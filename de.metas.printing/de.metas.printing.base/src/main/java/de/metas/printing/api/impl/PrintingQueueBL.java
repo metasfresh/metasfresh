@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -44,11 +42,13 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -58,6 +58,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.IPrintingQueueHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  * @author cg
@@ -215,7 +216,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		// if possible, use the AD_User_ID of the user that started the process which is calling this method
 		if (printingQueueQuery.getOnlyAD_PInstance_ID() > 0)
 		{
-			final I_AD_PInstance pinstance = InterfaceWrapperHelper.create(ctx, printingQueueQuery.getOnlyAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(ctx, printingQueueQuery.getOnlyAD_PInstance_ID());
 			final int printJobUserId = pinstance.getAD_User_ID();
 			if (printJobUserId > 0)
 			{

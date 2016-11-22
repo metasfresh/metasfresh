@@ -46,9 +46,9 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 		//
 		// Handle in memory queries
 		final POJOLookupMap memDatabase;
-		if (Check.isEmpty(builder.getTableName(), true))
+		if (Check.isEmpty(builder.getModelTableName(), true))
 		{
-			memDatabase = POJOLookupMap.getInMemoryDatabaseForTableName(builder.getTableName());
+			memDatabase = POJOLookupMap.getInMemoryDatabaseForTableName(builder.getModelTableName());
 		}
 		else
 		{
@@ -84,13 +84,12 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 
 		final String trxName = queryBuildCtx.getTrxName();
 		final Class<T> modelClass = queryBuildCtx.getModelClass();
-		final String tableName = queryBuildCtx.getTableName();
+		final String modelTableName = queryBuildCtx.getModelTableName();
 		final IQueryOrderBy queryOrderBy = queryBuildCtx.getQueryOrderBy();
 		final int queryLimit = queryBuildCtx.getQueryLimit();
 		final int queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
 		final Map<String, Object> queryOptions = queryBuildCtx.getQueryOptions();
-
-		return new TypedSqlQuery<T>(ctx, modelClass, tableName, sqlWhereClause, trxName)
+		return new TypedSqlQuery<T>(ctx, modelClass, modelTableName, sqlWhereClause, trxName)
 				.setParameters(sqlParams)
 				.setPostQueryFilter(nonSqlFilters)
 				.setOrderBy(queryOrderBy)

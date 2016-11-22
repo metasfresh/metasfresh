@@ -215,23 +215,9 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> List<ET> list() throws DBException
+	public List<T> list() throws DBException
 	{
-		final List<T> result = list(modelClass);
-		if (result == null || result.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		final List<ET> resultCasted = new ArrayList<ET>(result.size());
-		for (final T model : result)
-		{
-			@SuppressWarnings("unchecked")
-			final ET modelCasted = (ET)model;
-			resultCasted.add(modelCasted);
-		}
-
-		return resultCasted;
+		return list(modelClass);
 	}
 
 	@Override

@@ -22,13 +22,16 @@ import org.compiere.model.MTab;
 import org.compiere.model.MWindow;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Copy all Tabs of a Window
  *	
  *  @author Jorg Janke
  *  @version $Id: WindowCopy.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class WindowCopy extends SvrProcess
+public class WindowCopy extends JavaProcess
 {
 	/**	Window To					*/
 	private int			p_AD_WindowTo_ID = 0;
@@ -44,7 +47,7 @@ public class WindowCopy extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

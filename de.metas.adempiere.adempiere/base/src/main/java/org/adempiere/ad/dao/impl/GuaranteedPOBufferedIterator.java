@@ -167,7 +167,7 @@ import de.metas.logging.LogManager;
 				+ "\n LEFT OUTER JOIN " + tableName + " ON (" + keyColumnNameFQ + "=s.ZZ_Record_ID)";
 		final String selectionWhereClause = "s.ZZ_UUID=?";
 		final String selectionOrderBy = "s.ZZ_Line";
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<>(query.getCtx(), clazzToUse, selectionWhereClause, trxName)
+		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<ET>(query.getCtx(), clazzToUse, tableName, selectionWhereClause, trxName)
 				.setParameters(querySelectionUUID)
 				.setSqlFrom(selectionSqlFrom)
 				.setOrderBy(selectionOrderBy);

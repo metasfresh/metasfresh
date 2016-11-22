@@ -24,9 +24,9 @@ package de.metas.async.process;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.api.impl.WorkpackageCleanupStaleEntries;
+import de.metas.process.JavaProcess;
 
 /**
  * Identifies and deactivates stale workpackages.
@@ -34,7 +34,7 @@ import de.metas.async.api.impl.WorkpackageCleanupStaleEntries;
  * @author tsa
  * @see WorkpackageCleanupStaleEntries
  */
-public class C_Queue_WorkPackage_CleanupStaleEntries extends SvrProcess
+public class C_Queue_WorkPackage_CleanupStaleEntries extends JavaProcess
 {
 	@Override
 	protected void prepare()

@@ -1,8 +1,7 @@
 package de.metas.dlm.partitioner.process;
 
-import org.compiere.process.SvrProcess;
-
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -26,7 +25,7 @@ import de.metas.dlm.model.I_DLM_Partition;
  * #L%
  */
 
-public abstract class AbstractDLM_Partition_Create extends SvrProcess
+public abstract class AbstractDLM_Partition_Create extends JavaProcess
 {
 	public final I_DLM_Partition getPartitionToCompleteOrNull()
 	{

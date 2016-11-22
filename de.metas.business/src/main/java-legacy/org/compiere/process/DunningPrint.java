@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.io.File;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -32,13 +31,14 @@ import org.compiere.model.MUserMail;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Dunning Letter Print
@@ -47,8 +47,11 @@ import de.metas.email.IMailTextBuilder;
  *  @version $Id: DunningPrint.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  *  
  *  FR 2872010 - Dunning Run for a complete Dunning (not just level) - Developer: Carlos Ruiz - globalqss - Sponsor: Metas
+ *  
+ *  @deprecated This class is not working anymore, not used and we consider to drop it
  */
-public class DunningPrint extends SvrProcess
+@Deprecated
+public class DunningPrint extends JavaProcess
 {
 	/**	Mail PDF				*/
 	private boolean		p_EMailPDF = false;
@@ -68,7 +71,7 @@ public class DunningPrint extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -225,30 +228,8 @@ public class DunningPrint extends SvrProcess
 					&& re.getPrintFormat().getJasperProcess_ID() > 0)
 				{
 					// ReportCtl.startDocumentPrint(ReportEngine.DUNNING, entry.get_ID(), null, -1, true);
-					try
-					{
-						// TODO: workaround - solution would be to refactor ReportCtl, ServerReportCtl, ProcessCtl, ServerProcessCtl and provide interfaces
-						ClassLoader loader = Thread.currentThread().getContextClassLoader();
-						if (loader == null)
-							loader = getClass().getClassLoader();
-						loader.loadClass("org.compiere.print.ReportCtl")
-								.getMethod("startDocumentPrint",
-										Integer.TYPE, // int type
-										Integer.TYPE, // int Record_ID,
-										ASyncProcess.class, // ASyncProcess parent,
-										Integer.TYPE, // int WindowNo,
-										Boolean.TYPE) // boolean IsDirectPrint
-								.invoke(null,
-										ReportEngine.DUNNING, // type
-										entry.get_ID(), // Record_ID
-										null, // parent
-										-1, // WindowNo
-										true); // IsDirectPrint
-					}
-					catch (Exception e)
-					{
-						throw new AdempiereException(e);
-					}
+					// TODO: implement if needed
+					throw new UnsupportedOperationException();
 				}
 				else
 				{

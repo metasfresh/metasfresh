@@ -45,17 +45,17 @@ import java.util.List;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 
 import de.metas.banking.service.IBankingBL;
+import de.metas.process.JavaProcess;
 
 /**
  * 
  * @author ts
  * 
  */
-public class C_RecurrentPaymentCreateInvoice extends SvrProcess
+public class C_RecurrentPaymentCreateInvoice extends JavaProcess
 {
 
 	/**

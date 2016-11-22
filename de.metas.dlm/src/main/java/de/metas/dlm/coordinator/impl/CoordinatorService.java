@@ -46,11 +46,14 @@ public class CoordinatorService implements ICoordinatorService
 	@Override
 	public Partition inspectPartition(final Partition partition)
 	{
+		// TODO: consider to make the selects in an autocommit transaction so we don't accumulate millions of locks for large aprtitions
 		int minLevel = Integer.MAX_VALUE;
 
 		final PlainContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();
 
-		final List<Iterator<IDLMAware>> dlmAwareIterators = Services.get(IDLMService.class)
+		final IDLMService dlmService = Services.get(IDLMService.class);
+
+		final List<Iterator<IDLMAware>> dlmAwareIterators = dlmService
 				.retrieveDLMTableNames(ctxAware, partition.getDLM_Partition_ID())
 				.map(builder -> builder.create().iterate(IDLMAware.class))
 				.collect(Collectors.toList());

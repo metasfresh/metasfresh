@@ -55,13 +55,13 @@ import org.adempiere.inout.shipment.ShipmentParams;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.inout.model.I_M_InOut;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Generate Shipments. Manual or Automatic
@@ -79,7 +79,7 @@ import de.metas.inout.model.I_M_InOut;
  * @author Jorg Janke
  * @author t.schoeneberg@metas.de
  */
-public final class InOutGenerate extends SvrProcess
+public final class InOutGenerate extends JavaProcess
 {
 	public static final String PARAM_Selection = "Selection";
 	public static final String PARAM_M_Warehouse_ID = "M_Warehouse_ID";
@@ -145,7 +145,7 @@ public final class InOutGenerate extends SvrProcess
 	@Override
 	protected void prepare() {
 
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)

@@ -1201,10 +1201,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 *
 	 * @author Teo Sarca, FR [ 1724662 ]
 	 */
-	public StringBuffer getInfoDetail(StringBuffer sb, Properties ctx)
+	public StringBuilder getInfoDetail(StringBuilder sb, Properties ctx)
 	{
 		if (sb == null)
-			sb = new StringBuffer();
+			sb = new StringBuilder();
 		sb.append("=== ModelValidationEngine ===").append(Env.NL);
 		sb.append("Validators #").append(m_validators.size()).append(Env.NL);
 		for (ModelValidator mv : m_validators)

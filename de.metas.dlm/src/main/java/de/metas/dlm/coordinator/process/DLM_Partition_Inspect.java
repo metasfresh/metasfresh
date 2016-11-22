@@ -11,12 +11,12 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dlm.Partition;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.IPartitionerService;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ import de.metas.dlm.partitioner.IPartitionerService;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DLM_Partition_Inspect extends SvrProcess
+public class DLM_Partition_Inspect extends JavaProcess
 {
 
 	@Override

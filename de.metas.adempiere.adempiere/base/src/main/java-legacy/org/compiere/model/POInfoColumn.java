@@ -18,11 +18,14 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.Properties;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
@@ -246,6 +249,9 @@ public final class POInfoColumn implements Serializable
 	/* package */boolean IsSelectionColumn;
 
 	private final String sqlColumnForSelect;
+	
+	/** Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case) */
+	private Optional<MLookupInfo> _lookupInfoForWindowNone = null;
 
 	/**
 	 * String representation
@@ -327,7 +333,12 @@ public final class POInfoColumn implements Serializable
 	{
 		return DisplayType;
 	}
-
+	
+	public int getAD_Reference_Value_ID()
+	{
+		return AD_Reference_Value_ID;
+	}
+	
 	public boolean isSelectionColumn()
 	{
 		return IsSelectionColumn;
@@ -336,5 +347,94 @@ public final class POInfoColumn implements Serializable
 	public boolean isMandatory()
 	{
 		return IsMandatory;
+	}
+	
+	public boolean isParent()
+	{
+		return IsParent;
+	}
+	
+	public int getAD_Val_Rule_ID()
+	{
+		return AD_Val_Rule_ID;
+	}
+	
+	public boolean isLookup()
+	{
+		return org.compiere.util.DisplayType.isLookup(DisplayType);
+	}
+	
+	public String getReferencedTableNameOrNull()
+	{
+		// Special lookups (Location, Locator etc)
+		final String refTableName = org.compiere.util.DisplayType.getTableName(DisplayType);
+		if(refTableName != null)
+		{
+			return refTableName;
+		}
+
+		// Regular lookups
+		final MLookupInfo lookupInfo = getLookupInfo(Env.WINDOW_None);
+		if(lookupInfo != null)
+		{
+			return lookupInfo.getTableName();
+		}
+		
+		return null;
+	}
+
+	
+	public MLookupInfo getLookupInfo(final int windowNo)
+	{
+		//
+		// List, Table, TableDir
+		if(isLookup())
+		{
+			if(windowNo == Env.WINDOW_None)
+			{
+				if(_lookupInfoForWindowNone == null)
+				{
+					final MLookupInfo lookupInfoCached = MLookupFactory.getLookupInfo(Env.WINDOW_None, DisplayType, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+					_lookupInfoForWindowNone = Optional.ofNullable(lookupInfoCached);
+				}
+				return _lookupInfoForWindowNone.orElse(null);
+			}
+			
+			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(windowNo, DisplayType, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+			return lookupInfo;
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	public Lookup getLookup(final Properties ctx, final int windowNo)
+	{
+		//
+		// List, Table, TableDir
+		if (isLookup())
+		{
+			try
+			{
+				final MLookupInfo lookupInfo = getLookupInfo(windowNo);
+				if(lookupInfo == null)
+				{
+					return null;
+				}
+				
+				final Lookup lookup = MLookupFactory.ofLookupInfo(ctx, lookupInfo, AD_Column_ID);
+				return lookup;
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
+		}
+		else
+		{
+			return null;
+		}
+		
 	}
 }	// POInfoColumn

@@ -19,8 +19,9 @@ package org.compiere.install;
 import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MLanguage;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -29,7 +30,7 @@ import org.compiere.process.SvrProcess;
  *  @author Jorg Janke
  *  @version $Id: LanguageMaintenance.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
  */
-public class LanguageMaintenance extends SvrProcess
+public class LanguageMaintenance extends JavaProcess
 {
 	// services
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
@@ -55,7 +56,7 @@ public class LanguageMaintenance extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

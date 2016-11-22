@@ -42,8 +42,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.MUser;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
@@ -51,13 +49,15 @@ import de.metas.email.impl.EMailSendException;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Send BoilerPlate to selected contacts
  * @author teo_sarca
  *
  */
-public class AD_BoilderPlate_SendToUsers extends SvrProcess
+public class AD_BoilderPlate_SendToUsers extends JavaProcess
 {
 	public static final String AD_Message_UserNotifyError = "de.metas.letters.UserNotifyError";
 	
@@ -74,7 +74,7 @@ public class AD_BoilderPlate_SendToUsers extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

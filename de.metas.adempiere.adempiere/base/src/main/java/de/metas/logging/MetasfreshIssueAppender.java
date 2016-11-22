@@ -1,7 +1,9 @@
 package de.metas.logging;
 
+import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -288,7 +290,8 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 				return;
 			}
 			// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
-			final MSystem system = MSystem.get(Env.getCtx());
+			final Properties ctx = Env.getCtx();
+			final MSystem system = MSystem.get(ctx);
 			if (system == null || !system.isAutoErrorReport())
 			{
 				return;

@@ -168,8 +168,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		private final Properties ctx;
 		private final String trxName;
 		private final Class<T> modelClass;
-		private final String tableName;
-
+		private final String modelTableName;
 		private final ImmutableMap<String, Object> queryOptions;
 		//
 		private final int queryOnlySelectionId;
@@ -186,8 +185,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			this.ctx = builderImpl.getCtx();
 			this.trxName = builderImpl.getTrxName();
 			this.modelClass = builderImpl.getModelClass();
-			this.tableName = builderImpl.getTableName();
-
+			this.modelTableName = builderImpl.getModelTableName();
 			this.queryOptions = ImmutableMap.copyOf(builderImpl.getOptions());
 			//
 			this.queryOnlySelectionId = builderImpl.getSelectionId();
@@ -206,7 +204,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			this.ctx = parent.ctx;
 			this.trxName = parent.trxName;
 			this.modelClass = parent.modelClass;
-			this.tableName = parent.tableName;
+			this.modelTableName = parent.modelTableName;
 			this.queryOptions = parent.queryOptions;
 			//
 			this.queryOnlySelectionId = parent.queryOnlySelectionId;
@@ -243,9 +241,9 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			return modelClass;
 		}
 
-		public String getTableName()
+		public String getModelTableName()
 		{
-			return tableName;
+			return modelTableName;
 		}
 
 		public ImmutableMap<String, Object> getQueryOptions()

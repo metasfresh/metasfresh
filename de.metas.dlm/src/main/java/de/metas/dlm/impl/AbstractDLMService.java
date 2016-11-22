@@ -146,7 +146,7 @@ public abstract class AbstractDLMService implements IDLMService
 					.addSetColumnValue(columnName, targetValue)
 					.execute();
 
-			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", queryBuilder.getTableName(), updated, columnName, targetValue);
+			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", queryBuilder.getModelTableName(), updated, columnName, targetValue);
 		});
 	}
 

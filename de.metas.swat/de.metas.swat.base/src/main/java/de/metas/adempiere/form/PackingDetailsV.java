@@ -179,7 +179,6 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 	 * Opens a model dialog.
 	 * 
 	 * @param parent
-	 *            {@link VPackaging}'s {@link FormFrame} member
 	 */
 	public PackingDetailsV(final FormFrame parent, final PackingDetailsMd model)
 	{

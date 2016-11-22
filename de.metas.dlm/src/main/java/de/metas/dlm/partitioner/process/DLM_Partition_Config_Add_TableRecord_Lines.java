@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -13,6 +12,7 @@ import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
 /*
@@ -44,7 +44,7 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DLM_Partition_Config_Add_TableRecord_Lines extends SvrProcess
+public class DLM_Partition_Config_Add_TableRecord_Lines extends JavaProcess
 {
 
 	@Param(parameterName = I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID, mandatory = true)

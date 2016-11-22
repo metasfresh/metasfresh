@@ -1,10 +1,10 @@
 package de.metas.dlm.partitioner.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ import de.metas.dlm.model.I_DLM_Partition;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DLM_Partition_Update_PartitionSize extends SvrProcess
+public class DLM_Partition_Update_PartitionSize extends JavaProcess
 {
 	private final IDLMService dlmService = Services.get(IDLMService.class);
 

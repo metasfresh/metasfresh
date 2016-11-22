@@ -1,16 +1,17 @@
 package de.metas.dlm.process;
 
-import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.GridField;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPrecondition.PreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
 /*
@@ -35,8 +36,8 @@ import de.metas.process.Param;
  * #L%
  */
 
-public abstract class AbstractManageDLMTableProcess extends SvrProcess
-		implements ISvrProcessPrecondition, ISvrProcessDefaultParametersProvider
+public abstract class AbstractManageDLMTableProcess extends JavaProcess
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Param(mandatory = true, parameterName = I_AD_Table.COLUMNNAME_AD_Table_ID)
 	protected I_AD_Table table;

@@ -55,11 +55,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.X_T_MRP_CRP;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Re-Open Order Process (from Closed to Completed)
@@ -68,7 +69,7 @@ import org.eevolution.model.X_T_MRP_CRP;
  *  @version $Id: CreateCost.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
-public class CRPSummary extends SvrProcess
+public class CRPSummary extends JavaProcess
 {
 	/**					*/
 
@@ -87,7 +88,7 @@ public class CRPSummary extends SvrProcess
 	protected void prepare()
 	{
 		AD_Client_ID = Integer.parseInt(Env.getContext(Env.getCtx(), "#AD_Client_ID"));
-                ProcessInfoParameter[] para = getParameter();
+                ProcessInfoParameter[] para = getParametersAsArray();
                 
         AD_PInstance_ID = getAD_PInstance_ID();        
                

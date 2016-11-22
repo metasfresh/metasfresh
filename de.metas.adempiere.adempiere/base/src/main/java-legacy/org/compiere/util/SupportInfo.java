@@ -67,11 +67,11 @@ public class SupportInfo
 	 * @param sb buffer to append or null
 	 * @return Info as multiple Line String
 	 */
-	public static StringBuffer getInfo(StringBuffer sb)
+	public static StringBuilder getInfo(StringBuilder sb)
 	{
 		if (sb == null)
 		{
-			sb = new StringBuffer();
+			sb = new StringBuilder();
 		}
 		final String eq = " = ";
 		sb.append(getMsg("Host")).append(eq).append(getServerInfo()).append(NL);
@@ -145,11 +145,11 @@ public class SupportInfo
 	 * @param ctx Environment
 	 * @return System Info
 	 */
-	public static StringBuffer getInfoDetail(StringBuffer sb, Properties ctx)
+	public static StringBuilder getInfoDetail(StringBuilder sb, Properties ctx)
 	{
 		if (sb == null)
 		{
-			sb = new StringBuffer();
+			sb = new StringBuilder();
 		}
 		if (ctx == null)
 		{

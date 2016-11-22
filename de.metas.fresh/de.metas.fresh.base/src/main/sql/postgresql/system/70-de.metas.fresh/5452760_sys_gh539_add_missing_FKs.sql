@@ -48,6 +48,7 @@ DELETE FROM c_bp_docline_sort s WHERE NOT EXISTS (select 1 from C_BPartner p whe
 
 DELETE FROM Fact_Acct_ActivityChangeRequest s WHERE NOT EXISTS (select 1 from fact_Acct a where a.fact_Acct_id=s.fact_Acct_id);
 
+
 --
 -- fixing references from Table Direct to Table or Search 
 --
@@ -668,7 +669,7 @@ ALTER TABLE SEPA_Export_Line ADD CONSTRAINT CBPBankAccount_SEPAExportLine FOREIG
 ALTER TABLE SEPA_Export_Line ADD CONSTRAINT CCurrency_SEPAExportLine FOREIGN KEY (C_Currency_ID) REFERENCES C_Currency DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE SEPA_Export_Line ADD CONSTRAINT SEPAExport_SEPAExportLine FOREIGN KEY (SEPA_Export_ID) REFERENCES SEPA_Export DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE SEPA_Export_Line ADD CONSTRAINT SEPAExportLineRetry_SEPAExport FOREIGN KEY (SEPA_Export_Line_Retry_ID) REFERENCES SEPA_Export_Line DEFERRABLE INITIALLY DEFERRED;
---ALTER TABLE X_MRP_ProductInfo_Detail_MV ADD CONSTRAINT MAttributeSetInstance_XMRPProd FOREIGN KEY (M_AttributeSetInstance_ID) REFERENCES M_AttributeSetInstance DEFERRABLE INITIALLY DEFERRED;
+-- ALTER TABLE X_MRP_ProductInfo_Detail_MV ADD CONSTRAINT MAttributeSetInstance_XMRPProd FOREIGN KEY (M_AttributeSetInstance_ID) REFERENCES M_AttributeSetInstance DEFERRABLE INITIALLY DEFERRED;
 
 
 ALTER TABLE A_Asset_Acct DROP CONSTRAINT IF EXISTS AAssetA_AAssetAcct;

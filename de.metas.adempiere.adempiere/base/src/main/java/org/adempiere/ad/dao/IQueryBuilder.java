@@ -67,8 +67,9 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * @return the table name or <code>null</code>, if it shall be taken from the model class (see {@link #getModelClass()}).
+	 * @TODO delete
 	 */
-	String getTableName();
+	// String getTableName();
 
 	Properties getCtx();
 
@@ -334,4 +335,6 @@ public interface IQueryBuilder<T>
 	ICompositeQueryFilter<T> addCompositeQueryFilter();
 
 	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
+
+	String getModelTableName();
 }

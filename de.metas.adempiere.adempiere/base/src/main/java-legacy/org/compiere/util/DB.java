@@ -61,7 +61,6 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
@@ -72,6 +71,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  * General Database Interface
@@ -2286,7 +2286,7 @@ public final class DB
 	 */
 	public static int createT_Selection(Iterable<Integer> selection, String trxName)
 	{
-		final int adPInstanceId = getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
 		createT_Selection(adPInstanceId, selection, trxName);
 		return adPInstanceId;
 	}

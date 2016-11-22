@@ -11,12 +11,12 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
  * #L%
  */
 
-public abstract class C_Flatrate_Term_Create extends SvrProcess
+public abstract class C_Flatrate_Term_Create extends JavaProcess
 {
 	// services
 	protected final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

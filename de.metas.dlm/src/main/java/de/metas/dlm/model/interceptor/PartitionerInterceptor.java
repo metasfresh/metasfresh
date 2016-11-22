@@ -106,6 +106,12 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 		}
 
 		@Override
+		protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+		{
+			// nothing to do
+		}
+
+		@Override
 		public void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
 		{
 			final boolean afterNewOrChange = changeType.isNewOrChange() && changeType.isAfter();
@@ -150,6 +156,12 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 		private CheckTableRecordReferenceInterceptor()
 		{
+		}
+
+		@Override
+		protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+		{
+			// nothing to do
 		}
 
 		@Override

@@ -25,9 +25,9 @@ package org.adempiere.util;
 
 
 /**
- * Interface implementations can be passed to business logic to perform high-level logging. The signature of this
- * interface's only method is chosen so that all {@link org.compiere.process.SvrProcess} subclasses can implement it without further code
- * changes.
+ * Interface implementations can be passed to business logic to perform high-level logging.
+ * 
+ * NOTE: The signature of this interface's only method is chosen so that all classes like de.metas.process.JavaProcess subclasses can implement it without further code changes.
  *
  * @author ts
  *

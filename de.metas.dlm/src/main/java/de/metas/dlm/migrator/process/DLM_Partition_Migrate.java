@@ -9,12 +9,12 @@ import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dlm.Partition;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.IPartitionerService;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.dlm.partitioner.IPartitionerService;
  * #L%
  */
 
-public class DLM_Partition_Migrate extends SvrProcess
+public class DLM_Partition_Migrate extends JavaProcess
 {
 
 	@Override

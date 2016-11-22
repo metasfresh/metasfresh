@@ -19,20 +19,22 @@ package org.compiere.server;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -41,31 +43,36 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_SchedulerLog;
+import org.compiere.model.I_AD_Scheduler_Para;
 import org.compiere.model.I_AD_Task;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MNote;
-import org.compiere.model.MPInstance;
-import org.compiere.model.MProcess;
 import org.compiere.model.MScheduler;
-import org.compiere.model.MSchedulerPara;
 import org.compiere.model.MTask;
 import org.compiere.model.MUser;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import it.sauronsoftware.cron4j.Predictor;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 
@@ -102,8 +109,10 @@ public class Scheduler extends AdempiereServer
 		m_model = model;
 
 		// metas us1030 updating status
-		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, false); // saveLogs=false
+		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, AD_PInstance_ID_None); // saveLogs=false
 	}	// Scheduler
+	
+	private static final transient Logger log = LogManager.getLogger(Scheduler.class);
 
 	/** The Concrete Model */
 	private final MScheduler m_model;
@@ -118,24 +127,23 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
-	/** AD_PInstance_ID of current/last executed process/report */
-	private int m_AD_PInstance_ID = -1;
+	private static final int AD_PInstance_ID_None = -1;
 
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 *
 	 * @param status
 	 */
-	private void setSchedulerStatus(final String status, final boolean saveLogs)
+	private void setSchedulerStatus(final String status, final int adPInstanceId)
 	{
 		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				if (saveLogs)
+				if (adPInstanceId > 0)
 				{
-					saveLogs(localTrxName);
+					saveLogs(adPInstanceId, localTrxName);
 				}
 
 				m_model.setStatus(status);
@@ -152,7 +160,7 @@ public class Scheduler extends AdempiereServer
 	 *
 	 * @param trxName
 	 */
-	private void saveLogs(final String trxName)
+	private void saveLogs(final int adPInstanceId, final String trxName)
 	{
 		final int no = m_model.deleteLog(trxName);
 		m_summary.append("Logs deleted=").append(no);
@@ -166,9 +174,9 @@ public class Scheduler extends AdempiereServer
 		pLog.setIsError(!m_success);
 		pLog.setReference("#" + String.valueOf(p_runCount) + " - " + TimeUtil.formatElapsed(new Timestamp(p_startWork)));
 
-		if (m_AD_PInstance_ID > 0)
+		if (adPInstanceId > 0)
 		{
-			pLog.setAD_PInstance_ID(m_AD_PInstance_ID);
+			pLog.setAD_PInstance_ID(adPInstanceId);
 		}
 
 		InterfaceWrapperHelper.save(pLog);
@@ -183,12 +191,13 @@ public class Scheduler extends AdempiereServer
 	protected void doWork()
 	{
 		// metas us1030 updating staus
-		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, false); // saveLogs=false
+		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, AD_PInstance_ID_None);
 
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");
 
 		// Prepare a ctx for the report/process - BF [1966880]
 		final Properties schedulerCtx = createSchedulerCtxForDoWork();
+		final AtomicInteger adPInstanceId = new AtomicInteger(AD_PInstance_ID_None);
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(schedulerCtx))
 		{
@@ -213,10 +222,9 @@ public class Scheduler extends AdempiereServer
 				//
 				// Create process info
 				// metas-ts using process with scheduler-ctx
-				final MProcess process = new MProcess(schedulerCtx, m_model.getAD_Process_ID(), ITrx.TRXNAME_None);
-
-				final ProcessInfo pi = createProcessInfo(process);
-				m_AD_PInstance_ID = pi.getAD_PInstance_ID();
+				final I_AD_Process process = m_model.getAD_Process();
+				final ProcessInfo pi = createProcessInfo(schedulerCtx, m_model);
+				adPInstanceId.set(pi.getAD_PInstance_ID());
 
 				//
 				// Create process runner
@@ -232,7 +240,7 @@ public class Scheduler extends AdempiereServer
 						}
 						else
 						{
-							result = runProcess(pi, process);
+							result = runProcess(pi);
 						}
 						m_summary.append(result);
 					}
@@ -243,6 +251,12 @@ public class Scheduler extends AdempiereServer
 						log.warn("Failed running process/report: {}", process, e);
 						m_summary.append(e.toString());
 						return ROLLBACK;
+					}
+					
+					@Override
+					public void doFinally()
+					{
+						adPInstanceId.set(pi.getAD_PInstance_ID());
 					}
 				};
 
@@ -267,7 +281,7 @@ public class Scheduler extends AdempiereServer
 		}
 
 		// metas us1030 updating status: Running->Started
-		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, true); // saveLogs=true
+		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, adPInstanceId.get());
 		// metas end
 
 	}	// doWork
@@ -330,13 +344,6 @@ public class Scheduler extends AdempiereServer
 		return schedulerCtx;
 	}
 
-	private final ITrx getThreadInheritedTrx()
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		return trx;
-	}
-
 	/**
 	 * Run Report
 	 *
@@ -344,20 +351,23 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private String runReport(final ProcessInfo pi, final MProcess process) throws Exception
+	private String runReport(final ProcessInfo pi, final I_AD_Process process) throws Exception
 	{
 		log.debug("Run report: {}", process);
 
-		if (!process.isReport() || process.getAD_ReportView_ID() == 0)
+		if (!process.isReport() || process.getAD_ReportView_ID() <= 0)
 		{
 			return "Not a Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
 		}
 
 		// Process
-		final ITrx trx = getThreadInheritedTrx();
-		if (!process.processIt(pi, trx) && pi.getClassName() != null)
+		final ProcessExecutionResult result = ProcessExecutor.builder(pi)
+				//.switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
+				.executeSync()
+				.getResult();
+		if (result.isError())
 		{
-			return "Process failed: (" + pi.getClassName() + ") " + pi.getSummary();
+			return "Process failed: (" + pi.getClassName() + ") " + result.getSummary();
 		}
 
 		// Report
@@ -388,7 +398,7 @@ public class Scheduler extends AdempiereServer
 			attachment.save();
 		}
 		//
-		return pi.getSummary();
+		return result.getSummary();
 	}	// runReport
 
 	/**
@@ -398,54 +408,49 @@ public class Scheduler extends AdempiereServer
 	 * @return summary
 	 * @throws Exception
 	 */
-	private final String runProcess(final ProcessInfo pi, final MProcess process) throws Exception
+	private final String runProcess(final ProcessInfo pi) throws Exception
 	{
-		log.debug("Run process: {}", process);
+		log.debug("Run process: {}", pi);
 
-		final ITrx trx = getThreadInheritedTrx();
-		final boolean ok = process.processIt(pi, trx);
-		ProcessInfoUtil.setLogFromDB(pi);
-
+		final ProcessExecutionResult result = ProcessExecutor.builder(pi)
+				//.switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
+				.executeSync()
+				.getResult();
+		final boolean ok = !result.isError();
+		
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
 		final MUser from = new MUser(pi.getCtx(), pi.getAD_User_ID(), ITrx.TRXNAME_None);
-		final int adPInstanceTableID = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
+		final int adPInstanceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
 
 		notify(ok,
 				from,
-				process.getName(),
-				pi.getSummary(),
-				pi.getLogInfo(),
-				adPInstanceTableID,
-				pi.getAD_PInstance_ID());
+				pi.getTitle(),
+				result.getSummary(),
+				result.getLogInfo(),
+				adPInstanceTableId,
+				result.getAD_PInstance_ID());
 		// metas: c.ghita@metas.ro: end
 
 		m_success = ok; // stored it, so we can persist it in the scheduler log
-		return pi.getSummary();
+		return result.getSummary();
 	}	// runProcess
 
 	/**
 	 * Creates and setup the {@link ProcessInfo}.
 	 *
 	 * @param process
-	 * @see org.compiere.wf.MWFActivity.performWork(Trx)
+	 * @see org.compiere.wf.MWFActivity#performWork(Trx)
 	 */
-	private final ProcessInfo createProcessInfo(final MProcess process)
+	private static final ProcessInfo createProcessInfo(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
-		final Properties ctx = process.getCtx(); // We assume the right context was already used when the process was loaded
-		final int AD_Table_ID = 0;
-		final int Record_ID = 0;
-
-		final MPInstance pInstance = new MPInstance(ctx, process, AD_Table_ID, Record_ID);
-		fillParameter(pInstance);
-
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), AD_Table_ID, Record_ID);
-		pi.setClassName(process.getClassname());
-		pi.setCtx(ctx);
-		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
-		pi.setAD_Org_ID(Env.getAD_Org_ID(ctx));
-		pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
+		final I_AD_Process adProcess = adScheduler.getAD_Process();
+		
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(schedulerCtx)
+				.setAD_Process(adProcess)
+				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
+				.build();
 
 		return pi;
 	}
@@ -504,114 +509,127 @@ public class Scheduler extends AdempiereServer
 	 * Fill Parameter
 	 *
 	 * @param pInstance process instance
+	 * @return 
 	 */
-	private void fillParameter(final MPInstance pInstance)
+	private static List<ProcessInfoParameter> createProcessInfoParameters(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
-		// NOTE: we want to requrey the parameters each time, in case they were changed
-		// This will allow the sysadm to do quick tweaks without restarting adempiere server
-		final MSchedulerPara[] sParams = m_model.getParameters(true);
+		// NOTE: we want to re-query the parameters each time, in case they were changed
+		// This will allow the SysAdmin to do quick tweaks without restarting metasfresh server
+		final List<I_AD_Scheduler_Para> schedulerParams = adScheduler.getParameters(true);
 
-		for (final I_AD_PInstance_Para iPara : pInstance.getParameters())
+		final ImmutableList.Builder<ProcessInfoParameter> processInfoParameters = ImmutableList.builder();
+		for (final I_AD_Scheduler_Para schedulerPara : schedulerParams)
 		{
-			for (int np = 0; np < sParams.length; np++)
+			final String variable = schedulerPara.getParameterDefault();
+			
+			final I_AD_Process_Para adProcessPara = schedulerPara.getAD_Process_Para();
+			final String parameterName = adProcessPara.getColumnName();
+			final int displayType = adProcessPara.getAD_Reference_ID();
+			final ProcessInfoParameter pip = createProcessInfoParameter(schedulerCtx, parameterName, variable, displayType);
+			if(pip == null)
 			{
-				final MSchedulerPara sPara = sParams[np];
-				if (iPara.getParameterName().equals(sPara.getColumnName()))
-				{
-					final String variable = sPara.getParameterDefault();
-					log.debug("Filling parameter: {} = {}", sPara.getColumnName(), variable);
-					// Value - Constant/Variable
-					Object value = variable;
-					if (variable == null
-							|| variable != null && variable.length() == 0)
-					{
-						value = null;
-					}
-					else if (variable.indexOf('@') != -1)	// we have a variable
-					{
-						// Strip
-						int index = variable.indexOf('@');
-						String columnName = variable.substring(index + 1);
-						index = columnName.indexOf('@');
-						if (index == -1)
-						{
-							log.warn(sPara.getColumnName() + " - cannot evaluate=" + variable);
-							break;
-						}
-						columnName = columnName.substring(0, index);
-						// try Env
-						final Properties ctx = getCtx();
-						final String env = Env.getContext(ctx, columnName);
-						if (env.length() == 0)
-						{
-							log.warn(sPara.getColumnName() + " - not in environment =" + columnName + "(" + variable + ")");
-							break;
-						}
-						else
-						{
-							value = env;
-						}
-					}	// @variable@
-
-					// No Value
-					if (value == null)
-					{
-						log.debug("{} - empty", sPara.getColumnName());
-						break;
-					}
-
-					// Convert to Type
-					try
-					{
-						if (DisplayType.isNumeric(sPara.getDisplayType())
-								|| DisplayType.isID(sPara.getDisplayType()))
-						{
-							BigDecimal bd = null;
-							if (value instanceof BigDecimal)
-							{
-								bd = (BigDecimal)value;
-							}
-							else if (value instanceof Integer)
-							{
-								bd = new BigDecimal(((Integer)value).intValue());
-							}
-							else
-							{
-								bd = new BigDecimal(value.toString());
-							}
-							iPara.setP_Number(bd);
-							log.debug(sPara.getColumnName() + " = " + variable + " (=" + bd + "=)");
-						}
-						else if (DisplayType.isDate(sPara.getDisplayType()))
-						{
-							Timestamp ts = null;
-							if (value instanceof Timestamp)
-							{
-								ts = (Timestamp)value;
-							}
-							else
-							{
-								ts = Timestamp.valueOf(value.toString());
-							}
-							iPara.setP_Date(ts);
-							log.debug(sPara.getColumnName() + " = " + variable + " (=" + ts + "=)");
-						}
-						else
-						{
-							iPara.setP_String(value.toString());
-							log.debug(sPara.getColumnName() + " = " + variable + " (=" + value + "=) " + value.getClass().getName());
-						}
-						InterfaceWrapperHelper.save(iPara);
-					}
-					catch (final Exception e)
-					{
-						log.warn(sPara.getColumnName() + " = " + variable + " (" + value + ") " + value.getClass().getName() + " - " + e.getLocalizedMessage());
-					}
-					break;
-				}	// parameter match
-			}	// scheduler parameter loop
+				continue;
+			}
+			
+			processInfoParameters.add(pip);
 		}	// instance parameter loop
+		
+		return processInfoParameters.build();
 	}	// fillParameter
+	
+	private static final ProcessInfoParameter createProcessInfoParameter(final Properties schedulerCtx, final String parameterName, final String variable, final int displayType)
+	{
+		log.debug("Filling parameter: {} = {}", parameterName, variable);
+		// Value - Constant/Variable
+		Object value = variable;
+		if (variable == null || variable != null && variable.length() == 0)
+		{
+			value = null;
+		}
+		else if (variable.indexOf('@') != -1)	// we have a variable
+		{
+			// Strip
+			int index = variable.indexOf('@');
+			String columnName = variable.substring(index + 1);
+			index = columnName.indexOf('@');
+			if (index == -1)
+			{
+				log.warn(parameterName + " - cannot evaluate=" + variable);
+				return null;
+			}
+			columnName = columnName.substring(0, index);
+			
+			// try Env
+			final String env = Env.getContext(schedulerCtx, columnName);
+			if (Check.isEmpty(env))
+			{
+				log.warn(parameterName + " - not in environment =" + columnName + "(" + variable + ")");
+				return null;
+			}
+			else
+			{
+				value = env;
+			}
+		}	// @variable@
+
+		// No Value
+		if (value == null)
+		{
+			log.debug("{} - empty", parameterName);
+			return null;
+		}
+
+		// Convert to Type
+		try
+		{
+			if (DisplayType.isNumeric(displayType)
+					|| DisplayType.isID(displayType))
+			{
+				final BigDecimal bd;
+				if (value instanceof BigDecimal)
+				{
+					bd = (BigDecimal)value;
+				}
+				else if (value instanceof Integer)
+				{
+					bd = new BigDecimal(((Integer)value).intValue());
+				}
+				else
+				{
+					bd = new BigDecimal(value.toString());
+				}
+				final ProcessInfoParameter pip = ProcessInfoParameter.of(parameterName, bd);
+				log.debug("Created: {}", pip);
+				return pip;
+			}
+			else if (DisplayType.isDate(displayType))
+			{
+				final Timestamp ts;
+				if (value instanceof java.util.Date)
+				{
+					ts = TimeUtil.asTimestamp((java.util.Date)value);
+				}
+				else
+				{
+					ts = Timestamp.valueOf(value.toString());
+				}
+				final ProcessInfoParameter pip = ProcessInfoParameter.of(parameterName, ts);
+				log.debug("Created: {}", pip);
+				return pip;
+			}
+			else
+			{
+				final ProcessInfoParameter pip = ProcessInfoParameter.of(parameterName, value.toString());
+				log.debug("Created: {}", pip);
+				return pip;
+			}
+		}
+		catch (final Exception e)
+		{
+			log.warn(parameterName + " = " + variable + " (" + value + ") " + value.getClass().getName(), e);
+			return null;
+		}
+	}
 
 	/**
 	 * Get Server Info

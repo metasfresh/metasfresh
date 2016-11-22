@@ -41,12 +41,12 @@ public class PlainQueryBuilderDAO extends AbstractQueryBuilderDAO
 			final IQueryFilter<T> nonSqlFilters)
 	{
 		final Class<T> modelClass = queryBuildCtx.getModelClass();
-		final String tableName = queryBuildCtx.getTableName();
+		final String tableName = queryBuildCtx.getModelTableName();
 
 		final Properties ctx = queryBuildCtx.getCtx();
 		final String trxName = queryBuildCtx.getTrxName();
 
-		final POJOQuery<T> query = new POJOQuery<T>(ctx, modelClass, tableName, trxName)
+		final POJOQuery<T> query = new POJOQuery<>(ctx, modelClass, tableName, trxName)
 				.setOrderBy(queryBuildCtx.getQueryOrderBy())
 				.setLimit(queryBuildCtx.getQueryLimit())
 				.setOnlySelection(queryBuildCtx.getQueryOnlySelectionId())

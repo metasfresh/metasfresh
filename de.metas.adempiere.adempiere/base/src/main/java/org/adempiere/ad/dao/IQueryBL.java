@@ -33,13 +33,19 @@ public interface IQueryBL extends ISingletonService
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
 
+	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Properties ctx, String trxName);
+
+	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
+
 	/**
 	 *
 	 * @param modelClass
 	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>.
 	 * @param contextProvider
 	 * @return
+	 * @deprecated Please use {@link #createQueryOrderByBuilder(Class)}
 	 */
+	@Deprecated
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider);
 
 	/**
@@ -60,7 +66,7 @@ public interface IQueryBL extends ISingletonService
 	 * @return
 	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(Class<T> modelClass);
-
+	
 	/**
 	 *
 	 * @param tableName name of the table in question.

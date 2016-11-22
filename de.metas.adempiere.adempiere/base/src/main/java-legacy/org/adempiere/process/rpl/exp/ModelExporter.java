@@ -32,10 +32,11 @@ import org.compiere.model.MEXPFormat;
 import org.compiere.model.MReplicationStrategy;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_ReplicationTable;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -44,7 +45,7 @@ import org.w3c.dom.Document;
  * @see  http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1963487&group_id=176962
  * @version $Id:$
  */
-public class ModelExporter extends SvrProcess {
+public class ModelExporter extends JavaProcess {
 
 	/** Client Parameter */
 	protected int p_AD_Client_ID = 0;
@@ -79,7 +80,7 @@ public class ModelExporter extends SvrProcess {
 		StringBuffer sb = new StringBuffer("AD_Table_ID=").append(AD_Table_ID);
 		sb.append("; Record_ID=").append(getRecord_ID());
 		// Parameter
-		ProcessInfoParameter[] paras = getParameter();
+		ProcessInfoParameter[] paras = getParametersAsArray();
 		for (ProcessInfoParameter para : paras) 
 		{
 			String name = para.getParameterName();

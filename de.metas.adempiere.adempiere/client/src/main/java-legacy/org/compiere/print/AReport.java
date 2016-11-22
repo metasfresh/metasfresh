@@ -22,25 +22,24 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.sql.RowSet;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.apps.ADialog;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
-import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.process.IProcessExecutionListener;
+import de.metas.process.ui.ProcessDialog;
+import de.metas.logging.LogManager;
 
 /**
  *	Application Report Launcher.
@@ -76,7 +75,7 @@ public class AReport implements ActionListener
 	 *  @param WindowNo The invoking parent window number
 	 *  @param tabNo the invoking parent tab number
 	 */
-	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, ASyncProcess parent, int WindowNo, int tabNo)
+	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, IProcessExecutionListener parent, int WindowNo, int tabNo)
 	{
 		this(AD_Table_ID, invoker, query, parent, WindowNo, tabNo, null);
 	}	//	AReport
@@ -92,7 +91,7 @@ public class AReport implements ActionListener
 	 *  @param WindowNo The invoking parent window number
 	 *  @param tabNo the invoking parent tab number
 	 */
-	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, ASyncProcess parent, int WindowNo, int tabNo, String whereExtended)
+	public AReport (int AD_Table_ID, JComponent invoker, MQuery	query, IProcessExecutionListener parent, int WindowNo, int tabNo, String whereExtended)
 	{
 		super();
 		
@@ -126,7 +125,7 @@ public class AReport implements ActionListener
 	/**	Logger			*/
 	private static Logger log = LogManager.getLogger(AReport.class);
 	/** The parent window for locking/unlocking during process execution */
-	private final ASyncProcess parent;
+	private final IProcessExecutionListener parent;
 	/** The filter to apply to this report */
 	private final String m_whereExtended;
 	/** The parent window number */
@@ -171,7 +170,7 @@ public class AReport implements ActionListener
 		}
 		//	One Format exists or no invoker - show it
 		else if (m_list.size() == 1 || invoker == null)
-			launchReport ((KeyNamePair)m_list.get(0));
+			launchReport (m_list.get(0));
 		//	Multiple Formats exist - show selection
 		else if (invoker.isShowing())
 			m_popup.show(invoker, 0, invoker.getHeight());	//	below button
@@ -212,32 +211,36 @@ public class AReport implements ActionListener
 	 * 	Launch Report
 	 * 	@param pf print format
 	 */
-	private void launchReport (MPrintFormat pf)
+	private void launchReport(final MPrintFormat pf)
 	{
 		int Record_ID = 0;
-		if (m_query.getRestrictionCount()==1 && m_query.getCode(0) instanceof Integer)
+		if (m_query.getRestrictionCount() == 1 && m_query.getCode(0) instanceof Integer)
+		{
 			Record_ID = ((Integer)m_query.getCode(0)).intValue();
-		PrintInfo info = new PrintInfo(
-			pf.getName(),
-			pf.getAD_Table_ID(),
-			Record_ID);
-		info.setDescription(m_query.getInfo());
-		
+		}
+
+		// It's a report using the JasperReports engine
 		if(pf != null && pf.getJasperProcess_ID() > 0)
 		{
-			// It's a report using the JasperReports engine
-			ProcessInfo pi = new ProcessInfo ("", pf.getJasperProcess_ID(), pf.getAD_Table_ID(), Record_ID);
-			pi.setWindowNo(WindowNo);
-			pi.setTabNo(tabNo);
-			pi.setWhereClause(m_whereExtended);
-			
-			//	Execute Process
-			ProcessCtl worker = ProcessCtl.process(parent, WindowNo, pi, ITrx.TRX_None);
+			// Execute Process
+			ProcessDialog.builder()
+					.setAD_Process_ID(pf.getJasperProcess_ID())
+					.setTableAndRecord(pf.getAD_Table_ID(), Record_ID)
+					.setWindowAndTabNo(WindowNo, tabNo)
+					.setWhereClause(m_whereExtended)
+					.setProcessExecutionListener(parent)
+					.show();
 		}
+		// It's a default report using the standard printing engine
 		else
 		{
-			// It's a default report using the standard printing engine
-			ReportEngine re = new ReportEngine (Env.getCtx(), pf, m_query, info);
+			final PrintInfo info = new PrintInfo(
+					pf.getName(),
+					pf.getAD_Table_ID(),
+					Record_ID);
+			info.setDescription(m_query.getInfo());
+			
+			final ReportEngine re = new ReportEngine (Env.getCtx(), pf, m_query, info);
 			re.setWhereExtended(m_whereExtended);
 			re.setWindowNo(WindowNo);
 			ReportCtl.preview(re);
@@ -255,7 +258,7 @@ public class AReport implements ActionListener
 		String cmd = e.getActionCommand();
 		for (int i = 0; i < m_list.size(); i++)
 		{
-			KeyNamePair pp = (KeyNamePair)m_list.get(i);
+			KeyNamePair pp = m_list.get(i);
 			if (cmd.equals(pp.getName()))
 			{
 				launchReport (pp);
