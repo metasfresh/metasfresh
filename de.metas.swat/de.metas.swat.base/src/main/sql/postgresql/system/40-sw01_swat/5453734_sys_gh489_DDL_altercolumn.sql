@@ -1,7 +1,7 @@
--- Function: altercolumn(name, name, name, character varying, character varying)
-
 -- DROP FUNCTION altercolumn(name, name, name, character varying, character varying);
-
+--
+-- add "public." to the table names to avoid mixup with dlm-views
+--
 CREATE OR REPLACE FUNCTION altercolumn(tablename name, columnname name, datatype name, nullclause character varying, defaultclause character varying)
 RETURNS void AS
 $BODY$

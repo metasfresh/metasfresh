@@ -29,7 +29,7 @@ import java.sql.Timestamp;
 public class ProcessInfoLog implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4064380205358897097L;
 
@@ -42,9 +42,9 @@ public class ProcessInfoLog implements Serializable
 	 *	@param P_Number Process Number
 	 *	@param P_Msg Process Messagre
 	 */
-	public ProcessInfoLog (int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
+	public ProcessInfoLog (Timestamp P_Date, BigDecimal P_Number, String P_Msg)
 	{
-		this (s_Log_ID++, P_ID, P_Date, P_Number, P_Msg);
+		this (s_Log_ID++, P_Date, P_Number, P_Msg);
 	}	//	ProcessInfoLog
 
 	/**
@@ -55,10 +55,9 @@ public class ProcessInfoLog implements Serializable
 	 *	@param P_Number Process Number
 	 *	@param P_Msg Process Messagre
 	 */
-	public ProcessInfoLog (int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
+	public ProcessInfoLog (int Log_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
 	{
 		setLog_ID (Log_ID);
-		setP_ID (P_ID);
 		setP_Date (P_Date);
 		setP_Number (P_Number);
 		setP_Msg (P_Msg);

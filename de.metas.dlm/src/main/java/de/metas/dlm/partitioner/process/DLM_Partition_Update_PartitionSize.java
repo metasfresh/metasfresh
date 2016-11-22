@@ -1,4 +1,10 @@
-package de.metas.dlm.impl;
+package de.metas.dlm.partitioner.process;
+
+import org.adempiere.util.Services;
+import org.compiere.process.SvrProcess;
+
+import de.metas.dlm.IDLMService;
+import de.metas.dlm.model.I_DLM_Partition;
 
 /*
  * #%L
@@ -21,25 +27,25 @@ package de.metas.dlm.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-public class PlainDLMService extends AbstractDLMService
+/**
+ * Invokes {@link IDLMService#updatePartitionSize(I_DLM_Partition)} on the currently selected partitions.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class DLM_Partition_Update_PartitionSize extends SvrProcess
 {
+	private final IDLMService dlmService = Services.get(IDLMService.class);
 
 	@Override
-	void executeDBFunction_add_table_to_dlm(final String tableName, final String trxName)
+	protected String doIt() throws Exception
 	{
-		// nothing to do
-	}
-
-	@Override
-	void executeDBFunction_remove_table_from_dlm(final String tableName, final String trxName)
-	{
-		// nothing to do
-	}
-
-	@Override
-	void executeDBFunction_update_partition_size(int dlm_Partition_ID, String trxName)
-	{
-		// nothing to do
+		retrieveSelectedRecordsQueryBuilder(I_DLM_Partition.class)
+				.create()
+				.list()
+				.forEach(p -> {
+					dlmService.updatePartitionSize(p);
+				});
+		return MSG_OK;
 	}
 }

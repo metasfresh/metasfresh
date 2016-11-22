@@ -38,12 +38,12 @@ public class MPInstancePara extends X_AD_PInstance_Para
 	/**
 	 * 	Persistency Constructor
 	 *	@param ctx context
-	 *	@param ignored ignored
+	 *	@param id
 	 *	@param trxName transaction
 	 */
 	public MPInstancePara (Properties ctx, int id, String trxName)
 	{
-		super(ctx, 0, trxName);
+		super(ctx, id, trxName);
 	}	//	MPInstance_Para
 
 	/**

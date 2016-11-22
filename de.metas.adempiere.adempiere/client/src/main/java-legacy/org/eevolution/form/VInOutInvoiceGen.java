@@ -28,8 +28,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -67,14 +65,15 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.ASyncProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Manual Shipment Selection
@@ -83,7 +82,7 @@ import org.compiere.util.Trx;
  *  @version $Id: VInOutInvoiceGen.java
  */
 public class VInOutInvoiceGen extends CPanel
-	implements FormPanel, ActionListener, VetoableChangeListener, 
+	implements FormPanel, ActionListener, VetoableChangeListener,
 		ChangeListener, TableModelListener, ASyncProcess
 {
 	/**
@@ -140,15 +139,15 @@ public class VInOutInvoiceGen extends CPanel
 	private CTextPane info = new CTextPane();
 	private JScrollPane scrollPane = new JScrollPane();
 	private MiniTable miniTable = new MiniTable();
-	
+
 	private CLabel     lDocType = new CLabel();
 	private VComboBox  cmbDocType = new VComboBox();
 
 	/** User selection */
 	private ArrayList<Integer> selection = null;
 	private StringBuffer iText = new StringBuffer();
-	
-	
+
+
 	/**
 	 *	Static Init.
 	 *  <pre>
@@ -190,7 +189,7 @@ public class VInOutInvoiceGen extends CPanel
 		info.setEditable(false);
 		genPanel.add(confirmPanelGen, BorderLayout.SOUTH);
 		confirmPanelGen.setActionListener(this);
-		
+
 		lDocType.setLabelFor(cmbDocType);
 		selNorthPanel.add(lDocType, null);
 		selNorthPanel.add(cmbDocType, null);
@@ -276,7 +275,7 @@ public class VInOutInvoiceGen extends CPanel
             sql.append(" AND ic.M_Warehouse_ID=").append(m_M_Warehouse_ID);
         if (m_C_BPartner_ID != null)
             sql.append(" AND ic.C_BPartner_ID=").append(m_C_BPartner_ID);
-        
+
         // bug - [ 1713317 ] Generate Shipments (manual) show locked records
         /* begin - Exclude locked records; @Trifon */
         int AD_User_ID = Env.getContextAsInt(Env.getCtx(), "#AD_User_ID");
@@ -288,13 +287,13 @@ public class VInOutInvoiceGen extends CPanel
             sql.append("C_Order_ID").append(lockedIDs);
         }
         /* eng - Exclude locked records; @Trifon */
-          
+
         //
         sql.append(" ORDER BY o.Name,bp.Name,DateOrdered");
-        
+
         return sql.toString();
 	}
-	
+
 	/**
 	 * Get SQL for Vendor RMA that need to be shipped
 	 * @return sql
@@ -302,7 +301,7 @@ public class VInOutInvoiceGen extends CPanel
 	private String getRMASql()
 	{
 	    StringBuffer sql = new StringBuffer();
-	    
+
 	    sql.append("SELECT rma.M_RMA_ID, org.Name, dt.Name, rma.DocumentNo, bp.Name, rma.Created, rma.Amt ");
 	    sql.append("FROM M_RMA rma INNER JOIN AD_Org org ON rma.AD_Org_ID=org.AD_Org_ID ");
 	    sql.append("INNER JOIN C_DocType dt ON rma.C_DocType_ID=dt.C_DocType_ID ");
@@ -316,24 +315,24 @@ public class VInOutInvoiceGen extends CPanel
 	    sql.append("AND NOT EXISTS (SELECT * FROM M_InOut oio WHERE oio.M_RMA_ID=rma.M_RMA_ID ");
 	    sql.append("AND oio.DocStatus IN ('IP', 'CO', 'CL')) " );
 	    sql.append("AND rma.AD_Client_ID=?");
-	    
+
 	    if (m_M_Warehouse_ID != null)
             sql.append(" AND io.M_Warehouse_ID=").append(m_M_Warehouse_ID);
         if (m_C_BPartner_ID != null)
             sql.append(" AND bp.C_BPartner_ID=").append(m_C_BPartner_ID);
-        
+
         int AD_User_ID = Env.getContextAsInt(Env.getCtx(), "#AD_User_ID");
         String lockedIDs = MPrivateAccess.getLockedRecordWhere(MRMA.Table_ID, AD_User_ID);
         if (lockedIDs != null)
         {
             sql.append(" AND rma.M_RMA_ID").append(lockedIDs);
         }
-	    
+
 	    sql.append(" ORDER BY org.Name, bp.Name, rma.Created ");
 
 	    return sql.toString();
 	}
-	
+
 	/**
 	 *  Query Info
 	 */
@@ -341,11 +340,11 @@ public class VInOutInvoiceGen extends CPanel
 	{
 		log.info("");
 		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-		
+
 		String sql = "";
-		
+
 		KeyNamePair docTypeKNPair = (KeyNamePair)cmbDocType.getSelectedItem();
-		
+
 		if (docTypeKNPair.getKey() == MRMA.Table_ID)
 		{
 		    sql = getRMASql();
@@ -429,7 +428,7 @@ public class VInOutInvoiceGen extends CPanel
 			&& selection.size() > 0
 			&& m_selectionActive	//	on selection tab
 			&& m_M_Warehouse_ID != null)
-		{	
+		{
 			generateShipments ();
 
 		}
@@ -494,7 +493,7 @@ public class VInOutInvoiceGen extends CPanel
 		//  ID selection may be pending
 		miniTable.editingStopped(new ChangeEvent(this));
 		//  Array of Integers
-		ArrayList<Integer> results = new ArrayList<Integer>();
+		ArrayList<Integer> results = new ArrayList<>();
 		selection = null;
 
 		//	Get selected entries
@@ -511,29 +510,29 @@ public class VInOutInvoiceGen extends CPanel
 			return;
 		log.info("Selected #" + results.size());
 		selection = results;
-		
+
 	}	//	saveSelection
 
-	
+
 	/**************************************************************************
 	 *	Generate Shipments
 	 */
 	private void generateShipments ()
 	{
 		log.info("M_Warehouse_ID=" + m_M_Warehouse_ID);
-		String trxName = Trx.createTrxName("IOG");	
+		String trxName = Trx.createTrxName("IOG");
 		Trx trx = Trx.get(trxName, true);	//trx needs to be committed too
 		//String trxName = null;
 		//Trx trx = null;
-		
+
 		m_selectionActive = false;  //  prevents from being called twice
 		statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), "InOutGenerateGen"));
 		statusBar.setStatusDB(String.valueOf(selection.size()));
 
 		//	Prepare Process
-		int AD_Process_ID = 0;	  
+		int AD_Process_ID = 0;
 		KeyNamePair docTypeKNPair = (KeyNamePair)cmbDocType.getSelectedItem();
-        
+
         if (docTypeKNPair.getKey() == MRMA.Table_ID)
         {
             AD_Process_ID = 52001; // M_InOut_GenerateRMA - org.adempiere.process.InOutGenerateRMA
@@ -542,14 +541,14 @@ public class VInOutInvoiceGen extends CPanel
         {
             AD_Process_ID = 199;      // M_InOut_Generate - org.compiere.process.InOutGenerate
         }
-		
+
 		MPInstance instance = new MPInstance(Env.getCtx(), AD_Process_ID, 0, 0);
 		if (!instance.save())
 		{
 			info.setText(Msg.getMsg(Env.getCtx(), "ProcessNoInstance"));
 			return;
 		}
-		
+
 		//insert selection
 		StringBuffer insert = new StringBuffer();
 		insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
@@ -564,8 +563,8 @@ public class VInOutInvoiceGen extends CPanel
 			insert.append(", ");
 			insert.append(selectedId);
 			insert.append(" FROM DUAL ");
-			
-			if (counter == 1000) 
+
+			if (counter == 1000)
 			{
 				if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 				{
@@ -591,7 +590,7 @@ public class VInOutInvoiceGen extends CPanel
 				return;
 			}
 		}
-		
+
 		//call process
 		ProcessInfo pi = new ProcessInfo ("VInOutGen", AD_Process_ID);
 		pi.setAD_PInstance_ID (instance.getAD_PInstance_ID());
@@ -650,7 +649,7 @@ public class VInOutInvoiceGen extends CPanel
 		log.info("Reset=" + no);*/
 
 		//	Get results
-		int[] ids = pi.getIDs();
+		int[] ids = null;
 		if (ids == null || ids.length == 0)
 			return;
 		log.info("PrintItems=" + ids.length);
@@ -693,7 +692,7 @@ public class VInOutInvoiceGen extends CPanel
 		Trx trx = Trx.get(trxName, true);	//trx needs to be committed too
 		//String trxName = null;
 		//Trx trx = null;
-		
+
 		m_selectionActive = false;  //  prevents from being called twice
 		statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), "InvGenerateGen"));
 		statusBar.setStatusDB(String.valueOf(selection.size()));
@@ -701,7 +700,7 @@ public class VInOutInvoiceGen extends CPanel
 		//	Prepare Process
 		int AD_Process_ID = 0;
 		KeyNamePair docTypeKNPair = (KeyNamePair)cmbDocType.getSelectedItem();
-        
+
         if (docTypeKNPair.getKey() == MRMA.Table_ID)
         {
             AD_Process_ID = 52002; // C_Invoice_GenerateRMA - org.adempiere.process.InvoiceGenerateRMA
@@ -716,7 +715,7 @@ public class VInOutInvoiceGen extends CPanel
 			info.setText(Msg.getMsg(Env.getCtx(), "ProcessNoInstance"));
 			return;
 		}
-		
+
 		//insert selection
 		/*Selection exist from shipment*/
 		StringBuffer insert = new StringBuffer();
@@ -732,8 +731,8 @@ public class VInOutInvoiceGen extends CPanel
 			insert.append(", ");
 			insert.append(selectedId);
 			insert.append(" FROM DUAL ");
-			
-			if (counter == 1000) 
+
+			if (counter == 1000)
 			{
 				if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 				{
@@ -759,7 +758,7 @@ public class VInOutInvoiceGen extends CPanel
 				return;
 			}
 		}
-		
+
 		ProcessInfo pi = new ProcessInfo ("", AD_Process_ID);
 		pi.setAD_PInstance_ID (instance.getAD_PInstance_ID());
 
@@ -815,7 +814,7 @@ public class VInOutInvoiceGen extends CPanel
 		log.info("Reset=" + no);*/
 
 		//	Get results
-		int[] ids = pi.getIDs();
+		int[] ids = null;
 		if (ids == null || ids.length == 0)
 			return;
 
@@ -879,7 +878,7 @@ public class VInOutInvoiceGen extends CPanel
 			this.setEnabled(true);
 			this.setCursor(Cursor.getDefaultCursor());
 		}
-		
+
 	}   //  unlockUI
 
 	/**

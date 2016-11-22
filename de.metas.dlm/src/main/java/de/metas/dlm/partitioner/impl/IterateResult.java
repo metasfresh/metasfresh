@@ -206,8 +206,9 @@ public class IterateResult
 		{
 			// once we get the record from the queue, we also add it to our result
 			final WorkQueue next = iterator.next();
-			final IDLMAware model = next.getTableRecordReference().getModel(ctxAware, IDLMAware.class);
-			add0(next.getTableRecordReference(), model.getDLM_Partition_ID(), true);
+			final ITableRecordReference tableRecordReference = next.getTableRecordReference();
+			final IDLMAware model = tableRecordReference.getModel(ctxAware, IDLMAware.class);
+			add0(tableRecordReference, model.getDLM_Partition_ID(), true);
 
 			return next;
 		}

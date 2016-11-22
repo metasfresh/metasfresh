@@ -818,24 +818,23 @@ public class ProcessInfo implements Serializable, IContextAware
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
-	public void addLog(int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
+	public void addLog(int Log_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_ID, P_Date, P_Number, P_Msg));
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
 	}	// addLog
 
 	/**
 	 * Add to Log.
 	 *
-	 * @param P_ID Process ID
 	 * @param P_Date Process Date if <code>null</code> then the current {@link SystemTime} is used.
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
-	public void addLog(int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg)
+	public void addLog(Timestamp P_Date, BigDecimal P_Number, String P_Msg)
 	{
 		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
 
-		addLog(new ProcessInfoLog(P_ID, timestampToUse, P_Number, P_Msg));
+		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg));
 	}	// addLog
 
 	/**
@@ -848,7 +847,7 @@ public class ProcessInfo implements Serializable, IContextAware
 		if (logEntry == null)
 			return;
 		if (m_logs == null)
-			m_logs = new ArrayList<ProcessInfoLog>();
+			m_logs = new ArrayList<>();
 		m_logs.add(logEntry);
 	}	// addLog
 
@@ -865,21 +864,6 @@ public class ProcessInfo implements Serializable, IContextAware
 		m_logs.toArray(logs);
 		return logs;
 	}	// getLogs
-
-	/**
-	 * Method getIDs
-	 *
-	 * @return int[]
-	 */
-	public int[] getIDs()
-	{
-		if (m_logs == null)
-			return null;
-		int[] ids = new int[m_logs.size()];
-		for (int i = 0; i < m_logs.size(); i++)
-			ids[i] = m_logs.get(i).getP_ID();
-		return ids;
-	}	// getIDs
 
 	/**
 	 * Method getLogList
@@ -1109,7 +1093,7 @@ public class ProcessInfo implements Serializable, IContextAware
 			// no whereClause: return a "neutral" filter that does not exclude anything
 			return ConstantQueryFilter.of(true);
 		}
-		return new TypedSqlQueryFilter<T>(m_whereClause);
+		return new TypedSqlQueryFilter<>(m_whereClause);
 	}
 
 	/**

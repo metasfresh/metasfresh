@@ -20,7 +20,7 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.model.I_DLM_Partition_Record;
+import de.metas.dlm.model.I_DLM_Partition_Record_V;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 
 /*
@@ -191,7 +191,7 @@ public class PartitionerServiceAttachToPartitionTests
 
 		final ITableRecordReference tableRecordReverence = ITableRecordReference.FromModelConverter.convert(record);
 
-		final I_DLM_Partition_Record partitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record.class);
+		final I_DLM_Partition_Record_V partitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class);
 		partitionRecord.setAD_Table_ID(tableRecordReverence.getAD_Table_ID());
 		partitionRecord.setRecord_ID(tableRecordReverence.getRecord_ID());
 		partitionRecord.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());

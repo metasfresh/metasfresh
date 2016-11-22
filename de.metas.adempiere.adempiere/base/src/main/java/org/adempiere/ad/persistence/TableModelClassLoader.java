@@ -24,21 +24,16 @@ package org.adempiere.ad.persistence;
 
 import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -176,42 +171,30 @@ public class TableModelClassLoader
 		return modelClass;
 	}	// getClass
 
-	@VisibleForTesting
-	/* package */ final Class<?> findModelClassByTableName(final String tableName)
+	private final Class<?> findModelClassByTableName(final String tableName)
 	{
 		if (Check.isEmpty(tableName, true) || tableName.endsWith("_Trl"))
 		{
 			return NO_CLASS;
 		}
 
-		final String tableNameToUse;
-		if (Adempiere.isUnitTestMode())
-		{
-			tableNameToUse = tableName; // "MTable.get(Env.getCtx(), tableName)" does not work in unit test mode!
-		}
-		else
-		{
-			// given tableName may be in lower-case..we get the table and use its tableName
-			final I_AD_Table table = MTable.get(Env.getCtx(), tableName); // this method does not work in unit test mode!
-			tableNameToUse = table.getTableName();
-		}
 		// Import Tables (Name conflict)
-		if (tableNameToUse.startsWith("I_"))
+		if (tableName.startsWith("I_"))
 		{
-			final Class<?> clazz = loadModelClassForClassname("org.compiere.model.X_" + tableNameToUse);
+			final Class<?> clazz = loadModelClassForClassname("org.compiere.model.X_" + tableName);
 			if (clazz != null)
 			{
 				return clazz;
 			}
 
-			log.warn("No class for import table: {}", tableNameToUse);
+			log.warn("No class for import table: {}", tableName);
 			return NO_CLASS;
 		}
 
 		// Special Naming
 		for (int i = 0; i < s_special.length; i++)
 		{
-			if (s_special[i++].equals(tableNameToUse))
+			if (s_special[i++].equals(tableName))
 			{
 				final Class<?> clazz = loadModelClassForClassname(s_special[i]);
 				if (clazz != null)
@@ -225,24 +208,24 @@ public class TableModelClassLoader
 		//
 		// Use ModelPackage if exists
 		// Initially introduced by [ 1784588 ], vpj-cd
-		final String modelpackage = getModelPackageForTableName(tableNameToUse);
+		final String modelpackage = getModelPackageForTableName(tableName);
 		if (modelpackage != null)
 		{
-			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + Util.replace(tableNameToUse, "_", ""));
+			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + Util.replace(tableName, "_", ""));
 			if (clazz != null)
 			{
 				return clazz;
 			}
-			clazz = loadModelClassForClassname(modelpackage + ".X_" + tableNameToUse);
+			clazz = loadModelClassForClassname(modelpackage + ".X_" + tableName);
 			if (clazz != null)
 			{
 				return clazz;
 			}
-			log.warn("No class for table with it entity: {}", tableNameToUse);
+			log.warn("No class for table with it entity: {}", tableName);
 		}
 
 		// Strip table name prefix (e.g. AD_) Customizations are 3/4
-		String className = tableNameToUse;
+		String className = tableName;
 		int index = className.indexOf('_');
 		if (index > 0)
 		{
@@ -268,7 +251,7 @@ public class TableModelClassLoader
 		}
 
 		// Adempiere Extension
-		Class<?> clazz = loadModelClassForClassname("adempiere.model.X_" + tableNameToUse);
+		Class<?> clazz = loadModelClassForClassname("adempiere.model.X_" + tableName);
 		if (clazz != null)
 		{
 			return clazz;
@@ -276,14 +259,14 @@ public class TableModelClassLoader
 
 		// hengsin - allow compatibility with compiere plugins
 		// Compiere Extension
-		clazz = loadModelClassForClassname("compiere.model.X_" + tableNameToUse);
+		clazz = loadModelClassForClassname("compiere.model.X_" + tableName);
 		if (clazz != null)
 		{
 			return clazz;
 		}
 
 		// Default
-		clazz = loadModelClassForClassname("org.compiere.model.X_" + tableNameToUse);
+		clazz = loadModelClassForClassname("org.compiere.model.X_" + tableName);
 		if (clazz != null)
 		{
 			return clazz;
@@ -319,33 +302,10 @@ public class TableModelClassLoader
 	 */
 	private Class<?> loadModelClassForClassname(final String className)
 	{
-		final String packageName = className.substring(0, className.lastIndexOf('.'));
-
 		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try
 		{
-			// we need to find the classes in a case-insensitive fashion,
-			// because the classname's part that corresponds to the table name might be lower-case,
-			// because when doing DLM we sometimes get infos with table names directly from postgres
-			final List<String> allTypes = new Reflections(
-					packageName,
-					new SubTypesScanner(false)
-			// new FilterBuilder().include("(?i)" + className) // trying to use this filter gave me the following error:
-			// Couldn't find subtypes of Object. Make sure SubTypesScanner initialized to include Object class - new SubTypesScanner(false)
-			).getAllTypes().stream()
-					.filter(c -> c.equalsIgnoreCase(className)).collect(Collectors.toList());
-
-			Check.errorIf(allTypes.size() > 1, "There are multiple classes that match {}: {}", className, allTypes);
-			if (allTypes.isEmpty())
-			{
-				if (log.isDebugEnabled())
-				{
-					log.debug("No class found for " + className + " (classloader: " + classLoader + ")");
-					return null;
-				}
-			}
-
-			final Class<?> clazz = classLoader.loadClass(allTypes.iterator().next());
+			final Class<?> clazz = classLoader.loadClass(className);
 
 			// Make sure that it is a PO class
 			if (!PO.class.isAssignableFrom(clazz))

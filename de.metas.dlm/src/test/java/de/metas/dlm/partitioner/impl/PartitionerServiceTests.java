@@ -22,7 +22,7 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.model.I_DLM_Partition_Record;
+import de.metas.dlm.model.I_DLM_Partition_Record_V;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
@@ -142,7 +142,7 @@ public class PartitionerServiceTests
 		final I_AD_Table table = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
 		InterfaceWrapperHelper.save(table);
 
-		final I_DLM_Partition_Record tablePartitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record.class);
+		final I_DLM_Partition_Record_V tablePartitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class);
 		tablePartitionRecord.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
 		tablePartitionRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_AD_Table.class));
 		tablePartitionRecord.setRecord_ID(table.getAD_Table_ID());
@@ -153,7 +153,7 @@ public class PartitionerServiceTests
 		final I_AD_Column column = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
 		InterfaceWrapperHelper.save(column);
 
-		final I_DLM_Partition_Record columnPartitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record.class);
+		final I_DLM_Partition_Record_V columnPartitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class);
 		columnPartitionRecord.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
 		columnPartitionRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_AD_Column.class));
 		columnPartitionRecord.setRecord_ID(column.getAD_Column_ID());

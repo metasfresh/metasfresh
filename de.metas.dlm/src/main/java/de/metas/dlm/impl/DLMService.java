@@ -37,4 +37,10 @@ public class DLMService extends AbstractDLMService
 	{
 		DB.executeFunctionCallEx(trxName, "select dlm.remove_table_from_dlm(?)", new Object[] { tableName });
 	}
+
+	@Override
+	void executeDBFunction_update_partition_size(int dlm_Partition_ID, String trxName)
+	{
+		DB.executeFunctionCallEx(trxName, "select dlm.update_partition_size(?)", new Object[] { dlm_Partition_ID });
+	}
 }

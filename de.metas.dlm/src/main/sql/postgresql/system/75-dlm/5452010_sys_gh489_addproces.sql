@@ -65,11 +65,6 @@ UPDATE AD_Column SET ColumnSQL='(select t.IsDLM from AD_Table t where t.AD_Table
 
 -- 19.10.2016 13:25
 -- URL zum Konzept
-INSERT INTO DLM_Partition_Config (AD_Client_ID,AD_Org_ID,Created,CreatedBy,DLM_Partition_Config_ID,IsActive,Name,Updated,UpdatedBy) VALUES (0,0,TO_TIMESTAMP('2016-10-19 13:25:03','YYYY-MM-DD HH24:MI:SS'),100,540000,'Y','ts',TO_TIMESTAMP('2016-10-19 13:25:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 19.10.2016 13:25
--- URL zum Konzept
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555159,557338,0,540763,0,TO_TIMESTAMP('2016-10-19 13:25:59','YYYY-MM-DD HH24:MI:SS'),100,'Die Datensätze einer Tabelle mit aktiviertem DLM können vom System unterschiedlichen DLM-Levels zugeordnet werden',0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','N','Y','DLM aktiviert',45,45,0,1,1,TO_TIMESTAMP('2016-10-19 13:25:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 

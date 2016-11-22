@@ -13,14 +13,16 @@ BEGIN
 	
 	IF p_retain_dlm_column = false
 	THEN
-		EXECUTE 'ALTER TABLE ' || p_table_name || ' DROP COLUMN IF EXISTS DLM_Level;';
-		EXECUTE 'ALTER TABLE ' || p_table_name || ' DROP COLUMN IF EXISTS DLM_Partition_ID;';
+		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Level;';
+		EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl DROP COLUMN IF EXISTS DLM_Partition_ID;';
 		RAISE NOTICE 'remove_table_from_dlm - %: Dropped columns DLM_Level and DLM_Partition_ID from table % (if they existed)', p_table_name, p_table_name;
 		
 	ELSE
 		RAISE NOTICE 'remove_table_from_dlm - %: Retained columns DLM_Level and DLM_Partition_ID of table %', p_table_name, p_table_name;
 	END IF;
-
+	
+--	EXECUTE 'ALTER TABLE ' || p_table_name || '_Tbl RENAME TO ' || p_table_name || ';';
+--	RAISE NOTICE 'remove_table_from_dlm - %: Renamed table % back to % ', p_table_name, p_table_name||'_Tbl', p_table_name;
  END;
 $BODY$
   LANGUAGE plpgsql VOLATILE;

@@ -10,7 +10,6 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
-import de.metas.dlm.model.I_DLM_Partition_Record;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.config.PartitionerConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
@@ -61,7 +60,7 @@ public interface IPartitionerService extends ISingletonService
 	Partition loadPartition(I_DLM_Partition partitionDB);
 
 	/**
-	 * Create or update a {@link I_DLM_Partition_Record} for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
+	 * Create or update a {@link I_DLM_Partition} record for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
 	 *
 	 * @param partition
 	 * @param runInOwnTrx if <code>true</code>, then this method will create a dedicated transaction using {@link ITrxManager#run(org.compiere.util.TrxRunnable)} to perform the actual storing in.

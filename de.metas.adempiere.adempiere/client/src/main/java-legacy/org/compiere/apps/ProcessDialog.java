@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,8 +38,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.X_AD_Process;
-import org.compiere.print.ReportCtl;
-import org.compiere.print.ReportEngine;
 import org.compiere.process.ProcessInfo;
 import org.compiere.process.ProcessInfoUtil;
 import org.compiere.swing.CButton;
@@ -49,10 +46,8 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Process;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -115,10 +110,9 @@ public class ProcessDialog extends CFrame
 	private final int _adClientId;
 	private boolean m_IsReport = false;
 	private boolean _allowProcessReRun = true;
-	private int[] m_ids = null;
 	private boolean m_isLocked = false;
 	private boolean _disposed = false;
-	
+
 	/**
 	 * Determine if a Help Process Window is shown
 	 */
@@ -131,7 +125,7 @@ public class ProcessDialog extends CFrame
 	private CPanel dialog = new CPanel()
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 428410337428677817L;
 
@@ -171,7 +165,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * Static Layout
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -259,7 +253,7 @@ public class ProcessDialog extends CFrame
 
 		final String okButtonMessage;
 		final boolean enableBackButton;
-		
+
 		final String cardName = getCurrentCardName();
 		if (CARDNAME_ProcessParameters.equals(cardName))
 		{
@@ -281,12 +275,12 @@ public class ProcessDialog extends CFrame
 		bOK.setText(msgBL.getMsg(Env.getCtx(), okButtonMessage));
 		bBack.setVisible(_allowProcessReRun);
 		bBack.setEnabled(_allowProcessReRun && enableBackButton);
-		
+
 	}
 
 	/**
 	 * Set Visible (set focus to OK if visible)
-	 * 
+	 *
 	 * @param visible true if visible
 	 */
 	@Override
@@ -314,7 +308,7 @@ public class ProcessDialog extends CFrame
 			log.warn("Calling dispose again for {}", this, new Exception("trace"));
 		}
 		_disposed = true;
-		
+
 		if (parameterPanel != null)
 		{
 			parameterPanel.dispose();
@@ -326,7 +320,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * Dynamic Init
-	 * 
+	 *
 	 * @return true, if there is something to process (start from menu)
 	 */
 	public boolean init()
@@ -379,7 +373,7 @@ public class ProcessDialog extends CFrame
 		{
 			final JScrollPane parametersPanelScroll = new JScrollPane(parameterPanel);
 			parametersPanelScroll.setBorder(BorderFactory.createEmptyBorder());
-			
+
 			parametersContainer.add(parametersPanelScroll, BorderLayout.CENTER);
 		}
 
@@ -413,7 +407,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * ActionListener (Start)
-	 * 
+	 *
 	 * @param e ActionEvent
 	 */
 	@Override
@@ -448,7 +442,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * Lock User Interface Called from the Worker before processing
-	 * 
+	 *
 	 * @param pi process info
 	 */
 	@Override
@@ -461,7 +455,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * Unlock User Interface. Called from the Worker when processing is done
-	 * 
+	 *
 	 * @param pi process info
 	 */
 	@Override
@@ -486,7 +480,6 @@ public class ProcessDialog extends CFrame
 
 		//
 		// Fetch IDs from process logs... we will need them in afterProcessTask()
-		m_ids = pi.getIDs();
 
 		//
 		// Enable OK button, flag as not locked anymore.
@@ -502,10 +495,6 @@ public class ProcessDialog extends CFrame
 		// Update UI
 		this.validate();
 		AEnv.showCenterScreen(this);
-
-		//
-		// Execute after process task:
-		afterProcessTask();
 
 		//
 		// Close automatically
@@ -526,7 +515,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * Is the UI locked (Internal method)
-	 * 
+	 *
 	 * @return true, if UI is locked
 	 */
 	@Override
@@ -537,7 +526,7 @@ public class ProcessDialog extends CFrame
 
 	/**
 	 * Method to be executed async. Called from the ASyncProcess worker
-	 * 
+	 *
 	 * @param pi process info
 	 */
 	@Override
@@ -546,91 +535,9 @@ public class ProcessDialog extends CFrame
 		log.info("-");
 	}   // executeASync
 
-	/**************************************************************************
-	 * Optional Processing Task
-	 */
-	private void afterProcessTask()
-	{
-		// something to do?
-		if (m_ids != null && m_ids.length > 0)
-		{
-			log.info("");
-			// Print invoices
-			if (m_AD_Process_ID == 119)
-				printInvoices();
-			else if (m_AD_Process_ID == 118)
-				printShipments();
-		}
-
-	}	// afterProcessTask
-
-	/**************************************************************************
-	 * Print Shipments
-	 */
-	private void printShipments()
-	{
-		if (m_ids == null)
-			return;
-		if (!ADialog.ask(m_WindowNo, this, "PrintShipments"))
-			return;
-		final StringBuilder m_messageText = new StringBuilder();
-		m_messageText.append("<p>").append(msgBL.getMsg(Env.getCtx(), "PrintShipments")).append("</p>");
-		resultMessagePane.appendText(m_messageText.toString());
-		// message.setText(m_messageText.toString());
-
-		int retValue = ADialogDialog.A_CANCEL;
-		do
-		{
-			// Loop through all items
-			for (int i = 0; i < m_ids.length; i++)
-			{
-				int M_InOut_ID = m_ids[i];
-				ReportCtl.startDocumentPrint(ReportEngine.SHIPMENT, M_InOut_ID, this, Env.getWindowNo(this), true);
-			}
-			ADialogDialog d = new ADialogDialog(this,
-					Env.getHeader(Env.getCtx(), m_WindowNo),
-					msgBL.getMsg(Env.getCtx(), "PrintoutOK?"),
-					JOptionPane.QUESTION_MESSAGE);
-			retValue = d.getReturnCode();
-		}
-		while (retValue == ADialogDialog.A_CANCEL);
-	}	// printInvoices
-
-	/**
-	 * Print Invoices
-	 */
-	private void printInvoices()
-	{
-		if (m_ids == null)
-			return;
-		if (!ADialog.ask(m_WindowNo, this, "PrintInvoices"))
-			return;
-
-		final StringBuilder m_messageText = new StringBuilder();
-		m_messageText.append("<p>").append(msgBL.getMsg(Env.getCtx(), "PrintInvoices")).append("</p>");
-		resultMessagePane.appendText(m_messageText.toString());
-
-		int retValue = ADialogDialog.A_CANCEL;
-		do
-		{
-			// Loop through all items
-			for (int i = 0; i < m_ids.length; i++)
-			{
-				int AD_Invoice_ID = m_ids[i];
-				ReportCtl.startDocumentPrint(ReportEngine.INVOICE, AD_Invoice_ID, this, Env.getWindowNo(this), true);
-			}
-			ADialogDialog d = new ADialogDialog(this,
-					Env.getHeader(Env.getCtx(), m_WindowNo),
-					msgBL.getMsg(Env.getCtx(), "PrintoutOK?"),
-					JOptionPane.QUESTION_MESSAGE);
-			retValue = d.getReturnCode();
-		}
-		while (retValue == ADialogDialog.A_CANCEL);
-	}	// printInvoices
-
 	/**
 	 * Message panel component
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */

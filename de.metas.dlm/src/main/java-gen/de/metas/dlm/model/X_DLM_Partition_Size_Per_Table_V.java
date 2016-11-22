@@ -4,32 +4,30 @@ package de.metas.dlm.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for DLM_Partition_Workqueue
+/** Generated Model for DLM_Partition_Size_Per_Table_V
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_DLM_Partition_Workqueue extends org.compiere.model.PO implements I_DLM_Partition_Workqueue, org.compiere.model.I_Persistent 
+public class X_DLM_Partition_Size_Per_Table_V extends org.compiere.model.PO implements I_DLM_Partition_Size_Per_Table_V, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -945140217L;
+	private static final long serialVersionUID = 1516450236L;
 
     /** Standard Constructor */
-    public X_DLM_Partition_Workqueue (Properties ctx, int DLM_Partition_Workqueue_ID, String trxName)
+    public X_DLM_Partition_Size_Per_Table_V (Properties ctx, int DLM_Partition_Size_Per_Table_V_ID, String trxName)
     {
-      super (ctx, DLM_Partition_Workqueue_ID, trxName);
-      /** if (DLM_Partition_Workqueue_ID == 0)
+      super (ctx, DLM_Partition_Size_Per_Table_V_ID, trxName);
+      /** if (DLM_Partition_Size_Per_Table_V_ID == 0)
         {
-			setAD_Table_ID (0);
-			setDLM_Partition_Workqueue_ID (0);
-			setRecord_ID (0);
+			setDLM_Partition_Size_Per_Table_V_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_DLM_Partition_Workqueue (Properties ctx, ResultSet rs, String trxName)
+    public X_DLM_Partition_Size_Per_Table_V (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -63,9 +61,9 @@ public class X_DLM_Partition_Workqueue extends org.compiere.model.PO implements 
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
-			set_Value (COLUMNNAME_AD_Table_ID, null);
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
 	/** Get DB-Tabelle.
@@ -114,48 +112,42 @@ public class X_DLM_Partition_Workqueue extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	/** Set Partitionierungswarteschlange.
-		@param DLM_Partition_Workqueue_ID Partitionierungswarteschlange	  */
+	/** Set DLM_Partition_Size_Per_Table_V.
+		@param DLM_Partition_Size_Per_Table_V_ID DLM_Partition_Size_Per_Table_V	  */
 	@Override
-	public void setDLM_Partition_Workqueue_ID (int DLM_Partition_Workqueue_ID)
+	public void setDLM_Partition_Size_Per_Table_V_ID (int DLM_Partition_Size_Per_Table_V_ID)
 	{
-		if (DLM_Partition_Workqueue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DLM_Partition_Workqueue_ID, null);
+		if (DLM_Partition_Size_Per_Table_V_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DLM_Partition_Size_Per_Table_V_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DLM_Partition_Workqueue_ID, Integer.valueOf(DLM_Partition_Workqueue_ID));
+			set_ValueNoCheck (COLUMNNAME_DLM_Partition_Size_Per_Table_V_ID, Integer.valueOf(DLM_Partition_Size_Per_Table_V_ID));
 	}
 
-	/** Get Partitionierungswarteschlange.
-		@return Partitionierungswarteschlange	  */
+	/** Get DLM_Partition_Size_Per_Table_V.
+		@return DLM_Partition_Size_Per_Table_V	  */
 	@Override
-	public int getDLM_Partition_Workqueue_ID () 
+	public int getDLM_Partition_Size_Per_Table_V_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_Workqueue_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_Size_Per_Table_V_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
+	/** Set Anz. zugeordneter Datensätze.
+		@param PartitionSize Anz. zugeordneter Datensätze	  */
 	@Override
-	public void setRecord_ID (int Record_ID)
+	public void setPartitionSize (int PartitionSize)
 	{
-		if (Record_ID < 0) 
-			set_Value (COLUMNNAME_Record_ID, null);
-		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+		set_ValueNoCheck (COLUMNNAME_PartitionSize, Integer.valueOf(PartitionSize));
 	}
 
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
+	/** Get Anz. zugeordneter Datensätze.
+		@return Anz. zugeordneter Datensätze	  */
 	@Override
-	public int getRecord_ID () 
+	public int getPartitionSize () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PartitionSize);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -166,7 +158,8 @@ public class X_DLM_Partition_Workqueue extends org.compiere.model.PO implements 
 	@Override
 	public void setTableName (java.lang.String TableName)
 	{
-		throw new IllegalArgumentException ("TableName is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_TableName, TableName);
+	}
 
 	/** Get Name der DB-Tabelle.
 		@return Name der DB-Tabelle	  */

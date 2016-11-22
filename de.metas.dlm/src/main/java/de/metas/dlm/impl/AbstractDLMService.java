@@ -31,6 +31,7 @@ import de.metas.adempiere.util.CacheTrx;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
+import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
@@ -243,4 +244,13 @@ public abstract class AbstractDLMService implements IDLMService
 		return result;
 	}
 
+	@Override
+	public void updatePartitionSize(final I_DLM_Partition partitionDB)
+	{
+		final String trxName = InterfaceWrapperHelper.getTrxName(partitionDB);
+		executeDBFunction_update_partition_size(partitionDB.getDLM_Partition_ID(), trxName);
+	}
+
+	abstract void executeDBFunction_update_partition_size(int dlm_Partition_ID, String trxName);
 }
+

@@ -52,24 +52,22 @@ import org.compiere.util.ASyncProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
  * Generate custom form panel
- * 
+ *
  */
 public class VGenPanel extends CPanel implements ActionListener, ChangeListener, TableModelListener, ASyncProcess
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8154208229173738517L;
 
 	private GenForm genForm;
-	
+
 	/**	Window No			*/
 	private int         	m_WindowNo = 0;
 	/**	FormFrame			*/
@@ -78,12 +76,12 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	/**	Logger			*/
 	private static Logger log = LogManager.getLogger(VInOutGen.class);
 	//
-	
+
 	private CTabbedPane tabbedPane = new CTabbedPane();
 	private CPanel selPanel = new CPanel();
 	private CPanel selNorthPanel = new CPanel();
 	private BorderLayout selPanelLayout = new BorderLayout();
-	
+
 	private FlowLayout northPanelLayout = new FlowLayout();
 	private ConfirmPanel confirmPanelSel = ConfirmPanel.newWithOKAndCancel();
 	private ConfirmPanel confirmPanelGen = ConfirmPanel.builder()
@@ -99,10 +97,10 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	public VGenPanel(GenForm genForm, int WindowNo, FormFrame frame)
 	{
 		log.info("");
-		this.genForm = genForm;		
+		this.genForm = genForm;
 		m_WindowNo = WindowNo;
 		m_frame = frame;
-		
+
 		try
 		{
 			jbInit();
@@ -115,7 +113,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 			log.error("init", ex);
 		}
 	}	//	init
-	
+
 	/**
 	 *	Static Init.
 	 *  <pre>
@@ -132,7 +130,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		CompiereColor.setBackground(this);
 		//
 		selPanel.setLayout(selPanelLayout);
-		
+
 		selNorthPanel.setLayout(northPanelLayout);
 		northPanelLayout.setAlignment(FlowLayout.LEFT);
 		tabbedPane.add(selPanel, Msg.getMsg(Env.getCtx(), "Select"));
@@ -152,7 +150,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		genPanel.add(confirmPanelGen, BorderLayout.SOUTH);
 		confirmPanelGen.setActionListener(this);
 	}	//	jbInit
-	
+
 	/**
 	 *	Dynamic Init.
 	 *	- Create GridController & Panel
@@ -161,16 +159,16 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	private void dynInit()
 	{
 		genForm.configureMiniTable(miniTable);
-		
+
 		miniTable.setRowSelectionAllowed(true);
-		
+
 		miniTable.getModel().addTableModelListener(this);
 		//	Info
 		statusBar.setStatusDB(" ");
 		//	Tabbed Pane Listener
 		tabbedPane.addChangeListener(this);
 	}	//	dynInit
-	
+
 	/**
 	 * 	Dispose
 	 */
@@ -180,7 +178,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 			m_frame.dispose();
 		m_frame = null;
 	}	//	dispose
-	
+
 	/**
 	 *	Action Listener
 	 *  @param e event
@@ -195,7 +193,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 			dispose();
 			return;
 		}
-		
+
 		try
 		{
 			genForm.validate();
@@ -234,7 +232,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		}
 		statusBar.setStatusDB(" " + rowsSelected + " ");
 	}   //  tableChanged
-	
+
 	/**
 	 *	Save Selection & return selecion Query or ""
 	 *  @return where clause like C_Order_ID IN (...)
@@ -245,7 +243,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		miniTable.editingStopped(new ChangeEvent(this));
 		genForm.saveSelection(miniTable);
 	}	//	saveSelection
-	
+
 	/**************************************************************************
 	 *	Generate Shipments/Invoices
 	 */
@@ -256,7 +254,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		worker.start();
 		//
 	}
-	
+
 	/**
 	 *  Complete generating shipments/invoices.
 	 *  Called from Unlock UI
@@ -284,7 +282,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 		log.info("Reset=" + no);*/
 
 		//	Get results
-		int[] ids = pi.getIDs();
+		int[] ids = null;
 		if (ids == null || ids.length == 0)
 			return;
 		log.info("PrintItems=" + ids.length);
@@ -301,7 +299,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 				for (int i = 0; i < ids.length; i++)
 				{
 					int Record_ID = ids[i];
-					
+
 					if(genForm.getPrintFormat() != null)
 					{
 						MPrintFormat format = genForm.getPrintFormat();
@@ -309,14 +307,14 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 						MQuery query = new MQuery(table.getTableName());
 						query.addRestriction(table.getTableName() + "_ID", Operator.EQUAL, Record_ID);
 						//	Engine
-						PrintInfo info = new PrintInfo(table.getTableName(),table.get_Table_ID(), Record_ID);               
+						PrintInfo info = new PrintInfo(table.getTableName(),table.get_Table_ID(), Record_ID);
 						ReportEngine re = new ReportEngine(Env.getCtx(), format, query, info);
 						re.print();
 						new Viewer(re);
 					}
 					else
 					ReportCtl.startDocumentPrint(genForm.getReportEngineType(), Record_ID, this, Env.getWindowNo(this), true);
-					
+
 				}
 				ADialogDialog d = new ADialogDialog (m_frame,
 					Env.getHeader(Env.getCtx(), m_WindowNo),
@@ -330,8 +328,8 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 
 		//
 		confirmPanelGen.getOKButton().setEnabled(true);
-	} 
-	
+	}
+
 	/**************************************************************************
 	 *  Lock User Interface.
 	 *  Called from the Worker before processing
@@ -367,7 +365,7 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	{
 		return isEnabled();
 	}   //  isUILocked
-	
+
 	/**
 	 *  Method to be executed async.
 	 *  Called from the Worker
@@ -377,17 +375,17 @@ public class VGenPanel extends CPanel implements ActionListener, ChangeListener,
 	public void executeASync (ProcessInfo pi)
 	{
 	}   //  executeASync
-	
+
 	public CPanel getParameterPanel()
 	{
 		return selNorthPanel;
 	}
-	
+
 	public MiniTable getMiniTable()
 	{
 		return miniTable;
 	}
-	
+
 	public StatusBar getStatusBar()
 	{
 		return statusBar;

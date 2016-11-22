@@ -19,8 +19,6 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
@@ -29,6 +27,9 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Process Info with Utilities
@@ -134,7 +135,7 @@ public class ProcessInfoUtil
 	 */
 	public static void setLogFromDB(final ProcessInfo pi)
 	{
-		final String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
+		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
 				+ "ORDER BY Log_ID";
@@ -149,7 +150,7 @@ public class ProcessInfoUtil
 			while (rs.next())
 			{
 				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				pi.addLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				pi.addLog(rs.getInt(1), rs.getTimestamp(2), rs.getBigDecimal(3), rs.getString(4));
 			}
 		}
 		catch (SQLException e)
@@ -190,8 +191,8 @@ public class ProcessInfoUtil
 		}
 
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_ID, P_Number, P_Msg)"
-				+ " VALUES (?, ?, ?, ?, ?, ?)";
+				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
+				+ " VALUES (?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -202,7 +203,6 @@ public class ProcessInfoUtil
 						pi.getAD_PInstance_ID(),
 						log.getLog_ID(),
 						log.getP_Date(),
-						log.getP_ID() == 0 ? null : log.getP_ID(),
 						log.getP_Number(),
 						log.getP_Msg()
 				};

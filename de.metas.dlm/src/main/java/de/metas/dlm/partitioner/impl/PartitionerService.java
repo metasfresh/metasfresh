@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,7 +58,7 @@ import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
-import de.metas.dlm.model.I_DLM_Partition_Record;
+import de.metas.dlm.model.I_DLM_Partition_Record_V;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
@@ -694,7 +695,7 @@ public class PartitionerService implements IPartitionerService
 			partitionDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class, ctxAware);
 		}
 
-		if (partition.isConfigChanged())
+		if (partition.isConfigChanged() || partitionDB.getDLM_Partition_Config_ID() <= 0)
 		{
 			final PartitionerConfig storedConfig = storePartitionConfig(partition.getConfig());
 			partitionDB.setDLM_Partition_Config_ID(storedConfig.getDLM_Partition_Config_ID());
@@ -729,6 +730,8 @@ public class PartitionerService implements IPartitionerService
 						.withNextInspectionDate(null)
 						.withTargetDLMLevel(IMigratorService.DLM_Level_NOT_SET);
 			}
+
+			Services.get(IDLMService.class).updatePartitionSize(partitionDB);
 		}
 
 		final String msg = "Stored the partition {} with {} records; configChanged={}; recordsChanged={}";
@@ -1037,10 +1040,16 @@ public class PartitionerService implements IPartitionerService
 			final Set<Integer> keySet = new HashSet<>(dlmPartitionId2Record.keySet());
 			keySet.add(resultPartition.getDLM_Partition_ID());
 
+			// commpares dlmPartitionIds by the size of there respective DLM_Partition records
+			final Comparator<Integer> c = Comparator
+					.comparing(dlmPartitionId -> InterfaceWrapperHelper
+							.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName())
+							.getPartitionSize());
+
 			final Optional<Integer> firstKeyIfAny = keySet
 					.stream()
-					.sorted() // sort them by ID, because we need it deterministic; TODO: sort them by partition size so that the biggest existing partition can be left unchanged
 					.filter(dlmPartitionId -> dlmPartitionId > 0) // we want the first partition ID that is already "persisted" in the DB
+					.sorted(c.reversed()) // sort them by partition size so that the biggest existing partition can be left unchanged
 					.findFirst();
 
 			// in any case, store the partition, i.e. also persist the records that were found and added to result.getDlmPartitionId2Record()
@@ -1147,7 +1156,6 @@ public class PartitionerService implements IPartitionerService
 
 		final Map<String, Collection<ITableRecordReference>> table2Record = partition.getRecords();
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 
 		int updatedSum = 0;
@@ -1162,42 +1170,58 @@ public class PartitionerService implements IPartitionerService
 			{
 				continue;
 			}
-			final Integer[] recordIds = records
+
+			// Reason for this maxBatchsize-value:
+			// when i had too many IDs, i got this error:
+			// "Tried to send an out-of-range integer as a 2-byte value: 43278"
+			// 2-byte means 2^16 = 65536
+			// 43278 is less than 2^16, so i guess the max range is not [0, 2^16] but rather [-2^15, 2^15] (give or take 1)
+			final int maxBatchSize = 32700; // 2^15 minus a safety margin since there are additional params (at least for the DLM_Partition_ID)
+			final List<Integer> batch = new ArrayList<>(maxBatchSize);
+			final Mutable<Integer> updatedBatchesSum = new Mutable<>(0);
+
+			records
 					.stream()
 					.map(r -> r.getRecord_ID())
-					.toArray(size -> new Integer[size]);
+					.forEach(id -> {
+						batch.add(id);
+						if (batch.size() >= maxBatchSize)
+						{
+							final int updated = updateBatch(ctxAware, partition, tableName, keyColumn, batch);
+							updatedBatchesSum.setValue(updatedBatchesSum.getValue() + updated);
+						}
+					});
+			if (!batch.isEmpty())
+			{
+				final int updated = updateBatch(ctxAware, partition, tableName, keyColumn, batch);
+				updatedBatchesSum.setValue(updatedBatchesSum.getValue() + updated);
+			}
 
-			final int updated = queryBL.createQueryBuilder(IDLMAware.class, tableName, ctxAware)
-					.addInArrayFilter(keyColumn, recordIds)
-					.addNotEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID()) // only records that are not yet in this partition
-					.create()
-					.updateDirectly()
-					.addSetColumnValue(IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID())
-					.execute();
 			// make sure we didn't update more than we had on the screen..just to be sure
-			Check.errorIf(updated > recordIds.length, "We attempted to update {} record(s) of table {} to {}={}, but instead we updated {} records",
-					recordIds.length, tableName, IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID(), updated);
+			Check.errorIf(updatedBatchesSum.getValue() > records.size(), "We attempted to update {} record(s) of table {} to {}={}, but instead we updated {} records",
+					records.size(), tableName, IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID(), updatedBatchesSum);
 
-			updatedSum += updated;
+			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)",
+					tableName, updatedBatchesSum.getValue(), IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID());
 
-			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", tableName, updated, IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID());
+			updatedSum += updatedBatchesSum.getValue();
 		}
 
 		if (Adempiere.isUnitTestMode())
 		{
-			// in unit test mode we explicitly need to create I_DLM_Partition_Records.
+			// in unit test mode we explicitly need to create I_DLM_Partition_Record records.
 			// in "normal" mode, DLM_Partition_Record is a view.
 			partition.getRecordsFlat().forEach(r -> {
 
-				final boolean match = Services.get(IQueryBL.class).createQueryBuilder(I_DLM_Partition_Record.class, ctxAware)
-						.addEqualsFilter(I_DLM_Partition_Record.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID())
-						.addEqualsFilter(I_DLM_Partition_Record.COLUMNNAME_AD_Table_ID, r.getAD_Table_ID())
-						.addEqualsFilter(I_DLM_Partition_Record.COLUMNNAME_Record_ID, r.getRecord_ID())
+				final boolean match = Services.get(IQueryBL.class).createQueryBuilder(I_DLM_Partition_Record_V.class, ctxAware)
+						.addEqualsFilter(I_DLM_Partition_Record_V.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID())
+						.addEqualsFilter(I_DLM_Partition_Record_V.COLUMNNAME_AD_Table_ID, r.getAD_Table_ID())
+						.addEqualsFilter(I_DLM_Partition_Record_V.COLUMNNAME_Record_ID, r.getRecord_ID())
 						.create()
 						.match();
 				if (!match)
 				{
-					final I_DLM_Partition_Record viewRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record.class, ctxAware);
+					final I_DLM_Partition_Record_V viewRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class, ctxAware);
 					viewRecord.setAD_Table_ID(r.getAD_Table_ID());
 					viewRecord.setRecord_ID(r.getRecord_ID());
 					viewRecord.setDLM_Partition_ID(partition.getDLM_Partition_ID());
@@ -1207,6 +1231,23 @@ public class PartitionerService implements IPartitionerService
 		}
 
 		return updatedSum > 0;
+	}
+
+	private int updateBatch(final IContextAware ctxAware, final Partition partition, final String tableName, final String keyColumn, final List<Integer> batch)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final int updated = queryBL.createQueryBuilder(IDLMAware.class, tableName, ctxAware)
+				.addInArrayFilter(keyColumn, batch.toArray())
+				.addNotEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID()) // only records that are not yet in this partition
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID())
+				.execute();
+
+		batch.clear();
+
+		return updated;
 	}
 
 	/**
@@ -1231,8 +1272,8 @@ public class PartitionerService implements IPartitionerService
 
 		final Map<String, Collection<ITableRecordReference>> allRecords = new HashMap<>();
 
-		final Map<String, List<ITableRecordReference>> collect = queryBL.createQueryBuilder(I_DLM_Partition_Record.class, PlainContextAware.newWithThreadInheritedTrx())
-				.addEqualsFilter(I_DLM_Partition_Record.COLUMN_DLM_Partition_ID, partitionDB.getDLM_Partition_ID())
+		final Map<String, List<ITableRecordReference>> collect = queryBL.createQueryBuilder(I_DLM_Partition_Record_V.class, PlainContextAware.newWithThreadInheritedTrx())
+				.addEqualsFilter(I_DLM_Partition_Record_V.COLUMN_DLM_Partition_ID, partitionDB.getDLM_Partition_ID())
 				.create()
 				.list()
 				.stream()
@@ -1251,13 +1292,13 @@ public class PartitionerService implements IPartitionerService
 
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		final Iterator<I_DLM_Partition_Record> map = queryBL.createQueryBuilder(I_DLM_Partition_Record.class, PlainContextAware.newWithThreadInheritedTrx())
-				.addEqualsFilter(I_DLM_Partition_Record.COLUMN_DLM_Partition_ID, partition.getDLM_Partition_ID())
-				.addEqualsFilter(I_DLM_Partition_Record.COLUMN_AD_Table_ID, tableId)
+		final Iterator<I_DLM_Partition_Record_V> map = queryBL.createQueryBuilder(I_DLM_Partition_Record_V.class, PlainContextAware.newWithThreadInheritedTrx())
+				.addEqualsFilter(I_DLM_Partition_Record_V.COLUMN_DLM_Partition_ID, partition.getDLM_Partition_ID())
+				.addEqualsFilter(I_DLM_Partition_Record_V.COLUMN_AD_Table_ID, tableId)
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 5000)
-				.iterate(I_DLM_Partition_Record.class);
+				.iterate(I_DLM_Partition_Record_V.class);
 
 		return new Iterator<WorkQueue>()
 		{

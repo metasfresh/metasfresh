@@ -25,12 +25,12 @@ package org.eevolution.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -103,20 +103,18 @@ import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.eevolution.model.MDDOrder;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
  *	Create Movement from Distribution Order
  *
- *  @author victor.perez@www.e-evolution.com 
- *  @version $Id: VOrderDistribution,v 1.0 
+ *  @author victor.perez@www.e-evolution.com
+ *  @version $Id: VOrderDistribution,v 1.0
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 public class VOrderDistribution extends CPanel
-	implements FormPanel, ActionListener, VetoableChangeListener, 
+	implements FormPanel, ActionListener, VetoableChangeListener,
 				ChangeListener, TableModelListener, ASyncProcess
 {
 	private static final long serialVersionUID = 1L;
@@ -510,7 +508,7 @@ public class VOrderDistribution extends CPanel
 		//  ID selection may be pending
 		miniTable.editingStopped(new ChangeEvent(this));
 		//  Array of Integers
-		ArrayList<Integer> results = new ArrayList<Integer>();
+		ArrayList<Integer> results = new ArrayList<>();
 		selection = null;
 
 		//	Get selected entries
@@ -538,7 +536,7 @@ public class VOrderDistribution extends CPanel
 	{
 		//log.info("M_Warehouse_ID=" + m_M_Warehouse_ID);
 		log.info("M_Locator_ID=" + m_M_Locator_ID);
-		String trxName = Trx.createTrxName("IOG");	
+		String trxName = Trx.createTrxName("IOG");
 		Trx trx = Trx.get(trxName, true);	//trx needs to be committed too
 		//String trxName = null;
 		//Trx trx = null;
@@ -548,7 +546,7 @@ public class VOrderDistribution extends CPanel
 		statusBar.setStatusDB(String.valueOf(selection.size()));
 
 		//	Prepare Process
-		int AD_Process_ID = MProcess.getProcess_ID("M_Generate Movement", trxName);	  
+		int AD_Process_ID = MProcess.getProcess_ID("M_Generate Movement", trxName);
 		KeyNamePair docTypeKNPair = (KeyNamePair)cmbDocType.getSelectedItem();
 
 		MPInstance instance = new MPInstance(Env.getCtx(), AD_Process_ID, 0, 0);
@@ -573,7 +571,7 @@ public class VOrderDistribution extends CPanel
 			insert.append(selectedId);
 			insert.append(" FROM DUAL ");
 
-			if (counter == 1000) 
+			if (counter == 1000)
 			{
 				if ( DB.executeUpdate(insert.toString(), trxName) < 0 )
 				{
@@ -659,7 +657,7 @@ public class VOrderDistribution extends CPanel
 		//log.info("Reset=" + no);
 
 		//	Get results
-		int[] ids = pi.getIDs();
+		int[] ids = null;
 		if (ids == null || ids.length == 0)
 			return;
 		log.info("PrintItems=" + ids.length);
@@ -682,7 +680,7 @@ public class VOrderDistribution extends CPanel
 					query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, Operator.EQUAL, M_Movement_ID);
 
 					//	Engine
-					PrintInfo info = new PrintInfo(MMovement.Table_Name,MMovement.Table_ID, M_Movement_ID);               
+					PrintInfo info = new PrintInfo(MMovement.Table_Name,MMovement.Table_ID, M_Movement_ID);
 					ReportEngine re = new ReportEngine(Env.getCtx(), format, query, info);
 					re.print();
 					new Viewer(re);

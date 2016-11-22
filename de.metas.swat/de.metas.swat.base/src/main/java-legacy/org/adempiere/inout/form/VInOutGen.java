@@ -97,7 +97,7 @@ import de.metas.logging.LogManager;
 
 /**
  * Manual Shipment Selection
- * 
+ *
  * @author Jorg Janke
  * @version $Id: VInOutGen.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
@@ -121,7 +121,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Initialize Panel
-	 * 
+	 *
 	 * @param WindowNo
 	 *            window
 	 * @param frame
@@ -180,7 +180,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	private VComboBox cmbDocAction = new VComboBox();
 
-	private transient final Map<Integer, Collection<Integer>> bpId2OrderId = new HashMap<Integer, Collection<Integer>>();
+	private transient final Map<Integer, Collection<Integer>> bpId2OrderId = new HashMap<>();
 
 	private final VComboBox cOrgFilter = new VComboBox();
 	private final CCheckBox cIgnorePortage = new CCheckBox();
@@ -192,7 +192,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Static Init.
-	 * 
+	 *
 	 * <pre>
 	 *  selPanel (tabbed)
 	 *      fOrg, fBPartner
@@ -200,7 +200,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	 *  genPanel
 	 *      info
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	void jbInit() throws Exception {
@@ -320,13 +320,13 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Fill Picks. Column_ID from C_Order
-	 * 
+	 *
 	 * @throws Exception
 	 *             if Lookups cannot be initialized
 	 */
 	private void fillPicks() throws Exception {
 		// C_OrderLine.M_Warehouse_ID
-		final MLookup orgL = MLookupFactory.get(Env.getCtx(), m_WindowNo, 0, 
+		final MLookup orgL = MLookupFactory.get(Env.getCtx(), m_WindowNo, 0,
 //				2223, // AD_Column_ID of C_OrderLine.M_Warehouse_ID
 //				MTable.get(Env.getCtx(), I_M_InOut.Table_Name).getColumn(I_M_InOut.COLUMNNAME_M_Warehouse_ID).getAD_Column_ID(),
 				MTable.get(Env.getCtx(), I_M_ShipmentSchedule.Table_Name).getColumn(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID).getAD_Column_ID(),
@@ -443,7 +443,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Action Listener
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -465,7 +465,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 					statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), MSG_COMPUTING_DATA));
 					enableGuiElements(false);
-					
+
 					try
 					{
 						computeValues();
@@ -484,8 +484,8 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 			t.start();
 			return;
 		}
-		
-		
+
+
 		saveSelection();
 		if (selection != null && !selection.isEmpty()
 				&& m_selectionActive // on selection tab
@@ -501,7 +501,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Vetoable Change Listener - requery
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -530,17 +530,17 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	private void computeValues()
 	{
-		final List<Integer> schedIds = new ArrayList<Integer>();
+		final List<Integer> schedIds = new ArrayList<>();
 
-		final Map<Integer, Collection<Integer>> bp2scheds = new HashMap<Integer, Collection<Integer>>();
-		final Map<Integer, String> bp2value = new HashMap<Integer, String>();
-		final Map<Integer, String> bp2name = new HashMap<Integer, String>();
-		final Map<Integer, BigDecimal> bp2PostageFreeAmt = new HashMap<Integer, BigDecimal>();
+		final Map<Integer, Collection<Integer>> bp2scheds = new HashMap<>();
+		final Map<Integer, String> bp2value = new HashMap<>();
+		final Map<Integer, String> bp2name = new HashMap<>();
+		final Map<Integer, BigDecimal> bp2PostageFreeAmt = new HashMap<>();
 
-		final Map<Integer, BigDecimal> sched2LineNetAmt = new HashMap<Integer, BigDecimal>();
-		final Map<Integer, BigDecimal> sched2PriceActual = new HashMap<Integer, BigDecimal>();
-		final Map<Integer, BigDecimal> sched2QtyUnconfirmed = new HashMap<Integer, BigDecimal>();
-		final Map<Integer, BigDecimal> sched2QtyToDeliver = new HashMap<Integer, BigDecimal>();
+		final Map<Integer, BigDecimal> sched2LineNetAmt = new HashMap<>();
+		final Map<Integer, BigDecimal> sched2PriceActual = new HashMap<>();
+		final Map<Integer, BigDecimal> sched2QtyUnconfirmed = new HashMap<>();
+		final Map<Integer, BigDecimal> sched2QtyToDeliver = new HashMap<>();
 
 		//
 		// get the orders and their respective schedule entries
@@ -549,7 +549,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		final KeyNamePair selectedOrg = (KeyNamePair) cOrgFilter.getSelectedItem();
 		final int selectedOrgId = selectedOrg.getKey();
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = createSQL(selectedOrgId, selectedBPartner, sqlParams);
 
 		PreparedStatement pstmt = null;
@@ -581,13 +581,13 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		updateMiniTable(bp2scheds, bp2value, bp2name, bp2PostageFreeAmt,
 				sched2LineNetAmt, sched2PriceActual, sched2QtyUnconfirmed,
 				sched2QtyToDeliver);
-		
+
 		confirmPanelSel.getOKButton().setEnabled(miniTable.getRowCount() > 0);
 	}
 
 	/**
 	 * Constructs the SQL query for the miniTable.
-	 * 
+	 *
 	 * @param selectedOrgId
 	 *            the AD_Org_ID selected in the GUI or 0.
 	 * @param bPartnerId
@@ -688,14 +688,14 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 		Collection<Integer> bPartnerEntries = bp2scheds.get(bpId);
 		if (bPartnerEntries == null) {
-			bPartnerEntries = new ArrayList<Integer>();
+			bPartnerEntries = new ArrayList<>();
 			bp2scheds.put(bpId, bPartnerEntries);
 		}
 		bPartnerEntries.add(schedId);
 
 		Collection<Integer> bPartnerOrderIds = bpId2OrderId.get(bpId);
 		if (bPartnerOrderIds == null) {
-			bPartnerOrderIds = new ArrayList<Integer>();
+			bPartnerOrderIds = new ArrayList<>();
 			bpId2OrderId.put(bpId, bPartnerOrderIds);
 		}
 		bPartnerOrderIds.add(orderId);
@@ -757,7 +757,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 				totalQtyToDeliver = totalQtyToDeliver.add(qtyToDeliver);
 			}
 
-			if (totalQtyToDeliver.signum() <= 0) 
+			if (totalQtyToDeliver.signum() <= 0)
 			{
 				continue;
 			}
@@ -776,7 +776,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Change Listener (Tab changed)
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -788,7 +788,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Table Model Listener
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -808,7 +808,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Save Selection & return selecion Query or ""
-	 * 
+	 *
 	 * @return where clause like C_Order_ID IN (...)
 	 */
 	private void saveSelection()
@@ -817,7 +817,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		// ID selection may be pending
 		miniTable.editingStopped(new ChangeEvent(this));
 		// Array of Integers
-		final List<Integer> results = new ArrayList<Integer>();
+		final List<Integer> results = new ArrayList<>();
 		selection = null;
 
 		// Get selected entries
@@ -836,7 +836,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		{
 			return;
 		}
-		
+
 		log.info("Selected #" + results.size());
 		selection = results;
 
@@ -856,7 +856,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.run(new TrxRunnable()
 		{
-			
+
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
@@ -865,11 +865,11 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 			}
 		});
 	}
-	
+
 	private void generateShipments0(final ITrx trx)
 	{
 		final String trxName = trx.getTrxName();
-		
+
 		final int AD_Process_ID = 199; // M_InOut_Generate - org.compiere.process.InOutGenerate
 
 		final MPInstance instance = new MPInstance(Env.getCtx(), AD_Process_ID, 0, 0);
@@ -879,7 +879,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 			return;
 		}
 
-		final List<Integer> selectedOrderIds = new ArrayList<Integer>();
+		final List<Integer> selectedOrderIds = new ArrayList<>();
 		for (final Integer selectedBpId : selection)
 		{
 			selectedOrderIds.addAll(bpId2OrderId.get(selectedBpId));
@@ -915,7 +915,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		final ProcessCtl worker = new ProcessCtl(this, Env.getWindowNo(this), pi, trx);
 		worker.run(); // complete tasks in unlockUI / generateShipments_complete
 	} // generateShipments
-	
+
 	private void setupInstancePara(final MPInstancePara ip, final String name, final String value)
 	{
 		ip.setParameter(name, value);
@@ -940,7 +940,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Complete generating shipments. Called from Unlock UI
-	 * 
+	 *
 	 * @param pi
 	 *            process info
 	 */
@@ -966,7 +966,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		 */
 
 		// Get results
-		final int[] inoutIds = InOutGenerate.getM_InOut_IDs(pi);
+		final int[] inoutIds = null;
 		if (inoutIds == null || inoutIds.length == 0)
 		{
 			return;
@@ -994,7 +994,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 									Env.getWindowNo(VInOutGen.this),
 									true);
 						}
-						
+
 						final ADialogDialog d = new ADialogDialog(m_frame,
 								Env.getHeader(Env.getCtx(), m_WindowNo),
 								Msg.getMsg(Env.getCtx(), "PrintoutOK?"),
@@ -1008,15 +1008,15 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 		//
 		confirmPanelGen.getOKButton().setEnabled(true);
 	} // generateShipments_complete
-	
+
 	private void executeSync(final Runnable runnable)
 	{
 		final boolean okButtonEnabledOld = confirmPanelGen.getOKButton().isEnabled();
 		confirmPanelGen.getOKButton().setEnabled(false);
-		
+
 		final Cursor cursorOld = getCursor();
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		
+
 		try
 		{
 			runnable.run();
@@ -1026,12 +1026,12 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 			setCursor(cursorOld);
 			confirmPanelGen.getOKButton().setEnabled(okButtonEnabledOld);
 		}
-		
+
 	}
-	
+
 	/***************************************************************************
 	 * Lock User Interface. Called from the Worker before processing
-	 * 
+	 *
 	 * @param pi
 	 *            process info
 	 */
@@ -1046,7 +1046,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Unlock User Interface. Called from the Worker when processing is done
-	 * 
+	 *
 	 * @param pi
 	 *            result of execute ASync call
 	 */
@@ -1073,7 +1073,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Is the UI locked (Internal method)
-	 * 
+	 *
 	 * @return true, if UI is locked
 	 */
 	@Override
@@ -1084,7 +1084,7 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 
 	/**
 	 * Method to be executed async. Called from the Worker
-	 * 
+	 *
 	 * @param pi
 	 *            ProcessInfo
 	 */
@@ -1092,5 +1092,36 @@ public class VInOutGen extends CPanel implements FormPanel, ActionListener,
 	public void executeASync(ProcessInfo pi)
 	{
 	} // executeASync
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cIgnorePortage == null) ? 0 : cIgnorePortage.hashCode());
+		result = prime * result + ((cOrgFilter == null) ? 0 : cOrgFilter.hashCode());
+		result = prime * result + ((cmbDocAction == null) ? 0 : cmbDocAction.hashCode());
+		result = prime * result + ((confirmPanelGen == null) ? 0 : confirmPanelGen.hashCode());
+		result = prime * result + ((confirmPanelSel == null) ? 0 : confirmPanelSel.hashCode());
+		result = prime * result + ((considerUnconfirmed == null) ? 0 : considerUnconfirmed.hashCode());
+		result = prime * result + ((fBPartner == null) ? 0 : fBPartner.hashCode());
+		result = prime * result + ((fWarehouse == null) ? 0 : fWarehouse.hashCode());
+		result = prime * result + ((genLayout == null) ? 0 : genLayout.hashCode());
+		result = prime * result + ((genPanel == null) ? 0 : genPanel.hashCode());
+		result = prime * result + ((info == null) ? 0 : info.hashCode());
+		result = prime * result + m_WindowNo;
+		result = prime * result + ((m_frame == null) ? 0 : m_frame.hashCode());
+		result = prime * result + (m_selectionActive ? 1231 : 1237);
+		result = prime * result + ((miniTable == null) ? 0 : miniTable.hashCode());
+		result = prime * result + ((scrollPane == null) ? 0 : scrollPane.hashCode());
+		result = prime * result + ((selNorthPanel == null) ? 0 : selNorthPanel.hashCode());
+		result = prime * result + ((selPanel == null) ? 0 : selPanel.hashCode());
+		result = prime * result + ((selPanelLayout == null) ? 0 : selPanelLayout.hashCode());
+		result = prime * result + ((selection == null) ? 0 : selection.hashCode());
+		result = prime * result + ((statusBar == null) ? 0 : statusBar.hashCode());
+		result = prime * result + ((tabbedPane == null) ? 0 : tabbedPane.hashCode());
+		return result;
+	}
+
 
 } // VInOutGen

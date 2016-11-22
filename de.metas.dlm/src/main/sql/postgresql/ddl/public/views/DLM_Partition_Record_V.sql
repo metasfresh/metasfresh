@@ -1,9 +1,9 @@
 
-DROP VIEW IF EXISTS DLM_Partition_Record;
-CREATE VIEW DLM_Partition_Record AS
+DROP VIEW IF EXISTS DLM_Partition_Record_V;
+CREATE VIEW DLM_Partition_Record_V AS
 SELECT 
 	c.DLM_Partition_Config_ID, p.DLM_Partition_ID, t.TableName, t.IsDLM, t.AD_Table_ID, 
-	records.Record_ID AS DLM_Partition_Record_ID,
+	records.Record_ID AS DLM_Partition_Record_V_ID,
 	records.AD_Client_ID,
 	records.DLM_Level,
 	records.AD_Org_ID,
@@ -23,5 +23,5 @@ FROM DLM_Partition p
 
 	JOIN LATERAL (SELECT * FROM dlm.get_dlm_records(t.TableName, p.DLM_Partition_ID) ) records ON t.IsDLM='Y'
 ;
-COMMENT ON VIEW DLM_Partition_Record IS
+COMMENT ON VIEW DLM_Partition_Record_V IS
 'gh #489: select DLM_Partition_IDs and the records that belong to the respective partition.';

@@ -10,6 +10,7 @@ import org.compiere.model.I_AD_Column;
 
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
+import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
@@ -56,6 +57,16 @@ public interface IDLMService extends ISingletonService
 	 * @param table
 	 */
 	void removeTableFromDLM(I_AD_Table table);
+
+	/**
+	 * Call the DB function <code>update_partition_size()</code> with the given <code>partitionDB</code>'s <code>DLM_Partition_ID</code>.<br>
+	 * Do not reload the partition. That's up to the caller if and when she wants to.
+	 * <p>
+	 * Background into we use the size as an information to the user, and so that we keep the biggest partition when merging two or more partitions with each other.
+	 *
+	 * @param partitionDB
+	 */
+	void updatePartitionSize(I_DLM_Partition partitionDB);
 
 	/**
 	 * Updates the given <code>columnName</code> for all records (which can be in different tables) that reference the given partition-ID.

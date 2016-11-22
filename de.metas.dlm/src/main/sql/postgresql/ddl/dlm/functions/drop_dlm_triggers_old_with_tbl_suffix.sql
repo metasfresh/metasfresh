@@ -7,7 +7,7 @@ BEGIN
 	/* Iterate the dlm.triggers view and drop the triggers for each FK constraint.
 	 */
 	FOR v_trigger_view_row IN 
-		EXECUTE 'SELECT * FROM dlm.triggers v WHERE lower(v.foreign_table_name) = lower('''|| p_table_name ||''')'
+		EXECUTE 'SELECT * FROM dlm.triggers v WHERE lower(v.foreign_table_name) = lower('''|| p_table_name ||'_tbl'')'
 	LOOP
 		EXECUTE v_trigger_view_row.drop_dlm_trigger_ddl;
 	
