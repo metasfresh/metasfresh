@@ -2,11 +2,15 @@ package de.metas.ui.web.notification.json;
 
 import java.util.List;
 
+import org.adempiere.util.GuavaCollectors;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.notification.UserNotificationsList;
 
 /*
  * #%L
@@ -33,24 +37,38 @@ import com.google.common.collect.ImmutableList;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONNotificationsList
 {
-	public static final JSONNotificationsList EMPTY = new JSONNotificationsList(ImmutableList.of());
+	public static final JSONNotificationsList EMPTY = new JSONNotificationsList();
 
-	public static final JSONNotificationsList of(final List<JSONNotification> notifications)
+	public static final JSONNotificationsList of(final UserNotificationsList notifications, final String adLanguage)
 	{
-		if (notifications == null || notifications.isEmpty())
+		if (notifications.isEmpty())
 		{
 			return EMPTY;
 		}
-		return new JSONNotificationsList(notifications);
+
+		return new JSONNotificationsList(notifications, adLanguage);
 	}
 
+	@JsonProperty("totalCount")
+	private final int totalCount;
 	@JsonProperty("notifications")
 	private final List<JSONNotification> notifications;
 
-	private JSONNotificationsList(final List<JSONNotification> notifications)
+	private JSONNotificationsList(final UserNotificationsList notifications, final String adLanguage)
 	{
 		super();
-		this.notifications = ImmutableList.copyOf(notifications);
+		totalCount = notifications.getTotalCount();
+		this.notifications = notifications.getNotifications()
+				.stream()
+				.map(notification -> JSONNotification.of(notification, adLanguage))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	private JSONNotificationsList()
+	{
+		super();
+		totalCount = 0;
+		notifications = ImmutableList.of();
 	}
 
 	@Override

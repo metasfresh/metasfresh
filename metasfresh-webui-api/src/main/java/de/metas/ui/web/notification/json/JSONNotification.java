@@ -2,18 +2,13 @@ package de.metas.ui.web.notification.json;
 
 import java.io.Serializable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.event.Event;
+import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -39,11 +34,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JSONNotification implements Serializable
+public final class JSONNotification implements Serializable
 {
-	public static final JSONNotification of(final Event event, final JSONOptions jsonOpts)
+	public static final JSONNotification of(final UserNotification notification, final String adLanguage)
 	{
-		return new JSONNotification(event, jsonOpts);
+		return new JSONNotification(notification, adLanguage);
 	}
 
 	@JsonProperty("id")
@@ -54,50 +49,18 @@ public class JSONNotification implements Serializable
 	private final String timestamp;
 	@JsonProperty("important")
 	private final boolean important;
+	@JsonProperty("read")
+	private final boolean read;
 
-	private JSONNotification(final Event event, final JSONOptions jsonOpts)
+	private JSONNotification(final UserNotification notification, final String adLanguage)
 	{
 		super();
 
-		id = event.getId();
-		message = buildMessage(event, jsonOpts);
-		timestamp = JSONDate.toJson(new java.util.Date()); // TODO: introduce Event.getTimestamp()
-		important = false;
-	}
-
-	private static String buildMessage(final Event event, final JSONOptions jsonOpts)
-	{
-		// TODO: implement; see org.adempiere.ui.notifications.SwingEventNotifierFrame.toNotificationItem(Event)
-
-		//
-		// Build detail message
-		final StringBuilder detailBuf = new StringBuilder();
-
-		// Add plain detail if any
-		final String detailPlain = event.getDetailPlain();
-		if (!Check.isEmpty(detailPlain, true))
-		{
-			detailBuf.append(detailPlain.trim());
-		}
-
-		// Translate, parse and add detail (AD_Message).
-		final String detailADMessage = event.getDetailADMessage();
-		if (!Check.isEmpty(detailADMessage, true))
-		{
-			final String detailTrl = Services.get(IMsgBL.class)
-					.getTranslatableMsgText(detailADMessage)
-					.translate(jsonOpts.getAD_Language());
-			if (!Check.isEmpty(detailTrl, true))
-			{
-				if (detailBuf.length() > 0)
-				{
-					detailBuf.append("\n");
-				}
-				detailBuf.append(detailTrl);
-			}
-		}
-
-		return detailBuf.toString();
+		id = notification.getId();
+		message = notification.getMessage(adLanguage);
+		timestamp = JSONDate.toJson(notification.getTimestamp());
+		important = notification.isImportant();
+		read = notification.isRead();
 	}
 
 	@Override
@@ -108,6 +71,7 @@ public class JSONNotification implements Serializable
 				.add("message", message)
 				.add("timestamp", timestamp)
 				.add("important", important)
+				.add("read", read)
 				.toString();
 	}
 
@@ -129,5 +93,10 @@ public class JSONNotification implements Serializable
 	public boolean isImportant()
 	{
 		return important;
+	}
+
+	public boolean isRead()
+	{
+		return read;
 	}
 }

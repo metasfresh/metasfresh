@@ -289,7 +289,7 @@ public class LoginRestController
 		
 		//
 		// Enable user notifications
-		userNotificationsService.enableForSession(userSession.getSessionId(), userSession.getAD_Language());
+		userNotificationsService.enableForSession(userSession.getSessionId(), userSession.getAD_User_ID(), userSession.getAD_Language());
 	}
 	
 	@RequestMapping(value = "/isLoggedIn", method = RequestMethod.GET)

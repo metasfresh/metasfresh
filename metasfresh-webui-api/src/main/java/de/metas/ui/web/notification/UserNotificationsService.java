@@ -1,6 +1,7 @@
 package de.metas.ui.web.notification;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,6 @@ import org.springframework.stereotype.Service;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
-import de.metas.event.IEventListener;
-import de.metas.ui.web.config.WebSocketConfig;
-import de.metas.ui.web.notification.json.JSONNotification;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -40,74 +37,90 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @Service
 public class UserNotificationsService
 {
-	// private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
-
 	@Autowired
 	private SimpMessagingTemplate websocketMessagingTemplate;
 
-	private final ConcurrentHashMap<String, Event2WebSocketListener> sessionId2listeners = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Integer, UserNotificationsQueue> adUserId2notifications = new ConcurrentHashMap<>();
 
-	public void enableForSession(final String sessionId, final String adLanguage)
-	{
-		sessionId2listeners.computeIfAbsent(sessionId, theSessionId -> Event2WebSocketListener.createAndRegister(websocketMessagingTemplate, sessionId, adLanguage));
-	}
+	private final AtomicBoolean subscribedToEventBus = new AtomicBoolean(false);
 
-	public void disableForSession(final String sessionId)
+	private void subscribeToEventTopicsIfNeeded()
 	{
-		// NOTE: we assume the listeners were weakly registered...
-		sessionId2listeners.remove(sessionId);
-	}
-
-	public String getWebsocketEndpoint(final String sessionId)
-	{
-		return sessionId2listeners.get(sessionId).getWebsocketEndpoint();
-	}
-
-	private static final class Event2WebSocketListener implements IEventListener
-	{
-		public static final Event2WebSocketListener createAndRegister(final SimpMessagingTemplate websocketMessagingTemplate, final String sessionId, final String adLanguage)
+		if (!subscribedToEventBus.getAndSet(true))
 		{
-			final Event2WebSocketListener eventBusListener = new Event2WebSocketListener(websocketMessagingTemplate, sessionId, adLanguage);
-
 			final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 			eventBusFactory.getAvailableUserNotificationsTopics()
 					.stream()
 					.map(topic -> eventBusFactory.getEventBus(topic))
-					.forEach(eventBus -> eventBus.subscribeWeak(eventBusListener));
-
-			return eventBusListener;
-		}
-
-		private final SimpMessagingTemplate websocketMessagingTemplate;
-		private final String sessionId;
-		private final String adLanguage;
-		private final String websocketEndpoint;
-		private final JSONOptions jsonOpts;
-
-		public Event2WebSocketListener(final SimpMessagingTemplate websocketMessagingTemplate, final String sessionId, final String adLanguage)
-		{
-			super();
-			this.websocketMessagingTemplate = websocketMessagingTemplate;
-			this.sessionId = sessionId;
-			this.adLanguage = adLanguage;
-			websocketEndpoint = WebSocketConfig.buildNotificationsTopicName(sessionId);
-
-			jsonOpts = JSONOptions.builder()
-					.setAD_Language(adLanguage)
-					.build();
-
-		}
-
-		@Override
-		public void onEvent(final IEventBus eventBus, final Event event)
-		{
-			final JSONNotification jsonNotification = JSONNotification.of(event, jsonOpts);
-			websocketMessagingTemplate.convertAndSend(websocketEndpoint, jsonNotification);
-		}
-
-		public String getWebsocketEndpoint()
-		{
-			return websocketEndpoint;
+					.forEach(eventBus -> eventBus.subscribe(this::forwardEventToNotificationsQueues));
 		}
 	}
+
+	public synchronized void enableForSession(final String sessionId, final int adUserId, final String adLanguage)
+	{
+		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId,
+				theSessionId -> new UserNotificationsQueue(adUserId, adLanguage, websocketMessagingTemplate));
+		notificationsQueue.addActiveSessionId(sessionId);
+
+		subscribeToEventTopicsIfNeeded();
+	}
+
+	public synchronized void disableForSession(final String sessionId)
+	{
+		// TODO: implement
+	}
+
+	public String getWebsocketEndpoint(final int adUserId)
+	{
+		return getNotificationsQueue(adUserId).getWebsocketEndpoint();
+	}
+
+	private UserNotificationsQueue getNotificationsQueue(final int adUserId)
+	{
+		final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(adUserId);
+		if (notificationsQueue == null)
+		{
+			throw new IllegalArgumentException("No notifications queue found for AD_User_ID=" + adUserId);
+		}
+		return notificationsQueue;
+	}
+
+	public UserNotificationsList getNotifications(final int adUserId, final int limit)
+	{
+		return getNotificationsQueue(adUserId).getNotificationsAsList(limit);
+	}
+
+	private void forwardEventToNotificationsQueues(final IEventBus eventBus, final Event event)
+	{
+		final UserNotification notification = UserNotification.of(event);
+		if (event.isAllRecipients())
+		{
+			adUserId2notifications.forEachValue(100, notificationsQueue -> notificationsQueue.addNotification(notification.copy()));
+		}
+		else
+		{
+			event.getRecipientUserIds()
+					.stream()
+					.map(adUserId -> adUserId2notifications.get(adUserId))
+					.filter(notificationsQueue -> notificationsQueue != null)
+					.forEach(notificationsQueue -> notificationsQueue.addNotification(notification.copy()));
+		}
+	}
+
+	public void markNotificationAsRead(final int adUserId, final String notificationId)
+	{
+		getNotificationsQueue(adUserId).markAsRead(notificationId);
+	}
+
+	public void markAllNotificationsAsRead(final int adUserId)
+	{
+		getNotificationsQueue(adUserId).markAllAsRead();
+	}
+
+	public int getNotificationsUnreadCount(final int adUserId)
+	{
+		return getNotificationsQueue(adUserId)
+				.getUnreadCount();
+	}
+
 }

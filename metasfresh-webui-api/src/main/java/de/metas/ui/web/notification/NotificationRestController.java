@@ -1,8 +1,10 @@
 package de.metas.ui.web.notification;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
@@ -48,18 +50,49 @@ public class NotificationRestController
 	@RequestMapping(value = "/websocketEndpoint", method = RequestMethod.GET)
 	public final String getWebsocketEndpoint()
 	{
-		return userNotificationsService.getWebsocketEndpoint(userSession.getSessionId());
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		return userNotificationsService.getWebsocketEndpoint(adUserId);
 	}
 
-	@RequestMapping(value = "/markAsRead", method = RequestMethod.GET)
-	public void markAsRead(final String notificationId)
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	public JSONNotificationsList getNotifications(
+			@RequestParam(name = "limit", defaultValue = "-1") final int limit //
+	)
 	{
-		// TODO: implement
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, limit);
+		return JSONNotificationsList.of(notifications, userSession.getAD_Language());
 	}
 
-	public JSONNotificationsList getNotifications()
+	@RequestMapping(value = "/unreadCount", method = RequestMethod.GET)
+	public int getNotificationsUnreadCount()
 	{
-		// TODO: implement
-		return JSONNotificationsList.EMPTY;
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		return userNotificationsService.getNotificationsUnreadCount(adUserId);
 	}
+
+	@RequestMapping(value = "/{notificationId}/read", method = RequestMethod.PUT)
+	public void markAsRead(@PathVariable("notificationId") final String notificationId)
+	{
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		userNotificationsService.markNotificationAsRead(adUserId, notificationId);
+	}
+
+	@RequestMapping(value = "/all/read", method = RequestMethod.PUT)
+	public void markAllAsRead()
+	{
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		userNotificationsService.markAllNotificationsAsRead(adUserId);
+	}
+
 }

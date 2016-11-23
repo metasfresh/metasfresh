@@ -48,9 +48,9 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	public static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
 	
-	public static final String buildNotificationsTopicName(final String sessionId)
+	public static final String buildNotificationsTopicName(final int adUserId)
 	{
-		return TOPIC_Notifications + "/" + sessionId;
+		return TOPIC_Notifications + "/" + adUserId;
 	}
 
 	@Override
