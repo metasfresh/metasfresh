@@ -59,7 +59,6 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
-	[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], 
 	parameters([
 		string(defaultValue: '', 
 			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
