@@ -49,9 +49,10 @@ import org.compiere.model.X_A_Depreciation_Convention;
 import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.model.X_A_Depreciation_Method;
 import org.compiere.model.X_A_Depreciation_Workfile;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Build Depreciation Work File
@@ -60,7 +61,7 @@ import org.compiere.util.DB;
  *  @version $Id: BuildDepWorkFile.java,v 1.0 $
  */
 
-public class BuildDepWorkFile extends SvrProcess
+public class BuildDepWorkFile extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Depreciation_Build_ID = 0;
@@ -71,7 +72,7 @@ public class BuildDepWorkFile extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

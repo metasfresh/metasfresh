@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -33,15 +34,16 @@ import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_WF_Node_Para;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -49,8 +51,6 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
-import org.compiere.model.MPInstance;
-import org.compiere.model.MProcess;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserRoles;
@@ -59,7 +59,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -70,6 +69,8 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Workflow Activity Model.
@@ -995,21 +996,21 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Report ******/
 		else if (MWFNode.ACTION_AppsReport.equals(action))
 		{
-			log.debug("Report:AD_Process_ID=" + m_node.getAD_Process_ID());
-			// Process
-			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
-			process.set_TrxName(trx != null ? trx.getTrxName() : null);
-			if (!process.isReport() || process.getAD_ReportView_ID() == 0)
-				throw new IllegalStateException("Not a Report AD_Process_ID=" + m_node.getAD_Process_ID());
-			//
-			ProcessInfo pi = new ProcessInfo(m_node.getName(true), m_node.getAD_Process_ID(),
-					getAD_Table_ID(), getRecord_ID());
-			pi.setAD_User_ID(getAD_User_ID());
-			pi.setAD_Client_ID(getAD_Client_ID());
-			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
-			pInstance.set_TrxName(trx != null ? trx.getTrxName() : null);
-			fillParameter(pInstance, trx);
-			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
+			log.debug("Report: AD_Process_ID={}", m_node.getAD_Process_ID());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setAD_Client_ID(getAD_Client_ID())
+					.setAD_User_ID(getAD_User_ID())
+					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setTitle(m_node.getName(true))
+					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.addParameters(createProcessInfoParameters(getPO(trx)))
+					.build();
+			if (!pi.isReportingProcess())
+			{
+				throw new IllegalStateException("Not a Report AD_Process_ID=" + pi);
+			}
+
 			// Report
 			ReportEngine re = ReportEngine.get(getCtx(), pi);
 			if (re == null)
@@ -1033,18 +1034,20 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Process ******/
 		else if (MWFNode.ACTION_AppsProcess.equals(action))
 		{
-			log.debug("Process:AD_Process_ID=" + m_node.getAD_Process_ID());
-			// Process
-			MProcess process = MProcess.get(getCtx(), m_node.getAD_Process_ID());
-			MPInstance pInstance = new MPInstance(process, getAD_Table_ID(), getRecord_ID());
-			fillParameter(pInstance, trx);
-			//
-			ProcessInfo pi = new ProcessInfo(m_node.getName(true), m_node.getAD_Process_ID(),
-					getAD_Table_ID(), getRecord_ID());
-			pi.setAD_User_ID(getAD_User_ID());
-			pi.setAD_Client_ID(getAD_Client_ID());
-			pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
-			return process.processItWithoutTrxClose(pi, trx);
+			log.debug("Process: AD_Process_ID={}", m_node.getAD_Process_ID());
+			ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setAD_Client_ID(getAD_Client_ID())
+					.setAD_User_ID(getAD_User_ID())
+					.setAD_Process_ID(m_node.getAD_Process_ID())
+					.setTitle(m_node.getName(true))
+					.setRecord(getAD_Table_ID(), getRecord_ID())
+					.addParameters(createProcessInfoParameters(getPO(trx)))
+					//
+					.buildAndPrepareExecution()
+					.onErrorThrowException()
+					.executeSync();
+			return true;
 		}
 
 		/******
@@ -1461,129 +1464,105 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		setWFState(StateEngine.STATE_Completed);
 	}	// setUserConfirmation
 
-	/**
-	 * Fill Parameter
-	 *
-	 * @param pInstance process instance
-	 * @param trx transaction
-	 */
-	private void fillParameter(MPInstance pInstance, Trx trx)
+	
+	private List<ProcessInfoParameter> createProcessInfoParameters(final PO po)
 	{
-		getPO(trx);
-		//
-		MWFNodePara[] nParams = m_node.getParameters();
-		for (final I_AD_PInstance_Para iPara : pInstance.getParameters())
+		return Stream.of(m_node.getParameters())
+				.map(wfNodePara -> createProcessInfoParameter(wfNodePara, po))
+				.filter(pip -> pip != null)
+				.collect(GuavaCollectors.toImmutableList());
+	}
+	
+	private final ProcessInfoParameter createProcessInfoParameter(final I_AD_WF_Node_Para nPara, final PO po)
+	{
+		final String attributeName = nPara.getAttributeName();
+		final String attributeValue = nPara.getAttributeValue();
+		log.debug("{} = {}", attributeName, attributeValue);
+		
+		// Value - Constant/Variable
+		Object value = attributeValue;
+		if (attributeValue == null || (attributeValue != null && attributeValue.length() == 0))
+			value = null;
+		else if (attributeValue.indexOf('@') != -1 && po != null)	// we have a variable
 		{
-			for (int np = 0; np < nParams.length; np++)
+			// Strip
+			int index = attributeValue.indexOf('@');
+			String columnName = attributeValue.substring(index + 1);
+			index = columnName.indexOf('@');
+			if (index == -1)
 			{
-				MWFNodePara nPara = nParams[np];
-				if (iPara.getParameterName().equals(nPara.getAttributeName()))
+				log.warn(attributeName + " - cannot evaluate=" + attributeValue);
+				return null;
+			}
+			columnName = columnName.substring(0, index);
+			index = po.get_ColumnIndex(columnName);
+			if (index != -1)
+			{
+				value = po.get_Value(index);
+			}
+			else
+			// not a column
+			{
+				// try Env
+				String env = Env.getContext(getCtx(), columnName);
+				if (env.length() == 0)
 				{
-					String variableName = nPara.getAttributeValue();
-					log.debug(nPara.getAttributeName()
-							+ " = " + variableName);
-					// Value - Constant/Variable
-					Object value = variableName;
-					if (variableName == null
-							|| (variableName != null && variableName.length() == 0))
-						value = null;
-					else if (variableName.indexOf('@') != -1 && m_po != null)	// we have a variable
-					{
-						// Strip
-						int index = variableName.indexOf('@');
-						String columnName = variableName.substring(index + 1);
-						index = columnName.indexOf('@');
-						if (index == -1)
-						{
-							log.warn(nPara.getAttributeName()
-									+ " - cannot evaluate=" + variableName);
-							break;
-						}
-						columnName = columnName.substring(0, index);
-						index = m_po.get_ColumnIndex(columnName);
-						if (index != -1)
-						{
-							value = m_po.get_Value(index);
-						}
-						else
-						// not a column
-						{
-							// try Env
-							String env = Env.getContext(getCtx(), columnName);
-							if (env.length() == 0)
-							{
-								log.warn(nPara.getAttributeName()
-										+ " - not column nor environment =" + columnName
-										+ "(" + variableName + ")");
-								break;
-							}
-							else
-								value = env;
-						}
-					}	// @variable@
-
-					// No Value
-					if (value == null)
-					{
-						if (nPara.isMandatory())
-							log.warn(nPara.getAttributeName()
-									+ " - empty - mandatory!");
-						else
-							log.debug(nPara.getAttributeName()
-									+ " - empty");
-						break;
-					}
-
-					// Convert to Type
-					try
-					{
-						if (DisplayType.isNumeric(nPara.getDisplayType())
-								|| DisplayType.isID(nPara.getDisplayType()))
-						{
-							BigDecimal bd = null;
-							if (value instanceof BigDecimal)
-								bd = (BigDecimal)value;
-							else if (value instanceof Integer)
-								bd = new BigDecimal(((Integer)value).intValue());
-							else
-								bd = new BigDecimal(value.toString());
-							iPara.setP_Number(bd);
-							log.debug(nPara.getAttributeName()
-									+ " = " + variableName + " (=" + bd + "=)");
-						}
-						else if (DisplayType.isDate(nPara.getDisplayType()))
-						{
-							Timestamp ts = null;
-							if (value instanceof Timestamp)
-								ts = (Timestamp)value;
-							else
-								ts = Timestamp.valueOf(value.toString());
-							iPara.setP_Date(ts);
-							log.debug(nPara.getAttributeName()
-									+ " = " + variableName + " (=" + ts + "=)");
-						}
-						else
-						{
-							iPara.setP_String(value.toString());
-							log.debug(nPara.getAttributeName()
-									+ " = " + variableName
-									+ " (=" + value + "=) " + value.getClass().getName());
-						}
-
-						InterfaceWrapperHelper.save(iPara);
-					}
-					catch (Exception e)
-					{
-						log.warn(nPara.getAttributeName()
-								+ " = " + variableName + " (" + value
-								+ ") " + value.getClass().getName()
-								+ " - " + e.getLocalizedMessage());
-					}
-					break;
+					log.warn(attributeName + " - not column nor environment =" + columnName + "(" + attributeValue + ")");
+					return null;
 				}
-			}	// node parameter loop
-		}	// instance parameter loop
-	}	// fillParameter
+				else
+					value = env;
+			}
+		}	// @variable@
+		
+		final I_AD_Process_Para adProcessPara = nPara.getAD_Process_Para();
+
+		// No Value
+		if (value == null)
+		{
+			if (adProcessPara.isMandatory())
+				log.warn(attributeName + " - empty - mandatory!");
+			else
+				log.debug(attributeName + " - empty");
+			return null;
+		}
+
+		// Convert to Type
+		try
+		{
+			final int displayType = adProcessPara.getAD_Reference_ID();
+			if (DisplayType.isNumeric(displayType)
+					|| DisplayType.isID(displayType))
+			{
+				BigDecimal bd = null;
+				if (value instanceof BigDecimal)
+					bd = (BigDecimal)value;
+				else if (value instanceof Integer)
+					bd = new BigDecimal(((Integer)value).intValue());
+				else
+					bd = new BigDecimal(value.toString());
+				return ProcessInfoParameter.of(attributeName, bd);
+			}
+			else if (DisplayType.isDate(displayType))
+			{
+				Timestamp ts = null;
+				if (value instanceof Timestamp)
+					ts = (Timestamp)value;
+				else
+					ts = Timestamp.valueOf(value.toString());
+				return ProcessInfoParameter.of(attributeName, ts);
+			}
+			else
+			{
+				return ProcessInfoParameter.of(attributeName, value.toString());
+			}
+		}
+		catch (Exception e)
+		{
+			log.warn("Failed on {} = {} ({})", attributeName, attributeValue, value, e);
+			return null;
+		}
+	}
 
 	/*********************************
 	 * Send EMail

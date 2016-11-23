@@ -36,14 +36,15 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MUser;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * @author teo_sarca
  *
  */
-public class UserPasswordGenerate extends SvrProcess
+public class UserPasswordGenerate extends JavaProcess
 {
 	private int p_AD_Org_ID = -1;
 	private int p_AD_User_ID = -1;
@@ -53,7 +54,7 @@ public class UserPasswordGenerate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

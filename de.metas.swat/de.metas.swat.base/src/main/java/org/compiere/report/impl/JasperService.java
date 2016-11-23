@@ -30,13 +30,6 @@ import javax.print.attribute.PrintServiceAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.PrinterName;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporter;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
-import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,12 +39,18 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.MUser;
 import org.compiere.model.PrintInfo;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.process.ProcessInfo;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporter;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
+import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 
 /**
  * Old school Jasper Printing Service.
@@ -200,15 +199,7 @@ public final class JasperService extends AbstractJasperService
 		{
 			DB.getConstraints().incMaxTrx(1).addAllowedTrxNamePrefix("POSave");
 
-			final int userId;
-			if (pi.getAD_User_ID() != null)
-			{
-				userId = pi.getAD_User_ID();
-			}
-			else
-			{
-				userId = Env.getAD_User_ID(Env.getCtx());
-			}
+			final int userId = pi.getAD_User_ID();
 
 			Services.get(IArchiveEventManager.class).firePrintOut(
 					InterfaceWrapperHelper.create(Env.getCtx(), archiveId, I_AD_Archive.class, ITrx.TRXNAME_None),

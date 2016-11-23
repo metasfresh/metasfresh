@@ -87,7 +87,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.plaf.CompiereColor;
-import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.table.AnnotatedTableFactory;
 import org.compiere.swing.table.AnnotatedTableModel;
@@ -117,6 +116,7 @@ import de.metas.banking.payment.paymentallocation.service.WriteOffAmountTooBigPa
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.process.ProcessInfo;
 
 public class PaymentAllocationForm
 		extends AbstractPaymentAllocationForm
@@ -181,7 +181,7 @@ public class PaymentAllocationForm
 			final ProcessInfo processInfo = frame.getProcessInfo();
 			if (processInfo != null)
 			{
-				final I_C_PaySelectionLine paySelectionLine = processInfo.getRecordIfApplies(I_C_PaySelectionLine.class, ITrx.TRXNAME_None).orNull();
+				final I_C_PaySelectionLine paySelectionLine = processInfo.getRecordIfApplies(I_C_PaySelectionLine.class, ITrx.TRXNAME_None).orElse(null);
 				if (paySelectionLine != null)
 				{
 					final int bpartnerId = paySelectionLine.getC_BPartner_ID();

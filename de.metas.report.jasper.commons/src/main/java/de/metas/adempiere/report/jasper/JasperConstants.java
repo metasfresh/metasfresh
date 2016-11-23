@@ -55,4 +55,5 @@ public final class JasperConstants
 	 * If the jasper report does not support this parameter, it will be ignored.
 	 */
 	public static final String REPORT_PARAM_SQL_QUERY = "REPORT_SQL_QUERY";
+	public static final String REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder = "@AD_PInstance_ID@";
 }

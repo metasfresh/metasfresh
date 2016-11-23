@@ -35,13 +35,13 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.MUser;
-import org.compiere.process.ProcessInfo;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.process.ProcessInfo;
 
 /**
  * 

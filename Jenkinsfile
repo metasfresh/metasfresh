@@ -59,7 +59,6 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
-	[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], 
 	parameters([
 		string(defaultValue: '', 
 			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
@@ -193,6 +192,8 @@ stage('Invoke downstream jobs')
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
 
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+/*
+Currently this is inactive because we don't use it
 	node('linux')
 	{	
 		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
@@ -203,6 +204,7 @@ stage('Invoke downstream jobs')
 			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
 	}
+*/
 }
 
 	
@@ -303,7 +305,7 @@ else
 
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}"
+			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${env.BUILD_NUMBER}-${BUILD_VERSION}"
 			        .replaceAll('-', '_') // postgresql is allergic to '-' in DB names
 					.toLowerCase(); // also, DB names are generally in lowercase
 
@@ -322,55 +324,70 @@ else
 {
 	stage('Deployment')
 	{
-		def userInput;
-		// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
-		timeout(time:1, unit:'DAYS') 
+		final userInput;
+
+		try 
 		{
-			// use milestones to abort older builds as soon as a receent build is deployed
-			// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
-			milestone 1
-			userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
-			milestone 2
+			// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
+			timeout(time:1, unit:'DAYS') 
+			{
+				// use milestones to abort older builds as soon as a receent build is deployed
+				// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
+				milestone 1;
+				userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
+				milestone 2;
+				echo "Received userInput=$userInput";
+			}
+		} 
+		catch (error) 
+		{
+			userInput = null;
+			echo "We hit the timeout or the deployment was canceled by a user; set userinput to NULL";
 		}
-		
-		echo "Received userInput=$userInput";
-
-		node('master')
+	
+		if(userInput)
 		{
-			final distArtifactId='de.metas.endcustomer.mf15.dist';
-			final packaging='tar.gz';
-			final sshTargetHost=userInput;
-			final sshTargetUser='metasfresh'
+			node('master')
+			{
+				final distArtifactId='de.metas.endcustomer.mf15.dist';
+				final packaging='tar.gz';
+				final sshTargetHost=userInput;
+				final sshTargetUser='metasfresh'
 
-			// main part: provide and rollout the "main" distributable
-			// get the deployable dist file to the target host
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
+				// main part: provide and rollout the "main" distributable
+				// get the deployable dist file to the target host
+				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
 
-			// extract the tar.gz
-			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+				// extract the tar.gz
+				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
 
-			// Look Ma, I'm currying!!
-			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+				// Look Ma, I'm currying!!
+				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
 
-			// stop the service, perform the rollout and start the service
-			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
-			invokeRemoteInInstallDir('./stop_service.sh');
-			invokeRemoteInInstallDir('./sql_remote.sh');
-			invokeRemoteInInstallDir('./minor_remote.sh');
-			invokeRemoteInInstallDir('./start_service.sh');
+				// stop the service, perform the rollout and start the service
+				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
+				invokeRemoteInInstallDir('./stop_service.sh');
+				invokeRemoteInInstallDir('./sql_remote.sh');
+				invokeRemoteInInstallDir('./minor_remote.sh');
+				invokeRemoteInInstallDir('./start_service.sh');
 
-			// clean up what we just rolled out
-			invokeRemoteInHomeDir("rm -r ${deployDir}")
-			
-			// also provide the webui-api and procurement-webui; TODO actually deploy them
-			downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
-			downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
+				// clean up what we just rolled out
+				invokeRemoteInHomeDir("rm -r ${deployDir}")
+				
+				// also provide the webui-api and procurement-webui; TODO actually deploy them
+				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
 
-			// clean up the workspace, including the local maven repositories that the withMaven steps created
-			step([$class: 'WsCleanup', cleanWhenFailure: true])
-		} // node
+				// clean up the workspace, including the local maven repositories that the withMaven steps created
+				step([$class: 'WsCleanup', cleanWhenFailure: true])
+			} // node
+		}
+		else
+		{
+			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
+		} // if(userinput)
 	} // stage
 } // if(MF_OFFER_DEPLOY)
 } // timestamps

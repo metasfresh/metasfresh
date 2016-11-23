@@ -48,11 +48,12 @@ import org.compiere.model.I_AD_TreeNodeMM;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
-public class AD_Migration_CreateFromEntityType extends SvrProcess
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
+public class AD_Migration_CreateFromEntityType extends JavaProcess
 {
 	private I_AD_Migration migration;
 	private String entityType;
@@ -60,7 +61,7 @@ public class AD_Migration_CreateFromEntityType extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter p : getParameter())
+		for (final ProcessInfoParameter p : getParametersAsArray())
 		{
 			String para = p.getParameterName();
 			if ("EntityType".equals(para))

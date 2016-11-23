@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.process.JavaProcess;
+
 //import org.compiere.util.*;
 
 /**
@@ -24,7 +26,7 @@ package org.compiere.process;
  *  @author Jorg Janke
  *  @version $Id: SystemValidate.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
  */
-public class SystemValidate extends SvrProcess
+public class SystemValidate extends JavaProcess
 {
 	/**
 	 * 	Prepare
