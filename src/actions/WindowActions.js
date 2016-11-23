@@ -340,6 +340,7 @@ function getProcessData(processId, viewId, type, ids) {
         });
     } else {
         return () => axios.post(config.API_URL + '/process/instance', {
+            processId: processId,
             documentId: ids,
             documentType: type
         });
