@@ -34,6 +34,7 @@ import org.compiere.wf.MWorkflow;
 import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 
 //import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
@@ -98,6 +99,11 @@ public final class ProcessExecutor
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
 	}
+	
+	private final String buildThreadName()
+	{
+		return pi.getTitle() + "-" + pi.getAD_PInstance_ID();
+	}
 
 	/**
 	 * Run this process asynchronously
@@ -107,10 +113,7 @@ public final class ProcessExecutor
 		Check.assumeNull(m_thread, "not already started");
 
 		final Thread thread = new Thread(() -> executeSync());
-		if (pi != null)
-		{
-			thread.setName(pi.getTitle() + "-" + pi.getAD_PInstance_ID());
-		}
+		thread.setName(buildThreadName());
 
 		thread.start();
 
@@ -122,13 +125,46 @@ public final class ProcessExecutor
 	 */
 	private void executeSync()
 	{
+		//
+		// Case: the process requires to be executed on server, but we are not running on server
+		// => execute the process remotely
 		if (pi.isServerProcess() && Ini.isClient())
 		{
 			executeSync_Remote();
 		}
+		//
+		// Case: our process has some parts that requires to be executed out of transaction
+		// but we are currently running in a transaction.
+		// => spawn a new thread, run the process there and wait for the thread to finish
+		else if (pi.getProcessClassInfo().isRunOutOfTransaction()
+				&& trxManager.hasThreadInheritedTrx())
+		{
+			final Thread thread = new Thread(()->executeNow());
+			thread.setName(buildThreadName());
+			thread.start();
+			
+			try
+			{
+				thread.join();
+			}
+			catch (InterruptedException ex)
+			{
+				throw Throwables.propagate(ex);
+			}
+			
+			//
+			// Propagate the error if asked
+			if (onErrorThrowException)
+			{
+				pi.getResult().propagateErrorIfAny();
+			}
+		}
+		//
+		// Case: standard case
+		// => run the process now
 		else
 		{
-			executeSync_Local();
+			executeNow();
 		}
 	}
 
@@ -159,10 +195,9 @@ public final class ProcessExecutor
 		{
 			unlock(false);
 		}
-
 	}
-
-	private void executeSync_Local()
+	
+	private void executeNow()
 	{
 		logger.debug("running: {}", pi);
 
@@ -235,7 +270,7 @@ public final class ProcessExecutor
 
 			//
 			// Execute
-			if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
+			if (pi.getProcessClassInfo().isRunOutOfTransaction())
 			{
 				trxManager.runOutOfTransaction(processExecutor);
 			}

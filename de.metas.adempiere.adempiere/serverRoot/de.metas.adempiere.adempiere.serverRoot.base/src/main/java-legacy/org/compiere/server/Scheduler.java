@@ -264,7 +264,7 @@ public class Scheduler extends AdempiereServer
 				// Execute the process runner
 				final Stopwatch stopwatch = Stopwatch.createStarted();
 				final ITrxManager trxManager = Services.get(ITrxManager.class);
-				if (pi.getProcessClassInfo().isRunDoItOutOfTransaction())
+				if (pi.getProcessClassInfo().isRunOutOfTransaction())
 				{
 					trxManager.runOutOfTransaction(processRunner);
 				}
