@@ -44,9 +44,10 @@ import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
 import org.compiere.model.X_A_Asset_Disposed;
 import org.compiere.model.X_A_Depreciation_Exp;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -55,7 +56,7 @@ import org.compiere.util.DB;
  *  @author Rob klein
  *  @version $Id: AssetDisposed.java,v 1.0$
  */
-public class AssetDisposed extends SvrProcess
+public class AssetDisposed extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_Asset_Disposed_ID = 0;
@@ -66,7 +67,7 @@ public class AssetDisposed extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

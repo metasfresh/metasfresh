@@ -31,16 +31,16 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.process.ProcessInfoParameter;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.model.I_C_Payment;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * @author cg
  *
  */
-public class AllocatePayment extends org.compiere.process.SvrProcess
+public class AllocatePayment extends de.metas.process.JavaProcess
 {
 
 	private int p_C_Payment_ID;
@@ -54,7 +54,7 @@ public class AllocatePayment extends org.compiere.process.SvrProcess
 			p_C_Payment_ID = getRecord_ID();
 		}
 
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -59,7 +59,6 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
-	[$class: 'GithubProjectProperty', displayName: '', projectUrlStr: 'https://github.com/metasfresh/metasfresh-webui/'], 
 	parameters([
 	
 		string(defaultValue: '', 
@@ -217,6 +216,8 @@ stage('Invoke downstream jobs')
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
 
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+/*
+Currently this is inactive because we don't use it
 	node('linux')
 	{	
 		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
@@ -227,6 +228,7 @@ stage('Invoke downstream jobs')
 			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
 	}
+*/
 }
 
 	
@@ -329,7 +331,7 @@ else
 
 				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
 				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-				final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${BUILD_VERSION}"
+			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${env.BUILD_NUMBER}-${BUILD_VERSION}"
 						.replaceAll('-', '_') // postgresql is allergic to '-' in DB names
 						.toLowerCase(); // also, DB names are generally in lowercase
 
@@ -349,19 +351,29 @@ else
 {
 	stage('Deployment')
 	{
-		def userInput;
+		final userInput;
+
+		try 
+		{
 		// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
 		timeout(time:1, unit:'DAYS') 
 		{
 			// use milestones to abort older builds as soon as a receent build is deployed
 			// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
-			milestone 1
+				milestone 1;
 			userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
-			milestone 2
+				milestone 2;
+				echo "Received userInput=$userInput";
+		}
+		} 
+		catch (error) 
+		{
+			userInput = null;
+			echo "We hit the timeout or the deployment was canceled by a user; set userinput to NULL";
 		}
 		
-		echo "Received userInput=$userInput";
-
+		if(userInput)
+		{
 		node('master')
 		{
 			final distArtifactId='de.metas.endcustomer.mf15.dist';
@@ -398,6 +410,11 @@ else
 			// clean up the workspace, including the local maven repositories that the withMaven steps created
 			step([$class: 'WsCleanup', cleanWhenFailure: true])
 		} // node
+		}
+		else
+		{
+			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
+		} // if(userinput)
 	} // stage
 } // if(MF_SKIP_DEPLOYMENT)
 } // withEnv

@@ -23,6 +23,8 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Renumber Discount Schema
@@ -30,14 +32,14 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: DiscountSchemaReSeq.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class DiscountSchemaReSeq extends SvrProcess
+public class DiscountSchemaReSeq extends JavaProcess
 {
 	/** Discount Schema			*/
 	private int p_M_DiscountSchema_ID = 0;
 
 	/**
 	 * 	Prepare
-	 *	@see org.compiere.process.SvrProcess#prepare()
+	 *	@see de.metas.process.JavaProcess#prepare()
 	 */
 	protected void prepare ()
 	{

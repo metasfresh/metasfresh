@@ -48,10 +48,11 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPProductBOMLine;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -62,7 +63,7 @@ import org.eevolution.model.MPPProductBOMLine;
  *  
  *  @author Teo Sarca, www.arhipac.ro
  */
-public class ComponentChange extends SvrProcess
+public class ComponentChange extends JavaProcess
 {
 	private static final int	ACTION_AD_Reference_ID	= 53227;
 	private static final String ACTION_Add				= "A";
@@ -84,7 +85,7 @@ public class ComponentChange extends SvrProcess
 	{
 		int morepara = 0;
 		
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 

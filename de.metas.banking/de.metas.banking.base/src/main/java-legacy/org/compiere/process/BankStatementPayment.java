@@ -30,13 +30,16 @@ import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Create Payment from Bank Statement Info
  *	
  *  @author Jorg Janke
  *  @version $Id: BankStatementPayment.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class BankStatementPayment extends SvrProcess
+public class BankStatementPayment extends JavaProcess
 {
 
 	/**
@@ -44,7 +47,7 @@ public class BankStatementPayment extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

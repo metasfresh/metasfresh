@@ -32,6 +32,8 @@ package org.adempiere.process;
 import java.io.File;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -39,8 +41,6 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.MCity;
 import org.compiere.model.MSetup;
 import org.compiere.print.PrintUtil;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -53,7 +53,7 @@ import de.metas.currency.ICurrencyDAO;
  *  @author Carlos Ruiz
  *    [ 2598506 ] FR - Implement Initial Client Setup
  */
-public class InitialClientSetup extends SvrProcess
+public class InitialClientSetup extends JavaProcess
 {
 	
 	// Process Parameters
@@ -82,7 +82,7 @@ public class InitialClientSetup extends SvrProcess
 	@Override
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

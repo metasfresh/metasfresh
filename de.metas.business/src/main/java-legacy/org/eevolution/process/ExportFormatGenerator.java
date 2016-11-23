@@ -18,6 +18,8 @@ package org.eevolution.process;
 import java.util.Hashtable;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
@@ -26,8 +28,6 @@ import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.model.MWindow;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
@@ -39,7 +39,7 @@ import org.compiere.util.DisplayType;
  *  @author Victor Perez www.e-evolution.com
  *  @version $Id: ExportFormatGenerator.java,v 1.0 
  */
-public class ExportFormatGenerator extends SvrProcess
+public class ExportFormatGenerator extends JavaProcess
 {
 
 	private int			p_AD_Window_ID = 0;
@@ -55,7 +55,7 @@ public class ExportFormatGenerator extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

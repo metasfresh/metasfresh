@@ -15,11 +15,11 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -274,4 +274,15 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.save(uiElement);
 	}
 
+	@Override
+	public I_AD_Tab retrieveFirstTab(final I_AD_Window window)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Tab.class, window)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, window.getAD_Window_ID())
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
+				.create()
+				.firstOnly(I_AD_Tab.class);
+	}
 }

@@ -48,7 +48,7 @@ import org.eevolution.mrp.api.IMRPResult;
  * @author Victor Perez, e-Evolution, S.C.
  * @author Teo Sarca, www.arhipac.ro
  */
-public class MRP extends AbstractMRPSvrProcess
+public class MRP extends AbstractMRPProcess
 {
 	@Override
 	protected IMRPResult run(final IMRPContext mrpContext)

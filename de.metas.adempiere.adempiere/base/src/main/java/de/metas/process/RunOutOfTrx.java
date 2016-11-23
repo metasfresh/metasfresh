@@ -7,8 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.compiere.process.SvrProcess;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,9 +31,9 @@ import org.compiere.process.SvrProcess;
 
 
 /**
- * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
+ * Used to annotate that {@link JavaProcess#prepare()} or {@link JavaProcess#doIt()} shall be executed out of transaction.
  *
- * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
+ * If {@link JavaProcess#doIt()} is annotated then {@link JavaProcess#prepare()} will be executed out of transaction too.
  */
 @Inherited
 @Documented

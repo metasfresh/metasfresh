@@ -10,7 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.46.45 (2016-48)
+
+## Features
+* metasfresh
+  * #620 Marginal Return Report doubled sums for accounting group
+  
+* webui
+  * #425 Kickstart elasticsearch integration
+
+## Fixes
+* metasfresh
+  * #583 Reports without ad_org_id show wrong results
+
 # metasfresh 4.45.44 (2016-47)
+
+This week's RC
 
 ## Features
 * metasfresh
@@ -18,6 +33,8 @@ Here come the actual release notes:
   * #563 Report Statistics qty per Week
   * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
   * #597 Empties mask and functionality with autom. set the selected bpartner
+  * #576 Report Reclamation result, quality note and minor changes
+  * #539 Add missing FK constraints
 * webui
   * #567 WebUI - Material Receipt Schedule
   * #497 WebUI - ShipmentSchedule Window
@@ -26,24 +43,35 @@ Here come the actual release notes:
 * metasfresh
   * #589 console error when doing bpartner setup
   * #553 Report Account Info adjustments. Add parms date range.
+  * #611 IBAN Error for RBS Bank
 
 # metasfresh 4.44.43 (2016-46)
 
 ## Features
 * metasfresh
   * #553 Report Account Info adjustments. Add parms date range.
+    * Enhancing the Filter parms to allow variable daterange for selection.
   * #557 Report Saldenbilanz & Account Info native Excel Export
+    * Now Allowing an Excel Export though Report viewer process.
   * #558 Marginal return calculation - Accountings without c_activity_id
+    * Marginal Return now considers specific records without activity to be calculated on account specific one.
   * #568 Change on Report "Lieferschein" for one specific Customer
+    * Add properties File for Shipment Report.
   * #555 Businesspartner Location isEDI shall not be ticked by default
+    * Don't set the Flag isEDI per default when recording new Businesspartner Loactions.
   * #548 keep M_QualityNote and M_AttributeValue in sync
+    * New Functionality to sync the M_QualityNote and M_AttributeValue for R_Request complaints usage.
   * #577 Button Request shows too many results
+    * Adjust the Filtering of Request Button in main menue and show Role Based counter.
   * #565 Report Revenue per Week and BPartner also show qty
+    * Add a new Quantity value in reports Revenue per week and week Businesspartner.
   * #416 Extended async notification features
+    * Prepare the notification features for WebUI exposure in metasfresh nextGen.
  
 ## Fixes
 * metasfresh
   * #578 Request Window Attachment Image too large in viewer
+    * Fixes a Bug that scales window too large after uplaoding a large image.
 
 # metasfresh 4.43.42 (2016-45)
 

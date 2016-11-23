@@ -29,12 +29,12 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class CreateAdjustmentChargeFromInvoice extends SvrProcess
+public class CreateAdjustmentChargeFromInvoice extends JavaProcess
 {
 	private static final String PARA_DocSubType = "DocSubType";
 	private int AD_Table_ID = 0;
@@ -44,7 +44,7 @@ public class CreateAdjustmentChargeFromInvoice extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

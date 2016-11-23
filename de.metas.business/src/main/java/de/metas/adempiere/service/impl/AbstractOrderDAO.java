@@ -22,13 +22,11 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
@@ -47,16 +45,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(final I_C_Order order,
-			final Class<T> clazz)
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(final I_C_Order order, final Class<T> clazz)
 	{
-		final IQueryBuilder<org.compiere.model.I_C_OrderLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
-				.filter(new EqualsQueryFilter<org.compiere.model.I_C_OrderLine>(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID()));
-
-		queryBuilder.orderBy()
-				.addColumn(org.compiere.model.I_C_OrderLine.COLUMNNAME_Line);
-
-		final List<T> orderLines = queryBuilder.create().list(clazz);
+		final List<T> orderLines = Services.get(IQueryBL.class)
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
+				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
+				.orderBy()
+				.addColumn(org.compiere.model.I_C_OrderLine.COLUMN_Line)
+				.addColumn(org.compiere.model.I_C_OrderLine.COLUMN_C_OrderLine_ID)
+				.endOrderBy()
+				.create()
+				.list(clazz);
 
 		// Optimization: set parent
 		for (final T orderLine : orderLines)
@@ -67,10 +66,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return orderLines;
 	}
 
+	@Override
+	public final List<Integer> retrieveAllOrderLineIds(final I_C_Order order)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
+				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.listIds();
+	}
+
+	@Override
 	public <T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
+
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
 				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
 				.addEqualsFilter(I_C_OrderLine.COLUMN_Line, lineNo)

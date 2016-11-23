@@ -26,12 +26,12 @@ package de.metas.dunning.writeoff.invoice.process;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
+import de.metas.process.JavaProcess;
 
-public class C_Dunning_Candidate_MassWriteOff extends SvrProcess
+public class C_Dunning_Candidate_MassWriteOff extends JavaProcess
 {
 
 	final public static String MSG_DODISMISSAL = "StartMassDismissal";

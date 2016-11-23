@@ -20,13 +20,16 @@ import java.sql.Timestamp;
 import org.compiere.model.MYear;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Create Periods of year
  *	
  *  @author Jorg Janke
  *  @version $Id: YearCreatePeriods.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class YearCreatePeriods extends SvrProcess
+public class YearCreatePeriods extends JavaProcess
 {
 	private int	p_C_Year_ID = 0;
 	private Timestamp p_StartDate;
@@ -38,7 +41,7 @@ public class YearCreatePeriods extends SvrProcess
 	protected void prepare ()
 	{
 		
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

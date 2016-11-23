@@ -9,12 +9,12 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest_Source_v;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ import de.metas.process.Process;
  * @task http://dewiki908/mediawiki/index.php/09110_Konten_KST_Pflicht_%28105477200774%29
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class Fact_Acct_ActivityChangeRequest_Populate extends SvrProcess
+public class Fact_Acct_ActivityChangeRequest_Populate extends JavaProcess
 {
 	@Param(parameterName = "C_Period_ID")
 	private int p_C_Period_ID;

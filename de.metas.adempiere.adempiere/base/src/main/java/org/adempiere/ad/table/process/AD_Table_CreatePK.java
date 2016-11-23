@@ -1,7 +1,8 @@
 package org.adempiere.ad.table.process;
 
 import org.compiere.model.I_AD_Table;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -31,7 +32,7 @@ import org.compiere.process.SvrProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class AD_Table_CreatePK extends SvrProcess
+public class AD_Table_CreatePK extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception
