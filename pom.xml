@@ -53,15 +53,17 @@
 		-->
 		<repository>
 			<id>metasfresh-repo</id>
-			<name>metasfresh repository on github</name>
-			<url>https://repo.metasfresh.com/repository/mvn-public/</url>
+			<name>metasfresh maven repository</name>
+       
+         	<!-- URL for nexus 2.14 -->       
+         	<url>https://repo.metasfresh.com/content/groups/mvn-public/</url>
 		</repository>
 	</repositories>
 
 	<distributionManagement>
 		<!-- 
-		Where to deploy build artifacts; if you can't reach this repo, you can still make your own builds
-		TODO: think about moving with the repo to a public place with much more storage :-) 
+		Where to deploy build artifacts; the values are coming from one of the profiles below. 
+		Even if you can't deploy to this repo, you can still make your own builds.
 		-->
 		<snapshotRepository>
      		<id>${repo-id}</id>
@@ -186,7 +188,9 @@
 	    <properties>
 		  <repo-id>metasfresh-perm-snapshots-repo</repo-id>
 	      <repo-name>Maven metasfresh *permantent* Snapshots Repository</repo-name>
-	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-perm-snapshots/</repo-url>
+	      
+	      <!-- standard URL for nexus 2.14 -->
+	      <repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/</repo-url>
 	    </properties>
 	  </profile>
 	  <profile>
@@ -197,7 +201,9 @@
 	    <properties>
 	      <repo-id>metas-snapshots-repo</repo-id>
 	      <repo-name>Maven metasfresh Snapshots Repository</repo-name>
-	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</repo-url>
+
+	      <!-- standard URL for nexus 2.14 -->
+	      <repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-snapshots/</repo-url>
 	    </properties>
 	  </profile>
 	</profiles>
