@@ -105,6 +105,7 @@ class Modal extends Component {
                 dispatch(addNotification("Process error", data.summary, 5000, "error"));
                 return false;
             }else{
+                dispatch(addNotification("Process success", data.summary, 5000, "success"));
                 this.removeModal();
             }
         });
