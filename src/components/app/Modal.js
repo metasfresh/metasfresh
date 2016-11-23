@@ -39,7 +39,6 @@ class Modal extends Component {
                 break;
             case "process":
                 //processid, viewId, docType, id or ids
-                console.log(windowType, viewId, relativeType, dataId ? dataId : selected)
                 dispatch(createProcess(windowType, viewId, relativeType, dataId ? dataId : selected)).catch(err => {
                     this.handleClose();
                 });
