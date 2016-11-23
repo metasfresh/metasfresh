@@ -19,7 +19,8 @@ import {
     getRelatedDocuments,
     setReferences,
     getDocumentActions,
-    setActions
+    setActions,
+    getViewActions
 } from '../../actions/MenuActions';
 
 class Subheader extends Component {
@@ -39,15 +40,20 @@ class Subheader extends Component {
             }
         }
     }
+
     componentDidMount() {
-        const {dispatch, windowType, dataId} = this.props;
+        const {dispatch, windowType, dataId, viewId} = this.props;
         windowType && dataId && dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
             dispatch(setReferences(response.data.references));
         });
-        windowType && dataId && dispatch(getDocumentActions(windowType, dataId)).then((response) => {
+        windowType && dataId && dispatch(getDocumentActions(windowType)).then((response) => {
+            dispatch(setActions(response.data.actions));
+        });
+        viewId && dispatch(getViewActions(viewId)).then((response) => {
             dispatch(setActions(response.data.actions));
         });
     }
+
 
     redirect = (where) => {
         const {dispatch, onClick} = this.props;
@@ -118,7 +124,9 @@ class Subheader extends Component {
     }
 
     render() {
-        const { windowType, onClick, references, actions, dataId } = this.props;
+        const {
+            windowType, onClick, references, actions, dataId, viewId
+        } = this.props;
         const {prompt} = this.state;
 
         return (
@@ -183,9 +191,6 @@ class Subheader extends Component {
         )
     }
 }
-
-
-
 
 
 Subheader.propTypes = {

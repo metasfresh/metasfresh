@@ -56,3 +56,10 @@ export function initFiltersParameters(filterId, parameters){
 		parameters: parameters
 	}
 }
+
+export function initDocumentView(viewId) {
+    return {
+        type: types.INIT_DOC_VIEW,
+        viewId: viewId
+    }
+}

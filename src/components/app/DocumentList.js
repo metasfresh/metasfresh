@@ -15,7 +15,8 @@ import {
 import {
     setPagination,
     setSorting,
-    clearListProps
+    clearListProps,
+    initDocumentView
 } from '../../actions/ListActions';
 
 class DocumentList extends Component {
@@ -69,12 +70,11 @@ class DocumentList extends Component {
                         data: response.data
                     }), () => {
                         this.getView(response.data.viewId);
+                        dispatch(initDocumentView(response.data.viewId));
                     })
                 })
             })
         });
-
-
     }
 
     getView = (viewId) => {

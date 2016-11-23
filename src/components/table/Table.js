@@ -100,10 +100,9 @@ class Table extends Component {
 
 
     handleClickOutside = (event) => {
-        if(this.state.selected.length > 0){
-            this.deselectAllProducts();
-        }
-
+        // if(this.state.selected.length > 0){
+        //     this.deselectAllProducts();
+        // }
     }
 
     handleKeyDown = (e) => {

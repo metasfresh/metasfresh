@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
+import Modal from '../components/app/Modal';
 
 import {
     getWindowBreadcrumb
@@ -38,13 +39,28 @@ class DocList extends Component {
     }
 
     render() {
-        const {dispatch, windowType, breadcrumb, query} = this.props;
+        const {
+            dispatch, windowType, breadcrumb, query, actions, modal
+        } = this.props;
 
         return (
             <Container
                 breadcrumb={breadcrumb}
                 windowType={windowType}
+                actions={actions}
             >
+                {modal.visible &&
+                    <Modal
+                        windowType={modal.type}
+                        data={modal.data}
+                        layout={modal.layout}
+                        rowData={modal.rowData}
+                        tabId={modal.tabId}
+                        rowId={modal.rowId}
+                        modalTitle={modal.title}
+                        modalType={modal.modalType}
+                     />
+                 }
                 {this.renderDocumentList(windowType, query)}
             </Container>
         );
@@ -56,15 +72,25 @@ DocList.propTypes = {
     breadcrumb: PropTypes.array.isRequired,
     query: PropTypes.object.isRequired,
     search: PropTypes.string.isRequired,
-    pathname: PropTypes.string.isRequired
+    pathname: PropTypes.string.isRequired,
+    modal: PropTypes.object.isRequired,
+    actions: PropTypes.array.isRequired
 }
 
 function mapStateToProps(state) {
-    const { menuHandler, routing } = state;
+    const { windowHandler, menuHandler, routing } = state;
 
     const {
+        modal
+    } = windowHandler || {
+        modal: false
+    }
+
+    const {
+        actions,
         breadcrumb
     } = menuHandler || {
+        actions: [],
         breadcrumb: []
     }
 
@@ -80,10 +106,12 @@ function mapStateToProps(state) {
 
 
     return {
+        modal,
         breadcrumb,
         query,
         search,
-        pathname
+        pathname,
+        actions
     }
 }
 

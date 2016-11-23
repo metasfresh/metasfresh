@@ -87,7 +87,7 @@ class Modal extends Component {
         const {dispatch, closeCallback, modalType} = this.props;
         const {isNew} = this.state;
 
-        closeCallback(isNew);
+        closeCallback && closeCallback(isNew);
         this.removeModal();
     }
 

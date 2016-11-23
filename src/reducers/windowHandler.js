@@ -19,7 +19,8 @@ const initialState = {
         data: [],
         rowData: {},
     },
-    indicator: 'saved'
+    indicator: 'saved',
+    viewId: null
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -28,7 +29,7 @@ export default function windowHandler(state = initialState, action) {
         case types.NO_CONNECTION:
             return Object.assign({}, state, {
                 connectionError: action.status
-        })
+            })
 
         case types.OPEN_MODAL:
             return Object.assign({}, state, {

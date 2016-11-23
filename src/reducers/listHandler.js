@@ -12,7 +12,8 @@ const initialState = {
         dir: null,
         windowType: null
     },
-    page: 1
+    page: 1,
+    viewId: null
 }
 
 export default function listHandler(state = initialState, action) {
@@ -75,6 +76,13 @@ export default function listHandler(state = initialState, action) {
 
                 })
             })
+
+
+        case types.INIT_DOC_VIEW:
+            return Object.assign({}, state, {
+                viewId: action.viewId
+            })
+
         default:
             return state
     }
