@@ -49,7 +49,7 @@ class Subheader extends Component {
         (windowType && dataId) && dispatch(getDocumentActions(windowType,dataId)).then((response) => {
             dispatch(setActions(response.data.actions));
         });
-        viewId && dispatch(getViewActions(viewId)).then((response) => {
+        (viewId && !dataId) && dispatch(getViewActions(viewId)).then((response) => {
             dispatch(setActions(response.data.actions));
         });
     }
