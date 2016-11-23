@@ -46,7 +46,7 @@ class Subheader extends Component {
         windowType && dataId && dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
             dispatch(setReferences(response.data.references));
         });
-        windowType && dataId && dispatch(getDocumentActions(windowType)).then((response) => {
+        (windowType && dataId) && dispatch(getDocumentActions(windowType,dataId)).then((response) => {
             dispatch(setActions(response.data.actions));
         });
         viewId && dispatch(getViewActions(viewId)).then((response) => {
