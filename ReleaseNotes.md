@@ -13,6 +13,9 @@ Here come the actual release notes:
 # metasfresh 4.46.45 (2016-48)
 
 ## Features
+* metasfresh
+  * #620 Marginal Return Report doubled sums for accounting group
+  
 * webui
   * #425 Kickstart elasticsearch integration
 
