@@ -193,6 +193,8 @@ stage('Invoke downstream jobs')
 	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
 
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+/*
+Currently this is inactive because we don't use it
 	node('linux')
 	{	
 		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
@@ -203,6 +205,7 @@ stage('Invoke downstream jobs')
 			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
 	}
+*/
 }
 
 	
