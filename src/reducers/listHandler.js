@@ -3,6 +3,7 @@ import update from 'react-addons-update';
 
 const initialState = {
     filters: [],
+    filtersWindowType: "",
     filter: {
         filterId: "",
         parameters: []
@@ -20,7 +21,8 @@ export default function listHandler(state = initialState, action) {
     switch(action.type){
         case types.SET_LIST_FILTERS:
             return Object.assign({}, state, {
-                filters: action.filter != null ? [action.filter] : []
+                filters: action.filter != null ? [action.filter] : [],
+                filtersWindowType: action.windowType
             })
 
         case types.SET_LIST_PAGINATION:

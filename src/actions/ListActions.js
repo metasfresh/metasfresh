@@ -2,10 +2,11 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
 
-export function setFilter(filter){
+export function setFilter(filter, windowType){
     return {
         type: types.SET_LIST_FILTERS,
-        filter: filter
+        filter: filter,
+        windowType: windowType
     }
 }
 

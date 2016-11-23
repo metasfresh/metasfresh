@@ -130,10 +130,8 @@ class Filters extends Component {
             this.setState(Object.assign({}, this.state, {
                 active: filter.filterId
             }), () => {
-
-                dispatch(setFilter(filter));
+                dispatch(setFilter(filter, windowType));
             })
-            dispatch(setFilter(filter));
     		this.closeFilterMenu();
         }
 	}
@@ -162,7 +160,7 @@ class Filters extends Component {
 		});
 
 		dispatch(deleteFiltersParameters());
-        dispatch(setFilter(null));
+        dispatch(setFilter(null, null));
 		this.setSelectedItem('', true);
 	}
 
