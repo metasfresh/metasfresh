@@ -20,7 +20,8 @@ const initialState = {
         rowData: {},
     },
     indicator: 'saved',
-    viewId: null
+    viewId: null,
+    selected: []
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -180,6 +181,11 @@ export default function windowHandler(state = initialState, action) {
             }
         );
         // END OF INDICATOR ACTIONS
+
+        case types.SELECT_TABLE_ITEMS:
+            return Object.assign({}, state, {
+                selected: action.ids
+            })
 
         default:
             return state

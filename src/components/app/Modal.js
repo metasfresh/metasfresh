@@ -18,7 +18,11 @@ import {
 class Modal extends Component {
     constructor(props) {
         super(props);
-        const {dispatch, windowType, dataId, tabId, rowId, modalType} = this.props;
+
+        const {
+            dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
+            relativeType
+        } = this.props;
 
         this.state = {
             scrolled: false,
@@ -34,7 +38,9 @@ class Modal extends Component {
                 });
                 break;
             case "process":
-                dispatch(createProcess(windowType)).catch(err => {
+                //processid, viewId, docType, id or ids
+                console.log(windowType, viewId, relativeType, dataId ? dataId : selected)
+                dispatch(createProcess(windowType, viewId, relativeType, dataId ? dataId : selected)).catch(err => {
                     this.handleClose();
                 });
                 break;
@@ -113,9 +119,14 @@ class Modal extends Component {
     }
 
     render() {
+        const {
+            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType
+        } = this.props;
 
-        const {data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType} = this.props;
-        const {isAdvanced, scrolled} = this.state
+        const {
+            isAdvanced, scrolled
+        } = this.state;
+
         return (
             data.length > 0 && <div className="screen-freeze">
                 <div className="panel panel-modal panel-modal-primary">

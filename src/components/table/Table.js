@@ -4,7 +4,8 @@ import onClickOutside from 'react-onclickoutside';
 import update from 'react-addons-update';
 
 import {
-    openModal
+    openModal,
+    selectTableItems
 } from '../../actions/WindowActions';
 
 import TableFilter from './TableFilter';
@@ -29,6 +30,14 @@ class Table extends Component {
         }
     }
 
+    componentWillUpdate(nextProps, nextState) {
+        const {dispatch} = this.props;
+
+        if(JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected)){
+            dispatch(selectTableItems(nextState.selected));
+        }
+    }
+
     changeListenOnTrue = () => {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: true
@@ -41,32 +50,18 @@ class Table extends Component {
         }))
     }
 
-    selectAll = () => {
-        const {rowData, tabid, keyProperty} = this.props;
-        const property = keyProperty ? keyProperty : "rowId";
-        const toSelect = rowData[tabid].map((item, index) => item[property]);
-
-        this.selectRangeProduct(toSelect);
-    }
-
     getSelectedItems = () => {
         const {selected} = this.state;
         return selected;
     }
 
-    triggerFocus = (idFocused, idFocusedDown) => {
-        if(idFocused){
-            document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
-        }
-        if(idFocusedDown){
-            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
-        }
-    }
-
     selectProduct = (id, idFocused, idFocusedDown) => {
+        const {dispatch} = this.props;
+
         this.setState(Object.assign({}, this.state, {
             selected: this.state.selected.concat([id])
         }), () => {
+            dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
@@ -75,6 +70,14 @@ class Table extends Component {
         this.setState(Object.assign({}, this.state, {
             selected: ids
         }))
+    }
+
+    selectAll = () => {
+        const {rowData, tabid, keyProperty} = this.props;
+        const property = keyProperty ? keyProperty : "rowId";
+        const toSelect = rowData[tabid].map((item, index) => item[property]);
+
+        this.selectRangeProduct(toSelect);
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
@@ -96,8 +99,16 @@ class Table extends Component {
         this.setState(Object.assign({}, this.state, {
             selected: []
         }), cb && cb());
-     }
+    }
 
+    triggerFocus = (idFocused, idFocusedDown) => {
+        if(idFocused){
+            document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+        }
+        if(idFocusedDown){
+            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+        }
+    }
 
     handleClickOutside = (event) => {
         // if(this.state.selected.length > 0){
@@ -171,13 +182,9 @@ class Table extends Component {
 
     handleKeyDownDocList = (e) => {
         const {selected} = this.state;
-
-
         const {rowData, tabid, listenOnKeys, onDoubleClick} = this.props;
         const item = rowData[tabid];
         const selectRange = e.shiftKey;
-
-
 
         switch(e.key) {
             case "ArrowDown":
@@ -243,7 +250,6 @@ class Table extends Component {
     }
 
     handleClick = (e, id) => {
-
         if(e.button === 0){
             const {dispatch} = this.props;
             const {selected} = this.state;
@@ -266,7 +272,11 @@ class Table extends Component {
                     this.selectOneProduct(id);
                 }
             }else{
-                this.selectOneProduct(id);
+                if(isSelected){
+                    this.deselectAllProducts();
+                }else{
+                    this.selectOneProduct(id);
+                }
             }
         }
 

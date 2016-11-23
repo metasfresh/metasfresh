@@ -311,10 +311,10 @@ export function updateProperty(property, value, tabid, rowid, isModal){
 
 // PROCESS ACTIONS
 
-export function createProcess(processType){
+export function createProcess(processType, viewId, type, ids){
     let pid = null;
     return (dispatch) =>
-        dispatch(getProcessData(processType)).then(response => {
+        dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
                 const preparedData = nullToEmptyStrings(response.data.parameters);
                 pid = response.data.pinstanceId;
                 if(preparedData.length === 0){
@@ -331,8 +331,19 @@ export function createProcess(processType){
             });
 }
 
-function getProcessData(processType) {
-    return () => axios.put(config.API_URL + '/process/instance?processId=' + processType);
+function getProcessData(processId, viewId, type, ids) {
+    if(viewId){
+        return () => axios.post(config.API_URL + '/process/instance', {
+            processId: processId,
+            viewId: viewId,
+            viewDocumentsIds: ids
+        });
+    } else {
+        return () => axios.post(config.API_URL + '/process/instance', {
+            documentId: ids,
+            documentType: type
+        });
+    }
 }
 
 function getProcessLayout(processType) {
@@ -423,5 +434,14 @@ export function deleteLocal(tabid,rowsid,scope) {
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid,rowid,scope))
         }
+    }
+}
+
+//SELECT ON TABLE
+
+export function selectTableItems(ids) {
+    return {
+        type: types.SELECT_TABLE_ITEMS,
+        ids: ids
     }
 }

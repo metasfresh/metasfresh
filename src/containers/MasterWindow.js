@@ -74,6 +74,7 @@ class MasterWindow extends Component {
             >
                 {modal.visible &&
                     <Modal
+                        relativeType={type}
                         windowType={modal.type}
                         dataId={dataId}
                         data={modal.data}
