@@ -230,6 +230,11 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		return locale;
 	}
+	
+	public int getAD_User_ID()
+	{
+		return Env.getAD_User_ID(getCtx());
+	}
 
 	public UserRolePermissionsKey getUserRolePermissionsKey()
 	{
