@@ -61,8 +61,6 @@ import org.compiere.model.MStorage;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.model.X_T_Replenish;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
@@ -71,6 +69,8 @@ import org.compiere.util.Msg;
 import org.compiere.util.ReplenishInterface;
 
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 
@@ -83,7 +83,7 @@ import de.metas.adempiere.service.IOrderBL;
  *  Carlos Ruiz globalqss - integrate bug fixing from Chris Farley
  *    [ 1619517 ] Replenish report fails when no records in m_storage
  */
-public class ReplenishReport extends SvrProcess
+public class ReplenishReport extends JavaProcess
 {
 	/** Warehouse				*/
 	private int		p_M_Warehouse_ID = 0;
@@ -101,7 +101,7 @@ public class ReplenishReport extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

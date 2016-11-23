@@ -22,8 +22,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.ValueNamePair;
@@ -33,6 +31,8 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Title: Check BOM Structure (free of cycles) Description: Tree cannot contain BOMs which are already referenced
@@ -40,7 +40,7 @@ import de.metas.logging.MetasfreshLastError;
  * @author Tony Snook (tspc)
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-public class PP_Product_BOM_Check extends SvrProcess
+public class PP_Product_BOM_Check extends JavaProcess
 {
 
 	/** The Record */
@@ -52,7 +52,7 @@ public class PP_Product_BOM_Check extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

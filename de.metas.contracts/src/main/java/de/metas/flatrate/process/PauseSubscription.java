@@ -32,16 +32,16 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Msg;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class PauseSubscription extends SvrProcess {
+public class PauseSubscription extends JavaProcess {
 
 	static final String DATE_TO = "DateTo";
 
@@ -119,7 +119,7 @@ public class PauseSubscription extends SvrProcess {
 
 	@Override
 	protected void prepare() {
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++) {
 

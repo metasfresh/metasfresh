@@ -34,12 +34,15 @@ import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.process.ProcessInfo;
+import de.metas.process.JavaProcess;
+
 /**
  * Recalculate for {@link I_AD_User_SortPref_Line}
  *
  * @author al
  */
-public class AD_User_SortPref_Line_RecalculateSeqNo extends SvrProcess
+public class AD_User_SortPref_Line_RecalculateSeqNo extends JavaProcess
 {
 	@Override
 	protected void prepare()

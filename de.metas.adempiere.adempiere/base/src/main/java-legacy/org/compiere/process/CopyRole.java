@@ -25,6 +25,9 @@ import org.compiere.model.X_AD_Role_Included;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Copy role access records
@@ -35,7 +38,7 @@ import org.compiere.util.Env;
  *  
  */
 
-public class CopyRole extends SvrProcess
+public class CopyRole extends JavaProcess
 {
 	private int m_AD_Role_ID_From = 0;
 	private int m_AD_Role_ID_To = 0;
@@ -48,7 +51,7 @@ public class CopyRole extends SvrProcess
 	protected void prepare()
 	{
 		
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

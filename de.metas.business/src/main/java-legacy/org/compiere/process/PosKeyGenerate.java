@@ -25,8 +25,11 @@ import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class PosKeyGenerate extends SvrProcess {
+
+public class PosKeyGenerate extends JavaProcess {
 
 	private int posKeyLayoutId = 0;
 	private int productCategoryId = 0;
@@ -34,7 +37,7 @@ public class PosKeyGenerate extends SvrProcess {
 	@Override
 	protected void prepare() {
 
-		for ( ProcessInfoParameter para : getParameter())
+		for ( ProcessInfoParameter para : getParametersAsArray())
 		{
 			
 			if ( para.getParameterName().equals("C_POSKeyLayout_ID") )

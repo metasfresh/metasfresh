@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T10:21:18 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalancegeneral/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,6 +21,7 @@
 	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
 	<parameter name="IsRefundableConditions" class="java.lang.String"/>
 	<parameter name="showdetails" class="java.lang.String"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[select '';]]>
 	</queryString>
@@ -26,12 +29,12 @@
 		<band height="240" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3" key="subreport-4" x="0" y="31" width="595" height="55"/>
+				<reportElement key="subreport-4" x="0" y="31" width="595" height="55" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement uuid="57fee363-fabe-49b7-9652-20fecfd01700" key="subreport-8" x="0" y="86" width="595" height="153"/>
+				<reportElement key="subreport-8" x="0" y="86" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700"/>
 				<subreportParameter name="EndDate">
 					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -68,7 +71,7 @@
 		<band height="116" splitType="Stretch">
 			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac" key="subreport-5" x="0" y="31" width="595" height="85"/>
+				<reportElement key="subreport-5" x="0" y="31" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
@@ -80,7 +83,7 @@
 	<detail>
 		<band height="14" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement uuid="f4aecc68-d647-409b-bde5-65f943103dc3" key="subreport-3" x="0" y="0" width="595" height="14"/>
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
 				<subreportParameter name="M_Material_Balance_Config_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Material_Balance_Config_ID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -108,13 +111,16 @@
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="AD_Org_ID">
+					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/hubalancegeneral/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="50">
 			<subreport isUsingCache="true">
-				<reportElement uuid="f4aecc68-d647-409b-bde5-65f943103dc3" key="subreport-3" x="0" y="36" width="595" height="14"/>
+				<reportElement key="subreport-3" x="0" y="36" width="595" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
 				<subreportParameter name="EndDate">
 					<subreportParameterExpression><![CDATA[$P{EndDate}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -139,6 +145,9 @@
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="AD_Org_ID">
+					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/hubalancegeneral/report_details_sum.jasper"]]></subreportExpression>
 			</subreport>
@@ -150,7 +159,7 @@
 	<pageFooter>
 		<band height="55" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53" key="textField-62" x="538" y="7" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-62" x="538" y="7" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -163,7 +172,7 @@
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement uuid="b8c6c7c4-819f-4a5e-a9c7-87ca22b20655" key="textField-63" x="475" y="7" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-63" x="475" y="7" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b8c6c7c4-819f-4a5e-a9c7-87ca22b20655"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -176,7 +185,7 @@
 				<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01" key="textField-64" x="559" y="7" width="23" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-64" x="559" y="7" width="23" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

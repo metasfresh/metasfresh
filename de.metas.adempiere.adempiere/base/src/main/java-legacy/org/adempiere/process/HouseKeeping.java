@@ -39,23 +39,24 @@ import java.util.Date;
 import org.adempiere.model.GenericPO;
 import org.compiere.model.MTable;
 import org.compiere.model.X_AD_HouseKeeping;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.Msg;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	House Keeping
  *	
  *  @author Diego Ruiz - globalqss
  */
-public class HouseKeeping extends SvrProcess{
+public class HouseKeeping extends JavaProcess{
 	
 	private int		p_AD_HouseKeeping_ID = 0;
 	
 	protected void prepare() {
-		ProcessInfoParameter[] parameter = getParameter();
+		ProcessInfoParameter[] parameter = getParametersAsArray();
 		for (int i = 0; i < parameter.length; i++)
 		{
 			String name = parameter[i].getParameterName();

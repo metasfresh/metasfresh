@@ -17,8 +17,9 @@
 package org.compiere.print;
 
 import java.math.BigDecimal;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	MPrintFormat Process.
@@ -29,7 +30,7 @@ import org.compiere.process.SvrProcess;
  * 	@version 	$Id: MPrintFormatProcess.java,v 1.3 2006/07/30 00:53:02 jjanke Exp $
  *  @author		Michael Judd BF [ 2730339 ] - Error logging in MPrintFormatProcess
  */
-public class MPrintFormatProcess extends SvrProcess
+public class MPrintFormatProcess extends JavaProcess
 {
 	/** PrintFormat             */
 	private BigDecimal	m_AD_PrintFormat_ID;
@@ -41,7 +42,7 @@ public class MPrintFormatProcess extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

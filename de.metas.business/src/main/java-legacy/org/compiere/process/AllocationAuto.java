@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MAllocationHdr;
@@ -44,7 +46,7 @@ import de.metas.currency.ICurrencyBL;
  * @author Jorg Janke
  * @version $Id: AllocationAuto.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class AllocationAuto extends SvrProcess
+public class AllocationAuto extends JavaProcess
 {
 	/** BP Group */
 	private int p_C_BP_Group_ID = 0;
@@ -71,7 +73,7 @@ public class AllocationAuto extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			final String name = para[i].getParameterName();

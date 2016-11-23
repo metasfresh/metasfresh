@@ -26,6 +26,8 @@ import org.compiere.util.DB;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Title:	Inventory Valuation Temporary Table
@@ -33,7 +35,7 @@ import de.metas.logging.MetasfreshLastError;
  *  @author Carlos Ruiz (globalqss)
  *  @version $Id: T_InventoryValue_Create.java,v 1.0 2005/09/21 20:29:00 globalqss Exp $
  */
-public class T_InventoryValue_Create extends SvrProcess
+public class T_InventoryValue_Create extends JavaProcess
 {
 
 	/** The Parameters		*/
@@ -52,7 +54,7 @@ public class T_InventoryValue_Create extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

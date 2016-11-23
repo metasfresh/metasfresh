@@ -37,8 +37,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 
@@ -47,8 +45,10 @@ import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class C_Flatrate_Term_Prepare_Closing extends SvrProcess
+public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 {
 
 	private static final String MSG_PREPARE_CLOSING_MISSING_DATA_ENTRIES_0P = "PrepareClosing_MissingDataEntries";
@@ -214,7 +214,7 @@ public class C_Flatrate_Term_Prepare_Closing extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -28,6 +28,9 @@ import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  * Create Columns of Table or View
@@ -40,7 +43,7 @@ import org.compiere.util.DisplayType;
  *  @author Jorg Janke
  *  @version $Id: TableCreateColumns.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class TableCreateColumns extends SvrProcess
+public class TableCreateColumns extends JavaProcess
 {
 	/** Entity Type			*/
 	private String	p_EntityType = "C";	//	ENTITYTYPE_Customization
@@ -58,7 +61,7 @@ public class TableCreateColumns extends SvrProcess
 	 */
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -38,7 +38,6 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -50,6 +49,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.JavaProcess;
 
 /**
  * Send EDI documents for selected desadv entries.
@@ -57,7 +57,7 @@ import de.metas.process.RunOutOfTrx;
  * @task 08646
  *
  */
-public class EDI_Desadv_EnqueueForExport extends SvrProcess
+public class EDI_Desadv_EnqueueForExport extends JavaProcess
 {
 	private static final String MSG_DESADV_PerformEnqueuing = "DESADV_PerformEnqueuing";
 	private static final String MSG_EDI_DESADV_RefuseSending = "EDI_DESADV_RefuseSending";

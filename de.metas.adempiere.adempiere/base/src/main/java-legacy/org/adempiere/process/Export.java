@@ -45,8 +45,6 @@ import org.compiere.model.MEXPFormat;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -54,13 +52,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	
  *  @author Trifon Trifonov
  *  @version $Id: $
  */
-public class Export extends SvrProcess
+public class Export extends JavaProcess
 {
 	private static final String TOTAL_SEGMENTS = "${totalSegments}";
 
@@ -103,7 +104,7 @@ public class Export extends SvrProcess
 		StringBuffer sb = new StringBuffer ("AD_Table_ID=").append(AD_Table_ID);
 		sb.append("; Record_ID=").append(getRecord_ID());
 		//	Parameter
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

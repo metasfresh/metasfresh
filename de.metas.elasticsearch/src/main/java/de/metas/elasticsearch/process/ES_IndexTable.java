@@ -15,7 +15,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.base.Stopwatch;
 
@@ -23,6 +22,7 @@ import de.metas.elasticsearch.IESIndexerResult;
 import de.metas.elasticsearch.IESModelIndexer;
 import de.metas.elasticsearch.IESModelIndexerTrigger;
 import de.metas.elasticsearch.IESModelIndexingService;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
 /*
@@ -53,7 +53,7 @@ import de.metas.process.Param;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ES_IndexTable extends SvrProcess
+public class ES_IndexTable extends JavaProcess
 {
 	// services
 	private final transient IESModelIndexingService modelIndexingService = Services.get(IESModelIndexingService.class);

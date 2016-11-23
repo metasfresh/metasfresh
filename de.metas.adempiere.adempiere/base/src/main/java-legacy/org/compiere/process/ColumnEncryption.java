@@ -59,13 +59,16 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * Column Encryption Test
  * 
  * @author Jorg Janke
  * @version $Id: ColumnEncryption.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ColumnEncryption extends SvrProcess {
+public class ColumnEncryption extends JavaProcess {
 	/** Enable/Disable Encryption */
 	private boolean p_IsEncrypted = false;
 
@@ -97,7 +100,7 @@ public class ColumnEncryption extends SvrProcess {
 	 * Prepare - e.g., get Parameters.
 	 */
 	protected void prepare() {
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)

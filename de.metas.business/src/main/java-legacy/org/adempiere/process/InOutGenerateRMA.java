@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -33,8 +35,6 @@ import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -46,7 +46,7 @@ import org.compiere.util.Env;
  * 			<li>BF [ 2818523 ] Invoice and Shipment are not matched in case of RMA
  * 				https://sourceforge.net/tracker/?func=detail&aid=2818523&group_id=176962&atid=879332
  */
-public class InOutGenerateRMA extends SvrProcess
+public class InOutGenerateRMA extends JavaProcess
 {
     /** Manual Selection        */
     private boolean     p_Selection = false;
@@ -62,7 +62,7 @@ public class InOutGenerateRMA extends SvrProcess
 
     protected void prepare()
     {
-        ProcessInfoParameter[] para = getParameter();
+        ProcessInfoParameter[] para = getParametersAsArray();
         for (int i = 0; i < para.length; i++)
         {
             String name = para[i].getParameterName();
