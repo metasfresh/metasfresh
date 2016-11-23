@@ -74,7 +74,7 @@
 								</dependency>
 
 								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
-								<!-- seems as if we need to we need to repeat stuff from the parent pom :-( -->
+								<!-- seems as if we need to repeat stuff from the parent pom :-( -->
 								<dependency>
 									<groupId>org.elasticsearch</groupId>
 									<artifactId>elasticsearch</artifactId>
