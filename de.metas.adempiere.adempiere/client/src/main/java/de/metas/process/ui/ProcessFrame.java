@@ -42,7 +42,7 @@ class ProcessFrame extends CFrame implements ProcessDialog, ProcessPanelWindow
 	private final ProcessPanel panel;
 	private final Integer windowNoCreatedHere;
 
-	public ProcessFrame(final ProcessDialogBuilder builder)
+	ProcessFrame(final ProcessDialogBuilder builder)
 	{
 		super();
 
@@ -56,15 +56,26 @@ class ProcessFrame extends CFrame implements ProcessDialog, ProcessPanelWindow
 			windowNoCreatedHere = null;
 		}
 
-		panel = builder
-				.setWindow(this)
-				.buildPanel();
+		panel = builder.buildPanel();
+
+		if (panel.isDisposed())
+		{
+			dispose();
+			return;
+		}
+
+		panel.installTo(this);
 	}
 
 	@Override
 	public void dispose()
 	{
-		panel.dispose();
+		final ProcessPanel panel = this.panel;
+		if (panel != null)
+		{
+			panel.dispose();
+		}
+
 		super.dispose();
 
 		if (windowNoCreatedHere != null)
@@ -77,7 +88,12 @@ class ProcessFrame extends CFrame implements ProcessDialog, ProcessPanelWindow
 	public void setVisible(boolean visible)
 	{
 		super.setVisible(visible);
-		panel.setVisible(visible);
+		
+		final ProcessPanel panel = this.panel;
+		if (panel != null)
+		{
+			panel.setVisible(visible);
+		}
 	}
 
 	@Override
@@ -94,7 +110,8 @@ class ProcessFrame extends CFrame implements ProcessDialog, ProcessPanelWindow
 
 	public boolean isDisposed()
 	{
-		return panel.isDisposed();
+		final ProcessPanel panel = this.panel;
+		return panel == null || panel.isDisposed();
 	}
 
 	@Override

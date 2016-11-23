@@ -4,11 +4,11 @@ import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 
-import org.adempiere.util.Check;
 import org.compiere.apps.AEnv;
 import org.compiere.model.GridTab;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 
 import de.metas.process.IProcessExecutionListener;
 
@@ -36,7 +36,6 @@ import de.metas.process.IProcessExecutionListener;
 
 public final class ProcessDialogBuilder
 {
-	private ProcessPanelWindow window;
 	private int AD_Process_ID;
 	private boolean isSOTrx;
 	private int windowNo = Env.WINDOW_MAIN;
@@ -47,7 +46,7 @@ public final class ProcessDialogBuilder
 
 	private boolean skipResultsPanel = false;
 	private IProcessExecutionListener processExecutionListener;
-	private boolean printPreview;
+	private Boolean _printPreview;
 	/**
 	 * @see X_AD_Process#SHOWHELP_AD_Reference_ID
 	 */
@@ -86,18 +85,6 @@ public final class ProcessDialogBuilder
 	ProcessPanel buildPanel()
 	{
 		return new ProcessPanel(this);
-	}
-
-	ProcessDialogBuilder setWindow(final ProcessPanelWindow window)
-	{
-		this.window = window;
-		return this;
-	}
-
-	ProcessPanelWindow getWindow()
-	{
-		Check.assumeNotNull(window, "Parameter window is not null");
-		return window;
 	}
 
 	public ProcessDialogBuilder setWindowAndTabNo(final int windowNo, final int tabNo)
@@ -238,12 +225,17 @@ public final class ProcessDialogBuilder
 
 	public ProcessDialogBuilder setPrintPreview(final boolean printPreview)
 	{
-		this.printPreview = printPreview;
+		this._printPreview = printPreview;
 		return this;
 	}
 
 	boolean isPrintPreview()
 	{
-		return printPreview;
+		if(_printPreview != null)
+		{
+			return _printPreview;
+		}
+		
+		return Ini.isPropertyBool(Ini.P_PRINTPREVIEW);
 	}
 }

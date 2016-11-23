@@ -15,6 +15,11 @@
 	<version>3-development-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
+	<properties>
+		<!-- empty property because the sql migration dir already contains a list of base directories -->
+		<migration-sql-basedir></migration-sql-basedir>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
