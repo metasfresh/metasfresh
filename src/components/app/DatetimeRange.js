@@ -35,8 +35,8 @@ class DatetimeRange extends Component {
         const {isShown, isHidden, mandatory} = this.props;
         return (
             <DateRangePicker
-                startDate={Moment(new Date('1/1/2014'))}
-                endDate={Moment(new Date('3/1/2014'))}
+                startDate={Moment(new Date())}
+                endDate={Moment(new Date())}
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
