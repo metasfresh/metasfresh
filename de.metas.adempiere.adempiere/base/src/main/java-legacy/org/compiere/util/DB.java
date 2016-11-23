@@ -2446,6 +2446,7 @@ public final class DB
 			{
 				sql.append(TO_DATE(TimeUtil.asTimestamp((Date)paramIn)));
 			}
+			else
 			{
 				sql.append(TO_STRING(paramIn.toString()));
 			}
