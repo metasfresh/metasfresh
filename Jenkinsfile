@@ -174,10 +174,10 @@ echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
 echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
 
-final MF_MAVEN_REPO_NAME = "mvn-metasfresh-${MF_UPSTREAM_BRANCH}";
+final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}";
 echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME"
 
-final MF_MAVEN_DEPLOY_PARAMS = "-Ddeploy-repo-id=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-name=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-url=https://repo.metasfresh.com/repository/${MF_MAVEN_REPO_NAME}"
+final MF_MAVEN_DEPLOY_PARAMS = "-Ddeploy-repo-id=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-name=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-url=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}"
 echo "Setting MF_MAVEN_DEPLOY_PARAMS=$MF_MAVEN_DEPLOY_PARAMS"
 
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
