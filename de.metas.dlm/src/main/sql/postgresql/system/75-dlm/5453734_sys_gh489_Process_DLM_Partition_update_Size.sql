@@ -2,7 +2,7 @@
 
 -- 22.11.2016 15:59
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540744,'Y','N',TO_TIMESTAMP('2016-11-22 15:59:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Auswahl - Anz. zugeordn. Datensätze aktualisieren','N','Y',0,0,'Java',TO_TIMESTAMP('2016-11-22 15:59:30','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Update_PartitionSize')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540744,'Y','N',TO_TIMESTAMP('2016-11-22 15:59:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Auswahl - Anz. zugeordn. Datensätze aktualisieren','N','Y','Java',TO_TIMESTAMP('2016-11-22 15:59:30','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Update_PartitionSize')
 ;
 
 -- 22.11.2016 15:59
