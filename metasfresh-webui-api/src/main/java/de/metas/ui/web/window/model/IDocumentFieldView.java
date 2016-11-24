@@ -4,6 +4,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -63,6 +64,11 @@ public interface IDocumentFieldView
 	boolean isPublicField();
 	boolean isAdvancedField();
 	//@formatter:on
+	
+	default DocumentFieldWidgetType getWidgetType()
+	{
+		return getDescriptor().getWidgetType();
+	}
 
 	//@formatter:off
 	/**

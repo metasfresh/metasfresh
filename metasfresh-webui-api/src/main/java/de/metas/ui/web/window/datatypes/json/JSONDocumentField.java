@@ -57,7 +57,7 @@ public final class JSONDocumentField implements Serializable
 	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field)
 	{
 		final String name = field.getFieldName();
-		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getDescriptor().getWidgetType());
+		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
 		final Object valueJSON = field.getValueAsJsonObject();
 		final String reason = null; // N/A
 
@@ -96,7 +96,7 @@ public final class JSONDocumentField implements Serializable
 
 	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event)
 	{
-		final JSONLayoutWidgetType widgetType = null;
+		final JSONLayoutWidgetType widgetType = JSONLayoutWidgetType.fromNullable(event.getWidgetType());
 		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName(), widgetType);
 
 		if (event.isValueSet())
