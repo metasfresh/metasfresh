@@ -58,7 +58,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
 
-// currently, the code in these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
+// currently, the code iun these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
 final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
 echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
 
@@ -186,7 +186,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 			// TODO: notify zapier that the "main" stuff was build
 		} // withMaven
 	} // configFileProvider
-} // node			
+} // node
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -236,7 +236,8 @@ node('agent && linux && libc6-i386')
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
-						[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+						// with sparse checkout we sometimes got errors like "stderr: error: Entry 'de.metas.acct.base/LICENSE.txt' not uptodate. Cannot update sparse checkout."
+						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
