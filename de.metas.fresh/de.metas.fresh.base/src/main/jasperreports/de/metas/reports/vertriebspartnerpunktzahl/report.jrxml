@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-17T17:33:01 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="06f3a29e-cfe1-49d5-9950-0061354408e7">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	count(foo.commissionpoints),
@@ -146,7 +143,7 @@ FROM
 	JOIN c_bpartner foo_bp ON foo.VP = foo_bp.c_bpartner_id
 WHERE
 	commissionpoints > 0
-	AND foo.ad_org_id = COALESCE($P{AD_Org_ID}, 1000001)
+	AND foo.ad_org_id = 1000001
 GROUP BY
 	foo.VP,
 	foo_bp.name
@@ -175,7 +172,7 @@ ORDER BY
 	<title>
 		<band height="34" splitType="Stretch">
 			<staticText>
-				<reportElement x="176" y="15" width="203" height="16" uuid="e59f2295-35f1-40d9-b03b-887a89d7c804"/>
+				<reportElement uuid="e59f2295-35f1-40d9-b03b-887a89d7c804" x="176" y="15" width="203" height="16"/>
 				<textElement textAlignment="Center">
 					<font size="12" isBold="true"/>
 				</textElement>
@@ -186,18 +183,18 @@ ORDER BY
 	<pageHeader>
 		<band height="15" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-2" x="0" y="1" width="555" height="14" backcolor="#808080" uuid="a37de00c-808d-4cb7-9fbb-d10157240eb5"/>
+				<reportElement uuid="a37de00c-808d-4cb7-9fbb-d10157240eb5" key="rectangle-2" x="0" y="1" width="555" height="14" backcolor="#808080"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="315" y="1" width="83" height="14" forecolor="#FFFFFF" uuid="de53eadb-5b53-49ef-a573-0a6703b6b4e6"/>
+				<reportElement uuid="de53eadb-5b53-49ef-a573-0a6703b6b4e6" x="315" y="1" width="83" height="14" forecolor="#FFFFFF"/>
 				<textElement textAlignment="Right" markup="none"/>
 				<text><![CDATA[Punktzahl]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="3" y="1" width="313" height="14" forecolor="#FFFFFF" uuid="9cdeaba3-824b-46a0-9663-9cd37582b6cc"/>
+				<reportElement uuid="9cdeaba3-824b-46a0-9663-9cd37582b6cc" x="3" y="1" width="313" height="14" forecolor="#FFFFFF"/>
 				<textElement markup="none"/>
 				<text><![CDATA[Vertriebspartner]]></text>
 			</staticText>
@@ -209,7 +206,7 @@ ORDER BY
 	<detail>
 		<band height="14" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-2" x="0" y="0" width="555" height="14" backcolor="#FFFFCC" uuid="85c70ade-9124-4691-ab0f-7aa05e2d54c8">
+				<reportElement uuid="85c70ade-9124-4691-ab0f-7aa05e2d54c8" key="rectangle-2" x="0" y="0" width="555" height="14" backcolor="#FFFFCC">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -217,12 +214,13 @@ ORDER BY
 				</graphicElement>
 			</rectangle>
 			<textField pattern="###0.00">
-				<reportElement x="315" y="0" width="83" height="14" uuid="310c5b30-5d40-4467-aaff-98664c260f1b"/>
+				<reportElement uuid="310c5b30-5d40-4467-aaff-98664c260f1b" x="315" y="0" width="83" height="14"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{sum}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="3" y="0" width="313" height="14" uuid="1d02cc91-c82b-4c5a-9e79-4de14c6fab9d"/>
+				<reportElement uuid="1d02cc91-c82b-4c5a-9e79-4de14c6fab9d" x="3" y="0" width="313" height="14"/>
+				<textElement/>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 		</band>
