@@ -17,6 +17,10 @@ export function logoutSuccess() {
 	}
 }
 
+export function getUserLang() {
+    return () => axios.get(config.API_URL + '/login/language');
+}
+
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
     if (entity){
         return () => axios.get(

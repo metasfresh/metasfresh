@@ -5,11 +5,13 @@ import {connect} from 'react-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import RawList from '../widget/RawList';
+import Moment from 'moment';
 
 import {
     loginRequest,
     loginSuccess,
-    loginCompletionRequest
+    loginCompletionRequest,
+    getUserLang
 } from '../../actions/AppActions';
 
 class LoginForm extends Component {
@@ -40,11 +42,17 @@ class LoginForm extends Component {
     handleSuccess = () => {
         const {redirect, dispatch} = this.props;
 
-        if(redirect){
-            dispatch(goBack());
-        }else{
-            dispatch(push('/'));
-        }
+        dispatch(getUserLang()).then(response => {
+            //GET language shall always return a result
+            Moment.locale(response.data);
+
+            if(redirect){
+                dispatch(goBack());
+            }else{
+                dispatch(push('/'));
+            }
+        })
+
     }
 
     handleLogin = () => {
