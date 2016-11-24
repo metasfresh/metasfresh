@@ -53,6 +53,60 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		], wait: wait
 }
 
+def boolean isRepoExists(String repoId)
+{
+	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
+	{
+		echo "Check if the nexus repository ${repoId} exists";
+
+		// check if there is a repository for ur branch
+		final String checkForRepoCommand = "curl --silent -X GET -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories | grep '<id>${repoId}</id>'";
+		final grepExitCode = sh returnStatus: true, script: checkForRepoCommand;
+		final repoExists = grepExitCode == 0;
+
+		echo "The nexus repository ${repoId} exists: ${repoExists}";
+		return repoExists;
+	}
+}
+
+def createRepo(String repoId)
+{
+	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
+	{
+		echo "Create the repository ${repoId}";
+
+	final String payload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<repository>
+  <data>
+	<id>${repoId}</id>
+	<name>${repoId}</name>
+	<exposed>true</exposed>
+	<repoType>hosted</repoType>
+	<repoPolicy>SNAPSHOT</repoPolicy>
+	<providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
+	<provider>maven2</provider>
+	<format>maven2</format>
+  </data>
+</repository>
+""";
+
+		// # nexus ignored application/json
+		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${payload}\' https://repo.metasfresh.com/service/local/repositories"
+		sh "${createRepoCommand}"
+	} // withCredentials
+}
+
+def deleteRepo(String repoId)
+{
+	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
+	{
+		echo "Delete the repository ${repoId}";
+		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}"
+		sh "${deleteRepoCommand}"
+	}
+}
+
+
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
@@ -60,26 +114,18 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-	
 		string(defaultValue: '', 
-			description: '''<p>
-If this job is invoked by an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-This build will then attempt to use maven dependencies from that branch (but fall back to master), and it will set its own name to reflect the given value.
+			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
-			
-		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration scripts to that DB-copy.''', 
+		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
-			
-		string(defaultValue: '10', description: '''Timout in minutes for the "Test SQL-Migration" stage. Leave empty to have no Timeout, but please remember that we sometime have very limited time windows for rollouts into production.''', 
-			name: 'MF_SQL_MIGRATION_TEST_TIMEOUT'),
-		
 		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
 Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
 			name: 'MF_SKIP_DEPLOYMENT'),
-			
 		string(defaultValue: '', 
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
@@ -128,26 +174,17 @@ echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
 final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
 echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
 
-final int MF_SQL_MIGRATION_TEST_TIMEOUT;
-if(params.MF_SKIP_SQL_MIGRATION_TEST)
-{
-	MF_SQL_MIGRATION_TEST_TIMEOUT=0; // this variable won't be used if params.MF_SKIP_SQL_MIGRATION_TEST is truthy
-}
-else
-{
-    // get our int value right here, so we can fail fast if the user entered something that is not an int
-    final String timeoutToUseDefault = '999999999';
-    final String timeoutToUseStr = params.MF_SQL_MIGRATION_TEST_TIMEOUT ?: timeoutToUseDefault;
-	MF_SQL_MIGRATION_TEST_TIMEOUT = timeoutToUseStr as Integer;
-    echo "params.MF_SQL_MIGRATION_TEST_TIMEOUT=${params.MF_SQL_MIGRATION_TEST_TIMEOUT} => MF_SQL_MIGRATION_TEST_TIMEOUT=${MF_SQL_MIGRATION_TEST_TIMEOUT}"
-}	
+final MF_MAVEN_REPO_NAME = "mvn-metasfresh-${MF_UPSTREAM_BRANCH}";
+echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME"
+
+final MF_MAVEN_DEPLOY_PARAMS = "-Ddeploy-repo-id=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-name=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-url=https://repo.metasfresh.com/repository/${MF_MAVEN_REPO_NAME}"
+echo "Setting "MF_MAVEN_DEPLOY_PARAMS=$MF_MAVEN_DEPLOY_PARAMS"
 
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
 
+
 timestamps 
-{
-withEnv(["BUILD_VERSION=${BUILD_VERSION}"]) // provide the build version we constructed, so that the maven builds can incorporate it
 {
 node('agent && linux')
 {
@@ -155,9 +192,16 @@ node('agent && linux')
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{
+			createRepoIfNotExists(MF_UPSTREAM_BRANCH);
+
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
+				if(!isRepoExists(MF_MAVEN_REPO_NAME))
+				{
+					createRepo(MF_MAVEN_REPO_NAME);
+				}
+
 				// checkout our code. 
 				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
 				// we use this more complicated approach because that way we can also clean the workspace after checkout ('CleanCheckout') and we can ignore edits in ReleaseNotes, Readme etc
@@ -187,7 +231,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
         		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
         
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-        		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
+        		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_DEPLOY_PARAMS} clean deploy"
             }
 
             stage('Set versions and build esb') 
@@ -196,7 +240,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 	            sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
-    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
+    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_DEPLOY_PARAMS} clean deploy"
             }
 			
 			// collect test results
@@ -260,8 +304,7 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
-				// we currently deploy *and* also archive, but that might change in future
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_DEPLOY_PARAMS} clean deploy"
 		
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
@@ -313,32 +356,29 @@ else
 	{
 		node('master')
 		{
-			timeout(MF_SQL_MIGRATION_TEST_TIMEOUT) 
-			{
-				final distArtifactId='de.metas.endcustomer.mf15.dist';
-				final packaging='tar.gz';
-				final sshTargetHost='mf15cloudit';
-				final sshTargetUser='metasfresh'
+			final distArtifactId='de.metas.endcustomer.mf15.dist';
+			final packaging='tar.gz';
+			final sshTargetHost='mf15cloudit';
+			final sshTargetUser='metasfresh'
 
-				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'sql-only', sshTargetHost, sshTargetUser);
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'sql-only', sshTargetHost, sshTargetUser);
 
-				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
-				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
-				
-				// Look Ma, I'm currying!!
-				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+			
+			// Look Ma, I'm currying!!
+			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
 
-				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
-				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
+			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
+			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${env.BUILD_NUMBER}-${BUILD_VERSION}"
-						.replaceAll('-', '_') // postgresql is allergic to '-' in DB names
-						.toLowerCase(); // also, DB names are generally in lowercase
+			        .replaceAll('-', '_') // postgresql is allergic to '-' in DB names
+					.toLowerCase(); // also, DB names are generally in lowercase
 
-				invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
-				
-				invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
-			}
+			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
+			
+			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
 		}
 	}
 }
@@ -355,67 +395,67 @@ else
 
 		try 
 		{
-		// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
-		timeout(time:1, unit:'DAYS') 
-		{
-			// use milestones to abort older builds as soon as a receent build is deployed
-			// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
+			// after one day, snapshot artifacts will be purged from repo.metasfresh.com anyways
+			timeout(time:1, unit:'DAYS') 
+			{
+				// use milestones to abort older builds as soon as a receent build is deployed
+				// see https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Milestone+Step+Plugin
 				milestone 1;
-			userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
+				userInput = input message: 'Deploy to server?', parameters: [string(defaultValue: 'mf15cloudit', description: 'Host to deploy the "main" metasfresh backend server to.', name: 'MF_TARGET_HOST')];
 				milestone 2;
 				echo "Received userInput=$userInput";
-		}
+			}
 		} 
 		catch (error) 
 		{
 			userInput = null;
 			echo "We hit the timeout or the deployment was canceled by a user; set userinput to NULL";
 		}
-		
+	
 		if(userInput)
 		{
-		node('master')
-		{
-			final distArtifactId='de.metas.endcustomer.mf15.dist';
-			final packaging='tar.gz';
-			final sshTargetHost=userInput;
-			final sshTargetUser='metasfresh'
+			node('master')
+			{
+				final distArtifactId='de.metas.endcustomer.mf15.dist';
+				final packaging='tar.gz';
+				final sshTargetHost=userInput;
+				final sshTargetUser='metasfresh'
 
-			// main part: provide and rollout the "main" distributable
-			// get the deployable dist file to the target host
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
+				// main part: provide and rollout the "main" distributable
+				// get the deployable dist file to the target host
+				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
 
-			// extract the tar.gz
-			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+				// extract the tar.gz
+				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
 
-			// Look Ma, I'm currying!!
-			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+				// Look Ma, I'm currying!!
+				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
+				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
 
-			// stop the service, perform the rollout and start the service
-			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
-			invokeRemoteInInstallDir('./stop_service.sh');
-			invokeRemoteInInstallDir('./sql_remote.sh');
-			invokeRemoteInInstallDir('./minor_remote.sh');
-			invokeRemoteInInstallDir('./start_service.sh');
+				// stop the service, perform the rollout and start the service
+				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
+				invokeRemoteInInstallDir('./stop_service.sh');
+				invokeRemoteInInstallDir('./sql_remote.sh');
+				invokeRemoteInInstallDir('./minor_remote.sh');
+				invokeRemoteInInstallDir('./start_service.sh');
 
-			// clean up what we just rolled out
-			invokeRemoteInHomeDir("rm -r ${deployDir}")
-			
-			// also provide the webui-api and procurement-webui; TODO actually deploy them
-			downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
-			downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
+				// clean up what we just rolled out
+				invokeRemoteInHomeDir("rm -r ${deployDir}")
+				
+				// also provide the webui-api and procurement-webui; TODO actually deploy them
+				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
 
-			// clean up the workspace, including the local maven repositories that the withMaven steps created
-			step([$class: 'WsCleanup', cleanWhenFailure: true])
-		} // node
+				// clean up the workspace, including the local maven repositories that the withMaven steps created
+				step([$class: 'WsCleanup', cleanWhenFailure: true])
+			} // node
 		}
 		else
 		{
 			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
 		} // if(userinput)
 	} // stage
-} // if(MF_SKIP_DEPLOYMENT)
-} // withEnv
+} // if(MF_OFFER_DEPLOY)
 } // timestamps
+
