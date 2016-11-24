@@ -222,9 +222,8 @@
     flex-direction: row;
 }
 .header-right-side {
-    align-items: stretch;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: flex-end;
 }
 .header-right-side .form-group {
     height: auto;

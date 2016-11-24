@@ -1095,11 +1095,27 @@ th {
 .notification {
     width: 20px;
     height: 20px;
-    margin-right: 10px;
     font-size: 18px;
     color: $brand-link-color;
     display: inline-block;
     position: relative;
+}
+
+.notification-container {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-open {
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    pointer-events: none;
+    z-index:2;
+    border-bottom: 0 !important;
 }
 
 .notification-number {
@@ -1666,7 +1682,8 @@ td.pulse-off input {
 
 .inbox {
     position: fixed;
-    top:0;
+    top:54px;
+    right:0;
     z-index:1;
     max-width: 400px;
 }
@@ -1677,7 +1694,7 @@ td.pulse-off input {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: .3rem .8rem;
+    padding: .4rem .8rem;
 }
 
 .inbox-caption {
@@ -1699,7 +1716,6 @@ td.pulse-off input {
 
 .inbox-header-title {
     font-weight: 700;
-    font-size: 1rem;
 }
 
 .inbox-link {
@@ -1715,6 +1731,10 @@ td.pulse-off input {
     padding: .3rem .8rem;
 
     font-size: .8rem;
+}
+
+.inbox-item-unread {
+    background-color: $brand-primary-light-color;
 }
 
 .inbox-item:last-child {
@@ -1739,4 +1759,5 @@ td.pulse-off input {
 
     font-size: .7rem;
     color: $brand-font-color-weak;
+    padding-top:.3rem;
 }

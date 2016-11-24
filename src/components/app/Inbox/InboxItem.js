@@ -7,8 +7,12 @@ class InboxItem extends Component {
         super(props);
     }
     render() {
+        const {unread} = this.props;
         return (
-            <div className="inbox-item">
+            <div className={
+                "inbox-item " +
+                (unread ? "inbox-item-unread ":"")
+            }>
                 <div className="inbox-item-icon">
                     <i className="meta-icon-calendar" />
                 </div>

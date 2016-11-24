@@ -26,27 +26,50 @@ class Header extends Component {
             isSubheaderShow: false,
             isSideListShow: false,
             menuOverlay: null,
-            scrolled: false
+            scrolled: false,
+            isInboxOpen: false
         }
     }
 
     handleSubheaderOpen = () => {
-        this.setState(Object.assign({}, this.state, {isSubheaderShow: !this.state.isSubheaderShow}));
+        this.setState(
+            Object.assign({}, this.state, {
+                isSubheaderShow: !this.state.isSubheaderShow
+            })
+        );
     }
+
+    handleInboxOpen = (state) => {
+        this.setState(
+            Object.assign({}, this.state, {
+                isInboxOpen: !!state
+            })
+        );
+    }
+
     handleSideListToggle = () => {
         const {isSideListShow} = this.state;
         this.toggleScrollScope(!isSideListShow);
 
-        this.setState(Object.assign({}, this.state, {isSideListShow: !isSideListShow}));
+        this.setState(
+            Object.assign({}, this.state, {
+                isSideListShow: !isSideListShow
+            })
+        );
     }
-    handleCloseSideList = (callback) => {
-        this.setState(Object.assign({}, this.state, {isSideListShow: false}), callback);
-        this.toggleScrollScope(false);
 
+    handleCloseSideList = (callback) => {
+        this.setState(
+            Object.assign({}, this.state, {
+                isSideListShow: false
+            }), callback);
+        this.toggleScrollScope(false);
     }
+
     handleBackdropClick = (callback) => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
     }
+
     handleMenuOverlay = (e, nodeId) => {
         const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
@@ -107,7 +130,7 @@ class Header extends Component {
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen
         } = this.state;
 
         return (
@@ -155,7 +178,26 @@ class Header extends Component {
                                     </div>
                                 }
 
-                                <Inbox />
+                                <div className={
+                                    "notification-container pointer "+
+                                    (isInboxOpen ? "notification-open " : "")}
+                                    onClick={() => this.handleInboxOpen(true)}
+                                >
+                                    <span
+                                        className={
+                                            "notification "
+                                        }
+                                    >
+                                        <i className="meta-icon-notifications" />
+                                        <span className="notification-number">4</span>
+                                    </span>
+                                </div>
+
+                                <Inbox
+                                    open={isInboxOpen}
+                                    close={this.handleInboxOpen}
+                                    disableClickOutside={!isInboxOpen}
+                                />
 
 
                                 {showSidelist &&
