@@ -40,8 +40,6 @@ class Inbox extends Component {
                             <InboxItem onClick={this.handleClick}  />
                             <InboxItem onClick={this.handleClick}  />
                             <InboxItem onClick={this.handleClick}  />
-                            <InboxItem onClick={this.handleClick}  />
-                            <InboxItem onClick={this.handleClick}  />
                         </div>
                         <div
                             className="inbox-footer"
