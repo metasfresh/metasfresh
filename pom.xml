@@ -53,8 +53,14 @@
 		-->
 		<repository>
 			<id>metasfresh-repo</id>
-			<name>metasfresh repository on github</name>
+			<name>metasfresh nexus repository</name>
 			<url>https://repo.metasfresh.com/repository/mvn-public/</url>
+		</repository>
+		<!-- this additional repo's parameters can be set from outside. It usually correesponds to a (task-)branch -->
+		<repository>
+			<id>${deploy-repo-id}</id>
+		    <name>${deploy-repo-name}</name>
+      		<url>${deploy-repo-url}</url>
 		</repository>
 	</repositories>
 
@@ -64,9 +70,9 @@
 		TODO: think about moving with the repo to a public place with much more storage :-) 
 		-->
 		<snapshotRepository>
-     		<id>${repo-id}</id>
-		    <name>${repo-name}</name>
-      		<url>${repo-url}</url>
+     		<id>${deploy-repo-id}</id>
+		    <name>${deploy-repo-name}</name>
+      		<url>${deploy-repo-url}</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -183,23 +189,24 @@
 
 	<profiles>
 	  <!-- thx to http://stackoverflow.com/questions/635154/multiple-deployments-in-maven -->
+	  <!-- note that instead of activating one of theses repos, we will probably set those variables from outside -->
 	  <profile>
 	    <id>metasfresh-perm-snapshots-repo</id>
 	    <properties>
-		  <repo-id>metasfresh-perm-snapshots-repo</repo-id>
-	      <repo-name>Maven metasfresh *permantent* Snapshots Repository</repo-name>
-	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-perm-snapshots/</repo-url>
+		  <deploy-repo-id>metasfresh-perm-snapshots-repo</deploy-repo-id>
+	      <deploy-repo-name>Maven metasfresh *permantent* Snapshots Repository</deploy-repo-name>
+	      <deploy-repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-perm-snapshots/</deploy-repo-url>
 	    </properties>
 	  </profile>
 	  <profile>
 	    <id>metasfresh-snapshots-repo</id>
 	    <activation>
-	      <activeByDefault>true</activeByDefault>
+	      <!-- activeByDefault>true</activeByDefault -->
 	    </activation>
 	    <properties>
-	      <repo-id>metasfresh-snapshots-repo</repo-id>
-	      <repo-name>Maven metasfresh Snapshots Repository</repo-name>
-	      <repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</repo-url>
+	      <deploy-repo-id>metasfresh-snapshots-repo</deploy-repo-id>
+	      <deploy-repo-name>Maven metasfresh Snapshots Repository</deploy-repo-name>
+	      <deploy-repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</deploy-repo-url>
 	    </properties>
 	  </profile>
 	</profiles>
