@@ -35,7 +35,7 @@ and webui_dashboarditem_id = 1000002
 
 -- 2: Top 5 St‰dte Woche Sales
 update webui_dashboarditem
-set url = 'http://w101.metasfresh.com:5601/goto/ce0d152f1dc9fe31bd662ecc5735b6f9', name = 'Top5 St‰dte Woche'
+set url = 'http://w101.metasfresh.com:5601/goto/ce0d152f1dc9fe31bd662ecc5735b6f9', name = 'Top5 St√§dte Woche'
 where true
 and webui_dashboarditem_id = 1000001
 ;
@@ -56,7 +56,7 @@ and webui_dashboarditem_id = 1000000
 
 -- 5: Top 5 St‰dte Vorwoche Sales
 update webui_dashboarditem
-set url = 'http://w101.metasfresh.com:5601/goto/b510b26de9c632a7e76f6932ded7e5e1', name = 'Top5 St‰dte Vorwoche'
+set url = 'http://w101.metasfresh.com:5601/goto/b510b26de9c632a7e76f6932ded7e5e1', name = 'Top5 St√§dte Vorwoche'
 where true
 and webui_dashboarditem_id = 1000006
 ;
