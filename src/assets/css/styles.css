@@ -1685,7 +1685,7 @@ td.pulse-off input {
     top:54px;
     right:0;
     z-index:1;
-    max-width: 400px;
+    width: 400px;
 }
 
 .inbox-header,

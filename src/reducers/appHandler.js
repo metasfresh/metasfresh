@@ -3,7 +3,11 @@ import update from 'react-addons-update';
 
 const initialState = {
 	notifications: [],
-    isLogged: false
+    isLogged: false,
+    inbox: {
+        notifications: [],
+        totalCount: 0
+    }
 }
 
 export default function appHandler(state = initialState, action) {
@@ -36,6 +40,10 @@ export default function appHandler(state = initialState, action) {
             	notifications: update(state.notifications, {$splice: [[action.id,1]]})
 	        });
         // END OF NOTIFICATION ACTIONS
+        case types.GET_NOTIFICATIONS_SUCCESS:
+            return Object.assign({}, state, {
+                inbox: action.payload
+            });
 
         default:
             return state

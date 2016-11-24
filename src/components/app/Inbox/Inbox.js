@@ -23,7 +23,7 @@ class Inbox extends Component {
     }
 
     render() {
-        const {open} = this.props;
+        const {open, inbox} = this.props;
         return (
             <div>
                 {open && <div className="inbox">
@@ -35,11 +35,14 @@ class Inbox extends Component {
                             <span className="inbox-link">Mark all as read</span>
                         </div>
                         <div className="inbox-list">
-                            <InboxItem onClick={this.handleClick} unread={true}/>
-                            <InboxItem onClick={this.handleClick}  />
-                            <InboxItem onClick={this.handleClick}  />
-                            <InboxItem onClick={this.handleClick}  />
-                            <InboxItem onClick={this.handleClick}  />
+                            {inbox && inbox.notifications.map((item, id) =>
+                                <InboxItem onClick={this.handleClick} />
+                            )}
+                            {inbox && inbox.notifications.length == 0 &&
+                                <div className="inbox-item">
+                                    There is no notifications.
+                                </div>
+                            }
                         </div>
                         <div
                             className="inbox-footer"

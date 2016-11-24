@@ -33,6 +33,7 @@ export const getRoutes = (store) => {
                     }
                 })
             }else{
+                store.dispatch(loginSuccess());
                 callback();
             }
         }

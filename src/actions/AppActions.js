@@ -4,9 +4,13 @@ import config from '../config';
 import {replace} from 'react-router-redux';
 
 export function loginSuccess() {
-	return () => {
+	return dispatch => {
 		/** global: localStorage */
 		localStorage.setItem('isLogged', true);
+
+        dispatch(getNotifications()).then(response => {
+            dispatch(getNotificationsSuccess(response.data));
+        });
 	}
 }
 
@@ -157,4 +161,15 @@ export function filterAutocompleteRequest(type, filterId, parameterName, query) 
 		query = encodeURIComponent(query);
 		return axios.get(config.API_URL + '/documentView/filters/parameter/typeahead?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName +'&query=' + query);
 	}
+}
+
+export function getNotifications() {
+    return () => axios.get(config.API_URL + '/notifications/all?limit=20');
+}
+
+export function getNotificationsSuccess(notifications) {
+    return {
+        type: types.GET_NOTIFICATIONS_SUCCESS,
+        payload: notifications
+    }
 }

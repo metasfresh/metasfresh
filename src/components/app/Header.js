@@ -127,7 +127,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId
+            viewId, inbox
         } = this.props;
 
         const {
@@ -190,7 +190,7 @@ class Header extends Component {
                                         }
                                     >
                                         <i className="meta-icon-notifications" />
-                                        <span className="notification-number">4</span>
+                                        {inbox.totalCount > 0 && <span className="notification-number">{inbox.totalCount}</span>}
                                     </span>
                                 </div>
 
@@ -198,6 +198,7 @@ class Header extends Component {
                                     open={isInboxOpen}
                                     close={this.handleInboxOpen}
                                     disableClickOutside={!isInboxOpen}
+                                    inbox={inbox}
                                 />
 
                                 {showSidelist &&
@@ -236,11 +237,12 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     indicator: PropTypes.string.isRequired,
-    viewId: PropTypes.string
+    viewId: PropTypes.string,
+    inbox: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler,listHandler} = state;
+    const {windowHandler,listHandler, appHandler} = state;
 
     const {
         viewId
@@ -248,6 +250,11 @@ function mapStateToProps(state) {
         viewId: ""
     }
 
+    const {
+        inbox
+    } = appHandler || {
+        inbox: {}
+    }
 
     const {
         indicator
@@ -257,7 +264,8 @@ function mapStateToProps(state) {
 
     return {
         indicator,
-        viewId
+        viewId,
+        inbox
     }
 }
 
