@@ -178,7 +178,7 @@ final MF_MAVEN_REPO_NAME = "mvn-metasfresh-${MF_UPSTREAM_BRANCH}";
 echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME"
 
 final MF_MAVEN_DEPLOY_PARAMS = "-Ddeploy-repo-id=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-name=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-url=https://repo.metasfresh.com/repository/${MF_MAVEN_REPO_NAME}"
-echo "Setting "MF_MAVEN_DEPLOY_PARAMS=$MF_MAVEN_DEPLOY_PARAMS"
+echo "Setting MF_MAVEN_DEPLOY_PARAMS=$MF_MAVEN_DEPLOY_PARAMS"
 
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
@@ -192,8 +192,6 @@ node('agent && linux')
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{
-			createRepoIfNotExists(MF_UPSTREAM_BRANCH);
-
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
