@@ -208,7 +208,7 @@
 	    <properties>
 	      <deploy-repo-id>metasfresh-snapshots-repo</deploy-repo-id>
 	      <deploy-repo-name>Maven metasfresh Snapshots Repository</deploy-repo-name>
-	      <deploy-repo-url>https://repo.metasfresh.com/repository/mvn-metasfresh-snapshots/</deploy-repo-url>
+	      <deploy-repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-snapshots/</deploy-repo-url>
 	    </properties>
 	  </profile>
 	</profiles>
