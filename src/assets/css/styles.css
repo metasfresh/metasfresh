@@ -1662,3 +1662,81 @@ td.pulse-off input {
 .indicator:not(:first-of-type){
     border-left: 1px solid $brand-border-color;
 }
+
+
+.inbox {
+    position: fixed;
+    top:0;
+    z-index:1;
+    max-width: 400px;
+}
+
+.inbox-header,
+.inbox-footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: .3rem .8rem;
+}
+
+.inbox-caption {
+    position: relative;
+    width: 55px;
+    height: 55px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.inbox-body {
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    position: relative;
+}
+
+.inbox-header-title {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.inbox-link {
+    font-size: .8rem;
+    color: $brand-link-color;
+}
+
+.inbox-item {
+    display: flex;
+    flex-direction: row;
+
+    border-top: 1px solid $brand-border-color;
+    padding: .3rem .8rem;
+
+    font-size: .8rem;
+}
+
+.inbox-item:last-child {
+    border-bottom: 1px solid $brand-border-color;
+}
+
+.inbox-item-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+
+    padding-right: .8rem;
+    padding-left: .3rem;
+    font-size: 1.5rem;
+}
+
+.inbox-item-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    font-size: .7rem;
+    color: $brand-font-color-weak;
+}

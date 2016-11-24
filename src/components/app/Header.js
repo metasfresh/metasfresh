@@ -11,6 +11,7 @@ import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../MasterWidget';
 import SideList from '../app/SideList';
 import Indicator from './Indicator';
+import Inbox from './Inbox/Inbox';
 
 
 import {
@@ -154,7 +155,7 @@ class Header extends Component {
                                     </div>
                                 }
 
-                                <span className="notification"><i className="meta-icon-notifications"/><span className="notification-number">4</span></span>
+                                <Inbox />
 
 
                                 {showSidelist &&
@@ -162,7 +163,7 @@ class Header extends Component {
                                         className={"btn-square btn-header side-panel-toggle " + (isSideListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
                                         onClick={e => this.handleBackdropClick(this.handleSideListToggle)}
                                     >
-                                    <i className="meta-icon-list" />
+                                        <i className="meta-icon-list" />
                                     </div>
                                 }
                             </div>
