@@ -30,7 +30,7 @@ axios.defaults.withCredentials = true;
 axios.interceptors.response.use(function (response) {
     return response;
 }, function (error) {
-    if(error.response.status == 403){
+    if(error.response.status == 401){
         store.dispatch(logoutSuccess());
         store.dispatch(push('/login?redirect=true'));
     }

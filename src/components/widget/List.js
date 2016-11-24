@@ -18,7 +18,10 @@ class List extends Component {
     }
 
     handleFocus = () => {
-        const {properties, dispatch, dataId, rowId, tabId, windowType, filterWidget, filterId, parameterName} = this.props;
+        const {
+            properties, dispatch, dataId, rowId, tabId, windowType, filterWidget,
+            filterId, parameterName, entity
+        } = this.props;
 
         this.setState(Object.assign({}, this.state, {
             loading: true
@@ -32,7 +35,7 @@ class List extends Component {
                 }));
             });
         } else {
-            dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId)).then((res) => {
+            dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId, entity)).then((res) => {
                 this.setState(Object.assign({}, this.state, {
                     list: res.data.values,
                     loading: false

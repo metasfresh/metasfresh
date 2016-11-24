@@ -29,10 +29,10 @@
   },
   "dependencies": {
     "axios": "~0.13.1",
-    "bootstrap": "~4.0.0-alpha.2",
+    "bootstrap": "~4.0.0-alpha.5",
     "file-loader": "~0.8.5",
     "moment": "~2.14.0",
-    "react": "^15.3.2",
+    "react": "~15.3.1",
     "react-addons-css-transition-group": "~15.3.1",
     "react-addons-update": "~15.3.1",
     "react-bootstrap-daterangepicker": "~3.2.2",

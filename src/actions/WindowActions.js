@@ -95,20 +95,23 @@ export function noConnection(status){
     }
 }
 
-export function openModal(title, windowType, tabId, rowId){
+export function openModal(title, windowType, type, tabId, rowId){
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
+        modalType: type,
         tabId: tabId,
         rowId: rowId,
         title: title
     }
 }
+
 export function closeModal(){
     return {
         type: types.CLOSE_MODAL
     }
 }
+
 export function updateModal (rowId) {
     return {
         type: types.UPDATE_MODAL,
@@ -200,7 +203,7 @@ export function initWindow(windowType, docId, tabId, rowId = null) {
     }
 }
 
-export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value) {
+export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value, entity) {
     let payload = {};
 
     if(id === "NEW"){
@@ -215,45 +218,50 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
         }else {
             payload = [];
         }
-
     }
 
-    return () => axios.patch(
-        config.API_URL +
-        '/window/commit?type=' +
-        windowType +
-        '&id=' + id +
-        (tabId ? "&tabid=" + tabId : "") +
-        (rowId ? "&rowId=" + rowId : "")
-        , payload);
+    // Temporary solution, TODO after API endpoints unification
+    if(entity){
+        return () => axios.patch(
+            config.API_URL +
+            '/'+ entity + '/instance/' + id +'/parameters'
+            , payload);
+    }else{
+        return () => axios.patch(
+            config.API_URL +
+            '/window/commit?type=' +
+            windowType +
+            '&id=' + id +
+            (tabId ? "&tabid=" + tabId : "") +
+            (rowId ? "&rowId=" + rowId : "")
+            , payload);
+    }
+
 }
 
 /*
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
  */
-export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal) {
+export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal, entity) {
     return dispatch => {
+        let responsed = false;
 
-            let responsed = false;
+        dispatch(indicatorState('pending'));
+        let time = 0
+        let timeoutLoop = () => {
+            setTimeout(function(){
+                time = 999;
+                if(responsed){
+                    dispatch(indicatorState('saved'));
+                } else {
+                    timeoutLoop();
+                }
+            }, time);
+        }
+        timeoutLoop();
 
-            dispatch(indicatorState('pending'));
-            let time = 0
-            let timeoutLoop = () => {
-                setTimeout(function(){
-                    time = 999;
-                    if(responsed){
-                        dispatch(indicatorState('saved'));
-
-                    } else {
-                        timeoutLoop();
-                    }
-                }, time);
-            }
-            timeoutLoop();
-
-
-        return dispatch(patchRequest(windowType, id, tabId, rowId, property, value)).then(response => {
+        return dispatch(patchRequest(windowType, id, tabId, rowId, property, value, entity)).then(response => {
             responsed = true;
 
             dispatch(mapDataToState(response.data, isModal, rowId));
@@ -264,7 +272,6 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 function mapDataToState(data, isModal, rowId){
     return (dispatch) => {
         data.map(item1 => {
-
             item1.fields = nullToEmptyStrings(item1.fields);
 
             if(rowId === "NEW"){
@@ -301,6 +308,55 @@ export function updateProperty(property, value, tabid, rowid, isModal){
         }
     }
 }
+
+
+// PROCESS ACTIONS
+
+export function createProcess(processType, viewId, type, ids){
+    let pid = null;
+    return (dispatch) =>
+        dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
+                const preparedData = nullToEmptyStrings(response.data.parameters);
+                pid = response.data.pinstanceId;
+                if(preparedData.length === 0){
+                    throw new Error('wrong_response');
+                }
+                return dispatch(initDataSuccess(preparedData, "modal"));
+            }).then(response =>
+                dispatch(getProcessLayout(processType))
+            ).then(response => {
+                const preparedLayout = Object.assign({}, response.data, {
+                    pinstanceId: pid
+                })
+                return dispatch(initLayoutSuccess(preparedLayout, "modal"))
+            });
+}
+
+function getProcessData(processId, viewId, type, ids) {
+    if(viewId){
+        return () => axios.post(config.API_URL + '/process/instance', {
+            processId: processId,
+            viewId: viewId,
+            viewDocumentIds: ids
+        });
+    } else {
+        return () => axios.post(config.API_URL + '/process/instance', {
+            processId: processId,
+            documentId: ids,
+            documentType: type
+        });
+    }
+}
+
+function getProcessLayout(processType) {
+    return () => axios.get(config.API_URL + '/process/layout?processId=' + processType);
+}
+
+export function startProcess(processType) {
+    return () => axios.get(config.API_URL + '/process/instance/' + processType + '/start');
+}
+
+// END PROCESS ACTIONS
 
 export function initLayout(windowType, tabId){
     return () => axios.get(
@@ -364,14 +420,6 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-export function printDoc(windowType, id) {
-    return () => axios.get(
-        config.API_URL +
-        '/window/documentPrint?type=' + windowType +
-        '&id=' + id
-    );
-}
-
 //DELETE
 export function deleteData(windowType, id, tabId, rowId) {
     return () => axios.delete(
@@ -388,5 +436,14 @@ export function deleteLocal(tabid,rowsid,scope) {
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid,rowid,scope))
         }
+    }
+}
+
+//SELECT ON TABLE
+
+export function selectTableItems(ids) {
+    return {
+        type: types.SELECT_TABLE_ITEMS,
+        ids: ids
     }
 }

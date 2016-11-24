@@ -28,7 +28,8 @@ class Filters extends Component {
             frequentFilterOpen: false,
 			notFrequentFilterOpen: false,
             notValidFields: null,
-            active: null
+            active: null,
+            widgetShown: false
 		};
 	}
 
@@ -45,8 +46,21 @@ class Filters extends Component {
 		});
 	}
 
+    handleShow = () => {
+        this.setState(Object.assign({}, this.state, {
+            widgetShown: true
+        }));
+    }
+
+    handleHide = () => {
+        this.setState(Object.assign({}, this.state, {
+            widgetShown: false
+        }));
+    }
+
 	handleClickOutside = (e) => {
-		this.closeFilterMenu();
+		const {widgetShown} = this.state;
+        !widgetShown && this.closeFilterMenu();
 	}
 
 	closeFilterMenu = () => {
@@ -101,26 +115,23 @@ class Filters extends Component {
 
     isFilterValid = (filters) => {
         return filters.parameters.filter(item => {
-            //change the property name after solving #42 metasfresh-webui issue
-            return item.required && !item.value;
+            return item.mandatory && !item.value;
         })
     }
 
 	applyFilters = () => {
 		const {filter, dispatch, updateDocList, windowType} = this.props;
         const notValid = this.isFilterValid(filter);
-        if(notValid.length){
+        if (notValid.length) {
             this.setState(Object.assign({}, this.state, {
                 notValidFields: notValid
             }));
-        }else{
+        } else {
             this.setState(Object.assign({}, this.state, {
                 active: filter.filterId
             }), () => {
-
-                dispatch(setFilter(filter));
+                dispatch(setFilter(filter, windowType));
             })
-            dispatch(setFilter(filter));
     		this.closeFilterMenu();
         }
 	}
@@ -149,13 +160,13 @@ class Filters extends Component {
 		});
 
 		dispatch(deleteFiltersParameters());
-        dispatch(setFilter(null));
+        dispatch(setFilter(null, null));
 		this.setSelectedItem('', true);
 	}
 
 	renderFiltersItem = (item, key, isActive) => {
 		const {windowType, updateDocList} = this.props;
-		const {filterDataItem, selectedItem,notValidFields} = this.state;
+		const {filterDataItem, selectedItem, notValidFields} = this.state;
 		return (
 			<FiltersItem
 				key={key}
@@ -172,6 +183,8 @@ class Filters extends Component {
 				applyFilters={this.applyFilters}
                 notValidFields={notValidFields}
                 isActive={isActive}
+                isShown={this.handleShow}
+                isHidden={this.handleHide}
 			/>
 		)
 	}

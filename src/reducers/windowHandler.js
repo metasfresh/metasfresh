@@ -5,20 +5,23 @@ const initialState = {
     connectionError: false,
     modal: {
         visible: false,
-        type: 0,
+        type: "",
         tabId: null,
         rowId: null,
         layout: {},
         data: [],
         rowData: {},
-        modalTitle: ""
+        modalTitle: "",
+        modalType: ""
     },
     master: {
         layout: {},
         data: [],
         rowData: {},
     },
-    indicator: 'saved'
+    indicator: 'saved',
+    viewId: null,
+    selected: []
 }
 
 export default function windowHandler(state = initialState, action) {
@@ -27,7 +30,7 @@ export default function windowHandler(state = initialState, action) {
         case types.NO_CONNECTION:
             return Object.assign({}, state, {
                 connectionError: action.status
-        })
+            })
 
         case types.OPEN_MODAL:
             return Object.assign({}, state, {
@@ -36,7 +39,8 @@ export default function windowHandler(state = initialState, action) {
                     type: action.windowType,
                     tabId: action.tabId,
                     rowId: action.rowId,
-                    title: action.title
+                    title: action.title,
+                    modalType: action.modalType
                 })
         })
 
@@ -177,6 +181,11 @@ export default function windowHandler(state = initialState, action) {
             }
         );
         // END OF INDICATOR ACTIONS
+
+        case types.SELECT_TABLE_ITEMS:
+            return Object.assign({}, state, {
+                selected: action.ids
+            })
 
         default:
             return state

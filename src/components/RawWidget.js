@@ -36,7 +36,8 @@ class RawWidget extends Component {
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, id, range, setEditedFlag
+            filterId, parameterName, setSelectedItem, selectedItem, id, range, entity,
+            isShown, isHidden
         } = this.props;
 
         const {textValue} = this.state;
@@ -72,6 +73,9 @@ class RawWidget extends Component {
                     return (
                         <DatetimeRange
                             onChange={(value, valueTo) => handlePatch(widgetField, value, valueTo)}
+                            mandatory={widgetData.mandatory}
+                            isShown={isShown}
+                            isHidden={isHidden}
                          />
                     )
                 }else{
@@ -139,6 +143,7 @@ class RawWidget extends Component {
             case "Lookup":
                 return (
                     <Lookup
+                        entity={entity}
                         recent={[]}
                         dataId={dataId}
                         properties={fieldsArray}
@@ -165,6 +170,7 @@ class RawWidget extends Component {
                 return (
                     <List
                         dataId={dataId}
+                        entity={entity}
                         defaultValue={widgetFields.emptyText}
                         selected={selectedField}
                         properties={fields}

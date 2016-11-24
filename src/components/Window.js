@@ -125,7 +125,7 @@ class Window extends Component {
                 <div className="sections-wrapper">
                     {sections && this.renderSections(sections)}
                 </div>
-                <div className="m-t-1 tabs-wrapper">
+                <div className="mt-1 tabs-wrapper">
                     {tabs && this.renderTabs(tabs)}
                 </div>
             </div>

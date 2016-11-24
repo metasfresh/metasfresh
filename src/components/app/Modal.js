@@ -2,16 +2,27 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
 import Window from '../Window';
+import Process from '../Process';
 
 import {
     closeModal,
-    createWindow
+    createWindow,
+    createProcess,
+    startProcess
 } from '../../actions/WindowActions';
+
+import {
+    addNotification
+} from '../../actions/AppActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
-        const {dispatch, windowType, dataId, tabId, rowId} = this.props;
+
+        const {
+            dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
+            relativeType
+        } = this.props;
 
         this.state = {
             scrolled: false,
@@ -20,9 +31,19 @@ class Modal extends Component {
             init: false
         }
 
-        dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
-            this.handleClose();
-        });
+        switch(modalType){
+            case "window":
+                dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
+                    this.handleClose();
+                });
+                break;
+            case "process":
+                //processid, viewId, docType, id or ids
+                dispatch(createProcess(windowType, viewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                    this.handleClose();
+                });
+                break;
+        }
     }
 
     isAdvancedEdit = () => {
@@ -68,20 +89,43 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        const {dispatch, closeCallback} = this.props;
+        const {dispatch, closeCallback, modalType} = this.props;
         const {isNew} = this.state;
+
+        closeCallback && closeCallback(isNew);
+        this.removeModal();
+    }
+
+    handleStart = () => {
+        const {dispatch, modalType, layout} = this.props;
+        dispatch(startProcess(layout.pinstanceId)).then(response => {
+            const {data} = response;
+
+            if(data.error){
+                dispatch(addNotification("Process error", data.summary, 5000, "error"));
+                return false;
+            }else{
+                dispatch(addNotification("Process success", data.summary, 5000, "success"));
+                this.removeModal();
+            }
+        });
+    }
+
+    removeModal = () => {
+        const {dispatch} = this.props;
+
         dispatch(closeModal());
-
-        if(isNew){
-            closeCallback();
-        }
-
         document.body.style.overflow = "auto";
     }
 
     render() {
-        const {data, layout, modalTitle, tabId, rowId, dataId} = this.props;
-        const {isAdvanced, scrolled} = this.state
+        const {
+            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType
+        } = this.props;
+
+        const {
+            isAdvanced, scrolled
+        } = this.state;
 
         return (
             data.length > 0 && <div className="screen-freeze">
@@ -89,23 +133,33 @@ class Modal extends Component {
                     <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
+                            {modalType === "process" && <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleStart}>
+                                Start
+                            </span>}
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
-                                Done
+                                {modalType === "process" ? "Cancel" : "Done"}
                             </span>
-
                         </div>
                     </div>
                     <div className="panel-modal-content js-panel-modal-content container-fluid">
-                        <Window
-                            data={data}
-                            dataId={dataId}
-                            layout={layout}
-                            modal={true}
-                            tabId={tabId}
-                            rowId={rowId}
-                            isModal={true}
-                            isAdvanced={isAdvanced}
-                        />
+                        {modalType === "window" ?
+                            <Window
+                                data={data}
+                                dataId={dataId}
+                                layout={layout}
+                                modal={true}
+                                tabId={tabId}
+                                rowId={rowId}
+                                isModal={true}
+                                isAdvanced={isAdvanced}
+                            />
+                        :
+                            <Process
+                                data={data}
+                                layout={layout}
+                                type={windowType}
+                            />
+                        }
                     </div>
                 </div>
             </div>

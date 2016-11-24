@@ -3,7 +3,7 @@ import DateRangePicker from 'react-bootstrap-daterangepicker';
 import Moment from 'moment';
 
 class DatetimeRange extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
             startDate: null,
@@ -32,22 +32,27 @@ class DatetimeRange extends Component {
 			'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
 		}
         const {startDate, endDate} = this.state;
+        const {isShown, isHidden, mandatory} = this.props;
         return (
             <DateRangePicker
-                startDate={Moment(new Date('1/1/2014'))}
-                endDate={Moment(new Date('3/1/2014'))}
+                startDate={Moment(new Date())}
+                endDate={Moment(new Date())}
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
+                onShow={isShown}
+                onHide={isHidden}
                 locale={{
                     "firstDay": 1,
                     "monthNames": Moment.months()
                 }}
-                autoApply={true}
-                applyClass="hidden-xl-down"
-                cancelClass="hidden-xl-down"
+                autoApply={false}
             >
-                <button className="btn btn-block text-xs-left btn-meta-outline-secondary btn-distance btn-sm input-icon-container ">
+                <button className={
+                    "btn btn-block text-xs-left btn-meta-outline-secondary " +
+                    "btn-distance btn-sm input-icon-container input-primary" +
+                    (mandatory && !startDate && !endDate ? " input-mandatory " : "")
+                }>
                     {!!startDate && !!endDate ?
                         " " + Moment(startDate).format('L') + " - " + Moment(endDate).format('L') :
                         " All dates available"

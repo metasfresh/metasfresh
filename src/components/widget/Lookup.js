@@ -31,7 +31,6 @@ class Lookup extends Component {
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
             oldValue: ''
-
         }
 
     }
@@ -43,7 +42,6 @@ class Lookup extends Component {
         if(filterWidget && selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
         }
-
     }
 
     componentDidUpdate() {
@@ -188,7 +186,7 @@ class Lookup extends Component {
     handleChange = () => {
         const {
             dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId
+            filterId, parameterName, tabId, rowId, entity
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -213,7 +211,7 @@ class Lookup extends Component {
                     }));
                 })
             }else {
-                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId))
+                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId, entity))
                 .then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data.values,
@@ -332,7 +330,11 @@ class Lookup extends Component {
     }
 
     render() {
-        const {rank, readonly, properties, defaultValue, placeholder, align, isModal, updated, selected, oldValue, filterWidget} = this.props;
+        const {
+            rank, readonly, properties, defaultValue, placeholder, align, isModal,
+            updated, selected, oldValue, filterWidget, mandatory
+        } = this.props;
+
         const {propertiesCopy,isInputEmpty} = this.state;
 
         return (
@@ -343,7 +345,12 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={"input-dropdown-container"}
             >
-                <div className={"input-dropdown input-block input-" + (rank ? rank : "primary") + (updated ? " pulse-on" : " pulse-off") + (filterWidget ? " input-full" : "")}>
+                <div className={
+                    "input-dropdown input-block input-" + (rank ? rank : "primary") +
+                    (updated ? " pulse-on" : " pulse-off") +
+                    (filterWidget ? " input-full" : "") +
+                    (mandatory && isInputEmpty ? " input-mandatory " : "")
+                }>
                     <div className={
                         "input-editable " +
                         (align ? "text-xs-" + align + " " : "")
@@ -356,7 +363,6 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
-
                         />
                     </div>
                     <div className="input-rest">
@@ -365,12 +371,12 @@ class Lookup extends Component {
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
                     </div>
-                    {isInputEmpty ?
+                    {(isInputEmpty) ?
                         <div className="input-icon input-icon-lg">
                             <i className="meta-icon-preview" />
                         </div> :
                         <div className="input-icon input-icon-lg" tabIndex="0">
-                            <i onClick={this.handleClear} className="meta-icon-close-alt"/>
+                            {!readonly && <i onClick={this.handleClear} className="meta-icon-close-alt"/>}
                         </div>
                     }
                 </div>

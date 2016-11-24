@@ -15,7 +15,9 @@ import {
 import {
     setPagination,
     setSorting,
-    clearListProps
+    clearListProps,
+    initDocumentView,
+    setFilter
 } from '../../actions/ListActions';
 
 class DocumentList extends Component {
@@ -58,23 +60,26 @@ class DocumentList extends Component {
     }
 
     updateData = (type, windowType) => {
-        const {dispatch,filters} = this.props;
+        const {dispatch,filters, filtersWindowType} = this.props;
 
-        windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                layout: response.data
-            }), () => {
-                dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
-                    this.setState(Object.assign({}, this.state, {
-                        data: response.data
-                    }), () => {
-                        this.getView(response.data.viewId);
+        if(!!filtersWindowType && (filtersWindowType != windowType)) {
+            dispatch(setFilter(null,null));
+        }else{
+            windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
+                this.setState(Object.assign({}, this.state, {
+                    layout: response.data
+                }), () => {
+                    dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
+                        this.setState(Object.assign({}, this.state, {
+                            data: response.data
+                        }), () => {
+                            this.getView(response.data.viewId);
+                            dispatch(initDocumentView(response.data.viewId));
+                        })
                     })
                 })
-            })
-        });
-
-
+            });
+        }
     }
 
     getView = (viewId) => {
@@ -189,7 +194,11 @@ class DocumentList extends Component {
                                 <i className="meta-icon-add" /> New {layout.caption}
                             </button>
                         }
-                        <Filters filterData={layout.filters} windowType={windowType} updateDocList={this.updateData} />
+                        <Filters
+                            filterData={layout.filters}
+                            windowType={windowType}
+                            updateDocList={this.updateData}
+                        />
                     </div>
 
                     <div>
@@ -227,7 +236,8 @@ DocumentList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     page: PropTypes.number.isRequired,
     sorting: PropTypes.object.isRequired,
-    filters: PropTypes.array.isRequired
+    filters: PropTypes.array.isRequired,
+    filtersWindowType: PropTypes.string
 }
 
 function mapStateToProps(state) {
@@ -235,18 +245,21 @@ function mapStateToProps(state) {
 
     const {
         filters,
+        filtersWindowType,
         page,
         sorting
     } = listHandler || {
         filters: {},
         page: 1,
-        sorting: {}
+        sorting: {},
+        filtersWindowType: ""
     }
 
     return {
         filters,
         page,
-        sorting
+        sorting,
+        filtersWindowType
     }
 }
 

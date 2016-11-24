@@ -653,6 +653,7 @@ body {
     align-items: center;
     justify-content: center;
     color: #fff;
+    pointer-events: visible;
 }
 
 .screen-freeze-behind {
@@ -888,7 +889,7 @@ table .rdtPicker table td, .rdtPicker table th {
 }
 
 .breadcrumbs-shadow {
-    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.2);
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.8);
 }
 
 .prompt-shadow {
@@ -1532,6 +1533,10 @@ td.pulse-off input {
     pointer-events: visible;
 
     @media screen and (max-width: 991px){
+        width: calc(50% - 1rem);
+    }
+
+    @media screen and (max-width: 768px){
         width: calc(100% - 1rem);
     }
 }
@@ -1544,11 +1549,12 @@ td.pulse-off input {
     color: $brand-font-color;
     position: relative;
     cursor: move;
+    height: 34px;
 }
 
 .draggable-widget-body {
     min-height: 250px;
-    position: relative;
+    height: calc(100% - 34px);
     z-index: 1;
 }
 
@@ -1585,6 +1591,7 @@ td.pulse-off input {
 .draggable-widget-maximize {
     width: 100%;
     height: calc(100vh - 100px);
+    position: relative;
     margin: 0;
 }
 
@@ -1602,6 +1609,7 @@ td.pulse-off input {
 .draggable-widget-body iframe {
     width: calc(100% - 1px);
     min-height: 280px;
+    height: 100%;
     float: left;
 }
 
@@ -1611,6 +1619,7 @@ td.pulse-off input {
     overflow: hidden;
     height: 130px;
     margin: .5rem;
+    font-size: 0;
 }
 
 .indicator {
@@ -1619,7 +1628,16 @@ td.pulse-off input {
     height:100%;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 991px){
+    .indicator {
+        width:50%;
+        height: 130px;
+        border:0 !important;
+        display: inline-block;
+    }
+}
+
+@media screen and (max-width: 768px) {
     .indicators-wrapper {
         height: 100%;
     }

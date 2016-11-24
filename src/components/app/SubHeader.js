@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
+import config from '../../config';
 
 import {
     printDoc,
@@ -18,7 +19,8 @@ import {
     getRelatedDocuments,
     setReferences,
     getDocumentActions,
-    setActions
+    setActions,
+    getViewActions
 } from '../../actions/MenuActions';
 
 class Subheader extends Component {
@@ -38,15 +40,20 @@ class Subheader extends Component {
             }
         }
     }
+
     componentDidMount() {
-        const {dispatch, windowType, dataId} = this.props;
+        const {dispatch, windowType, dataId, viewId} = this.props;
         windowType && dataId && dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
             dispatch(setReferences(response.data.references));
         });
-        windowType && dataId && dispatch(getDocumentActions(windowType, dataId)).then((response) => {
+        (windowType && dataId) && dispatch(getDocumentActions(windowType,dataId)).then((response) => {
+            dispatch(setActions(response.data.actions));
+        });
+        (viewId && !dataId) && dispatch(getViewActions(viewId)).then((response) => {
             dispatch(setActions(response.data.actions));
         });
     }
+
 
     redirect = (where) => {
         const {dispatch, onClick} = this.props;
@@ -54,28 +61,25 @@ class Subheader extends Component {
         onClick();
     }
 
-    openModal = (windowType) => {
+    openModal = (windowType, type, caption) => {
         const {dispatch, onClick} = this.props;
-        dispatch(openModal("Advanced edit", windowType));
+        dispatch(openModal(caption, windowType, type));
         onClick();
     }
 
     handleReferenceClick = (type, filter) => {
         const {dispatch, onClick} = this.props;
-        dispatch(setFilter(filter));
+        dispatch(setFilter(filter, type));
         dispatch(push("/window/" + type));
         onClick();
     }
 
     handlePrint = (windowType, docId) => {
         const {dispatch, onClick} = this.props;
-        dispatch(printDoc(windowType,docId)).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                pdfSrc: response.data
-            }), () => {
-                this.pdf && this.pdf.print();
-            })
-        });
+        const url = config.API_URL +
+            '/window/documentPrint?type=' + windowType +
+            '&id=' + docId;
+        window.open(url, "_blank");
         onClick();
     }
 
@@ -120,19 +124,14 @@ class Subheader extends Component {
     }
 
     render() {
-        const { windowType, onClick, references, actions, dataId, pdfSrc } = this.props;
+        const {
+            windowType, onClick, references, actions, dataId, viewId
+        } = this.props;
         const {prompt} = this.state;
 
         return (
 
             <div className={"subheader-container overlay-shadow subheader-open"}>
-                {pdfSrc && <embed
-                    type="application/pdf"
-                    src={pdfSrc}
-                    ref={c => this.pdf = c}
-                    width="100%"
-                    height="100%"
-                />}
                 <Prompt
                     isOpen={prompt.open}
                     title={prompt.title}
@@ -148,7 +147,7 @@ class Subheader extends Component {
                                 {windowType && <div className="subheader-item" onClick={()=> this.redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true')}><i className="meta-icon-edit" /> Advanced Edit</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true', "window", "Advanced edit")}><i className="meta-icon-edit" /> Advanced Edit</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handlePrint(windowType, dataId)}><i className="meta-icon-print" /> Print</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
@@ -160,7 +159,7 @@ class Subheader extends Component {
                                 { actions && !!actions.length ? actions.map((item, key) =>
                                     <div
                                         className="subheader-item"
-                                        onClick={() => this.redirect("/window/" + item.actionId)}
+                                        onClick={() => this.openModal(item.processId + "", "process", item.caption)}
                                         key={key}
                                     >
                                         {item.caption}
@@ -192,9 +191,6 @@ class Subheader extends Component {
         )
     }
 }
-
-
-
 
 
 Subheader.propTypes = {

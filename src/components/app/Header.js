@@ -101,7 +101,8 @@ class Header extends Component {
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
-            windowType, dataId, breadcrumb, showSidelist, references, actions, indicator
+            windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
+            viewId
         } = this.props;
 
         const {
@@ -175,6 +176,7 @@ class Header extends Component {
                     references={references}
                     actions={actions}
                     windowType={windowType}
+                    viewId={viewId}
                     onClick={e => this.handleBackdropClick(false)}
                 />}
 
@@ -190,11 +192,18 @@ class Header extends Component {
 
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    indicator: PropTypes.string.isRequired
+    indicator: PropTypes.string.isRequired,
+    viewId: PropTypes.string
 };
 
 function mapStateToProps(state) {
-    const {windowHandler} = state;
+    const {windowHandler,listHandler} = state;
+
+    const {
+        viewId
+    } = listHandler || {
+        viewId: ""
+    }
 
 
     const {
@@ -204,7 +213,8 @@ function mapStateToProps(state) {
     }
 
     return {
-      indicator
+        indicator,
+        viewId
     }
 }
 
