@@ -557,6 +557,20 @@ public class GridTabVO implements Evaluatee, Serializable
 		
 		return null;
 	}
+
+	public GridFieldVO getFieldByAD_Column_ID(final int adColumnId)
+	{
+		for (final GridFieldVO gridFieldVO : getFields())
+		{
+			if(adColumnId == gridFieldVO.getAD_Column_ID())
+			{
+				return gridFieldVO;
+			}
+		}
+		
+		return null;
+	}
+
 	
 	public boolean hasField(final String columnName)
 	{
