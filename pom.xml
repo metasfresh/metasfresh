@@ -203,7 +203,7 @@
 	  <profile>
 	    <id>metasfresh-snapshots-repo</id>
 	    <activation>
-	      <!-- activeByDefault>true</activeByDefault -->
+	      <activeByDefault>true</activeByDefault>
 	    </activation>
 	    <properties>
 	      <deploy-repo-id>metasfresh-snapshots-repo</deploy-repo-id>
