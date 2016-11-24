@@ -151,7 +151,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
         		sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true clean deploy"
 				
-				junit '**/target/surefire-reports/*.xml'
+				// there are no tests
+				// junit '**/target/surefire-reports/*.xml'
             }
 		}
 	}
