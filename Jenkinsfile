@@ -3,7 +3,8 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 /**
- * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
+ * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ * TODO: move it into a shared library
  */
 def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
 {
@@ -56,6 +57,10 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
+
+// currently, the code in these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
+final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
+echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -184,16 +189,21 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 } // node			
 
 // invoke external build jobs like webui
-// wait for the results, but don't block a node for it
+// wait for the results, but don't block a node while waiting
+// TODO: invoke them in parallel
 stage('Invoke downstream jobs') 
 {
-	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+	// if(env.BRANCH_NAME in branchesWithNoWebUI) // "in" doesn't work due to jenkins sandbox restrictions ("no static methods")
+	if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
+	{
+		invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+	}
 	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
-	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
 
-	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+	// more do come: admin-webui, maybe the webui-javascript frontend too
 /*
 Currently this is inactive because we don't use it
+	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
 	node('linux')
 	{	
 		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
