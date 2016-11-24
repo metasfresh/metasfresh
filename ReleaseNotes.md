@@ -18,6 +18,7 @@ Here come the actual release notes:
   
 * webui
   * #425 Kickstart elasticsearch integration
+  * #598 WebUI Dashboard initial Prototype definition
 
 ## Fixes
 * metasfresh

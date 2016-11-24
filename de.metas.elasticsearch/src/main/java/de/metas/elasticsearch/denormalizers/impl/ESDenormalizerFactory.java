@@ -177,11 +177,22 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		//
 		// FIXME: hardcoded C_Order model value (to be used when indexing C_OrderLines)
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(I_C_Order.class)
+				.excludeStandardColumns()
+				//
 				.includeColumn(I_C_Order.COLUMNNAME_C_BPartner_ID)
 				.includeColumn(I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
+				.includeColumn(I_C_Order.COLUMNNAME_AD_User_ID)
+				//
+				.includeColumn(I_C_Order.COLUMNNAME_SalesRep_ID)
+				//
+				//
 				.includeColumn(I_C_Order.COLUMNNAME_DateOrdered)
+				.includeColumn(I_C_Order.COLUMNNAME_DatePromised)
+				.includeColumn(I_C_Order.COLUMNNAME_PreparationDate)
 				.includeColumn(I_C_Order.COLUMNNAME_C_Currency_ID)
-				.excludeStandardColumns()
+				.includeColumn(I_C_Order.COLUMNNAME_DocumentNo)
+				.includeColumn(I_C_Order.COLUMNNAME_IsSOTrx)
+				//
 				.build());
 	}
 
