@@ -197,9 +197,7 @@
 	    <properties>
 		  <deploy-repo-id>metasfresh-perm-snapshots-repo</deploy-repo-id>
 	      <deploy-repo-name>Maven metasfresh *permantent* Snapshots Repository</deploy-repo-name>
-	      
-	      <!-- standard URL for nexus 2.14 -->
-	      <repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/</repo-url>
+	      <deploy-repo-url>https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/</deploy-repo-url>
 	    </properties>
 	  </profile>
 	  <profile>
