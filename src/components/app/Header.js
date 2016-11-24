@@ -200,7 +200,6 @@ class Header extends Component {
                                     disableClickOutside={!isInboxOpen}
                                 />
 
-
                                 {showSidelist &&
                                     <div
                                         className={"btn-square btn-header side-panel-toggle " + (isSideListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}

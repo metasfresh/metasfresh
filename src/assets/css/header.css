@@ -233,10 +233,6 @@
 .header-left-side {
     align-items: center;
 }
-
-.header-right-side .side-panel-toggle {
-    margin-left: 15px;
-}
 .btn-header-open {
     border-width: 1px 1px 0 1px;
     border-style: solid;
