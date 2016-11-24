@@ -10,7 +10,7 @@ class InboxItem extends Component {
         const {unread} = this.props;
         return (
             <div className={
-                "inbox-item " +
+                "inbox-item pointer " +
                 (unread ? "inbox-item-unread ":"")
             }>
                 <div className="inbox-item-icon">

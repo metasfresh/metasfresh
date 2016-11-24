@@ -16,6 +16,12 @@ class Inbox extends Component {
         close();
     }
 
+    handleClick = () => {
+        const {close} = this.props;
+
+        close();
+    }
+
     render() {
         const {open} = this.props;
         return (
@@ -29,10 +35,13 @@ class Inbox extends Component {
                             <span className="inbox-link">Mark all as read</span>
                         </div>
                         <div className="inbox-list">
-                            <InboxItem unread={true}/>
-                            <InboxItem />
-                            <InboxItem />
-                            <InboxItem />
+                            <InboxItem onClick={this.handleClick} unread={true}/>
+                            <InboxItem onClick={this.handleClick}  />
+                            <InboxItem onClick={this.handleClick}  />
+                            <InboxItem onClick={this.handleClick}  />
+                            <InboxItem onClick={this.handleClick}  />
+                            <InboxItem onClick={this.handleClick}  />
+                            <InboxItem onClick={this.handleClick}  />
                         </div>
                         <div
                             className="inbox-footer"

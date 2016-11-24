@@ -1721,6 +1721,11 @@ td.pulse-off input {
 .inbox-link {
     font-size: .8rem;
     color: $brand-link-color;
+    cursor: pointer;
+}
+
+.inbox-link:hover{
+    text-decoration: underline;
 }
 
 .inbox-item {
@@ -1731,6 +1736,10 @@ td.pulse-off input {
     padding: .3rem .8rem;
 
     font-size: .8rem;
+}
+
+.inbox-item:hover {
+    background-color: #edf3f6;
 }
 
 .inbox-item-unread {
