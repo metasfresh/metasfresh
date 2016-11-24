@@ -86,11 +86,12 @@ class Header extends Component {
         }else{
             toggleBreadcrumb();
         }
-
     }
+
     componentDidMount() {
         document.addEventListener('scroll', this.handleScroll);
     }
+
     componentWillUnmount() {
         document.removeEventListener('scroll', this.handleScroll);
     }
