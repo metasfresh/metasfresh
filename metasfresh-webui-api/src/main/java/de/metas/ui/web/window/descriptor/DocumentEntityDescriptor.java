@@ -142,6 +142,7 @@ public class DocumentEntityDescriptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("tableName", tableName)
 				.add("fields", fields)
 				.add("entityDataBinding", dataBinding)
 				.add("includedEntitites", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId)

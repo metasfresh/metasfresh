@@ -60,6 +60,11 @@ public final class JSONDate implements Serializable
 		return valueStr;
 	}
 
+	public static String toJson(final long millis)
+	{
+		return DATE_FORMAT.format(new java.util.Date(millis));
+	}
+
 	public static java.util.Date fromJson(final String valueStr)
 	{
 		try

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.event.Event;
+import de.metas.event.Event.Builder;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.ProcessInstancesRepository;
@@ -66,15 +72,14 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private DocumentViewsRepository documentViewsRepo;
-	
+
 	@Autowired
 	@Lazy
 	private ProcessInstancesRepository pinstancesRepo;
-	
+
 	@Autowired
 	@Lazy
 	private IQueryStatisticsLogger statisticsLogger;
-
 
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
@@ -139,5 +144,31 @@ public class DebugRestController
 				.stream()
 				.map(stats -> stats.toString())
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	@RequestMapping(value = "/eventBus/postEvent", method = RequestMethod.GET)
+	public void postEvent(
+			@RequestParam(name = "topicName", defaultValue = "de.metas.event.GeneralNotifications") final String topicName //
+			, @RequestParam(name = "message", defaultValue = "test message") final String message//
+			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
+	)
+	{
+		final Topic topic = Topic.builder()
+				.setName(topicName)
+				.setType(Type.LOCAL)
+				.build();
+
+		final Builder eventBuilder = Event.builder()
+				.setSummary("summary")
+				.setDetailPlain(message);
+		if (toUserId > 0)
+		{
+			eventBuilder.addRecipient_User_ID(toUserId);
+		}
+		final Event event = eventBuilder.build();
+
+		Services.get(IEventBusFactory.class)
+				.getEventBus(topic)
+				.postEvent(event);
 	}
 }

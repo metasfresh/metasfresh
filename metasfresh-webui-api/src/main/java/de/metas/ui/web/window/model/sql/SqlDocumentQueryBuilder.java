@@ -217,6 +217,10 @@ class SqlDocumentQueryBuilder
 				throw new AdempiereException("Query shall filter at least by recordId or parentLinkId: " + query);
 			}
 		}
+		else if(query.isParentLinkIdSet())
+		{
+			throw new AdempiereException("Asked to filter by parent but there was no parent ID column in " + entityBinding + " for " + query);
+		}
 
 		//
 		// Document filters

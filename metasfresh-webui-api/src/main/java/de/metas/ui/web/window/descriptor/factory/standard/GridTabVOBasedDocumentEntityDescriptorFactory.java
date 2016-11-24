@@ -431,6 +431,21 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				return parentLinkField.getColumnName();
 			}
 		}
+		
+		//
+		// Try linking by the link field specified in child tab
+		if (tabVO.getAD_Column_ID() > 0 && tabVO.getParent_Column_ID() <= 0)
+		{
+			final GridFieldVO linkField = tabVO.getFieldByAD_Column_ID(tabVO.getAD_Column_ID());
+			if(linkField != null)
+			{
+				final GridFieldVO parentLinkField = tabVO.getFieldByColumnName(linkField.getColumnName());
+				if (parentLinkField != null)
+				{
+					return parentLinkField.getColumnName();
+				}
+			}
+		}
 
 		//
 		// Try linking by parent's key field
