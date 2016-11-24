@@ -30,6 +30,31 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
+/**
+ * Websocket notification event.
+ *
+ *
+ * The JSON notification event will have following structure:
+ *
+ * <pre>
+ * 	{
+ * 		eventType: "New" | "Read"
+ * 
+ * 		notificationId: <the notification id>
+ * 
+ * 		// The actual notification.
+ *		// NOTE: this field is optional and it will be present only when it makes sense (i.e. when eventType=New).
+ * 		notification: {
+ * 			// See Swagger for JSON notification structure.
+ *		}
+ *
+ *		unreadCount: current number of notifications which are unread
+ * }
+ * </pre>
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONNotificationEvent implements Serializable
