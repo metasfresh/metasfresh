@@ -151,8 +151,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 }
 
                 docId = response.data[0].id;
-                console.log(response.data)
-                const preparedData = nullToEmptyStrings(response.data[0].fields);
+                const preparedData = parseToDisplay(response.data[0].fields);
 
                 dispatch(initDataSuccess(preparedData, getScope(isModal)));
 
@@ -177,7 +176,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                         .then((res)=> {
 
                             res.data && res.data.map(row => {
-                                row.fields = nullToEmptyStrings(row.fields);
+                                row.fields = parseToDisplay(row.fields);
                                 tabTmp[tab.tabid][row.rowId] = row;
                             });
                             dispatch(addRowData(tabTmp, getScope(isModal)));
@@ -271,9 +270,10 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 
 function mapDataToState(data, isModal, rowId){
     return (dispatch) => {
+        console.log(data)
         data.map(item1 => {
-            item1.fields = nullToEmptyStrings(item1.fields);
-
+            item1.fields = parseToDisplay(item1.fields);
+            console.log(parseToDisplay(item1.fields))
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
             }else{
@@ -316,7 +316,7 @@ export function createProcess(processType, viewId, type, ids){
     let pid = null;
     return (dispatch) =>
         dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
-                const preparedData = nullToEmptyStrings(response.data.parameters);
+                const preparedData = parseToDisplay(response.data.parameters);
                 pid = response.data.pinstanceId;
                 if(preparedData.length === 0){
                     throw new Error('wrong_response');
@@ -382,6 +382,17 @@ function getScope(isModal) {
     return isModal ? "modal" : "master";
 }
 
+function parseToDisplay(arr) {
+    return parseDateToReadable(nullToEmptyStrings(arr));
+}
+
+function parseDateToReadable(arr) {
+    return arr.map(item =>
+        (item.widgetType === 'Date') ?
+        Object.assign({}, item, { value: new Date(item.value) }) :
+        item
+    )
+}
 
 function nullToEmptyStrings(arr){
     return arr.map(item =>

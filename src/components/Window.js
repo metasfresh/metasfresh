@@ -25,7 +25,9 @@ class Window extends Component {
             <Tabs>
                 {
                     tabs.map((elem)=> {
-                        const {tabid, caption, elements, emptyResultText, emptyResultHint} = elem;
+                        const {
+                            tabid, caption, elements, emptyResultText, emptyResultHint
+                        } = elem;
                         return (
                             <TabPane
                                 caption={caption}
@@ -77,7 +79,10 @@ class Window extends Component {
                 elementsLine && elementsLine.length > 0 &&
                     <div
                         key={'elemGroups' + id}
-                        className={"panel panel-spaced panel-distance " + ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")}
+                        className={
+                            "panel panel-spaced panel-distance " +
+                            ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
+                        }
                     >
                         {this.renderElementsLine(elementsLine)}
                     </div>

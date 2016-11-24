@@ -15,11 +15,14 @@ class DatePicker extends Component {
 
     handleBlur = (date) => {
         const {patch} = this.props;
+        console.log("BLUR")
+
         this.handleClose();
         patch(date);
     }
 
     handleFocus = () => {
+        console.log("FOCUS")
         this.setState(Object.assign({}, this.state, {
             open: true
         }));
@@ -48,8 +51,8 @@ class DatePicker extends Component {
 
     render() {
         const {open} = this.state;
+
         return (<Datetime
-            // open={open}
             closeOnTab={true}
             renderDay={this.renderDay}
             onBlur={this.handleBlur}
