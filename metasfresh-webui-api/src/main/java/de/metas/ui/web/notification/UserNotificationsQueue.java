@@ -158,11 +158,12 @@ public class UserNotificationsQueue
 	private void markAsRead(final UserNotification notification)
 	{
 		final boolean alreadyRead = notification.setRead(true);
-
-		if (!alreadyRead)
+		if (alreadyRead)
 		{
-			unreadCount.decrementAndGet();
+			return;
 		}
+
+		unreadCount.decrementAndGet();
 
 		final JSONNotification jsonNotification = JSONNotification.of(notification, adLanguage);
 		fireEventOnWebsocket(JSONNotificationEvent.eventRead(jsonNotification, unreadCount.get()));
