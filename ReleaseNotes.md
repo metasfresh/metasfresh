@@ -45,8 +45,11 @@ This week's RC
 ## Fixes
 * metasfresh
   * #589 console error when doing bpartner setup
+    * Fix a minor bug with jax-rs/ jms timeout in Business Partner setup workflow, which contantly popped up in console.
   * #553 Report Account Info adjustments. Add parms date range.
+    * Add the parms date range back into Account Info report in Jasper.
   * #611 IBAN Error for RBS Bank
+    * Add support for RBS Bank in metasfresh IBAN check when creating a new Businesspartner Bankaccount.
 
 # metasfresh 4.44.43 (2016-46)
 
