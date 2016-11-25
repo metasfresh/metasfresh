@@ -1,6 +1,7 @@
 const config = () => {
     return {
-        API_URL: ''
+        API_URL: 'http://w101.metasfresh.com:8081/rest/api',
+        WS_URL: 'http://w101.metasfresh.com:8081/stomp'
     }
 }
 

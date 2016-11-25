@@ -6,7 +6,7 @@ const initialState = {
     isLogged: false,
     inbox: {
         notifications: [],
-        totalCount: 0
+        unreadCount: 0
     }
 }
 
@@ -42,8 +42,25 @@ export default function appHandler(state = initialState, action) {
         // END OF NOTIFICATION ACTIONS
         case types.GET_NOTIFICATIONS_SUCCESS:
             return Object.assign({}, state, {
-                inbox: action.payload
+                inbox: Object.assign({}, state.inbox, {
+                    notifications: action.notifications,
+                    unreadCount: action.unreadCount
+                })
             });
+        case types.NEW_NOTIFICATION:
+            return update(state, {
+                inbox: {
+                    notifications: {$unshift: [action.notification]},
+                    unreadCount: {$set: action.unreadCount}
+                }
+            })
+        case types.UPDATE_NOTIFICATION:
+            return update(state, {
+                inbox: {
+                    notifications: {$merge: [action.notification]},
+                    unreadCount: {$set: action.unreadCount}
+                }
+            })
 
         default:
             return state

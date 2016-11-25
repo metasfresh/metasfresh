@@ -2,14 +2,36 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
 import {replace} from 'react-router-redux';
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
 
 export function loginSuccess() {
 	return dispatch => {
 		/** global: localStorage */
 		localStorage.setItem('isLogged', true);
 
+        dispatch(getNotificationsEndpoint()).then(topic => {
+            let sock = new SockJs(config.WS_URL);
+            let client = Stomp.Stomp.over(sock);
+
+            client.connect({}, frame => {
+                client.subscribe(topic.data, msg => {
+                    const notification = JSON.parse(msg.body);
+
+                    if(notification.eventType === "Read"){
+                        dispatch(updateNotification(notification.notification, notification.unreadCount));
+                    }else if(notification.eventType === "New"){
+                        dispatch(newNotification(notification.notification, notification.unreadCount));
+                    }
+                });
+            })
+        })
+
         dispatch(getNotifications()).then(response => {
-            dispatch(getNotificationsSuccess(response.data));
+            dispatch(getNotificationsSuccess(
+                response.data.notifications,
+                response.data.unreadCount
+            ));
         });
 	}
 }
@@ -167,13 +189,34 @@ export function getNotifications() {
     return () => axios.get(config.API_URL + '/notifications/all?limit=20');
 }
 
+export function getNotificationsEndpoint() {
+    return () => axios.get(config.API_URL + '/notifications/websocketEndpoint');
+}
+
 export function markAllAsRead() {
     return () => axios.put(config.API_URL + '/notifications/all/read');
 }
 
-export function getNotificationsSuccess(notifications) {
+export function getNotificationsSuccess(notifications, unreadCount) {
     return {
         type: types.GET_NOTIFICATIONS_SUCCESS,
-        payload: notifications
+        notifications: notifications,
+        unreadCount: unreadCount
+    }
+}
+
+export function updateNotification(msg, count) {
+    return {
+        type: types.UPDATE_NOTIFICATION,
+        notification: msg,
+        unreadCount: count
+    }
+}
+
+export function newNotification(msg, count) {
+    return {
+        type: types.NEW_NOTIFICATION,
+        notification: msg,
+        unreadCount: count
     }
 }
