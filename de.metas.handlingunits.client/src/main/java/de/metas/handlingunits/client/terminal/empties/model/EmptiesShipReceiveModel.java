@@ -57,6 +57,7 @@ import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.client.terminal.select.model.BPartnerLocationKey;
@@ -143,7 +144,11 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	private Date _date;
 	private final BPartnerLocationKeyLayout _bpLocationKeyLayout;
 
-	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId, final int partnerId, final int bpLocationId)
+	// #643: Order
+	private I_C_Order _order;
+
+	public EmptiesShipReceiveModel(
+			final ITerminalContext terminalContext, final int warehouseId, final int partnerId, final int bpLocationId, final int orderId)
 	{
 		super(terminalContext);
 
@@ -178,6 +183,9 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 			bpLocationSelectionModel.setAllowKeySelection(true);
 			bpLocationSelectionModel.setAutoSelectIfOnlyOne(true);
 		}
+
+		// task #643: Also memorize the order
+		_order = InterfaceWrapperHelper.create(terminalContext.getCtx(), orderId, I_C_Order.class, ITrx.TRXNAME_None);
 
 		// setBpartnerReturnType(BPartnerReturnType.ReturnToVendor); // nothing shall be selected by default
 		loadEmptiesKey();
@@ -269,6 +277,9 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		producer.setM_Warehouse(getM_Warehouse());
 
 		producer.setMovementDate(getDate());
+
+		// task #643: Set the order to the producer
+		producer.setC_Order(getOrder());
 
 		addPackingMaterialsFromKeyLayout(producer, getLUKeyLayout());
 		addPackingMaterialsFromKeyLayout(producer, getTUKeyLayout());
@@ -521,5 +532,15 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	public void setDate(final Date date)
 	{
 		_date = date;
+	}
+
+	public void setOrder(final I_C_Order order)
+	{
+		_order = order;
+	}
+
+	public I_C_Order getOrder()
+	{
+		return _order;
 	}
 }
