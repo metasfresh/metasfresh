@@ -28,26 +28,35 @@ import com.google.common.collect.ImmutableList;
 
 public final class UserNotificationsList
 {
-	/* package */static UserNotificationsList of(final List<UserNotification> notifications, final int totalCount)
+	/* package */static UserNotificationsList of(final List<UserNotification> notifications, final int totalCount, final int totalUnreadCount)
 	{
-		if (notifications.isEmpty() && totalCount <= 0)
+		if (notifications.isEmpty() && totalCount <= 0 && totalUnreadCount <= 0)
 		{
 			return EMPTY;
 		}
 
-		return new UserNotificationsList(notifications, totalCount);
+		return new UserNotificationsList(notifications, totalCount, totalUnreadCount);
 	}
 
-	public static final UserNotificationsList EMPTY = new UserNotificationsList(ImmutableList.of(), 0);
+	public static final UserNotificationsList EMPTY = new UserNotificationsList();
 
 	private final List<UserNotification> notifications;
 	private final int totalCount;
+	private final int totalUnreadCount;
 
-	private UserNotificationsList(final List<UserNotification> notifications, final int totalCount)
+	private UserNotificationsList(final List<UserNotification> notifications, final int totalCount, final int totalUnreadCount)
 	{
 		super();
 		this.notifications = ImmutableList.copyOf(notifications);
 		this.totalCount = totalCount;
+		this.totalUnreadCount = totalUnreadCount;
+	}
+	
+	private UserNotificationsList()
+	{
+		this.notifications = ImmutableList.of();
+		this.totalCount = 0;
+		this.totalUnreadCount = 0;
 	}
 
 	public List<UserNotification> getNotifications()
@@ -58,6 +67,11 @@ public final class UserNotificationsList
 	public int getTotalCount()
 	{
 		return totalCount;
+	}
+	
+	public int getTotalUnreadCount()
+	{
+		return totalUnreadCount;
 	}
 
 	public boolean isEmpty()

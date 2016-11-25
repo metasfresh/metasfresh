@@ -84,14 +84,14 @@ public class UserNotificationsQueue
 		if (limit <= 0)
 		{
 			final List<UserNotification> notifications = ImmutableList.copyOf(this.notifications);
-			return UserNotificationsList.of(notifications, notifications.size());
+			return UserNotificationsList.of(notifications, notifications.size(), getUnreadCount());
 		}
 		else
 		{
 			final List<UserNotification> notifications = this.notifications.stream()
 					.limit(limit)
 					.collect(GuavaCollectors.toImmutableList());
-			return UserNotificationsList.of(notifications, this.notifications.size());
+			return UserNotificationsList.of(notifications, this.notifications.size(), getUnreadCount());
 		}
 	}
 
