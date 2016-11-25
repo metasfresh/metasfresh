@@ -61,12 +61,13 @@ public final class JSONNotificationEvent implements Serializable
 {
 	public static final JSONNotificationEvent eventNew(final JSONNotification notification, final int unreadCount)
 	{
-		return new JSONNotificationEvent(EventType.New, notification.getId(), notification, unreadCount);
+		String notificationId = notification.getId();
+		return new JSONNotificationEvent(EventType.New, notificationId, notification, unreadCount);
 	}
 
-	public static final JSONNotificationEvent eventRead(final String notificationId, final int unreadCount)
+	public static final JSONNotificationEvent eventRead(final JSONNotification notification, final int unreadCount)
 	{
-		final JSONNotification notification = null;
+		String notificationId = notification.getId();
 		return new JSONNotificationEvent(EventType.Read, notificationId, notification, unreadCount);
 	}
 

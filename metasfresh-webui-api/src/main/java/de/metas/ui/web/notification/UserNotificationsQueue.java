@@ -164,7 +164,8 @@ public class UserNotificationsQueue
 			unreadCount.decrementAndGet();
 		}
 
-		fireEventOnWebsocket(JSONNotificationEvent.eventRead(notification.getId(), unreadCount.get()));
+		final JSONNotification jsonNotification = JSONNotification.of(notification, adLanguage);
+		fireEventOnWebsocket(JSONNotificationEvent.eventRead(jsonNotification, unreadCount.get()));
 	}
 
 	public int getUnreadCount()
