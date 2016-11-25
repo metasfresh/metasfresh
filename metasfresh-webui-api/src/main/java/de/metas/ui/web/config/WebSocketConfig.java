@@ -47,7 +47,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
 	public static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
-	
+
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
 		return TOPIC_Notifications + "/" + adUserId;
@@ -74,15 +74,32 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");
 	}
+	
+	@Override
+	public void configureClientOutboundChannel(ChannelRegistration registration)
+	{
+		//
+		// IMPORTANT: make sure we are using only one thread for sending outbound messages.
+		// If not, it might be that the messages will not be sent in the right order,
+		// and that's important for things like WS notifications API.
+		// ( thanks to http://stackoverflow.com/questions/29689838/sockjs-receive-stomp-messages-from-spring-websocket-out-of-order )
+		registration.taskExecutor()
+				.corePoolSize(1)
+				.maxPoolSize(1);
+	}
 
 	@Override
 	public void configureClientInboundChannel(final ChannelRegistration registration)
 	{
 		registration.setInterceptors(new WebSocketChannelInterceptor());
+		
+		// NOTE: atm we don't care if the inbound messages arrived in the right order
+		// When and If we would care we would restrict the taskExecutor()'s corePoolSize to ONE.
+		// see: configureClientOutboundChannel().
 	}
 
 	@Override
-	public boolean configureMessageConverters(List<MessageConverter> messageConverters)
+	public boolean configureMessageConverters(final List<MessageConverter> messageConverters)
 	{
 		messageConverters.add(new MappingJackson2MessageConverter());
 		return true;
