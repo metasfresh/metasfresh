@@ -18,9 +18,11 @@ class InboxItem extends Component {
     }
 
     render() {
-        const {item} = this.props;
+        const {item, onClick} = this.props;
         return (
-            <div className={
+            <div
+                onClick={onClick}
+                className={
                 "inbox-item pointer " +
                 (!item.read ? "inbox-item-unread ":"")
             }>

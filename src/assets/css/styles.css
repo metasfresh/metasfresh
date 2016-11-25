@@ -1688,6 +1688,15 @@ td.pulse-off input {
     width: 400px;
 }
 
+.inbox-all {
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.inbox-all .inbox-body {
+    background-color: #fff;
+}
+
 .inbox-header,
 .inbox-footer {
     display: flex;

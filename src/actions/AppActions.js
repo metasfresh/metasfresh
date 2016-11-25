@@ -197,6 +197,10 @@ export function markAllAsRead() {
     return () => axios.put(config.API_URL + '/notifications/all/read');
 }
 
+export function markAsRead(id) {
+    return () => axios.put(config.API_URL + '/notifications/' + id + '/read');
+}
+
 export function getNotificationsSuccess(notifications, unreadCount) {
     return {
         type: types.GET_NOTIFICATIONS_SUCCESS,
