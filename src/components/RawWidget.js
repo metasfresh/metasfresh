@@ -403,6 +403,7 @@ class RawWidget extends Component {
                     />
                 )
             case "ProductAttributes":
+                console.log(fields, dataId, widgetData, windowType)
                 return (
                     <ProductAttributes
                     />

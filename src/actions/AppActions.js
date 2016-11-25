@@ -13,6 +13,7 @@ export function loginSuccess() {
         dispatch(getNotificationsEndpoint()).then(topic => {
             let sock = new SockJs(config.WS_URL);
             let client = Stomp.Stomp.over(sock);
+            client.debug = null;
 
             client.connect({}, frame => {
                 client.subscribe(topic.data, msg => {
