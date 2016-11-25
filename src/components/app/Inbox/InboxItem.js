@@ -1,27 +1,38 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-
+import Moment from 'moment';
 
 class InboxItem extends Component {
     constructor(props){
         super(props);
     }
+
+    renderIconFromTarget = (target) => {
+        switch(target){
+            case 143:
+                return "sales";
+                break;
+            default:
+                return "system";
+        }
+    }
+
     render() {
-        const {unread} = this.props;
+        const {item} = this.props;
         return (
             <div className={
                 "inbox-item pointer " +
-                (unread ? "inbox-item-unread ":"")
+                (!item.read ? "inbox-item-unread ":"")
             }>
                 <div className="inbox-item-icon">
-                    <i className="meta-icon-calendar" />
+                    <i className={"meta-icon-" + this.renderIconFromTarget(item.target && item.target.documentType)} />
                 </div>
                 <div className="inbox-item-content">
                     <div className="inbox-item-title">
-                        The Material Receipt <b>123123</b> for Partner <b>G088F Mustermann</b> has been created.
+                        {item.message}
                     </div>
                     <div className="inbox-item-footer">
-                        <span>Today, 14:16</span>
+                        <span>{Moment(item.timestamp).fromNow()}</span>
                         <span>Notification</span>
                     </div>
                 </div>

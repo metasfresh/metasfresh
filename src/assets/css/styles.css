@@ -1697,6 +1697,14 @@ td.pulse-off input {
     padding: .4rem .8rem;
 }
 
+.inbox-header {
+    border-bottom: 1px solid #e1e8ee;
+}
+.inbox-footer {
+    border-top: 1px solid #e1e8ee;
+    justify-content: center;
+}
+
 .inbox-caption {
     position: relative;
     width: 55px;
@@ -1712,6 +1720,11 @@ td.pulse-off input {
     background-color: #F8FAFB;
     border: 1px solid #e1e8ee;
     position: relative;
+}
+
+.inbox-list {
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .inbox-header-title {
@@ -1736,18 +1749,29 @@ td.pulse-off input {
     padding: .3rem .8rem;
 
     font-size: .8rem;
+    min-height:80px;
 }
 
 .inbox-item:hover {
     background-color: #edf3f6;
 }
 
+.inbox-item-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
 .inbox-item-unread {
     background-color: $brand-primary-light-color;
 }
 
+.inbox-item:first-child {
+    border-top: 0;
+}
 .inbox-item:last-child {
-    border-bottom: 1px solid $brand-border-color;
+    border-bottom: 0;
 }
 
 .inbox-item-icon {

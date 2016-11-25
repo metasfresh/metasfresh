@@ -167,6 +167,10 @@ export function getNotifications() {
     return () => axios.get(config.API_URL + '/notifications/all?limit=20');
 }
 
+export function markAllAsRead() {
+    return () => axios.put(config.API_URL + '/notifications/all/read');
+}
+
 export function getNotificationsSuccess(notifications) {
     return {
         type: types.GET_NOTIFICATIONS_SUCCESS,

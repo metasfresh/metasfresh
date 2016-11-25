@@ -137,3 +137,39 @@
 .meta-icon-listing-up:before {
   content: "\47";
 }
+.meta-icon-beschaffung:before {
+  content: "\48";
+}
+.meta-icon-crm:before {
+  content: "\49";
+}
+.meta-icon-fakturierung:before {
+  content: "\4a";
+}
+.meta-icon-finanzen:before {
+  content: "\4b";
+}
+.meta-icon-langerverwaltung:before {
+  content: "\4c";
+}
+.meta-icon-lieferung:before {
+  content: "\4d";
+}
+.meta-icon-production:before {
+  content: "\4e";
+}
+.meta-icon-produktverwaltung:before {
+  content: "\4f";
+}
+.meta-icon-sales:before {
+  content: "\50";
+}
+.meta-icon-system:before {
+  content: "\51";
+}
+.meta-icon-vertragsverwaltung:before {
+  content: "\52";
+}
+.meta-icon-wareneingang:before {
+  content: "\53";
+}

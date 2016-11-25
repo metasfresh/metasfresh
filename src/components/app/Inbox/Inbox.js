@@ -5,6 +5,8 @@ import onClickOutside from 'react-onclickoutside';
 
 import InboxItem from './InboxItem';
 
+import {markAllAsRead} from '../../../actions/AppActions';
+
 class Inbox extends Component {
     constructor(props){
         super(props);
@@ -22,6 +24,20 @@ class Inbox extends Component {
         close();
     }
 
+    handleMarkAllAsRead = () => {
+        const {dispatch, close} = this.props;
+
+        dispatch(markAllAsRead());
+
+        close();
+    }
+
+    handleShowAll = () => {
+        const {close} = this.props;
+
+        close();
+    }
+
     render() {
         const {open, inbox} = this.props;
         return (
@@ -32,11 +48,20 @@ class Inbox extends Component {
                             className="inbox-header"
                         >
                             <span className="inbox-header-title">Inbox</span>
-                            <span className="inbox-link">Mark all as read</span>
+                            <span
+                                onClick={this.handleMarkAllAsRead}
+                                className="inbox-link"
+                            >
+                                Mark all as read
+                            </span>
                         </div>
                         <div className="inbox-list">
                             {inbox && inbox.notifications.map((item, id) =>
-                                <InboxItem onClick={this.handleClick} />
+                                <InboxItem
+                                    key={id}
+                                    item={item}
+                                    onClick={this.handleClick}
+                                />
                             )}
                             {inbox && inbox.notifications.length == 0 &&
                                 <div className="inbox-item">
@@ -47,8 +72,12 @@ class Inbox extends Component {
                         <div
                             className="inbox-footer"
                         >
-                            <span />
-                            <span className="inbox-link">Show all &gt;&gt;</span>
+                            <div
+                                onClick={this.handleShowAll}
+                                className="inbox-link text-xs-center"
+                            >
+                                Show all &gt;&gt;
+                            </div>
                         </div>
                     </div>
                 </div>}
@@ -57,4 +86,10 @@ class Inbox extends Component {
     }
 }
 
-export default onClickOutside(Inbox);
+Inbox.propTypes = {
+	dispatch: PropTypes.func.isRequired
+};
+
+Inbox = connect()(onClickOutside(Inbox))
+
+export default Inbox;

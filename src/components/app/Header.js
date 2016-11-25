@@ -190,7 +190,7 @@ class Header extends Component {
                                         }
                                     >
                                         <i className="meta-icon-notifications" />
-                                        {inbox.totalCount > 0 && <span className="notification-number">{inbox.totalCount}</span>}
+                                        {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>
                                 </div>
 
