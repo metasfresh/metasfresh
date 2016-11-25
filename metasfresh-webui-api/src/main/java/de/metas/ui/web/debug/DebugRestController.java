@@ -22,6 +22,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.process.ProcessInstancesRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -151,6 +152,7 @@ public class DebugRestController
 			@RequestParam(name = "topicName", defaultValue = "de.metas.event.GeneralNotifications") final String topicName //
 			, @RequestParam(name = "message", defaultValue = "test message") final String message//
 			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
+			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
 	)
 	{
 		final Topic topic = Topic.builder()
@@ -160,7 +162,8 @@ public class DebugRestController
 
 		final Builder eventBuilder = Event.builder()
 				.setSummary("summary")
-				.setDetailPlain(message);
+				.setDetailPlain(message)
+				.putProperty(UserNotification.EVENT_PARAM_Important, important);
 		if (toUserId > 0)
 		{
 			eventBuilder.addRecipient_User_ID(toUserId);

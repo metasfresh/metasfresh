@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 
@@ -38,6 +39,8 @@ public class UserNotification
 	{
 		return new UserNotification(event);
 	}
+	
+	public static final String EVENT_PARAM_Important = "important";
 
 	private final String id;
 	private final long timestamp;
@@ -54,7 +57,7 @@ public class UserNotification
 
 		id = event.getId();
 		timestamp = System.currentTimeMillis(); // TODO: introduce Event.getTimestamp()
-		important = false;
+		important = DisplayType.toBoolean(event.getProperty(EVENT_PARAM_Important), false);
 
 		detailPlain = event.getDetailPlain();
 		detailADMessage = event.getDetailADMessage();
