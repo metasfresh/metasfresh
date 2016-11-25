@@ -41,7 +41,8 @@ class ProductAttributes extends Component {
                     {
                         fields && fields.map((item, id) =>
                             <RawWidget
-                                fields={item}
+                                fields={[item.field]}
+                                widgetType={item.source}
                             />
                         )
                     }
