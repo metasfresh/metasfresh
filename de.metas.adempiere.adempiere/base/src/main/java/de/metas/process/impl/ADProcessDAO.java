@@ -325,7 +325,7 @@ public class ADProcessDAO implements IADProcessDAO
 		}
 		catch (Exception ex)
 		{
-			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}", adProcessId, adClientId, durationMillisToAdd, ex);
+			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}. Ignored.", adProcessId, adClientId, durationMillisToAdd, ex);
 		}
 	}
 
