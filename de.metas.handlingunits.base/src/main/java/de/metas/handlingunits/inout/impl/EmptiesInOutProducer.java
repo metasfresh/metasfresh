@@ -250,6 +250,7 @@ import de.metas.inout.IInOutBL;
 				final String poReference = order.getPOReference();
 				
 				inout.setPOReference(poReference);
+				inout.setC_Order(order);
 			}
 		}
 
