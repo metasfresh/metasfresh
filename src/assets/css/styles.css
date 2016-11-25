@@ -111,11 +111,19 @@ body {
     background-color: #fd8b0f;
 }
 
+.tag-secondary {
+    background-color: #80909a;
+    color: #fff;
+}
+
+.tag-lg {
+    font-size: .75rem;
+}
+
 .text-brand {
     font-weight: 700;
     color: $brand-color-primary;
 }
-
 
 
 .panel {
