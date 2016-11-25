@@ -38,7 +38,9 @@ This week's RC
   * #539 Add missing FK constraints
 * webui
   * #567 WebUI - Material Receipt Schedule
+    * Add initial Screen Layout for Material receipt schedule in metasfresh WebUI.
   * #497 WebUI - ShipmentSchedule Window
+    * Add initial Screen Layout for Shipment Schedule in metasfresh WebUI.
 
 ## Fixes
 * metasfresh
