@@ -48,7 +48,7 @@ public final class DocumentPath
 	{
 		if (documentTypeId <= 0)
 		{
-			throw new IllegalArgumentException("adWindowId < 0");
+			throw new IllegalArgumentException("documentTypeId < 0");
 		}
 
 		final DocumentId documentId = DocumentId.of(id);
