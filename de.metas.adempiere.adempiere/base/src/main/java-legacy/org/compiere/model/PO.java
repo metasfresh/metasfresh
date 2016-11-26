@@ -3349,7 +3349,7 @@ public abstract class PO
 			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
 			if (idNew <= 0)
 			{
-				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ")");
+				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
 				// log.error(ex.getLocalizedMessage(), ex);
 				// return false;
 				throw ex;
