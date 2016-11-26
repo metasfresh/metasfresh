@@ -200,6 +200,13 @@ public class AProcessModel
 		}
 		catch (ClassNotFoundException e)
 		{
+			if(process.isServerProcess())
+			{
+				// it might be that the class is available only on server
+				// so, for now, we consider the preconditions are applicable.
+				return true;
+			}
+			
 			logger.error("Cannot load class: " + classname, e);
 			return false;
 		}

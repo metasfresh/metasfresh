@@ -4,12 +4,11 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.elasticsearch.IESModelIndexingService;
+import de.metas.elasticsearch.IESSystem;
 
 /**
  *
@@ -22,6 +21,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 
 	private OrderModuleInterceptor()
 	{
+		super();
 	};
 
 	@Override
@@ -32,15 +32,13 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 
 		//
 		// Elasticsearch indexing
-		final boolean elasticSearchEnabled = !Adempiere.isUnitTestMode(); // FIXME: refactor
-		if (elasticSearchEnabled)
+		final IESSystem esSystem = Services.get(IESSystem.class);
+		if (esSystem.isEnabled())
 		{
-			final IESModelIndexingService indexingService = Services.get(IESModelIndexingService.class);
-
-			indexingService.newModelIndexerBuilder("orders", I_C_OrderLine.class)
+			esSystem.newModelIndexerConfig("orders", I_C_OrderLine.class)
 					.triggerOnDocumentChanged(I_C_Order.class, I_C_OrderLine.COLUMN_C_Order_ID)
 					.triggerOnDelete()
-					.buildAndRegister();
+					.buildAndInstall();
 		}
 	};
 

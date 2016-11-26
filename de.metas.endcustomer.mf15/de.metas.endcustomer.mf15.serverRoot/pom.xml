@@ -32,6 +32,12 @@
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
 			<version>${metasfresh-dependency.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+		</dependency>		
 	</dependencies>
 
 	<build>
