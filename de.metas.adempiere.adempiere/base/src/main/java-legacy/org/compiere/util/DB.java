@@ -1691,57 +1691,65 @@ public final class DB
 	/**
 	 * Is Sales Order Trx. Assumes Sales Order. Queries IsSOTrx of table with where clause
 	 *
-	 * @param TableName table
+	 * @param tableName table
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static boolean isSOTrx(String TableName, String whereClause)
+	public static boolean isSOTrx(final String tableName, final String whereClause)
 	{
-		if (TableName == null || TableName.length() == 0)
+		if(Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
 			return true;
 		}
-		if (whereClause == null || whereClause.length() == 0)
+		
+		if(Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
 			return true;
 		}
+		
 		//
-		boolean isSOTrx = true;
-		String sql = "SELECT IsSOTrx FROM " + TableName
-				+ " WHERE " + whereClause;
+		final String sql = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
-				isSOTrx = "Y".equals(rs.getString(1));
+			{
+				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
+				return isSOTrx;
+			}
 		}
 		catch (Exception e)
 		{
-			if (TableName.endsWith("Line"))
+			// FIXME: hardcoded
+			if (tableName.endsWith("Line"))
 			{
-				String hdr = TableName.substring(0, TableName.indexOf("Line"));
+				String hdr = tableName.substring(0, tableName.indexOf("Line"));
 				// metas: use IN instead of EXISTS as the subquery should be highly selective
-				sql = "SELECT IsSOTrx FROM " + hdr
-						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + TableName
+				final String sqlParent = "SELECT IsSOTrx FROM " + hdr
+						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + tableName
 						+ " l WHERE " + whereClause + ")";
 				PreparedStatement pstmt2 = null;
 				ResultSet rs2 = null;
 				try
 				{
-					pstmt2 = DB.prepareStatement(sql, null);
+					pstmt2 = DB.prepareStatement(sqlParent, ITrx.TRXNAME_None);
 					rs2 = pstmt2.executeQuery();
 					if (rs2.next())
-						isSOTrx = "Y".equals(rs2.getString(1));
+					{
+						final boolean isSOTrx = DisplayType.toBoolean(rs2.getString(1));
+						return isSOTrx;
+					}
 				}
 				catch (Exception ee)
 				{
 					ee = DBException.getSQLException(ee);
-					log.trace("Error while checking isSOTrx (SQL: {})", sql, ee);
+					log.trace("Error while checking isSOTrx (SQL: {})", sqlParent, ee);
 				}
 				finally
 				{
@@ -1752,17 +1760,19 @@ public final class DB
 			}
 			else
 			{
-				log.trace("Table {} has no IsSOTrx column", TableName, e);
+				log.trace("Table {} has no IsSOTrx column", tableName, e);
 			}
 		}
 		finally
 		{
-			close(rs);
-			close(pstmt);
+			close(rs, pstmt);
 			rs = null;
 			pstmt = null;
 		}
-		return isSOTrx;
+		
+		//
+		// Default fallback: consider IsSOTrx=true
+		return true;
 	}	// isSOTrx
 
 	/**************************************************************************
