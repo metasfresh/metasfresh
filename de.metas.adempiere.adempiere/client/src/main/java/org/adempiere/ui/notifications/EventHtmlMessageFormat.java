@@ -1,5 +1,9 @@
 package org.adempiere.ui.notifications;
 
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.text.MapFormat;
+import org.compiere.util.Util;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -24,15 +28,9 @@ package org.adempiere.ui.notifications;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.text.MapFormat;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
+import de.metas.logging.LogManager;
 
 /**
  * Extension of {@link MapFormat} which produces HTML text.
