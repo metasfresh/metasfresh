@@ -30,9 +30,6 @@ import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Set;
 
@@ -55,6 +52,7 @@ import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
+import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -108,16 +106,7 @@ public final class AEnv
 		else
 		{
 			// NOTE: if we are not invokingLater, then the window it's moved to front for ~1sec then it's moved back again
-			EventQueue.invokeLater(new Runnable()
-			{
-
-				@Override
-				public void run()
-				{
-					showWindowNow(window);
-				}
-
-			});
+			EventQueue.invokeLater(() -> showWindowNow(window));
 		}
 	}
 
@@ -623,40 +612,12 @@ public final class AEnv
 	 */
 	public static void zoom(final int AD_Table_ID, final int Record_ID)
 	{
-		String TableName = null;
-		int AD_Window_ID = 0;
-		int PO_Window_ID = 0;
-		final String sql = "SELECT TableName, AD_Window_ID, PO_Window_ID FROM AD_Table WHERE AD_Table_ID=?";
-
-		ResultSet rs = null;
-		PreparedStatement pstmt = null;
-		try
+		if(AD_Table_ID <= 0)
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Table_ID);
-
-			rs = pstmt.executeQuery();
-
-			if (rs.next())
-			{
-				TableName = rs.getString(1);
-				AD_Window_ID = rs.getInt(2);
-				PO_Window_ID = rs.getInt(3);
-			}
-
+			return;
 		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		zoom(TableName, Record_ID, AD_Window_ID, PO_Window_ID);
+		
+		zoom(RecordZoomWindowFinder.newInstance(AD_Table_ID, Record_ID));
 	}
 
 	/**
@@ -672,58 +633,34 @@ public final class AEnv
 			final int PO_Window_ID)
 	{
 		// Nothing to Zoom to
-		if (TableName == null || AD_Window_ID == 0)
+		if (TableName == null || AD_Window_ID <= 0)
 		{
 			return;
 		}
-
-		final int windowIdToUse;
-
-		// PO Zoom ?
-		final boolean isSOTrx;
-		if (PO_Window_ID != 0)
+		
+		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
+				.setSO_Window_ID(AD_Window_ID)
+				.setPO_Window_ID(AD_Window_ID));
+	}
+	
+	private static final void zoom(final RecordZoomWindowFinder zoomInfo)
+	{
+		final int windowIdToUse = zoomInfo.findAD_Window_ID();
+		if(windowIdToUse <= 0)
 		{
-			final String whereClause = TableName + "_ID=" + Record_ID;
-			isSOTrx = DB.isSOTrx(TableName, whereClause);
+			log.warn("No AD_Window_ID found to zoom for {}", zoomInfo);
+			return;
 		}
-		else
-		{
-			isSOTrx = true;
-		}
-
-		if (isSOTrx)
-		{
-			windowIdToUse = AD_Window_ID;
-		}
-		else
-		{
-			windowIdToUse = PO_Window_ID;
-		}
-
-		log.info(TableName + " - Record_ID=" + Record_ID + " (IsSOTrx=" + isSOTrx + ")");
-		AWindow frame = new AWindow();
-		// metas: begin: 01880
-		final MQuery query = new MQuery(TableName);
-		query.addRestriction(TableName + "_ID", Operator.EQUAL, Record_ID);
-		query.setZoomTableName(TableName);
-		query.setZoomColumnName(TableName + "_ID");
-		query.setZoomValue(Record_ID);
-		query.setRecordCount(1); // metas: notify FindPanel that only one record will be expected
-		// metas: end: 01880
+		
+		final MQuery query = zoomInfo.createZoomQuery();
+		
+		final AWindow frame = new AWindow();
 		if (!frame.initWindow(windowIdToUse, query))
 		{
 			return;
 		}
 		addToWindowManager(frame);
-		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
-		{
-			showMaximized(frame);
-		}
-		else
-		{
-			showCenterScreen(frame);
-		}
-		frame = null;
+		showCenterScreenOrMaximized(frame);
 	}
 
 	/**
@@ -737,90 +674,9 @@ public final class AEnv
 		{
 			return;
 		}
-		final String TableName = query.getTableName();
-		int AD_Window_ID = 0;
-		int PO_Window_ID = 0;
-		final String sql = "SELECT AD_Window_ID, PO_Window_ID FROM AD_Table WHERE TableName=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setString(1, TableName);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				AD_Window_ID = rs.getInt(1);
-				PO_Window_ID = rs.getInt(2);
-			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		//
-		// Figure out which window we shall use, based on IsSOTrx flag
-		final int adWindowIdToUse;
-		// PO Zoom ?
-		Boolean isSOTrx = query.isSOTrxOrNull();
-		if (isSOTrx == null && PO_Window_ID > 0)
-		{
-			isSOTrx = DB.isSOTrx(TableName, query.getWhereClause(false));
-			if (isSOTrx)
-			{
-				adWindowIdToUse = AD_Window_ID;
-			}
-			else
-			{
-				adWindowIdToUse = PO_Window_ID;
-			}
-		}
-		else if (isSOTrx == null)    // but PO_Window_ID <=0
-		{
-			adWindowIdToUse = AD_Window_ID;
-		}
-		else if (isSOTrx)    // sales trx window
-		{
-			adWindowIdToUse = AD_Window_ID;
-		}
-		else
-		// !isSOTrx
-		{
-			adWindowIdToUse = PO_Window_ID > 0 ? PO_Window_ID : AD_Window_ID;
-		}
-
-		// Nothing to Zoom to
-		if (adWindowIdToUse <= 0)
-		{
-			return;
-		}
-
-		log.info(query + " (IsSOTrx=" + isSOTrx + ")");
-		AWindow frame = new AWindow();
-		if (!frame.initWindow(adWindowIdToUse, query))
-		{
-			return;
-		}
-		addToWindowManager(frame);
-		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
-		{
-			showMaximized(frame);
-		}
-		else
-		{
-			showCenterScreen(frame);
-		}
-		frame = null;
-	}	// zoom
+		
+		zoom(RecordZoomWindowFinder.newInstance(query));
+	}
 
 	/**
 	 * Track open frame in window manager
