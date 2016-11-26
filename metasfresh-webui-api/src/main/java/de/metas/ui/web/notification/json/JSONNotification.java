@@ -51,6 +51,9 @@ public final class JSONNotification implements Serializable
 	private final boolean important;
 	@JsonProperty("read")
 	private final boolean read;
+	
+	@JsonProperty("target")
+	private final JSONNotificationTarget target;
 
 	private JSONNotification(final UserNotification notification, final String adLanguage)
 	{
@@ -61,6 +64,8 @@ public final class JSONNotification implements Serializable
 		timestamp = JSONDate.toJson(notification.getTimestamp());
 		important = notification.isImportant();
 		read = notification.isRead();
+		
+		target = JSONNotificationTarget.of(notification);
 	}
 
 	@Override
