@@ -22,6 +22,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
 import de.metas.script.ScriptEngineFactory;
+import de.metas.script.ui.GroovyScriptEditor;
 
 /**
  * ScriptEditor
@@ -44,7 +45,7 @@ public class ScriptEditor
 		// TODO: generic editor for jsr223 script
 		if (scriptEngineName == null || "groovy".equals(scriptEngineName))
 		{
-			final GroovyEditor gv = new GroovyEditor(owner, title, script, windowNo);
+			final GroovyScriptEditor gv = new GroovyScriptEditor(owner, title, script, windowNo);
 			return gv.getScript();
 		}
 		else
