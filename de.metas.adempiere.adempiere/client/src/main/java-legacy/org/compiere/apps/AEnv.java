@@ -543,10 +543,6 @@ public final class AEnv
 		{
 			showCenterScreen(new org.compiere.grid.ed.Editor(Env.getFrame(c)));
 		}
-		else if (actionCommand.equals("Script"))
-		{
-			new BeanShellEditor(Env.getFrame(c));
-		}
 		else if (actionCommand.equals("Preference"))
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions();

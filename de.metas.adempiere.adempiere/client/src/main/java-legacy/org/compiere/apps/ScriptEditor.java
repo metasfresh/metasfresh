@@ -18,53 +18,38 @@ package org.compiere.apps;
 
 import java.awt.Frame;
 
-import org.compiere.model.Scriptlet;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
+import de.metas.script.ScriptEngineFactory;
+
 /**
- *  ScriptEditor
+ * ScriptEditor
  */
-public class ScriptEditor 
+public class ScriptEditor
 {
 	/**
-	 *  Start ScriptEditor
+	 * Start ScriptEditor
 	 *
-	 *  @param header   Title
-	 *  @param script   ScriptCode
-	 *  @param editable
-	 *  @return updated Script
-	 *  
-	 *  @deprecated since 3.3.1
+	 * @param owner
+	 * @param title Title
+	 * @param script ScriptCode
+	 * @param editable
+	 * @return updated Script
 	 */
-	public static String start (String header, String script, boolean editable, int WindowNo)
+	public static String start(final Frame owner, final String title, final String script, final boolean editable, final int windowNo)
 	{
-		return start(null, header, script, editable, WindowNo);
-	}
-	
-	/**
-	 *  Start ScriptEditor
-	 *
-	 *  @param owner
-	 *  @param header   Title
-	 *  @param script   ScriptCode
-	 *  @param editable
-	 *  @return updated Script
-	 */
-	public static String start (Frame owner, String header, String script, boolean editable, int WindowNo)
-	{
-		Scriptlet scr = new Scriptlet (Scriptlet.VARIABLE, script, Env.getCtx(), WindowNo);
-		String value = Env.getContext(Env.getCtx(), WindowNo, "Value");
-		//TODO: generic editor for jsr223 script
-		if (value != null && value.startsWith("groovy:"))
+		final String value = Env.getContext(Env.getCtx(), windowNo, "Value");
+		final String scriptEngineName = ScriptEngineFactory.extractEngineNameFromRuleValue(value);
+		// TODO: generic editor for jsr223 script
+		if (scriptEngineName == null || "groovy".equals(scriptEngineName))
 		{
-			GroovyEditor gv = new GroovyEditor (owner, header, script, WindowNo);
+			final GroovyEditor gv = new GroovyEditor(owner, title, script, windowNo);
 			return gv.getScript();
 		}
 		else
 		{
-			BeanShellEditor se = new BeanShellEditor (owner, header, scr, WindowNo);
-			return scr.getScript();
+			throw new AdempiereException("@NotSupported@ @ScriptEngine@: " + scriptEngineName);
 		}
-	}   //  start
-
-}   //  ScriptEditor
+	}
+}
