@@ -28,10 +28,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
-import org.compiere.model.MRule;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
@@ -43,7 +44,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
 
 /**
  * HR Process Model
@@ -159,6 +162,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 *	@param processAction document action
 	 *	@return true if performed
 	 */
+	@Override
 	public boolean processIt(String processAction) 
 	{
 		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
@@ -175,6 +179,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Unlock Document.
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean unlockIt() 
 	{
 		log.info("unlockIt - " + toString());
@@ -187,6 +192,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Invalidate Document
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean invalidateIt() 
 	{
 		log.info("invalidateIt - " + toString());
@@ -199,6 +205,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 *	Prepare Document
 	 * 	@return new status (In Progress or Invalid)
 	 */
+	@Override
 	public String prepareIt()
 	{
 		log.info("prepareIt - " + toString());
@@ -246,6 +253,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
+	@Override
 	public String completeIt()
 	{
 		//	Re-Check
@@ -276,6 +284,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Approve Document
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean  approveIt() {
 		return true;
 	}	//	approveIt
@@ -285,6 +294,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Reject Approval
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean rejectIt() {
 		log.info("rejectIt - " + toString());
 		return true;
@@ -305,6 +315,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Set Qtys to 0 - Sales: reverse all documents
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean voidIt() {
 		log.info("voidIt - " + toString());
 		setProcessed(true);
@@ -318,6 +329,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Cancel not delivered Qunatities
 	 * 	@return true if success 
 	 */
+	@Override
 	public boolean closeIt()
 	{
 		if (isProcessed())
@@ -335,6 +347,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Reverse Correction - same void
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean reverseCorrectIt() {
 		log.info("reverseCorrectIt - " + toString());
 		return voidIt();
@@ -345,6 +358,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Reverse Accrual - none
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean reverseAccrualIt() {
 		log.info("reverseAccrualIt - " + toString());
 		return false;
@@ -355,6 +369,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Re-activate.
 	 * 	@return true if success
 	 */
+	@Override
 	public boolean reActivateIt() {
 		log.info("reActivateIt - " + toString());
 
@@ -387,6 +402,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
 	 */
+	@Override
 	public int getDoc_User_ID() {
 		return 0;
 	}	//	getDoc_User_ID
@@ -396,6 +412,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Get Document Approval Amount
 	 *	@return amount
 	 */
+	@Override
 	public java.math.BigDecimal getApprovalAmt() 
 	{
 		return BigDecimal.ZERO;
@@ -404,16 +421,19 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	/**
 	 * 
 	 */
+	@Override
 	public int getC_Currency_ID() 
 	{
 		return 0;
 	}
 
+	@Override
 	public String getProcessMsg() 
 	{
 		return m_processMsg;
 	}
 
+	@Override
 	public String getSummary()
 	{
 		return "";
@@ -423,6 +443,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Create PDF
 	 *	@return File or null
 	 */
+	@Override
 	public File createPDF ()
 	{
 		try
@@ -454,6 +475,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
 	 */
+	@Override
 	public String getDocumentInfo()
 	{
 		org.compiere.model.MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
@@ -537,9 +559,9 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 * @param AD_Rule_ID
 	 * @return
 	 */
-	private Object executeScript(HashMap<String, Object> scriptCtx, int AD_Rule_ID)
+	private Object executeScript(final HashMap<String, Object> scriptCtx, final int AD_Rule_ID)
 	{
-		MRule rulee = MRule.get(getCtx(), AD_Rule_ID);
+		final I_AD_Rule rulee = Services.get(IADRuleDAO.class).retrieveById(getCtx(), AD_Rule_ID);
 		Object result = null;
 		try
 		{
