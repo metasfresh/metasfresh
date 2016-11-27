@@ -59,12 +59,8 @@
 		</dependency>
 		
 		<!-- Groovy script support -->
-		<!-- FIXME: i think this shall go to base/ -->
 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy</artifactId>
-		</dependency>
-		<dependency>
+			<!-- this shall be included on in Swing clients only -->
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-console</artifactId>
 		</dependency>
