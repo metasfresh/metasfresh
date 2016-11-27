@@ -1,6 +1,7 @@
 package de.metas.script;
 
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.script.ScriptEngine;
@@ -59,16 +60,16 @@ public class ScriptExecutor
 		try
 		{
 			final Object result = engine.eval(script);
-			
-			if(throwExceptionIfResultNotEmpty)
+
+			if (throwExceptionIfResultNotEmpty)
 			{
-				final String errmsg = (result == null ? null : result.toString());
-				if(!Check.isEmpty(errmsg))
+				final String errmsg = result == null ? null : result.toString();
+				if (!Check.isEmpty(errmsg))
 				{
 					throw new AdempiereException(errmsg);
 				}
 			}
-			
+
 			return result;
 		}
 		catch (final ScriptException e)
@@ -110,7 +111,7 @@ public class ScriptExecutor
 				engine.put(engineKey, value);
 			}
 		}
-		
+
 		//
 		// Also put the context and windowNo as argument
 		putArgument("Ctx", ctx);
@@ -157,10 +158,20 @@ public class ScriptExecutor
 			return retValue;
 		}
 	}
-	
+
+	public ScriptExecutor putAll(final Map<String, ? extends Object> context)
+	{
+		final ScriptEngine engine = getEngine();
+		context.entrySet()
+				.stream()
+				.forEach(entry -> engine.put(entry.getKey(), entry.getValue()));
+
+		return this;
+	}
+
 	public ScriptExecutor setThrowExceptionIfResultNotEmpty()
 	{
-		this.throwExceptionIfResultNotEmpty = true;
+		throwExceptionIfResultNotEmpty = true;
 		return this;
 	}
 
