@@ -94,7 +94,7 @@ public class ScriptEngineFactory
 		}
 	}
 
-	private static final String extractEngineNameFromRuleValue(final String ruleValue)
+	public static final String extractEngineNameFromRuleValue(final String ruleValue)
 	{
 		if (ruleValue == null)
 		{

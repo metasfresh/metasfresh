@@ -176,15 +176,6 @@ public class FormFrame extends CFrame
 		//      Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		AEnv.addMenuItem("Calculator", null, null, mTools, this);
-//		AEnv.addMenuItem("Calendar", null, null, mTools, this);
-//		AEnv.addMenuItem("Editor", null, null, mTools, this);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			AEnv.addMenuItem("Script", null, null, mTools, this);
-		//@formatter:on
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
 			if (mTools.getComponentCount() > 0)
