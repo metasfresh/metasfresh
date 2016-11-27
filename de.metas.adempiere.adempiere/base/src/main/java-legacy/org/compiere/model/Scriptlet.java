@@ -22,15 +22,16 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.ParseException;
 import bsh.Parser;
+import de.metas.logging.LogManager;
+import de.metas.script.ScriptExecutor;
 
 /**
  *  Script Model
@@ -369,7 +370,7 @@ public class Scriptlet
 	 */
 	private String convertKey (String key)
 	{
-		return MRule.convertKey(key, m_windowNo);
+		return ScriptExecutor.convertToEngineKey(key, m_windowNo);
 	}   //  convertKey
 
 	/**

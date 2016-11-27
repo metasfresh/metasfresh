@@ -149,6 +149,10 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// gh-issue #288
 		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
+		
+		//
+		// Script/Rule engine
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
 	}
 
 	@Override

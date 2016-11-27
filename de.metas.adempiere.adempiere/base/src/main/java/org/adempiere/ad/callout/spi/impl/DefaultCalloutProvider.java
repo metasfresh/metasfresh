@@ -1,6 +1,7 @@
 package org.adempiere.ad.callout.spi.impl;
 
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -14,7 +15,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_ColumnCallout;
-import org.compiere.model.MRule;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableListMultimap;
@@ -22,6 +22,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.script.ScriptEngineFactory;
 
 /**
  * Provides {@link ICalloutInstance}s from {@link I_AD_ColumnCallout}.
@@ -103,17 +104,17 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 
 		try
 		{
-			final String calloutStr = calloutDef.getClassname();
-			Check.assumeNotEmpty(calloutStr, "calloutStr is not empty");
+			final String classname = calloutDef.getClassname();
+			Check.assumeNotEmpty(classname, "classname is not empty");
 
-			if (calloutStr.toLowerCase().startsWith(MRule.SCRIPT_PREFIX))
+			final Optional<String> ruleValue = ScriptEngineFactory.extractRuleValueFromClassname(classname);
+			if(ruleValue.isPresent())
 			{
-				final String ruleValue = calloutStr.substring(MRule.SCRIPT_PREFIX.length());
-				return RuleCalloutInstance.supplier(ruleValue);
+				return RuleCalloutInstance.supplier(ruleValue.get());
 			}
 			else
 			{
-				return MethodNameCalloutInstance.supplier(calloutStr);
+				return MethodNameCalloutInstance.supplier(classname);
 			}
 		}
 		catch (final Exception e)
