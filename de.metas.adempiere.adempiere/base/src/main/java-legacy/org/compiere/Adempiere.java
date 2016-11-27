@@ -770,10 +770,6 @@ public class Adempiere
 			}
 		}
 
-		if (runMode == RunMode.BACKEND)
-		{
-			DB.updateMail();
-		}
 		return true;
 	}	// startupEnvironment
 
