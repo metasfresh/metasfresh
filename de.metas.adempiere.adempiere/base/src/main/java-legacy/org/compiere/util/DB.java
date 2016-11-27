@@ -218,7 +218,7 @@ public final class DB
 	public static void updateMail()
 	{
 		// Get Property File
-		String envName = Ini.getAdempiereHome();
+		String envName = Ini.getMetasfreshHome();
 		if (envName == null)
 			return;
 		envName += File.separator + "AdempiereEnv.properties";

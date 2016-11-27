@@ -156,7 +156,7 @@ public class PackIn extends JavaProcess {
 		// Create Target directory if required
 		String packageDirectory = adPackageImp.getAD_Package_Dir();
 		if (packageDirectory == null || packageDirectory.trim().length() == 0) {
-			packageDirectory = Adempiere.getAdempiereHome();
+			packageDirectory = Adempiere.getMetasfreshHome();
 		}
 		File targetDir = new File( packageDirectory + File.separator
 				+ "packages");

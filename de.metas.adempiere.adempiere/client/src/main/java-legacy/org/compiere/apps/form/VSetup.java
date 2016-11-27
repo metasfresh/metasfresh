@@ -378,7 +378,7 @@ public class VSetup extends CPanel
 	private File getFile()
 	{
 		File file = null;
-		String dirName = org.compiere.Adempiere.getAdempiereHome() + File.separator + "data" + File.separator + "import";
+		String dirName = org.compiere.Adempiere.getMetasfreshHome() + File.separator + "data" + File.separator + "import";
 		log.info(dirName);
 		JFileChooser chooser = new JFileChooser(dirName);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

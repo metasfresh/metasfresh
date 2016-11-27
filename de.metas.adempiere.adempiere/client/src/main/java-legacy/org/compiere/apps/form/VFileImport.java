@@ -344,7 +344,7 @@ public class VFileImport extends CPanel
 		// Default: use the ADEMPIERE_HOME/data/import directory
 		if (directory == null)
 		{
-			directory = org.compiere.Adempiere.getAdempiereHome()
+			directory = org.compiere.Adempiere.getMetasfreshHome()
 					+ File.separator + "data"
 					+ File.separator + "import";
 			fileToSelect = null;

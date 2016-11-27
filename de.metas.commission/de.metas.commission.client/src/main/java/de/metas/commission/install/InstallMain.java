@@ -481,7 +481,7 @@ public class InstallMain {
 	public static void main(final String[] args) {
 
 		Adempiere.startupEnvironment(false);
-		Ini.setAdempiereHome(".");
+		Ini.setMetasfreshHome(".");
 		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 		
 		doIt();

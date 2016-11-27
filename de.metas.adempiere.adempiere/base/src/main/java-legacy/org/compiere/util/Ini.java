@@ -387,7 +387,7 @@ public final class Ini implements Serializable
 		//
 		String tempDir = System.getProperty("java.io.tmpdir");
 		if (tempDir == null || tempDir.length() <= 1)
-			tempDir = getAdempiereHome();
+			tempDir = getMetasfreshHome();
 		if (tempDir == null)
 			tempDir = "";
 		checkProperty(P_TEMP_DIR, tempDir);
@@ -477,7 +477,7 @@ public final class Ini implements Serializable
 			return System.getenv("PropertyFile");
 		}
 
-		String propertyFileName = getAdempiereHome();
+		String propertyFileName = getMetasfreshHome();
 		if (!propertyFileName.endsWith(File.separator))
 		{
 			propertyFileName += File.separator;
@@ -631,13 +631,12 @@ public final class Ini implements Serializable
 
 	/*************************************************************************/
 
-	/** System environment prefix */
-	public static final String ENV_PREFIX = "env.";
-
-	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
-	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
-
 	public static final String METASFRESH_HOME = "METASFRESH_HOME";
+	
+	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
+	@Deprecated
+	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
+	
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -724,31 +723,38 @@ public final class Ini implements Serializable
 	}   // isLoaded
 
 	/**
-	 * Get Adempiere Home from Environment
+	 * Get Metasfresh home directory.
 	 *
-	 * @return Adempiere home directory; never returns <code>null</code>
+	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
+		// Try getting the METASFRESH_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
+		String env = System.getProperty(METASFRESH_HOME);
+		if (!Check.isEmpty(env, true))
+		{
+			return env.trim();
+		}
+		
 		// Try getting the METASFRESH_HOME from environment
-		String env = System.getenv(METASFRESH_HOME);
+		env = System.getenv(METASFRESH_HOME);
 		if (!Check.isEmpty(env, true))
 		{
 			return env.trim();
 		}
 
-		// Try getting the ADEMPIERE_HOME from environment
+		// Legacy: Try getting the ADEMPIERE_HOME from environment
 		env = System.getenv(ADEMPIERE_HOME);
 		if (!Check.isEmpty(env, true))
 		{
 			return env.trim();
 		}
 
-		// Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
+		// Legacy: Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
 		env = System.getProperty(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env))
+		if (!Check.isEmpty(env, true))
 		{
-			return env;
+			return env.trim();
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
@@ -761,20 +767,25 @@ public final class Ini implements Serializable
 
 		// Fallback
 		if (env == null)
+		{
 			env = File.separator + "metasfresh";
+		}
+		
 		return env;
-	}   // getAdempiereHome
+	}
 
 	/**
-	 * Set Adempiere Home
+	 * Set Metashfresh home directory
 	 *
-	 * @param AdempiereHome ADEMPIERE_HOME
+	 * @param metasfreshHome METASFRESH_HOME
 	 */
-	public static void setAdempiereHome(String AdempiereHome)
+	public static void setMetasfreshHome(String metasfreshHome)
 	{
-		if (AdempiereHome != null && AdempiereHome.length() > 0)
-			System.setProperty(ADEMPIERE_HOME, AdempiereHome);
-	}   // setAdempiereHome
+		if (metasfreshHome != null && metasfreshHome.length() > 0)
+		{
+			System.setProperty(METASFRESH_HOME, metasfreshHome.trim());
+		}
+	}
 
 	/**************************************************************************
 	 * Get Window Dimension

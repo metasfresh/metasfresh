@@ -494,9 +494,9 @@ public class Adempiere
 	 *
 	 * @return Home directory
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
-		return Ini.getAdempiereHome();
+		return Ini.getMetasfreshHome();
 	}
 
 	/**
