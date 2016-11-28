@@ -90,6 +90,7 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 80px;
 }
 
 .header-breadcrumb > .menu-overlay-expand,
@@ -335,6 +336,13 @@
     width: 55px;
     height: 55px;
     padding-bottom: 6px;
+}
+
+.menu-overlay-caption-text {
+    width: 80px;
+    padding-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .menu-overlay-header {

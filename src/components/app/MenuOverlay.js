@@ -236,7 +236,11 @@ class MenuOverlay extends Component {
         return (
             <div className="menu-overlay menu-overlay-primary">
                 <div
-                    className="menu-overlay-caption"
+                    className={
+                        "menu-overlay-caption " +
+                        ((index !== 0) ? "menu-overlay-caption-text " : "")
+
+                    }
                     onClick={() => this.handleClickOutside()}
                 >
                     { (index === 0) ?
