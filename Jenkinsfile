@@ -168,7 +168,7 @@ Task branch builds are usually not deployed, so the pipeline can finish without 
 		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
 			name: 'MF_SKIP_TO_DIST'),	
 		string(defaultValue: '', 
-			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
+			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
 	]), 
 	pipelineTriggers([]),
@@ -198,31 +198,20 @@ else
 	MF_BUILD_ID=env.BUILD_NUMBER
 }
 
-
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
 final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER; // never incorporate params.MF_BUILD_ID into the version anymore. always go with the build number
+// the artifacts we build in this pipeline will have this version
+// never incorporate params.MF_BUILD_ID into the version anymore. Always go with the build number.
+final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
-// the maven artifact version that will be set to the artifacts in this build
-// examples: "1-master-543-SNAPSHOT", "2-FRESH-123-9842-SNAPSHOT"
-//final BUILD_MAVEN_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
-//final BUILD_MAVEN_VERSION=BUILD_VERSION + "-SNAPSHOT";
-final BUILD_MAVEN_VERSION=BUILD_VERSION;
-echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION";
-
-// the version range used when resolving depdendencies for this build
-// see e.g. https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN402 for a documentation of version ranges
-final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION='[1.0.0,5.0.0]'; // everything >= 1
-echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION";
-
-// metasfresh-task-repo does not depent of the task/breanch name so that maven can find the credentials in our provided settings.xml file
+// metasfresh-task-repo is a constrant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
 final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
 echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
 
-// name of the task/branch specific maven nexus-repository that we will deploy to
+// name of the task/branch specific maven nexus-repository that we will create if it doesn't exist and and resolve from
 final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}";
 echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
 
@@ -232,18 +221,15 @@ echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
 final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
 
+// the repository to which we are going to deploy
 final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
 echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 
-// provide these cmdline params to all maven invocations that do a deploy to a non-permanent repo
+// provide these cmdline params to all maven invocations that do a deploy
 // deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
-//final MF_MAVEN_TASK_DEPLOY_PARAMS = "-Dtask-repo-id=metasfresh-task-repo -Dtask-repo-name=${MF_MAVEN_REPO_NAME} -Dtask-repo-url=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
 final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
-//final MF_MAVEN_PERM_DEPLOY_PARAMS = "-Ddeploy-repo-id=metasfresh-perm-snapshots-repo -Ddeploy-repo-name=\"Maven metasfresh *permantent* Snapshots Repository\" -Ddeploy-repo-url=https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/";
-//final MF_MAVEN_PERM_DEPLOY_PARAMS = '-DaltDeploymentRepository="metasfresh-perm-snapshots-repo::default::https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/"'
-//echo "Setting MF_MAVEN_PERM_DEPLOY_PARAMS=$MF_MAVEN_PERM_DEPLOY_PARAMS";
 currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH;
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID;
 
@@ -293,15 +279,15 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// IMPORTANT: do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
-				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
-				
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
-								
-				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now also need it. Don't do anything with the modules that are declared in there
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+
+				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
         		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				
+				// update the versions of metas dependencies that are external to our reactor modules
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
         
+				// build and deploy
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
             }
@@ -309,19 +295,19 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
             stage('Set versions and build esb') 
             {
 				// set the artifact version of everything below de.metas.esb/pom.xml
-	            // sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
-				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+	           	sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				
+				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
-							
+						
+				// build and deploy
 				// maven.test.failure.ignore=true: see metasfresh stage
-    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
             }
 			
-			// collect test results
+			// collect the test results
 			junit '**/target/surefire-reports/*.xml'
-				
-			// TODO: notify zapier that the "main" stuff was build
+
 		} // withMaven
 	} // configFileProvider
 } // node			
@@ -332,7 +318,7 @@ stage('Invoke downstream jobs')
 {
 	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
-	// more do come: admin-webui, procurement-webui, maybe the webui-javascript frontend too
+	// more do come: admin-webui, maybe the webui-javascript frontend too
 
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
 /*
@@ -342,7 +328,7 @@ Currently this is inactive because we don't use it
 		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 		{
 			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-			final jsonPayload = "{\"BUILD_MAVEN_VERSION\":\"${BUILD_MAVEN_VERSION}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+			final jsonPayload = "{\"BUILD_VERSION\":\"${BUILD_VERSION}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
 			
 			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
@@ -360,8 +346,8 @@ node('agent && linux && libc6-i386')
 		{
 			stage('Build dist') 
 			{
-				// checkout our code..sparsely..we only need /de.metas.endcustomer.mf15
-				// note that we don not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
+				// checkout our code
+				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
 				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
 				checkout([
 					$class: 'GitSCM', 
@@ -369,20 +355,18 @@ node('agent && linux && libc6-i386')
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
-						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]] // failed if there was stale stuff checked out around /de.metas.endcustomer.mf15
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
 		
-				// *Now* set the artifact version of everything below de.metas.endcustomer.mf15/pom.xml
-				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
-				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				// *Now* set the artifact versions of everything below de.metas.endcustomer.mf15/pom.xml and also update their metas dependencies to the latest versions
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
@@ -393,7 +377,8 @@ node('agent && linux && libc6-i386')
 	} // configFileProvider
 
 	// clean up the workspace, including the local maven repositories that the withMaven steps created
-	step([$class: 'WsCleanup', cleanWhenFailure: true])
+	// don't clean up the work space..we do it when we check out next time
+	// step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
 
 // we need this one for both "Test-SQL" and "Deployment
@@ -401,7 +386,7 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 
 	final packagingPart=packaging ? ":${packaging}" : ""
 	final classifierPart=classifier ? ":${classifier}" : ""
-	final artifact = "${groupId}:${artifactId}:${BUILD_MAVEN_VERSION}${packagingPart}${classifierPart}"
+	final artifact = "${groupId}:${artifactId}:${BUILD_VERSION}${packagingPart}${classifierPart}"
 
 	// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
 	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
@@ -409,7 +394,7 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
-			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact}"
+			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact} ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
 			
 			// copy the artifact to a deploy folder. strip classifier and version so that we don't have to bother that much about for the filename looks
 			sh "mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=true -Dmdep.stripVersion=true"

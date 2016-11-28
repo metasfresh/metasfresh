@@ -65,7 +65,7 @@
 
 	</properties>
 
-	<!-- FRESH-271 by declaring those two reactor poms as modules of this parent 
+	<!-- FRESH-271 by declaring those three reactor poms as modules of this parent 
 		pom, we can set all the versions from cmdline, using mvn org.codehaus.mojo:versions-maven-plugin:2.1:revert 
 		-DnewVersion=tst -f de.metas.parent\pom.xml Note that we use version 2.1 
 		because of http://stackoverflow.com/questions/29995139/maven-versions-maven-plugin-versions-plugin-2-2 -->
