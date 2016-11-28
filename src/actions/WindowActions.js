@@ -270,10 +270,8 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
 
 function mapDataToState(data, isModal, rowId){
     return (dispatch) => {
-        console.log(data)
         data.map(item1 => {
             item1.fields = parseToDisplay(item1.fields);
-            console.log(parseToDisplay(item1.fields))
             if(rowId === "NEW"){
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
             }else{
@@ -387,8 +385,9 @@ function parseToDisplay(arr) {
 }
 
 function parseDateToReadable(arr) {
+    const dateParse = ['Date', 'DateTime', 'Time'];
     return arr.map(item =>
-        (item.widgetType === 'Date') ?
+        (dateParse.indexOf(item.widgetType) > -1) ?
         Object.assign({}, item, { value: new Date(item.value) }) :
         item
     )

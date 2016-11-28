@@ -24,7 +24,6 @@ class RawWidget extends Component {
         }
     }
 
-
     handleSelectedValue = (item) => {
         const {setSelectedItem} = this.props
         this.setState(Object.assign({}, this.state, {
@@ -116,8 +115,9 @@ class RawWidget extends Component {
                             timeFormat={true}
                             dateFormat={true}
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
-                            value={widgetData.value ? new Date(widgetData.value) : null}
-                            onChange={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            value={selectedField}
+                            onChange={(date) => handleChange(widgetField, date)}
+                            patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -135,8 +135,9 @@ class RawWidget extends Component {
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
-                            value={selectedField ? new Date(selectedField) : null}
-                            onChange={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            value={selectedField}
+                            onChange={(date) => handleChange(widgetField, date)}
+                            patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>

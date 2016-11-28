@@ -104,10 +104,12 @@ class Widget extends Component {
 
         let currRowId = rowId;
 
+        const dateParse = ['Date', 'DateTime', 'Time'];
+
         this.setState(Object.assign({}, this.state, {
             edited: true
         }), () => {
-            if(widgetType != "Date" && !this.validatePrecision(val)){
+            if(dateParse.indexOf(widgetType) === -1 && !this.validatePrecision(val)){
                 return;
             }
 
