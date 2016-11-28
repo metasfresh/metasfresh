@@ -37,7 +37,6 @@ class ProductAttributes extends Component {
                 {dropdown && <div
                     className="product-attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
                 >
-                {console.log(fields)}
                     {
                         fields && fields.map((item, id) =>
                             <RawWidget
