@@ -34,6 +34,7 @@ import java.util.Set;
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
@@ -637,6 +638,8 @@ public final class Ini implements Serializable
 	@Deprecated
 	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
 	
+	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
+	
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -729,61 +732,76 @@ public final class Ini implements Serializable
 	 */
 	public static String getMetasfreshHome()
 	{
-		// Try getting the METASFRESH_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
-		String env = System.getProperty(METASFRESH_HOME);
-		if (!Check.isEmpty(env, true))
+		return METASFRESH_HOME_Supplier.get();
+	}
+	
+	/**
+	 * Finds {@link #METASFRESH_HOME}.
+	 * 
+	 * @return Metasfresh home directory; never returns <code>null</code>
+	 */
+	private static String findMetasfreshHome()
+	{
+		// Try getting the METASFRESH_HOME from JRE defined properties (i.e. via -DMETASFRESH_HOME=....)
 		{
-			return env.trim();
+			final String env = System.getProperty(METASFRESH_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from system properties variable {})", metasfreshHome, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 		
 		// Try getting the METASFRESH_HOME from environment
-		env = System.getenv(METASFRESH_HOME);
-		if (!Check.isEmpty(env, true))
 		{
-			return env.trim();
-		}
-
-		// Legacy: Try getting the ADEMPIERE_HOME from environment
-		env = System.getenv(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env, true))
-		{
-			return env.trim();
+			final String env = System.getenv(METASFRESH_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
 		// Legacy: Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
-		env = System.getProperty(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env, true))
 		{
-			return env.trim();
+			final String env = System.getProperty(ADEMPIERE_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from system property variable {})", metasfreshHome, ADEMPIERE_HOME);
+				log.warn("Property variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				return metasfreshHome;
+			}
+		}
+
+		// Legacy: Try getting the ADEMPIERE_HOME from environment
+		{
+			final String env = System.getenv(ADEMPIERE_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, ADEMPIERE_HOME);
+				log.warn("System environment variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
 		if (isClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
-			env = userHomeDir + File.separator + ".metasfresh";
-			return env;
+			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";
+			log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
+			return metasfreshHome;
 		}
 
 		// Fallback
-		if (env == null)
 		{
-			env = File.separator + "metasfresh";
-		}
-		
-		return env;
-	}
-
-	/**
-	 * Set Metashfresh home directory
-	 *
-	 * @param metasfreshHome METASFRESH_HOME
-	 */
-	public static void setMetasfreshHome(String metasfreshHome)
-	{
-		if (metasfreshHome != null && metasfreshHome.length() > 0)
-		{
-			System.setProperty(METASFRESH_HOME, metasfreshHome.trim());
+			final String metasfreshHome = File.separator + "metasfresh";
+			log.info("Found METASFRESH_HOME: {} (fallback)", metasfreshHome);
+			return metasfreshHome;
 		}
 	}
 
