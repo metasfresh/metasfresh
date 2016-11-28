@@ -935,7 +935,7 @@ public final class Document
 			}
 
 			// Skip button callouts because it's expected to execute those callouts ONLY when the button is pressed
-			final DocumentFieldWidgetType widgetType = documentField.getDescriptor().getWidgetType();
+			final DocumentFieldWidgetType widgetType = documentField.getWidgetType();
 			if (widgetType == DocumentFieldWidgetType.Button || widgetType == DocumentFieldWidgetType.ActionButton)
 			{
 				return null;
@@ -966,9 +966,7 @@ public final class Document
 
 	private final void updateFieldReadOnly(final IDocumentField documentField)
 	{
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
-		final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
+		final ILogicExpression readonlyLogic = documentField.getDescriptor().getReadonlyLogic();
 		try
 		{
 			final LogicExpressionResult readonly = readonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
@@ -982,9 +980,7 @@ public final class Document
 
 	private final void updateFieldMandatory(final IDocumentField documentField)
 	{
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
-		final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
+		final ILogicExpression mandatoryLogic = documentField.getDescriptor().getMandatoryLogic();
 		try
 		{
 			final LogicExpressionResult mandatory = mandatoryLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
@@ -998,10 +994,8 @@ public final class Document
 
 	private final void updateFieldDisplayed(final IDocumentField documentField)
 	{
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
 		LogicExpressionResult displayed = LogicExpressionResult.FALSE; // default false, i.e. not displayed
-		final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
+		final ILogicExpression displayLogic = documentField.getDescriptor().getDisplayLogic();
 		try
 		{
 			displayed = displayLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);

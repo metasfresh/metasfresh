@@ -528,7 +528,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 		//
 		// Parent link
-		if (idField.getDescriptor().isParentLink())
+		if (idField.isParentLink())
 		{
 			final Class<?> returnType = method.getReturnType();
 			final Integer record_id = (Integer)getValue(idField, Integer.class);

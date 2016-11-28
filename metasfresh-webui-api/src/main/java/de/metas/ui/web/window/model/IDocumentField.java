@@ -5,8 +5,6 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document.CopyMode;
 
 /*
@@ -38,9 +36,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		NewDocument, Refresh, Load,
 	}
 
-	@Override
-	DocumentFieldDescriptor getDescriptor();
-
 	Document getDocument();
 
 	@Override
@@ -48,39 +43,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	{
 		return getDocument().getDocumentPath();
 	}
-
-	@Override
-	default String getFieldName()
-	{
-		return getDescriptor().getFieldName();
-	}
-
-	@Override
-	default boolean isKey()
-	{
-		return getDescriptor().isKey();
-	}
-
-	@Override
-	default boolean isVirtualField()
-	{
-		return getDescriptor().isVirtualField();
-	}
-
-	@Override
-	default boolean isCalculated()
-	{
-		return getDescriptor().isCalculated();
-	}
-
-	/**
-	 * Checks if this field was changed until it was saved. i.e. compares {@link #getValue()} with {@link #getInitialValue()}.
-	 */
-	@Override
-	boolean hasChangesToSave();
-
-	@Override
-	Object getInitialValue();
 
 	/**
 	 * @param initialValue initial value / last saved value
@@ -90,73 +52,16 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/**
 	 * Set field's current value.
-	 * 
+	 *
 	 * @param value
 	 */
 	void setValue(Object value);
 
-	@Override
-	Object getValue();
-
-	@Override
-	int getValueAsInt(int defaultValue);
-
-	@Override
-	boolean getValueAsBoolean();
-
-	@Override
-	<T> T getValueAs(Class<T> returnType);
-
-	@Override
-	Object getOldValue();
-
-	@Override
-	default boolean isMandatory()
-	{
-		return getMandatory().booleanValue();
-	}
-
-	@Override
-	LogicExpressionResult getMandatory();
-
 	void setMandatory(LogicExpressionResult mandatory);
-
-	@Override
-	default boolean isReadonly()
-	{
-		return getReadonly().booleanValue();
-	}
-
-	@Override
-	LogicExpressionResult getReadonly();
 
 	void setReadonly(LogicExpressionResult readonly);
 
-	@Override
-	default boolean isDisplayed()
-	{
-		return getDisplayed().booleanValue();
-	}
-
-	@Override
-	LogicExpressionResult getDisplayed();
-
 	void setDisplayed(LogicExpressionResult displayed);
-
-	@Override
-	default boolean isPublicField()
-	{
-		return getDescriptor().hasCharacteristic(Characteristic.PublicField);
-	}
-
-	@Override
-	default boolean isAdvancedField()
-	{
-		return getDescriptor().hasCharacteristic(Characteristic.AdvancedField);
-	}
-
-	@Override
-	boolean isLookupValuesStale();
 
 	boolean setLookupValuesStaled(String triggeringFieldName);
 
@@ -176,5 +81,4 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	DocumentValidStatus getValid();
 
 	IDocumentField copy(Document document, CopyMode copyMode);
-
 }

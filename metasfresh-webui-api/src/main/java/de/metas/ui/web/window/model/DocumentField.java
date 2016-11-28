@@ -270,7 +270,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		// Apply number precision
 		if (valueConv instanceof BigDecimal)
 		{
-			final Integer precision = getDescriptor().getWidgetType().getStandardNumberPrecision();
+			final Integer precision = getWidgetType().getStandardNumberPrecision();
 			if (precision != null)
 			{
 				final BigDecimal valueBDCorrected = NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
