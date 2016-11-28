@@ -601,3 +601,15 @@ input:checked + .input-slider:before {
     align-items: center;
     justify-content: space-between;
 }
+
+.product-attributes {
+    position: relative;
+    padding-top: 4px;
+    display: inline-block;
+}
+
+.product-attributes-dropdown {
+    position: absolute;
+    top:2rem;
+    z-index: 50;
+}

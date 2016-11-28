@@ -2,11 +2,38 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
 import {replace} from 'react-router-redux';
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
 
 export function loginSuccess() {
-	return () => {
+	return dispatch => {
 		/** global: localStorage */
 		localStorage.setItem('isLogged', true);
+
+        dispatch(getNotificationsEndpoint()).then(topic => {
+            let sock = new SockJs(config.WS_URL);
+            let client = Stomp.Stomp.over(sock);
+            client.debug = null;
+
+            client.connect({}, frame => {
+                client.subscribe(topic.data, msg => {
+                    const notification = JSON.parse(msg.body);
+
+                    if(notification.eventType === "Read"){
+                        dispatch(updateNotification(notification.notification, notification.unreadCount));
+                    }else if(notification.eventType === "New"){
+                        dispatch(newNotification(notification.notification, notification.unreadCount));
+                    }
+                });
+            })
+        })
+
+        dispatch(getNotifications()).then(response => {
+            dispatch(getNotificationsSuccess(
+                response.data.notifications,
+                response.data.unreadCount
+            ));
+        });
 	}
 }
 
@@ -15,6 +42,14 @@ export function logoutSuccess() {
 		/** global: localStorage */
 		localStorage.removeItem('isLogged');
 	}
+}
+
+export function getUserLang() {
+    return () => axios.get(config.API_URL + '/userSession/language');
+}
+
+export function getAvailableLang() {
+    return () => axios.get(config.API_URL + '/login/availableLanguages');
 }
 
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
@@ -149,4 +184,44 @@ export function filterAutocompleteRequest(type, filterId, parameterName, query) 
 		query = encodeURIComponent(query);
 		return axios.get(config.API_URL + '/documentView/filters/parameter/typeahead?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName +'&query=' + query);
 	}
+}
+
+export function getNotifications() {
+    return () => axios.get(config.API_URL + '/notifications/all?limit=20');
+}
+
+export function getNotificationsEndpoint() {
+    return () => axios.get(config.API_URL + '/notifications/websocketEndpoint');
+}
+
+export function markAllAsRead() {
+    return () => axios.put(config.API_URL + '/notifications/all/read');
+}
+
+export function markAsRead(id) {
+    return () => axios.put(config.API_URL + '/notifications/' + id + '/read');
+}
+
+export function getNotificationsSuccess(notifications, unreadCount) {
+    return {
+        type: types.GET_NOTIFICATIONS_SUCCESS,
+        notifications: notifications,
+        unreadCount: unreadCount
+    }
+}
+
+export function updateNotification(msg, count) {
+    return {
+        type: types.UPDATE_NOTIFICATION,
+        notification: msg,
+        unreadCount: count
+    }
+}
+
+export function newNotification(msg, count) {
+    return {
+        type: types.NEW_NOTIFICATION,
+        notification: msg,
+        unreadCount: count
+    }
 }

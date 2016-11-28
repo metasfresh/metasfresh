@@ -9,6 +9,7 @@ import {
 } from '../actions/WindowActions';
 
 import DatePicker from './widget/DatePicker';
+import ProductAttributes from './widget/ProductAttributes';
 import Lookup from './widget/Lookup';
 import DatetimeRange from './app/DatetimeRange';
 import List from './widget/List';
@@ -405,6 +406,15 @@ class RawWidget extends Component {
                         fields={fields}
                         dataId={dataId}
                         onChange={(option) => handlePatch(fields[1].field, option)}
+                    />
+                )
+            case "ProductAttributes":
+                return (
+                    <ProductAttributes
+                        fields={fields}
+                        dataId={dataId}
+                        widgetData={widgetData}
+                        windowType={windowType}
                     />
                 )
             default:

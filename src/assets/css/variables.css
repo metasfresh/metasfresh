@@ -12,6 +12,7 @@ $brand-success-color: #89d729;
 $brand-success-dark-color: #76b727;
 $brand-primary-color: #1d4776;
 $brand-primary-dark-color: #16365b;
+$brand-primary-light-color: #E6F1FA;
 $brand-danger-color: #f67a89;
 $brand-warning-color: #e5bf26;
 $brand-default-color: #eef2f7;
@@ -32,5 +33,3 @@ $brand-icon-color: #7180b6;
 $checkbox-unchecked: rgba(107, 123, 134, 0.2);
 
 $breakpoint: 543px;
-
-

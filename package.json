@@ -46,6 +46,8 @@
     "react-router": "~2.5.1",
     "react-router-redux": "~4.0.5",
     "redux": "~3.5.2",
-    "redux-thunk": "~2.1.0"
+    "redux-thunk": "~2.1.0",
+    "sockjs-client": "~1.1.1",
+    "stompjs": "~2.3.3"
   }
 }

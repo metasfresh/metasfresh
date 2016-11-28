@@ -11,6 +11,7 @@ import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../MasterWidget';
 import SideList from '../app/SideList';
 import Indicator from './Indicator';
+import Inbox from './Inbox/Inbox';
 
 
 import {
@@ -25,27 +26,50 @@ class Header extends Component {
             isSubheaderShow: false,
             isSideListShow: false,
             menuOverlay: null,
-            scrolled: false
+            scrolled: false,
+            isInboxOpen: false
         }
     }
 
     handleSubheaderOpen = () => {
-        this.setState(Object.assign({}, this.state, {isSubheaderShow: !this.state.isSubheaderShow}));
+        this.setState(
+            Object.assign({}, this.state, {
+                isSubheaderShow: !this.state.isSubheaderShow
+            })
+        );
     }
+
+    handleInboxOpen = (state) => {
+        this.setState(
+            Object.assign({}, this.state, {
+                isInboxOpen: !!state
+            })
+        );
+    }
+
     handleSideListToggle = () => {
         const {isSideListShow} = this.state;
         this.toggleScrollScope(!isSideListShow);
 
-        this.setState(Object.assign({}, this.state, {isSideListShow: !isSideListShow}));
+        this.setState(
+            Object.assign({}, this.state, {
+                isSideListShow: !isSideListShow
+            })
+        );
     }
-    handleCloseSideList = (callback) => {
-        this.setState(Object.assign({}, this.state, {isSideListShow: false}), callback);
-        this.toggleScrollScope(false);
 
+    handleCloseSideList = (callback) => {
+        this.setState(
+            Object.assign({}, this.state, {
+                isSideListShow: false
+            }), callback);
+        this.toggleScrollScope(false);
     }
+
     handleBackdropClick = (callback) => {
         this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
     }
+
     handleMenuOverlay = (e, nodeId) => {
         const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
@@ -62,11 +86,12 @@ class Header extends Component {
         }else{
             toggleBreadcrumb();
         }
-
     }
+
     componentDidMount() {
         document.addEventListener('scroll', this.handleScroll);
     }
+
     componentWillUnmount() {
         document.removeEventListener('scroll', this.handleScroll);
     }
@@ -102,11 +127,11 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId
+            viewId, inbox
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen
         } = this.state;
 
         return (
@@ -154,15 +179,34 @@ class Header extends Component {
                                     </div>
                                 }
 
-                                <span className="notification"><i className="meta-icon-notifications"/><span className="notification-number">4</span></span>
+                                <div className={
+                                    "notification-container pointer "+
+                                    (isInboxOpen ? "notification-open " : "")}
+                                    onClick={() => this.handleInboxOpen(true)}
+                                >
+                                    <span
+                                        className={
+                                            "notification "
+                                        }
+                                    >
+                                        <i className="meta-icon-notifications" />
+                                        {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
+                                    </span>
+                                </div>
 
+                                <Inbox
+                                    open={isInboxOpen}
+                                    close={this.handleInboxOpen}
+                                    disableClickOutside={!isInboxOpen}
+                                    inbox={inbox}
+                                />
 
                                 {showSidelist &&
                                     <div
                                         className={"btn-square btn-header side-panel-toggle " + (isSideListShow ? "btn-meta-default-bright btn-header-open" : "btn-meta-primary")}
                                         onClick={e => this.handleBackdropClick(this.handleSideListToggle)}
                                     >
-                                    <i className="meta-icon-list" />
+                                        <i className="meta-icon-list" />
                                     </div>
                                 }
                             </div>
@@ -193,11 +237,12 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     indicator: PropTypes.string.isRequired,
-    viewId: PropTypes.string
+    viewId: PropTypes.string,
+    inbox: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
-    const {windowHandler,listHandler} = state;
+    const {windowHandler,listHandler, appHandler} = state;
 
     const {
         viewId
@@ -205,6 +250,11 @@ function mapStateToProps(state) {
         viewId: ""
     }
 
+    const {
+        inbox
+    } = appHandler || {
+        inbox: {}
+    }
 
     const {
         indicator
@@ -214,7 +264,8 @@ function mapStateToProps(state) {
 
     return {
         indicator,
-        viewId
+        viewId,
+        inbox
     }
 }
 

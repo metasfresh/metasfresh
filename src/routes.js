@@ -6,6 +6,7 @@ import Login from './containers/Login.js';
 import Dashboard from './containers/Dashboard.js';
 import MasterWindow from './containers/MasterWindow.js';
 import DocList from './containers/DocList.js';
+import InboxAll from './containers/InboxAll.js';
 import NavigationTree from './containers/NavigationTree.js';
 
 import {
@@ -33,6 +34,7 @@ export const getRoutes = (store) => {
                     }
                 })
             }else{
+                store.dispatch(loginSuccess());
                 callback();
             }
         }
@@ -59,6 +61,7 @@ export const getRoutes = (store) => {
                     onEnter={(nextState) => store.dispatch(createWindow(nextState.params.windowType, nextState.params.docId))}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
+                <Route path="/inbox" component={InboxAll} />
                 <Route path="/logout" onEnter={logout} />
             </Route>
             <Route path="/login" component={nextState =>

@@ -222,9 +222,8 @@
     flex-direction: row;
 }
 .header-right-side {
-    align-items: stretch;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: flex-end;
 }
 .header-right-side .form-group {
     height: auto;
@@ -233,10 +232,6 @@
 }
 .header-left-side {
     align-items: center;
-}
-
-.header-right-side .side-panel-toggle {
-    margin-left: 15px;
 }
 .btn-header-open {
     border-width: 1px 1px 0 1px;

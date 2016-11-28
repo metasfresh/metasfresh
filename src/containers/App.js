@@ -17,13 +17,22 @@ import {
 
 import {
     addNotification,
-    logoutSuccess
+    logoutSuccess,
+    getAvailableLang
 } from '../actions/AppActions';
 
-Moment.locale(navigator.language);
 
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
+
+// init locale
+store.dispatch(getAvailableLang()).then(response => {
+    if(response.data.values.indexOf(navigator.language)){
+        Moment.locale(navigator.language);
+    }else{
+        Moment.locale(response.data.defaultValue);
+    }
+});
 
 axios.defaults.withCredentials = true;
 
