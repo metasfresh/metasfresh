@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<groupId>de.metas.procurement</groupId>
@@ -14,7 +14,7 @@
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
 		can't set it to another version it -->
-	<version>3-development-SNAPSHOT</version>
+	<version>3.0.0</version>
 
 	<properties>
 		<start-class>de.metas.procurement.webui.Application</start-class>
