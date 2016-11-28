@@ -6,14 +6,14 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<groupId>de.metas.admin.webui</groupId>
 	<artifactId>de.metas.admin.webui</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
-	<version>3.0.0</version>
+	<version>1.0.0</version>
 
 	<properties>
 		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
