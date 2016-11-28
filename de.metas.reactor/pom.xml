@@ -48,7 +48,9 @@
 		<module>../de.metas.dimension</module> <!-- task 08681 -->
 		
 		<module>../de.metas.dlm</module>
+		
 		<module>../de.metas.elasticsearch</module>
+		<module>../de.metas.elasticsearch.server</module>
 		
 		<module>../de.metas.storage</module>
 

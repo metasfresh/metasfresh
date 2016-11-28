@@ -52,6 +52,8 @@ public interface IQueueDAO extends ISingletonService
 	List<I_C_Queue_PackageProcessor> retrieveWorkpackageProcessors(I_C_Queue_Processor processor);
 
 	I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
+	
+	I_C_Queue_PackageProcessor retrievePackageProcessorDefByClassname(Properties ctx, String packageProcessorClassname);
 
 	I_C_Queue_PackageProcessor retrievePackageProcessorDefById(Properties ctx, int packageProcessorId);
 

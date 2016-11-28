@@ -446,7 +446,12 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final ITerminalContextReferences refs = terminalContext.newReferences())
 
 		{
-			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId, partnerId, bpLocationId);
+			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(
+					terminalContext, 
+					warehouseId, 
+					partnerId, 
+					bpLocationId, 
+					orderId);
 			final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
 
 			final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);

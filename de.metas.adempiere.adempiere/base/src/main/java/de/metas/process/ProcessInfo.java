@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -15,19 +16,26 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
@@ -36,6 +44,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Process Information (Value Object)
@@ -485,12 +494,19 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
-	 *
 	 * @return language used to reports; could BE <code>null</code>
 	 */
 	public Language getReportLanguage()
 	{
 		return this.reportLanguage;
+	}
+	
+	/**
+	 * @return AD_Language used to reports; could BE <code>null</code>
+	 */
+	public String getReportAD_Language()
+	{
+		return reportLanguage == null ? null : reportLanguage.getAD_Language();
 	}
 
 	public Optional<String> getReportTemplate()
@@ -526,6 +542,15 @@ public final class ProcessInfo implements Serializable
 	{
 		private Properties ctx;
 		private boolean createTemporaryCtx = false;
+		/**
+		 * Window context variables to copy when {@link #createTemporaryCtx}
+		 * 
+		 * NOTE to developer: before changing and mainly removing some context variables from this list,
+		 * please do a text search and check the code which is actually relying on this list.
+		 */
+		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
+		private static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+
 
 		private int adPInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -639,6 +664,25 @@ public final class ProcessInfo implements Serializable
 			// Date
 			final Timestamp date = SystemTime.asDayTimestamp();
 			Env.setContext(processCtx, Env.CTXNAME_Date, date);
+			
+			//
+			// Copy relevant properties from window context
+			final int windowNo = getWindowNo();
+			if(Env.isRegularWindowNo(windowNo))
+			{
+				for (final String windowCtxName : WINDOW_CTXNAMES_TO_COPY)
+				{
+					final boolean onlyWindow = true;
+					final String value = Env.getContext(ctx, windowNo, windowCtxName, onlyWindow);
+					if(Env.isPropertyValueNull(windowCtxName, value))
+					{
+						continue;
+					}
+					
+					Env.setContext(processCtx, windowNo, windowCtxName, value);
+				}
+			}
+			
 
 			return processCtx;
 		}
@@ -1033,16 +1077,43 @@ public final class ProcessInfo implements Serializable
 
 			return 0;
 		}
+		
+		private TableRecordReference getRecordOrNull()
+		{
+			final int adTableId = getAD_Table_ID();
+			if(adTableId <= 0)
+			{
+				return null;
+			}
+			
+			final int recordId = getRecord_ID();
+			if(recordId <= 0)
+			{
+				return null;
+			}
+			
+			return TableRecordReference.of(adTableId, recordId);
+		}
 
 		/**
 		 * Sets language to be used in reports.
 		 * 
 		 * @param reportLanguage optional report language
-		 * @return
 		 */
 		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
 		{
 			this.reportLanguage = reportLanguage;
+			return this;
+		}
+
+		/**
+		 * Sets language to be used in reports.
+		 * 
+		 * @param adLanguage optional report language
+		 */
+		public ProcessInfoBuilder setReportLanguage(final String adLanguage)
+		{
+			this.reportLanguage = Check.isEmpty(adLanguage, true) ? null : Language.getLanguage(adLanguage);
 			return this;
 		}
 
@@ -1059,7 +1130,35 @@ public final class ProcessInfo implements Serializable
 
 		private Language getReportLanguage()
 		{
-			return reportLanguage;
+			//
+			// Configured reporting language
+			if(reportLanguage != null)
+			{
+				return reportLanguage;
+			}
+			
+			//
+			// Load language from AD_PInstance, if any
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if(adPInstance != null)
+			{
+				final String adLanguage = adPInstance.getAD_Language();
+				if (!Check.isEmpty(adLanguage, true))
+				{
+					return Language.getLanguage(adLanguage);
+				}
+			}
+
+			//
+			// Find reporting language
+			if(isReportingProcess())
+			{
+				return findReportingLanguage();
+			}
+			
+			//
+			// Fallback: no reporting language
+			return null;
 		}
 
 		public ProcessInfoBuilder setPrintPreview(final boolean printPreview)
@@ -1209,6 +1308,164 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 	
+		/**
+		 * Extracts reporting language.
+		 * @param pi
+		 * @return Language; never returns null
+		 */
+		private Language findReportingLanguage()
+		{
+			final Properties ctx = getCtx();
+			final int windowNo = getWindowNo();
+			final boolean runningFromRegularWindow = Env.isRegularWindowNo(windowNo);
+			
+			//
+			// Get status of the InOut Document, if any, to have de_CH in case that document in DR or IP (03614)
+			if (runningFromRegularWindow)
+			{
+				final Language lang = extractLanguageFromDraftInOut();
+				if(lang != null)
+				{
+					return lang;
+				}
+			}
+
+			//
+			// Get Language directly from window context, if any (08966)
+			if (runningFromRegularWindow)
+			{
+				// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
+				final String languageString = Env.getContext(ctx, windowNo, "AD_Language", true);
+				if (!Env.isPropertyValueNull("AD_Language", languageString))
+				{
+					return Language.getLanguage(languageString);
+				}
+			}
+
+			//
+			// Get Language from the BPartner set in window context, if any (03040)
+			if (runningFromRegularWindow)
+			{
+				final int bpartnerId = Env.getContextAsInt(ctx, windowNo, "C_BPartner_ID");
+				if (bpartnerId > 0)
+				{
+					final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+					if(lang != null)
+					{
+						return lang;
+					}
+				}
+			}
+
+			// task 09740
+			// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner
+			{
+				final List<ProcessInfoParameter> parametersList = getParametersOrNull();
+				if(parametersList != null && !parametersList.isEmpty())
+				{
+					final ProcessParams parameters = new ProcessParams(parametersList);
+					final int bpartnerId = parameters.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+					if (bpartnerId > 0)
+					{
+						final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+						if(lang != null)
+						{
+							return lang;
+						}
+					}
+				}
+			}
+
+			//
+			// Get Organization Language if any (03040)
+			{
+				final Language lang = Services.get(ILanguageBL.class).getOrgLanguage(ctx, getAD_Org_ID());
+				if(lang != null)
+				{
+					return lang;
+				}
+			}
+
+			//
+			// Fallback: get it from client context
+			return Env.getLanguage(ctx);
+		}
+
+		/**
+		 * Method to extract the language from login in case of drafted documents with docType {@link X_C_DocType#DOCBASETYPE_MaterialDelivery}.
+		 * <p>
+		 * TODO: extract some sort of language-provider-SPI
+		 *
+		 * @param ctx
+		 * @param pi
+		 * @return the login language if conditions fulfilled, null otherwise.
+		 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
+		 */
+		private final Language extractLanguageFromDraftInOut()
+		{
+
+			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JasperLanguage, true);
+
+			// in case the sys config is not set, there is no need to continue
+			if (!isUseLoginLanguage)
+			{
+				return null;
+			}
+
+			final TableRecordReference recordRef = getRecordOrNull();
+			if(recordRef == null)
+			{
+				return null;
+			}
+
+			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			final boolean isDocument = docActionBL.isDocumentTable(recordRef.getTableName()); // fails for processes
+
+			// Make sure the process is for a document
+			if (!isDocument)
+			{
+				return null;
+			}
+
+			final Properties ctx = getCtx();
+			final Object document = recordRef.getModel(PlainContextAware.createUsingThreadInheritedTransaction(ctx));
+			if(document == null)
+			{
+				return null;
+			}
+			final I_C_DocType doctype = docActionBL.getDocTypeOrNull(document);
+
+			// make sure the document has a doctype
+			if (doctype == null)
+			{
+				return null; // this shall never happen
+			}
+
+			final String docBaseType = doctype.getDocBaseType();
+
+			// make sure the doctype has a base doctype
+			if (docBaseType == null)
+			{
+				return null;
+			}
+
+			// Nothing to do if not dealing with a sales inout.
+			if (!X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType))
+			{
+				return null;
+			}
+
+			// Nothing to do if the document is not a draft or in progress.
+			if (!docActionBL.isStatusDraftedOrInProgress(document))
+			{
+				return null;
+			}
+
+			// If all the conditions described above are fulfilled, take the language from the login
+			final String languageString = Env.getAD_Language(ctx);
+
+			return Language.getLanguage(languageString);
+		}
 	} // ProcessInfoBuilder
 	
 }   // ProcessInfo

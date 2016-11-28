@@ -24,20 +24,15 @@ package de.metas.adempiere.report.jasper.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
-import java.util.Properties;
 
 import org.adempiere.ad.api.ILanguageBL;
-import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -48,10 +43,10 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import net.sf.jasperreports.engine.JasperPrint;
 
 public final class JRClient
@@ -63,7 +58,6 @@ public final class JRClient
 
 	public static final String SYSCONFIG_JRServerClass = "de.metas.adempiere.report.jasper.JRServerClass";
 	public static final String SYSCONFIG_JRServerClass_DEFAULT = "de.metas.adempiere.report.jasper.server.RemoteServletServer";
-	public static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
 	private static final Logger logger = LogManager.getLogger(JRClient.class);
 
@@ -208,6 +202,15 @@ public final class JRClient
 		}
 	}
 
+	/**
+	 * Extracts reporting language from given {@link ProcessInfo}.
+	 * 
+	 * @param pi
+	 * @return Language; never returns null
+	 * 
+	 * @implNote Usually the ProcessInfo already has the language set, so this method is just a fallback.
+	 *           If you are thinking to extend how the reporting language is fetched, please check {@link ProcessInfoBuilder}'s getReportLanguage() method.
+	 */
 	private static Language extractLanguage(final ProcessInfo pi)
 	{
 		//
@@ -216,37 +219,6 @@ public final class JRClient
 		if (lang != null)
 		{
 			return lang;
-		}
-
-		//
-		// Get status of the InOut Document, if any, to have de_CH in case that document in dr or ip (03614)
-
-		if (lang == null && pi.getWindowNo() > 0)
-		{
-			lang = takeLanguageFromDraftInOut(pi);
-		}
-
-		//
-		// Get Language directly from window context, if any (08966)
-		if (lang == null && pi.getWindowNo() > 0)
-		{
-			// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
-			final String languageString = Env.getContext(pi.getCtx(), pi.getWindowNo(), "AD_Language", true);
-			if (languageString != null && !languageString.equals(""))
-			{
-				lang = Language.getLanguage(languageString);
-			}
-		}
-
-		//
-		// Get Language from the BPartner set in window context, if any (03040)
-		if (lang == null && pi.getWindowNo() > 0)
-		{
-			final Integer C_BPartner_ID = Env.getContextAsInt(pi.getCtx(), pi.getWindowNo(), "C_BPartner_ID");
-			if (C_BPartner_ID != null)
-			{
-				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), C_BPartner_ID);
-			}
 		}
 
 		// task 09740
@@ -278,83 +250,5 @@ public final class JRClient
 		//
 		// Fallback: get it from client context
 		return Env.getLanguage(Env.getCtx());
-	}
-
-	/**
-	 * Method to extract the language from login in case of drafted documents with docType {@link X_C_DocType#DOCBASETYPE_MaterialDelivery}.
-	 * <p>
-	 * TODO: extract some sort of language-provider-SPI
-	 *
-	 * @param ctx
-	 * @param pi
-	 * @return the login language if conditions fulfilled, null otherwise.
-	 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
-	 */
-	private static Language takeLanguageFromDraftInOut(final ProcessInfo pi)
-	{
-
-		final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JasperLanguage, true);
-
-		// in case the sys config is not set, there is no need to continue
-		if (!isUseLoginLanguage)
-		{
-			return null;
-		}
-
-		final String tablename = pi.getTableNameOrNull();
-
-		// the process might not be assigned to a table, but these processes are not covered by this logic
-		// for the document processes, there is always a table
-		if (Check.isEmpty(tablename, true))
-		{
-			return null;
-		}
-
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		final boolean isDocument = docActionBL.isDocumentTable(tablename); // fails for processes
-
-		// Make sure the process is for a document
-		if (!isDocument)
-		{
-			return null;
-		}
-
-		final Class<?> clazz = TableModelClassLoader.instance.getClass(tablename);
-
-		final Object document = pi.getRecord(clazz);
-
-		final I_C_DocType doctype = docActionBL.getDocTypeOrNull(document);
-
-		// make sure the document has a doctype
-		if (doctype == null)
-		{
-			return null; // this shall never happen
-		}
-
-		final String docBaseType = doctype.getDocBaseType();
-
-		// make sure the doctype has a base doctype
-		if (docBaseType == null)
-		{
-			return null;
-		}
-
-		// Nothing to do if not dealing with a sales inout.
-		if (!X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType))
-		{
-			return null;
-		}
-
-		// Nothing to do if the document is not a draft or in progress.
-		if (!docActionBL.isStatusDraftedOrInProgress(document))
-		{
-			return null;
-		}
-
-		// If all the conditions described above are fulfilled, take the language from the login
-		final Properties ctx = pi.getCtx();
-		final String languageString = Env.getAD_Language(ctx);
-
-		return Language.getLanguage(languageString);
 	}
 }
