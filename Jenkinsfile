@@ -73,13 +73,13 @@ def createRepo(String repoId)
 {
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
-		echo "Create the repository ${repoId}";
+		echo "Create the repository ${repoId}-releases";
 
-	final String payload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <repository>
   <data>
-	<id>${repoId}</id>
-	<name>${repoId}</name>
+	<id>${repoId}-releases</id>
+	<name>${repoId}-releases</name>
 	<exposed>true</exposed>
 	<repoType>hosted</repoType>
 	<writePolicy>ALLOW_WRITE_ONCE</writePolicy>
@@ -94,8 +94,41 @@ def createRepo(String repoId)
 """;
 
 		// # nexus ignored application/json
-		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${payload}\' https://repo.metasfresh.com/service/local/repositories"
+		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
+		
+		echo "Create the repository-group ${repoId}";
+		
+		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
+<repo-group>
+  <data>
+    <repositories>
+      <repo-group-member>
+        <name>${repoId}-releases</name>
+        <id>${repoId}-releases</id>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-FRESH-854-gh569-releases/</resourceURI>
+      </repo-group-member>
+      <repo-group-member>
+        <name>mvn-public-new</name>
+        <id>mvn-public-new</id>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public-new/</resourceURI>
+      </repo-group-member>
+    </repositories>
+    <name>${repoId}</name>
+    <repoType>group</repoType>
+    <providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
+    <exposed>true</exposed>
+    <id>${repoId}</id>
+	<provider>maven2</provider>
+	<format>maven2</format>
+  </data>
+</repo-group>
+"""
+
+		// # nexus ignored application/json
+		final String createGroupCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createGroupPayload}\' https://repo.metasfresh.com/service/local/repo_groups"
+		sh "${createGroupCommand}"
+
 	} // withCredentials
 }
 
@@ -104,11 +137,14 @@ def deleteRepo(String repoId)
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
 		echo "Delete the repository ${repoId}";
-		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}"
+		
+		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
+		sh "${deleteGroupCommand}"
+		
+		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
 		sh "${deleteRepoCommand}"
 	}
 }
-
 
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
@@ -129,6 +165,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
 Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
 			name: 'MF_SKIP_DEPLOYMENT'),
+		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
+			name: 'MF_SKIP_TO_DIST'),	
 		string(defaultValue: '', 
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
@@ -160,11 +198,12 @@ else
 	MF_BUILD_ID=env.BUILD_NUMBER
 }
 
+
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
 final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
+final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER; // never incorporate params.MF_BUILD_ID into the version anymore. always go with the build number
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
 // the maven artifact version that will be set to the artifacts in this build
@@ -193,10 +232,13 @@ echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
 final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
 
+final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
+echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
+
 // provide these cmdline params to all maven invocations that do a deploy to a non-permanent repo
 // deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
 //final MF_MAVEN_TASK_DEPLOY_PARAMS = "-Dtask-repo-id=metasfresh-task-repo -Dtask-repo-name=${MF_MAVEN_REPO_NAME} -Dtask-repo-url=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
-final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_REPO_URL}\"";
+final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 //final MF_MAVEN_PERM_DEPLOY_PARAMS = "-Ddeploy-repo-id=metasfresh-perm-snapshots-repo -Ddeploy-repo-name=\"Maven metasfresh *permantent* Snapshots Repository\" -Ddeploy-repo-url=https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/";
@@ -209,6 +251,12 @@ currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + 
 
 
 timestamps 
+{
+if(params.MF_SKIP_TO_DIST)
+{
+		echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+}
+else
 {
 node('agent && linux')
 {
@@ -298,7 +346,7 @@ Currently this is inactive because we don't use it
 	}
 */
 }
-
+} // if(params.MF_SKIP_TO_DIST)
 	
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
@@ -318,8 +366,7 @@ node('agent && linux && libc6-i386')
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
-						// with sparse checkout we sometimes got errors like "stderr: error: Entry 'de.metas.acct.base/LICENSE.txt' not uptodate. Cannot update sparse checkout."
-						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+						[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
