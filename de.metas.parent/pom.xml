@@ -965,7 +965,8 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh.assembly.descriptor.version}</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,5.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1078,7 +1079,8 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh.assembly.descriptor.version}</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,5.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1164,7 +1166,8 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh.assembly.descriptor.version}</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,5.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
