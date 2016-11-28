@@ -147,16 +147,13 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
 	{
-		// checkout our code,
-		// note that we don not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
-		// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
+		// checkout our code
 		checkout([
 			$class: 'GitSCM', 
 			branches: [[name: "${env.BRANCH_NAME}"]], 
 			doGenerateSubmoduleConfigurations: false, 
 			extensions: [
-				[$class: 'CleanCheckout'], 
-				// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+				[$class: 'CleanCheckout']
 			], 
 			submoduleCfg: [], 
 			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-webui.git']]
