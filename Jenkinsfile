@@ -52,7 +52,8 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_BUILD_ID', value: buildId),
-			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
+			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
+			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 		], wait: wait
 }
 
@@ -108,7 +109,7 @@ else
 final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
+final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER; // never incorporate params.MF_BUILD_ID into the version anymore. always go with the build number
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
 // the maven artifact version that will be set to the artifacts in this build
@@ -137,10 +138,13 @@ echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
 final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
 
+final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
+echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
+
 // provide these cmdline params to all maven invocations that do a deploy to a non-permanent repo
 // deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
 //final MF_MAVEN_TASK_DEPLOY_PARAMS = "-Dtask-repo-id=metasfresh-task-repo -Dtask-repo-name=${MF_MAVEN_REPO_NAME} -Dtask-repo-url=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
-final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_REPO_URL}\"";
+final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 //final MF_MAVEN_PERM_DEPLOY_PARAMS = "-Ddeploy-repo-id=metasfresh-perm-snapshots-repo -Ddeploy-repo-name=\"Maven metasfresh *permantent* Snapshots Repository\" -Ddeploy-repo-url=https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/";
@@ -171,7 +175,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
             stage('Set artifact versions') 
             {
                 // set the artifact version of everything below the webui's pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DincludeProperties=\"metasfresh-dependency.version\" -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:resolve-ranges"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DincludeProperties=\"metasfresh-dependency.version\" -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DincludeProperties=\"metasfresh-dependency.version\" -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
             }
             
 			stage('Build metasfresh-webui-api') 
