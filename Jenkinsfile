@@ -83,8 +83,8 @@ def createRepo(String repoId)
 	<exposed>true</exposed>
 	<repoType>hosted</repoType>
 	<writePolicy>ALLOW_WRITE_ONCE</writePolicy>
-	<browseable>true</browseable>
-	<indexable>true</indexable>
+    <browseable>true</browseable>
+    <indexable>true</indexable>
 	<repoPolicy>RELEASE</repoPolicy>
 	<providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
 	<provider>maven2</provider>
@@ -247,9 +247,10 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// IMPORTANT: do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
 				
-				// deploy the de.metas.parent pom.xml to our "permanent" snapshot repo. Other projects that are not build right now also need it. Don't do anything with the modules that are declared in there
+				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now also need it. Don't do anything with the modules that are declared in there
         		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
         
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
@@ -259,7 +260,8 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
             stage('Set versions and build esb') 
             {
 				// set the artifact version of everything below de.metas.esb/pom.xml
-	            sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+	            // sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
@@ -316,18 +318,20 @@ node('agent && linux && libc6-i386')
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
-						[$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
+						// with sparse checkout we sometimes got errors like "stderr: error: Entry 'de.metas.acct.base/LICENSE.txt' not uptodate. Cannot update sparse checkout."
+						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
 		
 				// *Now* set the artifact version of everything below de.metas.endcustomer.mf15/pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				sh "mvn --settings $MAVEN_SETTINGS --filede.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set versions:use-latest-versions"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-		
+
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
 				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
