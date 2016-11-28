@@ -41,6 +41,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -455,7 +456,8 @@ public final class Document
 		// Parameters
 		private final IntSupplier documentIdSupplier;
 		private final Properties ctx;
-		private final int adWindowId;
+		private final DocumentType documentType;
+		private final int documentTypeId;
 		private final Evaluatee evaluatee;
 		private final Document parentDocument;
 
@@ -467,7 +469,8 @@ public final class Document
 			ctx = document.getCtx();
 
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-			adWindowId = entityDescriptor.getAD_Window_ID();
+			documentType = entityDescriptor.getDocumentType();
+			documentTypeId = entityDescriptor.getDocumentTypeId();
 
 			evaluatee = document.asEvaluatee();
 
@@ -478,7 +481,8 @@ public final class Document
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("AD_Window_ID", adWindowId)
+					.add("type", documentType)
+					.add("typeId", documentTypeId)
 					.add("evaluatee", evaluatee)
 					.toString();
 		}
@@ -528,25 +532,32 @@ public final class Document
 			}
 
 			//
-			// Preference (user) - P|
+			// Window User Preferences
 			final String fieldName = fieldDescriptor.getFieldName();
+			if (documentType == DocumentType.Window)
 			{
-				final boolean retrieveGlobalPreferences = false; // retrieve Window level preferences
-				final String valueStr = Env.getPreference(ctx, adWindowId, fieldName, retrieveGlobalPreferences);
-				if (!Check.isEmpty(valueStr, false))
-				{
-					return valueStr;
-				}
-			}
+				final int adWindowId = documentTypeId;
 
-			//
-			// Preference (System) - # $
-			{
-				final boolean retrieveGlobalPreferences = true;
-				final String valueStr = Env.getPreference(ctx, adWindowId, fieldName, retrieveGlobalPreferences);
-				if (!Check.isEmpty(valueStr, false))
+				//
+				// Preference (user) - P|
 				{
-					return valueStr;
+					final boolean retrieveGlobalPreferences = false; // retrieve Window level preferences
+					final String valueStr = Env.getPreference(ctx, adWindowId, fieldName, retrieveGlobalPreferences);
+					if (!Check.isEmpty(valueStr, false))
+					{
+						return valueStr;
+					}
+				}
+
+				//
+				// Preference (System) - # $
+				{
+					final boolean retrieveGlobalPreferences = true;
+					final String valueStr = Env.getPreference(ctx, adWindowId, fieldName, retrieveGlobalPreferences);
+					if (!Check.isEmpty(valueStr, false))
+					{
+						return valueStr;
+					}
 				}
 			}
 
@@ -556,7 +567,7 @@ public final class Document
 		}
 	}
 
-	/* package */static enum CopyMode
+	public static enum CopyMode
 	{
 		CheckOutWritable(true), CheckInReadonly(false);
 
@@ -573,7 +584,7 @@ public final class Document
 		}
 	}
 
-	/* package */Document copy(final CopyMode copyMode)
+	public Document copy(final CopyMode copyMode)
 	{
 		final Document parentDocumentCopy = Document.NULL;
 		return new Document(this, parentDocumentCopy, copyMode);
@@ -788,7 +799,7 @@ public final class Document
 		}
 
 		_valid = valid;
-		Execution.getCurrentDocumentChangesCollector().collectDocumentValidStatusChanged(getDocumentPath(), valid);
+		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
 		return valid;
 	}
 
@@ -1083,6 +1094,8 @@ public final class Document
 		{
 			field.updateValid();
 		}
+		
+		checkAndGetValidStatus();
 	}
 
 	public LookupValuesList getFieldLookupValues(final String fieldName)
@@ -1432,6 +1445,10 @@ public final class Document
 				document.initializeFields(fieldInitializerMode, fieldInitializer);
 			}
 
+			//
+			// Update document's valid status
+			document.checkAndGetValidStatus();
+
 			return document;
 		}
 
@@ -1485,7 +1502,7 @@ public final class Document
 				final int documentId = documentIdSupplier.getAsInt();
 				if (parentDocument == null)
 				{
-					_documentPath = DocumentPath.rootDocumentPath(entityDescriptor.getAD_Window_ID(), documentId);
+					_documentPath = DocumentPath.rootDocumentPath(entityDescriptor.getDocumentType(), entityDescriptor.getDocumentTypeId(), documentId);
 				}
 				else
 				{

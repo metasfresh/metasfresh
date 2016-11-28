@@ -18,7 +18,6 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -137,7 +136,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 						.setOperator(operator)
 						.setDefaultValue(value)
 						.setDefaultValueTo(valueTo)
-						.setRequired(value == null) // required if there is no default value
+						.setMandatory(value == null) // mandatory if there is no default value
 						.setLookupDescriptor(lookupDescriptor));
 			}
 			else
@@ -181,9 +180,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			displayName = field.getCaption();
 			widgetType = field.getWidgetType();
 			valueClass = field.getValueClass();
-
-			final DocumentFieldDataBindingDescriptor fieldDataBinding = field.getDataBinding().orElse(null);
-			lookupDescriptor = fieldDataBinding == null ? null : fieldDataBinding.getLookupDescriptor(LookupScope.DocumentFilter);
+			lookupDescriptor = field.getLookupDescriptor(LookupScope.DocumentFilter);
 		}
 
 		@Override

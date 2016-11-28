@@ -65,7 +65,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocument implements Serializable
 {
-	private static final JSONDocument ofDocument(final Document document, final JSONFilteringOptions jsonFilteringOpts)
+	public static final JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
@@ -77,7 +77,7 @@ public final class JSONDocument implements Serializable
 		// Append the other fields
 		document.getFieldViews()
 				.stream()
-				.filter(jsonFilteringOpts.documentFieldFilter())
+				.filter(jsonOpts.documentFieldFilter())
 				.map(JSONDocumentField::ofDocumentField)
 				.forEach(jsonFields::add);
 
@@ -100,7 +100,7 @@ public final class JSONDocument implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getTableName());
-			jsonDocument.putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonFilteringOpts.toString());
+			jsonDocument.putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
 
@@ -112,14 +112,14 @@ public final class JSONDocument implements Serializable
 	 * @param includeFieldsList
 	 * @return list of {@link JSONDocument}s
 	 */
-	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONFilteringOptions jsonFilteringOpts)
+	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONOptions jsonOpts)
 	{
 		return documents.stream()
-				.map(document -> ofDocument(document, jsonFilteringOpts))
+				.map(document -> ofDocument(document, jsonOpts))
 				.collect(Collectors.toList());
 	}
 
-	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONFilteringOptions jsonFilteringOpts)
+	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONOptions jsonOpts)
 	{
 		final Collection<DocumentChanges> documentChangedEventList = documentChangesCollector.getDocumentChangesByPath().values();
 		if (documentChangedEventList.isEmpty())
@@ -130,7 +130,7 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocument> jsonDocuments = new ArrayList<>(documentChangedEventList.size());
 		for (final DocumentChanges documentChangedEvents : documentChangedEventList)
 		{
-			final JSONDocument jsonDocument = ofEvent(documentChangedEvents, jsonFilteringOpts);
+			final JSONDocument jsonDocument = ofEvent(documentChangedEvents, jsonOpts);
 			if (jsonDocument == null)
 			{
 				continue;
@@ -141,7 +141,7 @@ public final class JSONDocument implements Serializable
 		return jsonDocuments;
 	}
 
-	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents, final JSONFilteringOptions jsonFilteringOpts)
+	private static JSONDocument ofEvent(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)
 	{
 		if (documentChangedEvents.isEmpty())
 		{
@@ -155,8 +155,7 @@ public final class JSONDocument implements Serializable
 		final List<JSONDocumentField> jsonFields = new ArrayList<>();
 		documentChangedEvents.getFieldChangesList()
 				.stream()
-				// TODO apply filtering
-				.filter(jsonFilteringOpts.documentFieldChangeFilter())
+				.filter(jsonOpts.documentFieldChangeFilter())
 				.forEach((field) -> {
 					// Add the pseudo-field "ID" first
 					if (field.isKey())

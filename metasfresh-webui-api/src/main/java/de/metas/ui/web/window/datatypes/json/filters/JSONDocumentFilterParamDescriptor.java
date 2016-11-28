@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 
 /*
@@ -41,14 +41,14 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 @SuppressWarnings("serial")
 /* package */final class JSONDocumentFilterParamDescriptor implements Serializable
 {
-	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONFilteringOptions jsonOpts)
+	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONOptions jsonOpts)
 	{
 		return params.stream()
 				.map(filter -> of(filter, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
+	private static final JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentFilterParamDescriptor(param, jsonOpts);
 	}
@@ -72,10 +72,10 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Object defaultValueTo;
 
-	@JsonProperty("required")
-	private final boolean required;
+	@JsonProperty("mandatory")
+	private final boolean mandatory;
 
-	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		super();
 
@@ -97,7 +97,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		defaultValue = Values.valueToJsonObject(param.getDefaultValue());
 		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());
 
-		required = param.isRequired();
+		mandatory = param.isMandatory();
 	}
 
 	@JsonCreator
@@ -108,7 +108,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 			, @JsonProperty("range") final boolean rangeParameter //
 			, @JsonProperty("defaultValue") final Object defaultValue //
 			, @JsonProperty("defaultValueTo") final Object defaultValueTo //
-			, @JsonProperty("required") final boolean required)
+			, @JsonProperty("mandatory") final boolean mandatory //
+	)
 	{
 		this.caption = caption;
 		this.parameterName = parameterName;
@@ -116,7 +117,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		this.rangeParameter = rangeParameter;
 		this.defaultValue = defaultValue;
 		this.defaultValueTo = defaultValueTo;
-		this.required = required;
+		this.mandatory = mandatory;
 	}
 
 	@Override
@@ -130,7 +131,7 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 				.add("rangeParameter", rangeParameter)
 				.add("defaultValue", defaultValue)
 				.add("defaultValueTo", defaultValueTo)
-				.add("required", required)
+				.add("mandatory", mandatory)
 				.toString();
 	}
 
@@ -163,9 +164,9 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	{
 		return defaultValueTo;
 	}
-	
-	public boolean isRequired()
+
+	public boolean isMandatory()
 	{
-		return required;
+		return mandatory;
 	}
 }

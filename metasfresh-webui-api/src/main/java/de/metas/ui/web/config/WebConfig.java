@@ -30,12 +30,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 // @EnableWebMvc // NOTE: if u enable it, the swagger won't work!
 public class WebConfig extends WebMvcConfigurerAdapter
 {
-	// FIXME: atm this does not seem to work. i.e.
-	// if u call an rest API like http://88.198.5.5:8081/rest/api/windows/openWindow/143
-	// there is no headers set
-
-	
 	public static final String ENDPOINT_ROOT = "/rest/api";
+
+	//
+	// Common endpoint parameter names
+	public static final String PARAM_WindowId = "type";
+	public static final String PARAM_DocumentId = "id";
+	public static final String PARAM_TabId = "tabid";
+	public static final String PARAM_RowId = "rowId";
+
 
 	@Override
 	public void addCorsMappings(final CorsRegistry registry)

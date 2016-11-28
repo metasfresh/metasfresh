@@ -42,21 +42,21 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutElement implements Serializable
 {
-	static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONFilteringOptions jsonFilteringOpts)
+	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
 		return elements.stream()
-				.filter(jsonFilteringOpts.documentLayoutElementFilter())
-				.map(element -> new JSONDocumentLayoutElement(element, jsonFilteringOpts))
+				.filter(jsonOpts.documentLayoutElementFilter())
+				.map(element -> new JSONDocumentLayoutElement(element, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element, final JSONFilteringOptions jsonFilteringOpts)
+	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
 	{
 		if (element == null)
 		{
 			return null;
 		}
-		return new JSONDocumentLayoutElement(element, jsonFilteringOpts);
+		return new JSONDocumentLayoutElement(element, jsonOpts);
 	}
 
 	@JsonProperty("caption")
@@ -87,12 +87,12 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
-	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
 	{
 		super();
-		final String adLanguage = jsonFilteringOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAD_Language();
 
-		if (jsonFilteringOpts.isDebugShowColumnNamesForCaption())
+		if (jsonOpts.isDebugShowColumnNamesForCaption())
 		{
 			caption = element.getCaptionAsFieldNames();
 		}
@@ -109,7 +109,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 
-		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonFilteringOpts);
+		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
 	}
 
 	@JsonCreator

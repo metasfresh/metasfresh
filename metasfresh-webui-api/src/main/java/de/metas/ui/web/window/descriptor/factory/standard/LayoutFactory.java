@@ -65,7 +65,6 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
 
-
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
 			.setDefaultValue("There are no detail rows")
@@ -94,7 +93,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	{
 		super();
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
-		_adWindowId = descriptorsFactory.documentEntity().getAD_Window_ID();
+		_adWindowId = gridTabVO.getAD_Window_ID();
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -134,6 +133,9 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		return _adWindowId;
 	}
 
+	/**
+	 * Single row layout: sections list
+	 */
 	public List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList()
 	{
 		final List<I_AD_UI_Section> uiSections = getUISections();
@@ -144,12 +146,16 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		final List<DocumentLayoutSectionDescriptor.Builder> layoutSectionBuilders = new ArrayList<>();
 		for (final I_AD_UI_Section uiSection : uiSections)
 		{
-			layoutSectionBuilders.add(layoutSection(uiSection));
+			layoutSectionBuilders.add(layoutSection(uiSection)
+					.setExcludeSpecialFields());
 		}
 
 		return layoutSectionBuilders;
 	}
 
+	/**
+	 * Single row layout: section
+	 */
 	private DocumentLayoutSectionDescriptor.Builder layoutSection(final I_AD_UI_Section uiSection)
 	{
 		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder()
@@ -446,14 +452,15 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		logger.trace("Building layout element field for {}", field);
 
 		final String fieldName = field.getFieldName();
-		if(!field.hasCharacteristic(Characteristic.PublicField) && field.isPossiblePublicField())
+		if (!field.hasCharacteristic(Characteristic.PublicField) && field.isPossiblePublicField())
 		{
 			field.addCharacteristic(Characteristic.PublicField);
 		}
 
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
-				.setLookupSource(field.getLookupSource())
-				.setPublicField(field.hasCharacteristic(Characteristic.PublicField));
+				.setLookupSource(field.getLookupSourceType())
+				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
+				.trackField(field);
 
 		logger.trace("Built layout element field for {}: {}", field, layoutElementFieldBuilder);
 		return layoutElementFieldBuilder;
@@ -493,11 +500,11 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	public DocumentLayoutElementDescriptor createSpecialElement_DocumentNo()
 	{
 		final DocumentFieldDescriptor.Builder field = descriptorsFactory.getSpecialField_DocumentNo();
-		if(field == null)
+		if (field == null)
 		{
 			return null;
 		}
-		
+
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(null) // not relevant
 				.setDescription(null) // not relevant
@@ -510,11 +517,11 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	public DocumentLayoutElementDescriptor createSpecialElement_DocumentSummary()
 	{
 		final DocumentFieldDescriptor.Builder field = descriptorsFactory.getSpecialField_DocumentSummary();
-		if(field == null)
+		if (field == null)
 		{
 			return null;
 		}
-		
+
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(null) // not relevant
 				.setDescription(null) // not relevant
@@ -527,14 +534,14 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	public DocumentLayoutElementDescriptor createSpecialElement_DocStatusAndDocAction()
 	{
 		final Map<Characteristic, DocumentFieldDescriptor.Builder> fields = descriptorsFactory.getSpecialField_DocSatusAndDocAction();
-		if(fields == null || fields.isEmpty())
+		if (fields == null || fields.isEmpty())
 		{
 			return null;
 		}
-		
+
 		final DocumentFieldDescriptor.Builder docStatusField = fields.get(Characteristic.SpecialField_DocStatus);
 		final DocumentFieldDescriptor.Builder docActionField = fields.get(Characteristic.SpecialField_DocAction);
-		
+
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(null) // not relevant
 				.setDescription(null) // not relevant

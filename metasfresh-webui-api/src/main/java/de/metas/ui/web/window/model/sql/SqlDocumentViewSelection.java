@@ -21,7 +21,6 @@ import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.I_T_Query_Selection;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
@@ -78,6 +77,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
 	private final int adWindowId;
+	private final String tableName;
+	private final String keyColumnName;
 	private final OrderedSelection defaultSelection;
 
 	private final OrderedSelectionFactory orderedSelectionFactory;
@@ -86,7 +87,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	/** Active filters */
 	private final List<DocumentFilter> filters;
-	private final ConcurrentHashMap<List<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	private transient String _toString;
 
@@ -95,6 +96,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		super();
 
 		adWindowId = builder.getAD_Window_ID();
+		tableName = builder.getTableName();
+		keyColumnName = builder.getKeyColumnName();
 
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
@@ -117,6 +120,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 					.omitNullValues()
 					.add("viewId", defaultSelection.getUuid())
 					.add("AD_Window_ID", adWindowId)
+					.add("tableName", tableName)
 					.add("defaultSelection", defaultSelection)
 					.add("sql", sqlSelectPage)
 					// .add("fieldLoaders", fieldLoaders) // no point to show them because all are lambdas
@@ -135,6 +139,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	public int getAD_Window_ID()
 	{
 		return adWindowId;
+	}
+
+	@Override
+	public String getTableName()
+	{
+		return tableName;
+	}
+	
+	private String getKeyColumnName()
+	{
+		return keyColumnName;
 	}
 
 	@Override
@@ -243,7 +258,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		}
 
 		final String fromUUID = defaultSelection.getUuid();
-		return selectionsByOrderBys.computeIfAbsent(orderBys, (newOrderBys) -> orderedSelectionFactory.create(fromUUID, orderBys));
+		final ImmutableList<DocumentQueryOrderBy> orderBysImmutable = ImmutableList.copyOf(orderBys);
+		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.create(fromUUID, orderBysImmutable));
 	}
 
 	private IDocumentView loadDocumentView(final DocumentView.Builder documentViewBuilder, final ResultSet rs) throws SQLException
@@ -259,6 +275,28 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		return documentViewBuilder.build();
 	}
+	
+	@Override
+	public String getSqlWhereClause(final List<Integer> viewDocumentIds)
+	{
+		final String sqlTableName = getTableName();
+		final String sqlKeyColumnName = getKeyColumnName();
+		
+		final StringBuilder sqlWhereClause = new StringBuilder();
+		sqlWhereClause.append("exists (select 1 from " + I_T_Query_Selection.Table_Name + " sel "
+				+ " where "
+				+ " " + I_T_Query_Selection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId())
+				+ " and sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
+				+ ")");
+		
+		if(!Check.isEmpty(viewDocumentIds))
+		{
+			sqlWhereClause.append(" AND ").append(sqlKeyColumnName).append(" IN ").append(DB.buildSqlList(viewDocumentIds));
+		}
+
+		return sqlWhereClause.toString();
+	}
+
 
 	public static final class Builder
 	{
@@ -279,7 +317,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders()
 		{
 			final List<DocumentFieldDescriptor> fieldDescriptors = queryBuilder.getViewFields();
-
+			return createDocumentViewFieldValueLoaders(fieldDescriptors);
+		}
+		
+		private static ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders(final List<DocumentFieldDescriptor> fieldDescriptors)
+		{
 			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
 			for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
 			{
@@ -295,7 +337,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 				if (keyColumn)
 				{
-					// If it's key column, add it fast, because in case the record is missing, we want to fail fast
+					// If it's key column, add it first, because in case the record is missing, we want to fail fast
 					documentViewFieldLoaders.add(0, documentViewFieldLoader);
 				}
 				else
@@ -315,6 +357,16 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private int getAD_Window_ID()
 		{
 			return queryBuilder.getEntityDescriptor().getAD_Window_ID();
+		}
+		
+		private String getTableName()
+		{
+			return queryBuilder.getEntityDescriptor().getTableName();
+		}
+		
+		private String getKeyColumnName()
+		{
+			return queryBuilder.getEntityBinding().getKeyColumnName();
 		}
 
 		private String buildSqlSelectPage()
@@ -400,12 +452,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Created selection {}, rowsCount={} -- {} -- {}", uuid, rowsCount, sql, sqlParams);
 
-			final List<DocumentQueryOrderBy> orderBysWithoutExplicit = orderBys
-					.stream()
-					.filter(orderBy -> !orderBy.isExplicit())
-					.collect(GuavaCollectors.toImmutableList());
-
-			return new OrderedSelection(uuid, rowsCount, orderBysWithoutExplicit);
+			return new OrderedSelection(uuid, rowsCount, orderBys);
 		}
 
 		private OrderedSelectionFactory buildSqlCreateSelectionFromSelection()
@@ -509,11 +556,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		private final String buildOrderBy(final DocumentQueryOrderBy orderBy)
 		{
-			if (orderBy.isExplicit())
-			{
-				throw new DBException("Explicit ORDER BY is not allowed here: " + orderBy);
-			}
-
 			final String fieldName = orderBy.getFieldName();
 			final String fieldSql = fieldName2sqlDictionary.get(fieldName);
 			if (fieldSql == null)
@@ -561,7 +603,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return size;
 		}
 
-		public List<DocumentQueryOrderBy> getOrderBys()
+		private ImmutableList<DocumentQueryOrderBy> getOrderBys()
 		{
 			return orderBys;
 		}

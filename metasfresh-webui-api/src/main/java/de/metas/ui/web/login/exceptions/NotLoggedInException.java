@@ -1,6 +1,8 @@
 package de.metas.ui.web.login.exceptions;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /*
  * #%L
@@ -24,7 +26,16 @@ import org.springframework.security.core.AuthenticationException;
  * #L%
  */
 
+/**
+ * Exception thrown when user is not logged in.
+ * 
+ * IMPORTANT: this exception shall be mapped to HTTP 401 Unauthorized instead of 403 Forbidden. Webui frontend relies on that!
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @SuppressWarnings("serial")
+@ResponseStatus(code = HttpStatus.UNAUTHORIZED)
 public class NotLoggedInException extends AuthenticationException
 {
 	public NotLoggedInException()

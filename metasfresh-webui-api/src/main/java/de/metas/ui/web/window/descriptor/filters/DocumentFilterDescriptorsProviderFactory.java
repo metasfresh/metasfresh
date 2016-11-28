@@ -8,7 +8,6 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MQuery.Operator;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -106,9 +105,8 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
-
-		final DocumentFieldDataBindingDescriptor dataBinding = field.getDataBinding().orElse(null);
-		final LookupDescriptor lookupDescriptor = dataBinding == null ? null : dataBinding.getLookupDescriptor(LookupScope.DocumentFilter);
+		
+		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupScope.DocumentFilter);
 		
 		final Operator operator;
 		if (widgetType.isRangeFilteringSupported())
@@ -126,7 +124,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setWidgetType(widgetType)
 				.setOperator(operator)
 				.setLookupDescriptor(lookupDescriptor)
-				.setRequired(false);
+				.setMandatory(false);
 	}
 
 }

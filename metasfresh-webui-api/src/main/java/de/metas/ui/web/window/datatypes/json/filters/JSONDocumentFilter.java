@@ -105,7 +105,7 @@ public class JSONDocumentFilter implements Serializable
 			// If parameter is missing: skip it if no required, else throw exception
 			if (jsonParam == null)
 			{
-				if (paramDescriptor.isRequired())
+				if (paramDescriptor.isMandatory())
 				{
 					throw new IllegalArgumentException("Parameter '" + parameterName + "' was not provided");
 				}
@@ -118,7 +118,7 @@ public class JSONDocumentFilter implements Serializable
 			// If there was no value/valueTo provided: skip it if no required, else throw exception
 			if (value == null && valueTo == null)
 			{
-				if (paramDescriptor.isRequired())
+				if (paramDescriptor.isMandatory())
 				{
 					throw new IllegalArgumentException("Parameter '" + parameterName + "' has no value");
 				}

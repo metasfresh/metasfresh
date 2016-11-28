@@ -111,12 +111,12 @@ public final class DocumentQuery
 
 	public Document retriveDocumentOrNull()
 	{
-		return documentsRepository.retriveDocument(this);
+		return documentsRepository.retrieveDocument(this);
 	}
 	
 	public List<Document> retriveDocuments()
 	{
-		return documentsRepository.retriveDocuments(this);
+		return documentsRepository.retrieveDocuments(this);
 	}
 	
 	private Properties getCtx()

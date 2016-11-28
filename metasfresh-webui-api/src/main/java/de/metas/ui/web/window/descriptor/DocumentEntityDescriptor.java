@@ -29,6 +29,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
@@ -63,9 +64,12 @@ public class DocumentEntityDescriptor
 		return new Builder();
 	}
 
+	private final DocumentType documentType;
+	private final int documentTypeId;
+	private final String _id;
 	
-	private final String id;
-	
+	private final ITranslatableString caption;
+
 	private final DetailId detailId;
 
 	private final ILogicExpression allowCreateNewLogic;
@@ -82,7 +86,6 @@ public class DocumentEntityDescriptor
 	private final DocumentFieldDependencyMap dependencies;
 
 	// Legacy
-	private final int AD_Window_ID;
 	private final int AD_Tab_ID;
 	private final String tableName;
 	private final boolean isSOTrx;
@@ -92,12 +95,17 @@ public class DocumentEntityDescriptor
 	private final CalloutExecutor calloutExecutorFactory;
 
 	private final DocumentFilterDescriptorsProvider filtersProvider;
-
+	
+	private final int printProcessId;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
-		
+
+		documentType = Preconditions.checkNotNull(builder.documentType, "documentType shall be set");
+		documentTypeId = Preconditions.checkNotNull(builder.documentTypeId, "documentTypeId shall be set");
+		caption = builder.getCaption();
+
 		if (!builder.detailIdSet)
 		{
 			throw new IllegalArgumentException("detailId was not set to " + builder);
@@ -115,17 +123,18 @@ public class DocumentEntityDescriptor
 		dependencies = builder.buildDependencies();
 
 		// legacy:
-		AD_Window_ID = Preconditions.checkNotNull(builder.AD_Window_ID, "AD_Window_ID shall be set");
 		AD_Tab_ID = Preconditions.checkNotNull(builder.AD_Tab_ID, "AD_Tab_ID shall be set");
 		tableName = builder.getTableName();
 		isSOTrx = builder.isSOTrx;
 
 		//
-		id = String.valueOf(builder.AD_Tab_ID);
+		_id = String.valueOf(builder.AD_Tab_ID);
 
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
 
 		filtersProvider = builder.createFiltersProvider();
+		
+		printProcessId = builder.getPrintAD_Process_ID();
 	}
 
 	@Override
@@ -133,6 +142,7 @@ public class DocumentEntityDescriptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("tableName", tableName)
 				.add("fields", fields)
 				.add("entityDataBinding", dataBinding)
 				.add("includedEntitites", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId)
@@ -142,7 +152,7 @@ public class DocumentEntityDescriptor
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(id);
+		return Objects.hash(_id);
 	}
 
 	@Override
@@ -159,12 +169,33 @@ public class DocumentEntityDescriptor
 		}
 
 		final DocumentEntityDescriptor other = (DocumentEntityDescriptor)obj;
-		return DataTypes.equals(id, other.id);
+		return DataTypes.equals(_id, other._id);
 	}
 
-	public String getId()
+	public DocumentType getDocumentType()
 	{
-		return id;
+		return documentType;
+	}
+
+	public int getDocumentTypeId()
+	{
+		return documentTypeId;
+	}
+
+	public int getDocumentTypeId(final DocumentType expectedDocumentType)
+	{
+		Check.assume(documentType == expectedDocumentType, "expected document type to be {} but it was {}", expectedDocumentType, documentType);
+		return documentTypeId;
+	}
+
+	public int getAD_Window_ID()
+	{
+		return getDocumentTypeId(DocumentType.Window);
+	}
+	
+	public ITranslatableString getCaption()
+	{
+		return caption;
 	}
 
 	public DetailId getDetailId()
@@ -241,7 +272,7 @@ public class DocumentEntityDescriptor
 	 * @param detailId
 	 * @return included {@link DocumentEntityDescriptor}; never returns null
 	 */
-	public DocumentEntityDescriptor getIncludedEntityByDetailId(final String detailId) throws NoSuchElementException
+	public DocumentEntityDescriptor getIncludedEntityByDetailId(final DetailId detailId) throws NoSuchElementException
 	{
 		final DocumentEntityDescriptor includedEntityDescriptor = includedEntitiesByDetailId.get(detailId);
 		if (includedEntityDescriptor == null)
@@ -259,12 +290,6 @@ public class DocumentEntityDescriptor
 	public DocumentFieldDependencyMap getDependencies()
 	{
 		return dependencies;
-	}
-
-	// legacy
-	public int getAD_Window_ID()
-	{
-		return AD_Window_ID;
 	}
 
 	// legacy
@@ -294,13 +319,21 @@ public class DocumentEntityDescriptor
 	{
 		return filtersProvider;
 	}
+	
+	public int getPrintProcessId()
+	{
+		return printProcessId;
+	}
 
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 
 		private boolean _built = false;
-		
+
+		private DocumentType documentType;
+		private Integer documentTypeId;
+
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private ITranslatableString description = ImmutableTranslatableString.empty();
 
@@ -319,11 +352,11 @@ public class DocumentEntityDescriptor
 		private ILogicExpression readonlyLogic = ILogicExpression.FALSE;
 
 		// Legacy
-		private Integer AD_Window_ID;
 		private Integer AD_Tab_ID;
 		private String _tableName;
 		private Boolean isSOTrx;
 
+		private int printProcessId = -1;
 
 		private Builder()
 		{
@@ -345,7 +378,7 @@ public class DocumentEntityDescriptor
 				throw new IllegalStateException("Already built: " + this);
 			}
 		}
-		
+
 		public Builder setDetailId(final DetailId detailId)
 		{
 			this.detailId = detailId;
@@ -468,15 +501,21 @@ public class DocumentEntityDescriptor
 			return dependenciesBuilder.build();
 		}
 
-		public Builder setAD_Window_ID(final int AD_Window_ID)
+		public Builder setDocumentType(final DocumentType documentType, final int documentTypeId)
 		{
-			this.AD_Window_ID = AD_Window_ID;
+			this.documentType = documentType;
+			this.documentTypeId = documentTypeId;
 			return this;
 		}
-		
-		public int getAD_Window_ID()
+
+		public DocumentType getDocumentType()
 		{
-			return AD_Window_ID;
+			return documentType;
+		}
+
+		public int getDocumentTypeId()
+		{
+			return documentTypeId;
 		}
 
 		public Builder setAD_Tab_ID(final int AD_Tab_ID)
@@ -503,6 +542,13 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setCaption(final ITranslatableString caption)
+		{
+			Check.assumeNotNull(caption, "Parameter caption is not null");
+			this.caption = caption;
+			return this;
+		}
+
 		public ITranslatableString getCaption()
 		{
 			return caption;
@@ -511,6 +557,13 @@ public class DocumentEntityDescriptor
 		public Builder setDescription(final Map<String, String> descriptionTrls, final String defaultDescription)
 		{
 			description = ImmutableTranslatableString.ofMap(descriptionTrls, defaultDescription);
+			return this;
+		}
+
+		public Builder setDescription(final ITranslatableString description)
+		{
+			Check.assumeNotNull(description, "Parameter description is not null");
+			this.description = description;
 			return this;
 		}
 
@@ -607,6 +660,17 @@ public class DocumentEntityDescriptor
 			final String tableName = getTableName();
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
+		}
+		
+		public Builder setPrintAD_Process_ID(final int printProcessId)
+		{
+			this.printProcessId = printProcessId > 0 ? printProcessId : -1;
+			return this;
+		}
+		
+		private int getPrintAD_Process_ID()
+		{
+			return printProcessId;
 		}
 	}
 }

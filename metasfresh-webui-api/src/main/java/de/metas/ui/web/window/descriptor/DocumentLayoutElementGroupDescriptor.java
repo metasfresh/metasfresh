@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -107,7 +108,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 		public DocumentLayoutElementGroupDescriptor build()
 		{
 			final DocumentLayoutElementGroupDescriptor result = new DocumentLayoutElementGroupDescriptor(this);
-			
+
 			logger.trace("Built {} for {}", result, this);
 			return result;
 		}
@@ -183,5 +184,10 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return null;
 		}
 
+		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
+		{
+			return elementLinesBuilders.stream()
+					.flatMap(elementLineBuilder -> elementLineBuilder.streamElementBuilders());
+		}
 	}
 }

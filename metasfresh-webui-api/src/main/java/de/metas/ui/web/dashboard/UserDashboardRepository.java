@@ -1,14 +1,17 @@
 package de.metas.ui.web.dashboard;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Properties;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
@@ -21,6 +24,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
+import de.metas.ui.web.dashboard.json.JSONDashboardChanges;
 import de.metas.ui.web.session.UserSession;
 
 /*
@@ -58,8 +62,24 @@ public class UserDashboardRepository
 
 	public UserDashboard getUserDashboard()
 	{
-		final UserDashboardKey userDashboardKey = UserDashboardKey.of(userSession.getCtx());
+		final UserDashboardKey userDashboardKey = createUserDashboardKey();
 		return userDashboadCache.getOrLoad(userDashboardKey, () -> retrieveUserDashboard(userDashboardKey));
+	}
+
+	public UserDashboard getUserDashboard(final UserDashboardKey userDashboardKey)
+	{
+		return userDashboadCache.getOrLoad(userDashboardKey, () -> retrieveUserDashboard(userDashboardKey));
+	}
+
+	public void invalidateUserDashboard(final UserDashboardKey userDashboardKey)
+	{
+		userDashboadCache.remove(userDashboardKey);
+	}
+
+	private UserDashboardKey createUserDashboardKey()
+	{
+		final UserDashboardKey userDashboardKey = UserDashboardKey.of(userSession.getCtx());
+		return userDashboardKey;
 	}
 
 	private UserDashboard retrieveUserDashboard(final UserDashboardKey key)
@@ -91,19 +111,12 @@ public class UserDashboardRepository
 
 	private UserDashboard createUserDashboard(final Properties ctx, final I_WEBUI_Dashboard webuiDashboard)
 	{
-		final UserDashboard.Builder userDashboardBuilder = UserDashboard.builder()
-				.setId(webuiDashboard.getWEBUI_Dashboard_ID());
+		final int webuiDashboardId = webuiDashboard.getWEBUI_Dashboard_ID();
 
-		queryBL
-				.createQueryBuilder(I_WEBUI_DashboardItem.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_Dashboard_ID, webuiDashboard.getWEBUI_Dashboard_ID())
-				//
-				.orderBy()
-				.addColumn(I_WEBUI_DashboardItem.COLUMN_Y, Direction.Ascending, Nulls.First)
-				.addColumn(I_WEBUI_DashboardItem.COLUMN_X, Direction.Ascending, Nulls.First)
-				.addColumn(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardItem_ID)
-				.endOrderBy()
+		final UserDashboard.Builder userDashboardBuilder = UserDashboard.builder()
+				.setId(webuiDashboardId);
+
+		retrieveWEBUI_DashboardItemsQuery(ctx, webuiDashboardId)
 				//
 				.create()
 				.list(I_WEBUI_DashboardItem.class)
@@ -114,6 +127,22 @@ public class UserDashboardRepository
 		return userDashboardBuilder.build();
 	}
 
+	private IQueryBuilder<I_WEBUI_DashboardItem> retrieveWEBUI_DashboardItemsQuery(final Properties ctx, final int webuiDashboardId)
+	{
+		return queryBL
+				.createQueryBuilder(I_WEBUI_DashboardItem.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_Dashboard_ID, webuiDashboardId)
+				//
+				.orderBy()
+				.addColumn(I_WEBUI_DashboardItem.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
+				.addColumn(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardItem_ID)
+				.endOrderBy()
+				//
+				;
+
+	}
+
 	private static UserDashboardItem createUserDashboardItem(final I_WEBUI_DashboardItem webuiDashboardItem)
 	{
 		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(webuiDashboardItem);
@@ -121,13 +150,42 @@ public class UserDashboardRepository
 				.setId(webuiDashboardItem.getWEBUI_DashboardItem_ID())
 				.setCaption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, webuiDashboardItem.getName()))
 				.setUrl(webuiDashboardItem.getURL())
-				.setGridX(webuiDashboardItem.getX())
-				.setGridY(webuiDashboardItem.getY())
+				.setSeqNo(webuiDashboardItem.getSeqNo())
+				.setWidgetType(DashboardWidgetType.ofCode(webuiDashboardItem.getWEBUI_DashboardWidgetType()))
 				.build();
 	}
 
+	public void changeUserDashboardKPIs(final JSONDashboardChanges jsonDashboardChanges)
+	{
+		final UserDashboardKey userDashboardKey = createUserDashboardKey();
+		final UserDashboard userDashboard = getUserDashboard(userDashboardKey);
+
+		Services.get(ITrxManager.class)
+				.run((trxName) -> {
+					final Properties ctx = userSession.getCtx();
+					int nextSeqNo = 10;
+					for (final int itemId : jsonDashboardChanges.getDashboardItemIdsOrder())
+					{
+						final UserDashboardItem item = userDashboard.getKPIItemById(itemId);
+						if (item == null)
+						{
+							continue;
+						}
+
+						final I_WEBUI_DashboardItem webuiDashboardItem = InterfaceWrapperHelper.create(ctx, itemId, I_WEBUI_DashboardItem.class, ITrx.TRXNAME_ThreadInherited);
+						webuiDashboardItem.setSeqNo(nextSeqNo);
+						InterfaceWrapperHelper.save(webuiDashboardItem);
+
+						nextSeqNo += 10;
+					}
+				});
+
+		invalidateUserDashboard(userDashboardKey);
+	}
+
 	@Immutable
-	private static final class UserDashboardKey
+	@SuppressWarnings("serial")
+	private static final class UserDashboardKey implements Serializable
 	{
 		public static final UserDashboardKey of(final Properties ctx)
 		{

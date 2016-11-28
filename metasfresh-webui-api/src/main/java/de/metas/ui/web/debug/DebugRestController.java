@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +15,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.event.Event;
+import de.metas.event.Event.Builder;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.process.ProcessInstancesRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
-import de.metas.ui.web.window.datatypes.json.JSONFilteringOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
@@ -65,18 +72,22 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private DocumentViewsRepository documentViewsRepo;
-	
+
+	@Autowired
+	@Lazy
+	private ProcessInstancesRepository pinstancesRepo;
+
 	@Autowired
 	@Lazy
 	private IQueryStatisticsLogger statisticsLogger;
 
-
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
 	{
-		CacheMgt.get().reset(); // FIXME: debugging - while debugging is useful to reset all caches
+		CacheMgt.get().reset();
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
+		pinstancesRepo.cacheReset();
 	}
 
 	private static final void logResourceValueChanged(final String name, final Object value, final Object valueOld)
@@ -93,7 +104,7 @@ public class DebugRestController
 	public void setShowColumnNamesForCaption(@RequestBody final String showColumnNamesForCaptionStr)
 	{
 		final boolean showColumnNamesForCaption = DisplayType.toBoolean(showColumnNamesForCaptionStr);
-		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONFilteringOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
+		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
 		logResourceValueChanged("ShowColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
 	}
 
@@ -133,5 +144,31 @@ public class DebugRestController
 				.stream()
 				.map(stats -> stats.toString())
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	@RequestMapping(value = "/eventBus/postEvent", method = RequestMethod.GET)
+	public void postEvent(
+			@RequestParam(name = "topicName", defaultValue = "de.metas.event.GeneralNotifications") final String topicName //
+			, @RequestParam(name = "message", defaultValue = "test message") final String message//
+			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
+	)
+	{
+		final Topic topic = Topic.builder()
+				.setName(topicName)
+				.setType(Type.LOCAL)
+				.build();
+
+		final Builder eventBuilder = Event.builder()
+				.setSummary("summary")
+				.setDetailPlain(message);
+		if (toUserId > 0)
+		{
+			eventBuilder.addRecipient_User_ID(toUserId);
+		}
+		final Event event = eventBuilder.build();
+
+		Services.get(IEventBusFactory.class)
+				.getEventBus(topic)
+				.postEvent(event);
 	}
 }

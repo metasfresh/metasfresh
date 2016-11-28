@@ -75,7 +75,7 @@ public class CORSFilter implements Filter
 			// adding one more allowed header as requested by @damianprzygodzki to fix the error
 			// "Content-Type is not allowed by Access-Control-Allow-Headers"
 			// httpResponse.setHeader("Access-Control-Allow-Headers", "x-requested-with");
-			httpResponse.setHeader("Access-Control-Allow-Headers", "x-requested-with, Content-Type");
+			httpResponse.setHeader("Access-Control-Allow-Headers", "x-requested-with, Content-Type, Origin");
 			httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
 		}
 		chain.doFilter(request, response);

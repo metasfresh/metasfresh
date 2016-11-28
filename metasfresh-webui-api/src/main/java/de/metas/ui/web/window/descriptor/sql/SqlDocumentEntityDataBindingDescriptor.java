@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -55,8 +54,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor, Serializable
+public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor
 {
 	public static final Builder builder()
 	{
@@ -201,11 +199,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	public final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
 	{
-		if (orderBy.isExplicit())
-		{
-			return orderBy.getExplicitCode();
-		}
-
 		final String fieldName = orderBy.getFieldName();
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
 		return fieldBinding.buildSqlOrderBy(orderBy.isAscending());
@@ -229,11 +222,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	public final IStringExpression buildSqlFullOrderBy(final DocumentQueryOrderBy orderBy)
 	{
-		if (orderBy.isExplicit())
-		{
-			return orderBy.getExplicitCode();
-		}
-
 		final String fieldName = orderBy.getFieldName();
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = getFieldByFieldName(fieldName);
 		return fieldBinding.buildSqlFullOrderBy(orderBy.isAscending());

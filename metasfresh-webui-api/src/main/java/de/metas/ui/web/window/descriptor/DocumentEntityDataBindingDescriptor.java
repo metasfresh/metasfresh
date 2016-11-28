@@ -31,7 +31,7 @@ public interface DocumentEntityDataBindingDescriptor
 {
 	DocumentsRepository getDocumentsRepository();
 	
-	interface DocumentEntityDataBindingDescriptorBuilder
+	public interface DocumentEntityDataBindingDescriptorBuilder
 	{
 		DocumentEntityDataBindingDescriptor getOrBuild();
 	}

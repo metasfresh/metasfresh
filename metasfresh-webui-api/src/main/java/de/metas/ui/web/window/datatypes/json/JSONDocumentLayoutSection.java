@@ -43,27 +43,27 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutSection implements Serializable
 {
-	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONOptions jsonOpts)
 	{
 		return sections.stream()
-				.map(section -> of(section, jsonFilteringOpts))
+				.map(section -> of(section, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section, final JSONFilteringOptions jsonFilteringOpts)
+	private static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutSection(section, jsonFilteringOpts);
+		return new JSONDocumentLayoutSection(section, jsonOpts);
 	}
 
-	static List<JSONDocumentLayoutSection> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutSection> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(detailLayout, jsonFilteringOpts);
+		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(detailLayout, jsonOpts);
 		return ImmutableList.of(section);
 	}
 
-	static List<JSONDocumentLayoutSection> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutSection> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(sideListLayout, jsonFilteringOpts);
+		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(sideListLayout, jsonOpts);
 		return ImmutableList.of(section);
 	}
 
@@ -71,14 +71,14 @@ public final class JSONDocumentLayoutSection implements Serializable
 	 * Build the layout sections for advanced view.
 	 *
 	 * @param advancedViewLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 *
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/26
 	 */
-	static List<JSONDocumentLayoutSection> ofAdvancedView(final DocumentLayoutDetailDescriptor advancedViewLayout, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutSection> ofAdvancedView(final DocumentLayoutDetailDescriptor advancedViewLayout, final JSONOptions jsonOpts)
 	{
 		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(
-				JSONDocumentLayoutColumn.oneColumn(advancedViewLayout, jsonFilteringOpts) //
+				JSONDocumentLayoutColumn.oneColumn(advancedViewLayout, jsonOpts) //
 		);
 
 		return ImmutableList.of(section);
@@ -88,34 +88,34 @@ public final class JSONDocumentLayoutSection implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
 
-	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
 	{
 		super();
-		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonFilteringOpts);
+		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
 	}
 
 	/**
 	 * From detail tab constructor
 	 *
 	 * @param detailLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	private JSONDocumentLayoutSection(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutSection(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
 		super();
-		columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonFilteringOpts);
+		columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonOpts);
 	}
 
 	/**
 	 * From side-list layout constructor
 	 *
 	 * @param detailLayout
-	 * @param jsonFilteringOpts
+	 * @param jsonOpts
 	 */
-	private JSONDocumentLayoutSection(final DocumentLayoutSideListDescriptor sideListLayout, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutSection(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
 	{
 		super();
-		columns = JSONDocumentLayoutColumn.ofSideListLayout(sideListLayout, jsonFilteringOpts);
+		columns = JSONDocumentLayoutColumn.ofSideListLayout(sideListLayout, jsonOpts);
 	}
 
 	@JsonCreator

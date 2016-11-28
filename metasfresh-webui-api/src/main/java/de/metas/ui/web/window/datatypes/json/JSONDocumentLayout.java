@@ -48,12 +48,12 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayout implements Serializable
 {
-	public static final JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonOpts)
+	public static final JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayout(layout, jsonOpts);
 	}
 
-	public static final JSONDocumentLayout ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonOpts)
+	public static final JSONDocumentLayout ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayout(detailLayout, jsonOpts);
 	}
@@ -107,7 +107,7 @@ public final class JSONDocumentLayout implements Serializable
 	 * @param layout
 	 * @param jsonOpts
 	 */
-	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
 		super();
 
@@ -147,7 +147,7 @@ public final class JSONDocumentLayout implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			putDebugProperties(layout.getDebugProperties());
-			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonOpts.toString());
+			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
 		}
 	}
 
@@ -157,7 +157,7 @@ public final class JSONDocumentLayout implements Serializable
 	 * @param detailLayout
 	 * @param jsonOpts
 	 */
-	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONFilteringOptions jsonOpts)
+	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
 		super();
 
@@ -182,7 +182,7 @@ public final class JSONDocumentLayout implements Serializable
 
 		if (WindowConstants.isProtocolDebugging())
 		{
-			putDebugProperty(JSONFilteringOptions.DEBUG_ATTRNAME, jsonOpts.toString());
+			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
 		}
 	}
 

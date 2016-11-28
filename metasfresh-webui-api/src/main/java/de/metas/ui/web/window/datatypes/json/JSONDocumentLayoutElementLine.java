@@ -41,36 +41,36 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public class JSONDocumentLayoutElementLine implements Serializable
 {
-	static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementsLines, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementsLines, final JSONOptions jsonOpts)
 	{
 		return elementsLines.stream()
-				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonFilteringOpts))
+				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonOpts))
 				.filter(jsonElementsLine -> jsonElementsLine.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 	
-	static List<JSONDocumentLayoutElementLine> ofElementsOnePerLine(final List<DocumentLayoutElementDescriptor> elements, final JSONFilteringOptions jsonFilteringOpts)
+	static List<JSONDocumentLayoutElementLine> ofElementsOnePerLine(final List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
-		return JSONDocumentLayoutElement.ofList(elements, jsonFilteringOpts)
+		return JSONDocumentLayoutElement.ofList(elements, jsonOpts)
 				.stream()
 				.map(element -> new JSONDocumentLayoutElementLine(element))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONFilteringOptions jsonFilteringOpts)
+	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutElementLine(elementLine, jsonFilteringOpts);
+		return new JSONDocumentLayoutElementLine(elementLine, jsonOpts);
 	}
 
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine, final JSONFilteringOptions jsonFilteringOpts)
+	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
 	{
 		super();
 
-		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonFilteringOpts);
+		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonOpts);
 		this.elements = ImmutableList.copyOf(elements);
 	}
 

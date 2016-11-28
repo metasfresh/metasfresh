@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
@@ -117,7 +118,7 @@ public final class DocumentLayoutElementLineDescriptor
 				logger.trace("Skip adding {} to {} because it's already consumed", elementBuilder, this);
 				return false;
 			}
-
+			
 			return true;
 		}
 
@@ -165,6 +166,11 @@ public final class DocumentLayoutElementLineDescriptor
 			}
 
 			return null;
+		}
+		
+		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
+		{
+			return elementsBuilders.stream();
 		}
 
 	}

@@ -43,8 +43,8 @@ public final class UserDashboardItem
 	private final int id;
 	private final ITranslatableString caption;
 	private final String url;
-	private final int gridX;
-	private final int gridY;
+	private final int seqNo;
+	private final DashboardWidgetType widgetType;
 
 	private UserDashboardItem(final Builder builder)
 	{
@@ -52,8 +52,8 @@ public final class UserDashboardItem
 		id = builder.id;
 		caption = builder.caption;
 		url = builder.url;
-		gridX = builder.gridX;
-		gridY = builder.gridY;
+		seqNo = builder.seqNo;
+		widgetType = builder.widgetType;
 	}
 
 	@Override
@@ -63,11 +63,11 @@ public final class UserDashboardItem
 				.add("id", id)
 				.add("caption", caption)
 				.add("url", url)
-				.add("gridX", gridX)
-				.add("gridY", gridY)
+				.add("seqNo", seqNo)
+				.add("widgetType", widgetType)
 				.toString();
 	}
-	
+
 	public int getId()
 	{
 		return id;
@@ -83,14 +83,14 @@ public final class UserDashboardItem
 		return url;
 	}
 
-	public int getGridX()
+	public int getSeqNo()
 	{
-		return gridX;
+		return seqNo;
 	}
 
-	public int getGridY()
+	public DashboardWidgetType getWidgetType()
 	{
-		return gridY;
+		return widgetType;
 	}
 
 	public static final class Builder
@@ -98,8 +98,8 @@ public final class UserDashboardItem
 		private Integer id;
 		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private String url;
-		private int gridX;
-		private int gridY;
+		private int seqNo;
+		private DashboardWidgetType widgetType;
 
 		private Builder()
 		{
@@ -111,7 +111,7 @@ public final class UserDashboardItem
 			Check.assumeNotNull(id, "Parameter id is not null");
 			return new UserDashboardItem(this);
 		}
-		
+
 		public Builder setId(final int id)
 		{
 			this.id = id;
@@ -137,15 +137,15 @@ public final class UserDashboardItem
 			return this;
 		}
 
-		public Builder setGridX(final int gridX)
+		public Builder setSeqNo(final int seqNo)
 		{
-			this.gridX = gridX;
+			this.seqNo = seqNo;
 			return this;
 		}
 
-		public Builder setGridY(final int gridY)
+		public Builder setWidgetType(final DashboardWidgetType widgetType)
 		{
-			this.gridY = gridY;
+			this.widgetType = widgetType;
 			return this;
 		}
 	}

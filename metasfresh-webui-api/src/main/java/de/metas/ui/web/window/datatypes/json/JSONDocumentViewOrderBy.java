@@ -76,11 +76,6 @@ public class JSONDocumentViewOrderBy
 
 	private static JSONDocumentViewOrderBy of(final DocumentQueryOrderBy orderBy)
 	{
-		// Skip explicit OrderBYs!
-		if (orderBy.isExplicit())
-		{
-			return null;
-		}
 		return new JSONDocumentViewOrderBy(orderBy.getFieldName(), orderBy.isAscending());
 	}
 

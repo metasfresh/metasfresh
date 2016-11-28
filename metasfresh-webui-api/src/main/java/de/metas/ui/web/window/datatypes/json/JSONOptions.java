@@ -38,12 +38,12 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  */
 
 /**
- * JSON context: provide different options and filters to be used when the API responses are converted to JSON.
+ * JSON context: provide different options and filters to be used when the API responses are converted to/from JSON.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class JSONFilteringOptions
+public final class JSONOptions
 {
 	public static final Builder builder()
 	{
@@ -52,7 +52,7 @@ public final class JSONFilteringOptions
 
 	public static final String DEBUG_ATTRNAME = "json-options";
 
-	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONFilteringOptions.class.getName() + ".ShowColumnNamesForCaption";
+	public static final String SESSION_ATTR_ShowColumnNamesForCaption = JSONOptions.class.getName() + ".ShowColumnNamesForCaption";
 
 	private final String adLanguage;
 	private final boolean showAdvancedFields;
@@ -217,13 +217,13 @@ public final class JSONFilteringOptions
 		}
 	};
 
-	private JSONFilteringOptions(final Builder builder)
+	private JSONOptions(final Builder builder)
 	{
 		super();
-		adLanguage = builder.userSession.getAD_Language();
+		adLanguage = builder.getAD_Language();
 		showAdvancedFields = builder.showAdvancedFields;
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
-		debugShowColumnNamesForCaption = builder.userSession.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
+		debugShowColumnNamesForCaption = builder.getPropertyAsBoolean(SESSION_ATTR_ShowColumnNamesForCaption, false);
 	}
 
 	@Override
@@ -313,24 +313,46 @@ public final class JSONFilteringOptions
 
 	public static final class Builder
 	{
-		private UserSession userSession;
+		private UserSession _userSession;
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
+		private String adLanguage;
 
 		private Builder()
 		{
 			super();
 		}
 
-		public JSONFilteringOptions build()
+		public JSONOptions build()
 		{
-			return new JSONFilteringOptions(this);
+			return new JSONOptions(this);
 		}
 
 		public Builder setUserSession(final UserSession userSession)
 		{
-			this.userSession = userSession;
+			this._userSession = userSession;
 			return this;
+		}
+		
+		public Builder setAD_Language(final String adLanguage)
+		{
+			this.adLanguage = adLanguage;
+			return this;
+		}
+		
+		private String getAD_Language()
+		{
+			if(adLanguage != null)
+			{
+				return adLanguage;
+			}
+			
+			if(_userSession != null)
+			{
+				return _userSession.getAD_Language();
+			}
+			
+			throw new IllegalStateException("Cannot detect the AD_Language");
 		}
 
 		public Builder setShowAdvancedFields(final boolean showAdvancedFields)
@@ -343,6 +365,16 @@ public final class JSONFilteringOptions
 		{
 			this.dataFieldsListStr = dataFieldsListStr;
 			return this;
+		}
+		
+		private boolean getPropertyAsBoolean(final String propertyName, final boolean defaultValue)
+		{
+			if(_userSession != null)
+			{
+				return _userSession.getPropertyAsBoolean(propertyName, defaultValue);
+			}
+			
+			return defaultValue;
 		}
 	}
 }

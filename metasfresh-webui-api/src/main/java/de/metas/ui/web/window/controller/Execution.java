@@ -15,6 +15,7 @@ import com.google.common.base.Throwables;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.model.DocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -95,7 +96,7 @@ public class Execution implements IAutoCloseable
 		}
 		finally
 		{
-			if(!error)
+			if (!error)
 			{
 				logger.debug("Executed {} in {} ({})", name, stopwatch, callable);
 			}
@@ -109,6 +110,19 @@ public class Execution implements IAutoCloseable
 	public static IDocumentChangesCollector getCurrentDocumentChangesCollector()
 	{
 		return getCurrent().getDocumentChangesCollector();
+	}
+
+	/**
+	 * @return actual {@link IDocumentChangesCollector} or {@link NullDocumentChangesCollector}
+	 */
+	public static IDocumentChangesCollector getCurrentDocumentChangesCollectorOrNull()
+	{
+		final Execution execution = currentExecutionHolder.get();
+		if (execution == null)
+		{
+			return NullDocumentChangesCollector.instance;
+		}
+		return execution.getDocumentChangesCollector();
 	}
 
 	private static final Logger logger = LogManager.getLogger(Execution.class);
