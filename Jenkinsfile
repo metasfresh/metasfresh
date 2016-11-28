@@ -145,11 +145,17 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
 	{
-		// use this line in the "real" multibranch pipeline builds
-		// checkout scm
-
-		// use this line when developing this scrip in a normal pipeline job
-		git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh-procurement-webui.git'
+		// checkout our code
+		checkout([
+			$class: 'GitSCM', 
+			branches: [[name: "${env.BRANCH_NAME}"]], 
+			doGenerateSubmoduleConfigurations: false, 
+			extensions: [
+				[$class: 'CleanCheckout']
+			], 
+			submoduleCfg: [], 
+			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-procurement-webui.git']]
+		])
 	}
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
