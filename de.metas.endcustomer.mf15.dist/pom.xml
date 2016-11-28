@@ -372,6 +372,22 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+		
+		<!-- Elasticsearch -->
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh-dependency.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
 
 	</dependencies>
 
