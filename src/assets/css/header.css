@@ -104,7 +104,7 @@
 }
 
 .header-breadcrumb > *:first-of-type .menu-overlay-expand {
-    margin-left: .75rem;
+    margin-left: 17.5px;
 }
 
 .header-input-id {
@@ -248,8 +248,8 @@
 .menu-overlay {
     position: fixed;
     z-index:100;
-    margin-top: -1.57rem;
     pointer-events: none;
+    top:0;
 }
 
 .menu-overlay-body {
@@ -321,15 +321,20 @@
 }
 
 .menu-overlay-caption {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     position: relative;
     z-index:25;
     background-color: $brand-bright-color;
     border:1px solid $brand-border-color-2;
     border-bottom-width: 0;
-    padding: .2rem .68rem;
     color: $brand-link-color;
     pointer-events: visible;
+    width: 55px;
+    height: 55px;
+    padding-bottom: 6px;
 }
 
 .menu-overlay-header {
