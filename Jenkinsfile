@@ -82,7 +82,10 @@ def createRepo(String repoId)
 	<name>${repoId}</name>
 	<exposed>true</exposed>
 	<repoType>hosted</repoType>
-	<repoPolicy>SNAPSHOT</repoPolicy>
+	<writePolicy>ALLOW_WRITE_ONCE</writePolicy>
+	<browseable>true</browseable>
+	<indexable>true</indexable>
+	<repoPolicy>RELEASE</repoPolicy>
 	<providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
 	<provider>maven2</provider>
 	<format>maven2</format>
@@ -161,34 +164,55 @@ else
 final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID;
+final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
 // the maven artifact version that will be set to the artifacts in this build
 // examples: "1-master-543-SNAPSHOT", "2-FRESH-123-9842-SNAPSHOT"
-final BUILD_MAVEN_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
-echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION"
+//final BUILD_MAVEN_VERSION=BUILD_VERSION_PREFIX + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID + "-SNAPSHOT"
+//final BUILD_MAVEN_VERSION=BUILD_VERSION + "-SNAPSHOT";
+final BUILD_MAVEN_VERSION=BUILD_VERSION;
+echo "Setting BUILD_MAVEN_VERSION=$BUILD_MAVEN_VERSION";
 
 // the version range used when resolving depdendencies for this build
-// example: "[1-master-SNAPSHOT],[2-FRESH-123-SNAPSHOT]
-final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION="[1-master-SNAPSHOT],["+BUILD_MAVEN_VERSION+"]"
-echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION"
+// see e.g. https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN402 for a documentation of version ranges
+final BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION='[1.0.0,5.0.0]'; // everything >= 1
+echo "Setting BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION=$BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION";
 
+// metasfresh-task-repo does not depent of the task/breanch name so that maven can find the credentials in our provided settings.xml file
+final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
+echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
+
+// name of the task/branch specific maven nexus-repository that we will deploy to
 final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}";
-echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME"
+echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
 
-final MF_MAVEN_DEPLOY_PARAMS = "-Ddeploy-repo-id=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-name=${MF_MAVEN_REPO_NAME} -Ddeploy-repo-url=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}"
-echo "Setting MF_MAVEN_DEPLOY_PARAMS=$MF_MAVEN_DEPLOY_PARAMS"
+final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
+echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
 
-currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
-currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
+final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
+echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
+
+// provide these cmdline params to all maven invocations that do a deploy to a non-permanent repo
+// deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
+//final MF_MAVEN_TASK_DEPLOY_PARAMS = "-Dtask-repo-id=metasfresh-task-repo -Dtask-repo-name=${MF_MAVEN_REPO_NAME} -Dtask-repo-url=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
+final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_REPO_URL}\"";
+echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
+
+//final MF_MAVEN_PERM_DEPLOY_PARAMS = "-Ddeploy-repo-id=metasfresh-perm-snapshots-repo -Ddeploy-repo-name=\"Maven metasfresh *permantent* Snapshots Repository\" -Ddeploy-repo-url=https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/";
+//final MF_MAVEN_PERM_DEPLOY_PARAMS = '-DaltDeploymentRepository="metasfresh-perm-snapshots-repo::default::https://repo.metasfresh.com/content/repositories/mvn-metasfresh-perm-snapshots/"'
+//echo "Setting MF_MAVEN_PERM_DEPLOY_PARAMS=$MF_MAVEN_PERM_DEPLOY_PARAMS";
+
+
+currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH;
+currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID;
 
 
 timestamps 
 {
 node('agent && linux')
 {
-	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{
@@ -218,27 +242,27 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
 			
-				// deploy de.metas.parent/pom.xml as it is no (still with version "3-development-SNAPSHOT") so that other nodes can find it when they modify their own pom.xml versions
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
+				// deploy de.metas.parent/pom.xml as it is now (still with version "3.0.0") so that other nodes can find it when they modify their own pom.xml versions
+				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// IMPORTANT: do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 				
-        		// deploy the de.metas.parent pom.xml to our "permanent" snapshot repo. Other projects that are not build right now also need it. Don't do anything with the modules that are declared in there
-        		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive --activate-profiles metasfresh-perm-snapshots-repo clean deploy"
+				// deploy the de.metas.parent pom.xml to our "permanent" snapshot repo. Other projects that are not build right now also need it. Don't do anything with the modules that are declared in there
+        		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
         
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-        		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
             }
 
             stage('Set versions and build esb') 
             {
 				// set the artifact version of everything below de.metas.esb/pom.xml
-	            sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+	            sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
-    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_DEPLOY_PARAMS} clean deploy"
+    		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
             }
 			
 			// collect test results
@@ -277,7 +301,7 @@ Currently this is inactive because we don't use it
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
 {
-	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
@@ -299,10 +323,10 @@ node('agent && linux && libc6-i386')
 				])
 		
 				// *Now* set the artifact version of everything below de.metas.endcustomer.mf15/pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=true -DgenerateBackupPoms=false org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_MAVEN_VERSION} -DparentVersion=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=false ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} org.codehaus.mojo:versions-maven-plugin:2.1:update-parent org.codehaus.mojo:versions-maven-plugin:2.1:set"
 			
 				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmetasfresh-dependency.version=${BUILD_MAVEN_METASFRESH_DEPENDENCY_VERSION} -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 		
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
@@ -325,7 +349,7 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 
 	// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
 	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
-	configFileProvider([configFile(fileId: 'aa1d8797-5020-4a20-aa7b-2334c15179be', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
+	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
@@ -454,6 +478,6 @@ else
 			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
 		} // if(userinput)
 	} // stage
-} // if(MF_OFFER_DEPLOY)
+} // if(params.MF_SKIP_DEPLOYMENT)
 } // timestamps
 
