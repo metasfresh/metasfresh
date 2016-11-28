@@ -6,12 +6,12 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<groupId>de.metas.ui.web</groupId>
 	<artifactId>metasfresh-webui-vaadin</artifactId>
-	<version>3-development-SNAPSHOT</version>
+	<version>3.0.0</version>
 
 	<properties>
 		<start-class>de.metas.ui.web.vaadin.Application</start-class>
