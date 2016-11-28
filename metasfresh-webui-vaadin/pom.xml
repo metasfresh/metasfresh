@@ -6,12 +6,12 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<groupId>de.metas.ui.web</groupId>
 	<artifactId>metasfresh-webui-vaadin</artifactId>
-	<version>3.0.0</version>
+	<version>1.0.0</version>
 
 	<properties>
 		<start-class>de.metas.ui.web.vaadin.Application</start-class>
@@ -159,7 +159,7 @@
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>metasfresh-webui-api</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 
 			<exclusions>
 				<exclusion>
@@ -175,13 +175,13 @@
 		<dependency>
 			<groupId>de.metas.endcustomer.mf15</groupId>
 			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<!-- needed because we want to run jasper reports -->
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
