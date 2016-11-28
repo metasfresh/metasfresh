@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.metas.banking</groupId>
 		<artifactId>de.metas.banking</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>3.0.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 

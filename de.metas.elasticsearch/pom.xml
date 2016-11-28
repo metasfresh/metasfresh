@@ -6,13 +6,13 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>3.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.elasticsearch</groupId>
 	<artifactId>de.metas.elasticsearch</artifactId>
-	<version>3-development-SNAPSHOT</version>
+	<version>3.0.0</version>
 	<packaging>jar</packaging>
 
 	<properties>

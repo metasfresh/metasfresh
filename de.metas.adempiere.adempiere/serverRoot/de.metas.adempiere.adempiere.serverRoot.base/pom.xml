@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.metas.adempiere.adempiere</groupId>
 		<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
