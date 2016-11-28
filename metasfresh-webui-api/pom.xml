@@ -74,7 +74,7 @@
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
 			<!-- version>${metasfresh-dependency.version}</version -->
-			<version>1.0.0</version>
+			<version>3.0.0</version>
 			<exclusions>
 				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base !!! -->
 				<exclusion>
@@ -87,7 +87,7 @@
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
 			<!-- version>${metasfresh-dependency.version}</version -->
-			<version>1.0.0</version>
+			<version>3.0.0</version>
 		</dependency>
 		
 
@@ -126,7 +126,7 @@
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<!-- version>${metasfresh-dependency.version}</version -->
-			<version>1.0.0</version>
+			<version>3.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
