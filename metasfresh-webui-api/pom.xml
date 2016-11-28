@@ -46,8 +46,12 @@
 
 		<!-- Spring -->
 		<dependency>
+			<!-- spring-session is managed to 1.0.2.RELEASE by spring-boot 1.3.3.RELEASE 
+				but that version doesn't contain the annotation @EnableHazelcastHttpSession 
+				and others. That's why we go with 1.2.0.RELEASE. -->
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session</artifactId>
+			<version>1.2.0.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -69,7 +73,8 @@
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<!-- version>${metasfresh-dependency.version}</version -->
+			<version>1.0.0</version>
 			<exclusions>
 				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base !!! -->
 				<exclusion>
@@ -81,12 +86,8 @@
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<!-- version>${metasfresh-dependency.version}</version -->
+			<version>1.0.0</version>
 		</dependency>
 		
 
@@ -124,7 +125,8 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<!-- version>${metasfresh-dependency.version}</version -->
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
