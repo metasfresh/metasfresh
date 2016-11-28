@@ -10,6 +10,7 @@
 
 	<groupId>de.metas.assemblies</groupId>
 	<artifactId>de.metas.assemblies</artifactId>
+	<version>1.0.0</version>
 
 	<description>Shared assembly descriptors for metas projects</description>
 

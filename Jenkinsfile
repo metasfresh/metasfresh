@@ -52,7 +52,6 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
 }
-
 def boolean isRepoExists(String repoId)
 {
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
@@ -60,7 +59,7 @@ def boolean isRepoExists(String repoId)
 		echo "Check if the nexus repository ${repoId} exists";
 
 		// check if there is a repository for ur branch
-		final String checkForRepoCommand = "curl --silent -X GET -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories | grep '<id>${repoId}</id>'";
+		final String checkForRepoCommand = "curl --silent -X GET -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories | grep '<id>${repoId}-releases</id>'";
 		final grepExitCode = sh returnStatus: true, script: checkForRepoCommand;
 		final repoExists = grepExitCode == 0;
 
@@ -129,6 +128,38 @@ def createRepo(String repoId)
 		final String createGroupCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createGroupPayload}\' https://repo.metasfresh.com/service/local/repo_groups"
 		sh "${createGroupCommand}"
 
+		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
+		
+final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
+<scheduled-task>
+  <data>
+	<id>cleanup-repo-${repoId}-releases</id>
+	<enabled>true</enabled>
+	<name>Remove Releases from ${repoId}-releases</name>
+	<typeId>ReleaseRemoverTask</typeId>
+	<schedule>daily</schedule>
+	<startDate>${currentBuild.startTimeInMillis}</startDate>
+	<recurringTime>03:00</recurringTime>
+	<properties>
+      <scheduled-task-property>
+        <key>numberOfVersionsToKeep</key>
+        <value>1</value>
+      </scheduled-task-property>
+      <scheduled-task-property>
+        <key>indexBackend</key>
+        <value>false</value>
+      </scheduled-task-property>
+      <scheduled-task-property>
+        <key>repositoryId</key>
+        <value>${repoId}-releases</value>
+      </scheduled-task-property>
+	</properties>
+  </data>
+</scheduled-task>"""
+	
+		// # nexus ignored application/json
+		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
+		sh "${createScheduleCommand}"		
 	} // withCredentials
 }
 
@@ -143,6 +174,9 @@ def deleteRepo(String repoId)
 		
 		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
 		sh "${deleteRepoCommand}"
+		
+		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
+		sh "${deleteScheduleCommand}"
 	}
 }
 
@@ -278,7 +312,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
 				// set the artifact version of everything below de.metas.parent/pom.xml
-				// IMPORTANT: do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
+				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
@@ -365,8 +399,9 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
 			
-				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+				// about -Dmaven.test.failure.ignore=true: see metasfresh stage
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 

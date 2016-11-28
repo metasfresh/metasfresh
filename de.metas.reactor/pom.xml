@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.reactor</groupId>
 	<artifactId>de.metas.reactor</artifactId>
-	
+	<version>1.0.0</version>
 
 	<description>all projects that are required for a customer rollout</description>
 

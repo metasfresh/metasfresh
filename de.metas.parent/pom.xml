@@ -53,6 +53,9 @@
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
+		<!-- this version can't be updated by the versions plugin, but we can pass it through our pipeline and set this property in downstream jobs -->
+		<metasfresh.assembly.descriptor.version>1.0.0</metasfresh.assembly.descriptor.version>
+
 		<!-- Tells SonarQube to run the unit tests -->
 		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
 		<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test 
@@ -512,7 +515,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.4</version>
+					<version>3.0.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -962,7 +965,7 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>1.0.0</version>
+								<version>${metasfresh.assembly.descriptor.version}</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1075,7 +1078,7 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>1.0.0</version>
+								<version>${metasfresh.assembly.descriptor.version}</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1161,7 +1164,7 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>1.0.0</version>
+								<version>${metasfresh.assembly.descriptor.version}</version>
 							</dependency>
 						</dependencies>
 						<executions>
