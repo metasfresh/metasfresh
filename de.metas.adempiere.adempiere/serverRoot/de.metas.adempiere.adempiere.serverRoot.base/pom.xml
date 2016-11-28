@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.metas.adempiere.adempiere</groupId>
 		<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
@@ -92,23 +92,26 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<!-- Required for org.compiere.server.AcctProcessor -->
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- workaound, see 06687 Get rid of calls to non-API (107116288996) -->

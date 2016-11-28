@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -32,6 +32,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>compile</scope>
 		</dependency>
@@ -40,17 +41,20 @@
 			<!-- needed because of TestClientUI class -->
 			<groupId>de.metas.adempiere.ait</groupId>
 			<artifactId>de.metas.adempiere.ait</artifactId>
+			<version>1.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.ait</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.commission</groupId>
 			<artifactId>de.metas.commission.client</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 

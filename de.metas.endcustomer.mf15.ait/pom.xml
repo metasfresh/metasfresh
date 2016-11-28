@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.metas.endcustomer.mf15</groupId>
 		<artifactId>de.metas.endcustomer.mf15</artifactId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.ait</artifactId>
@@ -17,37 +17,37 @@
 		<dependency>
 			<groupId>de.metas.endcustomer.mf15</groupId>
 			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.ait</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<!-- 
 		<dependency>
 			<groupId>de.metas.commission</groupId>
 			<artifactId>de.metas.commission.ait</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.ait</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning.ait</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
  		-->
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts.ait</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 

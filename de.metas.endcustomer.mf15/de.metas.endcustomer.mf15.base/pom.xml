@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.endcustomer.mf15</groupId>
 		<artifactId>de.metas.endcustomer.mf15</artifactId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.base</artifactId>
@@ -22,13 +22,14 @@
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- this is required when we run with -Dorg.adempiere.server.embedded=true -->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!--
@@ -39,7 +40,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 

@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 		<relativePath>../../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -19,11 +19,12 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
@@ -31,13 +32,14 @@
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 <!-- not needed
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
-			<version>${metasfresh-dependency.version}</version>			
+			<version>1.0.0</version>			
 			<scope>runtime</scope>
 		</dependency>			
 -->	

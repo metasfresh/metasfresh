@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>de.metas.commission</artifactId>
 		<groupId>de.metas.commission</groupId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -18,12 +18,13 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.commission</groupId>
 			<artifactId>de.metas.commission.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

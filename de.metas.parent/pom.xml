@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
 		can't set it to another version it -->
-	<version>3.0.0</version>
+	<version>1.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -238,7 +238,7 @@
 				<version>${project.version}</version> 
 			</dependency> 
 			-->
-
+<!-- 
 			<dependency>
 				<groupId>de.metas.adempiere.libero</groupId>
 				<artifactId>de.metas.adempiere.libero.libero</artifactId>
@@ -442,7 +442,7 @@
 				<artifactId>de.metas.rfq</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+-->
 		</dependencies>
 	</dependencyManagement>
 
@@ -962,7 +962,7 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh-dependency.version}</version>
+								<version>1.0.0</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1075,7 +1075,7 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh-dependency.version}</version>
+								<version>1.0.0</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1161,7 +1161,7 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh-dependency.version}</version>
+								<version>1.0.0</version>
 							</dependency>
 						</dependencies>
 						<executions>

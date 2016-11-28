@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3.0.0</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -21,6 +21,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -32,6 +33,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -40,6 +42,7 @@
 			<!-- required for unit test mode, AITHelper etc -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 			<exclusions>
@@ -60,6 +63,7 @@
 			<!-- NOTE: required for MockedAdempiereImportProcessor -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 
 			<exclusions>
@@ -95,7 +99,7 @@
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
