@@ -176,7 +176,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 
 		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
-		if (allowCreateNewLogic.isConstantTrue())
+		if (allowCreateNewLogic.isConstantFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
 					+ "\n AllowCreateNewLogic: " + allowCreateNewLogic
