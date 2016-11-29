@@ -68,6 +68,7 @@
 		<dependency>
 			<groupId>de.metas.dlm</groupId>
 			<artifactId>metasfresh-dlm</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
