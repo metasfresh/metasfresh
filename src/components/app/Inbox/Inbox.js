@@ -78,8 +78,8 @@ class Inbox extends Component {
                                 />
                             )}
                             {inbox && inbox.notifications.length == 0 &&
-                                <div className="inbox-item">
-                                    There is no notifications.
+                                <div className="inbox-item inbox-item-empty">
+                                    Inbox is empty
                                 </div>
                             }
                         </div>

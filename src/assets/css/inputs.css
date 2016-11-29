@@ -59,10 +59,11 @@ input {
  .btn-square {
      height: 55px;
      width: 55px;
-     line-height: 55px;
-     text-align: center;
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
      cursor: pointer;
-     display: inline-block;
      font-size: 18px;
  }
 

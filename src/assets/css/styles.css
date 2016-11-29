@@ -1101,8 +1101,6 @@ th {
 }
 
 .notification {
-    width: 20px;
-    height: 20px;
     font-size: 18px;
     color: $brand-link-color;
     display: inline-block;
@@ -1124,6 +1122,9 @@ th {
     pointer-events: none;
     z-index:2;
     border-bottom: 0 !important;
+}
+.notification-open .notification {
+    margin-top: -1px;
 }
 
 .notification-number {
@@ -1719,7 +1720,7 @@ td.pulse-off input {
 }
 .inbox-footer {
     border-top: 1px solid #e1e8ee;
-    justify-content: center;
+    justify-content: flex-end;
 }
 
 .inbox-caption {
@@ -1769,7 +1770,7 @@ td.pulse-off input {
     min-height:80px;
 }
 
-.inbox-item:hover {
+.inbox-item:not(.inbox-item-empty):hover {
     background-color: #edf3f6;
 }
 
