@@ -744,6 +744,13 @@ public class CalloutOrder extends CalloutEngine
 		//
 		// Charge: reset
 		orderLine.setC_Charge(null);
+
+		//
+		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
+		final I_M_Product product = orderLine.getM_Product();
+		orderLine.setC_UOM(Services.get(IProductBL.class).getStockingUOM(product));
+		orderLine.setPrice_UOM(null); // reset; will be set when we update pricing
+		
 		// Set Attribute
 		if (calloutField.getTabInfoContextAsInt("M_Product_ID") == M_Product_ID
 				&& calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID") > 0)
