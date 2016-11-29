@@ -1116,6 +1116,11 @@ th {
     justify-content: center;
 }
 
+.notification-container:hover{
+    background-color: $brand-bright-color;
+    border-bottom: 1px solid $brand-border-color;
+}
+
 .notification-open {
     background-color: #F8FAFB;
     border: 1px solid #e1e8ee;

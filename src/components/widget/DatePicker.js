@@ -1,27 +1,34 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import Moment from 'moment';
 
 import Datetime from 'react-datetime';
 
 class DatePicker extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
-            open: false
+            open: false,
+            cache: null
         }
     }
 
     handleBlur = (date) => {
-        const {patch} = this.props;
+        const {patch, value} = this.props;
+        const {cache} = this.state;
+
+        if(JSON.stringify(cache) !== JSON.stringify(date.toDate())){
+            patch(date);
+        }
 
         this.handleClose();
-        patch(date);
     }
 
     handleFocus = () => {
+        const {value} = this.props;
         this.setState(Object.assign({}, this.state, {
+            cache: value,
             open: true
         }));
     }
