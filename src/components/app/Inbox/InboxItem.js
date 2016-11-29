@@ -9,7 +9,7 @@ class InboxItem extends Component {
 
     renderIconFromTarget = (target) => {
         switch(target){
-            case 143:
+            case "143":
                 return "sales";
                 break;
             default:

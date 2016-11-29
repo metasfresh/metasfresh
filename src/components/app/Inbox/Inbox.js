@@ -24,6 +24,13 @@ class Inbox extends Component {
 
     handleClick = (item) => {
         const {dispatch, close} = this.props;
+        if(item.target){
+            switch(item.target.targetType){
+                case "window":
+                    dispatch(push('/window/' + item.target.documentType + '/' + item.target.documentId));
+                    break;
+            }
+        }
         if(!item.read){
             dispatch(markAsRead(item.id));
         }
