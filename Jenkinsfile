@@ -52,6 +52,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
 }
+
 def boolean isRepoExists(String repoId)
 {
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
@@ -105,7 +106,7 @@ def createRepo(String repoId)
       <repo-group-member>
         <name>${repoId}-releases</name>
         <id>${repoId}-releases</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-FRESH-854-gh569-releases/</resourceURI>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/${repoId}-releases/</resourceURI>
       </repo-group-member>
       <repo-group-member>
         <name>mvn-public-new</name>
@@ -308,8 +309,8 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
 			
-				// deploy de.metas.parent/pom.xml as it is now (still with version "3.0.0") so that other nodes can find it when they modify their own pom.xml versions
-				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				// deploy de.metas.parent/pom.xml as it is now (still with version "1.0.0") so that other nodes can find it when they modify their own pom.xml versions
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
@@ -357,19 +358,16 @@ stage('Invoke downstream jobs')
 	// more do come: admin-webui, maybe the webui-javascript frontend too
 
 	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-/*
-Currently this is inactive because we don't use it
 	node('linux')
 	{	
 		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 		{
 			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-			final jsonPayload = "{\"BUILD_VERSION\":\"${BUILD_VERSION}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+			final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
 			
 			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
 	}
-*/
 }
 } // if(params.MF_SKIP_TO_DIST)
 	
