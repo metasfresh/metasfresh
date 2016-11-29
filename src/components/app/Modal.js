@@ -133,12 +133,12 @@ class Modal extends Component {
                     <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
                         <div className="items-row-2">
-                            {modalType === "process" && <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleStart}>
-                                Start
-                            </span>}
                             <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
                                 {modalType === "process" ? "Cancel" : "Done"}
                             </span>
+                            {modalType === "process" && <span className="btn btn-meta-primary btn-distance-3 btn-md" onClick={this.handleStart}>
+                                Start
+                            </span>}
                         </div>
                     </div>
                     <div className="panel-modal-content js-panel-modal-content container-fluid">

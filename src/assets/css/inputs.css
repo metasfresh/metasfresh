@@ -164,6 +164,9 @@ input {
      color: $brand-font-color-secondary;
      background-color: transparent;
  }
+ .btn-meta-outline-secondary:hover {
+     background-color: color(#000 lightness(95%));
+ }
 
  .btn-distance {
     margin-right: .5rem;
