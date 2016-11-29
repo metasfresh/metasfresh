@@ -422,10 +422,20 @@ public class WindowRestController implements IWindowRestController
 	}
 
 	@RequestMapping(value = "/documentPrint", method = RequestMethod.GET)
-	public ResponseEntity<byte[]> getDocumentPrint(
+	@Deprecated
+	public ResponseEntity<byte[]> getDocumentPrint_DEPRECATED(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
 	)
+	{
+		return getDocumentPrint(adWindowId, idStr, "report.pdf");
+	}
+
+	@RequestMapping(value = "/{" + PARAM_WindowId + "}/{" + PARAM_DocumentId + "}/print/{filename}", method = RequestMethod.GET)
+	public ResponseEntity<byte[]> getDocumentPrint(
+			@PathVariable(PARAM_WindowId) final int adWindowId //
+			, @PathVariable(PARAM_DocumentId) final String idStr //
+			, @PathVariable("filename") final String filename)
 	{
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, idStr);
 
@@ -446,13 +456,11 @@ public class WindowRestController implements IWindowRestController
 				.getResult();
 
 		final byte[] reportData = processExecutionResult.getReportData();
-		// final String reportFilename = processExecutionResult.getReportFilename();
 		final String reportContentType = processExecutionResult.getReportContentType();
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline");
-		// headers.setContentDispositionFormData(reportFilename, reportFilename);
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(reportData, headers, HttpStatus.OK);
 		return response;
