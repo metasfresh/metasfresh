@@ -92,6 +92,7 @@ public class Execution implements IAutoCloseable
 		catch (Exception e)
 		{
 			error = true;
+			logger.info("Changes that will be discarded: {}", getCurrentDocumentChangesCollectorOrNull());
 			throw Throwables.propagate(e);
 		}
 		finally
