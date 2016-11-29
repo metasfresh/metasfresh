@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.notification.UserNotification;
@@ -80,6 +81,17 @@ public class JSONNotificationTarget implements Serializable
 	{
 		super();
 		this.targetType = targetType;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("targetType", targetType)
+				.add("documentType", documentType)
+				.add("documentId", documentId)
+				.toString();
 	}
 
 	public TargetType getTargetType()

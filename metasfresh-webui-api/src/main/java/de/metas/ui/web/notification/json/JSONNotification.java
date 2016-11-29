@@ -72,11 +72,13 @@ public final class JSONNotification implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", id)
 				.add("message", message)
 				.add("timestamp", timestamp)
 				.add("important", important)
 				.add("read", read)
+				.add("target", target)
 				.toString();
 	}
 
