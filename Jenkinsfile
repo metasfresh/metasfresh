@@ -425,7 +425,7 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 	final classifierPart=classifier ? ":${classifier}" : ""
 	final artifact = "${groupId}:${artifactId}:${BUILD_VERSION}${packagingPart}${classifierPart}"
 
-	// we need configFileProvider because in mvn get  -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
+	// we need configFileProvider because in mvn get -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
 	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
@@ -433,16 +433,19 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 		{
 			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact} ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
 			
-			// copy the artifact to a deploy folder. strip classifier and version so that we don't have to bother that much about for the filename looks
-			sh "mvn org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=true -Dmdep.stripVersion=true"
+			// copy the artifact to a deploy folder.
+			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
 		}
 	}
-	sh "scp ${WORKSPACE}/deploy/${artifactId}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${BUILD_VERSION}.${packaging}"
+	sh "scp ${WORKSPACE}/deploy/${artifactId}-${BUILD_VERSION}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${BUILD_VERSION}-${classifier}.${packaging}"
 }
 
 // we need this one for both "Test-SQL" and "Deployment
 def invokeRemote = { String sshTargetHost, String sshTargetUser, String directory, String shellScript -> 
 
+// no echo needed: the log already shows what's done via the sh step
+//	echo "Going to invoke the following as user ${sshTargetUser} on host ${sshTargetHost} in directory ${directory}:";
+//	echo "${shellScript}"
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
@@ -457,24 +460,24 @@ else
 		node('master')
 		{
 			final distArtifactId='de.metas.endcustomer.mf15.dist';
+			final classifier='sql-only';
 			final packaging='tar.gz';
 			final sshTargetHost='mf15cloudit';
 			final sshTargetUser='metasfresh'
 
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'sql-only', sshTargetHost, sshTargetUser);
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
 
-			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
 			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
 			
 			// Look Ma, I'm currying!!
 			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
 
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${env.BUILD_NUMBER}-${BUILD_VERSION}"
-			        .replaceAll('-', '_') // postgresql is a way is allergic to '-' in DB names
-					.replaceAll('.', '_') // ..and also to dots
+					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 					.toLowerCase(); // also, DB names are generally in lowercase
 
 			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
@@ -518,21 +521,22 @@ else
 			node('master')
 			{
 				final distArtifactId='de.metas.endcustomer.mf15.dist';
+				final classifier='dist';
 				final packaging='tar.gz';
 				final sshTargetHost=userInput;
 				final sshTargetUser='metasfresh'
 
 				// main part: provide and rollout the "main" distributable
 				// get the deployable dist file to the target host
-				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, 'dist', sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
 
 				// extract the tar.gz
-				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}"
+				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
 				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
 
 				// Look Ma, I'm currying!!
 				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
-				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xvf ${fileAndDirName}.${packaging}")
+				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
 
 				// stop the service, perform the rollout and start the service
 				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
@@ -545,11 +549,11 @@ else
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
 				
 				// also provide the webui-api and procurement-webui; TODO actually deploy them
-				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
-				downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
+				//downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
+				//downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
 
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
-				step([$class: 'WsCleanup', cleanWhenFailure: true])
+				step([$class: 'WsCleanup', cleanWhenFailure: false])
 			} // node
 		}
 		else
