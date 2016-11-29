@@ -310,7 +310,8 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				])
 			
 				// deploy de.metas.parent/pom.xml as it is now (still with version "1.0.0") so that other nodes can find it when they modify their own pom.xml versions
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				// doesn't work because 1.0.0 is not SNAPSHOT anymore and there is already a 1.0.0 parent pom
+				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
