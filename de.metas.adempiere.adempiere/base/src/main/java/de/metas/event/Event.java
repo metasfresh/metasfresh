@@ -108,7 +108,7 @@ public final class Event
 				.add("detailPlain", detailPlain)
 				.add("detailADMessage", detailADMessage)
 				.add("senderId", senderId)
-				.add("recipientUserIds", recipientUserIds.isEmpty() ? null : recipientUserIds)
+				.add("recipientUserIds", isAllRecipients() ? "ALL" : recipientUserIds)
 				.add("properties", properties.isEmpty() ? null : properties)
 				.toString();
 	}
