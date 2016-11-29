@@ -111,11 +111,15 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        if(event.target.classList.contains('js-unselect')){
-            if(this.state.selected.length > 0){
-                this.deselectAllProducts();
+        const item = event.path;
+        for(let i = 0; i < item.length; i++){
+            if(item[i].classList && item[i].classList.contains('js-not-unselect')){
+                console.log('asd')
+                return;
             }
         }
+
+        this.deselectAllProducts();
     }
 
     handleKeyDown = (e) => {

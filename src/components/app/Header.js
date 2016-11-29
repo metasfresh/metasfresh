@@ -138,7 +138,7 @@ class Header extends Component {
             <div>
                 {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
                 {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
-                <nav className={"header header-super-faded " + (this.state.scrolled ? "header-shadow": "")}>
+                <nav className={"header header-super-faded js-not-unselect " + (this.state.scrolled ? "header-shadow": "")}>
                     <div className="container-fluid">
                         <div className="header-container">
                             <div className="header-left-side">
