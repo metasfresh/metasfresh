@@ -111,9 +111,11 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        // if(this.state.selected.length > 0){
-        //     this.deselectAllProducts();
-        // }
+        if(event.target.classList.contains('js-unselect')){
+            if(this.state.selected.length > 0){
+                this.deselectAllProducts();
+            }
+        }
     }
 
     handleKeyDown = (e) => {
@@ -190,11 +192,9 @@ class Table extends Component {
             case "ArrowDown":
                 e.preventDefault();
 
-
                 const array = (rowData[tabid]).map((item, id) => {
                     return item.id
                 });
-
 
                 const actualId = array.findIndex(x => x === selected[selected.length-1])
 
@@ -217,13 +217,11 @@ class Table extends Component {
 
                 const actual = arrays.findIndex(x => x === selected[selected.length-1])
 
-
                 if(actual > 0 ){
                     let newId = actual-1;
 
                     if(!selectRange) {
                         this.selectOneProduct(arrays[newId]);
-
                     } else {
                         this.selectProduct(arrays[newId]);
                     }
@@ -231,9 +229,7 @@ class Table extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                if(selected.length > 1) {
-
-                } else {
+                if(selected.length <= 1) {
                    onDoubleClick(selected[selected.length-1]);
                 }
 
@@ -272,11 +268,7 @@ class Table extends Component {
                     this.selectOneProduct(id);
                 }
             }else{
-                if(isSelected){
-                    this.deselectAllProducts();
-                }else{
-                    this.selectOneProduct(id);
-                }
+                this.selectOneProduct(id);
             }
         }
 

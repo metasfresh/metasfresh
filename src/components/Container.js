@@ -44,7 +44,7 @@ class Container extends Component {
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />
-                <div className={"header-sticky-distance " + (!!noMargin ? "dashboard" : "container-fluid")}>
+                <div className={"header-sticky-distance js-unselect " + (!!noMargin ? "dashboard" : "container-fluid")}>
                     {this.props.children}
                 </div>
             </div>
