@@ -394,6 +394,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final ReceiptScheduleHUSelectModel model = getModel();
 		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected			
 		
+		// #643 The POReference, partner and location will be taken from the selected receipt schedule
 		final I_M_ReceiptSchedule selectedReceiptSchedule = model.getSelectedReceiptSchedule();
 
 
