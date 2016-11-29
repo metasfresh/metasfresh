@@ -5,12 +5,13 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.adempiere.adempiere</groupId>
 	<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -18,24 +19,26 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<!-- NOTE: we need this for MG to be able to track dependencies -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -200,7 +203,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.commons</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>

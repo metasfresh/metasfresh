@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -22,10 +22,12 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -33,6 +35,7 @@
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -44,7 +47,7 @@
 		<dependency>
 			<groupId>de.metas.elasticsearch</groupId>
 			<artifactId>de.metas.elasticsearch</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>

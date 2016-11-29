@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.fresh</groupId>
 		<artifactId>de.metas.fresh</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.fresh.base</artifactId>
@@ -23,21 +23,25 @@
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -45,10 +49,12 @@
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -56,6 +62,7 @@
 		<dependency>
 			<groupId>de.metas.dimension</groupId>
 			<artifactId>de.metas.dimension</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -66,71 +73,79 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.document</groupId>
 			<artifactId>de.metas.document.refid</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- 04966 adding the code to access scales hardware -->
 		<dependency>
 			<groupId>de.metas.device.scales</groupId>
 			<artifactId>de.metas.device.scales</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.edi</groupId>
 			<artifactId>de.metas.edi</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.embedded-client</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
 			<artifactId>de.metas.payment.sepa</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -139,6 +154,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -146,28 +162,32 @@
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.client</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<!-- those two are required when we run with -Dorg.adempiere.server.embedded=true -->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!--
@@ -178,25 +198,26 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.rfq</groupId>
 			<artifactId>de.metas.rfq</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
