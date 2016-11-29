@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -213,6 +214,20 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 
 		return false;
 	}
+	
+	@Override
+	public boolean isNull(final Object model, final String columnName)
+	{
+		final Document document = DocumentInterfaceWrapper.getDocument(model);
+		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
+		if(field == null)
+		{
+			return true;
+		}
+		
+		final Object value = field.getValue();
+		return value == null;
+	}
 
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
@@ -245,5 +260,11 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 		@SuppressWarnings("unchecked")
 		final T po = (T)TableModelLoader.instance.getPO(document.getCtx(), tableName, document.getDocumentIdAsInt(), checkCache, ITrx.TRXNAME_ThreadInherited);
 		return po;
+	}
+	
+	@Override
+	public Evaluatee getEvaluatee(final Object model)
+	{
+		return DocumentInterfaceWrapper.getDocument(model).asEvaluatee();
 	}
 }
