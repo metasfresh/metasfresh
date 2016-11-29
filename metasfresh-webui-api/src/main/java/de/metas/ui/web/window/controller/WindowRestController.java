@@ -431,7 +431,7 @@ public class WindowRestController implements IWindowRestController
 		return getDocumentPrint(adWindowId, idStr, "report.pdf");
 	}
 
-	@RequestMapping(value = "/{" + PARAM_WindowId + "}/{" + PARAM_DocumentId + "}/print/{filename}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{" + PARAM_WindowId + "}/{" + PARAM_DocumentId + "}/print/{filename:.*}", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getDocumentPrint(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable(PARAM_DocumentId) final String idStr //
