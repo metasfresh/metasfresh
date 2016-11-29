@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-18T10:27:54 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="535" pageHeight="842" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/versand/report" uuid="9e641c15-cd18-4c94-9d56-3ee3755dfaee">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="535" pageHeight="842" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/versand/report">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
@@ -12,7 +10,7 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="von" class="java.util.Date"/>
 	<parameter name="bis" class="java.util.Date"/>
-	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="AD_Org_ID" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[SELECT
 
@@ -140,25 +138,27 @@ group by
 		<groupHeader>
 			<band height="16">
 				<textField>
-					<reportElement x="11" y="0" width="89" height="16" uuid="78280b35-a4ff-4370-a5f7-b46fb5b51fbb"/>
-					<textFieldExpression><![CDATA[$F{landcode}]]></textFieldExpression>
+					<reportElement x="11" y="0" width="89" height="16"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{landcode}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="100" y="0" width="273" height="16" uuid="41faae50-72af-4d3f-bd88-cda65c11fba3"/>
-					<textFieldExpression><![CDATA[$F{land}]]></textFieldExpression>
+					<reportElement x="100" y="0" width="273" height="16"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{land}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement x="0" y="15" width="535" height="1" forecolor="#5F8D92" uuid="818bc56f-e5f2-4f02-b1aa-ce8c847e6575"/>
+					<reportElement x="0" y="15" width="535" height="1" forecolor="#5F8D92"/>
 				</line>
 				<textField evaluationTime="Group" evaluationGroup="land">
-					<reportElement x="503" y="0" width="21" height="15" uuid="6435e3ab-167e-48b2-962d-a1e67a9fc597"/>
+					<reportElement x="503" y="0" width="21" height="15"/>
 					<textElement textAlignment="Right">
 						<font isItalic="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{land_COUNT}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{land_COUNT}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="373" y="0" width="131" height="15" uuid="f9264a48-13d6-4c5e-9ae1-98d3b98b2e63"/>
+					<reportElement x="373" y="0" width="131" height="15"/>
 					<textElement>
 						<font isItalic="true"/>
 					</textElement>
@@ -172,28 +172,28 @@ group by
 		<groupHeader>
 			<band height="14">
 				<line>
-					<reportElement x="40" y="13" width="463" height="1" forecolor="#5F8D92" uuid="9e2ab0d6-8b0f-43df-87e8-71c7c946a2be"/>
+					<reportElement x="40" y="13" width="463" height="1" forecolor="#5F8D92"/>
 				</line>
 				<textField isBlankWhenNull="true">
-					<reportElement x="40" y="0" width="60" height="14" uuid="11263767-69fb-4796-ace7-0a6b31e53656"/>
+					<reportElement x="40" y="0" width="60" height="14"/>
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{monat}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{monat}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="100" y="1" width="130" height="13" uuid="632057cd-61f1-44fd-b312-13f09334337b"/>
+					<reportElement x="100" y="1" width="130" height="13"/>
 					<textElement>
 						<font size="9" isBold="true"/>
 					</textElement>
 					<text><![CDATA[versendete Pakete pro Monat:]]></text>
 				</staticText>
 				<textField evaluationTime="Group" evaluationGroup="periode">
-					<reportElement x="229" y="1" width="12" height="13" uuid="5cecf6a2-85c4-4cb8-a971-d91e7631a355"/>
+					<reportElement x="229" y="1" width="12" height="13"/>
 					<textElement textAlignment="Right">
 						<font size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{periode_COUNT}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{periode_COUNT}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -203,28 +203,28 @@ group by
 		<groupHeader>
 			<band height="11">
 				<line>
-					<reportElement x="55" y="10" width="448" height="1" forecolor="#5F8D92" uuid="f1bb0e38-32ea-432e-9b44-fb180db65929"/>
+					<reportElement x="55" y="10" width="448" height="1" forecolor="#5F8D92"/>
 				</line>
 				<textField evaluationTime="Group" evaluationGroup="date">
-					<reportElement x="498" y="0" width="6" height="11" uuid="57d69506-e6e8-4f73-9da5-b9eeb6814fc0"/>
+					<reportElement x="498" y="0" width="6" height="11"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{date_COUNT}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{date_COUNT}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="398" y="0" width="100" height="11" uuid="7ed139c1-d48b-4a55-85fd-ca040a0e7a59"/>
+					<reportElement x="398" y="0" width="100" height="11"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
 					<text><![CDATA[versendete Pakete pro Tag:]]></text>
 				</staticText>
 				<textField pattern="dd.MM.yyyy">
-					<reportElement x="55" y="0" width="45" height="11" uuid="8e5fa322-5932-43ac-b099-1da1b6b30958"/>
+					<reportElement x="55" y="0" width="45" height="11"/>
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{datum}]]></textFieldExpression>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{datum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -238,26 +238,29 @@ group by
 	<pageHeader>
 		<band height="16" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="0" width="535" height="16" backcolor="#5F8D92" uuid="77abc549-c701-4cf5-9f4f-51e6c115ff8c"/>
+				<reportElement key="rectangle-1" x="0" y="0" width="535" height="16" backcolor="#5F8D92"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="11" y="0" width="89" height="16" forecolor="#FFFFFF" uuid="46f07b33-4d83-4fec-bbd9-3ff50fb4e20b"/>
+				<reportElement x="11" y="0" width="89" height="16" forecolor="#FFFFFF"/>
+				<textElement/>
 				<text><![CDATA[Landescode]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="100" y="0" width="100" height="16" forecolor="#FFFFFF" uuid="945d319c-835c-4e58-9308-a64be39958bb"/>
+				<reportElement x="100" y="0" width="100" height="16" forecolor="#FFFFFF"/>
+				<textElement/>
 				<text><![CDATA[Landesname]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="200" y="0" width="70" height="16" forecolor="#FFFFFF" uuid="dd44587c-70b8-49d8-9a4a-8408197d26e9"/>
+				<reportElement x="200" y="0" width="70" height="16" forecolor="#FFFFFF"/>
 				<textElement textAlignment="Right"/>
 				<text><![CDATA[Paketnummer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="291" y="0" width="107" height="16" forecolor="#FFFFFF" uuid="3c8bf48c-c9d3-4cd4-8a01-8edefabd37bb"/>
+				<reportElement x="291" y="0" width="107" height="16" forecolor="#FFFFFF"/>
+				<textElement/>
 				<text><![CDATA[Paketpacker]]></text>
 			</staticText>
 		</band>
@@ -268,7 +271,7 @@ group by
 	<detail>
 		<band height="11" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-2" x="55" y="0" width="448" height="11" backcolor="#FFFFCC" uuid="89b21546-7f04-404f-847b-d3e56616d440">
+				<reportElement key="rectangle-2" x="55" y="0" width="448" height="11" backcolor="#FFFFCC">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -276,25 +279,25 @@ group by
 				</graphicElement>
 			</rectangle>
 			<textField pattern="HH:mm">
-				<reportElement x="47" y="0" width="53" height="11" uuid="ca6af475-f416-4a97-826e-947cdf4bd01b"/>
+				<reportElement x="47" y="0" width="53" height="11"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{created}]]></textFieldExpression>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{created}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="291" y="0" width="107" height="11" uuid="79c040c9-030d-4f62-8cfb-37a93c782dd2"/>
+				<reportElement x="291" y="0" width="107" height="11"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{packer}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{packer}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="214" y="0" width="56" height="11" uuid="c6b96e2f-5d64-4ad2-bed4-849ce0df23ae"/>
+				<reportElement x="214" y="0" width="56" height="11"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{package}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{package}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -304,7 +307,7 @@ group by
 	<pageFooter>
 		<band height="13" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-3" x="0" y="0" width="535" height="13" backcolor="#808080" uuid="c15ae54d-0d53-4ab0-90e0-f6f8d76b5a08"/>
+				<reportElement key="rectangle-3" x="0" y="0" width="535" height="13" backcolor="#808080"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>

@@ -31,8 +31,8 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
-import de.metas.process.Process;
 import de.metas.process.IProcess;
+import de.metas.process.Process;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -139,6 +139,7 @@ public class ReportStarter implements IProcess
 			// Excel reporting
 			case Excel:
 				outputType = OutputType.XLS;
+				break;
 
 			default:
 				throw new AdempiereException("Unknown " + ReportingSystemType.class + ": " + reportingSystemType);

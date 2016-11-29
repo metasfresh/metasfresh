@@ -285,7 +285,7 @@ public final class ReportCtl
 					//
 					.setAD_Process_ID(printFormat.getJasperProcess_ID())
 					.setRecord(adTableId, recordId)
-					.setReportLanguage(printFormat.getLanguage())
+					.setReportLanguage(processInfo.getReportLanguage())
 					//
 					// Execute Process
 					.buildAndPrepareExecution()

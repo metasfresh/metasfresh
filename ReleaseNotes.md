@@ -13,8 +13,12 @@ Here come the actual release notes:
 # metasfresh 4.46.45 (2016-48)
 
 ## Features
+* metasfresh
+  * #620 Marginal Return Report doubled sums for accounting group
+  
 * webui
   * #425 Kickstart elasticsearch integration
+  * #598 WebUI Dashboard initial Prototype definition
 
 ## Fixes
 * metasfresh
@@ -27,20 +31,31 @@ This week's RC
 ## Features
 * metasfresh
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Adjust the completion process of Flatrate terms created manually. Now the flatrate term in not completed and can be manually adjusted by the user without reactivating.
   * #563 Report Statistics qty per Week
+    * New sales qty report that shows the sold product quanities per week and in comparison the last 11 weeks.
   * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
+    * Adjustment of Handling Unit permissions in manufacturing order, initially filtering out HU with washing cycle set.
   * #597 Empties mask and functionality with autom. set the selected bpartner
+    * New functionality to add informations about Businsspartner, Location and Purchase Order Reference. This allows the to raise the efficiency when checking and creating purchase invoices via invoice candidates.
   * #576 Report Reclamation result, quality note and minor changes
+    * New reqirements implemented in reclamation report.
   * #539 Add missing FK constraints
+    * Add further missin Foreign Key constraints surfacing during Data Lifecycle Management implementation.
 * webui
   * #567 WebUI - Material Receipt Schedule
+    * Add initial Screen Layout for Material receipt schedule in metasfresh WebUI.
   * #497 WebUI - ShipmentSchedule Window
+    * Add initial Screen Layout for Shipment Schedule in metasfresh WebUI.
 
 ## Fixes
 * metasfresh
   * #589 console error when doing bpartner setup
+    * Fix a minor bug with jax-rs/ jms timeout in Business Partner setup workflow, which contantly popped up in console.
   * #553 Report Account Info adjustments. Add parms date range.
+    * Add the parms date range back into Account Info report in Jasper.
   * #611 IBAN Error for RBS Bank
+    * Add support for RBS Bank in metasfresh IBAN check when creating a new Businesspartner Bankaccount.
 
 # metasfresh 4.44.43 (2016-46)
 

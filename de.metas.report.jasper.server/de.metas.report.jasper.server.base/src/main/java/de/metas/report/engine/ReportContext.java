@@ -264,7 +264,7 @@ public final class ReportContext
 			//
 			// Corner case: REPORT_SQL_QUERY
 			// => replace @AD_PInstance_ID@ placeholder with actual value
-			if (JasperConstants.REPORT_PARAM_SQL_QUERY.equals(piParam.getParameter()))
+			if (JasperConstants.REPORT_PARAM_SQL_QUERY.equals(piParam.getParameterName()))
 			{
 				final String parameterValue = piParam.getParameterAsString();
 				if (parameterValue != null)

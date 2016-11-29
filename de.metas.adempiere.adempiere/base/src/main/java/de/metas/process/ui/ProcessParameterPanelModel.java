@@ -60,7 +60,6 @@ public class ProcessParameterPanelModel
 	/** Display values provider (never null) */
 	private IDisplayValueProvider displayValueProvider = (gridField) -> null;
 
-
 	/**
 	 * Dynamic generated Parameter panel.
 	 *
@@ -73,18 +72,18 @@ public class ProcessParameterPanelModel
 		Check.assumeNotNull(pi, "pi not null");
 
 		// NOTE: we are using same WindowNo/TabNo as the calling window/tab but we will create a shadow context just to not alter the current context
-		this.ctx = Env.deriveCtx(parentCtx);
-		this.windowNo = pi.getWindowNo();
-		this.tabNo = pi.getTabNo();
-		this.processId = pi.getAD_Process_ID();
+		ctx = Env.deriveCtx(parentCtx);
+		windowNo = pi.getWindowNo();
+		tabNo = pi.getTabNo();
+		processId = pi.getAD_Process_ID();
 
-		this.defaultsProvider = createProcessDefaultParametersProvider(pi.getClassName());
-		this.processClassInfo = pi.getProcessClassInfo();
+		defaultsProvider = createProcessDefaultParametersProvider(pi.getClassName(), pi.isServerProcess());
+		processClassInfo = pi.getProcessClassInfo();
 
 		createFields();
 	}
 
-	private static final IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final String classname)
+	private static final IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final String classname, final boolean isServerProcess)
 	{
 		if (Check.isEmpty(classname, true))
 		{
@@ -109,9 +108,17 @@ public class ProcessParameterPanelModel
 			return defaultsProvider;
 
 		}
-		catch (Throwable e)
+		catch (final Throwable e)
 		{
-			log.error("Failed instantiating class: {}", classname, e);
+			if (isServerProcess)
+			{
+				// NOTE: in case of server process, it might be that the class is not present, which could be fine
+				log.debug("Failed instantiating class '{}'. Skipped.", classname, e);
+			}
+			else
+			{
+				log.warn("Failed instantiating class '{}'. Skipped.", classname, e);
+			}
 			return NULL_DefaultPrametersProvider;
 		}
 	}
@@ -154,6 +161,7 @@ public class ProcessParameterPanelModel
 		//
 		final String sql;
 		if (Env.isBaseLanguage(ctx, "AD_Process_Para"))
+		{
 			sql = "SELECT p.Name, p.Description, p.Help, "
 					+ "p.AD_Reference_ID, p.AD_Process_Para_ID, "
 					+ "p.FieldLength, p.IsMandatory, p.IsRange, p.ColumnName, "
@@ -166,7 +174,9 @@ public class ProcessParameterPanelModel
 					+ " WHERE p.AD_Process_ID=?"		// 1
 					+ " AND p.IsActive='Y' "
 					+ ASPFilter + " ORDER BY SeqNo";
+		}
 		else
+		{
 			sql = "SELECT t.Name, t.Description, t.Help, "
 					+ "p.AD_Reference_ID, p.AD_Process_Para_ID, "
 					+ "p.FieldLength, p.IsMandatory, p.IsRange, p.ColumnName, "
@@ -181,6 +191,7 @@ public class ProcessParameterPanelModel
 					+ " AND t.AD_Language='" + Env.getAD_Language(ctx) + "'"
 					+ " AND p.IsActive='Y' "
 					+ ASPFilter + " ORDER BY SeqNo";
+		}
 
 		// Create Fields
 		PreparedStatement pstmt = null;
@@ -195,7 +206,7 @@ public class ProcessParameterPanelModel
 				createField(rs);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}
@@ -212,12 +223,12 @@ public class ProcessParameterPanelModel
 		return gridFields.size();
 	}
 
-	public GridField getField(int index)
+	public GridField getField(final int index)
 	{
 		return gridFields.get(index);
 	}
 
-	public GridField getFieldTo(int index)
+	public GridField getFieldTo(final int index)
 	{
 		return gridFieldsTo.get(index);
 	}
@@ -386,7 +397,7 @@ public class ProcessParameterPanelModel
 	/** A list of column names which are notifying in progress */
 	private final Set<String> notifyValueChanged_CurrentColumnNames = new HashSet<String>();
 
-	public void setFieldValue(GridField gridField, Object valueNew)
+	public void setFieldValue(final GridField gridField, final Object valueNew)
 	{
 		gridField.setValue(valueNew, true); // inserting=true(always)
 	}

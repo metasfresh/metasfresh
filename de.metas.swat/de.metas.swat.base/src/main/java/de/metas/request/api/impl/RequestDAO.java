@@ -2,20 +2,17 @@ package de.metas.request.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
@@ -158,14 +155,6 @@ public class RequestDAO implements IRequestDAO
 		// summary from AD_Message
 		final String summary = msgBL.getMsg(ctx, MSG_R_Request_From_InOut_Summary);
 		request.setSummary(summary);
-
-		// the sales rep will be the user in charge of the organization
-		final I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, orgID, ITrx.TRXNAME_None);
-
-		if (userInCharge != null)
-		{
-			request.setSalesRep(userInCharge);
-		}
 
 		// confidential type internal
 		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);

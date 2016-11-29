@@ -425,6 +425,12 @@ public interface ITrxManager extends ISingletonService
 	<T> void assertModelTrxNameNotNull(T model);
 
 	/**
+	 * @return true if current thread has thread inherited transaction set
+	 */
+	boolean hasThreadInheritedTrx();
+
+
+	/**
 	 * Assumes current thread has thread inherited transaction set.
 	 */
 	void assertThreadInheritedTrxExists();

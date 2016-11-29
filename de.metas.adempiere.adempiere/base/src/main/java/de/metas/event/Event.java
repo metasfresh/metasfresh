@@ -196,13 +196,21 @@ public final class Event
 
 	public final boolean hasRecipient(final int userId)
 	{
-		// If no recipients were specified, consider that this event is for anybody
-		if (recipientUserIds.isEmpty())
+		if (isAllRecipients())
 		{
 			return true;
 		}
 
 		return recipientUserIds.contains(userId);
+	}
+
+	/**
+	 * @return true if this event is for all users
+	 */
+	public boolean isAllRecipients()
+	{
+		// If no recipients were specified, consider that this event is for anybody
+		return recipientUserIds.isEmpty();
 	}
 
 	public <T> T getProperty(final String name)

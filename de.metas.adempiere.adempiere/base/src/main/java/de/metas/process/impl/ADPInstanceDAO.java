@@ -49,6 +49,7 @@ import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -585,6 +586,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setRecord_ID(pi.getRecord_ID());
 		adPInstance.setWhereClause(pi.getWhereClause());
 		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
+		
+		final Language reportingLanguage = pi.getReportLanguage();
+		final String adLanguage = reportingLanguage == null ? null : reportingLanguage.getAD_Language();
+		adPInstance.setAD_Language(adLanguage);
+		
 		InterfaceWrapperHelper.save(adPInstance);
 
 		//
