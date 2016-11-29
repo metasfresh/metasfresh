@@ -1804,8 +1804,15 @@ td.pulse-off input {
     justify-content: center;
 
     padding-right: .8rem;
-    padding-left: .3rem;
+    padding-left: .4rem;
     font-size: 1.5rem;
+}
+
+.inbox-item-icon-sm {
+    font-size: .7rem;
+    margin-left: -.5rem;
+    padding-left:0;
+    padding-right:0;
 }
 
 .inbox-item-footer {

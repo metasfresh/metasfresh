@@ -173,3 +173,6 @@
 .meta-icon-wareneingang:before {
   content: "\53";
 }
+.meta-icon-important:before {
+  content: "\54";
+}
