@@ -81,16 +81,19 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 public final class SqlDocumentsRepository implements DocumentsRepository
 {
 	public static final transient SqlDocumentsRepository instance = new SqlDocumentsRepository();
-	
+
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
 
 	private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
+
+	private int loadLimitWarn = 100;
+	private int loadLimitMax = 300;
 
 	private SqlDocumentsRepository()
 	{
 		super();
 	}
-	
+
 	private final void assertThisRepository(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
@@ -102,7 +105,20 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 					+ "\n But it was: " + documentsRepository);
 		}
 	}
-	
+
+	public void setLoadLimitWarn(final int loadLimitWarn)
+	{
+		final int loadLimitWarnOld = this.loadLimitWarn;
+		this.loadLimitWarn = loadLimitWarn;
+		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitWarnOld, this.loadLimitWarn);
+	}
+
+	public void setLoadLimitMax(final int loadLimitMax)
+	{
+		final int loadLimitMaxOld = this.loadLimitMax;
+		this.loadLimitMax = loadLimitMax;
+		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitMaxOld, this.loadLimitMax);
+	}
 
 	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
 	{
@@ -138,23 +154,53 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final String sql = SqlDocumentQueryBuilder.of(query).getSql(sqlParams);
 		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
 
-		final List<Document> documentsCollector = new ArrayList<>(limit > 0 ? limit + 1 : 0);
+		final int loadLimitWarn = this.loadLimitWarn;
+		final int loadLimitMax = this.loadLimitMax;
+		int maxRowsToFetch = limit;
+		if (maxRowsToFetch <= 0)
+		{
+			maxRowsToFetch = loadLimitMax;
+		}
+
+		final List<Document> documentsCollector = limit > 0 ? new ArrayList<>(limit) : new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			if (maxRowsToFetch > 0)
+			{
+				pstmt.setMaxRows(maxRowsToFetch);
+			}
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
+			
+			boolean loadLimitWarnReported = false;
 			while (rs.next())
 			{
 				final Document document = retriveDocument(entityDescriptor, parentDocument, rs);
 				documentsCollector.add(document);
 
+				final int loadCount = documentsCollector.size();
+
 				// Stop if we reached the limit
-				if (limit > 0 && documentsCollector.size() > limit)
+				if (limit > 0 && loadCount >= limit)
 				{
 					break;
+				}
+
+				// Stop if we reached the MAXIMUM limit
+				if (loadLimitMax > 0 && loadCount >= loadLimitMax)
+				{
+					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount, new Exception("Trace"));
+					break;
+				}
+
+				// WARN if we reached the Warning limit
+				if (!loadLimitWarnReported && loadLimitWarn > 0 && loadCount >= loadLimitWarn)
+				{
+					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount, new Exception("Trace"));
+					loadLimitWarnReported = true;
 				}
 			}
 		}
@@ -195,7 +241,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
 	{
 		assertThisRepository(entityDescriptor);
-		
+
 		final int documentId = getNextId(entityDescriptor);
 		return Document.builder()
 				.setEntityDescriptor(entityDescriptor)
@@ -268,7 +314,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	public void refresh(final Document document)
 	{
 		assertThisRepository(document.getEntityDescriptor());
-		
+
 		refresh(document, document.getDocumentIdAsInt());
 	}
 

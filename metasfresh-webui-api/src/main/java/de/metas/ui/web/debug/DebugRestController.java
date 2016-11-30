@@ -35,6 +35,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 /*
  * #%L
@@ -194,4 +195,17 @@ public class DebugRestController
 				.getEventBus(topic)
 				.postEvent(event);
 	}
+
+	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
+	public void setSqlLoadLimitWarn(@RequestBody final int limit)
+	{
+		SqlDocumentsRepository.instance.setLoadLimitWarn(limit);
+	}
+
+	@RequestMapping(value = "/sql/loadLimit/max", method = RequestMethod.PUT)
+	public void setSqlLoadLimitMax(@RequestBody final int limit)
+	{
+		SqlDocumentsRepository.instance.setLoadLimitMax(limit);
+	}
+
 }
