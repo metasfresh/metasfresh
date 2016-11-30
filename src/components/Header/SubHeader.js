@@ -133,7 +133,7 @@ class Subheader extends Component {
 
         return (
 
-            <div className={"subheader-container overlay-shadow subheader-open"}>
+            <div className={"subheader-container overlay-shadow subheader-open js-not-unselect"}>
                 <Prompt
                     isOpen={prompt.open}
                     title={prompt.title}

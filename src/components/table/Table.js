@@ -336,7 +336,10 @@ class Table extends Component {
     }
 
     renderTableBody = () => {
-        const {rowData, tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, mainTable, newRow} = this.props;
+        const {
+            rowData, tabid, cols, type, docId, readonly, keyProperty,
+            onDoubleClick, mainTable, newRow
+        } = this.props;
         const {selected} = this.state;
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -388,61 +391,64 @@ class Table extends Component {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy
         } = this.props;
-        const {x, y, contextMenu, selected, listenOnKeys} = this.state;
+        const {contextMenu, selected, listenOnKeys} = this.state;
 
         return (
             <div>
-                <div className="row">
-                    <div className="col-xs-12">
-                        <TableContextMenu
-                            x={contextMenu.x}
-                            y={contextMenu.y}
-                            isDisplayed={contextMenu.open}
-                            blur={() => this.closeContextMenu()}
-                            docId={docId}
-                            type={type}
-                            tabId={tabid}
-                            selected={selected}
-                            deselect={() => this.deselectAllProducts()}
-                            mainTable={mainTable}
-                            updateDocList={updateDocList}
-                        />
-                        {!readonly && <div className="row">
-                            <div className="col-xs-12">
-                                <button className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left" onClick={() => this.openModal(type, tabid, "NEW")}>Add new</button>
-                                <div className="pull-xs-right">
-                                    {/*<TableFilter />*/}
-                                </div>
-                            </div>
-                        </div>}
-
-                        <div className="panel panel-primary panel-bordered panel-bordered-force">
-                            <table
-                                className={
-                                    "table table-bordered-vertically table-striped " +
-                                    (readonly ? "table-read-only" : "")
-                                }
-                                onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : (listenOnKeys && mainTable) ? (e) => this.handleKeyDownDocList(e) : ''}
+                <div >
+                    <TableContextMenu
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        isDisplayed={contextMenu.open}
+                        blur={() => this.closeContextMenu()}
+                        docId={docId}
+                        type={type}
+                        tabId={tabid}
+                        selected={selected}
+                        deselect={() => this.deselectAllProducts()}
+                        mainTable={mainTable}
+                        updateDocList={updateDocList}
+                    />
+                    {!readonly && <div className="row">
+                        <div className="col-xs-12">
+                            <button
+                                className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left"
+                                onClick={() => this.openModal(type, tabid, "NEW")}
                             >
-                                <thead>
-                                    <TableHeader
-                                        cols={cols}
-                                        mainTable={mainTable}
-                                        sort={sort}
-                                        orderBy={orderBy}
-                                        deselect={this.deselectAllProducts}
-                                        page={page}
-                                    />
-                                </thead>
-                                <tbody>
-                                    {this.renderTableBody()}
-                                </tbody>
-                                <tfoot>
-                                </tfoot>
-                            </table>
-
-                            {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
+                                Add new
+                            </button>
+                            <div className="pull-xs-right">
+                                {/*<TableFilter />*/}
+                            </div>
                         </div>
+                    </div>}
+
+                    <div className="panel panel-primary panel-bordered panel-bordered-force">
+                        <table
+                            className={
+                                "table table-bordered-vertically table-striped " +
+                                (readonly ? "table-read-only" : "")
+                            }
+                            onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : (listenOnKeys && mainTable) ? (e) => this.handleKeyDownDocList(e) : ''}
+                        >
+                            <thead>
+                                <TableHeader
+                                    cols={cols}
+                                    mainTable={mainTable}
+                                    sort={sort}
+                                    orderBy={orderBy}
+                                    deselect={this.deselectAllProducts}
+                                    page={page}
+                                />
+                            </thead>
+                            <tbody>
+                                {this.renderTableBody()}
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+
+                        {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
                     </div>
                 </div>
                 {page && pageLength && <div className="row">

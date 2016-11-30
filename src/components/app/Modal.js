@@ -128,7 +128,7 @@ class Modal extends Component {
         } = this.state;
 
         return (
-            data.length > 0 && <div className="screen-freeze">
+            data.length > 0 && <div className="screen-freeze js-not-unselect">
                 <div className="panel panel-modal panel-modal-primary">
                     <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>

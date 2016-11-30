@@ -277,7 +277,7 @@ class Filters extends Component {
 		return (
             <div>
     			{filterData && !!filterData.length &&
-    				<div className="filter-wrapper">
+    				<div className="filter-wrapper js-not-unselect">
     					<span>Filters: </span>
     					<div className="filter-wrapper">
     						{!!freqFilter.length && this.renderFrequentFilterWrapper(freqFilter)}
