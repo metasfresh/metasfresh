@@ -117,6 +117,7 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
+
         // call for more properties
         if(propertiesCopy.length > 0){
 
@@ -138,6 +139,7 @@ class Lookup extends Component {
                 });
             });
         }else{
+
             this.handleBlur();
         }
     }
@@ -147,7 +149,6 @@ class Lookup extends Component {
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
 
-        console.log(propertiesKeys)
         // Chcecking properties model if there is some
         // unselected properties and handling further
         // selection
@@ -244,8 +245,7 @@ class Lookup extends Component {
             selected: null,
             model: null,
             property: "",
-            loading: false,
-            propertiesCopy: []
+            loading: false
         }));
 
         this.handleBlur();
