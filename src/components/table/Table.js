@@ -114,7 +114,6 @@ class Table extends Component {
         const item = event.path;
         for(let i = 0; i < item.length; i++){
             if(item[i].classList && item[i].classList.contains('js-not-unselect')){
-                console.log('asd')
                 return;
             }
         }
