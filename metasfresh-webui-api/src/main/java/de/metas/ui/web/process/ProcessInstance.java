@@ -54,6 +54,7 @@ public final class ProcessInstance
 	private final int adPInstanceId;
 	private final Document parameters;
 
+	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
 
 	/** New instance constructor */
@@ -64,6 +65,7 @@ public final class ProcessInstance
 		this.adPInstanceId = adPInstanceId;
 		this.parameters = parameters;
 
+		executed = false;
 		executionResult = null;
 	}
 
@@ -75,6 +77,7 @@ public final class ProcessInstance
 		adPInstanceId = from.adPInstanceId;
 		parameters = from.parameters.copy(copyMode);
 
+		executed = from.executed;
 		executionResult = from.executionResult;
 	}
 
@@ -84,8 +87,9 @@ public final class ProcessInstance
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("AD_PInstance_ID", adPInstanceId)
-				.add("processDescriptor", processDescriptor)
+				.add("executed", "executed")
 				.add("executionResult", executionResult)
+				.add("processDescriptor", processDescriptor)
 				.toString();
 	}
 
@@ -151,7 +155,7 @@ public final class ProcessInstance
 	
 	public boolean isExecuted()
 	{
-		return executionResult != null;
+		return executed;
 	}
 
 	private final void assertNotExecuted()
@@ -209,6 +213,10 @@ public final class ProcessInstance
 
 			final ProcessInstanceResult result = resultBuilder.build();
 			executionResult = result;
+			if(result.isSuccess())
+			{
+				executed = false;
+			}
 			return result;
 		}
 	}

@@ -83,6 +83,11 @@ public class ProcessInstanceResult implements Serializable
 	{
 		return summary;
 	}
+	
+	public boolean isSuccess()
+	{
+		return !isError();
+	}
 
 	public boolean isError()
 	{
