@@ -75,7 +75,7 @@ public interface IDocumentFieldView
 	Object getValue();
 	Object getValueAsJsonObject();
 	boolean getValueAsBoolean();
-	int getValueAsInt(final int defaultValue);
+	int getValueAsInt(final int defaultValueWhenNull);
 	<T> T getValueAs(final Class<T> returnType);
 	/** @return initial value / last saved value */
 	Object getInitialValue();

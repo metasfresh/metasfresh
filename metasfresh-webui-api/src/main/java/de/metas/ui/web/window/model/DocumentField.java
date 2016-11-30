@@ -220,10 +220,10 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	@Override
-	public int getValueAsInt(final int defaultValue)
+	public int getValueAsInt(final int defaultValueWhenNull)
 	{
 		final Integer valueInt = convertToValueClass(_value, Integer.class);
-		return valueInt == null ? defaultValue : valueInt;
+		return valueInt == null ? defaultValueWhenNull : valueInt;
 	}
 
 	@Override
