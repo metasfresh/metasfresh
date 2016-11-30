@@ -33,6 +33,10 @@ input {
     text-align: inherit;
 }
 
+.form-control:disabled {
+    cursor: default !important;
+}
+
 .form-control-label {
     margin-top:.5rem;
     margin-bottom: .3rem;

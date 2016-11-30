@@ -150,7 +150,7 @@
 }
 .daterangepicker td.disabled, .daterangepicker option.disabled {
     color: #999;
-    cursor: not-allowed;
+    cursor: default;
     text-decoration: line-through;
 }
 .daterangepicker select.monthselect, .daterangepicker select.yearselect {
@@ -212,7 +212,7 @@
 }
 .daterangepicker .calendar-time select.disabled {
     color: #ccc;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .ranges {

@@ -89,7 +89,7 @@
 .rdtPicker td.rdtDisabled:hover {
   background: none;
   color: #999999;
-  cursor: not-allowed;
+  cursor: default;
 }
 
 .rdtPicker td span.rdtOld {
@@ -99,7 +99,7 @@
 .rdtPicker td span.rdtDisabled:hover {
   background: none;
   color: #999999;
-  cursor: not-allowed;
+  cursor: default;
 }
 
 .rdtPicker .dow {
@@ -133,7 +133,7 @@
 .rdtPicker th.rdtDisabled:hover {
   background: none;
   color: #999999;
-  cursor: not-allowed;
+  cursor: default;
 }
 .rdtPicker thead tr:first-child th {
   cursor: pointer;
