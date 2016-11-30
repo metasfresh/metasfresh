@@ -25,11 +25,11 @@ package de.metas.handlingunits.inout;
 import java.util.Date;
 
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 /**
