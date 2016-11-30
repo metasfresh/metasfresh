@@ -147,7 +147,7 @@ class Lookup extends Component {
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
 
-
+        console.log(propertiesKeys)
         // Chcecking properties model if there is some
         // unselected properties and handling further
         // selection
@@ -170,6 +170,7 @@ class Lookup extends Component {
                 }));
                 break;
             }else{
+                onChange(propertiesKeys[i], properts[propertiesKeys[i]][0]);
                 this.handleBlur();
             }
         }
