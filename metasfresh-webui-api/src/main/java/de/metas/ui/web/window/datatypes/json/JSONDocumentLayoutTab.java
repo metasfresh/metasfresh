@@ -121,7 +121,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 		final String adLanguage = jsonOpts.getAD_Language();
 		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabid != null)
 		{
-			caption = detail.getCaption(adLanguage) + " (" + tabid + ")";
+			caption = "[" + tabid + "] " + detail.getCaption(adLanguage);
 		}
 		else
 		{
