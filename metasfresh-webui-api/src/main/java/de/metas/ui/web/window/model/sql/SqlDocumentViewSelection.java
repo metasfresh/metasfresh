@@ -146,7 +146,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	{
 		return tableName;
 	}
-	
+
 	private String getKeyColumnName()
 	{
 		return keyColumnName;
@@ -163,7 +163,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	{
 		return defaultSelection.getOrderBys();
 	}
-	
+
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
@@ -275,28 +275,27 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		return documentViewBuilder.build();
 	}
-	
+
 	@Override
 	public String getSqlWhereClause(final List<Integer> viewDocumentIds)
 	{
 		final String sqlTableName = getTableName();
 		final String sqlKeyColumnName = getKeyColumnName();
-		
+
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		sqlWhereClause.append("exists (select 1 from " + I_T_Query_Selection.Table_Name + " sel "
 				+ " where "
 				+ " " + I_T_Query_Selection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId())
 				+ " and sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
 				+ ")");
-		
-		if(!Check.isEmpty(viewDocumentIds))
+
+		if (!Check.isEmpty(viewDocumentIds))
 		{
 			sqlWhereClause.append(" AND ").append(sqlKeyColumnName).append(" IN ").append(DB.buildSqlList(viewDocumentIds));
 		}
 
 		return sqlWhereClause.toString();
 	}
-
 
 	public static final class Builder
 	{
@@ -319,7 +318,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final List<DocumentFieldDescriptor> fieldDescriptors = queryBuilder.getViewFields();
 			return createDocumentViewFieldValueLoaders(fieldDescriptors);
 		}
-		
+
 		private static ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders(final List<DocumentFieldDescriptor> fieldDescriptors)
 		{
 			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
@@ -358,12 +357,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			return queryBuilder.getEntityDescriptor().getAD_Window_ID();
 		}
-		
+
 		private String getTableName()
 		{
 			return queryBuilder.getEntityDescriptor().getTableName();
 		}
-		
+
 		private String getKeyColumnName()
 		{
 			return queryBuilder.getEntityBinding().getKeyColumnName();
@@ -501,7 +500,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 			return new OrderedSelectionFactory(sql, fieldName2sqlDictionary);
 		}
-		
+
 		private List<DocumentFilter> getFilters()
 		{
 			return queryBuilder.getDocumentFilters();
@@ -560,7 +559,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final String fieldSql = fieldName2sqlDictionary.get(fieldName);
 			if (fieldSql == null)
 			{
-				throw new DBException("No SQL field mapping found for: " + fieldName);
+				throw new DBException("No SQL field mapping found for: " + fieldName + ". Available fields are: " + fieldName2sqlDictionary);
 			}
 
 			return "(" + fieldSql + ") " + (orderBy.isAscending() ? " ASC" : " DESC");
