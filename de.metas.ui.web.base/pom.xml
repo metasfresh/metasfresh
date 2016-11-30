@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -23,11 +23,13 @@
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 			<scope>provided</scope>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<scope>provided</scope>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- J2EE -->

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.endcustomer.mf15</groupId>
 		<artifactId>de.metas.endcustomer.mf15</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
@@ -20,23 +20,24 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.elasticsearch</groupId>
 			<artifactId>de.metas.elasticsearch.server</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>		
 	</dependencies>
 
