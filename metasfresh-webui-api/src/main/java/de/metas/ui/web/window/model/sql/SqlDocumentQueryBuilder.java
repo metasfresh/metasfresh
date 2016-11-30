@@ -12,10 +12,13 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -66,6 +69,16 @@ class SqlDocumentQueryBuilder
 		this.query = query;
 		entityDescriptor = query.getEntityDescriptor();
 		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("TableName", entityBinding.getTableName())
+				.add("detailId", entityDescriptor.getDetailId())
+				.toString();
 	}
 
 	public Evaluatee getEvaluationContext()
@@ -203,23 +216,22 @@ class SqlDocumentQueryBuilder
 
 		//
 		// Parent link where clause (if any)
-		final String sqlParentLinkColumnName = entityBinding.getParentLinkColumnName();
-		if (sqlParentLinkColumnName != null)
+		final Document parentDocument = query.getParentDocument();
+		if (parentDocument != null)
 		{
-			if (query.isParentLinkIdSet())
+			final String parentLinkColumnName = entityBinding.getParentLinkColumnName();
+			final String linkColumnName = entityBinding.getLinkColumnName();
+			if (parentLinkColumnName != null && linkColumnName != null)
 			{
+				final Object parentLinkValue = parentDocument.getFieldView(parentLinkColumnName).getValue();
+
+				final Class<?> targetClass = entityBinding.getFieldByFieldName(linkColumnName).getValueClass();
+				final Object sqlParentLinkValue = SqlDocumentsRepository.convertValueToPO(parentLinkValue, parentLinkColumnName, targetClass);
+
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-				sqlWhereClauseBuilder.append(" /* parent link */ ").append(sqlParentLinkColumnName).append("=?");
-				sqlParams.add(query.getParentLinkIdAsInt());
+				sqlWhereClauseBuilder.append(" /* parent link */ ").append(linkColumnName).append("=?");
+				sqlParams.add(sqlParentLinkValue);
 			}
-			else if (!query.isRecordIdSet())
-			{
-				throw new AdempiereException("Query shall filter at least by recordId or parentLinkId: " + query);
-			}
-		}
-		else if(query.isParentLinkIdSet())
-		{
-			throw new AdempiereException("Asked to filter by parent but there was no parent ID column in " + entityBinding + " for " + query);
 		}
 
 		//
@@ -289,7 +301,7 @@ class SqlDocumentQueryBuilder
 	{
 		//
 		// SQL filter
-		if(filterParam.isSqlFilter())
+		if (filterParam.isSqlFilter())
 		{
 			return IStringExpression.compile(filterParam.getSqlWhereClause());
 		}
@@ -407,11 +419,11 @@ class SqlDocumentQueryBuilder
 		}
 
 		String sqlValueStr = sqlValue.toString();
-		if(sqlValueStr.isEmpty())
+		if (sqlValueStr.isEmpty())
 		{
 			return IStringExpression.NULL;
 		}
-		
+
 		if (!sqlValueStr.startsWith("%"))
 		{
 			sqlValueStr = "%" + sqlValueStr;
@@ -482,7 +494,7 @@ class SqlDocumentQueryBuilder
 	{
 		return query.getViewFields();
 	}
-	
+
 	public List<DocumentFilter> getDocumentFilters()
 	{
 		return query.getFilters();
