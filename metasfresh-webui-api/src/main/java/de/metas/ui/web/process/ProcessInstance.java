@@ -1,10 +1,19 @@
 package de.metas.ui.web.process;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -14,6 +23,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*
  * #%L
@@ -37,19 +47,46 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
  * #L%
  */
 
-public class ProcessInstance
+public final class ProcessInstance
 {
 
 	private final ProcessDescriptor processDescriptor;
 	private final int adPInstanceId;
 	private final Document parameters;
 
+	private ProcessInstanceResult executionResult;
+
+	/** New instance constructor */
 	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final int adPInstanceId, final Document parameters)
 	{
 		super();
 		this.processDescriptor = processDescriptor;
 		this.adPInstanceId = adPInstanceId;
 		this.parameters = parameters;
+
+		executionResult = null;
+	}
+
+	/** Copy constructor */
+	private ProcessInstance(final ProcessInstance from, final CopyMode copyMode)
+	{
+		super();
+		processDescriptor = from.processDescriptor;
+		adPInstanceId = from.adPInstanceId;
+		parameters = from.parameters.copy(copyMode);
+
+		executionResult = from.executionResult;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("AD_PInstance_ID", adPInstanceId)
+				.add("processDescriptor", processDescriptor)
+				.add("executionResult", executionResult)
+				.toString();
 	}
 
 	public void destroy()
@@ -68,14 +105,19 @@ public class ProcessInstance
 		return adPInstanceId;
 	}
 
-	public Document getParameters()
+	public Document getParametersDocument()
 	{
 		return parameters;
+	}
+	
+	public Collection<IDocumentFieldView> getParameters()
+	{
+		return parameters.getFieldViews();
 	}
 
 	public ProcessInstance copy(final CopyMode copyMode)
 	{
-		return new ProcessInstance(processDescriptor, adPInstanceId, parameters.copy(copyMode));
+		return new ProcessInstance(this, copyMode);
 	}
 
 	public LookupValuesList getParameterLookupValues(final String parameterName)
@@ -95,6 +137,8 @@ public class ProcessInstance
 
 	public ProcessInstanceResult startProcess()
 	{
+		// TODO: make sure it wasn't already started
+
 		//
 		// Make sure it's saved in database
 		if (!saveIfValidAndHasChanges())
@@ -130,14 +174,60 @@ public class ProcessInstance
 					.setError(processExecutionResult.isError());
 			//
 			// Result: report
-			final byte[] reportData = processExecutionResult.getReportData();
-			if (reportData != null && reportData.length > 0)
+			final File reportTempFile = saveReportToDiskIfAny(processExecutionResult);
+			if (reportTempFile != null)
 			{
-				resultBuilder.setReportData(reportData, processExecutionResult.getReportContentType());
+				resultBuilder.setReportData(processExecutionResult.getReportFilename(), processExecutionResult.getReportContentType(), reportTempFile);
 			}
 
-			return resultBuilder.build();
+			final ProcessInstanceResult result = resultBuilder.build();
+			executionResult = result;
+			return result;
 		}
+	}
+
+	public ProcessInstanceResult getExecutionResult()
+	{
+		final ProcessInstanceResult executionResult = this.executionResult;
+		if (executionResult == null)
+		{
+			throw new AdempiereException("Process instance does not have an execution result yet: " + this);
+		}
+		return executionResult;
+	}
+
+	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
+	{
+		//
+		// If we are not dealing with a report, stop here
+		final byte[] reportData = processExecutionResult.getReportData();
+		if (reportData == null || reportData.length <= 0)
+		{
+			return null;
+		}
+
+		//
+		// Create report temporary file
+		File reportFile = null;
+		try
+		{
+			final String reportFilePrefix = "report_" + processExecutionResult.getAD_PInstance_ID() + "_";
+
+			final String reportContentType = processExecutionResult.getReportContentType();
+			final String reportFileExtension = MimeType.getExtensionByType(reportContentType);
+			final String reportFileSuffix = Check.isEmpty(reportFileExtension, true) ? "" : "." + reportFileExtension.trim();
+			reportFile = File.createTempFile(reportFilePrefix, reportFileSuffix);
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed creating report temporary file " + reportFile);
+		}
+
+		//
+		// Write report data to our temporary report file
+		Util.writeBytes(reportFile, reportData);
+
+		return reportFile;
 	}
 
 	/**
@@ -147,7 +237,7 @@ public class ProcessInstance
 	 */
 	public boolean saveIfValidAndHasChanges()
 	{
-		final DocumentSaveStatus parametersSaveStatus = getParameters().saveIfValidAndHasChanges();
+		final DocumentSaveStatus parametersSaveStatus = getParametersDocument().saveIfValidAndHasChanges();
 		final boolean saved = !parametersSaveStatus.isError();
 		return saved;
 	}

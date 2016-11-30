@@ -1,8 +1,11 @@
 package de.metas.ui.web.process;
 
+import java.io.File;
 import java.io.Serializable;
 
 import javax.annotation.concurrent.Immutable;
+
+import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
@@ -40,8 +43,10 @@ public class ProcessInstanceResult implements Serializable
 	private final int adPInstanceId;
 	private final String summary;
 	private final boolean error;
-	private final byte[] reportData;
+
+	private final String reportFilename;
 	private final String reportContentType;
+	private final File reportTempFile;
 
 	private ProcessInstanceResult(final Builder builder)
 	{
@@ -49,8 +54,10 @@ public class ProcessInstanceResult implements Serializable
 		adPInstanceId = builder.adPInstanceId;
 		summary = builder.summary;
 		error = builder.error;
-		reportData = builder.reportData;
+
+		reportFilename = builder.reportFilename;
 		reportContentType = builder.reportContentType;
+		reportTempFile = builder.reportTempFile;
 	}
 
 	@Override
@@ -61,11 +68,12 @@ public class ProcessInstanceResult implements Serializable
 				.add("adPInstanceId", adPInstanceId)
 				.add("summary", summary)
 				.add("error", error)
+				.add("reportFilename", reportFilename)
 				.add("reportContentType", reportContentType)
-				.add("reportData.length", reportData == null ? null : reportData.length)
+				.add("reportTempFile", reportTempFile)
 				.toString();
 	}
-	
+
 	public int getAD_PInstance_ID()
 	{
 		return adPInstanceId;
@@ -81,14 +89,19 @@ public class ProcessInstanceResult implements Serializable
 		return error;
 	}
 
-	public byte[] getReportData()
+	public String getReportFilename()
 	{
-		return reportData;
+		return reportFilename;
 	}
 
 	public String getReportContentType()
 	{
 		return reportContentType;
+	}
+	
+	public byte[] getReportData()
+	{
+		return Util.readBytes(reportTempFile);
 	}
 
 	public static final class Builder
@@ -97,8 +110,9 @@ public class ProcessInstanceResult implements Serializable
 		private String summary;
 		private boolean error;
 
-		private byte[] reportData;
+		private String reportFilename;
 		private String reportContentType;
+		private File reportTempFile;
 
 		private Builder()
 		{
@@ -109,7 +123,7 @@ public class ProcessInstanceResult implements Serializable
 		{
 			return new ProcessInstanceResult(this);
 		}
-		
+
 		public Builder setAD_PInstance_ID(final int adPInstanceId)
 		{
 			this.adPInstanceId = adPInstanceId;
@@ -128,10 +142,11 @@ public class ProcessInstanceResult implements Serializable
 			return this;
 		}
 
-		public Builder setReportData(final byte[] reportData, final String reportContentType)
+		public Builder setReportData(final String reportFileName, final String reportContentType, final File reportTempFile)
 		{
-			this.reportData = reportData;
+			reportFilename = reportFileName;
 			this.reportContentType = reportContentType;
+			this.reportTempFile = reportTempFile;
 			return this;
 		}
 	}
