@@ -10,7 +10,7 @@ import {
     queryPathsRequest,
     pathRequest,
     getWindowBreadcrumb
- } from '../../actions/MenuActions';
+} from '../../actions/MenuActions';
 
 class MenuOverlay extends Component {
     constructor(props){

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import {push} from 'react-router-redux';
 
 import MenuOverlay from './MenuOverlay';
-import MasterWidget from '../MasterWidget';
+import MasterWidget from '../Widget/MasterWidget';
 
 class Breadcrumb extends Component {
 	constructor(props) {

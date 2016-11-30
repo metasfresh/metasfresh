@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import Moment from 'moment';
-import MasterWidget from '../MasterWidget';
+import MasterWidget from '../Widget/MasterWidget';
 
 
 class TableCell extends Component {

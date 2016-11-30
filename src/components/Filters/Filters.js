@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import update from 'react-addons-update';
 
-import DatetimeRange from './DatetimeRange';
+import DatetimeRange from '../Widget/DatetimeRange';
 import FiltersItem from './FiltersItem';
 
 import {

@@ -8,10 +8,10 @@ import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
 import Breadcrumb from './Breadcrumb';
-import MasterWidget from '../MasterWidget';
-import SideList from '../app/SideList';
+import MasterWidget from '../Widget/MasterWidget';
+import SideList from './SideList';
 import Indicator from './Indicator';
-import Inbox from './Inbox/Inbox';
+import Inbox from '../Inbox/Inbox';
 
 
 import {

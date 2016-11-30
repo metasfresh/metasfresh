@@ -1,12 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import Header from '../components/app/Header';
+import Header from '../components/Header/Header';
 import {push} from 'react-router-redux';
 import Container from '../components/Container';
 
-import InboxItem from '../components/app/Inbox/InboxItem';
-import Inbox from '../components/app/Inbox/Inbox';
+import InboxItem from '../components/Inbox/InboxItem';
+import Inbox from '../components/Inbox/Inbox';
 
 class InboxAll extends Component {
     render() {

@@ -6,14 +6,14 @@ import {
     patch,
     updateProperty,
     findRowByPropName
-} from '../actions/WindowActions';
+} from '../../actions/WindowActions';
 
-import DatePicker from './widget/DatePicker';
-import ProductAttributes from './widget/ProductAttributes';
-import Lookup from './widget/Lookup';
-import DatetimeRange from './app/DatetimeRange';
-import List from './widget/List';
-import ActionButton from './widget/ActionButton';
+import DatePicker from './DatePicker';
+import ProductAttributes from './ProductAttributes';
+import Lookup from './Lookup';
+import DatetimeRange from './DatetimeRange';
+import List from './List';
+import ActionButton from './ActionButton';
 
 class RawWidget extends Component {
     constructor(props) {

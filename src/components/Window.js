@@ -5,10 +5,10 @@ import {
     findRowByPropName
 } from '../actions/WindowActions';
 
-import MasterWidget from '../components/MasterWidget';
-import Tabs from '../components/widget/Tabs';
-import TabPane from '../components/widget/TabPane';
-import Table from '../components/table/Table';
+import MasterWidget from '../components/Widget/MasterWidget';
+import Tabs from '../components/Widget/Tabs';
+import TabPane from '../components/Widget/TabPane';
+import Table from '../components/Table/Table';
 
 import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 

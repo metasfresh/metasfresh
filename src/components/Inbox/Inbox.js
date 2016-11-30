@@ -9,7 +9,7 @@ import InboxItem from './InboxItem';
 import {
     markAllAsRead,
     markAsRead
-} from '../../../actions/AppActions';
+} from '../../actions/AppActions';
 
 class Inbox extends Component {
     constructor(props){

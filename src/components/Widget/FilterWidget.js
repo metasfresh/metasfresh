@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import {
     updateFiltersParameters
-} from '../actions/ListActions';
+} from '../../actions/ListActions';
 
 import RawWidget from './RawWidget';
 

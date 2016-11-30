@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
-import Prompt from '../app/Prompt';
+import Prompt from '../App/Prompt';
 import config from '../../config';
 
 import {

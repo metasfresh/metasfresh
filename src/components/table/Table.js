@@ -13,7 +13,7 @@ import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
-import MasterWidget from '../MasterWidget';
+import MasterWidget from '../Widget/MasterWidget';
 
 
 class Table extends Component {

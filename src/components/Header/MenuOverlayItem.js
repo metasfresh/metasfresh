@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 
 import {
     getWindowBreadcrumb
- } from '../../actions/MenuActions';
+} from '../../actions/MenuActions';
 
 class MenuOverlayItem extends Component {
     constructor(props){

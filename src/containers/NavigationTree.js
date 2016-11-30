@@ -2,8 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import { Link } from 'react-router';
 
-import Header from '../components/app/Header';
-import MenuOverlayContainer from '../components/app/MenuOverlayContainer';
+import Header from '../components/Header/Header';
+import MenuOverlayContainer from '../components/Header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';

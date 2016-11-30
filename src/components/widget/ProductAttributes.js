@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 
-import RawWidget from '../RawWidget';
+import RawWidget from './RawWidget';
 
 class ProductAttributes extends Component {
     constructor(props) {
