@@ -1302,7 +1302,7 @@ public class GridField
 	 */
 	public boolean isParentColumn()
 	{
-		return m_vo.IsParent;
+		return m_vo.isParentLink();
 	}
 
 	/**

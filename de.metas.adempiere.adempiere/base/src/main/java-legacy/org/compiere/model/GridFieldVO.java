@@ -648,7 +648,7 @@ public class GridFieldVO implements Serializable
 	/**	PK				*/
 	public boolean      IsKey = false;
 	/**	FK				*/
-	public boolean      IsParent = false;
+	private boolean      IsParent = false;
 	/**	Process			*/
 	public int          AD_Process_ID = 0;
 	/**	Description		*/
@@ -897,6 +897,11 @@ public class GridFieldVO implements Serializable
 				.add("ColumnName", ColumnName)
 				.add("AD_Column_ID", AD_Column_ID)
 				.toString();
+	}
+	
+	public boolean isParentLink()
+	{
+		return IsParent;
 	}
 	
 	public int getTabNo()
