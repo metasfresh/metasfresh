@@ -419,8 +419,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_ID, P_Number, P_Msg)"
-				+ " VALUES (?, ?, ?, ?, ?, ?)";
+				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
+				+ " VALUES (?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -586,18 +586,18 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setRecord_ID(pi.getRecord_ID());
 		adPInstance.setWhereClause(pi.getWhereClause());
 		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
-		
+
 		final Language reportingLanguage = pi.getReportLanguage();
 		final String adLanguage = reportingLanguage == null ? null : reportingLanguage.getAD_Language();
 		adPInstance.setAD_Language(adLanguage);
-		
+
 		InterfaceWrapperHelper.save(adPInstance);
 
 		//
 		// Update ProcessInfo's AD_PInstance_ID
 		pi.setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
 	}
-	
+
 	@Override
 	public int createAD_PInstance_ID(final Properties ctx)
 	{

@@ -72,7 +72,6 @@ public class QueryBL implements IQueryBL
 				.setContext(contextProvider);
 	}
 
-
 	@Deprecated
 	@Override
 	public <T> IQueryOrderByBuilder<T> createQueryOrderByBuilder()

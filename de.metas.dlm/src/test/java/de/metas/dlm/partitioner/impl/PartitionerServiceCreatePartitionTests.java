@@ -609,4 +609,63 @@ public class PartitionerServiceCreatePartitionTests
 		assertThat(partitions.get(1).getRecordsFlat().contains(asTableRef(invoice)), is(true));
 	}
 
+	/**
+	 * Verifies that two unrelated records do not end up in one single partition.
+	 */
+	@Test
+	public void testUnrelatedRecords1()
+	{
+		final PartitionerConfig config = PartitionerConfig.builder()
+				// invoice
+				.line(I_C_Invoice.Table_Name)
+				.endLine().build();
+
+		final I_C_Invoice invoice1 = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		POJOWrapper.setInstanceName(invoice1, "invoice1");
+		InterfaceWrapperHelper.save(invoice1);
+
+		final I_C_Invoice invoice2 = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		POJOWrapper.setInstanceName(invoice2, "invoice2");
+		InterfaceWrapperHelper.save(invoice2);
+
+		final CreatePartitionRequest partitionerRequest = PartitionRequestFactory.builder().setConfig(config).setOldestFirst(true).build();
+		final List<Partition> partitions = partitionerService.createPartition0(partitionerRequest);
+
+		// expecting one partition with invoice1, because the partitioner only looked at that invoice
+		assertThat(partitions.size(), is(1));
+		assertThat(partitions.get(0).getRecordsFlat().size(), is(1));
+		assertThat(partitions.get(0).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(invoice1)));
+	}
+
+
+	/**
+	 * Verifies that two unrelated records do not end up in one single partition.
+	 */
+	@Test
+	public void testUnrelatedRecords2()
+	{
+		final PartitionerConfig config = PartitionerConfig.builder()
+				// invoice
+				.line(I_C_Invoice.Table_Name)
+				.line(I_C_Order.Table_Name)
+				.endLine().build();
+
+		final I_C_Invoice invoice1 = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		POJOWrapper.setInstanceName(invoice1, "invoice1");
+		InterfaceWrapperHelper.save(invoice1);
+
+		final I_C_Order order1 = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		POJOWrapper.setInstanceName(order1, "order1");
+		InterfaceWrapperHelper.save(order1);
+
+		final CreatePartitionRequest partitionerRequest = PartitionRequestFactory.builder().setConfig(config).setOldestFirst(true).build();
+		final List<Partition> partitions = partitionerService.createPartition0(partitionerRequest);
+
+		// expecting two partitions because the partitioner looked at each config line and found one partition for each line
+		assertThat(partitions.size(), is(2));
+		assertThat(partitions.get(0).getRecordsFlat().size(), is(1));
+		assertThat(partitions.get(0).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(invoice1)));
+		assertThat(partitions.get(1).getRecordsFlat().size(), is(1));
+		assertThat(partitions.get(1).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(order1)));
+	}
 }
