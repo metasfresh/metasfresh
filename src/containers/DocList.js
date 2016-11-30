@@ -29,12 +29,13 @@ class DocList extends Component {
         dispatch(updateUri(pathname, query, prop, value));
     }
 
-    renderDocumentList = (windowType, query) => {
+    renderDocumentList = (windowType, query, viewId) => {
         return (<DocumentList
             type="grid"
             updateUri={this.updateUriCallback}
             windowType={windowType}
             query={query}
+            viewId={viewId}
         />)
     }
 
@@ -63,7 +64,7 @@ class DocList extends Component {
                         selected={selected}
                      />
                  }
-                {this.renderDocumentList(windowType, query)}
+                {this.renderDocumentList(windowType, query, viewId)}
             </Container>
         );
     }

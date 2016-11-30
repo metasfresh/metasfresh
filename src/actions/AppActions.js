@@ -113,10 +113,7 @@ export function viewLayoutRequest(windowType, type){
 }
 
 export function browseViewRequest(viewId, page, pageLength, orderBy){
-	return () => {
-		const firstRow = pageLength * (page - 1);
-		return axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + firstRow + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''))
-	}
+	return () => axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + pageLength * (page - 1) + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters){

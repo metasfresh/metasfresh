@@ -9,7 +9,8 @@ import Filters from '../Filters/Filters';
 import {
     viewLayoutRequest,
     createViewRequest,
-    browseViewRequest
+    browseViewRequest,
+    addNotification
 } from '../../actions/AppActions';
 
 import {
@@ -59,8 +60,26 @@ class DocumentList extends Component {
         }
     }
 
+    setListData = (data) => {
+        const {dispatch} = this.props;
+
+        this.setState(Object.assign({}, this.state, {
+            data: data
+        }), () => {
+            this.getView(data.viewId);
+            dispatch(initDocumentView(data.viewId));
+        })
+    }
+
+    createNewView = (windowType, type, filters) => {
+        const {dispatch} = this.props;
+        dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
+            this.setListData(response.data);
+        })
+    }
+
     updateData = (type, windowType) => {
-        const {dispatch,filters, filtersWindowType} = this.props;
+        const {dispatch,filters, filtersWindowType, viewId, query} = this.props;
 
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
@@ -69,14 +88,19 @@ class DocumentList extends Component {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
                 }), () => {
-                    dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
-                        this.setState(Object.assign({}, this.state, {
-                            data: response.data
-                        }), () => {
-                            this.getView(response.data.viewId);
-                            dispatch(initDocumentView(response.data.viewId));
-                        })
-                    })
+                    if(query.viewId){
+                        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters))
+                            .then((response) => {
+                                this.setListData(response.data);
+                            }).catch((err) => {
+                                if(err.status === 404) {
+                                    dispatch(addNotification(err.error, err.message, 5000, 'error'));
+                                    this.createNewView(windowType, type, filters);
+                                }
+                            })
+                    }else{
+                        this.createNewView(windowType, type, filters);
+                    }
                 })
             });
         }
