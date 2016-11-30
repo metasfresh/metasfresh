@@ -23,6 +23,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * #583 Reports without ad_org_id show wrong results
+  * #656 Bug in Import Format - Copy lines process
 
 # metasfresh 4.45.44 (2016-47)
 
