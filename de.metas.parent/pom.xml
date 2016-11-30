@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
 		can't set it to another version it -->
-	<version>3-development-SNAPSHOT</version>
+	<version>1.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -53,6 +53,9 @@
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
+		<!-- this version can't be updated by the versions plugin, but we can pass it through our pipeline and set this property in downstream jobs -->
+		<metasfresh.assembly.descriptor.version>1.0.0</metasfresh.assembly.descriptor.version>
+
 		<!-- Tells SonarQube to run the unit tests -->
 		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
 		<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test 
@@ -65,7 +68,7 @@
 
 	</properties>
 
-	<!-- FRESH-271 by declaring those two reactor poms as modules of this parent 
+	<!-- FRESH-271 by declaring those three reactor poms as modules of this parent 
 		pom, we can set all the versions from cmdline, using mvn org.codehaus.mojo:versions-maven-plugin:2.1:revert 
 		-DnewVersion=tst -f de.metas.parent\pom.xml Note that we use version 2.1 
 		because of http://stackoverflow.com/questions/29995139/maven-versions-maven-plugin-versions-plugin-2-2 -->
@@ -222,8 +225,8 @@
 
 			<!-- Using dependency management is a workaround for: [WARNING] Rule 0: 
 				org.apache.maven.plugins.enforcer.BanDuplicateClasses failed with message: 
-				Duplicate classes found: Found in: de.metas.swat:de.metas.swat.swingui:jar:3-development-SNAPSHOT:compile 
-				de.metas.swat:de.metas.swat.swingui:jar:3-development-SNAPSHOT:compile Notes: 
+				Duplicate classes found: Found in: de.metas.swat:de.metas.swat.swingui:jar:3.0.0:compile 
+				de.metas.swat:de.metas.swat.swingui:jar:3.0.0:compile Notes: 
 				*an alternative would be to explicitly ignore the artifacts' classes, but 
 				i don't see the pattern of when just an another artifact is flagged as duplicate 
 				of itself, so we would enventually end up ignoring all our own artifacts 
@@ -238,7 +241,7 @@
 				<version>${project.version}</version> 
 			</dependency> 
 			-->
-
+<!-- 
 			<dependency>
 				<groupId>de.metas.adempiere.libero</groupId>
 				<artifactId>de.metas.adempiere.libero.libero</artifactId>
@@ -442,7 +445,7 @@
 				<artifactId>de.metas.rfq</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+-->
 		</dependencies>
 	</dependencyManagement>
 
@@ -512,7 +515,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.4</version>
+					<version>3.0.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -565,7 +568,7 @@
 						aparently came back in 1.4.1 ... Concretely, we got errors like: [...] 00:00:34.798 
 						[INFO] Adding ignorable dependency: null:jmockit:null 00:00:34.799 [INFO] 
 						Adding ignore: org.junit.runner.Runner 00:00:34.800 [WARNING] Could not find 
-						junit:junit:jar:4.11:test at null 00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:3-development-SNAPSHOT:compile 
+						junit:junit:jar:4.11:test at null 00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:3.0.0:compile 
 						at null 00:00:34.802 [WARNING] Could not find org.hamcrest:hamcrest-all:jar:1.3:test 
 						at null 00:00:34.803 [WARNING] Could not find org.jmockit:jmockit:jar:1.20:test 
 						at null -->
@@ -962,7 +965,8 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh-dependency.version}</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,5.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1075,7 +1079,8 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh-dependency.version}</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,5.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1161,7 +1166,8 @@
 							<dependency>
 								<groupId>de.metas.assemblies</groupId>
 								<artifactId>de.metas.assemblies</artifactId>
-								<version>${metasfresh-dependency.version}</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,5.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -1322,7 +1328,7 @@
 			<!-- If the environment variable BUILD_NUMBER is not set, it means that 
 				we are not building on jenkins, so we substitute the value "LOCAL-BUILD" 
 				instead. And we set BUILD_NUMBER_NUMERIC to 0, because some parts of the 
-				build (=>launch4j) requiere the build number to allways be a number. -->
+				build (=>launch4j) requiere the build number to always be a number. -->
 			<id>build-number-env-missing</id>
 			<activation>
 				<property>
@@ -1345,6 +1351,19 @@
 			</activation>
 			<properties>
 				<BUILD_NUMBER_NUMERIC>${env.BUILD_NUMBER}</BUILD_NUMBER_NUMERIC>
+			</properties>
+		</profile>
+		
+		<!--this profile is analog to "build-number-env-missing" -->
+		<profile>
+			<id>build-versiov-env-missing</id>
+			<activation>
+				<property>
+					<name>!env.BUILD_VERSION</name>
+				</property>
+			</activation>
+			<properties>
+				<env.BUILD_VERSION>3-LOCAL-BUILD-0</env.BUILD_VERSION>
 			</properties>
 		</profile>
 
