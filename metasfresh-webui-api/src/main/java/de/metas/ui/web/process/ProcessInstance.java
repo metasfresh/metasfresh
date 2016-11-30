@@ -132,12 +132,39 @@ public final class ProcessInstance
 
 	public void processParameterValueChange(final String parameterName, final Object value, final ReasonSupplier reason)
 	{
+		assertNotExecuted();
 		parameters.processValueChange(parameterName, value, reason);
+	}
+	
+	/**
+	 * @return execution result or throws exception if the process was not already executed
+	 */
+	public ProcessInstanceResult getExecutionResult()
+	{
+		final ProcessInstanceResult executionResult = this.executionResult;
+		if (executionResult == null)
+		{
+			throw new AdempiereException("Process instance does not have an execution result yet: " + this);
+		}
+		return executionResult;
+	}
+	
+	public boolean isExecuted()
+	{
+		return executionResult != null;
+	}
+
+	private final void assertNotExecuted()
+	{
+		if(isExecuted())
+		{
+			throw new AdempiereException("Process already executed");
+		}
 	}
 
 	public ProcessInstanceResult startProcess()
 	{
-		// TODO: make sure it wasn't already started
+		assertNotExecuted();
 
 		//
 		// Make sure it's saved in database
@@ -184,16 +211,6 @@ public final class ProcessInstance
 			executionResult = result;
 			return result;
 		}
-	}
-
-	public ProcessInstanceResult getExecutionResult()
-	{
-		final ProcessInstanceResult executionResult = this.executionResult;
-		if (executionResult == null)
-		{
-			throw new AdempiereException("Process instance does not have an execution result yet: " + this);
-		}
-		return executionResult;
 	}
 
 	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
