@@ -115,6 +115,7 @@ public class ProcessDescriptorsFactory
 				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
 				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
 				.setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
+				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
 				.setAD_Tab_ID(0)

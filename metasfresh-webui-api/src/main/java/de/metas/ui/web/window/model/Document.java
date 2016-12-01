@@ -16,7 +16,6 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
@@ -208,7 +207,7 @@ public final class Document
 
 		//
 		// Initialize field callout executor
-		fieldCalloutExecutor = entityDescriptor.createCalloutExecutor();
+		fieldCalloutExecutor = entityDescriptor.createFieldsCalloutExecutor();
 
 		_evaluatee = null; // lazy
 
@@ -301,7 +300,7 @@ public final class Document
 		//
 		// Initialize callout executor
 		documentCallout = from.documentCallout;
-		fieldCalloutExecutor = entityDescriptor.createCalloutExecutor();
+		fieldCalloutExecutor = entityDescriptor.createFieldsCalloutExecutor();
 
 		_evaluatee = null; // lazy
 
@@ -1440,7 +1439,7 @@ public final class Document
 		{
 			final Document document = new Document(this);
 
-			final ITabCallout documentCallout = Services.get(ITabCalloutFactory.class).createAndInitialize(document.asCalloutRecord());
+			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
 
 			//

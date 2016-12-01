@@ -114,6 +114,7 @@ public class ASIDescriptorFactory
 				.setCaption(attributeSet.getName())
 				.setDescription(attributeSet.getDescription())
 				.setDataBinding(getAsiBindingsBuilder())
+				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
 				.setAD_Tab_ID(0)
