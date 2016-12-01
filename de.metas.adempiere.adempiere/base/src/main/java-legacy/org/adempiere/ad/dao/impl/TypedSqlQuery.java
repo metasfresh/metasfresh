@@ -270,13 +270,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public <ET extends T> List<ET> list(Class<ET> clazz) throws DBException
 	{
 		final List<ET> list;
-		if (limit > 0)
+		if (limit > 0 && limit <= 100)
 		{
-			list = new ArrayList<ET>(limit);
+			list = new ArrayList<>(limit);
 		}
 		else
 		{
-			list = new ArrayList<ET>();
+			// TODO: check if we shall go with LinkedList in this case
+			list = new ArrayList<>();
 		}
 
 		final String sql = buildSQL(null, true);
