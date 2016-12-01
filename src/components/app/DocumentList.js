@@ -2,9 +2,9 @@ import React, { Component, PropTypes } from 'react';
 import {push, replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
-import DatetimeRange from '../Widget/DatetimeRange';
-import Table from '../Table/Table';
-import Filters from '../Filters/Filters';
+import DatetimeRange from '../widget/DatetimeRange';
+import Table from '../table/Table';
+import Filters from '../filters/Filters';
 
 import {
     viewLayoutRequest,

@@ -8,7 +8,7 @@ import {
     deleteLocal
 } from '../../actions/WindowActions';
 
-import Prompt from '../App/Prompt';
+import Prompt from '../app/Prompt';
 
 class TableContextMenu extends Component {
     constructor(props) {

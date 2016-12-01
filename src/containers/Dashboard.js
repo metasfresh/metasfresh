@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Container from '../components/Container';
-import DraggableWrapper from '../components/Widget/DraggableWrapper';
+import DraggableWrapper from '../components/widget/DraggableWrapper';
 
 
 import {

@@ -2,9 +2,9 @@ import React, { Component, PropTypes } from 'react';
 import {push,replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
-import DocumentList from '../components/App/DocumentList';
+import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
-import Modal from '../components/App/Modal';
+import Modal from '../components/app/Modal';
 
 import {
     getWindowBreadcrumb

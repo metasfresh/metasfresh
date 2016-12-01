@@ -13,7 +13,7 @@ import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
-import MasterWidget from '../Widget/MasterWidget';
+import MasterWidget from '../widget/MasterWidget';
 
 
 class Table extends Component {
@@ -416,6 +416,7 @@ class Table extends Component {
                             >
                                 Add new
                             </button>
+
                             <div className="pull-xs-right">
                                 {/*<TableFilter />*/}
                             </div>

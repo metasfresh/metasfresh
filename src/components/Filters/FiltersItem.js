@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import FilterWidget from '../Widget/FilterWidget';
+import FilterWidget from '../widget/FilterWidget';
 
 class FiltersItem extends Component {
 	constructor(props) {

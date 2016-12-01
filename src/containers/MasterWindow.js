@@ -12,8 +12,8 @@ import {
 } from '../actions/AppActions';
 
 import Window from '../components/Window';
-import Modal from '../components/App/Modal';
-import MasterWidget from '../components/Widget/MasterWidget';
+import Modal from '../components/app/Modal';
+import MasterWidget from '../components/widget/MasterWidget';
 import Container from '../components/Container';
 
 class MasterWindow extends Component {

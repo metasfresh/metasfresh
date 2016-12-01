@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import Header from './Header/Header';
-import NotificationHandler from './Notifications/NotificationHandler';
+import Header from './header/Header';
+import NotificationHandler from './notifications/NotificationHandler';
 
 class Container extends Component {
     constructor(props){

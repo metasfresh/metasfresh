@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import DocumentList from '../App/DocumentList';
+import DocumentList from '../app/DocumentList';
 
 class SideList extends Component {
     constructor(props) {

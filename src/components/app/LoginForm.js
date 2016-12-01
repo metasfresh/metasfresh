@@ -4,7 +4,7 @@ import {push, goBack} from 'react-router-redux';
 import {connect} from 'react-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
-import RawList from '../Widget/RawList';
+import RawList from '../widget/RawList';
 import Moment from 'moment';
 
 import {
