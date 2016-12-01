@@ -68,11 +68,13 @@ class Widget extends Component {
         if(isAdvanced){
             customWindowType += "&advanced=true";
         }
+        console.log( JSON.stringify(widgetData[0].value), JSON.stringify(value), cachedValue);
+
 
         //do patch only when value is not equal state
         //or cache is set and it is not equal value
         if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
-
+            console.log('wyslano')
             //check if we should update store
             //except button value
             if(widgetType !== "Button"){

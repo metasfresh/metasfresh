@@ -117,7 +117,7 @@ class RawWidget extends Component {
                             inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            patch={(date) => handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>

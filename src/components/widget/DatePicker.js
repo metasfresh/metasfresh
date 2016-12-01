@@ -18,7 +18,11 @@ class DatePicker extends Component {
         const {patch, value} = this.props;
         const {cache} = this.state;
 
-        if(JSON.stringify(cache) !== JSON.stringify(date.toDate())){
+        if(
+            JSON.stringify(cache) !== (
+                date !== "" ? JSON.stringify(date && date.toDate()) : ""
+            )
+        ){
             patch(date);
         }
 
