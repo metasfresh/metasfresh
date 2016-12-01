@@ -30,6 +30,7 @@
   "dependencies": {
     "axios": "~0.13.1",
     "bootstrap": "~4.0.0-alpha.5",
+    "d3": "^4.4.0",
     "file-loader": "~0.8.5",
     "moment": "~2.16.0",
     "react": "~15.3.1",

@@ -76,12 +76,12 @@ class Subheader extends Component {
         onClick();
     }
 
-    handlePrint = (windowType, docId) => {
+    handlePrint = (windowType, docId, docNo) => {
         const {dispatch, onClick} = this.props;
         const url = config.API_URL +
             '/window/' + windowType +
             '/' + docId +
-            '/print/' + windowType + '_' + docId + '.pdf';
+            '/print/' + windowType + '_' + (docNo ? docNo : docId) + '.pdf';
         window.open(url, "_blank");
         onClick();
     }
@@ -128,7 +128,7 @@ class Subheader extends Component {
 
     render() {
         const {
-            windowType, onClick, references, actions, dataId, viewId
+            windowType, onClick, references, actions, dataId, viewId, docNo
         } = this.props;
         const {prompt} = this.state;
 
@@ -151,7 +151,7 @@ class Subheader extends Component {
                                     <i className="meta-icon-report-1" /> New
                                 </div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType + '&advanced=true', "window", "Advanced edit")}><i className="meta-icon-edit" /> Advanced Edit</div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.handlePrint(windowType, dataId)}><i className="meta-icon-print" /> Print</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> this.handlePrint(windowType, dataId, docId)}><i className="meta-icon-print" /> Print</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
                                 <div className="subheader-item" onClick={()=> this.redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
