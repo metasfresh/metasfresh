@@ -262,6 +262,7 @@ echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 
 // provide these cmdline params to all maven invocations that do a deploy
 // deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
+// deployAtEnd=true so that
 final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
@@ -277,15 +278,16 @@ if(params.MF_SKIP_TO_DIST)
 }
 else
 {
+// while the "main/base" metasfresh stuff builds, no downstream builds should resolve metasfresh theses artifacts because we might end up with dependency convergence errors
+// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
+lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
+{
 node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M') 
 		{
-			// while the "main/base" metasfresh stuff builds, no downstream builds should resolve metasfresh theses artifacts because we might end up with dependency convergence errors
-			lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
-			{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
@@ -345,7 +347,6 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
             }
-			} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")			
 
 			// collect the test results
 			junit '**/target/surefire-reports/*.xml'
@@ -353,6 +354,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 		} // withMaven
 	} // configFileProvider
 } // node			
+} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node for it
@@ -376,6 +378,13 @@ stage('Invoke downstream jobs')
 }
 } // if(params.MF_SKIP_TO_DIST)
 	
+// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
+// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
+// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
+// i.e. Dependency convergence error
+// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
+lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
+{
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
 {
@@ -384,12 +393,6 @@ node('agent && linux && libc6-i386')
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
 			stage('Set versions and build endcustomer-dist') 
-			{
-			// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
-			// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
-			// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
-			// i.e. Dependency convergence error
-			lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 			{
 				// checkout our code
 				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
@@ -419,7 +422,6 @@ node('agent && linux && libc6-i386')
 				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
 				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 			}
-			} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 		} // withMaven
 	} // configFileProvider
 
@@ -427,6 +429,7 @@ node('agent && linux && libc6-i386')
 	// don't clean up the work space..we do it when we check out next time
 	// step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
+} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // we need this one for both "Test-SQL" and "Deployment
 def downloadForDeployment = { String groupId, String artifactId, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
