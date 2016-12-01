@@ -70,6 +70,7 @@ public class ASIDescriptorFactory
 	private ASIRepository asiRepository;
 
 	private final CCache<Integer, ASIDescriptor> cacheByAttributeSetId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
+	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(ASILookupDescriptor.CACHE_PREFIX + "#LookupDescriptors", 200, 0);
 
 	private ASIDataBindingDescriptorBuilder _asiBindingsBuilder;
 
@@ -133,7 +134,7 @@ public class ASIDescriptorFactory
 		return attributeSetDescriptor.build();
 	}
 
-	private static DocumentFieldDescriptor.Builder createASIAttributeDescriptor(final I_M_Attribute attribute)
+	private DocumentFieldDescriptor.Builder createASIAttributeDescriptor(final I_M_Attribute attribute)
 	{
 		final int attributeId = attribute.getM_Attribute_ID();
 		final String fieldName = attribute.getValue();
@@ -159,7 +160,7 @@ public class ASIDescriptorFactory
 			readMethod = I_M_AttributeInstance::getValue;
 			writeMethod = ASIAttributeFieldBinding::writeValueFromLookup;
 
-			final LookupDescriptor lookupDescriptor = createLookupDescriptor(attribute);
+			final LookupDescriptor lookupDescriptor = getLookupDescriptor(attribute);
 			lookupDescriptorProvider = (scope) -> lookupDescriptor;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
@@ -207,10 +208,9 @@ public class ASIDescriptorFactory
 				;
 	}
 
-	private static LookupDescriptor createLookupDescriptor(final I_M_Attribute attribute)
+	private LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
 	{
-		// TODO: caching
-		return ASILookupDescriptor.of(attribute);
+		return asiLookupDescriptorsByAttributeId.getOrLoad(attribute.getM_Attribute_ID(), () -> ASILookupDescriptor.of(attribute));
 	}
 
 	private static ASILayout createLayout(final DocumentEntityDescriptor attributeSetDescriptor)
@@ -326,7 +326,7 @@ public class ASIDescriptorFactory
 					.cast(ASILookupDescriptor.class)
 					.getAttributeValue(lookupValue);
 
-			if(attributeValue == null)
+			if (attributeValue == null)
 			{
 				ai.setValue(lookupValue == null ? null : lookupValue.toString());
 				ai.setM_AttributeValue(null);

@@ -50,29 +50,36 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+
 	public static final ASILookupDescriptor of(final I_M_Attribute attribute)
 	{
 		return new ASILookupDescriptor(attribute);
 	}
 
-	private static final CCache<Integer, AttributeValuesMap> attributeValuesMapByAttributeId = CCache.newLRUCache(I_M_AttributeValue.Table_Name, 100, 60);
+	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
+	static final String CACHE_PREFIX = I_M_AttributeValue.Table_Name;
 
+	private static final CCache<Integer, AttributeValuesMap> attributeValuesMapByAttributeId = CCache.newLRUCache(CACHE_PREFIX + "#AttributeValuesMap", 100, 60);
+
+	private final String name;
 	private final int attributeId;
 
 	private ASILookupDescriptor(final I_M_Attribute attribute)
 	{
 		super();
+		name = attribute.getValue() + "_" + attribute.getName();
 		attributeId = attribute.getM_Attribute_ID();
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("name", name)
 				.add("attributeId", attributeId)
 				.toString();
 	}
-	
+
 	@Override
 	public LookupDataSourceFetcher getLookupDataSourceFetcher()
 	{
@@ -112,16 +119,16 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public String getCachePrefix()
 	{
-		return I_M_AttributeValue.Table_Name;
+		return CACHE_PREFIX;
 	}
-	
+
 	public AttributeValue getAttributeValue(final LookupValue lookupValue)
 	{
-		if(lookupValue == null)
+		if (lookupValue == null)
 		{
 			return null;
 		}
-		
+
 		return getAttributeValuesMap().getAttributeValueByValue(lookupValue.getId());
 	}
 
@@ -140,7 +147,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(I_M_AttributeValue.Table_Name).putFilterById(id);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).putFilterById(id);
 	}
 
 	@Override
@@ -158,7 +165,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public Builder newContextForFetchingList()
 	{
-		return LookupDataSourceContext.builder(I_M_AttributeValue.Table_Name);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName);
 	}
 
 	@Override
@@ -195,7 +202,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		{
 			return lookupValues.getById(id);
 		}
-		
+
 		public AttributeValue getAttributeValueByValue(final Object value)
 		{
 			return attributeValuesByValue.get(value);
@@ -225,7 +232,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		{
 			return lookupValue.getId();
 		}
-		
+
 		public String getValueAsString()
 		{
 			return lookupValue.getIdAsString();
