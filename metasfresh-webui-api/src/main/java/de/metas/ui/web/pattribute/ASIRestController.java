@@ -57,7 +57,7 @@ public class ASIRestController
 	private UserSession userSession;
 
 	@Autowired
-	ASIRepository asiRepo;
+	private ASIRepository asiRepo;
 
 	private JSONOptions newJsonOpts()
 	{

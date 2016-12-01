@@ -68,11 +68,6 @@ public class ASILayout
 				.toString();
 	}
 
-	public int getAD_Window_ID()
-	{
-		return M_AttributeSet_ID;
-	}
-
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);

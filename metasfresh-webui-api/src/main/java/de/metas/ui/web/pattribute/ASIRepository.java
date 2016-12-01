@@ -81,6 +81,8 @@ public class ASIRepository
 		{
 			loadASIDocumentField(asiDoc, fromAI);
 		}
+		
+		asiDoc.checkAndGetValidStatus();
 
 		logger.trace("Created from ASI={}: {}", fromASI_ID, asiDoc);
 
