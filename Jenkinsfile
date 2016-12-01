@@ -164,20 +164,24 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
         {
-            stage('Set artifact versions') 
+			// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
+			// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
+			// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
+			// i.e. Dependency convergence error
+			lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
+			{
+			stage('Set versions and build metasfresh-webui-api') 
             {
                 // set the artifact version of everything below the webui's pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
-            }
-            
-			stage('Build metasfresh-webui-api') 
-            {
-        		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+
+				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
 				junit '**/target/surefire-reports/*.xml'
             }
+			} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 		}
 	}
    
