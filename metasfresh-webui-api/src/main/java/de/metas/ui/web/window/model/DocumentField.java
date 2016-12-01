@@ -49,7 +49,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 	private final DocumentFieldDescriptor descriptor;
 	private final Document _document;
-	private final LookupDataSource lookupDataSource;
+	private final LookupDataSource _lookupDataSource;
 	private boolean lookupValuesStaled = true;
 
 	private transient ICalloutField _calloutField; // lazy
@@ -75,7 +75,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		this.descriptor = descriptor;
 		_document = document;
 
-		lookupDataSource = descriptor.createLookupDataSource(LookupScope.DocumentField);
+		_lookupDataSource = descriptor.createLookupDataSource(LookupScope.DocumentField);
 
 		_valid = DocumentValidStatus.inititalInvalid();
 	}
@@ -86,7 +86,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		super();
 		descriptor = from.descriptor;
 		_document = document;
-		lookupDataSource = from.lookupDataSource;
+		_lookupDataSource = from._lookupDataSource;
 		lookupValuesStaled = from.lookupValuesStaled;
 		_calloutField = null; // don't copy it
 		_initialValue = from._initialValue;
@@ -136,6 +136,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	public DocumentFieldDescriptor getDescriptor()
 	{
 		return descriptor;
+	}
+	
+	private LookupDataSource getLookupDataSource()
+	{
+		return _lookupDataSource;
 	}
 
 	@Override
@@ -288,7 +293,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 	private final <T> T convertToValueClass(final Object value, final Class<T> targetType)
 	{
-		return descriptor.convertToValueClass(value, targetType, lookupDataSource);
+		return descriptor.convertToValueClass(value, targetType, getLookupDataSource());
 	}
 
 	@Override
@@ -349,6 +354,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean isLookupValuesStale()
 	{
+		final LookupDataSource lookupDataSource = getLookupDataSource();
 		if (lookupDataSource == null)
 		{
 			return false;
@@ -359,6 +365,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean setLookupValuesStaled(final String triggeringFieldName)
 	{
+		final LookupDataSource lookupDataSource = getLookupDataSource();
 		if (lookupDataSource == null)
 		{
 			return false;
@@ -373,6 +380,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public LookupValuesList getLookupValues()
 	{
+		final LookupDataSource lookupDataSource = getLookupDataSource();
 		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
@@ -387,6 +395,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public LookupValuesList getLookupValuesForQuery(final String query)
 	{
+		final LookupDataSource lookupDataSource = getLookupDataSource();
 		if (lookupDataSource == null)
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
