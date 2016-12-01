@@ -110,7 +110,7 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, item, dataId, newProps, select
+            dispatch, windowType, item, dataId, newProps, select, tabId, rowId
         } = this.props;
 
         const {
@@ -122,7 +122,7 @@ class Lookup extends Component {
         if(propertiesCopy.length > 0){
 
             const batchArray = propertiesCopy.map((item) =>
-                dispatch(dropdownRequest(windowType, item.field, dataId))
+                dispatch(dropdownRequest(windowType, item.field, dataId, tabId, rowId))
             );
 
             Promise.all(batchArray).then(props => {
