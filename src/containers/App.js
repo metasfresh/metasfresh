@@ -25,14 +25,7 @@ import {
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 
-// init locale
-store.dispatch(getAvailableLang()).then(response => {
-    if(response.data.values.indexOf(navigator.language)){
-        Moment.locale(navigator.language);
-    }else{
-        Moment.locale(response.data.defaultValue);
-    }
-});
+
 
 axios.defaults.withCredentials = true;
 
@@ -56,6 +49,17 @@ axios.interceptors.response.use(function (response) {
 });
 
 export default class App extends Component {
+    constructor() {
+        super();
+        store.dispatch(getAvailableLang()).then(response => {
+            if(response.data.values.indexOf(navigator.language)){
+                Moment.locale(navigator.language);
+            }else{
+                Moment.locale(response.data.defaultValue);
+            }
+        });
+    }
+
     render() {
         return (
             <Provider store={store}>
