@@ -66,6 +66,14 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	}
 	
 	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("attributeId", attributeId)
+				.toString();
+	}
+	
+	@Override
 	public LookupDataSourceFetcher getLookupDataSourceFetcher()
 	{
 		return this;

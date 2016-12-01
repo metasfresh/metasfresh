@@ -63,6 +63,14 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		final int expireAfterMinutes = 60 * 2;
 		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("fetcher", fetcher)
+				.toString();
+	}
 
 	private LookupValuesList getLookupValuesList(final Evaluatee parentEvaluatee)
 	{
