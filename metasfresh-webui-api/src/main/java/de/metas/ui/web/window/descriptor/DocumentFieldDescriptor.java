@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -728,6 +729,19 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setLookupDescriptorProvider(final LookupDescriptor lookupDescriptor)
+		{
+			Check.assumeNotNull(lookupDescriptor, "Parameter lookupDescriptor is not null");
+			setLookupDescriptorProvider((scope) -> lookupDescriptor);
+			return this;
+		}
+
+		public Builder setLookupDescriptorProvider_None()
+		{
+			setLookupDescriptorProvider((scope) -> null);
+			return this;
+		}
+
 		private Function<LookupScope, LookupDescriptor> getLookupDescriptorProvider()
 		{
 			return lookupDescriptorProvider;
@@ -801,6 +815,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
+			return this;
+		}
+
+		public Builder setReadonlyLogic(final boolean readonly)
+		{
+			setReadonlyLogic(ConstantLogicExpression.of(readonly));
 			return this;
 		}
 
@@ -919,6 +939,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setDisplayLogic(final boolean display)
+		{
+			setDisplayLogic(ConstantLogicExpression.of(display));
+			return this;
+		}
+
 		public ILogicExpression getDisplayLogic()
 		{
 			return displayLogic;
@@ -947,6 +973,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			_mandatoryLogic = Preconditions.checkNotNull(mandatoryLogic);
+			return this;
+		}
+
+		public Builder setMandatoryLogic(final boolean mandatory)
+		{
+			setMandatoryLogic(ConstantLogicExpression.of(mandatory));
 			return this;
 		}
 
