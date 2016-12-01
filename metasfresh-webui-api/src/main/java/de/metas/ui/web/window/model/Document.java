@@ -850,7 +850,7 @@ public final class Document
 			processDocAction();
 		}
 	}
-	
+
 	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
@@ -865,7 +865,6 @@ public final class Document
 			}
 		}
 	}
-
 
 	private void processDocAction()
 	{
@@ -1103,7 +1102,7 @@ public final class Document
 		{
 			field.updateValid();
 		}
-		
+
 		checkAndGetValidStatus();
 	}
 
@@ -1446,6 +1445,12 @@ public final class Document
 			// Initialize the fields
 			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
+				if (fieldInitializer != null)
+				{
+					// shall never happen
+					throw new IllegalStateException("fieldInitializer shall be null when " + FieldInitializationMode.NewDocument);
+				}
+
 				fieldInitializer = new InitialFieldValueSupplier(document, documentIdSupplier);
 			}
 
