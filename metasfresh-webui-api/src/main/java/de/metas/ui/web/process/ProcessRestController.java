@@ -180,17 +180,7 @@ public class ProcessRestController
 
 			//
 			// Apply changes
-			for (final JSONDocumentChangedEvent event : events)
-			{
-				if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
-				{
-					processInstance.processParameterValueChange(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
-				}
-				else
-				{
-					throw new IllegalArgumentException("Unknown operation: " + event);
-				}
-			}
+			processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 
 			// Push back the changed document
 			instancesRepository.checkin(processInstance);

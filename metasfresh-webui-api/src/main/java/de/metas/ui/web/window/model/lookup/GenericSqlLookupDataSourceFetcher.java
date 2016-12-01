@@ -11,9 +11,6 @@ import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.compiere.util.DB;
-import org.compiere.util.KeyNamePair;
-import org.compiere.util.NamePair;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -50,7 +47,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
  * #L%
  */
 
-class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
+public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	public static final GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)
 	{
@@ -70,15 +67,13 @@ class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 	private GenericSqlLookupDataSourceFetcher(final LookupDescriptor lookupDescriptor)
 	{
 		super();
+		
+		// NOTE: don't store a reference to our descriptor, just extract what we need!
 
 		Preconditions.checkNotNull(lookupDescriptor);
-		lookupTableName = lookupDescriptor.getTableName();
-		numericKey = lookupDescriptor.isNumericKey();
-
-		//
-		// SqlLookupDescriptor specific
-		// NOTE: don't store a reference to our descriptor, just extract what we need!
-		final SqlLookupDescriptor sqlLookupDescriptor = SqlLookupDescriptor.cast(lookupDescriptor);
+		final SqlLookupDescriptor sqlLookupDescriptor = lookupDescriptor.cast(SqlLookupDescriptor.class);
+		lookupTableName = sqlLookupDescriptor.getTableName();
+		numericKey = sqlLookupDescriptor.isNumericKey();
 		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
 		sqlForFetchingDisplayNameByIdExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression();
@@ -97,8 +92,9 @@ class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 	}
 
 	@Override
-	public String getLookupTableName()
+	public String getCachePrefix()
 	{
+		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
 		return lookupTableName;
 	}
 
@@ -141,7 +137,7 @@ class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 			final List<LookupValue> values = data.fetchAll()
 					.stream()
 					.filter(evalCtx::acceptItem)
-					.map(namePair -> toLookupValue(namePair))
+					.map(namePair -> LookupValue.fromNamePair(namePair))
 					.collect(Collectors.toList());
 
 			Map<String, String> debugProperties = null;
@@ -184,29 +180,6 @@ class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 		{
 			final String idString = id.toString();
 			return StringLookupValue.of(idString, displayName);
-		}
-	}
-
-	private static final LookupValue toLookupValue(final NamePair namePair)
-	{
-		if (namePair == null)
-		{
-			return null;
-		}
-		else if (namePair instanceof ValueNamePair)
-		{
-			final ValueNamePair vnp = (ValueNamePair)namePair;
-			return StringLookupValue.of(vnp.getValue(), vnp.getName());
-		}
-		else if (namePair instanceof KeyNamePair)
-		{
-			final KeyNamePair knp = (KeyNamePair)namePair;
-			return IntegerLookupValue.of(knp.getKey(), knp.getName());
-		}
-		else
-		{
-			// shall not happen
-			throw new IllegalArgumentException("Unknown namePair: " + namePair + " (" + namePair.getClass() + ")");
 		}
 	}
 }

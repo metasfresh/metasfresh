@@ -30,7 +30,7 @@ public interface LookupDataSourceFetcher
 {
 	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.of(-1, "");
 
-	String getLookupTableName();
+	String getCachePrefix();
 
 	boolean isNumericKey();
 

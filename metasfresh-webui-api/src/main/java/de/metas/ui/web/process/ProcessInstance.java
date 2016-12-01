@@ -3,6 +3,7 @@ package de.metas.ui.web.process;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -19,6 +20,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -134,10 +136,10 @@ public final class ProcessInstance
 		return parameters.getFieldLookupValuesForQuery(parameterName, query);
 	}
 
-	public void processParameterValueChange(final String parameterName, final Object value, final ReasonSupplier reason)
+	public void processParameterValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
 	{
 		assertNotExecuted();
-		parameters.processValueChange(parameterName, value, reason);
+		parameters.processValueChanges(events, reason);
 	}
 	
 	/**

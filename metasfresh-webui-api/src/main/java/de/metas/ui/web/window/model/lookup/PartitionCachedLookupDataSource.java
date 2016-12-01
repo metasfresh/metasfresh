@@ -54,13 +54,13 @@ class PartitionCachedLookupDataSource implements LookupDataSource
 		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
 
-		final String lookupTableName = fetcher.getLookupTableName();
-		Check.assumeNotEmpty(lookupTableName, "lookupTableName is not empty");
+		final String cachePrefix = fetcher.getCachePrefix();
+		Check.assumeNotEmpty(cachePrefix, "cachePrefix is not empty");
 		final int maxSize = 100;
 		final int expireAfterMinutes = 60 * 2;
 		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
-		cacheByPartition = CCache.newLRUCache(lookupTableName + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
-		cacheByKey = CCache.newLRUCache(lookupTableName + "#" + NAME + "#LookupByKey", maxSize, expireAfterMinutes);
+		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
+		cacheByKey = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByKey", maxSize, expireAfterMinutes);
 	}
 
 	@Override

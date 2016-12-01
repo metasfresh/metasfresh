@@ -32,6 +32,8 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
+import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 import groovy.transform.Immutable;
 
@@ -65,20 +67,6 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return new Builder();
 	}
 
-	public static final SqlLookupDescriptor cast(final LookupDescriptor lookupDescriptor)
-	{
-		return (SqlLookupDescriptor)lookupDescriptor;
-	}
-
-	public static final SqlLookupDescriptor castOrNull(final LookupDescriptor lookupDescriptor)
-	{
-		if (lookupDescriptor instanceof SqlLookupDescriptor)
-		{
-			return (SqlLookupDescriptor)lookupDescriptor;
-		}
-		return null;
-	}
-
 	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
 	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset/0");
 	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit/1000");
@@ -103,6 +91,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	private final LookupSource lookupSourceType;
 
 	private final Set<String> dependsOnFieldNames;
+	
+	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
@@ -120,6 +110,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		lookupSourceType = builder.getLookupSourceType();
 
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
+		
+		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
 
 	@Override
@@ -180,6 +172,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				// lookupSourceType // not needed because it's computed
 		;
 	}
+	
+	@Override
+	public LookupDataSourceFetcher getLookupDataSourceFetcher()
+	{
+		return lookupDataSourceFetcher;
+	}
 
 	@Override
 	public boolean isNumericKey()
@@ -187,7 +185,6 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return numericKey;
 	}
 
-	@Override
 	public String getTableName()
 	{
 		return tableName;

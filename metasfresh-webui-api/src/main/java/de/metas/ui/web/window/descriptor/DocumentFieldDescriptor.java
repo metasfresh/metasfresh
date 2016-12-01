@@ -108,8 +108,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocAction //
 		, SpecialField_DocumentSummary //
 		;
-		
-		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary); 
+
+		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary);
 	};
 
 	private final Set<Characteristic> characteristics;
@@ -218,6 +218,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		return lookupDescriptorProvider.apply(scope);
 	}
 
+	public LookupSource getLookupSourceType()
+	{
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+		return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+	}
+
 	public LookupDataSource createLookupDataSource(final LookupScope scope)
 	{
 		final LookupDescriptor lookupDescriptor = getLookupDescriptor(scope);
@@ -266,6 +272,13 @@ public final class DocumentFieldDescriptor implements Serializable
 	public Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
 	{
 		return dataBinding;
+	}
+
+	public <T extends DocumentFieldDataBindingDescriptor> T getDataBindingNotNull(final Class<T> bindingClass)
+	{
+		@SuppressWarnings("unchecked")
+		final T dataBindingCasted = (T)dataBinding.orElseThrow(() -> new IllegalStateException("No databinding defined for " + this));
+		return dataBindingCasted;
 	}
 
 	public DocumentFieldDependencyMap getDependencies()
@@ -598,6 +611,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setCaption(final String caption)
+		{
+			this.caption = ImmutableTranslatableString.constant(caption);
+			return this;
+		}
+
 		public ITranslatableString getCaption()
 		{
 			if (caption == null)
@@ -620,6 +639,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setDescription(final String description)
+		{
+			this.description = ImmutableTranslatableString.constant(description);
+			return this;
+		}
+
 		public ITranslatableString getDescription()
 		{
 			if (description == null)
@@ -632,7 +657,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		/* package */Builder setDetailId(final DetailId detailId)
 		{
 			assertNotBuilt();
-			this._detailId = detailId;
+			_detailId = detailId;
 			return this;
 		}
 
@@ -696,7 +721,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return widgetType;
 		}
 
-		public Builder setLookupDescriptorProvider(Function<LookupScope, LookupDescriptor> lookupDescriptorProvider)
+		public Builder setLookupDescriptorProvider(final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider)
 		{
 			Check.assumeNotNull(lookupDescriptorProvider, "Parameter lookupDescriptorProvider is not null");
 			this.lookupDescriptorProvider = lookupDescriptorProvider;
@@ -746,7 +771,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return characteristics.contains(c);
 		}
-		
+
 		public Builder addCharacteristicIfTrue(final boolean test, final Characteristic c)
 		{
 			if (test)
@@ -756,10 +781,10 @@ public final class DocumentFieldDescriptor implements Serializable
 
 			return this;
 		}
-		
+
 		public boolean isSpecialField()
 		{
-			return !Collections.disjoint(this.characteristics, Characteristic.SPECIALFIELDS);
+			return !Collections.disjoint(characteristics, Characteristic.SPECIALFIELDS);
 		}
 
 		/* package */ void setEntityReadonlyLogic(final ILogicExpression entityReadonlyLogic)

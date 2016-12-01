@@ -44,6 +44,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
@@ -849,8 +850,23 @@ public final class Document
 		{
 			processDocAction();
 		}
-
 	}
+	
+	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	{
+		for (final JSONDocumentChangedEvent event : events)
+		{
+			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
+			{
+				processValueChange(event.getPath(), event.getValue(), reason);
+			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown operation: " + event);
+			}
+		}
+	}
+
 
 	private void processDocAction()
 	{

@@ -225,17 +225,7 @@ public class WindowRestController implements IWindowRestController
 
 		//
 		// Apply changes
-		for (final JSONDocumentChangedEvent event : events)
-		{
-			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
-			{
-				document.processValueChange(event.getPath(), event.getValue(), REASON_Value_DirectSetFromCommitAPI);
-			}
-			else
-			{
-				throw new IllegalArgumentException("Unknown operation: " + event);
-			}
-		}
+		document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 
 		// Push back the changed document
 		documentCollection.commit(document);

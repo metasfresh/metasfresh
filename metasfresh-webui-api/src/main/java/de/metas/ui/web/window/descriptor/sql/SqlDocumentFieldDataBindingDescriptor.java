@@ -399,7 +399,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 			//
 			// Display column
-			final SqlLookupDescriptor sqlLookupDescriptor = SqlLookupDescriptor.castOrNull(lookupDescriptor);
+			final SqlLookupDescriptor sqlLookupDescriptor = lookupDescriptor == null ? null : lookupDescriptor.castOrNull(SqlLookupDescriptor.class);
 			if (lookupDescriptor != null)
 			{
 				usingDisplayColumn = true;

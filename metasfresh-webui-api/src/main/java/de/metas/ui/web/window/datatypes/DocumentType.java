@@ -26,6 +26,7 @@ public enum DocumentType
 {
 	Window("W") //
 	, Process("P") //
+	, ProductAttributes("ASI") //
 	;
 
 	private final String symbol;

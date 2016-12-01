@@ -549,6 +549,12 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setCaption(final String caption)
+		{
+			this.caption = ImmutableTranslatableString.constant(caption);
+			return this;
+		}
+
 		public ITranslatableString getCaption()
 		{
 			return caption;
@@ -564,6 +570,12 @@ public class DocumentEntityDescriptor
 		{
 			Check.assumeNotNull(description, "Parameter description is not null");
 			this.description = description;
+			return this;
+		}
+
+		public Builder setDescription(final String description)
+		{
+			this.description = ImmutableTranslatableString.constant(description);
 			return this;
 		}
 

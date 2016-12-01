@@ -2,6 +2,10 @@ package de.metas.ui.web.window.datatypes;
 
 import java.util.Objects;
 
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.NamePair;
+import org.compiere.util.ValueNamePair;
+
 import com.google.common.base.MoreObjects;
 
 /*
@@ -81,11 +85,34 @@ public abstract class LookupValue
 			return new StringLookupValue(id.toString(), displayName);
 		}
 	}
+	
+	public static final LookupValue fromNamePair(final NamePair namePair)
+	{
+		if (namePair == null)
+		{
+			return null;
+		}
+		else if (namePair instanceof ValueNamePair)
+		{
+			final ValueNamePair vnp = (ValueNamePair)namePair;
+			return StringLookupValue.of(vnp.getValue(), vnp.getName());
+		}
+		else if (namePair instanceof KeyNamePair)
+		{
+			final KeyNamePair knp = (KeyNamePair)namePair;
+			return IntegerLookupValue.of(knp.getKey(), knp.getName());
+		}
+		else
+		{
+			// shall not happen
+			throw new IllegalArgumentException("Unknown namePair: " + namePair + " (" + namePair.getClass() + ")");
+		}
+	}
 
 	protected final Object id;
 	protected final String displayName;
 
-	LookupValue(final Object id, final String displayName)
+	private LookupValue(final Object id, final String displayName)
 	{
 		super();
 		if (id == null)

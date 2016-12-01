@@ -42,17 +42,23 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  */
 public final class LookupValuesList
 {
+	public static final LookupValuesList of(final List<LookupValue> values)
+	{
+		final Map<String, String> debugProperties = null;
+		return of(values, debugProperties);
+	}
+
 	public static final LookupValuesList of(final List<LookupValue> values, final Map<String, String> debugProperties)
 	{
-		if((values == null || values.isEmpty())
+		if ((values == null || values.isEmpty())
 				&& (debugProperties == null || debugProperties.isEmpty()))
 		{
 			return EMPTY;
 		}
-		
+
 		return new LookupValuesList(values, debugProperties);
 	}
-	
+
 	public static final LookupValuesList EMPTY = new LookupValuesList(ImmutableList.of(), ImmutableMap.of());
 
 	private final Map<Object, LookupValue> values;
@@ -121,13 +127,13 @@ public final class LookupValuesList
 	{
 		return values.containsKey(id);
 	}
-	
+
 	public LookupValue getById(final Object id)
 	{
 		return values.get(id);
 	}
-	
-	public final <T> T transform(Function<LookupValuesList, T> transformation)
+
+	public final <T> T transform(final Function<LookupValuesList, T> transformation)
 	{
 		return transformation.apply(this);
 	}

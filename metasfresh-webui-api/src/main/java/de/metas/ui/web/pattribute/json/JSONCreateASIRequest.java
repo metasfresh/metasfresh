@@ -1,4 +1,9 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.pattribute.json;
+
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /*
  * #%L
@@ -22,19 +27,23 @@ package de.metas.ui.web.window.descriptor;
  * #L%
  */
 
-public interface DocumentFieldDataBindingDescriptor
+@SuppressWarnings("serial")
+public final class JSONCreateASIRequest implements Serializable
 {
-	String getColumnName();
+	@JsonProperty("templateId")
+	private final int templateId;
 
-	/**
-	 * @return true if mandatory in underlying database/repository
-	 */
-	boolean isMandatory();
-
-	default <T extends DocumentFieldDataBindingDescriptor> T cast(final Class<T> bindingClass)
+	@JsonCreator
+	private JSONCreateASIRequest(
+			@JsonProperty("templateId") final int templateId //
+	)
 	{
-		@SuppressWarnings("unchecked")
-		final T thisCasted = (T)this;
-		return thisCasted;
+		super();
+		this.templateId = templateId;
+	}
+
+	public int getTemplateId()
+	{
+		return templateId;
 	}
 }
