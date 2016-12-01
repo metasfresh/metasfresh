@@ -1254,7 +1254,7 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
-	/* package */ DocumentValidStatus checkAndGetValidStatus()
+	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		//
 		// Check document fields
