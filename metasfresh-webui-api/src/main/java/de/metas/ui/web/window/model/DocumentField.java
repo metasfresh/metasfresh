@@ -389,7 +389,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
 		final LookupValuesList values = lookupDataSource.findEntities(ctx);
 		lookupValuesStaled = false;
-		return values;
+		return values == null ? LookupValuesList.EMPTY : values;
 	}
 
 	@Override
