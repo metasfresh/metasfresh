@@ -79,8 +79,9 @@ class Subheader extends Component {
     handlePrint = (windowType, docId) => {
         const {dispatch, onClick} = this.props;
         const url = config.API_URL +
-            '/window/documentPrint?type=' + windowType +
-            '&id=' + docId;
+            '/window/' + windowType +
+            '/' + docId +
+            '/print/' + windowType + '_' + docId + '.pdf';
         window.open(url, "_blank");
         onClick();
     }
