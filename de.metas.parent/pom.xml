@@ -781,6 +781,8 @@
 						<manifestEntries>
 							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
 							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
+							<ciJobName>${JOB_NAME}</ciJobName>
+							<ciBuildUrl>${BUILD_URL}</ciBuildUrl>
 						</manifestEntries>
 					</archive>
 				</configuration>
