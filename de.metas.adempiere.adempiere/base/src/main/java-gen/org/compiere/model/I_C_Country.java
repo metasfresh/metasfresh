@@ -12,7 +12,7 @@ public interface I_C_Country
     public static final String Table_Name = "C_Country";
 
     /** AD_Table_ID=170 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
