@@ -143,6 +143,13 @@ currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + 
 
 timestamps 
 {
+// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
+// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
+// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
+// i.e. Dependency convergence error
+// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
+lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
+{
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
@@ -164,12 +171,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
         {
-			// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
-			// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
-			// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
-			// i.e. Dependency convergence error
-			lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
-			{
 			stage('Set versions and build metasfresh-webui-api') 
             {
                 // set the artifact version of everything below the webui's pom.xml
@@ -181,7 +182,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				
 				junit '**/target/surefire-reports/*.xml'
             }
-			} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 		}
 	}
    
@@ -201,4 +201,5 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	// don't clean up the work space..we do it when we check out next time
 	// step([$class: 'WsCleanup', cleanWhenFailure: false])
 } // node
+} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 } // timestamps   
