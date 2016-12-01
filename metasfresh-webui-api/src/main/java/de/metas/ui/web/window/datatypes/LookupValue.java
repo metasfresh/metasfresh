@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -85,7 +86,7 @@ public abstract class LookupValue
 			return new StringLookupValue(id.toString(), displayName);
 		}
 	}
-	
+
 	public static final LookupValue fromNamePair(final NamePair namePair)
 	{
 		if (namePair == null)
@@ -173,6 +174,11 @@ public abstract class LookupValue
 	public String getIdAsString()
 	{
 		return id.toString();
+	}
+
+	public final <T> T transform(final Function<LookupValue, T> transformation)
+	{
+		return transformation.apply(this);
 	}
 
 	public static final class StringLookupValue extends LookupValue

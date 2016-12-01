@@ -18,7 +18,6 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.util.function.BiConsumer;
@@ -66,13 +65,10 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 @Component
 public class ASIDescriptorFactory
 {
-	@Autowired
-	private ASIRepository asiRepository;
-
 	private final CCache<Integer, ASIDescriptor> cacheByAttributeSetId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
 	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(ASILookupDescriptor.CACHE_PREFIX + "#LookupDescriptors", 200, 0);
 
-	private ASIDataBindingDescriptorBuilder _asiBindingsBuilder;
+	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
 
 	private ASIDescriptorFactory()
 	{
@@ -81,10 +77,6 @@ public class ASIDescriptorFactory
 
 	public ASIDataBindingDescriptorBuilder getAsiBindingsBuilder()
 	{
-		if (_asiBindingsBuilder == null)
-		{
-			_asiBindingsBuilder = new ASIDataBindingDescriptorBuilder(asiRepository);
-		}
 		return _asiBindingsBuilder;
 	}
 
@@ -244,18 +236,13 @@ public class ASIDescriptorFactory
 			@Override
 			public DocumentsRepository getDocumentsRepository()
 			{
-				return asiRepository;
+				throw new IllegalStateException("No repository available for "+this);
 			}
-
 		};
 
-		private final ASIRepository asiRepository;
-
-		private ASIDataBindingDescriptorBuilder(final ASIRepository asiRepository)
+		private ASIDataBindingDescriptorBuilder()
 		{
 			super();
-			Check.assumeNotNull(asiRepository, "Parameter asiRepository is not null");
-			this.asiRepository = asiRepository;
 		}
 
 		@Override

@@ -1,11 +1,17 @@
 package de.metas.ui.web.pattribute.json;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+
+import de.metas.ui.web.pattribute.ASILayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -31,22 +37,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONCreateASIRequest implements Serializable
+public final class JSONASILayout implements Serializable
 {
-	@JsonProperty("templateId")
-	private final int templateId;
-
-	@JsonCreator
-	private JSONCreateASIRequest(
-			@JsonProperty("templateId") final int templateId //
-	)
+	public static JSONASILayout of(final ASILayout layout, final JSONOptions jsonOpts)
 	{
-		super();
-		this.templateId = templateId;
+		return new JSONASILayout(layout, jsonOpts);
 	}
 
-	public int getTemplateId()
+	@JsonProperty("elements")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutElement> elements;
+
+	public JSONASILayout(final ASILayout layout, final JSONOptions jsonOpts)
 	{
-		return templateId;
+		super();
+		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("elements", elements)
+				.toString();
+	}
+
+	public List<JSONDocumentLayoutElement> getElements()
+	{
+		return elements;
 	}
 }

@@ -29,6 +29,9 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface DocumentEntityDataBindingDescriptor
 {
+	/**
+	 * @return repository or might throw exception if the repository is not configured
+	 */
 	DocumentsRepository getDocumentsRepository();
 	
 	public interface DocumentEntityDataBindingDescriptorBuilder

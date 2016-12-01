@@ -1,9 +1,10 @@
 package de.metas.ui.web.pattribute;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -11,7 +12,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.CCache;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +20,14 @@ import org.springframework.stereotype.Component;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentQuery;
-import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
  * #%L
@@ -51,14 +52,17 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  */
 
 @Component
-public class ASIRepository implements DocumentsRepository
+public class ASIRepository
 {
+	// services
 	private static final Logger logger = LogManager.getLogger(ASIRepository.class);
-
 	@Autowired
 	private ASIDescriptorFactory descriptorsFactory;
 
-	private final CCache<Integer, Document> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
+	private final AtomicInteger nextASIDocId = new AtomicInteger(1);
+	private final CCache<DocumentId, Document> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
+
+	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
 	public Document createNewFrom(final int fromASI_ID)
 	{
@@ -69,7 +73,7 @@ public class ASIRepository implements DocumentsRepository
 
 		final Document asiDoc = Document.builder()
 				.setEntityDescriptor(entityDescriptor)
-				.setDocumentIdSupplier(this::getNextId)
+				.setDocumentIdSupplier(nextASIDocId::getAndIncrement)
 				.initializeAsNewDocument()
 				.build();
 
@@ -78,34 +82,69 @@ public class ASIRepository implements DocumentsRepository
 			loadASIDocumentField(asiDoc, fromAI);
 		}
 
+		logger.trace("Created from ASI={}: {}", fromASI_ID, asiDoc);
+
 		putASIDocument(asiDoc);
 
 		return asiDoc;
 	}
 
-	public final void putASIDocument(final Document asiDoc)
+	public ASILayout getLayout(final int asiDocIdInt)
 	{
-		id2asiDoc.put(asiDoc.getDocumentIdAsInt(), asiDoc.copy(CopyMode.CheckInReadonly));
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final int attributeSetId = getASIDocument(asiDocId)
+				.getEntityDescriptor()
+				.getDocumentTypeId();
+
+		return descriptorsFactory.getProductAttributesDescriptor(attributeSetId)
+				.getLayout();
 	}
 
-	public final void removeASIDocument(final Document asiDoc)
+	private final void putASIDocument(final Document asiDoc)
 	{
-		id2asiDoc.remove(asiDoc.getDocumentIdAsInt());
+		final Document asiDocReadonly = asiDoc.copy(CopyMode.CheckInReadonly);
+		id2asiDoc.put(asiDoc.getDocumentId(), asiDocReadonly);
+
+		logger.trace("Added to repository: {}", asiDocReadonly);
 	}
 
-	public Document getASIDocument(final int asiId)
+	private final void removeASIDocumentById(final DocumentId asiDocId)
 	{
-		final Document asiDoc = id2asiDoc.get(asiId);
+		final Document asiDocRemoved = id2asiDoc.remove(asiDocId);
+
+		logger.trace("Removed from repository by ID={}: {}", asiDocId, asiDocRemoved);
+	}
+
+	public Document getASIDocument(final int asiDocIdInt)
+	{
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		return getASIDocument(asiDocId);
+	}
+
+	public Document getASIDocument(final DocumentId asiDocId)
+	{
+		final Document asiDoc = id2asiDoc.get(asiDocId);
 		if (asiDoc == null)
 		{
-			throw new EntityNotFoundException("No product attributes found for asiId=" + asiId);
+			throw new EntityNotFoundException("No product attributes found for asiId=" + asiDocId);
 		}
 		return asiDoc;
 	}
 
-	public Document getASIDocumentForWriting(final int asiId)
+	private Document getASIDocumentForWriting(final DocumentId asiDocId)
 	{
-		return getASIDocument(asiId).copy(CopyMode.CheckOutWritable);
+		return getASIDocument(asiDocId).copy(CopyMode.CheckOutWritable);
+	}
+
+	public void processASIDocumentChanges(final int asiDocIdInt, final List<JSONDocumentChangedEvent> events)
+	{
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final Document asiDoc = getASIDocumentForWriting(asiDocId);
+		asiDoc.processValueChanges(events, REASON_ProcessASIDocumentChanges);
+
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.onAfterCommit(() -> putASIDocument(asiDoc));
 	}
 
 	private void loadASIDocumentField(final Document asiDoc, final I_M_AttributeInstance fromAI)
@@ -120,84 +159,45 @@ public class ASIRepository implements DocumentsRepository
 		asiDoc.processValueChange(fieldName, value, () -> "update from " + fromAI);
 	}
 
-	private int getNextId()
+	public LookupValue complete(final int asiDocIdInt)
 	{
-		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-		final String tableName = I_M_AttributeSetInstance.Table_Name;
-		final int nextId = DB.getNextID(adClientId, tableName, ITrx.TRXNAME_ThreadInherited);
-		if (nextId <= 0)
-		{
-			throw new DBException("Cannot retrieve next ID from database for " + tableName);
-		}
+		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
+		final Document asiDoc = getASIDocumentForWriting(asiDocId);
 
-		logger.trace("Acquired next ID={} for {}", nextId, tableName);
-		return nextId;
-	}
-
-	public LookupValue complete(final Document asiDoc)
-	{
 		final I_M_AttributeSetInstance asiRecord = createM_AttributeSetInstance(asiDoc);
+
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.onAfterCommit(() -> removeASIDocumentById(asiDocId));
+
 		return IntegerLookupValue.of(asiRecord.getM_AttributeSetInstance_ID(), asiRecord.getDescription());
 	}
 
 	private final I_M_AttributeSetInstance createM_AttributeSetInstance(final Document asiDoc)
 	{
-		// asiDoc.saveIfValidAndHasChanges()
-
+		//
+		// Create M_AttributeSetInstance
 		final int attributeSetId = asiDoc.getEntityDescriptor().getDocumentTypeId();
 
 		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.create(Env.getCtx(), I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
-		// TODO: set the preallocated ASI ID
 		asiRecord.setM_AttributeSet_ID(attributeSetId);
 		// TODO: set Lot, GuaranteeDate etc
 		InterfaceWrapperHelper.save(asiRecord);
 
+		//
+		// Create M_AttributeInstances
 		asiDoc.getFieldViews()
 				.stream()
-				.forEach(asiField -> {
-					final ASIAttributeFieldBinding fieldBinding = asiField.getDescriptor().getDataBindingNotNull(ASIAttributeFieldBinding.class);
-					fieldBinding.createAndSaveM_AttributeInstance(asiRecord, asiField);
-				});
+				.forEach(asiField -> asiField
+						.getDescriptor()
+						.getDataBindingNotNull(ASIAttributeFieldBinding.class)
+						.createAndSaveM_AttributeInstance(asiRecord, asiField));
 
+		//
+		// Update the ASI description
 		Services.get(IAttributeSetInstanceBL.class).setDescription(asiRecord);
 		InterfaceWrapperHelper.save(asiRecord);
 
 		return asiRecord;
-	}
-
-	@Override
-	public void save(final Document asiDoc)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List<Document> retrieveDocuments(final DocumentQuery query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Document retrieveDocument(final DocumentQuery query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void refresh(final Document document)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void delete(final Document document)
-	{
-		throw new UnsupportedOperationException();
 	}
 }
