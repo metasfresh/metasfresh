@@ -3,7 +3,11 @@ package de.metas.ui.web.window.datatypes;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -58,6 +62,18 @@ public final class LookupValuesList
 
 		return new LookupValuesList(values, debugProperties);
 	}
+	
+	public static final Collector<LookupValue, ?, LookupValuesList> collect()
+	{
+		final Supplier<ImmutableMap.Builder<Object, LookupValue>> supplier = ImmutableMap.Builder::new;
+		final BiConsumer<ImmutableMap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> {
+			final Object key = item.getId();
+			builder.put(key, item);
+		};
+		final BinaryOperator<ImmutableMap.Builder<Object, LookupValue>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
+		final Function<ImmutableMap.Builder<Object, LookupValue>, LookupValuesList> finisher = (builder) -> new LookupValuesList(builder.build());
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
 
 	public static final LookupValuesList EMPTY = new LookupValuesList(ImmutableList.of(), ImmutableMap.of());
 
@@ -70,6 +86,14 @@ public final class LookupValuesList
 		this.values = values == null || values.isEmpty() ? ImmutableMap.of() : Maps.uniqueIndex(values, value -> value.getId());
 		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
 	}
+	
+	private LookupValuesList(final Map<Object, LookupValue> valuesById)
+	{
+		super();
+		this.values = ImmutableMap.copyOf(valuesById);
+		this.debugProperties = ImmutableMap.of();
+	}
+
 
 	@Override
 	public String toString()
