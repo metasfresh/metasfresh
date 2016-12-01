@@ -21,7 +21,6 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.CtxName;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
@@ -33,6 +32,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 import groovy.transform.Immutable;
@@ -67,16 +67,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return new Builder();
 	}
 
-	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
-	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset/0");
-	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit/1000");
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
 	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive/N");
-
-	public static final CtxName SQL_PARAM_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
 
 	private static final int WINDOWNO_Dummy = 99999;
 
@@ -389,7 +384,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 				// Filter's WHERE
 				sqlWhereFinal.appendIfNotEmpty("\n AND ");
-				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql);
+				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(LookupDataSourceContext.PARAM_FilterSql);
 			}
 
 			//
@@ -406,8 +401,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					.append(sqlSelectFrom) // SELECT ... FROM ...
 					.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
 					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
-					.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
+					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset.toStringWithMarkers())
+					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit.toStringWithMarkers()) // LIMIT
 					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 					.build();
 			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
@@ -449,7 +444,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 			// Filter's WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
-			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql); // #1
+			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(LookupDataSourceContext.PARAM_FilterSql); // #1
 
 			// IsActive WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
@@ -482,8 +477,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					.append(lookupInfo.getSelectSqlPart()) // SELECT .. FROM ...
 					.append("\n WHERE \n").append(sqlWhere) // WHERE
 					.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(SQL_PARAM_Offset) // OFFSET
-					.append("\n LIMIT ").append(SQL_PARAM_Limit) // LIMIT
+					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset) // OFFSET
+					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit) // LIMIT
 					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 					.build();
 		}
