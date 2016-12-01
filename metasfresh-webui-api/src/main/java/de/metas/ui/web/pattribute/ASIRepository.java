@@ -68,7 +68,7 @@ public class ASIRepository
 	{
 		final I_M_AttributeSetInstance fromASI = InterfaceWrapperHelper.create(Env.getCtx(), fromASI_ID, I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
 
-		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getProductAttributesDescriptor(fromASI.getM_AttributeSet_ID())
+		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getASIDescriptor(fromASI.getM_AttributeSet_ID())
 				.getEntityDescriptor();
 
 		final Document asiDoc = Document.builder()
@@ -96,7 +96,7 @@ public class ASIRepository
 				.getEntityDescriptor()
 				.getDocumentTypeId();
 
-		return descriptorsFactory.getProductAttributesDescriptor(attributeSetId)
+		return descriptorsFactory.getASIDescriptor(attributeSetId)
 				.getLayout();
 	}
 

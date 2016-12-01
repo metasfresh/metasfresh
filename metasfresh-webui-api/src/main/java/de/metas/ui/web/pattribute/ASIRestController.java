@@ -57,7 +57,7 @@ public class ASIRestController
 	private UserSession userSession;
 
 	@Autowired
-	ASIRepository productAttributesRepo;
+	ASIRepository asiRepo;
 
 	private JSONOptions newJsonOpts()
 	{
@@ -74,8 +74,8 @@ public class ASIRestController
 		return Execution.callInNewExecution("createASI", () -> {
 			if (request.getTemplateId() > 0)
 			{
-				final Document productAttributes = productAttributesRepo.createNewFrom(request.getTemplateId());
-				return JSONDocument.ofDocument(productAttributes, newJsonOpts());
+				final Document asiDoc = asiRepo.createNewFrom(request.getTemplateId());
+				return JSONDocument.ofDocument(asiDoc, newJsonOpts());
 			}
 			throw new AdempiereException("Invalid request: " + request);
 		});
@@ -86,7 +86,7 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ASILayout asiLayout = productAttributesRepo.getLayout(asiDocId);
+		final ASILayout asiLayout = asiRepo.getLayout(asiDocId);
 		return JSONASILayout.of(asiLayout, newJsonOpts());
 	}
 
@@ -95,7 +95,7 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Document asiDoc = productAttributesRepo.getASIDocument(asiDocId);
+		final Document asiDoc = asiRepo.getASIDocument(asiDocId);
 		return JSONDocument.ofDocument(asiDoc, newJsonOpts());
 	}
 
@@ -108,7 +108,7 @@ public class ASIRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("processChanges", () -> {
-			productAttributesRepo.processASIDocumentChanges(asiDocId, events);
+			asiRepo.processASIDocumentChanges(asiDocId, events);
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
 		});
 	}
@@ -122,7 +122,7 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		return productAttributesRepo.getASIDocument(asiDocId)
+		return asiRepo.getASIDocument(asiDocId)
 				.getFieldLookupValuesForQuery(attributeName, query)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
@@ -135,7 +135,7 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		return productAttributesRepo.getASIDocument(asiDocId)
+		return asiRepo.getASIDocument(asiDocId)
 				.getFieldLookupValues(attributeName)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
@@ -145,7 +145,7 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		return Execution.callInNewExecution("complete", () -> productAttributesRepo
+		return Execution.callInNewExecution("complete", () -> asiRepo
 				.complete(asiDocId)
 				.transform(JSONLookupValue::ofLookupValue));
 	}

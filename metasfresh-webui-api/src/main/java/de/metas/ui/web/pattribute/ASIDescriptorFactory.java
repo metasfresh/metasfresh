@@ -80,12 +80,12 @@ public class ASIDescriptorFactory
 		return _asiBindingsBuilder;
 	}
 
-	public ASIDescriptor getProductAttributesDescriptor(final int attributeSetId)
+	public ASIDescriptor getASIDescriptor(final int attributeSetId)
 	{
-		return cacheByAttributeSetId.getOrLoad(attributeSetId, () -> retrieveProductAttributesDescriptor(attributeSetId));
+		return cacheByAttributeSetId.getOrLoad(attributeSetId, () -> retrieveASIDescriptor(attributeSetId));
 	}
 
-	private ASIDescriptor retrieveProductAttributesDescriptor(final int attributeSetId)
+	private ASIDescriptor retrieveASIDescriptor(final int attributeSetId)
 	{
 		Check.assume(attributeSetId > 0, "attributeSetId > 0");
 
