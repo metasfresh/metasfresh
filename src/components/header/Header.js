@@ -222,7 +222,7 @@ class Header extends Component {
                     windowType={windowType}
                     viewId={viewId}
                     onClick={e => this.handleBackdropClick(false)}
-                    docNo={docNoData.value}
+                    docNo={docNoData && docNoData.value}
                 />}
 
                 {showSidelist && <SideList
