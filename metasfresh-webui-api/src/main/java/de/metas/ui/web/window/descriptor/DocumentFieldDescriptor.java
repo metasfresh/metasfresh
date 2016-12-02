@@ -161,7 +161,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("name", fieldName)
+				.add("fieldName", fieldName)
 				.add("detailId", detailId)
 				.add("widgetType", widgetType)
 				.add("characteristics", characteristics.isEmpty() ? null : characteristics)
@@ -386,6 +386,12 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)(Integer)((Number)value).intValue();
+					return valueConv;
+				}
+				else if (value instanceof LookupValue)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)((LookupValue)value).getIdAsInt();
 					return valueConv;
 				}
 			}
