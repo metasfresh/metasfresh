@@ -102,11 +102,17 @@ public class AddressDescriptorFactory
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_City_ID)
-				.setValueClass(IntegerLookupValue.class)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
+		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_City)
+				.setValueClass(String.class)
+				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setLookupDescriptorProvider(new AddressCityLookupDescriptor())
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_C_City_ID, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_C_City_ID)));
+				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_City, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_City)));
+		//
+//		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_City_ID)
+//				.setValueClass(IntegerLookupValue.class)
+//				.setWidgetType(DocumentFieldWidgetType.Lookup)
+//				.setLookupDescriptorProvider(new AddressCityLookupDescriptor())
+//				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_C_City_ID, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_C_City_ID)));
 		//
 		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_Region_ID)
 				.setValueClass(IntegerLookupValue.class)
@@ -296,6 +302,11 @@ public class AddressDescriptorFactory
 		public static void writeValue_Address4(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
 		{
 			toLocationRecord.setAddress4(fromField.getValueAs(String.class));
+		}
+
+		public static void writeValue_City(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setCity(fromField.getValueAs(String.class));
 		}
 
 		public static void writeValue_C_City_ID(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
