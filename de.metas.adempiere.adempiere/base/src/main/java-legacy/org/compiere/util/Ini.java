@@ -366,7 +366,7 @@ public final class Ini implements Serializable
 		}
 		s_loaded = true;
 		log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
-		s_propertyFileName = filename;
+		s_propertyFileName = propertiesFile.toString();
 
 		return firstTime;
 	}	// loadProperties
