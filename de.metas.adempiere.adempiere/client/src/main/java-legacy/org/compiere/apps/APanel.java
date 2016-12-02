@@ -491,18 +491,6 @@ public class APanel extends CPanel
 		final JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
 
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		aCalculator = addAction("Calculator",	mTools, 	null,	false);
-//		aCalendar = addAction("Calendar",		mTools, 	null,	false);
-//		aEditor =	addAction("Editor",			mTools, 	null,	false);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			aScript = addAction("Script",	        mTools, 	null,	false);
-//		if (AEnv.isWorkflowProcess())
-//			aWorkflow = addAction("WorkFlow",	mTools,		null,	false);
-		//@formatter:on
-
 		if ("Y".equals(Env.getContext(m_ctx, "#SysAdmin")))  	// set in DB.loginDB
 			aWinSize = addAction("WinSize", mTools, null, false, false);
 		AWindowSaveState.createAndAdd(this, mTools);

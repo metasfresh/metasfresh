@@ -98,6 +98,8 @@ public interface IUserRolePermissions
 	int getAD_Client_ID();
 
 	int getAD_User_ID();
+	
+	boolean isSystemAdministrator();
 
 	/**
 	 * @return all AD_Role_IDs. It will contain:
