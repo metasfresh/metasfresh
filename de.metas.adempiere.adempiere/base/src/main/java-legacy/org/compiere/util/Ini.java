@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -331,8 +330,8 @@ public final class Ini implements Serializable
 		// gh #658: only show the dialog if the file doesn't exist yet.
 		// for any other fail, we shall throw an exception because there can be
 		// plenty of reasons and we can't just rewrite the file and go on each time.
-		final File propertiesFile = new File(filename);
-		if (!propertiesFile.exists() || s_prop.getProperty(P_TODAY, "").equals(""))
+		final File propertiesFile = new File(filename).getAbsoluteFile();
+		if (!propertiesFile.exists())
 		{
 			log.info(filename);
 			firstTime = true;
@@ -366,7 +365,7 @@ public final class Ini implements Serializable
 			saveProperties();
 		}
 		s_loaded = true;
-		log.info("Loaded {} properties from {}", s_prop.size(), filename);
+		log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
 		s_propertyFileName = filename;
 
 		return firstTime;
