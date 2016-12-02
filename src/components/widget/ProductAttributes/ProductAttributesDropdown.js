@@ -25,7 +25,6 @@ class ProductAttributesDropdown extends Component {
         ).then(response => {
             const {id, fields} = response.data;
 
-            log(id,fields)
 
             this.setState(Object.assign({}, this.state, {
                 data: fields
@@ -34,7 +33,6 @@ class ProductAttributesDropdown extends Component {
             return dispatch(getPattributeLayout(id));
         }).then(response => {
             const {elements} = response.data;
-            log(elements)
 
             this.setState(Object.assign({}, this.state, {
                 layout: elements

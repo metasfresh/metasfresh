@@ -78,7 +78,6 @@ class Subheader extends Component {
 
     handlePrint = (windowType, docId, docNo) => {
         const {dispatch, onClick} = this.props;
-        log(docId, docNo)
         const url = config.API_URL +
             '/window/' + windowType +
             '/' + docId +
