@@ -137,9 +137,7 @@ echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
-currentBuild.description="Parameter MF_UPSTREAM_BRANCH="+params.MF_UPSTREAM_BRANCH
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
-
 
 timestamps 
 {
@@ -179,7 +177,12 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-				
+
+currentBuild.description="""artifacts (if not yet cleaned up)				
+				<ul>
+<li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar\">spring-boot jar</a></li>
+</ul>"""
+
 				junit '**/target/surefire-reports/*.xml'
             }
 		}
