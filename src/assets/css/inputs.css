@@ -614,6 +614,14 @@ input:checked + .input-slider:before {
     position: relative;
     padding-top: 4px;
     display: inline-block;
+    min-width: 5rem;
+    max-width:100%;
+    overflow: hidden;
+}
+
+.product-attributes::selection {
+    background-color: none;
+    color: inherit;
 }
 
 .product-attributes-dropdown {

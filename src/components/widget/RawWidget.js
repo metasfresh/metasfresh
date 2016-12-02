@@ -9,7 +9,7 @@ import {
 } from '../../actions/WindowActions';
 
 import DatePicker from './DatePicker';
-import ProductAttributes from './ProductAttributes';
+import ProductAttributes from './ProductAttributes/ProductAttributes';
 import Lookup from './Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List';

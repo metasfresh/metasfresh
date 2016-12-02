@@ -93,6 +93,12 @@ body {
     font-weight: 500;
 }
 
+.tag-block {
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .tag-success {
     background-color: $brand-success-color;
 }

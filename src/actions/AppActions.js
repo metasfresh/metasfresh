@@ -199,6 +199,17 @@ export function markAsRead(id) {
     return () => axios.put(config.API_URL + '/notifications/' + id + '/read');
 }
 
+export function getPattributeLayout(asiDocId) {
+    return () => axios.get(config.API_URL + '/pattribute/instance/' + asiDocId + '/layout');
+}
+
+export function getPattributeInstance(tmpId) {
+    return () => axios.post(config.API_URL + '/pattribute/instance/', {
+        "templateId": tmpId
+    });
+}
+
+
 export function getNotificationsSuccess(notifications, unreadCount) {
     return {
         type: types.GET_NOTIFICATIONS_SUCCESS,
