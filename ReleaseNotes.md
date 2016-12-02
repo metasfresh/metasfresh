@@ -27,6 +27,7 @@ Here come the actual release notes:
 * metasfresh
   * #583 Reports without ad_org_id show wrong results
   * #656 Bug in Import Format - Copy lines process
+  * #646 Fix support for groovy scripts
 
 # metasfresh 4.45.44 (2016-47)
 
