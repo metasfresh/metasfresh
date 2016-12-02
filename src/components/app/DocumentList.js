@@ -79,7 +79,7 @@ class DocumentList extends Component {
     }
 
     updateData = (type, windowType) => {
-        const {dispatch,filters, filtersWindowType, viewId, query} = this.props;
+        const {dispatch,filters, filtersWindowType, query} = this.props;
 
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
@@ -88,7 +88,7 @@ class DocumentList extends Component {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
                 }), () => {
-                    if(query.viewId){
+                    if(query && query.viewId){
                         dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters))
                             .then((response) => {
                                 this.setListData(response.data);
