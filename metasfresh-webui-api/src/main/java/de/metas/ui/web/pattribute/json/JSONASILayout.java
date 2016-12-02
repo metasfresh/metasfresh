@@ -44,6 +44,15 @@ public final class JSONASILayout implements Serializable
 		return new JSONASILayout(layout, jsonOpts);
 	}
 
+	@JsonProperty("id")
+	private final int id;
+
+	@JsonProperty("caption")
+	private final String caption;
+	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String description;
+
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -51,6 +60,10 @@ public final class JSONASILayout implements Serializable
 	public JSONASILayout(final ASILayout layout, final JSONOptions jsonOpts)
 	{
 		super();
+		final String adLanguage = jsonOpts.getAD_Language();
+		id = layout.getM_AttributeSet_ID();
+		caption = layout.getCaption(adLanguage);
+		description = layout.getDescription(adLanguage);
 		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
 	}
 
@@ -58,8 +71,22 @@ public final class JSONASILayout implements Serializable
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("id", id)
+				.add("caption", caption)
+				.add("description", description)
 				.add("elements", elements)
 				.toString();
+	}
+
+	public String getCaption()
+	{
+		return caption;
+	}
+
+	public String getDescription()
+	{
+		return description;
 	}
 
 	public List<JSONDocumentLayoutElement> getElements()

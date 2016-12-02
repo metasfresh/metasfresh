@@ -67,6 +67,11 @@ public class ASILayout
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
+	
+	public int getM_AttributeSet_ID()
+	{
+		return M_AttributeSet_ID;
+	}
 
 	public String getCaption(final String adLanguage)
 	{

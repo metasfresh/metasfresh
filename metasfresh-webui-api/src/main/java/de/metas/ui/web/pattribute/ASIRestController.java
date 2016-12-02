@@ -2,7 +2,6 @@ package de.metas.ui.web.pattribute;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,12 +71,8 @@ public class ASIRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("createASI", () -> {
-			if (request.getTemplateId() > 0)
-			{
-				final Document asiDoc = asiRepo.createNewFrom(request.getTemplateId());
-				return JSONDocument.ofDocument(asiDoc, newJsonOpts());
-			}
-			throw new AdempiereException("Invalid request: " + request);
+			final Document asiDoc = asiRepo.createNewFrom(request);
+			return JSONDocument.ofDocument(asiDoc, newJsonOpts());
 		});
 	}
 

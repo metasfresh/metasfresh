@@ -5,7 +5,11 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 
 /*
  * #%L
@@ -36,17 +40,44 @@ public final class JSONCreateASIRequest implements Serializable
 	@JsonProperty("templateId")
 	private final int templateId;
 
+	//
+	// Source
+	@JsonProperty("source")
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	private final JSONDocumentPath source;
+
 	@JsonCreator
 	private JSONCreateASIRequest(
 			@JsonProperty("templateId") final int templateId //
+			, @JsonProperty("source") final JSONDocumentPath source //
 	)
 	{
 		super();
 		this.templateId = templateId;
+		this.source = source;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("templateId", templateId)
+				.add("source", source)
+				.toString();
 	}
 
 	public int getTemplateId()
 	{
 		return templateId;
+	}
+
+	public JSONDocumentPath getSource()
+	{
+		if(source == null)
+		{
+			new IllegalStateException("source is not set for " + this);
+		}
+		return source;
 	}
 }

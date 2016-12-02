@@ -15,18 +15,23 @@ import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
+import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
@@ -58,34 +63,75 @@ public class ASIRepository
 	private static final Logger logger = LogManager.getLogger(ASIRepository.class);
 	@Autowired
 	private ASIDescriptorFactory descriptorsFactory;
+	@Autowired
+	@Lazy
+	private DocumentCollection documentsCollection;
 
 	private final AtomicInteger nextASIDocId = new AtomicInteger(1);
 	private final CCache<DocumentId, Document> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
 
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
-	public Document createNewFrom(final int fromASI_ID)
+	public Document createNewFrom(final JSONCreateASIRequest request)
 	{
-		final I_M_AttributeSetInstance fromASI = InterfaceWrapperHelper.create(Env.getCtx(), fromASI_ID, I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
+		//
+		// Extract template ASI
+		final int templateASI_ID = request.getTemplateId();
+		final I_M_AttributeSetInstance templateASI;
+		int attributeSetId = -1;
+		if (templateASI_ID <= 0)
+		{
+			templateASI = null;
+		}
+		else
+		{
+			templateASI = InterfaceWrapperHelper.create(Env.getCtx(), templateASI_ID, I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
+			if (templateASI == null)
+			{
+				throw new EntityNotFoundException("@NotFound@ @M_AttributeSetInstance_ID@ (ID=" + templateASI_ID + ")");
+			}
 
-		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getASIDescriptor(fromASI.getM_AttributeSet_ID())
+			attributeSetId = templateASI.getM_AttributeSet_ID();
+		}
+
+		//
+		// Extract the M_AttributeSet_ID
+		if (attributeSetId <= 0)
+		{
+			final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
+			final Document document = documentsCollection.getDocument(documentPath);
+			final int productId = document.getFieldView("M_Product_ID").getValueAsInt(-1);
+
+			attributeSetId = Services.get(IProductBL.class).getM_AttributeSet_ID(Env.getCtx(), productId);
+		}
+
+		//
+		// Get the ASI descriptor
+		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getASIDescriptor(attributeSetId)
 				.getEntityDescriptor();
 
+		//
+		// Create the new ASI document
 		final Document asiDoc = Document.builder()
 				.setEntityDescriptor(entityDescriptor)
 				.setDocumentIdSupplier(nextASIDocId::getAndIncrement)
 				.initializeAsNewDocument()
 				.build();
 
-		for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(fromASI))
+		//
+		// If we have a template ASI, populate the ASI document from it
+		if (templateASI != null)
 		{
-			loadASIDocumentField(asiDoc, fromAI);
+			for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateASI))
+			{
+				loadASIDocumentField(asiDoc, fromAI);
+			}
 		}
-		
+
+		//
+		// Validate, log and add the new ASI document to our index
 		asiDoc.checkAndGetValidStatus();
-
-		logger.trace("Created from ASI={}: {}", fromASI_ID, asiDoc);
-
+		logger.trace("Created from ASI={}: {}", templateASI_ID, asiDoc);
 		putASIDocument(asiDoc);
 
 		return asiDoc;
