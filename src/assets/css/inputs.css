@@ -616,7 +616,6 @@ input:checked + .input-slider:before {
     display: inline-block;
     min-width: 5rem;
     max-width:100%;
-    overflow: hidden;
 }
 
 .product-attributes::selection {

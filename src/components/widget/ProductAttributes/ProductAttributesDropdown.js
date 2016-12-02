@@ -17,27 +17,30 @@ class ProductAttributesDropdown extends Component {
             layout: null,
             data: null
         }
+    }
 
-        const {dispatch, tmpId} = this.props;
-
-        dispatch(
-            getPattributeInstance(tmpId)
-        ).then(response => {
-            const {id, fields} = response.data;
-
-
-            this.setState(Object.assign({}, this.state, {
-                data: fields
-            }));
-
-            return dispatch(getPattributeLayout(id));
-        }).then(response => {
-            const {elements} = response.data;
-
-            this.setState(Object.assign({}, this.state, {
-                layout: elements
-            }));
-        });
+    componentDidMount() {
+        // const {dispatch, tmpId} = this.props;
+        //
+        // dispatch(
+        //     getPattributeInstance(tmpId)
+        // ).then(response => {
+        //     const {id, fields} = response.data;
+        //
+        //     console.log(fields)
+        //     this.setState(Object.assign({}, this.state, {
+        //         data: fields
+        //     }));
+        //
+        //     return dispatch(getPattributeLayout(id));
+        // }).then(response => {
+        //     const {elements} = response.data;
+        //     console.log(elements)
+        //
+        //     this.setState(Object.assign({}, this.state, {
+        //         layout: elements
+        //     }));
+        // });
     }
 
     handleClickOutside = () => {
