@@ -377,6 +377,10 @@ node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
+		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.BUILD_VERSION" 
+		// which needs to be replaced when version.properties is dealt with be the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
+		withEnv(['"BUILD_VERSION=${BUILD_VERSION}"'])
+		{
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
 		{
 			stage('Build dist') 
@@ -410,6 +414,7 @@ node('agent && linux && libc6-i386')
 				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 			}
 		} // withMaven
+		} // withEnv(['"BUILD_VERSION=${BUILD_VERSION}"'])
 	} // configFileProvider
 
 	// clean up the workspace, including the local maven repositories that the withMaven steps created
