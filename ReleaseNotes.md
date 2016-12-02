@@ -15,10 +15,13 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * #620 Marginal Return Report doubled sums for accounting group
+    * Fix the doubled sums in Marginal return report for specific accounting group.
   
 * webui
   * #425 Kickstart elasticsearch integration
+    * Add the first prototype of elasticsearch integration in WebUI environment of metasfresh ERP. Data for elasticsearch index is created via metasfresh async framework.
   * #598 WebUI Dashboard initial Prototype definition
+    * Create a prototype dashboard in new metasfresh WebUI. Current prototype uses kibana for KPI and data visualization.
 
 ## Fixes
 * metasfresh
