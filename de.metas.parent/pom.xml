@@ -766,8 +766,7 @@
 				</executions>
 			</plugin>
 
-			<!-- Add the generic info plus ci build info to the manifests of all jars 
-				that we create -->
+			<!-- Add the generic info plus ci build info to the manifests of all jars that we create -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -787,6 +786,39 @@
 					</archive>
 				</configuration>
 			</plugin>
+			<!--  -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					
+					<execution>
+						<id>copy-springboot-properties</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<encoding>UTF-8</encoding>
+							<delimiters>
+								<delimiter>@</delimiter>
+								<useDefaultDelimiters>false</useDefaultDelimiters>
+							</delimiters>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>application*.properties</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 
 			<!-- Don't archive a web project's files (i.e. put the classes into WEB-INF/classes), 
 				because we want skinny war to include theirs own classes in that folder (and 
