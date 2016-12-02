@@ -2,7 +2,6 @@ package de.metas.ui.web.address;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,12 +71,8 @@ public class AddressRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("createAddressDocument", () -> {
-			if (request.getTemplateId() > 0)
-			{
-				final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId());
-				return JSONDocument.ofDocument(addressDoc, newJsonOpts());
-			}
-			throw new AdempiereException("Invalid request: " + request);
+			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId());
+			return JSONDocument.ofDocument(addressDoc, newJsonOpts());
 		});
 	}
 
