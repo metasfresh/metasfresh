@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -151,6 +152,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return get_ValueAsInt(PARAM_Offset.getName(), defaultValue);
 	}
 
+	public String getAD_Language()
+	{
+		return get_ValueAsString(PARAM_AD_Language.getName());
+	}
+
 	@Override
 	public boolean has_Variable(final String variableName)
 	{
@@ -204,18 +210,18 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public Integer getIdToFilterAsInt(final Integer defaultValue)
 	{
-		if(idToFilter == null)
+		if (idToFilter == null)
 		{
 			return defaultValue;
 		}
-		else if(idToFilter instanceof Number)
+		else if (idToFilter instanceof Number)
 		{
 			return ((Number)idToFilter).intValue();
 		}
 		else
 		{
 			final String idToFilterStr = idToFilter.toString();
-			if(idToFilterStr.isEmpty())
+			if (idToFilterStr.isEmpty())
 			{
 				return defaultValue;
 			}
@@ -230,7 +236,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		private INamePairPredicate postQueryPredicate = INamePairPredicate.NULL;
 		private final Map<String, Object> name2value = new HashMap<>();
 		private Object idToFilter;
-		private Collection<String> requiredParameters;
+		private Collection<String> _requiredParameters;
+		private boolean _requiredParameters_copyOnAdd = false;
 
 		private final Map<String, Object> valuesCollected = new LinkedHashMap<>();
 
@@ -262,7 +269,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			//
 			// Collect all values required for given query
 			// failIfNotFound=true
-			collectContextValues(requiredParameters, true);
+			collectContextValues(getRequiredParameters(), true);
 
 			//
 			// Collect all values required by the post-query predicate
@@ -274,9 +281,82 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return new LookupDataSourceContext(lookupTableName, valuesCollected, idToFilter, postQueryPredicate);
 		}
 
+		private Collection<String> getRequiredParameters()
+		{
+			return _requiredParameters;
+		}
+
+		/**
+		 * Advises the builder that provided parameters shall be present the context that will be build.
+		 * 
+		 * NOTE: previous required parameters, if any, will be lost.
+		 * 
+		 * @param requiredParameters
+		 */
 		public Builder setRequiredParameters(final Collection<String> requiredParameters)
 		{
-			this.requiredParameters = requiredParameters;
+			_requiredParameters = requiredParameters;
+			_requiredParameters_copyOnAdd = true;
+			return this;
+		}
+
+		/**
+		 * Advises the builder that given parameter shall be present the context that will be build
+		 *
+		 * @param requiredParameter
+		 */
+		public Builder requiresParameter(final String requiredParameter)
+		{
+			Check.assumeNotEmpty(requiredParameter, "requiredParameter is not empty");
+			if (_requiredParameters != null && _requiredParameters.contains(requiredParameter))
+			{
+				// we already have the parameter => do nothing
+				return this;
+			}
+
+			if (_requiredParameters == null)
+			{
+				_requiredParameters = new HashSet<>();
+				_requiredParameters_copyOnAdd = false;
+			}
+			else if (_requiredParameters_copyOnAdd)
+			{
+				_requiredParameters = new HashSet<>(_requiredParameters);
+				_requiredParameters_copyOnAdd = false;
+			}
+
+			_requiredParameters.add(requiredParameter);
+
+			return this;
+		}
+
+		/**
+		 * Advises the builder that {@link LookupDataSourceContext#PARAM_AD_Language} shall be present the context that will be build
+		 */
+		public Builder requiresAD_Language()
+		{
+			requiresParameter(PARAM_AD_Language.getName());
+			return this;
+		}
+
+		/**
+		 * Advises the builder that filter, filterSql, limit and offset parameters shall be present the context that will be build
+		 */
+		public Builder requiresFilterAndLimit()
+		{
+			requiresParameter(PARAM_Filter.getName());
+			requiresParameter(PARAM_FilterSql.getName());
+			requiresParameter(PARAM_Limit.getName());
+			requiresParameter(PARAM_Offset.getName());
+			return this;
+		}
+
+		/**
+		 * Advises the builder that {@link LookupDataSourceContext#PARAM_UserRolePermissionsKey} shall be present the context that will be build
+		 */
+		public Builder requiresUserRolePermissionsKey()
+		{
+			requiresParameter(PARAM_UserRolePermissionsKey.getName());
 			return this;
 		}
 
