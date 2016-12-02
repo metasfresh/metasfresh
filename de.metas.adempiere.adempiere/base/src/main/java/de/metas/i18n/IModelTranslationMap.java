@@ -2,6 +2,7 @@ package de.metas.i18n;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.google.common.base.Strings;
 
@@ -68,5 +69,25 @@ public interface IModelTranslationMap
 		}
 
 		return ImmutableTranslatableString.ofMap(columnTrls, defaultValue);
+	}
+
+	/**
+	 * Translates columnName to given adLanguage. If the language or the column was not found, {@link Optional#empty()} will be returned.
+	 */
+	default Optional<String> translateColumn(final String columnName, final String adLanguage)
+	{
+		final IModelTranslation modelTrl = getTranslation(adLanguage);
+		if (NullModelTranslation.isNull(modelTrl))
+		{
+			return Optional.empty();
+		}
+
+		final String columnTrl = modelTrl.getTranslation(columnName);
+		if (columnTrl == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(columnTrl);
 	}
 }

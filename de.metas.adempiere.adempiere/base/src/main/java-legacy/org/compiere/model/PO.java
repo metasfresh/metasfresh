@@ -5092,7 +5092,7 @@ public abstract class PO
 		return m_translations;
 	}
 
-	private POInfoModelTranslationMap m_translations = null;
+	private IModelTranslationMap m_translations = null;
 
 	public final POInfo getPOInfo()
 	{
