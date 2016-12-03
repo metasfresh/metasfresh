@@ -500,4 +500,21 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
 	}
 
+	
+	private DocumentEntityDescriptor createQuickInputEntityDescriptor_SalesOrder(DocumentEntityDescriptor.Builder documentDescriptor)
+	{
+		final DocumentEntityDescriptor.Builder quickInputDescriptor = DocumentEntityDescriptor.builder()
+				.setDocumentType(DocumentType.QuickInput, documentDescriptor.getDocumentTypeId())
+				.disableCallouts()
+				// Defaults:
+				.setDetailId(null)
+				.setAD_Tab_ID(0)
+				.setTableName(documentDescriptor.getTableName())
+				.setIsSOTrx(true)
+				//
+				;
+
+		// TODO: implement
+		throw new UnsupportedOperationException();
+	}
 }

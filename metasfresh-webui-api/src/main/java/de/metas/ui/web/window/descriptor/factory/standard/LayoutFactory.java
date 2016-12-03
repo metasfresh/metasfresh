@@ -28,8 +28,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -448,7 +448,21 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		//
 		// Make sure all added elements have the GridViewField characteristic
 		descriptorsFactory.addFieldsCharacteristic(layoutDetail.getFieldNames(), Characteristic.GridViewField);
+
+		//
+		// Quick input
+		layoutDetail.setQuickInput(layoutDetail_QuickInput());
+
 		return layoutDetail;
+	}
+
+	public DocumentLayoutDetailQuickInputDescriptor.Builder layoutDetail_QuickInput()
+	{
+		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInput = DocumentLayoutDetailQuickInputDescriptor.builder();
+
+		// TODO
+
+		return quickInput;
 	}
 
 	/**

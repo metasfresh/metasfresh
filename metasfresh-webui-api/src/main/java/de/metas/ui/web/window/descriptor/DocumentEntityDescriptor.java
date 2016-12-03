@@ -580,7 +580,7 @@ public class DocumentEntityDescriptor
 			return _documentType;
 		}
 
-		private int getDocumentTypeId()
+		public int getDocumentTypeId()
 		{
 			Check.assumeNotNull(_documentTypeId, "documentTypeId is set for {}", this);
 			return _documentTypeId;

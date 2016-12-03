@@ -28,6 +28,7 @@ public enum DocumentType
 	, Process("P") //
 	, ProductAttributes("ASI") //
 	, Address("ADDR") //
+	, QuickInput("QI")
 	;
 
 	private final String symbol;

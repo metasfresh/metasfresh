@@ -53,6 +53,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final ITranslatableString emptyResultHint;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
+	private final DocumentLayoutDetailQuickInputDescriptor quickInput;
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
@@ -64,6 +65,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
+		quickInput = builder.quickInput == null ? null : builder.quickInput.build();
 	}
 
 	@Override
@@ -127,6 +129,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		private ITranslatableString emptyResultHint;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+		
+		private DocumentLayoutDetailQuickInputDescriptor.Builder quickInput;
 
 		private Builder()
 		{
@@ -247,6 +251,16 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = findElementBuilderByFieldName(fieldName);
 			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
+		
+		public Builder setQuickInput(DocumentLayoutDetailQuickInputDescriptor.Builder quickInput)
+		{
+			this.quickInput = quickInput;
+			return this;
+		}
 	}
-
+	
+	public DocumentLayoutDetailQuickInputDescriptor getQuickInput()
+	{
+		return quickInput;
+	}
 }
