@@ -117,6 +117,17 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
 	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("AD_Window_ID", _adWindowId)
+				.add("AD_UI_Sections.count", getUISections().size())
+				.add("UIProvider", getUIProvider())
+				.toString();
+	}
 
 	private IWindowUIElementsProvider getUIProvider()
 	{
