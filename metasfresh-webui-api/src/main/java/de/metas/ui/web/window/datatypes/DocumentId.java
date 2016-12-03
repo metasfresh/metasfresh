@@ -1,6 +1,9 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.io.Serializable;
 import java.util.Objects;
+
+import javax.annotation.concurrent.Immutable;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -26,7 +29,9 @@ import de.metas.printing.esb.base.util.Check;
  * #L%
  */
 
-public final class DocumentId
+@Immutable
+@SuppressWarnings("serial")
+public final class DocumentId implements Serializable
 {
 	public static final int NEW_ID = -1;
 	public static final String NEW_ID_STRING = "NEW";
