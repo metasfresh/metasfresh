@@ -385,6 +385,19 @@ public class DocumentEntityDescriptor
 		{
 			super();
 		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("documentType", _documentType)
+					.add("documentTypeId", _documentTypeId)
+					.add("detailId", _detailId)
+					.add("caption", _caption)
+					.add("tableName", _tableName)
+					.toString();
+		}
 
 		public DocumentEntityDescriptor build()
 		{
