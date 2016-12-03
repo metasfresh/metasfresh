@@ -1,15 +1,13 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.math.BigDecimal;
 import java.util.Set;
 
+import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -39,7 +37,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /**
  * Miscellaneous descriptors building helpers.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -53,111 +51,52 @@ public final class DescriptorsFactoryHelper
 		super();
 	}
 
-	public static Class<?> getValueClass(final int displayType, final LookupDescriptor lookupDescriptor)
+	public static Class<?> getValueClass(final DocumentFieldWidgetType widgetType, final LookupDescriptor lookupDescriptor)
 	{
+		final Class<?> widgetValueClass = widgetType.getValueClassOrNull();
+
+		//
+		// Try fetching the valueClass from lookup
 		if (lookupDescriptor != null)
 		{
-			return lookupDescriptor.getValueClass();
-		}
-		else
-		{
-			return DescriptorsFactoryHelper.getValueClass(displayType);
+			final Class<?> lookupValueClass = lookupDescriptor.getValueClass();
+			Check.assumeNotNull(lookupValueClass, "Parameter lookupValueClass is not null for {}", lookupDescriptor); // shall not happen
+
+			if (widgetValueClass == null)
+			{
+				return lookupValueClass;
+			}
+			else if (lookupValueClass.equals(widgetValueClass))
+			{
+				return lookupValueClass;
+			}
+			else
+			{
+				throw new IllegalArgumentException("WidgetType's class is not compatible with LookupDescriptor's class"
+						+ "\n WidgetType: " + widgetType
+						+ "\n WidgetType value class: " + widgetValueClass
+						+ "\n LookupDescriptor: " + lookupDescriptor
+						+ "\n LookupDescriptor value class: " + lookupValueClass);
+			}
 		}
 
-	}
+		//
+		// Use the standard widget's valueClass, if any
+		if (widgetValueClass != null)
+		{
+			return widgetValueClass;
+		}
 
-	private static Class<?> getValueClass(final int displayType)
-	{
-		if (displayType == DisplayType.List)
-		{
-			return StringLookupValue.class;
-		}
-		else if (displayType == DisplayType.Location)
-		{
-			return IntegerLookupValue.class;
-		}
-		else if (displayType == DisplayType.PAttribute)
-		{
-			return IntegerLookupValue.class;
-		}
-		else if (displayType == DisplayType.Table || displayType == DisplayType.Search)
-		{
-			throw new IllegalArgumentException("Table and Search references are not supported at this level"); // shall not happen
-		}
-		else if (DisplayType.isAnyLookup(displayType))
-		{
-			return IntegerLookupValue.class;
-		}
-		else if (displayType == DisplayType.ID)
-		{
-			return Integer.class;
-		}
 		//
-		//
-		else if (displayType == DisplayType.Date)
-		{
-			return java.util.Date.class;
-		}
-		else if (displayType == DisplayType.Time)
-		{
-			return java.util.Date.class;
-		}
-		else if (displayType == DisplayType.DateTime)
-		{
-			return java.util.Date.class;
-		}
-		//
-		//
-		else if (displayType == DisplayType.TextLong || displayType == DisplayType.Memo || displayType == DisplayType.Text)
+		// HARDCODED case: if Button, return String
+		if (widgetType == DocumentFieldWidgetType.Button)
 		{
 			return String.class;
 		}
-		else if (DisplayType.isText(displayType))
-		{
-			return String.class;
-		}
+
 		//
-		//
-		else if (DisplayType.Integer == displayType)
-		{
-			return Integer.class;
-		}
-		else if (displayType == DisplayType.Amount)
-		{
-			return BigDecimal.class;
-		}
-		else if (displayType == DisplayType.Number)
-		{
-			return BigDecimal.class;
-		}
-		else if (displayType == DisplayType.CostPrice)
-		{
-			return BigDecimal.class;
-		}
-		else if (displayType == DisplayType.Quantity)
-		{
-			return BigDecimal.class;
-		}
-		//
-		//
-		else if (displayType == DisplayType.YesNo)
-		{
-			return Boolean.class;
-		}
-		else if (displayType == DisplayType.Button)
-		{
-			return String.class;
-		}
-		else if (displayType == DisplayType.Image)
-		{
-			return Integer.class;
-		}
-		//
-		//
-		else
-		{
-			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType);
-		}
+		// Fallback
+		throw new IllegalArgumentException("No value class found for widgetType=" + widgetType);
 	}
 
 	public static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType)

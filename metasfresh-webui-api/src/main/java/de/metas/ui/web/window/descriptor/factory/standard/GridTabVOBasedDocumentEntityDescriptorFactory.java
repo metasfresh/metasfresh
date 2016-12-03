@@ -275,7 +275,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 					.buildProvider();
 
 			lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
-			valueClass = DescriptorsFactoryHelper.getValueClass(displayType, lookupDescriptor);
+			valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(
 					gridFieldVO.getDefaultValue() //

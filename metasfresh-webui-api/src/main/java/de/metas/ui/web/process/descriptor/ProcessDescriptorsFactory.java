@@ -151,8 +151,8 @@ public class ProcessDescriptorsFactory
 				.buildProvider();
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(adProcessParam.getAD_Reference_ID(), lookupDescriptor);
 		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(adProcessParam.getColumnName(), adProcessParam.getAD_Reference_ID());
+		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
