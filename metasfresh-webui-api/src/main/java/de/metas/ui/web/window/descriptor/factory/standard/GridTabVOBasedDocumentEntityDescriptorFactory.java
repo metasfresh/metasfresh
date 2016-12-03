@@ -95,7 +95,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		_documentEntryBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx);
 
 		//
-		// HARDCODED: C_Order's DocumentSummary
+		// FIXME: HARDCODED: C_Order's DocumentSummary
 		if (rootEntity && I_C_Order.Table_Name.equals(_documentEntryBuilder.getTableName()))
 		{
 			// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
