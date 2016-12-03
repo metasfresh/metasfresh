@@ -370,12 +370,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		// Load the PO / Create new PO instance
 		final PO po = retrieveOrCreatePO(document);
 
-		// TODO: handle the case of composed primary key!
-		if (po.getPOInfo().getKeyColumnName() == null)
-		{
-			throw new UnsupportedOperationException("Composed primary key is not supported");
-		}
-
 		//
 		// Set values to PO
 		final boolean isNew = document.isNew();
@@ -433,6 +427,12 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			{
 				throw new DBException("No PO found for " + document);
 			}
+		}
+		
+		// TODO: handle the case of composed primary key!
+		if (po.getPOInfo().getKeyColumnName() == null)
+		{
+			throw new UnsupportedOperationException("Composed primary key is not supported");
 		}
 
 		//

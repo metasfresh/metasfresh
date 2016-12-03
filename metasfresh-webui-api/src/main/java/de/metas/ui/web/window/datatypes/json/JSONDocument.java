@@ -6,10 +6,13 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -63,6 +66,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("document")
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocument implements Serializable
 {
 	public static final JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
@@ -184,6 +188,10 @@ public final class JSONDocument implements Serializable
 			jsonDocument.setSaveStatus(documentSaveStatus.toJson());
 		}
 
+		//
+		// Stale tabs
+		jsonDocument.setStaleTabIds(DetailId.toJson(documentChangedEvents.getStaleDetailIds()));
+
 		return jsonDocument;
 	}
 
@@ -238,6 +246,10 @@ public final class JSONDocument implements Serializable
 	@JsonProperty("save-status")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String saveStatus;
+
+	@JsonProperty("staleTabIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Set<String> staleTabIds;
 
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -319,6 +331,16 @@ public final class JSONDocument implements Serializable
 	public String getSaveStatus()
 	{
 		return saveStatus;
+	}
+
+	private void setStaleTabIds(final Set<String> staleTabIds)
+	{
+		this.staleTabIds = staleTabIds;
+	}
+
+	public Set<String> getStaleTabIds()
+	{
+		return staleTabIds;
 	}
 
 	@JsonAnyGetter

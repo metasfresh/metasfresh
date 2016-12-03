@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -199,5 +200,12 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	{
 		documentChanges(documentPath)
 				.collectDocumentSaveStatusChanged(documentSaveStatus);
+	}
+
+	@Override
+	public void collectStaleDetailId(final DocumentPath documentPath, final DetailId detailId)
+	{
+		documentChanges(documentPath)
+				.collectStaleDetailId(detailId);
 	}
 }

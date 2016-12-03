@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -109,6 +110,12 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 
 	@Override
 	public void collectDocumentSaveStatusChanged(final DocumentPath documentPath, final DocumentSaveStatus documentSaveStatus)
+	{
+		// do nothing
+	}
+
+	@Override
+	public void collectStaleDetailId(DocumentPath documentPath, DetailId detailId)
 	{
 		// do nothing
 	}

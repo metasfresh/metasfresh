@@ -902,10 +902,15 @@ public final class Document
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
 		final String expectedDocStatus = null; // N/A
 		Services.get(IDocActionBL.class).processEx(this, docAction, expectedDocStatus);
-
+		
 		//
 		// Refresh it
+		// and also mark all included documents as stale because it might be that processing add/removed/changed some data in included documents too
 		refreshFromRepository();
+		for (final IncludedDocumentsCollection includedDocumentsPerDetail : includedDocuments.values())
+		{
+			includedDocumentsPerDetail.markStaleAll();
+		}
 	}
 
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
