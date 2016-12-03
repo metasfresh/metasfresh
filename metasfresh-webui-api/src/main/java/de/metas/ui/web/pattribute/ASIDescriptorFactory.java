@@ -36,7 +36,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -136,7 +136,7 @@ public class ASIDescriptorFactory
 		final DocumentFieldWidgetType widgetType;
 		final Function<I_M_AttributeInstance, Object> readMethod;
 		final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod;
-		Function<LookupScope, LookupDescriptor> lookupDescriptorProvider = (scope) -> null;
+		LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
 
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
@@ -153,7 +153,7 @@ public class ASIDescriptorFactory
 			writeMethod = ASIAttributeFieldBinding::writeValueFromLookup;
 
 			final LookupDescriptor lookupDescriptor = getLookupDescriptor(attribute);
-			lookupDescriptorProvider = (scope) -> lookupDescriptor;
+			lookupDescriptorProvider = LookupDescriptorProvider.singleton(lookupDescriptor);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
@@ -309,7 +309,7 @@ public class ASIDescriptorFactory
 		private static final void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
 		{
 			final StringLookupValue lookupValue = field.getValueAs(StringLookupValue.class);
-			final AttributeValue attributeValue = field.getDescriptor().getLookupDescriptor(LookupScope.DocumentField)
+			final AttributeValue attributeValue = field.getDescriptor().getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentField)
 					.cast(ASILookupDescriptor.class)
 					.getAttributeValue(lookupValue);
 

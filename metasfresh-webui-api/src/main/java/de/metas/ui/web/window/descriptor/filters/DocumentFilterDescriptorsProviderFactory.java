@@ -12,7 +12,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 
 /*
  * #%L
@@ -106,7 +106,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
 		
-		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupScope.DocumentFilter);
+		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 		
 		final Operator operator;
 		if (widgetType.isRangeFilteringSupported())

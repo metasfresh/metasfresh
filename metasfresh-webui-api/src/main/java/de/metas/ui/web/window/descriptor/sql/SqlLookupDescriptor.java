@@ -2,7 +2,6 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -15,7 +14,6 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
-import org.adempiere.util.Functions;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -30,6 +28,8 @@ import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -263,12 +263,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			super();
 		}
 
-		public Function<LookupScope, LookupDescriptor> buildProvider()
+		public LookupDescriptorProvider buildProvider()
 		{
 			return buildProvider(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
 
-		private static Function<LookupScope, LookupDescriptor> buildProvider(
+		private static LookupDescriptorProvider buildProvider(
 				final String sqlColumnName //
 				, final int displayType //
 				, final int AD_Reference_Value_ID //
@@ -278,7 +278,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
-				return Functions.memoizing(scope -> SqlLookupDescriptor.builder()
+				return LookupDescriptorProvider.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
 						.setColumnName(sqlColumnName)
 						.setDisplayType(displayType)
 						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
@@ -286,7 +286,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 						.setScope(scope)
 						.build());
 			}
-			return scope -> null;
+			return LookupDescriptorProvider.NULL;
 		}
 
 		private SqlLookupDescriptor build()

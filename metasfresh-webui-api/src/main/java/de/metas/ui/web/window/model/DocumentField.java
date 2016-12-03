@@ -16,7 +16,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -75,7 +75,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		this.descriptor = descriptor;
 		_document = document;
 
-		_lookupDataSource = descriptor.createLookupDataSource(LookupScope.DocumentField);
+		_lookupDataSource = descriptor.createLookupDataSource(LookupDescriptorProvider.LookupScope.DocumentField);
 
 		_valid = DocumentValidStatus.inititalInvalid();
 	}

@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -30,7 +29,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -246,7 +245,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		final Class<?> valueClass;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
-		final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
+		final LookupDescriptorProvider lookupDescriptorProvider;
 		final LookupDescriptor lookupDescriptor;
 		final ILogicExpression readonlyLogic;
 
@@ -256,7 +255,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			valueClass = Integer.class;
 			alwaysUpdateable = false;
 
-			lookupDescriptorProvider = (scope) -> null;
+			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
 			lookupDescriptor = null;
 
 			defaultValueExpression = Optional.empty();
@@ -275,7 +274,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 					.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
 					.buildProvider();
 
-			lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+			lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 			valueClass = DescriptorsFactoryHelper.getValueClass(displayType, lookupDescriptor);
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(

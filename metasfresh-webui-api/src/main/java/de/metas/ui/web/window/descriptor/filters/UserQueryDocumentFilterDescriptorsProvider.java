@@ -21,7 +21,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 
@@ -180,7 +180,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			displayName = field.getCaption();
 			widgetType = field.getWidgetType();
 			valueClass = field.getValueClass();
-			lookupDescriptor = field.getLookupDescriptor(LookupScope.DocumentFilter);
+			lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 		}
 
 		@Override

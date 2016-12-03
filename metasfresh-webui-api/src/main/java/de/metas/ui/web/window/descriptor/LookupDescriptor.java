@@ -31,11 +31,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 public interface LookupDescriptor
 {
-	public static enum LookupScope
-	{
-		DocumentField, DocumentFilter
-	}
-
 	boolean isHighVolume();
 
 	LookupSource getLookupSourceType();
