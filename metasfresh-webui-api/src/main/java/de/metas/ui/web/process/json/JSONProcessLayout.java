@@ -3,6 +3,8 @@ package de.metas.ui.web.process.json;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -33,6 +35,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  */
 
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONProcessLayout implements Serializable
 {
 	public static JSONProcessLayout of(final ProcessLayout layout, final JSONOptions jsonOpts)
@@ -48,8 +51,9 @@ public class JSONProcessLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	public JSONProcessLayout(final ProcessLayout layout, final JSONOptions jsonOpts)
+	private JSONProcessLayout(final ProcessLayout layout, final JSONOptions jsonOpts)
 	{
+		super();
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = layout.getCaption(adLanguage);
 		description = layout.getDescription(adLanguage);
