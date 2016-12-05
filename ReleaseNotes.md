@@ -18,6 +18,8 @@ this week's release
 * metasfresh
   * #658 make Ini more robust: throw ex if file can't be read
 
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
 
 # metasfresh 4.46.45 (2016-48)
 
