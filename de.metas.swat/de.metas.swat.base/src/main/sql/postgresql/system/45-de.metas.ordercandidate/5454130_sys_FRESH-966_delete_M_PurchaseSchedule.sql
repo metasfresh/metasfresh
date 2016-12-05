@@ -204,3 +204,31 @@ DELETE FROM  AD_Reference_Trl WHERE AD_Reference_ID=540224
 DELETE FROM AD_Reference WHERE AD_Reference_ID=540224
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Dec 5, 2016 5:59 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540012
+;
+
