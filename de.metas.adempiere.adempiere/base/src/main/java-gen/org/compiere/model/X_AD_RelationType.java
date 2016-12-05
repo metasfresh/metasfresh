@@ -1,37 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_RelationType
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_RelationType, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20110331L;
+	private static final long serialVersionUID = 791382458L;
 
     /** Standard Constructor */
     public X_AD_RelationType (Properties ctx, int AD_RelationType_ID, String trxName)
@@ -40,13 +23,11 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
       /** if (AD_RelationType_ID == 0)
         {
 			setAD_RelationType_ID (0);
+			setEntityType (null);
+// de.metas.swat
 			setIsDirected (false);
 // N
-			setIsExplicit (false);
-// N
 			setName (null);
-			setRole_Source (null);
-			setRole_Target (null);
         } */
     }
 
@@ -56,35 +37,32 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 7 - System - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_RelationType[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
+	@Override
 	public org.compiere.model.I_AD_Reference getAD_Reference_Source() throws RuntimeException
-    {
-		return (org.compiere.model.I_AD_Reference)MTable.get(getCtx(), org.compiere.model.I_AD_Reference.Table_Name)
-			.getPO(getAD_Reference_Source_ID(), get_TrxName());	}
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Reference_Source_ID, org.compiere.model.I_AD_Reference.class);
+	}
+
+	@Override
+	public void setAD_Reference_Source(org.compiere.model.I_AD_Reference AD_Reference_Source)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Reference_Source_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Source);
+	}
 
 	/** Set Source Reference.
-		@param AD_Reference_Source_ID Source Reference	  */
+		@param AD_Reference_Source_ID 
+		For directed relation types, the where clause of this reference's AD_Ref_Table is used to decide if a given record is a possible relation source.
+	  */
+	@Override
 	public void setAD_Reference_Source_ID (int AD_Reference_Source_ID)
 	{
 		if (AD_Reference_Source_ID < 1) 
@@ -94,7 +72,9 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 	}
 
 	/** Get Source Reference.
-		@return Source Reference	  */
+		@return For directed relation types, the where clause of this reference's AD_Ref_Table is used to decide if a given record is a possible relation source.
+	  */
+	@Override
 	public int getAD_Reference_Source_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Source_ID);
@@ -103,13 +83,23 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 		return ii.intValue();
 	}
 
+	@Override
 	public org.compiere.model.I_AD_Reference getAD_Reference_Target() throws RuntimeException
-    {
-		return (org.compiere.model.I_AD_Reference)MTable.get(getCtx(), org.compiere.model.I_AD_Reference.Table_Name)
-			.getPO(getAD_Reference_Target_ID(), get_TrxName());	}
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Reference_Target_ID, org.compiere.model.I_AD_Reference.class);
+	}
+
+	@Override
+	public void setAD_Reference_Target(org.compiere.model.I_AD_Reference AD_Reference_Target)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Reference_Target_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Target);
+	}
 
 	/** Set Target Reference.
-		@param AD_Reference_Target_ID Target Reference	  */
+		@param AD_Reference_Target_ID 
+		For directed relation types, the table and where clause of this reference's AD_Ref_Table is used to select the relation partners for a given source-record (e.g. the shipments for a given order).
+	  */
+	@Override
 	public void setAD_Reference_Target_ID (int AD_Reference_Target_ID)
 	{
 		if (AD_Reference_Target_ID < 1) 
@@ -119,7 +109,9 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 	}
 
 	/** Get Target Reference.
-		@return Target Reference	  */
+		@return For directed relation types, the table and where clause of this reference's AD_Ref_Table is used to select the relation partners for a given source-record (e.g. the shipments for a given order).
+	  */
+	@Override
 	public int getAD_Reference_Target_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Target_ID);
@@ -130,6 +122,7 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 
 	/** Set Relation Type.
 		@param AD_RelationType_ID Relation Type	  */
+	@Override
 	public void setAD_RelationType_ID (int AD_RelationType_ID)
 	{
 		if (AD_RelationType_ID < 1) 
@@ -140,6 +133,7 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 
 	/** Get Relation Type.
 		@return Relation Type	  */
+	@Override
 	public int getAD_RelationType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_RelationType_ID);
@@ -149,72 +143,82 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 	}
 
 	/** Set Beschreibung.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	/** Get Beschreibung.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
+	public static final int ENTITYTYPE_AD_Reference_ID=389;
+	/** Set Entitäts-Art.
+		@param EntityType 
+		Dictionary Entity Type; Determines ownership and synchronization
+	  */
+	@Override
+	public void setEntityType (java.lang.String EntityType)
+	{
+
+		set_Value (COLUMNNAME_EntityType, EntityType);
+	}
+
+	/** Get Entitäts-Art.
+		@return Dictionary Entity Type; Determines ownership and synchronization
+	  */
+	@Override
+	public java.lang.String getEntityType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
 	}
 
 	/** Set Interner Name.
-		@param InternalName Interner Name	  */
-	public void setInternalName (String InternalName)
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public void setInternalName (java.lang.String InternalName)
 	{
 		set_ValueNoCheck (COLUMNNAME_InternalName, InternalName);
 	}
 
 	/** Get Interner Name.
-		@return Interner Name	  */
-	public String getInternalName () 
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public java.lang.String getInternalName () 
 	{
-		return (String)get_Value(COLUMNNAME_InternalName);
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
 	}
 
 	/** Set Directed.
 		@param IsDirected 
-		Tells whether one "sees" the other end of the relation from each end or just from the source
+		Tells whether one "sees" the other end of the relation from each end or just from the source.
 	  */
+	@Override
 	public void setIsDirected (boolean IsDirected)
 	{
 		set_Value (COLUMNNAME_IsDirected, Boolean.valueOf(IsDirected));
 	}
 
 	/** Get Directed.
-		@return Tells whether one "sees" the other end of the relation from each end or just from the source
+		@return Tells whether one "sees" the other end of the relation from each end or just from the source.
 	  */
+	@Override
 	public boolean isDirected () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDirected);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Explizit.
-		@param IsExplicit Explizit	  */
-	public void setIsExplicit (boolean IsExplicit)
-	{
-		set_Value (COLUMNNAME_IsExplicit, Boolean.valueOf(IsExplicit));
-	}
-
-	/** Get Explizit.
-		@return Explizit	  */
-	public boolean isExplicit () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsExplicit);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -228,7 +232,8 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -236,20 +241,16 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
-
-	/** Role_Source AD_Reference_ID=53331 */
+	/** 
+	 * Role_Source AD_Reference_ID=53331
+	 * Reference name: AD_RelationType Role
+	 */
 	public static final int ROLE_SOURCE_AD_Reference_ID=53331;
 	/** Auftrag = Order */
 	public static final String ROLE_SOURCE_Auftrag = "Order";
@@ -273,9 +274,38 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 	public static final String ROLE_SOURCE_Prov_Abrechnung = "ComCalc";
 	/** Prov-Korrektur = ComCorr */
 	public static final String ROLE_SOURCE_Prov_Korrektur = "ComCorr";
+	/** Auftragskandidat = OLCand */
+	public static final String ROLE_SOURCE_Auftragskandidat = "OLCand";
+	/** Auftragspos. = C_OrderLine */
+	public static final String ROLE_SOURCE_Auftragspos = "C_OrderLine";
+	/** Bestelldispo = PurchaseSchedule */
+	public static final String ROLE_SOURCE_Bestelldispo = "PurchaseSchedule";
+	/** Bestellung = PurchaseOrder */
+	public static final String ROLE_SOURCE_Bestellung = "PurchaseOrder";
+	/** Bestellung (offen) = PurchaseOrder_Current */
+	public static final String ROLE_SOURCE_BestellungOffen = "PurchaseOrder_Current";
+	/** Bestellung (hist.) = PurchaseOrder_Done */
+	public static final String ROLE_SOURCE_BestellungHist = "PurchaseOrder_Done";
+	/** Auftrag (offen) = Order_Current */
+	public static final String ROLE_SOURCE_AuftragOffen = "Order_Current";
+	/** Auftrag (hist.) = Order_hist */
+	public static final String ROLE_SOURCE_AuftragHist = "Order_hist";
+	/** Bedarf = ReqLine */
+	public static final String ROLE_SOURCE_Bedarf = "ReqLine";
+	/** Beziehungen Geschäftspartner = C_BP_Relation */
+	public static final String ROLE_SOURCE_BeziehungenGeschaeftspartner = "C_BP_Relation";
+	/** Zuordnung = C_AllocationLine */
+	public static final String ROLE_SOURCE_Zuordnung = "C_AllocationLine";
+	/** Bankauszug = C_BankStatement */
+	public static final String ROLE_SOURCE_Bankauszug = "C_BankStatement";
+	/** Eingangsrechnung = PO_Invoice */
+	public static final String ROLE_SOURCE_Eingangsrechnung = "PO_Invoice";
+	/** ESR Import = ESR_Import */
+	public static final String ROLE_SOURCE_ESRImport = "ESR_Import";
 	/** Set Source Role.
 		@param Role_Source Source Role	  */
-	public void setRole_Source (String Role_Source)
+	@Override
+	public void setRole_Source (java.lang.String Role_Source)
 	{
 
 		set_Value (COLUMNNAME_Role_Source, Role_Source);
@@ -283,12 +313,16 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 
 	/** Get Source Role.
 		@return Source Role	  */
-	public String getRole_Source () 
+	@Override
+	public java.lang.String getRole_Source () 
 	{
-		return (String)get_Value(COLUMNNAME_Role_Source);
+		return (java.lang.String)get_Value(COLUMNNAME_Role_Source);
 	}
 
-	/** Role_Target AD_Reference_ID=53331 */
+	/** 
+	 * Role_Target AD_Reference_ID=53331
+	 * Reference name: AD_RelationType Role
+	 */
 	public static final int ROLE_TARGET_AD_Reference_ID=53331;
 	/** Auftrag = Order */
 	public static final String ROLE_TARGET_Auftrag = "Order";
@@ -312,9 +346,38 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 	public static final String ROLE_TARGET_Prov_Abrechnung = "ComCalc";
 	/** Prov-Korrektur = ComCorr */
 	public static final String ROLE_TARGET_Prov_Korrektur = "ComCorr";
+	/** Auftragskandidat = OLCand */
+	public static final String ROLE_TARGET_Auftragskandidat = "OLCand";
+	/** Auftragspos. = C_OrderLine */
+	public static final String ROLE_TARGET_Auftragspos = "C_OrderLine";
+	/** Bestelldispo = PurchaseSchedule */
+	public static final String ROLE_TARGET_Bestelldispo = "PurchaseSchedule";
+	/** Bestellung = PurchaseOrder */
+	public static final String ROLE_TARGET_Bestellung = "PurchaseOrder";
+	/** Bestellung (offen) = PurchaseOrder_Current */
+	public static final String ROLE_TARGET_BestellungOffen = "PurchaseOrder_Current";
+	/** Bestellung (hist.) = PurchaseOrder_Done */
+	public static final String ROLE_TARGET_BestellungHist = "PurchaseOrder_Done";
+	/** Auftrag (offen) = Order_Current */
+	public static final String ROLE_TARGET_AuftragOffen = "Order_Current";
+	/** Auftrag (hist.) = Order_hist */
+	public static final String ROLE_TARGET_AuftragHist = "Order_hist";
+	/** Bedarf = ReqLine */
+	public static final String ROLE_TARGET_Bedarf = "ReqLine";
+	/** Beziehungen Geschäftspartner = C_BP_Relation */
+	public static final String ROLE_TARGET_BeziehungenGeschaeftspartner = "C_BP_Relation";
+	/** Zuordnung = C_AllocationLine */
+	public static final String ROLE_TARGET_Zuordnung = "C_AllocationLine";
+	/** Bankauszug = C_BankStatement */
+	public static final String ROLE_TARGET_Bankauszug = "C_BankStatement";
+	/** Eingangsrechnung = PO_Invoice */
+	public static final String ROLE_TARGET_Eingangsrechnung = "PO_Invoice";
+	/** ESR Import = ESR_Import */
+	public static final String ROLE_TARGET_ESRImport = "ESR_Import";
 	/** Set Target Role.
 		@param Role_Target Target Role	  */
-	public void setRole_Target (String Role_Target)
+	@Override
+	public void setRole_Target (java.lang.String Role_Target)
 	{
 
 		set_Value (COLUMNNAME_Role_Target, Role_Target);
@@ -322,8 +385,9 @@ public class X_AD_RelationType extends PO implements I_AD_RelationType, I_Persis
 
 	/** Get Target Role.
 		@return Target Role	  */
-	public String getRole_Target () 
+	@Override
+	public java.lang.String getRole_Target () 
 	{
-		return (String)get_Value(COLUMNNAME_Role_Target);
+		return (java.lang.String)get_Value(COLUMNNAME_Role_Target);
 	}
 }

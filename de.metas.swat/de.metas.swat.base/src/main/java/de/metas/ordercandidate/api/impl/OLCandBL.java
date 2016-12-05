@@ -1064,7 +1064,6 @@ public class OLCandBL implements IOLCandBL
 			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.getAD_Reference_ID(), trxName);
 
 		}
-		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
 		InterfaceWrapperHelper.save(relType);

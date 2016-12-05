@@ -1,7 +1,6 @@
 package org.adempiere.model;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -20,7 +19,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
-import org.compiere.model.MRelation;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -64,7 +62,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
 
 	private final boolean directed;
-	private final boolean explicit;
 	private final String zoomInfoId;
 	private final String internalName;
 	private final int adRelationTypeId;
@@ -77,7 +74,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		super();
 
 		directed = builder.isDirected();
-		explicit = builder.isExplicit();
 		zoomInfoId = builder.getZoomInfoId();
 		internalName = builder.getInternalName();
 		adRelationTypeId = builder.getAD_RelationType_ID();
@@ -94,7 +90,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.add("zoomInfoId", zoomInfoId)
 				.add("internalName", internalName)
 				.add("directed", directed)
-				.add("explicit", explicit)
 				.add("source", source)
 				.add("target", target)
 				.toString();
@@ -128,11 +123,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	public boolean isDirected()
 	{
 		return directed;
-	}
-
-	public boolean isExplicit()
-	{
-		return explicit;
 	}
 
 	private String getZoomInfoId()
@@ -223,31 +213,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 		else
 		{
-			if (!isExplicit())
-			{
-				throw new AdempiereException("RefTable " + refTable + " has no whereClause, so RelationType " + this + " needs to be explicit");
-			}
-			queryWhereClause.append(" TRUE ");
-		}
-
-		if (isExplicit())
-		{
-			// "explicit" means that the where clause only defines a superset of possible relation elements.
-			// Therefore, we now need to append the actually existing elements to the where clause.
-
-			final String destinationKeyCol = refTable.getKeyColumn();
-
-			queryWhereClause.append(" AND ").append(destinationKeyCol).append(" IN ( -99 ");
-
-			final List<Object> targetModels = MRelation.retrieveDestinations(zoomSource.getCtx(), this, zoomSource.getTableName(), zoomSource.getRecord_ID(), Object.class, zoomSource.getTrxName());
-			for (final Object targetModel : targetModels)
-			{
-				assert Objects.equals(InterfaceWrapperHelper.getModelTableName(targetModel), refTable.getTableName()) : "target=" + targetModel + "; refTable=" + refTable;
-				queryWhereClause.append(", ");
-				queryWhereClause.append(InterfaceWrapperHelper.getId(targetModel));
-			}
-
-			queryWhereClause.append(" )");
+			throw new AdempiereException("RefTable " + refTable + " has no whereClause, so RelationType " + this + " needs to be explicit");
 		}
 
 		final MQuery query = new MQuery();
@@ -310,11 +276,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	public <T> List<T> retrieveDestinations(final Properties ctx, final PO sourcePO, final Class<T> clazz, final String trxName)
 	{
-		if (isExplicit())
-		{
-			return MRelation.retrieveDestinations(ctx, this, sourcePO, clazz, trxName);
-		}
-
 		final IZoomSource zoomSource = POZoomSource.of(sourcePO, -1);
 
 		final ZoomProviderDestination target = findSourceAndTargetEffective(zoomSource).getRight();
@@ -440,7 +401,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	public static final class Builder
 	{
 		private Boolean directed;
-		private Boolean explicit;
 		private String internalName;
 		private int adRelationTypeId;
 
@@ -495,18 +455,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			this.directed = directed;
 			return this;
-		}
-
-		public Builder setExplicit(final boolean explicit)
-		{
-			this.explicit = explicit;
-			return this;
-		}
-
-		private boolean isExplicit()
-		{
-			Check.assumeNotNull(explicit, "Parameter explicit is not null");
-			return explicit;
 		}
 
 		private boolean isDirected()

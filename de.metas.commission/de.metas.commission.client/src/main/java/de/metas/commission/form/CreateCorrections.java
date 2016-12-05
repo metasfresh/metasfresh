@@ -52,7 +52,6 @@ import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MRelation;
 import org.compiere.model.MRelationType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -386,8 +385,10 @@ public class CreateCorrections extends CreateFrom
 			plusLine.setDescription(plusDescription);
 			plusLine.saveEx();
 
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
+			// FIXME: adding explicit relations is not supported anymore
+			throw new UnsupportedOperationException("adding explicit relations is not supported anymore");
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
 
 		} // for all rows
 

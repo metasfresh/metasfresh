@@ -48,8 +48,8 @@ import org.slf4j.Logger;
 
 import de.metas.document.IDocumentPA;
 import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
@@ -236,7 +236,7 @@ public class MigrationHelper
 		calcLine2corrLine.setIsDirected(false);
 		calcLine2corrLine.setAD_Reference_Source_ID(MigrationHelper.AD_Reference_ID_C_InvoiceLine);
 		calcLine2corrLine.setAD_Reference_Target_ID(MigrationHelper.AD_Reference_ID_C_InvoiceLine);
-		calcLine2corrLine.setIsExplicit(true);
+		//calcLine2corrLine.setIsExplicit(true);
 		calcLine2corrLine.setInternalName("com_calcline2corrline");
 		calcLine2corrLine.setRole_Source("ComCalc");
 		calcLine2corrLine.setRole_Target("ComCorr");
@@ -249,7 +249,6 @@ public class MigrationHelper
 		calc2corr.setIsDirected(false);
 		calc2corr.setAD_Reference_Source_ID(MigrationHelper.AD_REFERENCE_Reltype_Invoice);
 		calc2corr.setAD_Reference_Target_ID(MigrationHelper.AD_REFERENCE_Reltype_Invoice);
-		calc2corr.setIsExplicit(false);
 		calc2corr.setInternalName("com_calc2corr");
 
 		calc2corr.setRole_Source("ComCalc");

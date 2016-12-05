@@ -164,7 +164,6 @@ public class CtrlRelationTarget
 			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.get_ID(), trxName);
 
 		}
-		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
 		InterfaceWrapperHelper.save(relType);

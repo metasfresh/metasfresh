@@ -169,7 +169,6 @@ public final class RelationTypeZoomProvidersFactory
 
 			result.add(RelationTypeZoomProvider.builder()
 					.setDirected(relationType.isDirected())
-					.setExplicit(relationType.isExplicit())
 					.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 					.setInternalName(relationType.getInternalName())
 					//

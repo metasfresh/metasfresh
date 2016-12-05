@@ -55,7 +55,6 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MRelation;
 import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -291,22 +290,6 @@ public class CommissionValidator implements ModelValidator
 		if (po instanceof MHRProcess)
 		{
 			return payrollValidate((MHRProcess)po, timing);
-		}
-		else if (po instanceof MInvoice)
-		{
-			return invoiceValidate((MInvoice)po, timing);
-		}
-		return null;
-	}
-
-	private String invoiceValidate(final MInvoice invoice, final int timing)
-	{
-		if (timing == ModelValidator.TIMING_AFTER_VOID || timing == ModelValidator.TIMING_AFTER_REVERSECORRECT)
-		{
-			for (final MInvoiceLine il : invoice.getLines())
-			{
-				MRelation.deleteForPO(il);
-			}
 		}
 		return null;
 	}

@@ -18,8 +18,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_RelationType;
-import org.compiere.model.X_AD_RelationType;
 
 /**
  * Formal definition for a set of data record pairs
@@ -79,9 +77,6 @@ public class MRelationType extends X_AD_RelationType
 		sb.append(get_ID());
 		sb.append(", InternalName=").append(getInternalName());
 		sb.append(", Directed=").append(isDirected());
-		sb.append(", Explicit=").append(isExplicit());
-
-//		sb.append(", AD_Reference_Destination_RefId=").append(destinationRefId);
 
 		sb.append(", AD_Reference_Source_ID=").append(getAD_Reference_Source_ID());
 		sb.append(", Role_Source=").append(getRole_Source());
