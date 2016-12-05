@@ -30,11 +30,11 @@ import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReference;
-import org.compiere.model.MRelationType;
 import org.compiere.model.MTable;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.util.Env;
@@ -43,6 +43,7 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 
 import de.metas.ordercandidate.OrderCandidate_Constants;
+import de.metas.relation.IRelationTypeDAO;
 
 public class CtrlRelationTarget
 {
@@ -111,7 +112,7 @@ public class CtrlRelationTarget
 
 	private void createOrUpdateRelationType(final Properties ctx, final String entityType, final String trxName)
 	{
-		final I_AD_RelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), null);
+		final I_AD_RelationType retrievedRelType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, model.getRelationTypeInternalName());
 
 		final I_AD_RelationType relType;
 
@@ -125,7 +126,7 @@ public class CtrlRelationTarget
 
 		if (retrievedRelType == null)
 		{
-			relType = new MRelationType(ctx, 0, trxName);
+			relType = InterfaceWrapperHelper.create(ctx, I_AD_RelationType.class, trxName);
 			relType.setInternalName(model.getRelationTypeInternalName());
 
 			refSource = new MReference(ctx, 0, trxName);

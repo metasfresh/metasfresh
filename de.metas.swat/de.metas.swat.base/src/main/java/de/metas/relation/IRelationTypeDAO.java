@@ -1,14 +1,15 @@
-/**
- * Contains rather advanced stuff that builds upon "relations"
- * @see {@link org.adempiere.model.RelationTypeZoomProvidersFactory}
- */
 package de.metas.relation;
+
+import java.util.Properties;
+
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_RelationType;
 
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,3 +26,10 @@ package de.metas.relation;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+public interface IRelationTypeDAO extends ISingletonService
+{
+
+	I_AD_RelationType retrieveForInternalName(Properties ctx, String internalName);
+
+}

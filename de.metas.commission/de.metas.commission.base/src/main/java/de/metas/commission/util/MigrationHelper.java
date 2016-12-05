@@ -33,11 +33,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrg;
-import org.compiere.model.MRelationType;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_SysConfig;
@@ -231,7 +231,7 @@ public class MigrationHelper
 		}
 
 		// first adding an explicit type with very simple references, to record connections between c_invoicelines
-		final MRelationType calcLine2corrLine = new MRelationType(ctx, 0, trxName);
+		final I_AD_RelationType calcLine2corrLine = InterfaceWrapperHelper.create(ctx,  I_AD_RelationType.class, trxName);
 		calcLine2corrLine.setName("Prov.-Abrechnung <=> Korrektur (Positionsebene)");
 		calcLine2corrLine.setIsDirected(false);
 		calcLine2corrLine.setAD_Reference_Source_ID(MigrationHelper.AD_Reference_ID_C_InvoiceLine);
@@ -240,11 +240,11 @@ public class MigrationHelper
 		calcLine2corrLine.setInternalName("com_calcline2corrline");
 		calcLine2corrLine.setRole_Source("ComCalc");
 		calcLine2corrLine.setRole_Target("ComCorr");
-		calcLine2corrLine.saveEx();
+		InterfaceWrapperHelper.save(calcLine2corrLine);
 
 		log("Created relation type '" + calcLine2corrLine.getName() + "' (internal name='" + calcLine2corrLine.getInternalName() + "')");
 
-		final MRelationType calc2corr = new MRelationType(ctx, 0, trxName);
+		final I_AD_RelationType calc2corr = InterfaceWrapperHelper.create(ctx,  I_AD_RelationType.class, trxName);
 		calc2corr.setName("Prov.-Abrechnung <=> Korrektur (Belegebene)");
 		calc2corr.setIsDirected(false);
 		calc2corr.setAD_Reference_Source_ID(MigrationHelper.AD_REFERENCE_Reltype_Invoice);
@@ -253,7 +253,7 @@ public class MigrationHelper
 
 		calc2corr.setRole_Source("ComCalc");
 		calc2corr.setRole_Target("ComCorr");
-		calc2corr.saveEx();
+		InterfaceWrapperHelper.save(calc2corr);
 
 		log("Created relation type '" + calc2corr.getName() + "' (internal name='" + calc2corr.getInternalName() + "')");
 	}

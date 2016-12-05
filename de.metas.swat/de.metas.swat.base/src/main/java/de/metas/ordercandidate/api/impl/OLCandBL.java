@@ -64,7 +64,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReference;
-import org.compiere.model.MRelationType;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
 import org.compiere.model.PO;
@@ -102,6 +101,7 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;
 import de.metas.pricing.attributebased.ProductPriceAttributeAware;
 import de.metas.product.IProductPA;
+import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 
@@ -1011,7 +1011,7 @@ public class OLCandBL implements IOLCandBL
 
 		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
 
-		final I_AD_RelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), ITrx.TRXNAME_None);
+		final I_AD_RelationType retrievedRelType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, model.getRelationTypeInternalName());
 
 		final I_AD_RelationType relType;
 
@@ -1025,7 +1025,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (retrievedRelType == null)
 		{
-			relType = new MRelationType(ctx, 0, trxName);
+			relType = InterfaceWrapperHelper.create(ctx, I_AD_RelationType.class, trxName);
 			relType.setInternalName(model.getRelationTypeInternalName());
 
 			refSource = new MReference(ctx, 0, trxName);

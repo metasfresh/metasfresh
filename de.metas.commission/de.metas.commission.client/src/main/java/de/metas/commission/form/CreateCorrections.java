@@ -48,11 +48,9 @@ import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.compiere.grid.CreateFrom;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MRelationType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -318,7 +316,7 @@ public class CreateCorrections extends CreateFrom
 
 		final int countryID = payrollLocPO.getC_Location().getC_Country_ID();
 
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
+//		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
 
 		for (int i = 0; i < miniTable.getRowCount(); i++)
 		{

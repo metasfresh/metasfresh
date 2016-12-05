@@ -38,7 +38,6 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.MQuery;
-import org.compiere.model.MRelationType;
 import org.compiere.model.MSchedulerPara;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.Env;
@@ -48,6 +47,7 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.process.ProcessOLCands;
 import de.metas.process.IADProcessDAO;
+import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.relation.grid.VRelationTarget;
 
@@ -110,7 +110,7 @@ public class OLCandProcessor extends CalloutEngine
 		}
 
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, olCandBL.mkRelationTypeInternalName(processor), null);
+		final I_AD_RelationType relType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, olCandBL.mkRelationTypeInternalName(processor));
 
 		if (relType == null)
 		{
