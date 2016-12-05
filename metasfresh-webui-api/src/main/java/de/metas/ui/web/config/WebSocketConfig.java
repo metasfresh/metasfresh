@@ -3,6 +3,7 @@ package de.metas.ui.web.config;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -18,6 +19,8 @@ import org.springframework.web.socket.config.annotation.AbstractWebSocketMessage
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -45,9 +48,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
-	public static final String ENDPOINT = "/stomp";
+	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
-	
+
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
 		return TOPIC_Notifications + "/" + adUserId;
@@ -76,13 +79,30 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	}
 
 	@Override
-	public void configureClientInboundChannel(final ChannelRegistration registration)
+	public void configureClientOutboundChannel(final ChannelRegistration registration)
 	{
-		registration.setInterceptors(new WebSocketChannelInterceptor());
+		//
+		// IMPORTANT: make sure we are using only one thread for sending outbound messages.
+		// If not, it might be that the messages will not be sent in the right order,
+		// and that's important for things like WS notifications API.
+		// ( thanks to http://stackoverflow.com/questions/29689838/sockjs-receive-stomp-messages-from-spring-websocket-out-of-order )
+		registration.taskExecutor()
+				.corePoolSize(1)
+				.maxPoolSize(1);
 	}
 
 	@Override
-	public boolean configureMessageConverters(List<MessageConverter> messageConverters)
+	public void configureClientInboundChannel(final ChannelRegistration registration)
+	{
+		registration.setInterceptors(new WebSocketChannelInterceptor());
+
+		// NOTE: atm we don't care if the inbound messages arrived in the right order
+		// When and If we would care we would restrict the taskExecutor()'s corePoolSize to ONE.
+		// see: configureClientOutboundChannel().
+	}
+
+	@Override
+	public boolean configureMessageConverters(final List<MessageConverter> messageConverters)
 	{
 		messageConverters.add(new MappingJackson2MessageConverter());
 		return true;
@@ -90,50 +110,23 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 
 	private static class WebSocketChannelInterceptor extends ChannelInterceptorAdapter
 	{
-		@Override
-		public Message<?> preSend(final Message<?> message, final MessageChannel channel)
-		{
-			System.out.println("websocket - preSend: " + message + ", channel=" + channel);
-			return message;
-		}
-
-		@Override
-		public void postSend(final Message<?> message, final MessageChannel channel, final boolean sent)
-		{
-			System.out.println("websocket - postSend: " + message + ", channel=" + channel + ", sent=" + sent);
-		}
+		private static final Logger logger = LogManager.getLogger(WebSocketConfig.WebSocketChannelInterceptor.class);
 
 		@Override
 		public void afterSendCompletion(final Message<?> message, final MessageChannel channel, final boolean sent, final Exception ex)
 		{
-			System.out.println("websocket - afterSendCompletion: " + message + ", channel=" + channel + ", sent=" + sent + ", ex=" + ex);
-			if (ex != null)
+			if (!sent)
 			{
-				ex.printStackTrace();
+				logger.warn("Failed sending: message={}, channel={}, sent={}", message, channel, sent, ex);
 			}
-		}
-
-		@Override
-		public boolean preReceive(final MessageChannel channel)
-		{
-			System.out.println("websocket - postReceive: channel=" + channel);
-			return true;
-		}
-
-		@Override
-		public Message<?> postReceive(final Message<?> message, final MessageChannel channel)
-		{
-			System.out.println("websocket - postReceive: " + message + ", channel=" + channel);
-			return message;
 		}
 
 		@Override
 		public void afterReceiveCompletion(final Message<?> message, final MessageChannel channel, final Exception ex)
 		{
-			System.out.println("websocket - afterReceiveCompletion: " + message + ", channel=" + channel + ", ex=" + ex);
 			if (ex != null)
 			{
-				ex.printStackTrace();
+				logger.warn("Failed receiving: message={}, channel={}", message, channel, ex);
 			}
 		}
 
@@ -141,19 +134,19 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 
 	private static class WebSocketHandshakeInterceptor implements HandshakeInterceptor
 	{
+		private static final Logger logger = LogManager.getLogger(WebSocketConfig.WebSocketHandshakeInterceptor.class);
 
 		@Override
 		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
-			System.out.println("websocket server - before handshake: " + wsHandler);
+			logger.trace("before handshake: {}", wsHandler);
 			return true;
 		}
 
 		@Override
 		public void afterHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Exception exception)
 		{
-			System.out.println("websocket server - after handshake: " + wsHandler);
+			logger.trace("after handshake: {}", wsHandler);
 		}
-
 	}
 }

@@ -17,6 +17,7 @@ import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_T_Query_Selection;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
@@ -78,6 +79,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final String sqlTableName;
 	private final String sqlTableAlias;
 	private final String sqlKeyColumnName;
+	private final String sqlLinkColumnName;
 	private final String sqlParentLinkColumnName;
 
 	private final ICachedStringExpression sqlSelectAllFrom;
@@ -90,9 +92,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
 		super();
-		
-		this.documentsRepository = builder.getDocumentsRepository();
-		
+
+		documentsRepository = builder.getDocumentsRepository();
+
 		sqlTableName = builder.getTableName();
 		Check.assumeNotEmpty(sqlTableName, "sqlTableName is not empty");
 
@@ -101,6 +103,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		sqlKeyColumnName = builder.getKeyColumnName();
 
+		sqlLinkColumnName = builder.getSqlLinkColumnName();
 		sqlParentLinkColumnName = builder.getSqlParentLinkColumnName();
 
 		fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
@@ -123,6 +126,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.add("sqlTableName", sqlTableName)
 				.add("sqlTableAlias", sqlTableAlias)
 				.add("sqlKeyColumnName", sqlKeyColumnName)
+				.add("sqlLinkColumnName", sqlLinkColumnName)
 				.add("sqlParentLinkColumnName", sqlParentLinkColumnName)
 				.add("orderBys", orderBys)
 				.add("fields", fieldsByFieldName.isEmpty() ? null : fieldsByFieldName.values())
@@ -154,6 +158,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public String getKeyColumnName()
 	{
 		return sqlKeyColumnName;
+	}
+	
+	public String getLinkColumnName()
+	{
+		return sqlLinkColumnName;
 	}
 
 	public String getParentLinkColumnName()
@@ -264,6 +273,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private DocumentsRepository documentsRepository;
 		private String _sqlTableName;
 		private String _tableAlias;
+		private String _sqlLinkColumnName;
 		private String _sqlParentLinkColumnName;
 		private String _sqlWhereClause = null;
 		private IStringExpression _sqlWhereClauseExpression;
@@ -478,20 +488,19 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(GuavaCollectors.toImmutableList());
 		}
-		
+
 		public Builder setDocumentsRepository(final DocumentsRepository documentsRepository)
 		{
 			assertNotBuilt();
 			this.documentsRepository = documentsRepository;
 			return this;
 		}
-		
+
 		private DocumentsRepository getDocumentsRepository()
 		{
 			Check.assumeNotNull(documentsRepository, "Parameter documentsRepository is not null");
 			return documentsRepository;
 		}
-
 
 		public Builder setTableName(final String sqlTableName)
 		{
@@ -530,12 +539,27 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			return _tableAlias;
 		}
-
-		public Builder setParentLinkColumnName(final String sqlParentLinkColumnName)
+		
+		public Builder setChildToParentLinkColumnNames(final IPair<String, String> childToParentLinkColumnNames)
 		{
 			assertNotBuilt();
-			_sqlParentLinkColumnName = sqlParentLinkColumnName;
+			
+			if(childToParentLinkColumnNames != null)
+			{
+				_sqlLinkColumnName = childToParentLinkColumnNames.getLeft();
+				_sqlParentLinkColumnName = childToParentLinkColumnNames.getRight();
+			}
+			else
+			{
+				_sqlLinkColumnName = null;
+				_sqlParentLinkColumnName = null;
+			}
 			return this;
+		}
+
+		public String getSqlLinkColumnName()
+		{
+			return _sqlLinkColumnName;
 		}
 
 		public String getSqlParentLinkColumnName()

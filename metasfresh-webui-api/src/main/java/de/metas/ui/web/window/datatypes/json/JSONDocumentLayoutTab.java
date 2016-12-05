@@ -104,6 +104,10 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
+	
+	@JsonProperty("quickInput")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final JSONDocumentLayoutTabQuickInput quickInput;
 
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutDetailDescriptor detail //
@@ -119,7 +123,14 @@ public final class JSONDocumentLayoutTab implements Serializable
 		tabid = DetailId.toJson(detailId);
 
 		final String adLanguage = jsonOpts.getAD_Language();
-		caption = detail.getCaption(adLanguage);
+		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabid != null)
+		{
+			caption = "[" + tabid + "] " + detail.getCaption(adLanguage);
+		}
+		else
+		{
+			caption = detail.getCaption(adLanguage);
+		}
 		description = detail.getDescription(adLanguage);
 		emptyResultText = detail.getEmptyResultText(adLanguage);
 		emptyResultHint = detail.getEmptyResultHint(adLanguage);
@@ -127,6 +138,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
+		
+		this.quickInput = JSONDocumentLayoutTabQuickInput.of(detail.getQuickInput(), jsonOpts);
 	}
 
 	private JSONDocumentLayoutTab(
@@ -148,6 +161,8 @@ public final class JSONDocumentLayoutTab implements Serializable
 		elements = JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
+		
+		this.quickInput = null;
 	}
 
 	@JsonCreator
@@ -160,6 +175,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
+			, @JsonProperty("quickInput") final JSONDocumentLayoutTabQuickInput quickInput //
 	)
 	{
 		super();
@@ -173,6 +189,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
+		this.quickInput = quickInput;
 	}
 
 	@Override

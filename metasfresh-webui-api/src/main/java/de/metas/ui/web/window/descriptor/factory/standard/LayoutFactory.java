@@ -16,6 +16,7 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -27,8 +28,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -117,6 +118,17 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
 	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("AD_Window_ID", _adWindowId)
+				.add("AD_UI_Sections.count", getUISections().size())
+				.add("UIProvider", getUIProvider())
+				.toString();
+	}
 
 	private IWindowUIElementsProvider getUIProvider()
 	{
@@ -126,6 +138,15 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	private final List<I_AD_UI_Section> getUISections()
 	{
 		return _uiSections;
+	}
+
+	private final Stream<I_AD_UI_Element> streamAD_UI_Elements()
+	{
+		return getUISections()
+				.stream()
+				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
+				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
+				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream());
 	}
 
 	private int getAD_Window_ID()
@@ -385,26 +406,63 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 			return null;
 		}
 
-		final List<I_AD_UI_Section> uiSections = getUISections();
-		final Stream<Builder> layoutElements = uiSections.stream()
-				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
-				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
-				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
-				.filter(uiElement -> uiElement.isDisplayedGrid())
-				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
-				.map(uiElement -> layoutElement(uiElement).setGridElement())
-				.filter(uiElement -> uiElement != null);
-
 		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder()
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.addElements(layoutElements);
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 
+		//
+		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
+		{
+			streamAD_UI_Elements()
+					.filter(adUIElement -> adUIElement.isDisplayedGrid())
+					.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
+					.map(adUIElement -> layoutElement(adUIElement))
+					.filter(uiElement -> uiElement != null)
+					.peek(uiElement -> uiElement.setGridElement())
+					.forEach(layoutDetail::addElement);
+		}
+
+		//
+		// Fallback: when no elements were found: creating the view using the single row layout
+		if (!layoutDetail.hasElements())
+		{
+			logger.warn("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
+			streamAD_UI_Elements()
+					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
+					.map(adUIElement -> layoutElement(adUIElement))
+					.filter(uiElement -> uiElement != null)
+					.peek(uiElement -> uiElement.setGridElement())
+					.forEach(layoutDetail::addElement);
+		}
+
+		//
+		// Fallback:
+		if (!layoutDetail.hasElements())
+		{
+			logger.warn("No grid layout found for {}. Continuing", entityDescriptor);
+		}
+
+		//
+		// Make sure all added elements have the GridViewField characteristic
 		descriptorsFactory.addFieldsCharacteristic(layoutDetail.getFieldNames(), Characteristic.GridViewField);
+
+		//
+		// Quick input
+		layoutDetail.setQuickInput(layoutDetail_QuickInput());
+
 		return layoutDetail;
+	}
+
+	public DocumentLayoutDetailQuickInputDescriptor.Builder layoutDetail_QuickInput()
+	{
+		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInput = DocumentLayoutDetailQuickInputDescriptor.builder();
+
+		// TODO
+
+		return quickInput;
 	}
 
 	/**
@@ -426,11 +484,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 			return null;
 		}
 
-		final List<I_AD_UI_Section> uiSections = getUISections();
-		final Stream<Builder> layoutElements = uiSections.stream()
-				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
-				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
-				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
+		final Stream<DocumentLayoutElementDescriptor.Builder> layoutElements = streamAD_UI_Elements()
 				.filter(uiElement -> uiElement.isDisplayed())
 				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo))
 				.map(uiElement -> layoutElement(uiElement).setNotGridElement())
@@ -468,25 +522,42 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 	public final DocumentLayoutSideListDescriptor layoutSideList()
 	{
-		final List<I_AD_UI_Section> uiSections = getUISections();
-		logger.trace("Generating layout side list for {}", uiSections);
-
 		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder()
 				.setAD_Window_ID(getAD_Window_ID())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 
-		uiSections.stream()
-				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
-				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
-				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream())
+		//
+		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
+		streamAD_UI_Elements()
 				// .peek((uiElement)->System.out.println("UI ELEMENT: "+uiElement + ", SIDE="+uiElement.isDisplayed_SideList()))
 				.filter(uiElement -> uiElement.isDisplayed_SideList())
 				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
 				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
+		
+		//
+		// Fallback: when no elements were found: creating the view using the single row layout
+		{
+			logger.warn("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
+			streamAD_UI_Elements()
+					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
+					.map(adUIElement -> layoutElement(adUIElement))
+					.filter(uiElement -> uiElement != null)
+					.peek(uiElement -> uiElement.setGridElement())
+					.forEach(layoutSideListBuilder::addElement);
+		}
 
+		//
+		// Fallback:
+		if (!layoutSideListBuilder.hasElements())
+		{
+			logger.warn("No side list layout found for {}. Continuing", this);
+		}
+
+		//
+		// Make sure all added elements have the SideListField characteristic
 		descriptorsFactory.addFieldsCharacteristic(layoutSideListBuilder.getFieldNames(), Characteristic.SideListField);
 
 		return layoutSideListBuilder.build();

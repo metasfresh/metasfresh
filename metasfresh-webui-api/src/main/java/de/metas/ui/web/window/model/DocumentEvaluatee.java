@@ -246,7 +246,7 @@ public final class DocumentEvaluatee implements Evaluatee
 		{
 			if (documentField != null)
 			{
-				final Class<?> valueClass = documentField.getDescriptor().getValueClass();
+				final Class<?> valueClass = documentField.getValueClass();
 				if (StringLookupValue.class.equals(valueClass))
 				{
 					// corner case: e.g. Field: C_Order.IncotermLocation's DisplayLogic=@Incoterm@!''

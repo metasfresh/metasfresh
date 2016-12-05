@@ -147,6 +147,9 @@ public class ProcessInstancesRepository
 				.getDataBinding()
 				.getDocumentsRepository()
 				.retrieveDocumentById(parametersDescriptor, adPInstanceId);
+		
+		// TODO: handle the case when the process was already executed
+		// In that case we need to load the result and provide it to ProcessInstance constructor
 
 		return new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
 	}

@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model.sql;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.cache.Cache;
@@ -11,6 +10,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
@@ -67,7 +67,7 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 		final SqlDocumentViewSelection view = views.getIfPresent(viewId);
 		if (view == null)
 		{
-			throw new AdempiereException("No view found for viewId=" + viewId);
+			throw new EntityNotFoundException("No view found for viewId=" + viewId);
 		}
 		return view;
 	}

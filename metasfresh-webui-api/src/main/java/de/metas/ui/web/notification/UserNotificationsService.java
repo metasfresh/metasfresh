@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -37,6 +39,8 @@ import de.metas.event.IEventBusFactory;
 @Service
 public class UserNotificationsService
 {
+	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
+
 	@Autowired
 	private SimpMessagingTemplate websocketMessagingTemplate;
 
@@ -58,6 +62,8 @@ public class UserNotificationsService
 
 	public synchronized void enableForSession(final String sessionId, final int adUserId, final String adLanguage)
 	{
+		logger.trace("Enabling for sessionId={}, adUserId={}, adLanguage={}", sessionId, adUserId, adLanguage);
+		
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId,
 				theSessionId -> new UserNotificationsQueue(adUserId, adLanguage, websocketMessagingTemplate));
 		notificationsQueue.addActiveSessionId(sessionId);
@@ -92,18 +98,28 @@ public class UserNotificationsService
 
 	private void forwardEventToNotificationsQueues(final IEventBus eventBus, final Event event)
 	{
+		logger.trace("Got event from {}: {}", eventBus, event);
+		
 		final UserNotification notification = UserNotification.of(event);
 		if (event.isAllRecipients())
 		{
+			logger.trace("Sending event to ALL: {}", adUserId2notifications);
 			adUserId2notifications.forEachValue(100, notificationsQueue -> notificationsQueue.addNotification(notification.copy()));
 		}
 		else
 		{
-			event.getRecipientUserIds()
-					.stream()
-					.map(adUserId -> adUserId2notifications.get(adUserId))
-					.filter(notificationsQueue -> notificationsQueue != null)
-					.forEach(notificationsQueue -> notificationsQueue.addNotification(notification.copy()));
+			logger.trace("Sending event to event's recipients");
+			for (final int recipientUserId : event.getRecipientUserIds())
+			{
+				final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(recipientUserId);
+				if(notificationsQueue == null)
+				{
+					logger.trace("No notification queue was found for recipientUserId={}", recipientUserId);
+					continue;
+				}
+				
+				notificationsQueue.addNotification(notification.copy());
+			}
 		}
 	}
 

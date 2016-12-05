@@ -1,8 +1,9 @@
 package de.metas.ui.web.window.exceptions;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 
 /*
  * #%L
@@ -28,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @SuppressWarnings("serial")
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
-public class DocumentNotFoundException extends AdempiereException
+public class DocumentNotFoundException extends EntityNotFoundException
 {
 	public DocumentNotFoundException(final Object searchInfo)
 	{

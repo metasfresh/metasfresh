@@ -1,11 +1,15 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
+import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.GridTabVO;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import groovy.transform.Immutable;
 
@@ -80,6 +84,16 @@ public final class DetailId implements Serializable
 	public static final String toJson(final DetailId detailId)
 	{
 		return detailId == null ? null : String.valueOf(detailId.tabNo);
+	}
+	
+	public static final Set<String> toJson(final Collection<DetailId> detailIds)
+	{
+		if(detailIds == null || detailIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
+		return detailIds.stream().map(DetailId::toJson).collect(GuavaCollectors.toImmutableSet());
 	}
 
 	public static int getTabNo(final DetailId detailId)

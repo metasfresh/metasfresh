@@ -11,6 +11,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -62,6 +63,17 @@ public class UserNotificationsQueue
 		this.adLanguage = adLanguage;
 		this.websocketMessagingTemplate = websocketMessagingTemplate;
 		websocketEndpoint = WebSocketConfig.buildNotificationsTopicName(adUserId);
+		
+		logger.trace("Created notifications queue: {}", this); // keep it last
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("websocketEndpoint", websocketEndpoint)
+				.add("unread", unreadCount.get())
+				.toString();
 	}
 
 	public int getAD_User_ID()
@@ -77,6 +89,7 @@ public class UserNotificationsQueue
 	private final void fireEventOnWebsocket(final JSONNotificationEvent event)
 	{
 		websocketMessagingTemplate.convertAndSend(websocketEndpoint, event);
+		logger.trace("Fired notification to WS {}: {}", websocketEndpoint, event);
 	}
 
 	public UserNotificationsList getNotificationsAsList(final int limit)
@@ -84,14 +97,14 @@ public class UserNotificationsQueue
 		if (limit <= 0)
 		{
 			final List<UserNotification> notifications = ImmutableList.copyOf(this.notifications);
-			return UserNotificationsList.of(notifications, notifications.size());
+			return UserNotificationsList.of(notifications, notifications.size(), getUnreadCount());
 		}
 		else
 		{
 			final List<UserNotification> notifications = this.notifications.stream()
 					.limit(limit)
 					.collect(GuavaCollectors.toImmutableList());
-			return UserNotificationsList.of(notifications, this.notifications.size());
+			return UserNotificationsList.of(notifications, this.notifications.size(), getUnreadCount());
 		}
 	}
 
@@ -99,11 +112,13 @@ public class UserNotificationsQueue
 	{
 		Check.assumeNotNull(sessionId, "Parameter sessionId is not null");
 		activeSessions.add(sessionId);
+		logger.debug("Added sessionId '{}' to {}", sessionId, this);
 	}
 
 	public void removeActiveSessionId(final String sessionId)
 	{
 		activeSessions.remove(sessionId);
+		logger.debug("Removed sessionId '{}' to {}", sessionId, this);
 	}
 
 	public boolean hasActiveSessions()
@@ -121,7 +136,7 @@ public class UserNotificationsQueue
 		if (notificationOld != null)
 		{
 			// already added, shall not happen
-			logger.warn("Skip adding notification {} because it's ID is already present in {}", notification, id2notification);
+			logger.warn("Skip adding notification {} because it's ID is already present in {}", notification, this);
 			return;
 		}
 		notifications.addFirst(notification);
@@ -132,6 +147,8 @@ public class UserNotificationsQueue
 		{
 			unreadCount.incrementAndGet();
 		}
+
+		logger.trace("Added notification to {}: {}", this, notification); // NOTE: log after updating unreadCount
 
 		//
 		// Notify on websocket
@@ -144,7 +161,7 @@ public class UserNotificationsQueue
 		final UserNotification notification = id2notification.get(notificationId);
 		if (notification == null)
 		{
-			throw new IllegalArgumentException("Notification for id=" + notificationId + " not found");
+			throw new IllegalArgumentException("Notification for id=" + notificationId + " not found in " + this);
 		}
 
 		markAsRead(notification);
@@ -152,19 +169,29 @@ public class UserNotificationsQueue
 
 	public void markAllAsRead()
 	{
+		logger.trace("Marking all notifications as read (if any) for {}...", this);
 		id2notification.values().forEach(this::markAsRead);
 	}
 
 	private void markAsRead(final UserNotification notification)
 	{
 		final boolean alreadyRead = notification.setRead(true);
-
-		if (!alreadyRead)
+		if (alreadyRead)
 		{
-			unreadCount.decrementAndGet();
+			logger.trace("Skip marking notification as read because it's already read: {}", notification);
+			return;
 		}
 
-		fireEventOnWebsocket(JSONNotificationEvent.eventRead(notification.getId(), unreadCount.get()));
+		//
+		// Update unreadCount
+		unreadCount.decrementAndGet();
+
+		logger.trace("Marked notification as read on {}: {}", notification); // NOTE: log after updating unreadCount
+
+		//
+		// Notify on websocket
+		final JSONNotification jsonNotification = JSONNotification.of(notification, adLanguage);
+		fireEventOnWebsocket(JSONNotificationEvent.eventRead(jsonNotification, unreadCount.get()));
 	}
 
 	public int getUnreadCount()

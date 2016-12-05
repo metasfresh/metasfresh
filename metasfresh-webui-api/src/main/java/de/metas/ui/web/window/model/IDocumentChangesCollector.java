@@ -7,6 +7,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -61,6 +62,8 @@ public interface IDocumentChangesCollector
 	void collectDocumentValidStatusChanged(DocumentPath documentPath, DocumentValidStatus documentValidStatus);
 
 	void collectDocumentSaveStatusChanged(DocumentPath documentPath, DocumentSaveStatus documentSaveStatus);
+
+	void collectStaleDetailId(DocumentPath documentPath, DetailId detailId);
 
 	@FunctionalInterface
 	public interface ReasonSupplier

@@ -2,6 +2,8 @@ package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,6 +32,7 @@ import de.metas.ui.web.process.ProcessInstanceResult;
  */
 
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONProcessInstanceResult implements Serializable
 {
 	public static final JSONProcessInstanceResult of(final ProcessInstanceResult result)
@@ -47,12 +50,12 @@ public class JSONProcessInstanceResult implements Serializable
 	
 	//
 	// Report
+	@JsonProperty("reportFilename")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String reportFilename;
 	@JsonProperty("reportContentType")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String reportContentType;
-	@JsonProperty("reportData")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final byte[] reportData;
 
 	private JSONProcessInstanceResult(final ProcessInstanceResult result)
 	{
@@ -64,9 +67,8 @@ public class JSONProcessInstanceResult implements Serializable
 
 		//
 		// Report
+		reportFilename = result.getReportFilename();
 		reportContentType = result.getReportContentType();
-		final byte[] reportData = result.getReportData();
-		this.reportData = reportData == null || reportData.length == 0 ? null : reportData;
 	}
 	
 	public int getPinstanceId()
@@ -83,14 +85,14 @@ public class JSONProcessInstanceResult implements Serializable
 	{
 		return error;
 	}
+	
+	public String getReportFilename()
+	{
+		return reportFilename;
+	}
 
 	public String getReportContentType()
 	{
 		return reportContentType;
-	}
-
-	public byte[] getReportData()
-	{
-		return reportData;
 	}
 }

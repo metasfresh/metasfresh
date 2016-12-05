@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -16,6 +18,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
@@ -46,6 +50,7 @@ public final class DocumentChanges
 	private final Map<String, DocumentFieldChange> fieldChangesByName = new LinkedHashMap<>();
 	private DocumentValidStatus documentValidStatus = null;
 	private DocumentSaveStatus documentSaveStatus = null;
+	private final Set<DetailId> staleDetailIds = new HashSet<>();
 
 	/* package */ DocumentChanges(final DocumentPath documentPath)
 	{
@@ -64,8 +69,10 @@ public final class DocumentChanges
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("documentPath", documentPath)
-				.add("fields", fieldChangesByName)
+				.add("fields", fieldChangesByName.isEmpty() ? null : fieldChangesByName)
+				.add("staleDetailIds", staleDetailIds.isEmpty() ? null : staleDetailIds)
 				.toString();
 	}
 
@@ -78,7 +85,8 @@ public final class DocumentChanges
 	{
 		return fieldChangesByName.isEmpty()
 				&& documentValidStatus == null
-				&& documentSaveStatus == null;
+				&& documentSaveStatus == null
+				&& staleDetailIds.isEmpty();
 	}
 
 	private DocumentFieldChange fieldChangesOf(final IDocumentFieldView documentField)
@@ -90,7 +98,7 @@ public final class DocumentChanges
 		}
 
 		return fieldChangesByName.computeIfAbsent(documentField.getFieldName(), (fieldName) -> {
-			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey(), documentField.isPublicField(), documentField.isAdvancedField());
+			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey(), documentField.isPublicField(), documentField.isAdvancedField(), documentField.getWidgetType());
 			if (WindowConstants.isProtocolDebugging())
 			{
 				event.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, documentField.toString());
@@ -99,9 +107,9 @@ public final class DocumentChanges
 		});
 	}
 
-	private DocumentFieldChange fieldChangesOf(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
+	private DocumentFieldChange fieldChangesOf(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField, final DocumentFieldWidgetType widgetType)
 	{
-		return fieldChangesByName.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChange.of(newFieldName, key, publicField, advancedField));
+		return fieldChangesByName.computeIfAbsent(fieldName, (newFieldName) -> DocumentFieldChange.of(newFieldName, key, publicField, advancedField, widgetType));
 	}
 
 	public List<DocumentFieldChange> getFieldChangesList()
@@ -138,7 +146,7 @@ public final class DocumentChanges
 	{
 		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
-			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField());
+			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField(), fromFieldChange.getWidgetType());
 			toFieldChange.mergeFrom(fromFieldChange);
 		}
 
@@ -245,6 +253,17 @@ public final class DocumentChanges
 	public DocumentSaveStatus getDocumentSaveStatus()
 	{
 		return documentSaveStatus;
+	}
+	
+	/* package */void collectStaleDetailId(final DetailId detailId)
+	{
+		Check.assumeNotNull(detailId, "Parameter detailId is not null");
+		staleDetailIds.add(detailId);
+	}
+	
+	public Set<DetailId> getStaleDetailIds()
+	{
+		return ImmutableSet.copyOf(staleDetailIds);
 	}
 
 }

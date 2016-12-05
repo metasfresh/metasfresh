@@ -1,9 +1,12 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
 /*
  * #%L
@@ -31,42 +34,42 @@ public enum DocumentFieldWidgetType
 {
 	//
 	// Text
-	Text //
-	, LongText //
+	Text(LayoutAlign.Left, String.class) //
+	, LongText(LayoutAlign.Left, String.class) //
 
 	//
 	// Dates
-	, Date(LayoutAlign.Right) //
-	, Time(LayoutAlign.Right) //
-	, DateTime(LayoutAlign.Right) //
+	, Date(LayoutAlign.Right, java.util.Date.class) //
+	, Time(LayoutAlign.Right, java.util.Date.class) //
+	, DateTime(LayoutAlign.Right, java.util.Date.class) //
 
 	// Numbers, Amounts, Prices
-	, Integer(LayoutAlign.Right) //
-	, Number(LayoutAlign.Right) //
-	, Amount(LayoutAlign.Right) //
-	, Quantity(LayoutAlign.Right) //
-	, CostPrice(LayoutAlign.Right) //
+	, Integer(LayoutAlign.Right, Integer.class) //
+	, Number(LayoutAlign.Right, BigDecimal.class) //
+	, Amount(LayoutAlign.Right, BigDecimal.class) //
+	, Quantity(LayoutAlign.Right, BigDecimal.class) //
+	, CostPrice(LayoutAlign.Right, BigDecimal.class) //
 
 	//
 	// General Lookups
-	, List //
-	, Lookup //
+	, List(LayoutAlign.Left, null) //
+	, Lookup(LayoutAlign.Left, null) //
 
 	//
 	// Special lookups
-	, Address //
-	, ProductAttributes //
-	, Image //
+	, Address(LayoutAlign.Left, IntegerLookupValue.class) //
+	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class) //
+	, Image(LayoutAlign.Left, Integer.class) // TODO Image widgetType not yet supported
 
 	//
 	// Checkboxes
-	, YesNo(LayoutAlign.Center) //
-	, Switch(LayoutAlign.Center) //
+	, YesNo(LayoutAlign.Center, Boolean.class) //
+	, Switch(LayoutAlign.Center, Boolean.class) //
 
 	//
 	// Buttons
-	, Button //
-	, ActionButton //
+	, Button(LayoutAlign.Left, null) //
+	, ActionButton(LayoutAlign.Left, null) //
 
 	//
 	;
@@ -76,16 +79,12 @@ public enum DocumentFieldWidgetType
 	private static final Set<DocumentFieldWidgetType> TYPES_WithRageFilteringSupport = Sets.immutableEnumSet(Iterables.concat(TYPES_Date, TYPES_Numeric));
 
 	private final LayoutAlign gridAlign;
+	private final Class<?> valueClass;
 
-	private DocumentFieldWidgetType(final LayoutAlign gridAlign)
+	private DocumentFieldWidgetType(final LayoutAlign gridAlign, final Class<?> valueClass)
 	{
 		this.gridAlign = gridAlign;
-	}
-
-	/** Default constructor */
-	private DocumentFieldWidgetType()
-	{
-		gridAlign = LayoutAlign.Left;
+		this.valueClass = valueClass;
 	}
 
 	public LayoutAlign getGridAlign()
@@ -113,9 +112,34 @@ public enum DocumentFieldWidgetType
 	{
 		return TYPES_WithRageFilteringSupport.contains(this);
 	}
-	
+
 	public final boolean isDateOrTime()
 	{
 		return TYPES_Date.contains(this);
+	}
+
+	/**
+	 * Same as {@link #getValueClassOrNull()} but it will throw exception in case there is no valueClass.
+	 * 
+	 * @return value class
+	 */
+	public Class<?> getValueClass()
+	{
+		if (valueClass == null)
+		{
+			throw new IllegalStateException("valueClass is unknown for " + this);
+		}
+		return valueClass;
+	}
+
+	/**
+	 * Gets the standard value class to be used for this widget.
+	 * In case there are multiple value classes which can be used for this widget, the method will return null.
+	 * 
+	 * @return value class or <code>null</code>
+	 */
+	public Class<?> getValueClassOrNull()
+	{
+		return valueClass;
 	}
 }

@@ -79,8 +79,6 @@ public class Execution implements IAutoCloseable
 	{
 		Preconditions.checkNotNull(callable, "callable");
 
-		// TODO: implement a mechanism to restore documents to the state they were before running this commit, in case something fails
-
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -92,6 +90,7 @@ public class Execution implements IAutoCloseable
 		catch (Exception e)
 		{
 			error = true;
+			logger.info("Changes that will be discarded: {}", getCurrentDocumentChangesCollectorOrNull());
 			throw Throwables.propagate(e);
 		}
 		finally

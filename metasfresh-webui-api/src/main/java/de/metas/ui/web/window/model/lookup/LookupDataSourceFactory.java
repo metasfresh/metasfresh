@@ -56,7 +56,7 @@ public final class LookupDataSourceFactory
 	{
 		Check.assumeNotNull(lookupDescriptor, "Parameter lookupDescriptor is not null");
 		
-		final LookupDataSourceFetcher fetcher = GenericSqlLookupDataSourceFetcher.of(lookupDescriptor);
+		final LookupDataSourceFetcher fetcher = lookupDescriptor.getLookupDataSourceFetcher();
 
 		final LookupDataSource lookupDataSource;
 		if (!lookupDescriptor.isHighVolume() && !lookupDescriptor.hasParameters())

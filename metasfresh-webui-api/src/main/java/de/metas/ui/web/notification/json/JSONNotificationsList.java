@@ -51,6 +51,8 @@ public class JSONNotificationsList
 
 	@JsonProperty("totalCount")
 	private final int totalCount;
+	@JsonProperty("unreadCount")
+	private final int unreadCount;
 	@JsonProperty("notifications")
 	private final List<JSONNotification> notifications;
 
@@ -58,6 +60,7 @@ public class JSONNotificationsList
 	{
 		super();
 		totalCount = notifications.getTotalCount();
+		unreadCount = notifications.getTotalUnreadCount();
 		this.notifications = notifications.getNotifications()
 				.stream()
 				.map(notification -> JSONNotification.of(notification, adLanguage))
@@ -68,6 +71,7 @@ public class JSONNotificationsList
 	{
 		super();
 		totalCount = 0;
+		unreadCount = 0;
 		notifications = ImmutableList.of();
 	}
 
@@ -75,8 +79,20 @@ public class JSONNotificationsList
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("totalCount", totalCount)
+				.add("unreadCount", unreadCount)
 				.add("notifications", notifications)
 				.toString();
+	}
+	
+	public int getTotalCount()
+	{
+		return totalCount;
+	}
+	
+	public int getUnreadCount()
+	{
+		return unreadCount;
 	}
 
 	public List<JSONNotification> getNotifications()

@@ -44,9 +44,12 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
 
+	/**
+	 * @return all lookup values
+	 */
 	default LookupValuesList findEntities(final Evaluatee ctx)
 	{
-		return findEntities(ctx, DEFAULT_PageLength);
+		return findEntities(ctx, Integer.MAX_VALUE);
 	}
 
 	@Override

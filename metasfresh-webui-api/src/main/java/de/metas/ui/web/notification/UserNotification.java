@@ -1,12 +1,21 @@
 package de.metas.ui.web.notification;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
+import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.DisplayType;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.event.Event;
 
@@ -39,14 +48,55 @@ public class UserNotification
 		return new UserNotification(event);
 	}
 
+	public static final String EVENT_PARAM_Important = "important";
+
 	private final String id;
 	private final long timestamp;
 	private final boolean important;
 
 	private final String detailPlain;
 	private final String detailADMessage;
+	private final Map<String, Object> detailADMessageParams;
+	private final Map<String, String> adLanguage2message = new HashMap<>();
 
+	//
+	// Mutable: read flag
 	private final AtomicBoolean read;
+
+	//
+	// Target
+	public static enum TargetType
+	{
+		None("none"), Window("window");
+		
+		final private String jsonValue;
+
+		TargetType(final String jsonValue)
+		{
+			this.jsonValue = jsonValue;
+		}
+		
+		@JsonValue
+		public String getJsonValue()
+		{
+			return jsonValue;
+		}
+		
+		public static TargetType forJsonValue(final String jsonValue)
+		{
+			return Stream.of(values())
+					.filter(value -> Objects.equal(jsonValue, value.getJsonValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("Invalid jsonValue: " + jsonValue));
+		}
+	};
+
+	private final TargetType targetType;
+	//
+	// Target: Window/Document
+	private final int target_adWindowId;
+	private final String target_tableName;
+	private final int target_recordId;
 
 	private UserNotification(final Event event)
 	{
@@ -54,12 +104,34 @@ public class UserNotification
 
 		id = event.getId();
 		timestamp = System.currentTimeMillis(); // TODO: introduce Event.getTimestamp()
-		important = false;
+		important = DisplayType.toBoolean(event.getProperty(EVENT_PARAM_Important), false);
 
 		detailPlain = event.getDetailPlain();
 		detailADMessage = event.getDetailADMessage();
+		detailADMessageParams = ImmutableMap.copyOf(event.getProperties());
 
 		read = new AtomicBoolean(false);
+
+		//
+		// Target: window (from document record)
+		final ITableRecordReference targetRecord = event.getRecord();
+		if (targetRecord != null)
+		{
+			targetType = TargetType.Window;
+			final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecord);
+			target_adWindowId = recordWindowFinder.findAD_Window_ID();
+			target_tableName = recordWindowFinder.getTableName();
+			target_recordId = recordWindowFinder.getRecord_ID();
+		}
+		//
+		// Target: none
+		else
+		{
+			targetType = TargetType.None;
+			target_adWindowId = -1;
+			target_tableName = null;
+			target_recordId = -1;
+		}
 	}
 
 	private UserNotification(final UserNotification from)
@@ -72,8 +144,15 @@ public class UserNotification
 
 		detailPlain = from.detailPlain;
 		detailADMessage = from.detailADMessage;
+		detailADMessageParams = from.detailADMessageParams;
+		adLanguage2message.putAll(from.adLanguage2message);
 
 		read = new AtomicBoolean(from.read.get());
+
+		targetType = from.targetType;
+		target_adWindowId = from.target_adWindowId;
+		target_tableName = from.target_tableName;
+		target_recordId = from.target_recordId;
 	}
 
 	@Override
@@ -86,6 +165,12 @@ public class UserNotification
 				.add("timestamp", timestamp)
 				.add("important", important)
 				.add("read", read)
+				//
+				.add("targetType", targetType)
+				.add("target_AD_Window_ID", target_adWindowId)
+				.add("target_TableName", target_tableName)
+				.add("target_RecordId", target_recordId)
+				//
 				.toString();
 	}
 
@@ -101,8 +186,11 @@ public class UserNotification
 
 	public String getMessage(final String adLanguage)
 	{
-		// TODO: implement; see org.adempiere.ui.notifications.SwingEventNotifierFrame.toNotificationItem(Event)
+		return adLanguage2message.computeIfAbsent(adLanguage, this::buildMessage);
+	}
 
+	private final String buildMessage(final String adLanguage)
+	{
 		//
 		// Build detail message
 		final StringBuilder detailBuf = new StringBuilder();
@@ -119,13 +207,20 @@ public class UserNotification
 			final String detailTrl = Services.get(IMsgBL.class)
 					.getTranslatableMsgText(detailADMessage)
 					.translate(adLanguage);
-			if (!Check.isEmpty(detailTrl, true))
+
+			final String detailTrlParsed = UserNotificationDetailMessageFormat.newInstance()
+					.setLeftBrace("{").setRightBrace("}")
+					.setThrowExceptionIfKeyWasNotFound(false)
+					.setArguments(detailADMessageParams)
+					.format(detailTrl);
+
+			if (!Check.isEmpty(detailTrlParsed, true))
 			{
 				if (detailBuf.length() > 0)
 				{
 					detailBuf.append("\n");
 				}
-				detailBuf.append(detailTrl);
+				detailBuf.append(detailTrlParsed);
 			}
 		}
 
@@ -150,5 +245,28 @@ public class UserNotification
 	boolean setRead(final boolean read)
 	{
 		return this.read.getAndSet(read);
+	}
+
+	public TargetType getTargetType()
+	{
+		return targetType;
+	}
+
+	public String getTargetDocumentType()
+	{
+		if (target_adWindowId <= 0)
+		{
+			return null;
+		}
+		return String.valueOf(target_adWindowId);
+	}
+
+	public String getTargetDocumentId()
+	{
+		if (target_recordId < 0)
+		{
+			return null;
+		}
+		return String.valueOf(target_recordId);
 	}
 }

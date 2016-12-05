@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -37,7 +39,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
@@ -90,7 +92,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	private final Class<?> valueClass;
 
-	private final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
+	private final LookupDescriptorProvider lookupDescriptorProvider;
 
 	private final Optional<IExpression<?>> defaultValueExpression;
 	private final List<IDocumentFieldCallout> callouts;
@@ -108,8 +110,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocAction //
 		, SpecialField_DocumentSummary //
 		;
-		
-		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary); 
+
+		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary);
 	};
 
 	private final Set<Characteristic> characteristics;
@@ -160,7 +162,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("name", fieldName)
+				.add("fieldName", fieldName)
 				.add("detailId", detailId)
 				.add("widgetType", widgetType)
 				.add("characteristics", characteristics.isEmpty() ? null : characteristics)
@@ -215,9 +217,16 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
 	{
-		return lookupDescriptorProvider.apply(scope);
+		return lookupDescriptorProvider.provideForScope(scope);
 	}
 
+	public LookupSource getLookupSourceType()
+	{
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
+		return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+	}
+
+	@Nullable
 	public LookupDataSource createLookupDataSource(final LookupScope scope)
 	{
 		final LookupDescriptor lookupDescriptor = getLookupDescriptor(scope);
@@ -266,6 +275,13 @@ public final class DocumentFieldDescriptor implements Serializable
 	public Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
 	{
 		return dataBinding;
+	}
+
+	public <T extends DocumentFieldDataBindingDescriptor> T getDataBindingNotNull(final Class<T> bindingClass)
+	{
+		@SuppressWarnings("unchecked")
+		final T dataBindingCasted = (T)dataBinding.orElseThrow(() -> new IllegalStateException("No databinding defined for " + this));
+		return dataBindingCasted;
 	}
 
 	public DocumentFieldDependencyMap getDependencies()
@@ -372,6 +388,12 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)(Integer)((Number)value).intValue();
+					return valueConv;
+				}
+				else if (value instanceof LookupValue)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)((LookupValue)value).getIdAsInt();
 					return valueConv;
 				}
 			}
@@ -528,7 +550,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Class<?> valueClass;
 
 		// Lookup
-		private Function<LookupScope, LookupDescriptor> lookupDescriptorProvider = (scope) -> null;
+		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
 
 		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
@@ -598,6 +620,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setCaption(final String caption)
+		{
+			this.caption = ImmutableTranslatableString.constant(caption);
+			return this;
+		}
+
 		public ITranslatableString getCaption()
 		{
 			if (caption == null)
@@ -620,6 +648,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setDescription(final String description)
+		{
+			this.description = ImmutableTranslatableString.constant(description);
+			return this;
+		}
+
 		public ITranslatableString getDescription()
 		{
 			if (description == null)
@@ -632,7 +666,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		/* package */Builder setDetailId(final DetailId detailId)
 		{
 			assertNotBuilt();
-			this._detailId = detailId;
+			_detailId = detailId;
 			return this;
 		}
 
@@ -696,21 +730,33 @@ public final class DocumentFieldDescriptor implements Serializable
 			return widgetType;
 		}
 
-		public Builder setLookupDescriptorProvider(Function<LookupScope, LookupDescriptor> lookupDescriptorProvider)
+		public Builder setLookupDescriptorProvider(final LookupDescriptorProvider lookupDescriptorProvider)
 		{
 			Check.assumeNotNull(lookupDescriptorProvider, "Parameter lookupDescriptorProvider is not null");
 			this.lookupDescriptorProvider = lookupDescriptorProvider;
 			return this;
 		}
 
-		private Function<LookupScope, LookupDescriptor> getLookupDescriptorProvider()
+		public Builder setLookupDescriptorProvider(final LookupDescriptor lookupDescriptor)
+		{
+			setLookupDescriptorProvider(LookupDescriptorProvider.singleton(lookupDescriptor));
+			return this;
+		}
+
+		public Builder setLookupDescriptorProvider_None()
+		{
+			setLookupDescriptorProvider(LookupDescriptorProvider.NULL);
+			return this;
+		}
+
+		private LookupDescriptorProvider getLookupDescriptorProvider()
 		{
 			return lookupDescriptorProvider;
 		}
 
 		public LookupSource getLookupSourceType()
 		{
-			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 			return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 		}
 
@@ -746,7 +792,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return characteristics.contains(c);
 		}
-		
+
 		public Builder addCharacteristicIfTrue(final boolean test, final Characteristic c)
 		{
 			if (test)
@@ -756,10 +802,10 @@ public final class DocumentFieldDescriptor implements Serializable
 
 			return this;
 		}
-		
+
 		public boolean isSpecialField()
 		{
-			return !Collections.disjoint(this.characteristics, Characteristic.SPECIALFIELDS);
+			return !Collections.disjoint(characteristics, Characteristic.SPECIALFIELDS);
 		}
 
 		/* package */ void setEntityReadonlyLogic(final ILogicExpression entityReadonlyLogic)
@@ -776,6 +822,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
+			return this;
+		}
+
+		public Builder setReadonlyLogic(final boolean readonly)
+		{
+			setReadonlyLogic(ConstantLogicExpression.of(readonly));
 			return this;
 		}
 
@@ -894,6 +946,12 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder setDisplayLogic(final boolean display)
+		{
+			setDisplayLogic(ConstantLogicExpression.of(display));
+			return this;
+		}
+
 		public ILogicExpression getDisplayLogic()
 		{
 			return displayLogic;
@@ -922,6 +980,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			_mandatoryLogic = Preconditions.checkNotNull(mandatoryLogic);
+			return this;
+		}
+
+		public Builder setMandatoryLogic(final boolean mandatory)
+		{
+			setMandatoryLogic(ConstantLogicExpression.of(mandatory));
 			return this;
 		}
 
@@ -1013,7 +1077,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					.add(fieldName, getDisplayLogic().getParameters(), DependencyType.DisplayLogic)
 					.add(fieldName, getMandatoryLogicEffective().getParameters(), DependencyType.MandatoryLogic);
 
-			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().apply(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().provideForScope(LookupScope.DocumentField);
 			if (lookupDescriptor != null)
 			{
 				dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues);

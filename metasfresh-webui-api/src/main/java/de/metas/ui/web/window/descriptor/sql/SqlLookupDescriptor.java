@@ -2,7 +2,6 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -15,13 +14,11 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.util.Check;
-import org.adempiere.util.Functions;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.CtxName;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
@@ -31,7 +28,12 @@ import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
+import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.sql.DocActionValidationRule;
 import groovy.transform.Immutable;
 
@@ -65,30 +67,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return new Builder();
 	}
 
-	public static final SqlLookupDescriptor cast(final LookupDescriptor lookupDescriptor)
-	{
-		return (SqlLookupDescriptor)lookupDescriptor;
-	}
-
-	public static final SqlLookupDescriptor castOrNull(final LookupDescriptor lookupDescriptor)
-	{
-		if (lookupDescriptor instanceof SqlLookupDescriptor)
-		{
-			return (SqlLookupDescriptor)lookupDescriptor;
-		}
-		return null;
-	}
-
-	public static final CtxName SQL_PARAM_FilterSql = CtxName.parse("SqlFilter");
-	public static final CtxName SQL_PARAM_Offset = CtxName.parse("SqlOffset/0");
-	public static final CtxName SQL_PARAM_Limit = CtxName.parse("SqlLimit/1000");
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
 	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive/N");
-
-	public static final CtxName SQL_PARAM_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
 
 	private static final int WINDOWNO_Dummy = 99999;
 
@@ -103,6 +86,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	private final LookupSource lookupSourceType;
 
 	private final Set<String> dependsOnFieldNames;
+	
+	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
@@ -120,6 +105,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		lookupSourceType = builder.getLookupSourceType();
 
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
+		
+		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
 
 	@Override
@@ -180,6 +167,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				// lookupSourceType // not needed because it's computed
 		;
 	}
+	
+	@Override
+	public LookupDataSourceFetcher getLookupDataSourceFetcher()
+	{
+		return lookupDataSourceFetcher;
+	}
 
 	@Override
 	public boolean isNumericKey()
@@ -187,7 +180,6 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return numericKey;
 	}
 
-	@Override
 	public String getTableName()
 	{
 		return tableName;
@@ -271,12 +263,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			super();
 		}
 
-		public Function<LookupScope, LookupDescriptor> buildProvider()
+		public LookupDescriptorProvider buildProvider()
 		{
 			return buildProvider(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
 
-		private static Function<LookupScope, LookupDescriptor> buildProvider(
+		private static LookupDescriptorProvider buildProvider(
 				final String sqlColumnName //
 				, final int displayType //
 				, final int AD_Reference_Value_ID //
@@ -286,7 +278,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
-				return Functions.memoizing(scope -> SqlLookupDescriptor.builder()
+				return LookupDescriptorProvider.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
 						.setColumnName(sqlColumnName)
 						.setDisplayType(displayType)
 						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
@@ -294,7 +286,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 						.setScope(scope)
 						.build());
 			}
-			return scope -> null;
+			return LookupDescriptorProvider.NULL;
 		}
 
 		private SqlLookupDescriptor build()
@@ -392,7 +384,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 				// Filter's WHERE
 				sqlWhereFinal.appendIfNotEmpty("\n AND ");
-				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql);
+				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(LookupDataSourceContext.PARAM_FilterSql);
 			}
 
 			//
@@ -409,8 +401,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					.append(sqlSelectFrom) // SELECT ... FROM ...
 					.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
 					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(SQL_PARAM_Offset.toStringWithMarkers())
-					.append("\n LIMIT ").append(SQL_PARAM_Limit.toStringWithMarkers()) // LIMIT
+					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset.toStringWithMarkers())
+					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit.toStringWithMarkers()) // LIMIT
 					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 					.build();
 			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
@@ -452,7 +444,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 			// Filter's WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
-			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(SQL_PARAM_FilterSql); // #1
+			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(LookupDataSourceContext.PARAM_FilterSql); // #1
 
 			// IsActive WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
@@ -485,8 +477,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					.append(lookupInfo.getSelectSqlPart()) // SELECT .. FROM ...
 					.append("\n WHERE \n").append(sqlWhere) // WHERE
 					.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(SQL_PARAM_Offset) // OFFSET
-					.append("\n LIMIT ").append(SQL_PARAM_Limit) // LIMIT
+					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset) // OFFSET
+					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit) // LIMIT
 					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
 					.build();
 		}

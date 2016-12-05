@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,10 +16,13 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
@@ -53,9 +58,11 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final Document parentDocument;
 
-	private final Map<DocumentId, Document> documents = new LinkedHashMap<>();
-	private boolean stale;
-	private boolean fullyLoaded;
+	private final LinkedHashMap<DocumentId, Document> _documents;
+
+	// State
+	private boolean _fullyLoaded;
+	private final Set<DocumentId> _staleDocumentIds;
 
 	/* package */ IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
@@ -63,8 +70,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
 		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
 
-		stale = true;
-		fullyLoaded = false;
+		// State
+		_fullyLoaded = false;
+		_staleDocumentIds = new HashSet<>();
+
+		// Documents map
+		_documents = new LinkedHashMap<>();
 	}
 
 	/** copy constructor */
@@ -74,17 +85,22 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		parentDocument = Preconditions.checkNotNull(parentDocumentCopy);
 		entityDescriptor = from.entityDescriptor;
 
-		stale = from.stale;
-		fullyLoaded = from.fullyLoaded;
+		// State
+		_fullyLoaded = from._fullyLoaded;
+		_staleDocumentIds = new HashSet<>(from._staleDocumentIds);
 
-		// Copy documents map
-		for (final Map.Entry<DocumentId, Document> e : from.documents.entrySet())
-		{
-			final DocumentId includedDocumentId = e.getKey();
-			final Document includedDocumentOrig = e.getValue();
-			final Document includedDocumentCopy = includedDocumentOrig.copy(parentDocumentCopy, copyMode);
-			documents.put(includedDocumentId, includedDocumentCopy);
-		}
+		// Deep-copy documents map
+		this._documents = new LinkedHashMap<>(Maps.transformValues(from._documents, (includedDocumentOrig) -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
+	}
+
+	@Override
+	public String toString()
+	{
+		// NOTE: keep it short
+		return MoreObjects.toStringHelper(this)
+				.add("detailId", entityDescriptor.getDetailId())
+				.add("documentsCount", _documents.size())
+				.toString();
 	}
 
 	private final void assertWritable()
@@ -92,66 +108,143 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		parentDocument.assertWritable();
 	}
 
-	@Override
-	public String toString()
+	private final boolean isFullyLoaded()
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("detailId", entityDescriptor.getDetailId())
-				.add("documentsCount", documents.size())
-				.toString();
+		return _fullyLoaded;
 	}
 
-	public synchronized Document getDocumentById(final DocumentId id)
+	private final void markFullyLoaded()
 	{
-		if (id == null || id.isNew())
-		{
-			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + id + "'");
-		}
+		_fullyLoaded = true;
+	}
 
-		//
-		// Reset if staled
-		if (stale)
+	private final void markNotFullyLoaded()
+	{
+		_fullyLoaded = false;
+	}
+
+	private final boolean isStale()
+	{
+		return !_staleDocumentIds.isEmpty();
+	}
+
+	private final boolean isStale(DocumentId documentId)
+	{
+		return _staleDocumentIds.contains(documentId);
+	}
+
+	private final void markNotStale()
+	{
+		_staleDocumentIds.clear();
+	}
+
+	private final void markNotStale(final DocumentId documentId)
+	{
+		if (documentId == null)
 		{
-			clearDocumentsExceptNewOnes();
+			throw new NullPointerException("documentId cannot be null");
+		}
+		_staleDocumentIds.add(documentId);
+	}
+
+	public final void markStaleAll()
+	{
+		markNotFullyLoaded();
+		_staleDocumentIds.addAll(_documents.keySet());
+
+		Execution.getCurrentDocumentChangesCollectorOrNull()
+				.collectStaleDetailId(parentDocument.getDocumentPath(), getDetailId());
+	}
+
+	private DocumentsRepository getDocumentsRepository()
+	{
+		return entityDescriptor.getDataBinding().getDocumentsRepository();
+	}
+
+	public DetailId getDetailId()
+	{
+		return entityDescriptor.getDetailId();
+	}
+
+	public synchronized Document getDocumentById(final DocumentId documentId)
+	{
+		if (documentId == null || documentId.isNew())
+		{
+			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + documentId + "'");
 		}
 
 		//
 		// Check loaded collection
-		Document document = documents.get(id);
-		if (document != null)
+		Document documentExisting = _documents.get(documentId);
+		if (documentExisting != null)
 		{
-			return document;
+			if (isStale(documentId))
+			{
+				logger.trace("Found stale document with id '{}' in local documents. We need to reload it.");
+				getDocumentsRepository().refresh(documentExisting);
+				markNotStale(documentId);
+			}
+
+			return documentExisting;
 		}
 		else
 		{
 			if (logger.isTraceEnabled())
 			{
-				logger.trace("No document with id '{}' was found in local documents. \nAvailable IDs are: {}", id, documents.keySet());
+				logger.trace("No document with id '{}' was found in local documents. \nAvailable IDs are: {}", documentId, _documents.keySet());
 			}
 		}
 
 		//
 		// Load from underlying repository
-		document = loadById(id);
-
-		if (document == null)
+		// document = loadById(id);
+		final Document documentNew = DocumentQuery.builder(entityDescriptor)
+				.setRecordId(documentId)
+				.setParentDocument(parentDocument)
+				.retriveDocumentOrNull();
+		if (documentNew == null)
 		{
-			throw new DocumentNotFoundException("No document found for id=" + id + " in " + this + "."
+			throw new DocumentNotFoundException("No document found for id=" + documentId + " in " + this + "."
 					+ "\n Parent document: " + parentDocument
-					+ "\n Available document ids are: " + documents.keySet());
+					+ "\n Available document ids are: " + _documents.keySet());
 		}
 
-		return document;
+		//
+		// Put the document to our documents map
+		// and update the status
+		_documents.put(documentId, documentNew);
+		markNotStale(documentId);
+		// FullyLoaded: we just loaded and added a document to our collection
+		// => for sure this was/is not fully loaded
+		markNotFullyLoaded();
+
+		// Done
+		return documentNew;
 	}
 
 	public synchronized List<Document> getDocuments()
 	{
-		if (stale || !fullyLoaded)
+		return ImmutableList.copyOf(getInnerDocumentsFullyLoaded());
+	}
+
+	/**
+	 * @return inner documents as they are now (no refresh, internal writable collection)
+	 */
+	private final Collection<Document> getInnerDocuments()
+	{
+		return _documents.values();
+	}
+
+	/**
+	 * @return inner documents (internal writable collection). If the documents were not fully loaded, it will load them now.
+	 */
+	private final Collection<Document> getInnerDocumentsFullyLoaded()
+	{
+		if (isStale() || !isFullyLoaded())
 		{
 			loadAll();
 		}
-
-		return ImmutableList.copyOf(documents.values());
+		return _documents.values();
 	}
 
 	public synchronized Document createNewDocument()
@@ -163,7 +256,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		final Document document = documentsRepository.createNewDocument(entityDescriptor, parentDocument);
 
 		final DocumentId documentId = document.getDocumentId();
-		documents.put(documentId, document);
+		_documents.put(documentId, document);
 
 		return document;
 	}
@@ -176,7 +269,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 
 		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
-		if (allowCreateNewLogic.isConstantTrue())
+		if (allowCreateNewLogic.isConstantFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
 					+ "\n AllowCreateNewLogic: " + allowCreateNewLogic
@@ -212,62 +305,37 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 	}
 
-	private final void clearDocumentsExceptNewOnes()
-	{
-		logger.trace("Removing all documents, except the new ones from {}", this);
-
-		for (final Iterator<Document> it = documents.values().iterator(); it.hasNext();)
-		{
-			final Document document = it.next();
-
-			// Skip new documents
-			if (document.isNew())
-			{
-				continue;
-			}
-
-			it.remove();
-			logger.trace("Removed document: {}", document);
-		}
-
-		fullyLoaded = false;
-		stale = true;
-	}
-
-	private final Document loadById(final DocumentId id)
-	{
-		if (id == null || id.isNew())
-		{
-			throw new InvalidDocumentPathException("Actual ID was expected instead of '" + id + "'");
-		}
-
-		final Document document = DocumentQuery.builder(entityDescriptor)
-				.setRecordId(id.toInt())
-				.setParentDocument(parentDocument)
-				.retriveDocumentOrNull();
-		if (document == null)
-		{
-			return null;
-		}
-
-		final Document documentOld = documents.put(document.getDocumentId(), document);
-		stale = false;
-		if (documentOld == null)
-		{
-			// we just loaded and added a document to our collection => for sure this was/is not fully loaded
-			fullyLoaded = false;
-		}
-		return document;
-	}
-
 	private final void loadAll()
 	{
+		//
+		// Retrieve the documents from repository
 		final List<Document> documentsNew = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.retriveDocuments();
 
-		clearDocumentsExceptNewOnes();
+		final Map<DocumentId, Document> documents = _documents;
 
+		//
+		// Clear documents map, but keep the new ones because they were not pushed to repository
+		{
+			logger.trace("Removing all documents, except the new ones from {}", this);
+			for (final Iterator<Document> it = documents.values().iterator(); it.hasNext();)
+			{
+				final Document document = it.next();
+
+				// Skip new documents
+				if (document.isNew())
+				{
+					continue;
+				}
+
+				it.remove();
+				logger.trace("Removed document from internal map: {}", document);
+			}
+		}
+
+		//
+		// Put the new documents(from repository) into our documents map
 		for (final Document document : documentsNew)
 		{
 			final DocumentId documentId = document.getDocumentId();
@@ -278,8 +346,10 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 			}
 		}
 
-		stale = false;
-		fullyLoaded = true;
+		//
+		// Update status
+		markNotStale();
+		markFullyLoaded();
 	}
 
 	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
@@ -289,7 +359,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/* package */DocumentValidStatus checkAndGetValidStatus()
 	{
-		for (final Document document : documents.values())
+		for (final Document document : getInnerDocuments())
 		{
 			final DocumentValidStatus validState = document.checkAndGetValidStatus();
 			if (!validState.isValid())
@@ -304,7 +374,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/* package */boolean hasChangesRecursivelly()
 	{
-		for (final Document document : documents.values())
+		for (final Document document : getInnerDocuments())
 		{
 			if (document.hasChangesRecursivelly())
 			{
@@ -319,32 +389,36 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/* package */void saveIfHasChanges()
 	{
-		for (final Document document : documents.values())
+		for (final Document document : getInnerDocuments())
 		{
 			document.saveIfHasChanges();
+			// TODO: if saved and refreshed, we shall mark it as not stale !!!
 		}
 	}
 
-	public synchronized void deleteDocuments(final Set<DocumentId> rowIds)
+	public synchronized void deleteDocuments(final Set<DocumentId> documentIds)
 	{
-		if (rowIds == null || rowIds.isEmpty())
+		if (documentIds == null || documentIds.isEmpty())
 		{
 			throw new IllegalArgumentException("At least one rowId shall be specified when deleting included documents");
 		}
 
 		assertWritable();
 
-		for (final DocumentId rowId : rowIds)
+		for (final DocumentId documentId : documentIds)
 		{
-			final Document document = getDocumentById(rowId);
+			final Document document = getDocumentById(documentId);
 			assertDeleteDocumentAllowed(document);
 
+			// Delete it from underlying repository (if it's present there)
 			if (!document.isNew())
 			{
 				document.deleteFromRepository();
 			}
 
-			documents.remove(document.getDocumentId());
+			// Delete it from our documents map
+			_documents.remove(documentId);
+			markNotStale(documentId);
 		}
 	}
 
@@ -357,13 +431,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	private int getLastLineNo()
 	{
-		if (!fullyLoaded)
-		{
-			loadAll();
-		}
-
 		int maxLineNo = 0;
-		for (final Document document : documents.values())
+		for (final Document document : getInnerDocumentsFullyLoaded())
 		{
 			final IDocumentFieldView lineNoField = document.getFieldView(WindowConstants.FIELDNAME_Line);
 			final int lineNo = lineNoField.getValueAsInt(0);

@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
 /*
@@ -45,9 +46,9 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
  */
 public final class DocumentFieldChange
 {
-	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
+	/* package */static final DocumentFieldChange of(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField, final DocumentFieldWidgetType widgetType)
 	{
-		return new DocumentFieldChange(fieldName, key, publicField, advancedField);
+		return new DocumentFieldChange(fieldName, key, publicField, advancedField, widgetType);
 	}
 
 	private static final Logger logger = LogManager.getLogger(DocumentFieldChange.class);
@@ -60,6 +61,7 @@ public final class DocumentFieldChange
 	/** <code>true</code> if this field is public and will be published to API clients */
 	private final boolean publicField;
 	private final boolean advancedField;
+	private final DocumentFieldWidgetType widgetType;
 
 	//
 	private boolean valueSet;
@@ -80,13 +82,15 @@ public final class DocumentFieldChange
 
 	private Map<String, Object> debugProperties;
 
-	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField)
+
+	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField, final DocumentFieldWidgetType widgetType)
 	{
 		super();
 		this.fieldName = Preconditions.checkNotNull(fieldName, "fieldName shall not be null");
 		this.key = key;
 		this.publicField = publicField;
 		this.advancedField = advancedField;
+		this.widgetType = widgetType;
 	}
 
 	@Override
@@ -97,7 +101,8 @@ public final class DocumentFieldChange
 				.add("fieldName", fieldName)
 				.add("key", key ? Boolean.TRUE : null)
 				.add("privateField", !publicField ? Boolean.TRUE : null)
-				.add("advancedField", advancedField ? Boolean.TRUE : null);
+				.add("advancedField", advancedField ? Boolean.TRUE : null)
+				.add("widgetType", widgetType);
 		if (valueSet)
 		{
 			toStringBuilder.add("value", value == null ? "<NULL>" : value);
@@ -153,6 +158,11 @@ public final class DocumentFieldChange
 	public boolean isAdvancedField()
 	{
 		return advancedField;
+	}
+	
+	public DocumentFieldWidgetType getWidgetType()
+	{
+		return widgetType;
 	}
 
 	/* package */void setValue(final Object value, final ReasonSupplier reason)

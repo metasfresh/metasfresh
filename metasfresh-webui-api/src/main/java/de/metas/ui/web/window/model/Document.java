@@ -16,7 +16,6 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,6 +43,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
@@ -207,7 +207,7 @@ public final class Document
 
 		//
 		// Initialize field callout executor
-		fieldCalloutExecutor = entityDescriptor.createCalloutExecutor();
+		fieldCalloutExecutor = entityDescriptor.createFieldsCalloutExecutor();
 
 		_evaluatee = null; // lazy
 
@@ -300,7 +300,7 @@ public final class Document
 		//
 		// Initialize callout executor
 		documentCallout = from.documentCallout;
-		fieldCalloutExecutor = entityDescriptor.createCalloutExecutor();
+		fieldCalloutExecutor = entityDescriptor.createFieldsCalloutExecutor();
 
 		_evaluatee = null; // lazy
 
@@ -849,7 +849,21 @@ public final class Document
 		{
 			processDocAction();
 		}
+	}
 
+	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	{
+		for (final JSONDocumentChangedEvent event : events)
+		{
+			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
+			{
+				processValueChange(event.getPath(), event.getValue(), reason);
+			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown operation: " + event);
+			}
+		}
 	}
 
 	private void processDocAction()
@@ -888,10 +902,15 @@ public final class Document
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
 		final String expectedDocStatus = null; // N/A
 		Services.get(IDocActionBL.class).processEx(this, docAction, expectedDocStatus);
-
+		
 		//
 		// Refresh it
+		// and also mark all included documents as stale because it might be that processing add/removed/changed some data in included documents too
 		refreshFromRepository();
+		for (final IncludedDocumentsCollection includedDocumentsPerDetail : includedDocuments.values())
+		{
+			includedDocumentsPerDetail.markStaleAll();
+		}
 	}
 
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
@@ -935,7 +954,7 @@ public final class Document
 			}
 
 			// Skip button callouts because it's expected to execute those callouts ONLY when the button is pressed
-			final DocumentFieldWidgetType widgetType = documentField.getDescriptor().getWidgetType();
+			final DocumentFieldWidgetType widgetType = documentField.getWidgetType();
 			if (widgetType == DocumentFieldWidgetType.Button || widgetType == DocumentFieldWidgetType.ActionButton)
 			{
 				return null;
@@ -966,9 +985,7 @@ public final class Document
 
 	private final void updateFieldReadOnly(final IDocumentField documentField)
 	{
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
-		final ILogicExpression readonlyLogic = fieldDescriptor.getReadonlyLogic();
+		final ILogicExpression readonlyLogic = documentField.getDescriptor().getReadonlyLogic();
 		try
 		{
 			final LogicExpressionResult readonly = readonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
@@ -982,9 +999,7 @@ public final class Document
 
 	private final void updateFieldMandatory(final IDocumentField documentField)
 	{
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
-		final ILogicExpression mandatoryLogic = fieldDescriptor.getMandatoryLogic();
+		final ILogicExpression mandatoryLogic = documentField.getDescriptor().getMandatoryLogic();
 		try
 		{
 			final LogicExpressionResult mandatory = mandatoryLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
@@ -998,10 +1013,8 @@ public final class Document
 
 	private final void updateFieldDisplayed(final IDocumentField documentField)
 	{
-		final DocumentFieldDescriptor fieldDescriptor = documentField.getDescriptor();
-
 		LogicExpressionResult displayed = LogicExpressionResult.FALSE; // default false, i.e. not displayed
-		final ILogicExpression displayLogic = fieldDescriptor.getDisplayLogic();
+		final ILogicExpression displayLogic = documentField.getDescriptor().getDisplayLogic();
 		try
 		{
 			displayed = displayLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
@@ -1094,7 +1107,7 @@ public final class Document
 		{
 			field.updateValid();
 		}
-		
+
 		checkAndGetValidStatus();
 	}
 
@@ -1246,7 +1259,7 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
-	/* package */ DocumentValidStatus checkAndGetValidStatus()
+	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		//
 		// Check document fields
@@ -1430,13 +1443,19 @@ public final class Document
 		{
 			final Document document = new Document(this);
 
-			final ITabCallout documentCallout = Services.get(ITabCalloutFactory.class).createAndInitialize(document.asCalloutRecord());
+			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
 
 			//
 			// Initialize the fields
 			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
+				if (fieldInitializer != null)
+				{
+					// shall never happen
+					throw new IllegalStateException("fieldInitializer shall be null when " + FieldInitializationMode.NewDocument);
+				}
+
 				fieldInitializer = new InitialFieldValueSupplier(document, documentIdSupplier);
 			}
 

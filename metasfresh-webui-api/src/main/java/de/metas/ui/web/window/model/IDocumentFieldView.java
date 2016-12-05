@@ -4,6 +4,8 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
  * #%L
@@ -41,47 +43,44 @@ public interface IDocumentFieldView
 	//@formatter:off
 	DocumentFieldDescriptor getDescriptor();
 	DocumentPath getDocumentPath();
-	String getFieldName();
-	boolean isKey();
-	boolean isCalculated();
-	boolean isVirtualField();
+	default String getFieldName() { return getDescriptor().getFieldName(); }
+	default DocumentFieldWidgetType getWidgetType() { return getDescriptor().getWidgetType(); }
+	default boolean isKey() { return getDescriptor().isKey(); }
+	default boolean isCalculated() { return getDescriptor().isCalculated(); }
+	default boolean isVirtualField() { return getDescriptor().isVirtualField(); }
+	default boolean isParentLink() { return getDescriptor().isParentLink(); }
+	/** Checks if this field was changed until it was saved. i.e. compares {@link #getValue()} with {@link #getInitialValue()}. */
 	boolean hasChangesToSave();
 	//@formatter:on
 
 	//@formatter:off
-	boolean isReadonly();
 	LogicExpressionResult getReadonly();
+	default boolean isReadonly() { return getReadonly().booleanValue(); }
 	//
-	boolean isMandatory();
 	LogicExpressionResult getMandatory();
+	default boolean isMandatory() { return getMandatory().booleanValue(); }
 	//
-	boolean isDisplayed();
 	LogicExpressionResult getDisplayed();
+	default boolean isDisplayed() { return getDisplayed().booleanValue(); }
 	//
 	boolean isLookupValuesStale();
 	/** @return true if this field is public and will be published to API clients */
-	boolean isPublicField();
-	boolean isAdvancedField();
+	default boolean isPublicField() { return getDescriptor().hasCharacteristic(Characteristic.PublicField); }
+	default boolean isAdvancedField() { return getDescriptor().hasCharacteristic(Characteristic.AdvancedField); }
 	//@formatter:on
 
 	//@formatter:off
-	/**
-	 * @return field's current value
-	 */
+	default Class<?> getValueClass() { return getDescriptor().getValueClass(); }
+	/** @return field's current value */
 	Object getValue();
 	Object getValueAsJsonObject();
 	boolean getValueAsBoolean();
-	int getValueAsInt(final int defaultValue);
+	int getValueAsInt(final int defaultValueWhenNull);
 	<T> T getValueAs(final Class<T> returnType);
+	/** @return initial value / last saved value */
+	Object getInitialValue();
+	/** @return old value (i.e. the value as it was when the document was checked out from repository/documents collection) */
+	Object getOldValue();
 	//@formatter:on
 
-	/**
-	 * @return initial value / last saved value
-	 */
-	Object getInitialValue();
-
-	/**
-	 * @return old value (i.e. the value as it was when the document was checked out from repository/documents collection)
-	 */
-	Object getOldValue();
 }

@@ -3,8 +3,10 @@ package de.metas.ui.web.debug;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuTreeRepository;
+import de.metas.ui.web.notification.UserNotification;
+import de.metas.ui.web.notification.UserNotification.TargetType;
 import de.metas.ui.web.process.ProcessInstancesRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -31,6 +35,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 /*
  * #%L
@@ -151,6 +156,11 @@ public class DebugRestController
 			@RequestParam(name = "topicName", defaultValue = "de.metas.event.GeneralNotifications") final String topicName //
 			, @RequestParam(name = "message", defaultValue = "test message") final String message//
 			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
+			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
+	//
+	, @RequestParam(name = "targetType", required = false) final String targetTypeStr//
+	, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final int targetDocumentType//
+	, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
 	)
 	{
 		final Topic topic = Topic.builder()
@@ -160,15 +170,42 @@ public class DebugRestController
 
 		final Builder eventBuilder = Event.builder()
 				.setSummary("summary")
-				.setDetailPlain(message);
+				.setDetailPlain(message)
+				.putProperty(UserNotification.EVENT_PARAM_Important, important);
 		if (toUserId > 0)
 		{
 			eventBuilder.addRecipient_User_ID(toUserId);
 		}
+
+		final TargetType targetType = Check.isEmpty(targetTypeStr) ? null : TargetType.forJsonValue(targetTypeStr);
+		if (targetType == TargetType.Window)
+		{
+			final String targetTableName = documentCollection.getDocumentDescriptorFactory()
+					.getDocumentDescriptor(targetDocumentType)
+					.getEntityDescriptor()
+					.getTableName();
+
+			final TableRecordReference targetRecord = TableRecordReference.of(targetTableName, Integer.parseInt(targetDocumentId));
+			eventBuilder.setRecord(targetRecord);
+		}
+
 		final Event event = eventBuilder.build();
 
 		Services.get(IEventBusFactory.class)
 				.getEventBus(topic)
 				.postEvent(event);
 	}
+
+	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
+	public void setSqlLoadLimitWarn(@RequestBody final int limit)
+	{
+		SqlDocumentsRepository.instance.setLoadLimitWarn(limit);
+	}
+
+	@RequestMapping(value = "/sql/loadLimit/max", method = RequestMethod.PUT)
+	public void setSqlLoadLimitMax(@RequestBody final int limit)
+	{
+		SqlDocumentsRepository.instance.setLoadLimitMax(limit);
+	}
+
 }

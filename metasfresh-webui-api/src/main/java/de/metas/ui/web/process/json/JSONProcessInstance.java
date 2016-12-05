@@ -51,7 +51,7 @@ public class JSONProcessInstance implements Serializable
 		super();
 		pinstanceId = pinstance.getAD_PInstance_ID();
 
-		parameters = pinstance.getParameters().getFieldViews()
+		parameters = pinstance.getParameters()
 				.stream()
 				.map(JSONDocumentField::ofDocumentField)
 				.collect(GuavaCollectors.toImmutableList());

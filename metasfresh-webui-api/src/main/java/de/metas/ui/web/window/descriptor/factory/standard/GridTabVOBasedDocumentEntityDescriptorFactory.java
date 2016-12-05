@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -13,6 +12,8 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_C_Order;
@@ -28,7 +29,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -63,7 +64,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-	
+
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
 	private final Map<Integer, String> _adFieldId2columnName;
@@ -94,7 +95,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		_documentEntryBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx);
 
 		//
-		// HARDCODED: C_Order's DocumentSummary
+		// FIXME: HARDCODED: C_Order's DocumentSummary
 		if (rootEntity && I_C_Order.Table_Name.equals(_documentEntryBuilder.getTableName()))
 		{
 			// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
@@ -171,7 +172,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setDocumentsRepository(documentsRepository)
 				.setTableName(tableName)
 				.setTableAliasFromDetailId(detailId)
-				.setParentLinkColumnName(extractParentLinkColumnName(gridTabVO, parentTabVO))
+				.setChildToParentLinkColumnNames(extractChildParentLinkColumnNames(gridTabVO, parentTabVO))
 				.setSqlWhereClause(gridTabVO.getWhereClause());
 
 		final ILogicExpression allowInsert = ConstantLogicExpression.of(gridTabVO.isInsertRecord());
@@ -202,8 +203,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
 				//
-				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID())
-				;
+				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID());
 
 		//
 		// Fields descriptor
@@ -245,7 +245,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		final Class<?> valueClass;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
-		final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider;
+		final LookupDescriptorProvider lookupDescriptorProvider;
 		final LookupDescriptor lookupDescriptor;
 		final ILogicExpression readonlyLogic;
 
@@ -254,10 +254,10 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = Integer.class;
 			alwaysUpdateable = false;
-			
-			lookupDescriptorProvider = (scope) -> null;
+
+			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
 			lookupDescriptor = null;
-			
+
 			defaultValueExpression = Optional.empty();
 			readonlyLogic = ConstantLogicExpression.TRUE;
 		}
@@ -274,8 +274,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 					.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
 					.buildProvider();
 
-			lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
-			valueClass = DescriptorsFactoryHelper.getValueClass(displayType, lookupDescriptor);
+			lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
+			valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(
 					gridFieldVO.getDefaultValue() //
@@ -284,7 +284,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 					, valueClass //
 					, gridFieldVO.isMandatory() //
 			);
-			if(gridFieldVO.isReadOnly())
+			if (gridFieldVO.isReadOnly())
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
@@ -411,57 +411,50 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return fieldBuilder;
 	}
 
-	private static final String extractParentLinkColumnName(final GridTabVO tabVO, final GridTabVO parentTabVO)
+	/** @return a pair of "child link column name" - "parent link column name" */
+	private static final IPair<String, String> extractChildParentLinkColumnNames(final GridTabVO childTabVO, final GridTabVO parentTabVO)
 	{
 		// If this is the master tab then there is no parent link
-		// final GridTabVO parentTabVO = getParentGridTabVO();
 		if (parentTabVO == null)
 		{
 			return null;
 		}
 
-		// final GridTabVO tabVO = getGridTabVO();
-
 		//
-		// Get configured parent link if any
+		// Find parent's link column name
+		final int parentLinkColumnId = childTabVO.getParent_Column_ID();
+		String parentLinkColumnName = parentTabVO.getColumnNameByAD_Column_ID(parentLinkColumnId);
+		if(parentLinkColumnName == null)
 		{
-			final GridFieldVO parentLinkField = tabVO.getParentLinkField();
-			if (parentLinkField != null)
-			{
-				return parentLinkField.getColumnName();
-			}
+			parentLinkColumnName = parentTabVO.getKeyColumnName();
 		}
-		
-		//
-		// Try linking by the link field specified in child tab
-		if (tabVO.getAD_Column_ID() > 0 && tabVO.getParent_Column_ID() <= 0)
+		if(parentLinkColumnName == null)
 		{
-			final GridFieldVO linkField = tabVO.getFieldByAD_Column_ID(tabVO.getAD_Column_ID());
-			if(linkField != null)
-			{
-				final GridFieldVO parentLinkField = tabVO.getFieldByColumnName(linkField.getColumnName());
-				if (parentLinkField != null)
-				{
-					return parentLinkField.getColumnName();
-				}
-			}
+			return null;
 		}
 
 		//
-		// Try linking by parent's key field
+		// Find child's link column name and then return the pair
+		final Set<String> childLinkColumnNames = childTabVO.getLinkColumnNames();
+		if (childLinkColumnNames.isEmpty())
 		{
-			final GridFieldVO parentKeyField = parentTabVO.getKeyField();
-			if (parentKeyField != null)
-			{
-				final GridFieldVO parentLinkField = tabVO.getFieldByColumnName(parentKeyField.getColumnName());
-				if (parentLinkField != null)
-				{
-					return parentLinkField.getColumnName();
-				}
-			}
+			// No child link columns
+			return null;
 		}
-
-		return null;
+		else if (childLinkColumnNames.size() == 1)
+		{
+			final String childLinkColumnName = childLinkColumnNames.iterator().next();
+			return ImmutablePair.of(childLinkColumnName, parentLinkColumnName);
+		}
+		else if (childLinkColumnNames.contains(parentLinkColumnName))
+		{
+			final String childLinkColumnName = parentLinkColumnName;
+			return ImmutablePair.of(childLinkColumnName, parentLinkColumnName);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public void addFieldsCharacteristic(final Set<String> fieldNames, final Characteristic characteristic)
@@ -507,4 +500,21 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
 	}
 
+	
+	private DocumentEntityDescriptor createQuickInputEntityDescriptor_SalesOrder(DocumentEntityDescriptor.Builder documentDescriptor)
+	{
+		final DocumentEntityDescriptor.Builder quickInputDescriptor = DocumentEntityDescriptor.builder()
+				.setDocumentType(DocumentType.QuickInput, documentDescriptor.getDocumentTypeId())
+				.disableCallouts()
+				// Defaults:
+				.setDetailId(null)
+				.setAD_Tab_ID(0)
+				.setTableName(documentDescriptor.getTableName())
+				.setIsSOTrx(true)
+				//
+				;
+
+		// TODO: implement
+		throw new UnsupportedOperationException();
+	}
 }

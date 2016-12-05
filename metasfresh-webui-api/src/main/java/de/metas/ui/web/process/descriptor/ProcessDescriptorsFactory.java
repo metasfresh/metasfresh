@@ -2,7 +2,6 @@ package de.metas.ui.web.process.descriptor;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
@@ -37,7 +36,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -115,6 +114,7 @@ public class ProcessDescriptorsFactory
 				.setCaption(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName()))
 				.setDescription(adProcessTrlsMap.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription()))
 				.setDataBinding(ProcessParametersDataBindingDescriptorBuilder.instance)
+				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
 				.setAD_Tab_ID(0)
@@ -143,16 +143,16 @@ public class ProcessDescriptorsFactory
 	{
 		final IModelTranslationMap adProcessParaTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcessParam);
 
-		final Function<LookupScope, LookupDescriptor> lookupDescriptorProvider = SqlLookupDescriptor.builder()
+		final LookupDescriptorProvider lookupDescriptorProvider = SqlLookupDescriptor.builder()
 				.setColumnName(adProcessParam.getColumnName())
 				.setDisplayType(adProcessParam.getAD_Reference_ID())
 				.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
 				.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
 				.buildProvider();
-		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.apply(LookupScope.DocumentField);
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(adProcessParam.getAD_Reference_ID(), lookupDescriptor);
 		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(adProcessParam.getColumnName(), adProcessParam.getAD_Reference_ID());
+		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);

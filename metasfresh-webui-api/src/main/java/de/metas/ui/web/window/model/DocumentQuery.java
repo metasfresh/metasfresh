@@ -15,6 +15,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -99,9 +100,9 @@ public final class DocumentQuery
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("tableName", entityDescriptor.getTableName())
 				.add("recordId", recordId)
 				.add("parentDocument", parentDocument)
-				.add("entityDescriptor", entityDescriptor)
 				.add("filters", filters.isEmpty() ? null : filters)
 				.add("firstRow", firstRow > 0 ? firstRow : null)
 				.add("pageLength", pageLength > 0 ? pageLength : null)
@@ -263,6 +264,12 @@ public final class DocumentQuery
 		public Builder setRecordId(final int recordId)
 		{
 			this.recordId = recordId;
+			return this;
+		}
+
+		public Builder setRecordId(final DocumentId documentId)
+		{
+			this.recordId = documentId.toInt();
 			return this;
 		}
 
