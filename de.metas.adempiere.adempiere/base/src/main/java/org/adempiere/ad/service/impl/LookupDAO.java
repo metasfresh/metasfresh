@@ -50,7 +50,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_AD_Column;
@@ -69,6 +68,7 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
@@ -141,7 +141,6 @@ public class LookupDAO implements ILookupDAO
 		// * make sure all the fields are primitives or immutable.
 		// * when adding new fields, please change "equals" and "hashCode" methods too
 
-		@SuppressWarnings("unused")
 		private final String name; // used only for debugging
 		private final String tableName;
 		private final String keyColumn;
@@ -217,7 +216,22 @@ public class LookupDAO implements ILookupDAO
 		@Override
 		public String toString()
 		{
-			return ObjectUtils.toString(this);
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("name", name)
+					.add("tableName", tableName)
+					.add("keyColumn", keyColumn)
+					.add("displayColumn", displayColumn)
+					.add("displayColumnSQL", displayColumnSQL)
+					.add("valueDisplayed", valueDisplayed)
+					.add("whereClause", whereClause)
+					.add("orderByClause", orderByClause)
+					.add("translated", translated)
+					.add("zoomWindow", zoomWindow)
+					.add("zoomWindowPO", zoomWindowPO)
+					.add("overrideZoomWindow", overrideZoomWindow)
+					.add("autoComplete", autoComplete)
+					.toString();
 		}
 
 		@Override
@@ -267,6 +281,12 @@ public class LookupDAO implements ILookupDAO
 					.append(overrideZoomWindow, other.overrideZoomWindow)
 					.append(autoComplete, other.autoComplete)
 					.isEqual();
+		}
+		
+		@Override
+		public String getName()
+		{
+			return name;
 		}
 
 		@Override
