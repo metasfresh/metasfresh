@@ -26,6 +26,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
+import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -73,6 +74,10 @@ public class UserSession implements InitializingBean, Serializable
 	@Value("${metasfresh.webui.userSession.dashboardUrl:}")
 	private String dashboardUrl;
 
+	public static final String PARAM_DisableDeprecatedRestAPI = "metasfresh.webui.debug.DisableDeprecatedRestAPI";
+	@Value("${" + PARAM_DisableDeprecatedRestAPI + ":false}")
+	private boolean default_disableDeprecatedRestAPI;
+
 	public UserSession()
 	{
 		super();
@@ -116,6 +121,7 @@ public class UserSession implements InitializingBean, Serializable
 		//
 		// Set initial properties
 		properties.put(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, default_showColumnNamesForCaption);
+		properties.put(PARAM_DisableDeprecatedRestAPI, default_disableDeprecatedRestAPI);
 	}
 
 	private void writeObject(final java.io.ObjectOutputStream out) throws IOException
@@ -230,7 +236,7 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		return locale;
 	}
-	
+
 	public int getAD_User_ID()
 	{
 		return Env.getAD_User_ID(getCtx());
@@ -272,5 +278,14 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		final Boolean value = getProperty(name);
 		return value != null ? value : defaultValue;
+	}
+	
+	public void assertDeprecatedRestAPIAllowed()
+	{
+		final boolean disableDeprecatedRestAI = getPropertyAsBoolean(PARAM_DisableDeprecatedRestAPI, false);
+		if(disableDeprecatedRestAI)
+		{
+			throw new DeprecatedRestAPINotAllowedException();
+		}
 	}
 }

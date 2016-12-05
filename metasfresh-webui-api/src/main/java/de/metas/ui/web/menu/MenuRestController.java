@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
 import de.metas.ui.web.session.UserSession;
@@ -53,9 +52,6 @@ public class MenuRestController
 	private static final String PARAM_ChildrenLimit = "childrenLimit";
 
 	@Autowired
-	private LoginService loginService;
-
-	@Autowired
 	private UserSession userSession;
 
 	@Autowired
@@ -73,7 +69,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final MenuNode node = getMenuTree()
 				.getRootNode();
@@ -88,7 +84,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final MenuNode node = getMenuTree()
 				.getNodeById(nodeId);
@@ -102,7 +98,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final List<MenuNode> path = getMenuTree()
 				.getPath(nodeId);
@@ -117,7 +113,7 @@ public class MenuRestController
 			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final List<MenuNode> path = getMenuTree()
 				.getPath(jsonType.toMenuNodeType(), elementId);
@@ -134,7 +130,7 @@ public class MenuRestController
 			final boolean includeLeafsIfGroupAccepted //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final MenuNode rootFiltered = getMenuTree()
 				.filter(nameQuery, includeLeafsIfGroupAccepted);

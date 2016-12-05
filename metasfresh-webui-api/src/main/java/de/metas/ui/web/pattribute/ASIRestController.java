@@ -66,6 +66,14 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance", method = RequestMethod.POST)
+	@Deprecated
+	public JSONDocument createASIDocument_DEPRECATED(@RequestBody final JSONCreateASIRequest request)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return createASIDocument(request);
+	}
+
+	@RequestMapping(value = "/", method = RequestMethod.POST)
 	public JSONDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -77,6 +85,14 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance/{asiDocId}/layout", method = RequestMethod.GET)
+	@Deprecated
+	public JSONASILayout getLayout_DEPRECATED(@PathVariable("asiDocId") final int asiDocId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return getLayout(asiDocId);
+	}
+
+	@RequestMapping(value = "/{asiDocId}/layout", method = RequestMethod.GET)
 	public JSONASILayout getLayout(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();
@@ -86,7 +102,15 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance/{asiDocId}", method = RequestMethod.GET)
-	public JSONDocument getASI(@PathVariable("asiDocId") final int asiDocId)
+	@Deprecated
+	public JSONDocument getASIDocument_DEPRECATED(@PathVariable("asiDocId") final int asiDocId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return getASIDocument(asiDocId);
+	}
+
+	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.GET)
+	public JSONDocument getASIDocument(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();
 
@@ -95,6 +119,17 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance/{asiDocId}", method = RequestMethod.PATCH)
+	@Deprecated
+	public List<JSONDocument> processChanges_DEPRECATED(
+			@PathVariable("asiDocId") final int asiDocId //
+			, @RequestBody final List<JSONDocumentChangedEvent> events //
+	)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return processChanges(asiDocId, events);
+	}
+
+	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.PATCH)
 	public List<JSONDocument> processChanges(
 			@PathVariable("asiDocId") final int asiDocId //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
@@ -109,7 +144,19 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance/{asiDocId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
-	public JSONLookupValuesList typeahead(
+	@Deprecated
+	public JSONLookupValuesList getAttributeTypeahead_DEPRECATED(
+			@PathVariable("asiDocId") final int asiDocId //
+			, @PathVariable("attributeName") final String attributeName //
+			, @RequestParam(name = "query", required = true) final String query //
+	)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return getAttributeTypeahead(asiDocId, attributeName, query);
+	}
+
+	@RequestMapping(value = "/{asiDocId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
+	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable("asiDocId") final int asiDocId //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -123,7 +170,18 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance/{asiDocId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
-	public JSONLookupValuesList dropdown(
+	@Deprecated
+	public JSONLookupValuesList getAttributeDropdown_DEPRECATED(
+			@PathVariable("asiDocId") final int asiDocId //
+			, @PathVariable("attributeName") final String attributeName //
+	)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return getAttributeDropdown(asiDocId, attributeName);
+	}
+
+	@RequestMapping(value = "/{asiDocId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
+	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable("asiDocId") final int asiDocId //
 			, @PathVariable("attributeName") final String attributeName //
 	)
@@ -136,6 +194,14 @@ public class ASIRestController
 	}
 
 	@RequestMapping(value = "/instance/{asiDocId}/complete", method = RequestMethod.GET)
+	@Deprecated
+	public JSONLookupValue complete_DEPRECATED(@PathVariable("asiDocId") final int asiDocId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return complete(asiDocId);
+	}
+
+	@RequestMapping(value = "/{asiDocId}/complete", method = RequestMethod.GET)
 	public JSONLookupValue complete(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();

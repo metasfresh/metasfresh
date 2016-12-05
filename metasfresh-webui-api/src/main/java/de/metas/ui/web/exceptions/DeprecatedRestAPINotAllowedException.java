@@ -1,9 +1,8 @@
-package de.metas.ui.web.login;
+package de.metas.ui.web.exceptions;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import de.metas.ui.web.session.UserSession;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /*
  * #%L
@@ -27,14 +26,18 @@ import de.metas.ui.web.session.UserSession;
  * #L%
  */
 
-@Service
-public class LoginService
+/**
+ * Exception thrown when a deprecated REST API is called but this is not allowed.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@SuppressWarnings("serial")
+@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "You are using deprecated REST API, which is not allowed. Please check configuration.")
+public class DeprecatedRestAPINotAllowedException extends AdempiereException
 {
-	@Autowired
-	private UserSession userSession;
-
-	public void assertLoggedIn()
+	public DeprecatedRestAPINotAllowedException()
 	{
-		userSession.assertLoggedIn();
+		super();
 	}
 }

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
@@ -88,9 +87,6 @@ public class DocumentViewRestController
 	private static final String PARAM_FilterParameterName = "parameterName";
 
 	@Autowired
-	private LoginService loginService;
-
-	@Autowired
 	private UserSession userSession;
 
 	@Autowired
@@ -115,13 +111,12 @@ public class DocumentViewRestController
 	 * @param viewDataType
 	 */
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	public JSONDocumentLayoutTab layout(
+	public JSONDocumentLayoutTab getLayout(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 
@@ -159,7 +154,7 @@ public class DocumentViewRestController
 			, @RequestBody(required = false) final List<JSONDocumentFilter> jsonFilters //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory
 				.getDocumentDescriptor(adWindowId)
@@ -200,7 +195,7 @@ public class DocumentViewRestController
 	@RequestMapping(value = "/{" + PARAM_ViewId + "}", method = RequestMethod.DELETE)
 	public void deleteView(@PathVariable(PARAM_ViewId) final String viewId)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		documentViewsRepo.deleteView(viewId);
 	}
@@ -213,7 +208,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 
@@ -230,7 +225,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
 
@@ -251,7 +246,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_FilterParameterName, required = true) final String parameterName //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
 
@@ -271,7 +266,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 
