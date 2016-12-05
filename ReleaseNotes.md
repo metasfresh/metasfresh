@@ -27,6 +27,9 @@ this week's release
   * #567 WebUI - Material Receipt Schedule
 
 ## Fixes
+* metasfresh
+  * #664 R_Request Performance Issue
+  
 * webui
   * #67 Error when introducing parameters to report
   * #70 Add BPLocation Error
