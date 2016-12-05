@@ -143,9 +143,11 @@
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Version>${project.version}.${BUILD_NUMBER}</Implementation-Version>
+							<Implementation-Version>${project.version}</Implementation-Version>
 							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
 							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
+							<ciJobName>${JOB_NAME}</ciJobName>
+							<ciBuildUrl>${BUILD_URL}</ciBuildUrl>
 						</manifestEntries>
 					</archive>
 				</configuration>
