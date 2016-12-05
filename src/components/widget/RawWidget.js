@@ -86,7 +86,7 @@ class RawWidget extends Component {
                             (align ? "text-xs-" + align + " " : "") +
                             (type === "primary" ? "input-primary " : "input-secondary ") +
                             (updated ? "pulse-on " : "pulse-off ") +
-                            (rowId ? "input-table " : "")
+                            (rowId && !isModal ? "input-table " : "")
                         }>
                             <DatePicker
                                 timeFormat={false}
@@ -111,7 +111,7 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        (((rowId && !isModal)) ? "input-table " : "")
                     }>
                         <DatePicker
                             timeFormat={true}
@@ -132,7 +132,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <DatePicker
                             timeFormat={true}
@@ -202,7 +202,7 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <input
                             type="text"
@@ -226,7 +226,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <textarea
                             className="input-field js-input-field"
@@ -248,7 +248,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -272,7 +272,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -294,7 +294,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -318,7 +318,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -342,7 +342,7 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        (rowId ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -438,13 +438,13 @@ class RawWidget extends Component {
     render() {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, gridAlign, updated
+            widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal
         } = this.props;
 
         return (
             <div className={
                 "form-group row " +
-                (rowId ? "form-group-table " : " ")
+                ((rowId && !isModal) ? "form-group-table " : " ")
             }>
                 {!noLabel &&
                     <div

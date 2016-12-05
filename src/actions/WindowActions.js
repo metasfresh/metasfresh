@@ -387,7 +387,7 @@ function parseToDisplay(arr) {
 function parseDateToReadable(arr) {
     const dateParse = ['Date', 'DateTime', 'Time'];
     return arr.map(item =>
-        (dateParse.indexOf(item.widgetType) > -1) ?
+        (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
         Object.assign({}, item, { value: item.value ? new Date(item.value) : "" }) :
         item
     )

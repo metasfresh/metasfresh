@@ -46,7 +46,11 @@ class RawList extends Component {
     }
 
     render() {
-        const {list, rank, readonly, defaultValue, selected, align, updated, loading, rowId} = this.props;
+        const {
+            list, rank, readonly, defaultValue, selected, align, updated, loading,
+            rowId, isModal
+        } = this.props;
+        
         return (
             <div
                 tabIndex="0"
@@ -54,8 +58,8 @@ class RawList extends Component {
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
                 className={
-                    "input-dropdown-container" +
-                    (rowId ? "input-table " : "")
+                    "input-dropdown-container " +
+                    ((rowId && !isModal) ? "input-table " : "")
                 }
             >
                 <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary") + (updated ? " pulse" : "")}>

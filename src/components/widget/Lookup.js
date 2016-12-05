@@ -347,7 +347,7 @@ class Lookup extends Component {
                 className={
                     "input-dropdown-container " +
                     (rowId ? "input-dropdown-container-static " : "") +
-                    (rowId ? "input-table " : "")
+                    ((rowId && !isModal)? "input-table " : "")
                 }
             >
                 <div className={
