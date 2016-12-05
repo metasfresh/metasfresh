@@ -10,9 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.46.45 (2016-49)
+# metasfresh 4.47.45 (2016-49)
 
 this week's release
+
+## Features 
+* metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+
 
 # metasfresh 4.46.45 (2016-48)
 
