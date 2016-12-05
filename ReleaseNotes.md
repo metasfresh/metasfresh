@@ -10,6 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.47.45 (2016-49)
+
+this week's release
+
+## Features 
+* metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
+
 # metasfresh 4.46.45 (2016-48)
 
 ## Features 
