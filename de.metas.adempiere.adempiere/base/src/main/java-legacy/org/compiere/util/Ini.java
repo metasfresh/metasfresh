@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
@@ -387,7 +388,7 @@ public final class Ini implements Serializable
 		//
 		String tempDir = System.getProperty("java.io.tmpdir");
 		if (tempDir == null || tempDir.length() <= 1)
-			tempDir = getAdempiereHome();
+			tempDir = getMetasfreshHome();
 		if (tempDir == null)
 			tempDir = "";
 		checkProperty(P_TEMP_DIR, tempDir);
@@ -477,7 +478,7 @@ public final class Ini implements Serializable
 			return System.getenv("PropertyFile");
 		}
 
-		String propertyFileName = getAdempiereHome();
+		String propertyFileName = getMetasfreshHome();
 		if (!propertyFileName.endsWith(File.separator))
 		{
 			propertyFileName += File.separator;
@@ -631,13 +632,14 @@ public final class Ini implements Serializable
 
 	/*************************************************************************/
 
-	/** System environment prefix */
-	public static final String ENV_PREFIX = "env.";
-
-	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
-	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
-
 	public static final String METASFRESH_HOME = "METASFRESH_HOME";
+	
+	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
+	@Deprecated
+	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
+	
+	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
+	
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -724,57 +726,84 @@ public final class Ini implements Serializable
 	}   // isLoaded
 
 	/**
-	 * Get Adempiere Home from Environment
+	 * Get Metasfresh home directory.
 	 *
-	 * @return Adempiere home directory; never returns <code>null</code>
+	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
+		return METASFRESH_HOME_Supplier.get();
+	}
+	
+	/**
+	 * Finds {@link #METASFRESH_HOME}.
+	 * 
+	 * @return Metasfresh home directory; never returns <code>null</code>
+	 */
+	private static String findMetasfreshHome()
+	{
+		// Try getting the METASFRESH_HOME from JRE defined properties (i.e. via -DMETASFRESH_HOME=....)
+		{
+			final String env = System.getProperty(METASFRESH_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from system properties variable {})", metasfreshHome, METASFRESH_HOME);
+				return metasfreshHome;
+			}
+		}
+		
 		// Try getting the METASFRESH_HOME from environment
-		String env = System.getenv(METASFRESH_HOME);
-		if (!Check.isEmpty(env, true))
 		{
-			return env.trim();
+			final String env = System.getenv(METASFRESH_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
-		// Try getting the ADEMPIERE_HOME from environment
-		env = System.getenv(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env, true))
+		// Legacy: Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
 		{
-			return env.trim();
+			final String env = System.getProperty(ADEMPIERE_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from system property variable {})", metasfreshHome, ADEMPIERE_HOME);
+				log.warn("Property variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
-		// Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
-		env = System.getProperty(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env))
+		// Legacy: Try getting the ADEMPIERE_HOME from environment
 		{
-			return env;
+			final String env = System.getenv(ADEMPIERE_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, ADEMPIERE_HOME);
+				log.warn("System environment variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
 		if (isClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
-			env = userHomeDir + File.separator + ".metasfresh";
-			return env;
+			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";
+			log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
+			return metasfreshHome;
 		}
 
 		// Fallback
-		if (env == null)
-			env = File.separator + "metasfresh";
-		return env;
-	}   // getAdempiereHome
-
-	/**
-	 * Set Adempiere Home
-	 *
-	 * @param AdempiereHome ADEMPIERE_HOME
-	 */
-	public static void setAdempiereHome(String AdempiereHome)
-	{
-		if (AdempiereHome != null && AdempiereHome.length() > 0)
-			System.setProperty(ADEMPIERE_HOME, AdempiereHome);
-	}   // setAdempiereHome
+		{
+			final String metasfreshHome = File.separator + "metasfresh";
+			log.info("Found METASFRESH_HOME: {} (fallback)", metasfreshHome);
+			return metasfreshHome;
+		}
+	}
 
 	/**************************************************************************
 	 * Get Window Dimension

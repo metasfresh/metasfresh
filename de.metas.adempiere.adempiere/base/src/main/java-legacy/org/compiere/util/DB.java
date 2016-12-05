@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -211,80 +208,6 @@ public final class DB
 		system.setIsJustMigrated(false);
 		return system.save();
 	}	// afterMigration
-
-	/**
-	 * Update Mail Settings for System Client and System User
-	 */
-	public static void updateMail()
-	{
-		// Get Property File
-		String envName = Ini.getAdempiereHome();
-		if (envName == null)
-			return;
-		envName += File.separator + "AdempiereEnv.properties";
-		File envFile = new File(envName);
-		if (!envFile.exists())
-			return;
-
-		Properties env = new Properties();
-		try
-		{
-			FileInputStream in = new FileInputStream(envFile);
-			env.load(in);
-			in.close();
-		}
-		catch (Exception e)
-		{
-			return;
-		}
-		String updated = env.getProperty("ADEMPIERE_MAIL_UPDATED");
-		if (updated != null && updated.equals("Y"))
-			return;
-
-		// See org.compiere.install.ConfigurationData
-		String server = env.getProperty("ADEMPIERE_MAIL_SERVER");
-		if (server == null || server.length() == 0)
-			return;
-		String adminEMail = env.getProperty("ADEMPIERE_ADMIN_EMAIL");
-		if (adminEMail == null || adminEMail.length() == 0)
-			return;
-		String mailUser = env.getProperty("ADEMPIERE_MAIL_USER");
-		if (mailUser == null || mailUser.length() == 0)
-			return;
-		String mailPassword = env.getProperty("ADEMPIERE_MAIL_PASSWORD");
-		// if (mailPassword == null || mailPassword.length() == 0)
-		// return;
-		//
-		StringBuffer sql = new StringBuffer("UPDATE AD_Client SET")
-				.append(" SMTPHost=").append(DB.TO_STRING(server))
-				.append(", RequestEMail=").append(DB.TO_STRING(adminEMail))
-				.append(", RequestUser=").append(DB.TO_STRING(mailUser))
-				.append(", RequestUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(", IsSMTPAuthorization='Y' WHERE AD_Client_ID=0");
-		int no = DB.executeUpdate(sql.toString(), null);
-		log.debug("Client #" + no);
-		//
-		sql = new StringBuffer("UPDATE AD_User SET ")
-				.append(" EMail=").append(DB.TO_STRING(adminEMail))
-				.append(", EMailUser=").append(DB.TO_STRING(mailUser))
-				.append(", EMailUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(" WHERE AD_User_ID IN (0,100)");
-		no = DB.executeUpdate(sql.toString(), null);
-		log.debug("User #" + no);
-		//
-		try
-		{
-			env.setProperty("ADEMPIERE_MAIL_UPDATED", "Y");
-			FileOutputStream out = new FileOutputStream(envFile);
-			env.store(out, "");
-			out.flush();
-			out.close();
-		}
-		catch (Exception e)
-		{
-		}
-
-	}	// updateMail
 
 	/**************************************************************************
 	 * Set connection.

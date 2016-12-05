@@ -10,16 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.47.45 (2016-49)
+# metasfresh 4.47.46 (2016-49)
 
 this week's release
 
 ## Features 
 * metasfresh
   * #658 make Ini more robust: throw ex if file can't be read
+  * #585 Adjust the remaining Property names
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
+  * #59 User friendly URL for Print Endpoint
+  * #45 Dashboard Target area backend support
+  * #567 WebUI - Material Receipt Schedule
+
+## Fixes
+* webui
+  * #67 Error when introducing parameters to report
+  * #70 Add BPLocation Error
 
 # metasfresh 4.46.45 (2016-48)
 
