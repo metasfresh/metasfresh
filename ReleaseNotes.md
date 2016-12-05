@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.47.45 (2016-49)
+# metasfresh 4.47.46 (2016-49)
 
 this week's release
 
@@ -21,6 +21,8 @@ this week's release
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
   * #59 User friendly URL for Print Endpoint
+  * #45 Dashboard Target area backend support
+  * #567 WebUI - Material Receipt Schedule
 
 ## Fixes
 * webui
