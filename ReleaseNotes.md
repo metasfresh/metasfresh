@@ -10,6 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.46.45 (2016-49)
+
+this week's release
+
 # metasfresh 4.46.45 (2016-48)
 
 ## Features 
