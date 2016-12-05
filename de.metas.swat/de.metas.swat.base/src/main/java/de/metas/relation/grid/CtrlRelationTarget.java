@@ -29,12 +29,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
-import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelationType;
 import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.MRefTable;
 import org.compiere.model.MReference;
+import org.compiere.model.MRelationType;
 import org.compiere.model.MTable;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.util.Env;

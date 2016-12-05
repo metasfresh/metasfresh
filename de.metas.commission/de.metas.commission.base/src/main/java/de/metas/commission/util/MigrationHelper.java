@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelationType;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
@@ -38,6 +37,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrg;
+import org.compiere.model.MRelationType;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_SysConfig;

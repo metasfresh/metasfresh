@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package org.compiere.model;
 
 /*
  * #%L
@@ -28,8 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
+import org.compiere.model.X_AD_Relation_Explicit_v1;
 
 public class MRelationExplicitv1 extends X_AD_Relation_Explicit_v1
 {

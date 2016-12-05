@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.adempiere.model;
+package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -81,7 +81,7 @@ public interface I_AD_Relation
 	/** Get Relation Type	  */
 	public int getAD_RelationType_ID();
 
-	public org.adempiere.model.I_AD_RelationType getAD_RelationType() throws RuntimeException;
+	public org.compiere.model.I_AD_RelationType getAD_RelationType() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";

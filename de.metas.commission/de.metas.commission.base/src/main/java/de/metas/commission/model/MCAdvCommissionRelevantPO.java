@@ -173,7 +173,7 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 	}
 
 	/**
-	 * Very similar to {@link org.adempiere.model.MRelationType#whereClauseMatches}, but doesn't parse the where clause.
+	 * Very similar to {@link org.compiere.model.MRelationType#whereClauseMatches}, but doesn't parse the where clause.
 	 * 
 	 * @param po
 	 * @param where

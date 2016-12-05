@@ -66,7 +66,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;

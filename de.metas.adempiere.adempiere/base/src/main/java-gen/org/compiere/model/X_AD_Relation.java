@@ -15,7 +15,7 @@
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
-package org.adempiere.model;
+package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -91,9 +91,9 @@ public class X_AD_Relation extends PO implements I_AD_Relation, I_Persistent
 		return ii.intValue();
 	}
 
-	public org.adempiere.model.I_AD_RelationType getAD_RelationType() throws RuntimeException
+	public org.compiere.model.I_AD_RelationType getAD_RelationType() throws RuntimeException
     {
-		return (org.adempiere.model.I_AD_RelationType)MTable.get(getCtx(), org.adempiere.model.I_AD_RelationType.Table_Name)
+		return (org.compiere.model.I_AD_RelationType)MTable.get(getCtx(), org.compiere.model.I_AD_RelationType.Table_Name)
 			.getPO(getAD_RelationType_ID(), get_TrxName());	}
 
 	/** Set Relation Type.

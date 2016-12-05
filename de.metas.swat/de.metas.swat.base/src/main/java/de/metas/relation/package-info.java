@@ -1,6 +1,6 @@
 /**
  * Contains rather advanced stuff that builds upon "relations"
- * @See {@link org.adempiere.model.MRelationType}
+ * @See {@link org.compiere.model.MRelationType}
  * @See {@link org.adempiere.model.ZoomInfoFactory}
  */
 package de.metas.relation;

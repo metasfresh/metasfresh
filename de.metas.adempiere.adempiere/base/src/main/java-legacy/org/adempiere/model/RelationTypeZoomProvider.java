@@ -20,6 +20,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
+import org.compiere.model.MRelation;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;

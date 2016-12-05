@@ -11,13 +11,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
-package org.adempiere.model;
+package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_RelationType;
+import org.compiere.model.X_AD_RelationType;
 
 /**
  * Formal definition for a set of data record pairs

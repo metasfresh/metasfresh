@@ -25,9 +25,7 @@ package de.metas.ordercandidate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelationType;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -37,8 +35,10 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.MQuery;
+import org.compiere.model.MRelationType;
 import org.compiere.model.MSchedulerPara;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.Env;

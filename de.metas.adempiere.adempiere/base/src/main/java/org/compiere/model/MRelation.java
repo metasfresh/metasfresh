@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -11,11 +11,16 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.MRelationExplicitv1.SourceOrTarget;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.RelationTypeZoomProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Relation;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
+import org.compiere.model.X_AD_Relation;
+import org.compiere.model.MRelationExplicitv1.SourceOrTarget;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;

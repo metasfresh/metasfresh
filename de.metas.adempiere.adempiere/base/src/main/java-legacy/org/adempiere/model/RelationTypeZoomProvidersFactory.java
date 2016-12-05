@@ -18,6 +18,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.Check;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.CCache;
