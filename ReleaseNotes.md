@@ -18,6 +18,7 @@ this week's release
 * metasfresh
   * #658 make Ini more robust: throw ex if file can't be read
   * #585 Adjust the remaining Property names
+  * #661 Cultivation Planning report adjustments
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
