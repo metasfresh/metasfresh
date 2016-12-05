@@ -3,6 +3,7 @@ package de.metas.elasticsearch.impl;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
@@ -47,12 +48,25 @@ public class ESSystem implements IESSystem
 	@VisibleForTesting
 	public static final String ESServer_Classname = "de.metas.elasticsearch.ESServer";
 
+	private static final String SYSCONFIG_Enabled = "de.metas.elasticsearch.Enabled";
+	private static final boolean SYSCONFIG_Enabled_Default = true;
+
 	@Override
 	public boolean isEnabled()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
 			return false;
+		}
+
+		//
+		// Check if it was disabled by sysconfig
+		{
+			final boolean enabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_Enabled, SYSCONFIG_Enabled_Default);
+			if (!enabled)
+			{
+				return false;
+			}
 		}
 
 		return true;
@@ -107,7 +121,7 @@ public class ESSystem implements IESSystem
 					.getContextClassLoader()
 					.loadClass(ESServer_Classname)
 					.newInstance();
-			
+
 			logger.info("Found ESServer: {}", esServer);
 			return esServer;
 		}

@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.reactor</groupId>
 	<artifactId>de.metas.reactor</artifactId>
-	
+	<version>1.0.0</version>
 
 	<description>all projects that are required for a customer rollout</description>
 

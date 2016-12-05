@@ -1,15 +1,12 @@
 package de.metas.process;
 
-import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -23,7 +20,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.compiere.model.MRule;
+import org.compiere.model.I_AD_Rule;
+import org.compiere.model.X_AD_Rule;
 import org.compiere.print.ReportCtl;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -38,6 +36,9 @@ import com.google.common.base.Throwables;
 
 //import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
+import de.metas.script.ScriptExecutor;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -446,9 +447,10 @@ public final class ProcessExecutor
 	{
 		logger.debug("startProcess: {}", pi);
 
-		if (pi.getClassName().toLowerCase().startsWith(MRule.SCRIPT_PREFIX))
+		final Optional<String> ruleValue = ScriptEngineFactory.extractRuleValueFromClassname(pi.getClassName());
+		if (ruleValue.isPresent())
 		{
-			startScriptProcess();
+			startScriptProcess(ruleValue.get());
 		}
 		else
 		{
@@ -456,74 +458,81 @@ public final class ProcessExecutor
 		}
 	}
 
-	private final void startScriptProcess() throws ScriptException
+	private final void startScriptProcess(final String ruleValue)
 	{
 		final Properties ctx = pi.getCtx();
-		final String cmd = pi.getClassName();
-		final MRule rule = MRule.get(ctx, cmd.substring(MRule.SCRIPT_PREFIX.length()));
+		final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveByValue(ctx, ruleValue);
 		if (rule == null)
 		{
-			throw new AdempiereException("@ScriptNotFound@: " + cmd);
+			throw new AdempiereException("@ScriptNotFound@: " + ruleValue);
 		}
-		if (!(rule.getEventType().equals(MRule.EVENTTYPE_Process)
-				&& rule.getRuleType().equals(MRule.RULETYPE_JSR223ScriptingAPIs)))
+		if (! X_AD_Rule.EVENTTYPE_Process.equals(rule.getEventType()))
 		{
-			throw new AdempiereException("@ScriptNotFound@: " + cmd + " must be of type JSR 223 and eventType must be Process");
+			throw new AdempiereException("@ScriptNotFound@: " + ruleValue + " - eventType must be Process");
 		}
-
-		final ScriptEngine engine = rule.getScriptEngine();
 
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		final String trxName = trx == null ? null : trx.getTrxName();
 
-		// Window context are W_
-		// Login context are G_
-		// Method arguments context are A_
-		// Parameter context are P_
-		MRule.setContext(engine, ctx, 0);  // no window
-		// now add the method arguments to the engine
-		engine.put(MRule.ARGUMENTS_PREFIX + "Ctx", ctx);
-		engine.put(MRule.ARGUMENTS_PREFIX + "Trx", trx);
-		engine.put(MRule.ARGUMENTS_PREFIX + "TrxName", trxName);
-		engine.put(MRule.ARGUMENTS_PREFIX + "Record_ID", pi.getRecord_ID());
-		engine.put(MRule.ARGUMENTS_PREFIX + "AD_Client_ID", pi.getAD_Client_ID());
-		engine.put(MRule.ARGUMENTS_PREFIX + "AD_User_ID", pi.getAD_User_ID());
-		engine.put(MRule.ARGUMENTS_PREFIX + "AD_PInstance_ID", pi.getAD_PInstance_ID());
-		engine.put(MRule.ARGUMENTS_PREFIX + "Table_ID", pi.getTable_ID());
-		// Add process parameters
+		final ScriptExecutor scriptExecutor = ScriptEngineFactory.get()
+				.createExecutor(rule)
+				.putContext(ctx, pi.getWindowNo())
+				.putArgument("Trx", trx)
+				.putArgument("TrxName", trxName)
+				.putArgument("Table_ID", pi.getTable_ID())
+				.putArgument("Record_ID", pi.getRecord_ID())
+				.putArgument("AD_Client_ID", pi.getAD_Client_ID())
+				.putArgument("AD_Org_ID", pi.getAD_Org_ID())
+				.putArgument("AD_User_ID", pi.getAD_User_ID())
+				.putArgument("AD_Role_ID", pi.getAD_Role_ID())
+				.putArgument("AD_PInstance_ID", pi.getAD_PInstance_ID());
+		
 		final List<ProcessInfoParameter> parameters = pi.getParameter();
 		if (parameters != null)
 		{
-			engine.put(MRule.ARGUMENTS_PREFIX + "Parameter", parameters);
+			scriptExecutor.putArgument("Parameter", parameters.toArray(new ProcessInfoParameter[parameters.size()])); // put as array for backward compatibility
 			for (final ProcessInfoParameter para : parameters)
 			{
 				String name = para.getParameterName();
 				if (para.getParameter_To() == null)
 				{
-					Object value = para.getParameter();
-					if (name.endsWith("_ID") && (value instanceof BigDecimal))
-						engine.put(MRule.PARAMETERS_PREFIX + name, ((BigDecimal)value).intValue());
+					final Object value = para.getParameter();
+					if (name.endsWith("_ID") && (value instanceof Number))
+					{
+						scriptExecutor.putProcessParameter(name, ((Number)value).intValue());
+					}
 					else
-						engine.put(MRule.PARAMETERS_PREFIX + name, value);
+					{
+						scriptExecutor.putProcessParameter(name, value);
+					}
 				}
 				else
 				{
-					Object value1 = para.getParameter();
-					Object value2 = para.getParameter_To();
-					if (name.endsWith("_ID") && (value1 instanceof BigDecimal))
-						engine.put(MRule.PARAMETERS_PREFIX + name + "1", ((BigDecimal)value1).intValue());
+					final Object value1 = para.getParameter();
+					final Object value2 = para.getParameter_To();
+					if (name.endsWith("_ID") && (value1 instanceof Number))
+					{
+						scriptExecutor.putProcessParameter(name + "1", ((Number)value1).intValue());
+					}
 					else
-						engine.put(MRule.PARAMETERS_PREFIX + name + "1", value1);
-					if (name.endsWith("_ID") && (value2 instanceof BigDecimal))
-						engine.put(MRule.PARAMETERS_PREFIX + name + "2", ((BigDecimal)value2).intValue());
+					{
+						scriptExecutor.putProcessParameter(name + "1", value1);
+					}
+					if (name.endsWith("_ID") && (value2 instanceof Number))
+					{
+						scriptExecutor.putProcessParameter(name + "2", ((Number)value2).intValue());
+					}
 					else
-						engine.put(MRule.PARAMETERS_PREFIX + name + "2", value2);
+					{
+						scriptExecutor.putProcessParameter(name + "2", value2);
+					}
 				}
 			}
 		}
-		engine.put(MRule.ARGUMENTS_PREFIX + "ProcessInfo", pi);
+		scriptExecutor.putArgument("ProcessInfo", pi);
 
-		final String msg = engine.eval(rule.getScript()).toString();
+		final Object scriptResult = scriptExecutor.execute(rule.getScript());
+		final String msg = scriptResult != null ? scriptResult.toString() : null;
 		// transaction should rollback if there are error in process
 		if ("@Error@".equals(msg))
 		{

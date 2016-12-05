@@ -627,7 +627,7 @@ public class VFileImport extends CPanel
 		}
 		catch (Exception e)
 		{
-			throw new AdempiereException("Failed to schedules lines to be imported");
+			throw new AdempiereException("Failed to schedules lines to be imported", e);
 		}
 	}
 }
