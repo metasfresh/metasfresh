@@ -32,7 +32,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_Storage;
-import org.compiere.model.MOrder;
 
 import de.metas.process.JavaProcess;
 import de.metas.purchasing.model.I_M_PurchaseSchedule;
@@ -112,7 +111,4 @@ public interface IPurchaseScheduleBL extends ISingletonService
 			Properties ctx,
 			I_M_Requisition requisition,
 			String trxName);
-
-	Collection<MMPurchaseSchedule> retrieveOrCreateForPO(MOrder order);
-
 }

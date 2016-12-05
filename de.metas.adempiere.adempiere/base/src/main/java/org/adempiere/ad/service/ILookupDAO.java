@@ -58,6 +58,8 @@ public interface ILookupDAO extends ISingletonService
 	 */
 	interface ITableRefInfo
 	{
+		String getName();
+		
 		String getTableName();
 
 		String getKeyColumn();

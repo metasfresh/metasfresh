@@ -46,15 +46,6 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	String retrieveWindowName(int adWindowId);
 
-	/**
-	 * Loads and returns the given window (cached).
-	 * 
-	 * @param ctx
-	 * @param adWindowId whe window's <code>AD_Window_ID</code>.
-	 * @return
-	 */
-	I_AD_Window retrieveWindow(Properties ctx, int adWindowId);
-
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 
 	List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);

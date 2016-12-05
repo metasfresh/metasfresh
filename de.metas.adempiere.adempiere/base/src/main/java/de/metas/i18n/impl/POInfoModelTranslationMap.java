@@ -4,18 +4,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IModelTranslation;
@@ -52,14 +50,18 @@ import de.metas.logging.LogManager;
  */
 public class POInfoModelTranslationMap implements IModelTranslationMap
 {
-	public static POInfoModelTranslationMap of(final String tableName, final int recordId)
+	public static IModelTranslationMap of(final String tableName, final int recordId)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		return new POInfoModelTranslationMap(poInfo, recordId);
 	}
 
-	public static POInfoModelTranslationMap of(final POInfo poInfo, final int recordId)
+	public static IModelTranslationMap of(final POInfo poInfo, final int recordId)
 	{
+		if(!poInfo.isTranslated())
+		{
+			return NullModelTranslationMap.instance;
+		}
 		return new POInfoModelTranslationMap(poInfo, recordId);
 	}
 
@@ -68,17 +70,7 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 	private final POInfo poInfo;
 
 	private int _recordId;
-	private final LoadingCache<String, IModelTranslation> _trlsByLanguage = CacheBuilder.newBuilder()
-			.build(new CacheLoader<String, IModelTranslation>()
-			{
-
-				@Override
-				public IModelTranslation load(final String adLanguage) throws Exception
-				{
-					return retriveByIdAndLanguage(getRecord_ID(), adLanguage);
-				}
-
-			});
+	private final ConcurrentHashMap<String, IModelTranslation> _trlsByLanguage = new ConcurrentHashMap<>();
 	private boolean _trlsByLanguage_FullyLoaded = false;
 
 	private POInfoModelTranslationMap(final POInfo poInfo, final int recordId)
@@ -92,8 +84,9 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("poInfo", poInfo)
 				.add("recordId", _recordId)
+				.add("loadedLanguages", _trlsByLanguage.keySet())
+				.add("poInfo", poInfo)
 				.toString();
 	}
 
@@ -106,14 +99,22 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 	public IModelTranslation getTranslation(final int recordId, final String adLanguage)
 	{
 		setRecord_ID(recordId);
+		
+		// If we were asked about base language, there is no point to go forward
+		// because only the translations will be loaded,
+		// so the effect will be the same: NullModelTranslation will be returned
+		if(Language.isBaseLanguage(adLanguage))
+		{
+			return NullModelTranslation.instance;
+		}
+
 		try
 		{
-			return _trlsByLanguage.get(adLanguage);
+			return _trlsByLanguage.computeIfAbsent(adLanguage, this::retriveByLanguage);
 		}
-		catch (final ExecutionException e)
+		catch (final Exception e)
 		{
-			logger.warn("Failed loading translation for recordId={}, adLanguage={} ({})", recordId, adLanguage, this);
-			logger.warn("", e.getCause());
+			logger.warn("Failed loading translation for recordId={}, adLanguage={} ({})", recordId, adLanguage, this, e);
 			return NullModelTranslation.instance;
 		}
 	}
@@ -124,20 +125,20 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 		return getAllTranslations(getRecord_ID());
 	}
 
-	public Map<String, IModelTranslation> getAllTranslations(final int recordId)
+	private Map<String, IModelTranslation> getAllTranslations(final int recordId)
 	{
 		setRecord_ID(recordId);
 
 		final Map<String, IModelTranslation> translations;
 		if (!_trlsByLanguage_FullyLoaded)
 		{
-			translations = retriveById(recordId);
-			_trlsByLanguage.invalidateAll();
+			translations = retriveAllById(recordId);
+			_trlsByLanguage.clear();
 			_trlsByLanguage.putAll(translations);
 		}
 		else
 		{
-			translations = ImmutableMap.copyOf(_trlsByLanguage.asMap());
+			translations = ImmutableMap.copyOf(_trlsByLanguage);
 		}
 
 		return translations;
@@ -151,7 +152,7 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 		}
 
 		_recordId = recordId;
-		_trlsByLanguage.invalidateAll();
+		_trlsByLanguage.clear();
 		_trlsByLanguage_FullyLoaded = false;
 	}
 
@@ -160,7 +161,7 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 		return _recordId;
 	}
 
-	private IModelTranslation retriveByIdAndLanguage(final int recordId, final String AD_Language)
+	private IModelTranslation retriveByLanguage(final String AD_Language)
 	{
 		final String sql = poInfo.getSqlSelectTrlByIdAndLanguage();
 		if (sql == null)
@@ -170,7 +171,7 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		final Object[] params = new Object[] { recordId, AD_Language };
+		final Object[] params = new Object[] { getRecord_ID(), AD_Language };
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
@@ -197,7 +198,7 @@ public class POInfoModelTranslationMap implements IModelTranslationMap
 		}
 	}
 
-	private Map<String, IModelTranslation> retriveById(final int recordId)
+	private Map<String, IModelTranslation> retriveAllById(final int recordId)
 	{
 		final String sql = poInfo.getSqlSelectTrlById();
 		if (sql == null)

@@ -47,13 +47,13 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
+import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
@@ -129,18 +129,9 @@ public class OLCandBL implements IOLCandBL
 
 		//
 		// 1. Get the ol-candidates to process (using relation)
-		final I_AD_RelationType relationType = MRelationType.retrieveForInternalName(ctx, mkRelationTypeInternalName(processor), trxName);
-		if (relationType == null)
-		{
-			final String msg = "No relation type has been configured for" + processor;
-			logProcess(process, msg);
-			throw new AdempiereException(msg);
-		}
-
-		//
-		// FIXME retrieve (AND FILTER) the candidates directly, and not with M..., please
-		final MRelationType relationTypePO = LegacyAdapters.convertToPO(relationType);
-		final List<I_C_OLCand> allCandidates = relationTypePO.retrieveDestinations(InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class);
+		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
+		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
 		if (orderCandidates.isEmpty())
 		{
