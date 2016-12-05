@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -14,7 +14,7 @@
 	<packaging>pom</packaging>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
-	<version>3-development-SNAPSHOT</version>
+	<version>1.0.0</version>
 
 	<properties>
 		<!--
