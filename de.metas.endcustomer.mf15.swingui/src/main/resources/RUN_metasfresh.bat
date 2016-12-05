@@ -1,10 +1,10 @@
-@Title	metasfresh Client %ADEMPIERE_HOME%   %1%
+@Title	metasfresh Client %METASFRESH_HOME%   %1%
 @Echo off
 
-@Rem Set/Overwrite ADEMPIERE_HOME/JAVA_HOME 
+@Rem Set/Overwrite METASFRESH_HOME/JAVA_HOME 
 @Rem explicitly here for different versions, etc. e.g.
 @Rem
-@Rem SET ADEMPIERE_HOME=C:\Adempiere
+@Rem SET METASFRESH_HOME=C:\metasfresh
 @Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_40
 
 @Rem Variables: 
@@ -14,7 +14,7 @@
 @Rem CLIENT_REMOTE_DEBUG_OPTS   ->  Commandline-Options (Arguments) to use, if Debugging is enabled
 @Rem JMX_REMOTE_DEBUG_OPTS      ->  Same as CLIENT_REMOTE_DEBUG_OPTS
 
-:ADEMPIERE_DEBUG_PORTS
+:METASFRESH_DEBUG_PORTS
 @SET /a DBG_PORT=10000
 @SET /a MAX_DBG_PORT=10100
 :CHECK_PORTS_CLIENT
@@ -57,39 +57,37 @@
 @if not "%JAVA_HOME%" == "" goto JAVA_HOME_OK
 @Set JAVA=java
 @Echo JAVA_HOME is not set.  
-@Echo   You may not be able to start Adempiere
+@Echo   You may not be able to start Metasfresh
 @Echo   Set JAVA_HOME to the directory of your local JDK.
-@Echo   You could set it via WinEnv.js e.g.:
-@Echo     cscript WinEnv.js C:\Adempiere C:\j2sdk1.4.2_06
-@goto CHECK_ADEMPIERE
+@goto CHECK_METASFRESH
 :JAVA_HOME_OK
 @Set JAVA=%JAVA_HOME%\bin\java
 
-:CHECK_ADEMPIERE
-@if not "%ADEMPIERE_HOME%" == "" goto ADEMPIERE_HOME_OK
+:CHECK_METASFRESH
+@if not "%METASFRESH_HOME%" == "" goto METASFRESH_HOME_OK
 
 SET LOG_DIR=%UserProfile%\.metasfresh\log
 @Echo Going to write our log files to %LOG_DIR%
 
-SET ADEMPIERE_HOME=%~dp0
+SET METASFRESH_HOME=%~dp0
 
-@Echo ADEMPIERE_HOME is not set.  
-@Echo   You may not be able to start Adempiere
-@Echo   Set ADEMPIERE_HOME to the directory of Adempiere.
-@Echo   For now we will try with ADEMPIERE_HOME=%ADEMPIERE_HOME%
+@Echo METASFRESH_HOME is not set.  
+@Echo   You may not be able to start Metasfresh
+@Echo   Set METASFRESH_HOME to the directory of Metasfresh.
+@Echo   For now we will try with METASFRESH_HOME=%METASFRESH_HOME%
 REM @goto MULTI_INSTALL
 
-:ADEMPIERE_HOME_OK
+:METASFRESH_HOME_OK
 SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
 
 @REM finding our jar file
 @REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
-for /f "delims=" %%F in ('dir /b /s "%ADEMPIERE_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
+for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
 
 SET CLASSPATH=%JAR%
 
 :MULTI_INSTALL
-@REM  To switch between multiple installs, copy the created Adempiere.properties file
+@REM  To switch between multiple installs, copy the created metasfresh.properties file
 @REM  Select the configuration by setting the PROP variable
 @SET PROP=
 @Rem  SET PROP=-DPropertyFile=C:\test.properties
@@ -100,7 +98,7 @@ SET CLASSPATH=%JAR%
 :ENCRYPTION
 @Rem  To use your own Encryption class (implementing org.compiere.util.SecureInterface),
 @Rem  you need to set it here (and in the server start script) - example:
-@Rem  SET SECURE=-DADEMPIERE_SECURE=org.compiere.util.Secure
+@Rem  SET SECURE=-DMETASFRESH_SECURE=org.compiere.util.Secure
 @SET SECURE=
 
 @Echo JAVA=%JAVA%
@@ -114,7 +112,7 @@ SET CLASSPATH=%JAR%
 
 :START
 SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Djava.util.Arrays.useLegacyMergeSort=true
-"%JAVA%" %JAVA_OPTS% -DADEMPIERE_HOME=%ADEMPIERE_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
+"%JAVA%" %JAVA_OPTS% -DMETASFRESH_HOME=%METASFRESH_HOME% %PROP% %CLIENT_REMOTE_DEBUG_OPTS% %JMX_REMOTE_DEBUG_OPTS% "-Dlogging.path=%LOG_DIR%" %SECURE% -classpath "%CLASSPATH%" %MAIN_CLASSNAME%
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL
