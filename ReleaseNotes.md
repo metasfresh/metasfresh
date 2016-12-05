@@ -16,6 +16,7 @@ this week's release
 
 ## Features 
 * metasfresh
+  * #639 Marginal Return report calculation does not check ad_org_id
   * #658 make Ini more robust: throw ex if file can't be read
   * #585 Adjust the remaining Property names
   * #661 Cultivation Planning report adjustments
