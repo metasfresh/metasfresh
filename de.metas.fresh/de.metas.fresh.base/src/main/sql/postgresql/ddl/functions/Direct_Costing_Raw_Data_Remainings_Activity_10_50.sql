@@ -14,11 +14,11 @@ $BODY$
 SELECT
 	
 	l_value, l_name,
-	Balance_10 AS Balance_1000,
-	Balance_20 AS Balance_2000,
-	Balance_30 AS Balance_100,
-	Balance_40 AS Balance_100,
-	Balance_50 AS Balance_150,
+	Balance_10 AS Balance_10,
+	Balance_20 AS Balance_20,
+	Balance_30 AS Balance_30,
+	Balance_40 AS Balance_40,
+	Balance_50 AS Balance_50,
 	Balance_Other AS Balance_Other,
 	Balance_10 + Balance_20 + Balance_30 + Balance_40 + Balance_50 + Balance_Other AS Balance,
 	Budget_10 AS Budget_10,
