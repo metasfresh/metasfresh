@@ -17,6 +17,7 @@ this week's release
 ## Features 
 * metasfresh
   * #658 make Ini more robust: throw ex if file can't be read
+  * #585 Adjust the remaining Property names
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
