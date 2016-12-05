@@ -268,15 +268,9 @@ echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 // these two are shown in jenkins, for each build
 currentBuild.displayName="build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
-currentBuild.description="task or upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
+currentBuild.description="task/upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
 
 timestamps 
-{
-if(params.MF_SKIP_TO_DIST)
-{
-	echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
-}
-else
 {
 // while the "main/base" metasfresh stuff builds, no downstream builds should resolve metasfresh theses artifacts because we might end up with dependency convergence errors
 // note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
@@ -291,6 +285,12 @@ node('agent && linux')
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
+				if(params.MF_SKIP_TO_DIST) 
+				{
+					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+				}
+				else
+				{
 				if(!isRepoExists(MF_MAVEN_REPO_NAME))
 				{
 					createRepo(MF_MAVEN_REPO_NAME);
@@ -332,10 +332,21 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				
+				// collect the test results
+				junit '**/target/surefire-reports/*.xml'
+				
+				} // if(params.MF_SKIP_TO_DIST)
             }
 
             stage('Set versions and build esb') 
             {
+				if(params.MF_SKIP_TO_DIST) 
+				{
+					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+				}
+				else
+				{
 				// set the artifact version of everything below de.metas.esb/pom.xml
 	           	sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 				
@@ -346,18 +357,12 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-
-				// provide links to the artifact we just deployed
-				currentBuild.description="""artifacts (if not yet cleaned up)
-<ul>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-</ul>"""
-            }
-
-			// collect the test results
-			junit '**/target/surefire-reports/*.xml'
+				
+				// collect the test results
+				junit '**/target/surefire-reports/*.xml'
+				
+				} // if(params.MF_SKIP_TO_DIST)
+			}
 
 		} // withMaven
 	} // configFileProvider
@@ -368,6 +373,12 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 // wait for the results, but don't block a node for it
 stage('Invoke downstream jobs') 
 {
+	if(params.MF_SKIP_TO_DIST) 
+	{
+		echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+	}
+	else
+	{
 	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 	// more do come: admin-webui, maybe the webui-javascript frontend too
@@ -383,8 +394,9 @@ stage('Invoke downstream jobs')
 			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 		}
 	}
+	} // if(params.MF_SKIP_TO_DIST)
 }
-} // if(params.MF_SKIP_TO_DIST)
+
 	
 // make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
 // otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
@@ -434,6 +446,16 @@ node('agent && linux && libc6-i386')
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
 				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
 				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+				
+				// prepend links to the artifacts we just deployed
+				currentBuild.description="""artifacts (if not yet cleaned up)
+<ul>
+<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
+<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
+</ul>
+${currentBuild.description}"""
+				
 			}
 		} // withMaven
 		} // withEnv(['"BUILD_VERSION=${BUILD_VERSION}"'])
