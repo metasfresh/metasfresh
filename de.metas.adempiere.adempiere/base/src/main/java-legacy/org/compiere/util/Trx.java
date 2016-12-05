@@ -243,34 +243,47 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	@Override
 	protected boolean rollbackNative(boolean throwException) throws SQLException
-	// metas: end: 02367
 	{
-		if(m_connection == null || m_connection.getAutoCommit())
+		final String trxName = getTrxName();
+		
+		//
+		// Get current connection
+		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
+		final Connection connection = m_connection;
+
+		if(connection == null || connection.getAutoCommit())
 		{
-			log.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
-			return false;
+			log.debug("rollbackNative: doing nothing because we have a null or autocommit connection; this={}, connection={}", this, m_connection);
+			// => consider this a success because if there was no open transaction then there is nothing to rollback 
+			return true;
 		}
 
-		final String m_trxName = getTrxName();
-		// local
+		// Case: we really have something to rollback (because connection was acquired and used)
+		if (connection != null)
+		{
 		try
 		{
-			if (m_connection != null)
-			{
-				m_connection.rollback();
-				log.debug("**** {}", m_trxName);
+				connection.rollback();
+				log.debug("rollbackNative: OK - {}", trxName);
 				return true;
 			}
-		}
 		catch (SQLException e)
 		{
-			log.error(m_trxName, e);
+				log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
 			if (throwException)
 			{
 				throw e;
 			}
+				return false;
 		}
-		return false;
+		}
+		//
+		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
+		else
+		{
+			// => consider this a success because if nothing was done then there is nothing to rollback 
+			return true;
+		}
 	}	// rollback
 
 	@Override
@@ -308,7 +321,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	@Override
 	protected boolean commitNative(boolean throwException) throws SQLException
-	// metas: end: 02367
 	{
 		if(m_connection == null || m_connection.getAutoCommit())
 		{
@@ -316,31 +328,42 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			return true;
 		}
 
-		final String m_trxName = getTrxName();
+		final String trxName = getTrxName();
 
-		// local
+		//
+		// Get current connection
+		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
+		final Connection connection = this.m_connection;
+		
+		//
+		// Case: we really have something to commit (because connection was acquired and used)
+		if (connection != null)
+		{
 		try
 		{
-			if (m_connection != null)
-			{
-				m_connection.commit();
-				log.debug("**** {}", m_trxName);
+				connection.commit();
+				log.debug("commitNative: OK - {}", trxName);
 				// m_active = false;
 				return true;
 			}
-		}
 		catch (SQLException e)
 		{
-			// TODO make configurable!
-			// log.error(m_trxName, e);
+				log.error("commitNative: FAILED - {} (throwException={})", trxName, throwException, e);
 			if (throwException)
 			{
 				// m_active = false;
 				throw e;
 			}
+				return false;
 		}
-		// m_active = false;
-		return false;
+		}
+		//
+		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
+		else
+		{
+			// => consider this a success because even if nothing was done on this transaction, nothing failed neither
+			return true;
+		}
 	}	// commit
 
 	@Override

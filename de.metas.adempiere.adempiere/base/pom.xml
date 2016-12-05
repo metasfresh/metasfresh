@@ -143,13 +143,12 @@
 
 
 		<!-- Scripting support -->
-
-		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/model/Scriptlet.java -->
 		<dependency>
-			<groupId>org.beanshell</groupId>
-			<artifactId>bsh</artifactId>
-			<version>2.0b5</version>
+			<!-- required by AD_Rule scripts -->
+		    <groupId>org.codehaus.groovy</groupId>
+		    <artifactId>groovy-jsr223</artifactId>
 		</dependency>
+		
 
 		<!-- Swing -->
 		<dependency>

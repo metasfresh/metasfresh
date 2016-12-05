@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.connection.ITemporaryConnectionCustomizer;
@@ -187,11 +188,11 @@ public class PartitionerService implements IPartitionerService
 
 		if (request.getRecordToAttach() == null && request.getPartitionToComplete() == null)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("The request does not explicitly tell us where to start; request={}", request);
+			ILoggable.get().addLog("The request does not explicitly tell us where to start; request={}", request);
 			final Iterator<WorkQueue> incompletePartitionQueue = retrieveIncompletePartitionOrNull(ctxAware);
 			if (incompletePartitionQueue != null)
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Working with an inclomplete partition");
+				ILoggable.get().addLog("Working with an inclomplete partition");
 				final Partition partition = attachToPartitionAndCheck(
 						request,
 						new IterateResult(
@@ -201,7 +202,7 @@ public class PartitionerService implements IPartitionerService
 			}
 			else
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("Iterating the config's lines and working on one record for each line");
+				ILoggable.get().addLog("Iterating the config's lines and working on one record for each line");
 				// iterate the lines and look for the first record out o
 				for (final PartitionerConfigLine line : lines)
 				{
@@ -282,7 +283,7 @@ public class PartitionerService implements IPartitionerService
 			final String msg = "Caught {}; going to retry with an augmented config that also includes referencingTable={}";
 			final Object[] msgParameters = { e.toString(), descriptor.getReferencingTableName() };
 			logger.info(msg, msgParameters);
-			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+			ILoggable.get().addLog(msg, msgParameters);
 
 			final PartitionerConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
@@ -311,7 +312,7 @@ public class PartitionerService implements IPartitionerService
 
 		final String msg = "Returning a newly identified partition={}.";
 		logger.info(msg, partition);
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg, partition);
+		ILoggable.get().addLog(msg, partition);
 
 		return partition;
 	}
@@ -650,7 +651,7 @@ public class PartitionerService implements IPartitionerService
 				{
 					final String msg = "ReferencingTable={} is not yet DLM'ed; doing it now";
 					logger.info(msg, tableName);
-					ILoggable.THREADLOCAL.getLoggable().addLog(msg, tableName);
+					ILoggable.get().addLog(msg, tableName);
 
 					dlmService.addTableToDLM(referencingTable);
 				}
@@ -737,7 +738,7 @@ public class PartitionerService implements IPartitionerService
 		final String msg = "Stored the partition {} with {} records; configChanged={}; recordsChanged={}";
 		final Object[] msgParameters = { partitionDB, intermediatePartition.getRecordsFlat().size(), intermediatePartition.isConfigChanged(), intermediatePartition.isRecordsChanged() };
 		logger.info(msg, msgParameters);
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+		ILoggable.get().addLog(msg, msgParameters);
 
 		final Partition result = intermediatePartition.withJustStored(partitionDB.getDLM_Partition_ID());
 		return result;
@@ -846,7 +847,7 @@ public class PartitionerService implements IPartitionerService
 		}
 		final String msg = "Stored DLM_Partition_Config={}";
 		logger.info(msg, configDB);
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg, configDB);
+		ILoggable.get().addLog(msg, configDB);
 
 		return PartitionerConfig.builder(config)
 				.setChanged(false)
@@ -939,10 +940,8 @@ public class PartitionerService implements IPartitionerService
 					.endRef()
 					.endLine();
 
-			final String msg = "Added descriptor={} to the config with name={}";
-			final Object[] params = { descriptor, config.getName() };
-			logger.info(msg, params);
-			ILoggable.THREADLOCAL.getLoggable().addLog(msg, params);
+			ILoggable.get().withLogger(logger, Level.INFO)
+					.addLog("Added descriptor={} to the config with name={}", descriptor, config.getName());
 		});
 
 		return builder.build();

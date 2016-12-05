@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Check;
@@ -326,35 +326,35 @@ public final class Ini implements Serializable
 		boolean loadOK = true;
 		boolean firstTime = false;
 		s_prop = new Properties();
-		FileInputStream fis = null;
-		try
+
+		// gh #658: only show the dialog if the file doesn't exist yet.
+		// for any other fail, we shall throw an exception because there can be
+		// plenty of reasons and we can't just rewrite the file and go on each time.
+		final File propertiesFile = new File(filename).getAbsoluteFile();
+		if (!propertiesFile.exists())
 		{
-			fis = new FileInputStream(filename);
+			log.info(filename);
+			firstTime = true;
+			if (isShowLicenseDialog())
+			{
+				if (!IniDialog.accept())
+				{
+					System.exit(-1);
+				}
+			}
+		}
+
+		try (final FileInputStream fis = new FileInputStream(filename))
+		{
 			s_prop.load(fis);
 			fis.close();
 		}
-		catch (FileNotFoundException e)
-		{
-			log.warn("{} not found", filename);
-			loadOK = false;
-		}
 		catch (Exception e)
 		{
-			log.error("Error while loading {}", filename, e);
+			log.warn(filename + " - " + e.toString());
 			loadOK = false;
-		}
-		catch (Throwable t)
-		{
-			log.error("Error while loading {}", filename, t);
-			loadOK = false;
-		}
-		if (!loadOK || "".equals(s_prop.getProperty(P_TODAY, "")))
-		{
-			log.info("Properties file {} is missing. Asking for license approval.", filename);
-			firstTime = true;
-			if (isShowLicenseDialog())
-				if (!IniDialog.accept())
-					System.exit(-1);
+			// gh #658: for f***'s sake, don't just log a warning. When running in tomcat, this logged warning will go nowhere
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		checkProperties();
@@ -365,8 +365,8 @@ public final class Ini implements Serializable
 			saveProperties();
 		}
 		s_loaded = true;
-		log.info("Loaded {} properties from {}", s_prop.size(), filename);
-		s_propertyFileName = filename;
+		log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
+		s_propertyFileName = propertiesFile.toString();
 
 		return firstTime;
 	}	// loadProperties

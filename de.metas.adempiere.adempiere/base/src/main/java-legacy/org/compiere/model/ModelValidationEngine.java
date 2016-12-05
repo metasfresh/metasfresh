@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.script.ScriptEngine;
-
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -67,6 +65,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
 
 /**
  * Model Validation Engine
@@ -440,7 +440,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param AD_Org_ID org
 	 * @param AD_Role_ID role
 	 * @param AD_User_ID user
-	 * @return error message or null
+	 * @return error message or empty/null
 	 */
 	public String loginComplete(int AD_Client_ID, int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
@@ -456,38 +456,29 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 
 		// now process the script model validator login
-		List<MRule> loginRules = MRule.getModelValidatorLoginRules(Env.getCtx());
-		if (loginRules != null)
+		final Properties ctx = Env.getCtx();
+		final List<I_AD_Rule> loginRules = Services.get(IADRuleDAO.class).retrieveByEventType(ctx, X_AD_Rule.EVENTTYPE_ModelValidatorLoginEvent);
+		if (loginRules != null && !loginRules.isEmpty())
 		{
-			for (MRule loginRule : loginRules)
+			for (final I_AD_Rule loginRule : loginRules)
 			{
-				// currently just JSR 223 supported
-				if (loginRule.getRuleType().equals(MRule.RULETYPE_JSR223ScriptingAPIs)
-						&& loginRule.getEventType().equals(MRule.EVENTTYPE_ModelValidatorLoginEvent))
+				try
 				{
-					String error;
-					try
-					{
-						ScriptEngine engine = loginRule.getScriptEngine();
-
-						MRule.setContext(engine, Env.getCtx(), 0);  // no window
-						// now add the method arguments to the engine
-						engine.put(MRule.ARGUMENTS_PREFIX + "Ctx", Env.getCtx());
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_Client_ID", AD_Client_ID);
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_Org_ID", AD_Org_ID);
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_Role_ID", AD_Role_ID);
-						engine.put(MRule.ARGUMENTS_PREFIX + "AD_User_ID", AD_User_ID);
-
-						Object retval = engine.eval(loginRule.getScript());
-						error = (retval == null ? "" : retval.toString());
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-						error = e.toString();
-					}
-					if (error != null && error.length() > 0)
-						return error;
+					ScriptEngineFactory.get()
+							.createExecutor(loginRule)
+							.putContext(ctx, Env.WINDOW_None) // no window
+							.putArgument("AD_Client_ID", AD_Client_ID)
+							.putArgument("AD_Org_ID", AD_Org_ID)
+							.putArgument("AD_Role_ID", AD_Role_ID)
+							.putArgument("AD_User_ID", AD_User_ID)
+							.setThrowExceptionIfResultNotEmpty()
+							.execute(loginRule.getScript());
+				}
+				catch (final Exception e)
+				{
+					log.warn("Failed executing login script for {}", loginRule, e);
+					final String error = AdempiereException.extractMessage(e);
+					return error;
 				}
 			}
 		}
@@ -824,31 +815,22 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 		for (final I_AD_Table_ScriptValidator scriptValidator : scriptValidators)
 		{
-			final MRule rule = MRule.get(po.getCtx(), scriptValidator.getAD_Rule_ID());
-			// currently just JSR 223 supported
+			final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveById(po.getCtx(), scriptValidator.getAD_Rule_ID());
 			if (rule != null
 					&& rule.isActive()
-					&& rule.getRuleType().equals(X_AD_Rule.RULETYPE_JSR223ScriptingAPIs)
-					&& rule.getEventType().equals(ruleEventType) // MRule.EVENTTYPE_ModelValidatorTableEvent)
+					&& rule.getEventType().equals(ruleEventType)
 			)
 			{
 				try
 				{
-					final ScriptEngine engine = rule.getScriptEngine();
-					final int windowNo = po.get_WindowNo();
-					MRule.setContext(engine, po.getCtx(), windowNo);
-					// now add the method arguments to the engine
-					engine.put(MRule.ARGUMENTS_PREFIX + "Ctx", po.getCtx());
-					engine.put(MRule.ARGUMENTS_PREFIX + "PO", po);
-					engine.put(MRule.ARGUMENTS_PREFIX + "Type", changeTypeOrDocTiming);
-					engine.put(MRule.ARGUMENTS_PREFIX + "Event", ruleEventModelValidator);
-
-					final Object retval = engine.eval(rule.getScript());
-					final String error = (retval == null ? "" : retval.toString());
-					if (error != null && error.length() > 0)
-					{
-						throw new AdempiereException(error);
-					}
+					ScriptEngineFactory.get()
+							.createExecutor(rule)
+							.putContext(po.getCtx(), po.get_WindowNo())
+							.putArgument("PO", po)
+							.putArgument("Type", changeTypeOrDocTiming)
+							.putArgument("Event", ruleEventModelValidator)
+							.setThrowExceptionIfResultNotEmpty()
+							.execute(rule.getScript());
 				}
 				catch (Exception e)
 				{

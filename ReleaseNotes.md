@@ -10,20 +10,36 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.47.45 (2016-49)
+
+this week's release
+
+## Features 
+* metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
+
 # metasfresh 4.46.45 (2016-48)
 
-## Features
-* metasfresh
-  * #620 Marginal Return Report doubled sums for accounting group
-  
+## Features 
 * webui
   * #425 Kickstart elasticsearch integration
+    * Add the first prototype of elasticsearch integration in WebUI environment of metasfresh ERP. Data for elasticsearch index is created via metasfresh async framework.
   * #598 WebUI Dashboard initial Prototype definition
+    * Create a prototype dashboard in new metasfresh WebUI. Current prototype uses kibana for KPI and data visualization.
 
 ## Fixes
 * metasfresh
   * #583 Reports without ad_org_id show wrong results
+    * Add support for multi organisation usage of selected 22 reports.
+  * #620 Marginal Return Report doubled sums for accounting group
+    * Fix the doubled sums in Marginal return report for specific accounting group.    
   * #656 Bug in Import Format - Copy lines process
+    * Fix a minor Bug in Import format.
+  * #646 Fix support for groovy scripts
+    * Fix groovy Script support and extend fieldsize for script recording.
 
 # metasfresh 4.45.44 (2016-47)
 

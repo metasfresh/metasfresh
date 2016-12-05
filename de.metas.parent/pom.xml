@@ -786,6 +786,8 @@
 						<manifestEntries>
 							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
 							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
+							<ciJobName>${JOB_NAME}</ciJobName>
+							<ciBuildUrl>${BUILD_URL}</ciBuildUrl>
 						</manifestEntries>
 					</archive>
 				</configuration>
@@ -1368,7 +1370,7 @@
 				</property>
 			</activation>
 			<properties>
-				<env.BUILD_VERSION>3-LOCAL-BUILD-0</env.BUILD_VERSION>
+				<env.BUILD_VERSION>1.0.0</env.BUILD_VERSION>
 			</properties>
 		</profile>
 
