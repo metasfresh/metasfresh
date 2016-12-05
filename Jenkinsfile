@@ -393,9 +393,6 @@ stage('Invoke downstream jobs')
 		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
-		// more do come: admin-webui, maybe the webui-javascript frontend too
-	/*
-	Currently this is inactive because we don't use it
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
 		node('linux')
 		{	
