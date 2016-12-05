@@ -46,14 +46,17 @@ class RawList extends Component {
     }
 
     render() {
-        const {list, rank, readonly, defaultValue, selected, align, updated, loading} = this.props;
+        const {list, rank, readonly, defaultValue, selected, align, updated, loading, rowId} = this.props;
         return (
             <div
                 tabIndex="0"
                 onFocus={()=>this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
-                className={"input-dropdown-container"}
+                className={
+                    "input-dropdown-container" +
+                    (rowId ? "input-table " : "")
+                }
             >
                 <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary") + (updated ? " pulse" : "")}>
                     <div className={

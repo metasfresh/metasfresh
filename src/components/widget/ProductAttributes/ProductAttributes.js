@@ -26,14 +26,17 @@ class ProductAttributes extends Component {
 
 
     render() {
-        const {widgetData,fields, dispatch} = this.props;
+        const {widgetData,fields, dispatch, rowId} = this.props;
         const {dropdown} = this.state;
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
         const label = value[tmpId];
 
         return (
-            <div className="product-attributes">
+            <div className={
+                "product-attributes " +
+                (rowId ? "product-attributes-in-table " : "") 
+            }>
                 <div
                     onClick={() => this.handleToggle(!dropdown)}
                     className="tag tag-lg tag-block tag-secondary pointer"

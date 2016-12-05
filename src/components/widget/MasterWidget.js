@@ -165,35 +165,27 @@ class Widget extends Component {
 
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
-                <div className="form-group row">
-                    <div className="col-xs-12">
-                        <div className={"form-group row " + (type === "primary" ? "" : "")}>
-                            {!noLabel && <div key="title" className={"form-control-label " + ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")} title={caption}>{caption}</div>}
-                            <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                                <RawWidget
-                                    entity={entity}
-                                    widgetType={widgetType}
-                                    fields={fields}
-                                    windowType={windowType}
-                                    dataId={dataId}
-                                    type={type}
-                                    widgetData={widgetData}
-                                    rowId={rowId}
-                                    tabId={tabId}
-                                    icon={icon}
-                                    gridAlign={gridAlign}
-                                    handlePatch={this.handlePatch}
-                                    handleChange={this.handleChange}
-                                    handleFocus={this.handleFocus}
-                                    updated={updated}
-                                    isModal={isModal}
-                                    setEditedFlag={this.setEditedFlag}
-                                    test={this.test}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <RawWidget
+                    entity={entity}
+                    widgetType={widgetType}
+                    fields={fields}
+                    windowType={windowType}
+                    dataId={dataId}
+                    widgetData={widgetData}
+                    rowId={rowId}
+                    tabId={tabId}
+                    icon={icon}
+                    gridAlign={gridAlign}
+                    handlePatch={this.handlePatch}
+                    handleChange={this.handleChange}
+                    handleFocus={this.handleFocus}
+                    updated={updated}
+                    isModal={isModal}
+                    setEditedFlag={this.setEditedFlag}
+                    noLabel={noLabel}
+                    type={type}
+                    caption={caption}
+                />
             )
         }else{
             return false;

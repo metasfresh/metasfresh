@@ -26,34 +26,27 @@ class FilterWidget extends Component {
 
         if(widgetData){
             return (
-                <div className="form-group row">
-                    <div className="col-xs-12">
-                        <div className={"form-group row"}>
-                            <div key="title" className={"form-control-label col-sm-3"} title={caption}>{item.caption}</div>
-                            <div className="col-sm-9 ">
-                                <RawWidget
-                                    handlePatch={this.handlePatch}
-                                    widgetType={widgetType}
-                                    fields={widgetData}
-                                    windowType={windowType}
-                                    type={type}
-                                    widgetData={widgetData}
-                                    filterWidget={true}
-                                    filterId={filterId}
-                                    parameterName={widgetData.parameterName}
-                                    setSelectedItem={setSelectedItem}
-                                    selectedItem={filter.parameters.length? ( filter.parameters[id].value  ? filter.parameters[id].value : '' ) : ''}
-                                    handleFocus={this.handleFocus}
-                                    id={id}
-                                    handleChange={this.handleChange}
-                                    range={item.range}
-                                    isShown={isShown}
-                                    isHidden={isHidden}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <RawWidget
+                    handlePatch={this.handlePatch}
+                    widgetType={widgetType}
+                    fields={widgetData}
+                    windowType={windowType}
+                    type={type}
+                    widgetData={widgetData}
+                    filterWidget={true}
+                    filterId={filterId}
+                    parameterName={widgetData.parameterName}
+                    setSelectedItem={setSelectedItem}
+                    selectedItem={filter.parameters.length? ( filter.parameters[id].value  ? filter.parameters[id].value : '' ) : ''}
+                    handleFocus={this.handleFocus}
+                    id={id}
+                    handleChange={this.handleChange}
+                    range={item.range}
+                    isShown={isShown}
+                    isHidden={isHidden}
+                    caption={item.caption}
+                    noLable={false}
+                />
             )
         }else{
             return false;

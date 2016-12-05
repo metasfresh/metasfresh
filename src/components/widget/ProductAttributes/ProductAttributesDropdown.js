@@ -9,6 +9,10 @@ import {
     getPattributeInstance
 } from '../../../actions/AppActions';
 
+import {
+    findRowByPropName
+} from '../../../actions/WindowActions'
+
 class ProductAttributesDropdown extends Component {
     constructor(props) {
         super(props);
@@ -20,27 +24,25 @@ class ProductAttributesDropdown extends Component {
     }
 
     componentDidMount() {
-        // const {dispatch, tmpId} = this.props;
-        //
-        // dispatch(
-        //     getPattributeInstance(tmpId)
-        // ).then(response => {
-        //     const {id, fields} = response.data;
-        //
-        //     console.log(fields)
-        //     this.setState(Object.assign({}, this.state, {
-        //         data: fields
-        //     }));
-        //
-        //     return dispatch(getPattributeLayout(id));
-        // }).then(response => {
-        //     const {elements} = response.data;
-        //     console.log(elements)
-        //
-        //     this.setState(Object.assign({}, this.state, {
-        //         layout: elements
-        //     }));
-        // });
+        const {dispatch, tmpId} = this.props;
+
+        dispatch(
+            getPattributeInstance(tmpId)
+        ).then(response => {
+            const {id, fields} = response.data;
+
+            this.setState(Object.assign({}, this.state, {
+                data: fields
+            }));
+
+            return dispatch(getPattributeLayout(id));
+        }).then(response => {
+            const {elements} = response.data;
+
+            this.setState(Object.assign({}, this.state, {
+                layout: elements
+            }));
+        });
     }
 
     handleClickOutside = () => {
@@ -48,16 +50,33 @@ class ProductAttributesDropdown extends Component {
         toggle(false);
     }
 
+    renderFields = (layout, data, dataId) => {
+        if(layout){
+            return layout.map((item, id) => {
+                const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
+
+                return (<RawWidget
+                    entity={'asi'}
+                    widgetType={item.widgetType}
+                    fields={item.fields}
+                    dataId={dataId}
+                    widgetData={widgetData}
+                    gridAlign={item.gridAlign}
+                    key={id}
+                    type={item.type}
+                    caption={item.caption}
+                />)
+            })
+        }
+    }
+
     render() {
-        const {data,layout} = this.props;
+        const {data,layout} = this.state;
+        const dataId = findRowByPropName(data, "ID").value;
 
         return (
             <div className="product-attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
-                {
-                    data && data.map((item, id) =>
-                        <span>Item</span>
-                    )
-                }
+                {this.renderFields(layout, data, dataId)}
             </div>
         )
     }

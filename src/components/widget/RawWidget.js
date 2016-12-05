@@ -85,7 +85,8 @@ class RawWidget extends Component {
                             (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                             (align ? "text-xs-" + align + " " : "") +
                             (type === "primary" ? "input-primary " : "input-secondary ") +
-                            (updated ? " pulse-on" : " pulse-off")
+                            (updated ? "pulse-on " : "pulse-off ") +
+                            (rowId ? "input-table " : "")
                         }>
                             <DatePicker
                                 timeFormat={false}
@@ -109,7 +110,8 @@ class RawWidget extends Component {
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (align ? "text-xs-" + align + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <DatePicker
                             timeFormat={true}
@@ -129,7 +131,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <DatePicker
                             timeFormat={true}
@@ -198,7 +201,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <input
                             type="text"
@@ -221,7 +225,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <textarea
                             className="input-field js-input-field"
@@ -242,7 +247,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? " pulse-on" : " pulse-off") +
+                        (rowId ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -265,7 +271,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -286,7 +293,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -309,7 +317,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -332,7 +341,8 @@ class RawWidget extends Component {
                         (align ? "text-xs-" + align + " " : "") +
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off")
+                        (updated ? "pulse-on " : "pulse-off ") +
+                        (rowId ? "input-table " : "")
                     }>
                         <input
                             type="number"
@@ -416,6 +426,7 @@ class RawWidget extends Component {
                         dataId={dataId}
                         widgetData={widgetData}
                         windowType={windowType}
+                        rowId={rowId}
                     />
                 )
             default:
@@ -431,8 +442,28 @@ class RawWidget extends Component {
         } = this.props;
 
         return (
-            <div>
-                {this.renderWidget(widgetType, fields, windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign)}
+            <div className={
+                "form-group row " +
+                (rowId ? "form-group-table " : " ")
+            }>
+                {!noLabel &&
+                    <div
+                        key="title"
+                        className={
+                            "form-control-label " +
+                            ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")
+                        }
+                        title={caption}
+                    >
+                        {caption}
+                    </div>
+                }
+                <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
+                    {this.renderWidget(
+                        widgetType, fields, windowType, dataId, type, widgetData,
+                        rowId, tabId, icon, gridAlign
+                    )}
+                </div>
             </div>
         )
     }

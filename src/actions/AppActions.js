@@ -53,7 +53,7 @@ export function getAvailableLang() {
 }
 
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
-    if (entity){
+    if (entity === 'process'){
         return () => axios.get(
     		config.API_URL +
     		'/process/instance/' + id +
@@ -61,7 +61,15 @@ export function autocompleteRequest(windowType, propertyName, query, id = "NEW",
             '/typeahead' +
             '?query=' + query
     	);
-    }else{
+    } else if (entity === 'asi') {
+        return () => axios.get(
+    		config.API_URL +
+    		'/pattribute/instance/' + id +
+            '/attribute/' + propertyName +
+            '/typeahead' +
+            '?query=' + query
+    	);
+    } else {
     	return () => {
     		query = encodeURIComponent(query);
     		return axios.get(
@@ -77,14 +85,21 @@ export function autocompleteRequest(windowType, propertyName, query, id = "NEW",
 }
 
 export function dropdownRequest(windowType, propertyName, id, tabId, rowId, entity) {
-    if (entity){
+    if (entity === 'process'){
         return () => axios.get(
     		config.API_URL +
     		'/process/instance/' + id +
             '/parameters/' + propertyName +
             '/dropdown'
     	);
-    }else{
+    } else if (entity === 'asi') {
+        return () => axios.get(
+    		config.API_URL +
+    		'/pattribute/instance/' + id +
+            '/attribute/' + propertyName +
+            '/dropdown'
+    	);
+    } else {
     	return () => axios.get(
     		config.API_URL +
     		'/window/dropdown?type=' + windowType +

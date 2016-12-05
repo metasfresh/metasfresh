@@ -333,7 +333,7 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, selected, oldValue, filterWidget, mandatory
+            updated, selected, oldValue, filterWidget, mandatory, rowId
         } = this.props;
 
         const {propertiesCopy,isInputEmpty} = this.state;
@@ -344,7 +344,11 @@ class Lookup extends Component {
                 tabIndex="0"
                 onFocus={()=>this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
-                className={"input-dropdown-container"}
+                className={
+                    "input-dropdown-container " +
+                    (rowId ? "input-dropdown-container-static " : "") +
+                    (rowId ? "input-table " : "")
+                }
             >
                 <div className={
                     "input-dropdown input-block input-" + (rank ? rank : "primary") +

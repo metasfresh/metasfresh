@@ -746,28 +746,28 @@ body {
     100% {width: 0%; background-color: transparent;}
 }
 
-table .input-field {
+.input-table .input-field {
     background: white;
     height: 20px;
     font-weight: normal;
 }
 
-table .input-secondary {
+.input-table .input-secondary {
     margin: 0;
     border-bottom: 0;
 }
 
-table .input-secondary,
-table .input-dropdown {
+.input-table .input-secondary,
+.input-table .input-dropdown {
     padding: 0;
 }
 
-table .form-group {
+.form-group-table {
     margin-bottom: 0;
 }
 
-table .input-disabled input,
-table .input-mandatory input {
+.input-table .input-disabled input,
+.input-table .input-mandatory input {
     background: transparent;
 }
 
@@ -792,22 +792,15 @@ table .input-mandatory input {
     margin: 0;
 }
 
-table .input-dropdown-list {
-    /*left: -.75rem;*/
-    /*width: calc(100% + 1.5rem);*/
-}
 
-
-table .input-dropdown .input-field {
+.input-table .input-dropdown .input-field {
     background: transparent;
     color: $brand-font-color;
     font-style: italic;
 }
 
-table .input-dropdown {
+.input-table .input-dropdown {
     border: none;
-    /*padding-left: .50rem;
-    padding-right: .50rem;*/
 }
 
 table .List .input-dropdown-item-title {
@@ -945,6 +938,8 @@ table .rdtPicker table td, .rdtPicker table th {
     height: 16px;
     bottom: 0;
 }
+
+
 
 .pagination {
     margin-top:0;
