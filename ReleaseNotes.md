@@ -20,6 +20,12 @@ this week's release
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
+  * #59 User friendly URL for Print Endpoint
+
+## Fixes
+* webui
+  * #67 Error when introducing parameters to report
+  * #70 Add BPLocation Error
 
 # metasfresh 4.46.45 (2016-48)
 
