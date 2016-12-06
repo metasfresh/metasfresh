@@ -425,8 +425,10 @@ class RawWidget extends Component {
                         fields={fields}
                         dataId={dataId}
                         widgetData={widgetData}
-                        windowType={windowType}
+                        docType={windowType}
+                        tabId={tabId}
                         rowId={rowId}
+                        fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => handlePatch(widgetField, option)}
                     />

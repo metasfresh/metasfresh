@@ -1382,6 +1382,14 @@ th {
     transition: all 0.5s;
 }
 
+.notification-item.primary {
+    border: 2px solid $brand-primary-color;
+}
+
+.notification-item.primary .notification-header {
+    color: $brand-primary-color;
+}
+
 .notification-item.success {
     border: 2px solid $brand-success-dark-color;
 }

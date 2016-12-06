@@ -26,7 +26,7 @@ class ProductAttributes extends Component {
     }
 
     render() {
-        const {widgetData,fields, dispatch, rowId, patch} = this.props;
+        const {widgetData,fields, dispatch, docType, dataId, tabId, rowId, patch, fieldName} = this.props;
         const {dropdown} = this.state;
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
@@ -48,6 +48,11 @@ class ProductAttributes extends Component {
                         tmpId={tmpId}
                         toggle={this.handleToggle}
                         patch={patch}
+                        docType={docType}
+                        dataId={dataId}
+                        rowId={rowId}
+                        tabId={tabId}
+                        fieldName={fieldName}
                     />
                 }
             </div>

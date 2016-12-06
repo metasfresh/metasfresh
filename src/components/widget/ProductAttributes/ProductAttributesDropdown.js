@@ -26,11 +26,9 @@ class ProductAttributesDropdown extends Component {
     }
 
     componentDidMount() {
-        const {dispatch, tmpId} = this.props;
+        const {dispatch, tmpId, docType, dataId, tabId, rowId, fieldName} = this.props;
 
-        dispatch(
-            getPattributeInstance(tmpId)
-        ).then(response => {
+        dispatch(getPattributeInstance(tmpId, docType, dataId, tabId, rowId, fieldName)).then(response => {
             const {id, fields} = response.data;
 
             this.setState(Object.assign({}, this.state, {

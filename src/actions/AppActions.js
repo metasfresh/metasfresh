@@ -23,6 +23,10 @@ export function loginSuccess() {
                         dispatch(updateNotification(notification.notification, notification.unreadCount));
                     }else if(notification.eventType === "New"){
                         dispatch(newNotification(notification.notification, notification.unreadCount));
+                        const notif = notification.notification;
+                        if(notif.important){
+                            dispatch(addNotification("Important notification", notif.message, 5000, "primary"))
+                        }
                     }
                 });
             })
@@ -222,9 +226,16 @@ export function pattributeComplete(asiDocId) {
     return () => axios.get(config.API_URL + '/pattribute/' + asiDocId + '/complete');
 }
 
-export function getPattributeInstance(tmpId) {
+export function getPattributeInstance(tmpId, docType, docId, tabId, rowId, fieldName) {
     return () => axios.post(config.API_URL + '/pattribute/instance/', {
-        "templateId": tmpId
+        "templateId": tmpId,
+        "source": {
+            "documentType": docType,
+            "documentId": docId,
+            "tabid": tabId,
+            "rowId": rowId,
+            "fieldName": fieldName
+        }
     });
 }
 
