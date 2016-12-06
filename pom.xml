@@ -4,7 +4,7 @@
 
 	<groupId>de.metas</groupId>
 	<artifactId>de.metas.parent.general</artifactId>
-	<version>3.0.0</version>
+	<version>1.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -28,20 +28,6 @@
 	</developers>
 
 	<properties>
-			<!-- 
-			Please use this property when declaring metasfresh dependencies.
-			Example:
-			<dependency>
-				<groupId>de.metas.commons.cxf</groupId>
-				<artifactId>metasfresh-commons-cxf</artifactId>
-				<version>${metasfresh-dependency.version}</version>
-			</dependency>
-			
-			Using of ${metasfresh-dependency.version} is deprecated.
-			See https://github.com/metasfresh/metasfresh-documentation/blob/master/infrastructure/CI_infrastructure.md for explanations.
-			-->
-		<metasfresh-dependency.version>[1-master-SNAPSHOT],[${project.version}]</metasfresh-dependency.version>
-
 		<!-- java 1.7. is currently our minimum, but some projects might already be implemented with java-8-->
 		<minimum.java.version>1.7</minimum.java.version>
 	</properties>
@@ -123,7 +109,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.0.1</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
 					</configuration>
