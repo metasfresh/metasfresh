@@ -180,7 +180,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 currentBuild.description="""artifacts (if not yet cleaned up)				
 				<ul>
-<li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar\">spring-boot jar</a></li>
+<li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
