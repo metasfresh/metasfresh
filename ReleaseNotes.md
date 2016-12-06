@@ -20,6 +20,7 @@ this week's release
   * #658 make Ini more robust: throw ex if file can't be read
   * #585 Adjust the remaining Property names
   * #661 Cultivation Planning report adjustments
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
