@@ -96,7 +96,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomSource, final int targetAD_Window_ID)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomSource, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(zoomSource);
 		final ZoomProviderDestination source = sourceAndTarget.getLeft();
@@ -116,7 +116,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 		final MQuery query = mkQuery(zoomSource, target);
-		evaluateQuery(query);
+		if(checkRecordsCount)
+		{
+			updateRecordsCountAndZoomValue(query);
+		}
 
 
 		final String display = target.getRoleDisplayName(adWindowId);
@@ -262,7 +265,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return whereParsed;
 	}
 
-	private static void evaluateQuery(final MQuery query)
+	private static void updateRecordsCountAndZoomValue(final MQuery query)
 	{
 		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
 

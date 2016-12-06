@@ -61,7 +61,7 @@ public class GenericZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnName());
 		if (zoomInfoDescriptors.isEmpty())
@@ -85,7 +85,10 @@ public class GenericZoomProvider implements IZoomProvider
 				continue;
 			}
 			
-			updateRecordCount(query, zoomInfoDescriptor, source.getTableName());
+			if (checkRecordsCount)
+			{
+				updateRecordCount(query, zoomInfoDescriptor, source.getTableName());
+			}
 			
 			final String zoomInfoId = "generic-" + AD_Window_ID;
 			result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, query, name));

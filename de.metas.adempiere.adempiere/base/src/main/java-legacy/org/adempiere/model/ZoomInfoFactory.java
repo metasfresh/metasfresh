@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
@@ -238,9 +239,17 @@ public class ZoomInfoFactory implements IZoomProvider
 		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
 			super();
+
+			Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
 			_zoomInfoId = zoomInfoId;
+
+			Check.assume(windowId > 0, "windowId > 0");
 			_windowId = windowId;
+
+			Check.assumeNotNull(query, "Parameter query is not null");
 			_query = query;
+
+			Check.assumeNotEmpty(destinationDisplay, "destinationDisplay is not empty");
 			_destinationDisplay = destinationDisplay;
 		}
 
@@ -251,7 +260,7 @@ public class ZoomInfoFactory implements IZoomProvider
 					.add("zoomInfoId", _zoomInfoId)
 					.add("display", _destinationDisplay)
 					.add("AD_Window_ID", _windowId)
-					.add("RecordCount", _query == null ? "<no query>" : _query.getRecordCount())
+					.add("RecordCount", _query.getRecordCount())
 					.toString();
 		}
 
@@ -267,7 +276,7 @@ public class ZoomInfoFactory implements IZoomProvider
 
 		public int getRecordCount()
 		{
-			return _query == null ? 0 : _query.getRecordCount();
+			return _query.getRecordCount();
 		}
 
 		public int getAD_Window_ID()
@@ -295,14 +304,15 @@ public class ZoomInfoFactory implements IZoomProvider
 	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
 	{
 		final int targetAD_Window_ID = -1;
-		return retrieveZoomInfos(source, targetAD_Window_ID);
+		final boolean checkRecordsCount = true;
+		return retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount);
 	}
 
 	/**
 	 * Retrieves all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		logger.info("source={}", source);
 
@@ -316,26 +326,27 @@ public class ZoomInfoFactory implements IZoomProvider
 
 			try
 			{
-				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID))
+				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount))
 				{
-					// TODO: fetch the Records count only when it's really needed because that's expensive
-					if (zoomInfo.getRecordCount() <= 0)
+					//
+					// Skip if we already added a zoom info for the same window
+					final int adWindowId = zoomInfo.getAD_Window_ID();
+					if (!alreadySeenWindowIds.add(adWindowId))
+					{
+						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
+						continue;
+					}
+
+					//
+					// Filter out those ZoomInfos which have ZERO records (if requested)
+					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)
 					{
 						logger.debug("No target records for destination {}", zoomInfo);
 						continue;
 					}
 
-					final int adWindowId = zoomInfo.getAD_Window_ID();
-					if (alreadySeenWindowIds.add(adWindowId))
-					{
-						logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
-						result.add(zoomInfo);
-
-					}
-					else
-					{
-						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
-					}
+					logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
+					result.add(zoomInfo);
 				}
 			}
 			catch (final Exception e)
@@ -347,12 +358,24 @@ public class ZoomInfoFactory implements IZoomProvider
 		return result.build();
 	}
 
+	/**
+	 * Retrieves that {@link ZoomInfo} which is referencing our given <code>source</code> and has given target window.
+	 *
+	 * NOTE: Records count is not checked
+	 *
+	 * @param source
+	 * @param targetWindowId target AD_Window_ID (must be provided)
+	 * @return ZoomInfo; never returns <code>null</code>
+	 */
 	public ZoomInfo retrieveZoomInfo(final IZoomSource source, final int targetWindowId)
 	{
-		final List<ZoomInfo> zoomInfos = retrieveZoomInfos(source, targetWindowId);
+		Check.assume(targetWindowId > 0, "targetWindowId > 0");
+
+		final boolean checkRecordsCount = false;
+		final List<ZoomInfo> zoomInfos = retrieveZoomInfos(source, targetWindowId, checkRecordsCount);
 		if (zoomInfos.isEmpty())
 		{
-			throw new IllegalArgumentException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId);
+			throw new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId);
 		}
 		else if (zoomInfos.size() == 1)
 		{
@@ -360,6 +383,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		}
 		else
 		{
+			// shall not happen because we assume that retriveZoomInfos will return one zoom info per AD_Window_ID
 			throw new IllegalStateException("More than one zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId + ": " + zoomInfos);
 		}
 	}
@@ -368,6 +392,8 @@ public class ZoomInfoFactory implements IZoomProvider
 	{
 		final List<IZoomProvider> zoomProviders = new ArrayList<>();
 
+		// NOTE: Zoom providers order matter because in case it finds some duplicates (i.e. same window),
+		// it will pick only the first one (i.e. the one from the first provider).
 		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
 
