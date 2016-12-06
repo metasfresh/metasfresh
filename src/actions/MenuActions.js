@@ -66,27 +66,14 @@ export function getWindowBreadcrumb(id){
                 for(let i = 0; i < pathData.length; i++){
                     const node = pathData[i];
 
-                    if(node.nodeId != "0"){
-                        //not root menu
-                        dispatch(nodePathsRequest(node.nodeId, 10)).then(item => {
-                            node.children = item.data;
-                            req += 1;
+                    dispatch(nodePathsRequest(node.nodeId, 10)).then(item => {
+                        node.children = item.data;
+                        req += 1;
 
-                            if(req === pathData.length){
-                                resolve(pathData);
-                            }
-                        })
-                    }else{
-                        //root menu
-                        dispatch(rootRequest(6)).then(root => {
-                            node.children = root.data;
-                            req += 1;
-
-                            if(req === pathData.length){
-                                resolve(pathData);
-                            }
-                        })
-                    }
+                        if(req === pathData.length){
+                            resolve(pathData);
+                        }
+                    })
                 }
             });
 

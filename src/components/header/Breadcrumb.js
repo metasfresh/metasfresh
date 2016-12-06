@@ -27,7 +27,7 @@ class Breadcrumb extends Component {
                             className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) + (index === 0 ? "ico-home" : "")}
                             onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
-                            {(index === 0) ? <i className="meta-icon-menu" /> : item && item.children && item.children.captionBreadcrumb}
+                            {item && item.children && item.children.captionBreadcrumb}
                         </span>
                         {menuOverlay === item.nodeId &&
                             <MenuOverlay
