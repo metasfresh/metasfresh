@@ -509,13 +509,14 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
-if(params.MF_SKIP_SQL_MIGRATION_TEST)
+
+stage('Test SQL-Migration')
 {
-	echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-}
-else
-{
-	stage('Test SQL-Migration')
+	if(params.MF_SKIP_SQL_MIGRATION_TEST)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+	}
+	else
 	{
 		node('master')
 		{
@@ -544,16 +545,16 @@ else
 			
 			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
 		}
-	}
-}
+	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
+} // stage
 
-if(params.MF_SKIP_DEPLOYMENT)
+stage('Deployment')
 {
-	echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
-}
-else
-{
-	stage('Deployment')
+	if(params.MF_SKIP_DEPLOYMENT)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
+	}
+	else
 	{
 		final userInput;
 
@@ -620,7 +621,7 @@ else
 		{
 			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
 		} // if(userinput)
-	} // stage
-} // if(params.MF_SKIP_DEPLOYMENT)
+	} // if(params.MF_SKIP_DEPLOYMENT)
+} // stage
 } // timestamps
 
