@@ -3,7 +3,8 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 /**
- * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
+ * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ * TODO: move it into a shared library
  */
 def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
 {
@@ -185,6 +186,10 @@ def deleteRepo(String repoId)
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
 
+// currently, the code in these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
+final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
+echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
+
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
@@ -268,15 +273,9 @@ echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 // these two are shown in jenkins, for each build
 currentBuild.displayName="build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
-currentBuild.description="task or upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
+currentBuild.description="task/upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
 
 timestamps 
-{
-if(params.MF_SKIP_TO_DIST)
-{
-	echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
-}
-else
 {
 // while the "main/base" metasfresh stuff builds, no downstream builds should resolve metasfresh theses artifacts because we might end up with dependency convergence errors
 // note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
@@ -291,6 +290,12 @@ node('agent && linux')
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
             stage('Set versions and build metasfresh') 
             {
+				if(params.MF_SKIP_TO_DIST) 
+				{
+					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+				}
+				else
+				{
 				if(!isRepoExists(MF_MAVEN_REPO_NAME))
 				{
 					createRepo(MF_MAVEN_REPO_NAME);
@@ -332,10 +337,21 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				
+				// collect the test results
+				junit '**/target/surefire-reports/*.xml'
+				
+				} // if(params.MF_SKIP_TO_DIST)
             }
 
             stage('Set versions and build esb') 
             {
+				if(params.MF_SKIP_TO_DIST) 
+				{
+					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+				}
+				else
+				{
 				// set the artifact version of everything below de.metas.esb/pom.xml
 	           	sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 				
@@ -346,18 +362,12 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-
-				// provide links to the artifact we just deployed
-				currentBuild.description="""artifacts (if not yet cleaned up)
-<ul>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-</ul>"""
-            }
-
-			// collect the test results
-			junit '**/target/surefire-reports/*.xml'
+				
+				// collect the test results
+				junit '**/target/surefire-reports/*.xml'
+				
+				} // if(params.MF_SKIP_TO_DIST)
+			}
 
 		} // withMaven
 	} // configFileProvider
@@ -365,26 +375,38 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 } // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // invoke external build jobs like webui
-// wait for the results, but don't block a node for it
+// wait for the results, but don't block a node while waiting
+// TODO: invoke them in parallel
 stage('Invoke downstream jobs') 
 {
-	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
-	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
-	// more do come: admin-webui, maybe the webui-javascript frontend too
-
-	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-	node('linux')
-	{	
-		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
-		{
-			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-			final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
-			
-			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
-		}
+	if(params.MF_SKIP_TO_DIST) 
+	{
+		echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
 	}
+	else
+	{
+		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
+		{
+			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+		}
+	
+		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+		// more do come: admin-webui, maybe the webui-javascript frontend too
+
+		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+		node('linux')
+		{	
+			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+			{
+				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+				final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+				
+				sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+			}
+		}
+	} // if(params.MF_SKIP_TO_DIST)
 }
-} // if(params.MF_SKIP_TO_DIST)
+
 	
 // make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
 // otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
@@ -416,7 +438,8 @@ node('agent && linux && libc6-i386')
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
-						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]] // failed if there was stale stuff checked out around /de.metas.endcustomer.mf15
+						// with sparse checkout we sometimes got errors like "stderr: error: Entry 'de.metas.acct.base/LICENSE.txt' not uptodate. Cannot update sparse checkout."
+						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
@@ -434,6 +457,16 @@ node('agent && linux && libc6-i386')
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
 				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
 				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+				
+				// prepend links to the artifacts we just deployed
+				currentBuild.description="""artifacts (if not yet cleaned up)
+<ul>
+<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
+<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
+</ul>
+${currentBuild.description}"""
+				
 			}
 		} // withMaven
 		} // withEnv(['"BUILD_VERSION=${BUILD_VERSION}"'])
@@ -476,13 +509,14 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
-if(params.MF_SKIP_SQL_MIGRATION_TEST)
+
+stage('Test SQL-Migration')
 {
-	echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-}
-else
-{
-	stage('Test SQL-Migration')
+	if(params.MF_SKIP_SQL_MIGRATION_TEST)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+	}
+	else
 	{
 		node('master')
 		{
@@ -503,7 +537,7 @@ else
 
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${env.BUILD_NUMBER}-${BUILD_VERSION}"
+			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
 					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 					.toLowerCase(); // also, DB names are generally in lowercase
 
@@ -511,16 +545,16 @@ else
 			
 			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
 		}
-	}
-}
+	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
+} // stage
 
-if(params.MF_SKIP_DEPLOYMENT)
+stage('Deployment')
 {
-	echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
-}
-else
-{
-	stage('Deployment')
+	if(params.MF_SKIP_DEPLOYMENT)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
+	}
+	else
 	{
 		final userInput;
 
@@ -587,7 +621,7 @@ else
 		{
 			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
 		} // if(userinput)
-	} // stage
-} // if(params.MF_SKIP_DEPLOYMENT)
+	} // if(params.MF_SKIP_DEPLOYMENT)
+} // stage
 } // timestamps
 

@@ -245,11 +245,17 @@ public final class Msg
 		//
 		//  hardcoded trl
 		if (text.equals("/") || text.equals("\\"))
+		{
 			return Message.ofMissingADMessage(File.separator);
+		}
 		if (text.equals(";") || text.equals(":"))
+		{
 			return Message.ofMissingADMessage(File.pathSeparator);
-		if (text.equals("ADEMPIERE_HOME"))
-			return Message.ofMissingADMessage(Adempiere.getAdempiereHome());
+		}
+		if (Ini.METASFRESH_HOME.equals(text) || Ini.ADEMPIERE_HOME.equals(text))
+		{
+			return Message.ofMissingADMessage(Ini.getMetasfreshHome());
+		}
 		if (text.equals("bat") || text.equals("sh"))
 		{
 			if (System.getProperty("os.name").startsWith("Win"))

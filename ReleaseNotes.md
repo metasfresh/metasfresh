@@ -10,6 +10,32 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.47.46 (2016-49)
+
+this week's release
+
+## Features 
+* metasfresh
+  * #639 Marginal Return report calculation does not check ad_org_id
+  * #658 make Ini more robust: throw ex if file can't be read
+  * #585 Adjust the remaining Property names
+  * #661 Cultivation Planning report adjustments
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
+  * #59 User friendly URL for Print Endpoint
+  * #45 Dashboard Target area backend support
+  * #567 WebUI - Material Receipt Schedule
+
+## Fixes
+* metasfresh
+  * #664 R_Request Performance Issue
+  
+* webui
+  * #67 Error when introducing parameters to report
+  * #70 Add BPLocation Error
+
 # metasfresh 4.46.45 (2016-48)
 
 ## Features 
