@@ -4,7 +4,7 @@
 
 	<groupId>de.metas</groupId>
 	<artifactId>de.metas.parent.general</artifactId>
-	<version>3-development-SNAPSHOT</version>
+	<version>1.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -63,10 +63,15 @@
 		TODO: think about moving with the repo to a public place with much more storage :-) 
 		-->
 		<snapshotRepository>
-			<id>metas-nexus-repo</id>
-			<name>Maven metasfresh Snapshots Repository</name>
+			<id>metasfresh-dedep901-snapshots-repo</id>
+			<name>Maven metasfresh snapshots Repository</name>
 			<url>http://dedep901:8081/nexus/content/repositories/metasfresh-snapshots/</url>
 		</snapshotRepository>
+		<repository>
+			<id>metasfresh-dedep901-releases-repo</id>
+			<name>Maven metasfresh releases Repository</name>
+			<url>http://dedep901:8081/nexus/content/repositories/releases//</url>
+		</repository>
 
 	</distributionManagement>
 
