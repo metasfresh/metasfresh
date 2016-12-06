@@ -37,7 +37,7 @@ class RawWidget extends Component {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, id, range, entity,
-            isShown, isHidden
+            isShown, isHidden, handleBackdropLock
         } = this.props;
 
         const {textValue} = this.state;
@@ -427,6 +427,8 @@ class RawWidget extends Component {
                         widgetData={widgetData}
                         windowType={windowType}
                         rowId={rowId}
+                        handleBackdropLock={handleBackdropLock}
+                        patch={(option) => handlePatch(widgetField, option)}
                     />
                 )
             default:

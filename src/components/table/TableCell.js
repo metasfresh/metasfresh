@@ -7,6 +7,10 @@ import MasterWidget from '../widget/MasterWidget';
 class TableCell extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            backdropLock: false
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -16,14 +20,25 @@ class TableCell extends Component {
         }
     }
 
+    handleBackdropLock = (state) => {
+        this.setState(Object.assign({}, this.state, {
+            backdropLock: !!state
+        }))
+    }
+
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
+        const {backdropLock} = this.state;
 
-        //it is important to change focus before collapsing to
-        //blur Widget field and patch data
-        this.cell && this.cell.focus();
+        //We can handle click outside only if
+        //nested elements has no click oustide listening pending
+        if(!backdropLock){
+            //it is important to change focus before collapsing to
+            //blur Widget field and patch data
+            this.cell && this.cell.focus();
 
-        onClickOutside(e);
+            onClickOutside(e);
+        }
     }
 
     fieldToString = (field, type) => {
@@ -82,6 +97,7 @@ class TableCell extends Component {
                             tabId={tabId}
                             noLabel={true}
                             gridAlign={item.gridAlign}
+                            handleBackdropLock={this.handleBackdropLock}
                         />
                     :
                         this.fieldToString(widgetData[0].value, item.widgetType)

@@ -218,6 +218,10 @@ export function getPattributeLayout(asiDocId) {
     return () => axios.get(config.API_URL + '/pattribute/instance/' + asiDocId + '/layout');
 }
 
+export function pattributeComplete(asiDocId) {
+    return () => axios.get(config.API_URL + '/pattribute/' + asiDocId + '/complete');
+}
+
 export function getPattributeInstance(tmpId) {
     return () => axios.post(config.API_URL + '/pattribute/instance/', {
         "templateId": tmpId

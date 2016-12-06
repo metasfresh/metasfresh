@@ -6,11 +6,13 @@ import RawWidget from '../RawWidget';
 
 import {
     getPattributeLayout,
-    getPattributeInstance
+    getPattributeInstance,
+    pattributeComplete
 } from '../../../actions/AppActions';
 
 import {
-    findRowByPropName
+    findRowByPropName,
+    patchRequest
 } from '../../../actions/WindowActions'
 
 class ProductAttributesDropdown extends Component {
@@ -46,8 +48,32 @@ class ProductAttributesDropdown extends Component {
     }
 
     handleClickOutside = () => {
-        const {toggle} = this.props;
+        const {toggle, dispatch, patch} = this.props;
+        const {data} = this.state;
+        const dataId = findRowByPropName(data, "ID").value;
+
+        dispatch(pattributeComplete(dataId)).then(response => {
+            patch(response.data);
+        });
         toggle(false);
+    }
+
+    handlePatch = (prop, value, id) => {
+        const {dispatch} = this.props;
+
+        dispatch(patchRequest(null, id, null, null, prop, value, "asi")).then(response => {
+            response.data[0].fields.map(item => {
+                this.setState(Object.assign({}, this.state, {
+                    data: this.state.data.map(field => {
+                        if(field.field === item.field){
+                            return Object.assign({}, field, item);
+                        }else{
+                            return field;
+                        }
+                    })
+                }));
+            })
+        })
     }
 
     renderFields = (layout, data, dataId) => {
@@ -65,6 +91,7 @@ class ProductAttributesDropdown extends Component {
                     key={id}
                     type={item.type}
                     caption={item.caption}
+                    handlePatch={(prop, value) => this.handlePatch(prop, value, dataId)}
                 />)
             })
         }

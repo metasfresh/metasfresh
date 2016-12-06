@@ -220,10 +220,15 @@ export function patchRequest(windowType, id = "NEW", tabId, rowId, property, val
     }
 
     // Temporary solution, TODO after API endpoints unification
-    if(entity){
+    if (entity === 'process'){
         return () => axios.patch(
             config.API_URL +
             '/'+ entity + '/instance/' + id +'/parameters'
+            , payload);
+    } else if (entity === 'asi') {
+        return () => axios.patch(
+            config.API_URL +
+            '/pattribute/' + id
             , payload);
     }else{
         return () => axios.patch(

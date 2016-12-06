@@ -15,18 +15,18 @@ class ProductAttributes extends Component {
     }
 
     handleToggle = (option) => {
+        const {handleBackdropLock} = this.props;
         this.setState(Object.assign({}, this.state, {
             dropdown: !!option
-        }))
+        }), () => {
+            //Method is disabling outside click in parents
+            //elements if there is some
+            handleBackdropLock && handleBackdropLock(!!option);
+        })
     }
-
-    handleClickOutside = () => {
-        this.handleToggle(false);
-    }
-
 
     render() {
-        const {widgetData,fields, dispatch, rowId} = this.props;
+        const {widgetData,fields, dispatch, rowId, patch} = this.props;
         const {dropdown} = this.state;
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
@@ -35,7 +35,7 @@ class ProductAttributes extends Component {
         return (
             <div className={
                 "product-attributes " +
-                (rowId ? "product-attributes-in-table " : "") 
+                (rowId ? "product-attributes-in-table " : "")
             }>
                 <div
                     onClick={() => this.handleToggle(!dropdown)}
@@ -47,6 +47,7 @@ class ProductAttributes extends Component {
                     <ProductAttributesDropdown
                         tmpId={tmpId}
                         toggle={this.handleToggle}
+                        patch={patch}
                     />
                 }
             </div>
