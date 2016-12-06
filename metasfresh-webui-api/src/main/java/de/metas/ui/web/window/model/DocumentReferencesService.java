@@ -8,11 +8,13 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Evaluatee;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -58,6 +60,19 @@ public class DocumentReferencesService
 				.map(zoomInfo -> DocumentReference.of(zoomInfo))
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentReference::getId));
 	}
+	
+	public DocumentReference getDocumentReference(final Document document, final int targetWindowId)
+	{
+		if (document == null || document.isNew())
+		{
+			throw new IllegalArgumentException("Invalid document: "+document);
+		}
+
+		final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
+
+		final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId);
+		return DocumentReference.of(zoomInfo);
+	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource
 	{
@@ -84,6 +99,16 @@ public class DocumentReferencesService
 			recordId = document.getDocumentId().toInt();
 			keyColumnName = entityDescriptor.getIdFieldName();
 			keyColumnNames = keyColumnName == null ? ImmutableList.of() : ImmutableList.of(keyColumnName);
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("tableName", tableName)
+					.add("recordId", recordId)
+					.add("AD_Window_ID", adWindowId)
+					.toString();
 		}
 
 		@Override

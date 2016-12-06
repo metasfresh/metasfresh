@@ -28,7 +28,7 @@ public interface DocumentViewsRepository
 {
 	IDocumentViewSelection getView(String viewId);
 
-	IDocumentViewSelection createView(DocumentQuery query);
+	IDocumentViewSelection createView(DocumentViewCreateRequest request);
 
 	void deleteView(String viewId);
 

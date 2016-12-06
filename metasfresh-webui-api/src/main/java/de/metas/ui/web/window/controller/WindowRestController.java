@@ -567,7 +567,7 @@ public class WindowRestController
 	)
 	{
 		userSession.assertDeprecatedRestAPIAllowed();
-		return documentViewController.createView(adWindowId, viewDataType, firstRow, pageLength, jsonFilters);
+		return documentViewController.createView_DEPRECATED(adWindowId, viewDataType, firstRow, pageLength, jsonFilters);
 	}
 
 	@RequestMapping(value = "/view/{" + PARAM_ViewId + "}", method = RequestMethod.DELETE)
