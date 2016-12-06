@@ -96,7 +96,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomSource)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomSource, final int targetAD_Window_ID)
 	{
 		final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(zoomSource);
 		final ZoomProviderDestination source = sourceAndTarget.getLeft();
@@ -108,11 +108,16 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return ImmutableList.of();
 		}
 
+		final int adWindowId = target.getAD_Window_ID(zoomSource.isSOTrx());
+
+		if (targetAD_Window_ID > 0 && targetAD_Window_ID != adWindowId)
+		{
+			return ImmutableList.of();
+		}
+
 		final MQuery query = mkQuery(zoomSource, target);
 		evaluateQuery(query);
 
-		final boolean isSOTrx = zoomSource.isSOTrx();
-		final int adWindowId = target.getAD_Window_ID(isSOTrx);
 
 		final String display = target.getRoleDisplayName(adWindowId);
 

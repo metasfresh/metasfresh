@@ -36,21 +36,22 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 
 /**
- * 
+ *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
 public class ZoomInfoFactory implements IZoomProvider
 {
 	public static final ZoomInfoFactory get()
 	{
-		return instance; 
+		return instance;
 	}
-	
+
 	private static final transient ZoomInfoFactory instance = new ZoomInfoFactory();
-	
+
 	public static interface IZoomSource
 	{
 		Properties getCtx();
+
 		Evaluatee createEvaluationContext();
 
 		String getTrxName();
@@ -66,7 +67,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		List<String> getKeyColumnNames();
 
 		int getRecord_ID();
-		
+
 		default boolean isSOTrx()
 		{
 			return Env.isSOTrx(getCtx());
@@ -100,11 +101,11 @@ public class ZoomInfoFactory implements IZoomProvider
 			final String[] keyColumnNamesArr = po.get_KeyColumns();
 			if (keyColumnNamesArr == null)
 			{
-				this.keyColumnNames = ImmutableList.of();
+				keyColumnNames = ImmutableList.of();
 			}
 			else
 			{
-				this.keyColumnNames = ImmutableList.copyOf(keyColumnNamesArr);
+				keyColumnNames = ImmutableList.copyOf(keyColumnNamesArr);
 			}
 		}
 
@@ -173,12 +174,12 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			return po.get_TrxName();
 		}
-		
+
 		@Override
 		public Evaluatee createEvaluationContext()
 		{
 			final Properties privateCtx = Env.deriveCtx(getCtx());
-			
+
 			final PO po = getPO();
 			final POInfo poInfo = po.getPOInfo();
 			for (int i = 0; i < poInfo.getColumnCount(); i++)
@@ -217,9 +218,9 @@ public class ZoomInfoFactory implements IZoomProvider
 	/**
 	 * Simple class that contains zoom information. Currently used by
 	 * {@link org.compiere.apps.AZoomAcross}.
-	 * 
+	 *
 	 * @author ts
-	 * 
+	 *
 	 */
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
@@ -237,10 +238,10 @@ public class ZoomInfoFactory implements IZoomProvider
 		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
 			super();
-			this._zoomInfoId = zoomInfoId;
-			this._windowId = windowId;
-			this._query = query;
-			this._destinationDisplay = destinationDisplay;
+			_zoomInfoId = zoomInfoId;
+			_windowId = windowId;
+			_query = query;
+			_destinationDisplay = destinationDisplay;
 		}
 
 		@Override
@@ -281,22 +282,32 @@ public class ZoomInfoFactory implements IZoomProvider
 	}
 
 	private static final Logger logger = LogManager.getLogger(ZoomInfoFactory.class);
-	
+
 	private ZoomInfoFactory()
 	{
 		super();
 	}
 
 	/**
+	 * @param source the source we need zoom targets for
+	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
+	 */
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	{
+		final int targetAD_Window_ID = -1;
+		return retrieveZoomInfos(source, targetAD_Window_ID);
+	}
+
+	/**
 	 * Retrieves all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID)
 	{
 		logger.info("source={}", source);
 
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
-		final Set<String> alreadySeenIds = new HashSet<String>();
+		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
 		for (final IZoomProvider zoomProvider : zoomProviders)
@@ -305,34 +316,52 @@ public class ZoomInfoFactory implements IZoomProvider
 
 			try
 			{
-				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
+				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID))
 				{
+					// TODO: fetch the Records count only when it's really needed because that's expensive
 					if (zoomInfo.getRecordCount() <= 0)
 					{
 						logger.debug("No target records for destination {}", zoomInfo);
 						continue;
 					}
 
-					final String zoomInfoId = zoomInfo.getId();
-					if (alreadySeenIds.add(zoomInfoId))
+					final int adWindowId = zoomInfo.getAD_Window_ID();
+					if (alreadySeenWindowIds.add(adWindowId))
 					{
 						logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
 						result.add(zoomInfo);
-	
+
 					}
 					else
 					{
-						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, zoomInfoId);
+						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
 					}
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, e);
 			}
 		}
 
 		return result.build();
+	}
+
+	public ZoomInfo retrieveZoomInfo(final IZoomSource source, final int targetWindowId)
+	{
+		final List<ZoomInfo> zoomInfos = retrieveZoomInfos(source, targetWindowId);
+		if (zoomInfos.isEmpty())
+		{
+			throw new IllegalArgumentException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId);
+		}
+		else if (zoomInfos.size() == 1)
+		{
+			return zoomInfos.get(0);
+		}
+		else
+		{
+			throw new IllegalStateException("More than one zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId + ": " + zoomInfos);
+		}
 	}
 
 	private static List<IZoomProvider> retrieveZoomProviders(final String tableName)

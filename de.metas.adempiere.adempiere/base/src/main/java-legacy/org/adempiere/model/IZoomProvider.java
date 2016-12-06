@@ -49,7 +49,8 @@ public interface IZoomProvider
 	/**
 	 * 
 	 * @param source the source we need zoom targets for
+	 * @param targetAD_Window_ID optional target window ID
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	List<ZoomInfo> retrieveZoomInfos(IZoomSource source);
+	List<ZoomInfo> retrieveZoomInfos(IZoomSource source, final int targetAD_Window_ID);
 }
