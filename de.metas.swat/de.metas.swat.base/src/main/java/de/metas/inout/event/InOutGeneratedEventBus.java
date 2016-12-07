@@ -31,8 +31,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -63,9 +61,6 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 
 	private static final String MSG_Event_ShipmentGenerated = "Event_ShipmentGenerated";
 	private static final String MSG_Event_ReceiptGenerated = "Event_ReceiptGenerated";
-
-	@VisibleForTesting
-	public static final String EVENT_PROPERTY_InOutRecord = "record";
 
 	private InOutGeneratedEventBus(final IEventBus delegate)
 	{
@@ -129,7 +124,7 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 		final Event event = Event.builder()
 				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId)
-				.putProperty(EVENT_PROPERTY_InOutRecord, TableRecordReference.of(inout))
+				.setRecord(TableRecordReference.of(inout))
 				.build();
 		return event;
 	}

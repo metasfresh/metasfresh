@@ -1,5 +1,11 @@
 package org.adempiere.invoice.event;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,14 +30,6 @@ package org.adempiere.invoice.event;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
@@ -39,6 +37,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.logging.LogManager;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.
@@ -62,9 +61,6 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 	private static final transient Logger logger = LogManager.getLogger(InvoiceGeneratedEventBus.class);
 
 	private static final String MSG_Event_InvoiceGenerated = "Event_InvoiceGenerated";
-
-	@VisibleForTesting
-	public static final String EVENT_PROPERTY_InvoiceRecord = "record";
 
 	private InvoiceGeneratedEventBus(IEventBus delegate)
 	{
@@ -121,7 +117,7 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 		final Event event = Event.builder()
 				.setDetailADMessage(MSG_Event_InvoiceGenerated, TableRecordReference.of(invoice), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId <= 0 ? invoice.getCreatedBy() : recipientUserId)
-				.putProperty(EVENT_PROPERTY_InvoiceRecord, TableRecordReference.of(invoice))
+				.setRecord(TableRecordReference.of(invoice))
 				.build();
 		return event;
 	}

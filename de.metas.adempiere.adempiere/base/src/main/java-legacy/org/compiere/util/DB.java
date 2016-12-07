@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -211,80 +208,6 @@ public final class DB
 		system.setIsJustMigrated(false);
 		return system.save();
 	}	// afterMigration
-
-	/**
-	 * Update Mail Settings for System Client and System User
-	 */
-	public static void updateMail()
-	{
-		// Get Property File
-		String envName = Ini.getAdempiereHome();
-		if (envName == null)
-			return;
-		envName += File.separator + "AdempiereEnv.properties";
-		File envFile = new File(envName);
-		if (!envFile.exists())
-			return;
-
-		Properties env = new Properties();
-		try
-		{
-			FileInputStream in = new FileInputStream(envFile);
-			env.load(in);
-			in.close();
-		}
-		catch (Exception e)
-		{
-			return;
-		}
-		String updated = env.getProperty("ADEMPIERE_MAIL_UPDATED");
-		if (updated != null && updated.equals("Y"))
-			return;
-
-		// See org.compiere.install.ConfigurationData
-		String server = env.getProperty("ADEMPIERE_MAIL_SERVER");
-		if (server == null || server.length() == 0)
-			return;
-		String adminEMail = env.getProperty("ADEMPIERE_ADMIN_EMAIL");
-		if (adminEMail == null || adminEMail.length() == 0)
-			return;
-		String mailUser = env.getProperty("ADEMPIERE_MAIL_USER");
-		if (mailUser == null || mailUser.length() == 0)
-			return;
-		String mailPassword = env.getProperty("ADEMPIERE_MAIL_PASSWORD");
-		// if (mailPassword == null || mailPassword.length() == 0)
-		// return;
-		//
-		StringBuffer sql = new StringBuffer("UPDATE AD_Client SET")
-				.append(" SMTPHost=").append(DB.TO_STRING(server))
-				.append(", RequestEMail=").append(DB.TO_STRING(adminEMail))
-				.append(", RequestUser=").append(DB.TO_STRING(mailUser))
-				.append(", RequestUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(", IsSMTPAuthorization='Y' WHERE AD_Client_ID=0");
-		int no = DB.executeUpdate(sql.toString(), null);
-		log.debug("Client #" + no);
-		//
-		sql = new StringBuffer("UPDATE AD_User SET ")
-				.append(" EMail=").append(DB.TO_STRING(adminEMail))
-				.append(", EMailUser=").append(DB.TO_STRING(mailUser))
-				.append(", EMailUserPW=").append(DB.TO_STRING(mailPassword))
-				.append(" WHERE AD_User_ID IN (0,100)");
-		no = DB.executeUpdate(sql.toString(), null);
-		log.debug("User #" + no);
-		//
-		try
-		{
-			env.setProperty("ADEMPIERE_MAIL_UPDATED", "Y");
-			FileOutputStream out = new FileOutputStream(envFile);
-			env.store(out, "");
-			out.flush();
-			out.close();
-		}
-		catch (Exception e)
-		{
-		}
-
-	}	// updateMail
 
 	/**************************************************************************
 	 * Set connection.
@@ -1691,57 +1614,65 @@ public final class DB
 	/**
 	 * Is Sales Order Trx. Assumes Sales Order. Queries IsSOTrx of table with where clause
 	 *
-	 * @param TableName table
+	 * @param tableName table
 	 * @param whereClause where clause
 	 * @return true (default) or false if tested that not SO
 	 */
-	public static boolean isSOTrx(String TableName, String whereClause)
+	public static boolean isSOTrx(final String tableName, final String whereClause)
 	{
-		if (TableName == null || TableName.length() == 0)
+		if(Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
 			return true;
 		}
-		if (whereClause == null || whereClause.length() == 0)
+		
+		if(Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
 			return true;
 		}
+		
 		//
-		boolean isSOTrx = true;
-		String sql = "SELECT IsSOTrx FROM " + TableName
-				+ " WHERE " + whereClause;
+		final String sql = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
-				isSOTrx = "Y".equals(rs.getString(1));
+			{
+				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
+				return isSOTrx;
+		}
 		}
 		catch (Exception e)
 		{
-			if (TableName.endsWith("Line"))
+			// FIXME: hardcoded
+			if (tableName.endsWith("Line"))
 			{
-				String hdr = TableName.substring(0, TableName.indexOf("Line"));
+				String hdr = tableName.substring(0, tableName.indexOf("Line"));
 				// metas: use IN instead of EXISTS as the subquery should be highly selective
-				sql = "SELECT IsSOTrx FROM " + hdr
-						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + TableName
+				final String sqlParent = "SELECT IsSOTrx FROM " + hdr
+						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + tableName
 						+ " l WHERE " + whereClause + ")";
 				PreparedStatement pstmt2 = null;
 				ResultSet rs2 = null;
 				try
 				{
-					pstmt2 = DB.prepareStatement(sql, null);
+					pstmt2 = DB.prepareStatement(sqlParent, ITrx.TRXNAME_None);
 					rs2 = pstmt2.executeQuery();
 					if (rs2.next())
-						isSOTrx = "Y".equals(rs2.getString(1));
+					{
+						final boolean isSOTrx = DisplayType.toBoolean(rs2.getString(1));
+						return isSOTrx;
+				}
 				}
 				catch (Exception ee)
 				{
 					ee = DBException.extractSQLExceptionOrNull(ee);
-					log.trace("Error while checking isSOTrx (SQL: {})", sql, ee);
+					log.trace("Error while checking isSOTrx (SQL: {})", sqlParent, ee);
 				}
 				finally
 				{
@@ -1752,17 +1683,19 @@ public final class DB
 			}
 			else
 			{
-				log.trace("Table {} has no IsSOTrx column", TableName, e);
+				log.trace("Table {} has no IsSOTrx column", tableName, e);
 			}
 		}
 		finally
 		{
-			close(rs);
-			close(pstmt);
+			close(rs, pstmt);
 			rs = null;
 			pstmt = null;
 		}
-		return isSOTrx;
+		
+		//
+		// Default fallback: consider IsSOTrx=true
+		return true;
 	}	// isSOTrx
 
 	/**************************************************************************

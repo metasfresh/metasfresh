@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Region;
 
 /**
  * @author cg
@@ -74,4 +75,6 @@ public interface ICountryDAO extends ISingletonService
 	 * @return countries
 	 */
 	public List<I_C_Country> getCountries(Properties ctx);
+
+	List<I_C_Region> retrieveRegions(Properties ctx, int countryId);
 }

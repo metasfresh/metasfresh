@@ -1378,7 +1378,7 @@ public final class POInfo implements Serializable
 	 * 
 	 * NOTE: values are parameterized
 	 * 
-	 * @return SQL where clause
+	 * @return SQL where clause (e.g. KeyColumn_ID=?)
 	 */
 	/* package */String getSqlWhereClauseByKeys()
 	{
@@ -1398,7 +1398,6 @@ public final class POInfo implements Serializable
 			sb.append(keyColumnName).append("=?");
 		}
 		return sb.toString();
-
 	}
 
 	/**

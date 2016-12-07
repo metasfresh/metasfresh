@@ -3,7 +3,8 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 /**
- * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
+ * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ * TODO: move it into a shared library
  */
 def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
 {
@@ -184,6 +185,10 @@ def deleteRepo(String repoId)
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
+
+// currently, the code in these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
+final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
+echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -370,7 +375,8 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 } // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // invoke external build jobs like webui
-// wait for the results, but don't block a node for it
+// wait for the results, but don't block a node while waiting
+// TODO: invoke them in parallel
 stage('Invoke downstream jobs') 
 {
 	if(params.MF_SKIP_TO_DIST) 
@@ -379,21 +385,26 @@ stage('Invoke downstream jobs')
 	}
 	else
 	{
-	invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
-	invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
-	// more do come: admin-webui, maybe the webui-javascript frontend too
-
-	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-	node('linux')
-	{	
-		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
-			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-			final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
-			
-			sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
 		}
-	}
+	
+		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+		// more do come: admin-webui, maybe the webui-javascript frontend too
+
+		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+		echo "Going to notify external systems via zapier webhook"
+		node('linux')
+		{	
+			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
+			{
+				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
+				final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+				
+				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+			}
+		}
 	} // if(params.MF_SKIP_TO_DIST)
 }
 
@@ -428,7 +439,8 @@ node('agent && linux && libc6-i386')
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
-						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]] // failed if there was stale stuff checked out around /de.metas.endcustomer.mf15
+						// with sparse checkout we sometimes got errors like "stderr: error: Entry 'de.metas.acct.base/LICENSE.txt' not uptodate. Cannot update sparse checkout."
+						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
@@ -498,13 +510,14 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
-if(params.MF_SKIP_SQL_MIGRATION_TEST)
+
+stage('Test SQL-Migration')
 {
-	echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-}
-else
-{
-	stage('Test SQL-Migration')
+	if(params.MF_SKIP_SQL_MIGRATION_TEST)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+	}
+	else
 	{
 		node('master')
 		{
@@ -525,7 +538,7 @@ else
 
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="mf15_cloud_it-${env.BUILD_NUMBER}-${BUILD_VERSION}"
+			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
 					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 					.toLowerCase(); // also, DB names are generally in lowercase
 
@@ -533,16 +546,16 @@ else
 			
 			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
 		}
-	}
-}
+	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
+} // stage
 
-if(params.MF_SKIP_DEPLOYMENT)
+stage('Deployment')
 {
-	echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
-}
-else
-{
-	stage('Deployment')
+	if(params.MF_SKIP_DEPLOYMENT)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
+	}
+	else
 	{
 		final userInput;
 
@@ -609,7 +622,7 @@ else
 		{
 			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
 		} // if(userinput)
-	} // stage
-} // if(params.MF_SKIP_DEPLOYMENT)
+	} // if(params.MF_SKIP_DEPLOYMENT)
+} // stage
 } // timestamps
 

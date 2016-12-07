@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -176,6 +177,12 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	{
 		return POJOWrapper.isValueChanged(model, columnNames);
 	}
+	
+	@Override
+	public boolean isNull(final Object model, final String columnName)
+	{
+		return POJOWrapper.isNull(model, columnName);
+	}
 
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
@@ -194,5 +201,11 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	public <T extends PO> T getPO(final Object model, final boolean strict)
 	{
 		throw new UnsupportedOperationException("Getting PO from '" + model + "' is not supported in JUnit testing mode");
+	}
+	
+	@Override
+	public Evaluatee getEvaluatee(final Object model)
+	{
+		return POJOWrapper.getWrapper(model).asEvaluatee();
 	}
 }

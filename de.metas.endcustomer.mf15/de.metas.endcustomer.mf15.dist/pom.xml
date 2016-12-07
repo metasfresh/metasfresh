@@ -89,11 +89,14 @@ Since we now work with a range, we now declare the dependencies here where range
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		
+		<!-- removed because we are not using it
 		<dependency>
 			<groupId>de.metas.admin.webui</groupId>
 			<artifactId>de.metas.admin.webui</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		-->
 
 <!-- 
 SQL and jasper dependencies:

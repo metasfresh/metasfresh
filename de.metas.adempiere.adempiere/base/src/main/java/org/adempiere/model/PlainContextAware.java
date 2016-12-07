@@ -53,6 +53,14 @@ public final class PlainContextAware implements IContextAware
 		final boolean allowThreadInherited = true;
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None, allowThreadInherited);
 	}
+	
+	/**
+	 * @return a {@link IContextAware} for {@link Env#getCtx()} and {@link ITrx#TRXNAME_None}.
+	 */
+	public static final PlainContextAware createUsingOutOfTransaction()
+	{
+		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+	}
 
 	/**
 	 * @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_ThreadInherited}.

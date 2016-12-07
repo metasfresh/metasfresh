@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
+import org.compiere.util.Evaluatee;
 
 /*
  * #%L
@@ -119,9 +120,21 @@ public interface IInterfaceWrapperHelper
 	 */
 	boolean isValueChanged(Object model, Set<String> columnNames);
 
+	/**
+	 * Checks if given columnName's value is <code>null</code>
+	 *
+	 * @param model
+	 * @param columnName
+	 * @return <code>true</code> if columnName's value is <code>null</code>
+	 */
+	boolean isNull(Object model, String columnName);
+	
 	<T> T getDynAttribute(final Object model, final String attributeName);
 
 	Object setDynAttribute(final Object model, final String attributeName, final Object value);
 
 	<T extends PO> T getPO(final Object model, final boolean strict);
+
+	Evaluatee getEvaluatee(Object model);
+
 }

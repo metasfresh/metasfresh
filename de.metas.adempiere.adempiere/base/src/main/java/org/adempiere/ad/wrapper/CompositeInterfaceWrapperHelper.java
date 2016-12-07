@@ -9,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -231,6 +232,18 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return getHelperThatCanHandle(model)
 				.isValueChanged(model, columnNames);
 	}
+	
+	@Override
+	public boolean isNull(final Object model, final String columnName)
+	{
+		if (model == null)
+		{
+			return true;
+		}
+		
+		return getHelperThatCanHandle(model)
+				.isNull(model, columnName);
+	}
 
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
@@ -265,4 +278,22 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return getHelperThatCanHandle(model)
 				.getPO(model, strict);
 	}
+
+	@Override
+	public Evaluatee getEvaluatee(final Object model)
+	{
+		if (model == null)
+		{
+			return null;
+		}
+		else if (model instanceof Evaluatee)
+		{
+			final Evaluatee evaluatee = (Evaluatee)model;
+			return evaluatee;
+		}
+		
+		return getHelperThatCanHandle(model)
+				.getEvaluatee(model);
+	}
+
 }

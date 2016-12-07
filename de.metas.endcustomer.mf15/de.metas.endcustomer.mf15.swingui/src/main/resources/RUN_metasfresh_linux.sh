@@ -48,14 +48,14 @@ fi
 
 #  To use your own Encryption class (implementing org.compiere.util.SecureInterface),
 #  you need to set it here (and in the server start script) - example:
-#  SECURE=-DADEMPIERE_SECURE=org.compiere.util.Secure
+#  SECURE=-DMETASFRESH_SECURE=org.compiere.util.Secure
 SECURE=
 
 MEMORY_OPTS="-Xms32m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"
 
 # -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)"
 # -Dsun.java2d.xrender=false is related to http://stackoverflow.com/questions/34188495/how-can-i-work-around-the-classcastexception-in-java2d-bug-id-7172749 . The problem happens in some X environments
-JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dsun.java2d.xrender=false -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
+JAVA_OPTS="${JAVA_OPTS} -Djava.util.Arrays.useLegacyMergeSort=true -Dsun.java2d.xrender=false -DMETASFRESH_HOME=$METASFRESH_HOME $PROP $SECURE -classpath $CLASSPATH org.compiere.Adempiere"
 
 echo "JAVA_OPTS = $JAVA_OPTS"
 echo "JAR_FILE = $JAR_FILE"
@@ -65,8 +65,8 @@ echo "SECURE=$SECURE"
 
 echo "================================"
 echo "about to execute"
-echo "$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $PROP $SECURE -jar $JAR_FILE"
+echo "$JAVA $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $PROP $SECURE -jar $JAR_FILE"
 echo "================================"
 
-$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DADEMPIERE_HOME=$ADEMPIERE_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
+$JAVA $MEMORY_OPTS $JAVA_OPTS $REMOTE_DEBUG_OPTS -DMETASFRESH_HOME=$METASFRESH_HOME $METASFRESH_CLIENT_CHECK_OPTS -Dlogging.path=$LOG_DIR $PROP $SECURE -jar $JAR_FILE
 

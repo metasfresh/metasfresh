@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.pricing.api.IPriceListDAO;
@@ -53,7 +52,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
@@ -779,37 +777,6 @@ public class OrderBL implements IOrderBL
 			logger.debug("MOrder.setBPartner - Has no Bill To Address: " + billBPartner);
 		}
 		return foundLoc;
-	}
-
-	@Override
-	public void setOrder(final org.compiere.model.I_C_OrderLine orderLine, final I_C_Order order, final String trxName)
-	{
-		orderLine.setC_Order_ID(order.getC_Order_ID());
-
-		Services.get(IPOService.class).copyClientOrg(order, orderLine);
-
-		orderLine.setC_BPartner_ID(order.getC_BPartner_ID());
-		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		orderLine.setM_Warehouse_ID(order.getM_Warehouse_ID());
-		orderLine.setDateOrdered(order.getDateOrdered());
-		orderLine.setDatePromised(order.getDatePromised());
-		orderLine.setC_Currency_ID(order.getC_Currency_ID());
-	}
-
-	@Override
-	public void setProduct(final org.compiere.model.I_C_OrderLine orderLine, final I_M_Product product)
-	{
-		if (product != null)
-		{
-			orderLine.setM_Product_ID(product.getM_Product_ID());
-			orderLine.setC_UOM_ID(product.getC_UOM_ID());
-		}
-		else
-		{
-			orderLine.setM_Product_ID(0);
-			orderLine.setC_UOM_ID(0);
-		}
-		orderLine.setM_AttributeSetInstance_ID(0);
 	}
 
 	@Override

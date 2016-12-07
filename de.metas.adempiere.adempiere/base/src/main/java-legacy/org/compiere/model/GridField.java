@@ -1302,7 +1302,7 @@ public class GridField
 	 */
 	public boolean isParentColumn()
 	{
-		return m_vo.IsParent;
+		return m_vo.isParentLink();
 	}
 
 	/**
@@ -1970,10 +1970,13 @@ public class GridField
 
 		//
 		// No IsActive flag found => assume true, but log a message, so we can fix it
-		log.warn("No IsActive flag found on WindowNo=" + m_vo.WindowNo + ", TabNo=" + m_vo.TabNo
-				+ ", WindowName=" + Services.get(IADWindowDAO.class).retrieveWindowName(getAD_Window_ID())
-				+ ", TableName=" + Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID())
-				+ ". Considering IsActive=Y");
+		if(log.isWarnEnabled())
+		{
+			log.warn("No IsActive flag found on WindowNo=" + m_vo.WindowNo + ", TabNo=" + m_vo.TabNo
+					+ ", WindowName=" + Services.get(IADWindowDAO.class).retrieveWindowName(getAD_Window_ID())
+					+ ", TableName=" + Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID())
+					+ ". Considering IsActive=Y");
+		}
 		return true;
 	}
 

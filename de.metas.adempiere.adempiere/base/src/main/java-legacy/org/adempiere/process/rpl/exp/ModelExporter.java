@@ -101,7 +101,7 @@ public class ModelExporter extends JavaProcess {
 		if(p_FileName == null)
 		{
 			// Load XML file and parse it
-			String fileNameOr = org.compiere.util.Ini.getAdempiereHome()
+			String fileNameOr = org.compiere.util.Ini.getMetasfreshHome()
 			+ System.getProperty("file.separator")  
 			+ "data"
 			+ System.getProperty("file.separator")

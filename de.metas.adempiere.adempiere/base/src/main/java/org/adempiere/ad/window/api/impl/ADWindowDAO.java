@@ -53,24 +53,30 @@ public class ADWindowDAO implements IADWindowDAO
 	public String retrieveWindowName(final int adWindowId)
 	{
 		final Properties ctx = Env.getCtx();
-		final I_AD_Window window = retrieveWindow(ctx, adWindowId); // using a simple DB call would be faster, but this way it's less coupled and after all we have caching
-		return window.getName();
+		return retrieveWindowNameCached(ctx, adWindowId);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	public I_AD_Window retrieveWindow(
+	public String retrieveWindowNameCached(
 			@CacheCtx final Properties ctx,
 			final int adWindowId)
 	{
+		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
+		
 		final I_AD_Window window = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Window.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
 				.firstOnly(I_AD_Window.class);
-
-		return window;
+		
+		if(window == null)
+		{
+			return null;
+		}
+		
+		final I_AD_Window windowTrl = InterfaceWrapperHelper.translate(window, I_AD_Window.class);
+		return window.getName();
 	}
 
 	@Override

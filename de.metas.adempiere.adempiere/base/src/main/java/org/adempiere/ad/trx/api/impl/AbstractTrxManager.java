@@ -985,6 +985,12 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 		return trx.getTrxListenerManager();
 	}
+	
+	@Override
+	public ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit()
+	{
+		return getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
+	}
 
 	@Override
 	public final boolean isNull(final ITrx trx)
