@@ -86,7 +86,7 @@ public class ProcessInstancesRepository
 
 	public void checkin(final ProcessInstance processInstance)
 	{
-		processInstance.saveIfValidAndHasChanges();
+		processInstance.saveIfValidAndHasChanges(false); // throwEx=false
 		processInstances.put(processInstance.getAD_PInstance_ID(), processInstance.copy(CopyMode.CheckInReadonly));
 	}
 
