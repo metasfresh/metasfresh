@@ -14,7 +14,7 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -812352325L;
+	private static final long serialVersionUID = -532356150L;
 
     /** Standard Constructor */
     public X_DLM_Partition_Config_Reference (Properties ctx, int DLM_Partition_Config_Reference_ID, String trxName)
@@ -26,6 +26,8 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 			setDLM_Partition_Config_Reference_ID (0);
 			setDLM_Referenced_Table_ID (0);
 			setDLM_Referencing_Column_ID (0);
+			setIsPartitionBoundary (false);
+// N
         } */
     }
 
@@ -43,6 +45,22 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
 
 	@Override
 	public de.metas.dlm.model.I_DLM_Partition_Config_Line getDLM_Partition_Config_Line() throws RuntimeException
@@ -166,5 +184,31 @@ public class X_DLM_Partition_Config_Reference extends org.compiere.model.PO impl
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Partitionsgrenze.
+		@param IsPartitionBoundary 
+		Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	  */
+	@Override
+	public void setIsPartitionBoundary (boolean IsPartitionBoundary)
+	{
+		set_Value (COLUMNNAME_IsPartitionBoundary, Boolean.valueOf(IsPartitionBoundary));
+	}
+
+	/** Get Partitionsgrenze.
+		@return Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	  */
+	@Override
+	public boolean isPartitionBoundary () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPartitionBoundary);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

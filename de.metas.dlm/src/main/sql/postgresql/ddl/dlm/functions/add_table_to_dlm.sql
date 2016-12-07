@@ -2,7 +2,6 @@
   RETURNS void AS
 $BODY$
 DECLARE
-    -- v_index_view_row dlm.indices;
 	v_trigger_view_row dlm.triggers;
 BEGIN
 	BEGIN
@@ -15,6 +14,7 @@ BEGIN
 	EXCEPTION
 		WHEN duplicate_column THEN RAISE NOTICE 'Column DLM_Level already exists in %. Nothing do to', p_table_name;
     END;
+
 	BEGIN
 		EXECUTE 'ALTER TABLE ' || p_table_name || ' ADD COLUMN DLM_Partition_ID numeric(10,0);';
 		RAISE NOTICE 'add_table_to_dlm - %: Added column DLM_Partition_ID to table %', p_table_name, p_table_name;
@@ -26,7 +26,7 @@ BEGIN
 	   See https://www.postgresql.org/docs/9.5/static/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY.
 	   However, this doesn't work: "ERROR: CREATE INDEX CONCURRENTLY cannot be executed from a function or multi-command string"
 	 */
-	/* Non-partial indices; they large and grow with the table, but so does everything else, and at most times the DBMS will only have to keep those blocks in memory that have DLM_Level=0.
+	/* Non-partial indices; they are large and grow with the table, but so does everything else, and at most times the DBMS will only have to keep those blocks in memory that have DLM_Level=0.
 	   And this way we have the flexibility to go with current_setting('metasfresh.DLM_Level').
 	 */
 	EXECUTE 'CREATE INDEX IF NOT EXISTS ' || p_table_name || '_DLM_Level ON ' || p_table_name || ' (DLM_Level)';   
@@ -35,8 +35,6 @@ BEGIN
 	
 	PERFORM dlm.reset_dlm_view(p_table_name);
 	
---	EXECUTE 'CREATE VIEW dlm.' || p_table_name || ' AS SELECT * FROM ' || p_table_name || ' WHERE COALESCE(DLM_Level, current_setting(''metasfresh.DLM_Coalesce_Level'')::smallint) <= current_setting(''metasfresh.DLM_Level'')::smallint;';
---	EXECUTE 'COMMENT ON VIEW dlm.' || p_table_name || ' IS ''This view selects records according to the metasfresh.DLM_Coalesce_Level and metasfresh.DLM_Level DBMS parameters. See task gh #489'';';
 	RAISE NOTICE 'add_table_to_dlm - %: Created view dlm.%', p_table_name, p_table_name;
 
 	/* Create triggers and trigger functions for each FK constraint.
@@ -44,8 +42,8 @@ BEGIN
 	PERFORM dlm.create_dlm_triggers(p_table_name);
 	
 	/* make sure that the DB actually takes note of what we just did */
-	EXECUTE 'ANALYZE ' || p_table_name || ';'; 
-	RAISE NOTICE 'Called ANALYZE %', p_table_name;
+	EXECUTE 'ANALYZE public.' || p_table_name || ';'; 
+	RAISE NOTICE 'Called ANALYZE public.%', p_table_name;
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE; 

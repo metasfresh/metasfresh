@@ -34,7 +34,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Column;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
@@ -54,6 +53,7 @@ import de.metas.dlm.exception.DLMReferenceException;
 import de.metas.dlm.exception.TableNotAddedToDLMException;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_AD_Column;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
@@ -437,6 +437,11 @@ public class PartitionerService implements IPartitionerService
 				// but only add them if they were not yet identified as parts of this partition (i.e. not yet added to 'records').
 				for (final PartitionerConfigReference forwardRef : forwardRefs)
 				{
+					if(forwardRef.isPartitionBoundary())
+					{
+						continue;
+					}
+
 					// the table name for the foreign record which has 'foreignKey' as its ID
 					final String forwardTableName = forwardRef.getReferencedTableName();
 					final String forwardColumnName = forwardRef.getReferencingColumnName();
@@ -511,6 +516,11 @@ public class PartitionerService implements IPartitionerService
 			final List<PartitionerConfigReference> backwardRefs = config.getReferences(currentTableName);
 			for (final PartitionerConfigReference backwardRef : backwardRefs)
 			{
+				if(backwardRef.isPartitionBoundary())
+				{
+					continue;
+				}
+
 				final PartitionerConfigLine backwardLine = backwardRef.getParent();
 				final String backwardTableName = backwardLine.getTableName();
 				final String backwardColumnName = backwardRef.getReferencingColumnName();
@@ -838,7 +848,7 @@ public class PartitionerService implements IPartitionerService
 				final int referencedTableID = adTableDAO.retrieveTableId(ref.getReferencedTableName());
 				configRefDB.setDLM_Referenced_Table_ID(referencedTableID);
 
-				final I_AD_Column referencingColumn = adTableDAO.retrieveColumn(line.getTableName(), ref.getReferencingColumnName());
+				final I_AD_Column referencingColumn = InterfaceWrapperHelper.create(adTableDAO.retrieveColumn(line.getTableName(), ref.getReferencingColumnName()), I_AD_Column.class);
 				configRefDB.setDLM_Referencing_Column(referencingColumn);
 
 				InterfaceWrapperHelper.save(configRefDB);
@@ -905,7 +915,10 @@ public class PartitionerService implements IPartitionerService
 				final RefBuilder refBuilder = lineBuilder.ref()
 						.setReferencedTableName(ref.getDLM_Referenced_Table().getTableName())
 						.setReferencingColumnName(ref.getDLM_Referencing_Column().getColumnName())
-						.setDLM_Partition_Config_Reference_ID(ref.getDLM_Partition_Config_Reference_ID());
+						.setDLM_Partition_Config_Reference_ID(ref.getDLM_Partition_Config_Reference_ID())
+						.setIsPartitionBoundary(
+								InterfaceWrapperHelper.create(ref.getDLM_Referencing_Column(), I_AD_Column.class)
+										.isDLMPartitionBoundary());
 
 				refBuilder.endRef();
 			}

@@ -4,7 +4,7 @@ CREATE OR REPLACE VIEW dlm.triggers AS
 SELECT 
 	fk_info.*,
 ------------------------- DDL to drop the trigger ------------------------- 
-	'DROP TRIGGER IF EXISTS dlm_' || fk_info.constraint_name || '_tg ON '|| fk_info.foreign_table_name ||';' AS drop_dlm_trigger_ddl,
+	'DROP TRIGGER IF EXISTS dlm_' || fk_info.constraint_name || '_tg ON public.'|| fk_info.foreign_table_name ||';' AS drop_dlm_trigger_ddl,
 	
 ------------------------- DDL to create the trigger ------------------------- 
 	'DROP TRIGGER IF EXISTS dlm_' || fk_info.constraint_name || '_tg ON public.'|| fk_info.foreign_table_name ||';

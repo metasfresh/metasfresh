@@ -49,15 +49,19 @@ public class PartitionerConfigReference
 	private final String referencedTableName;
 	private final String referencingColumnName;
 	private final PartitionerConfigLine parent;
+	private final boolean partitionBoundary;
+
 	private int DLM_Partition_Config_Reference_ID;
 
 	private PartitionerConfigReference(final PartitionerConfigLine parent,
 			final String referencingColumnName,
-			final String referencedTableName)
+			final String referencedTableName,
+			final boolean partitionBoundary)
 	{
 		this.parent = parent;
 		this.referencingColumnName = referencingColumnName;
 		this.referencedTableName = referencedTableName;
+		this.partitionBoundary = partitionBoundary;
 	}
 
 	public String getReferencedTableName()
@@ -70,10 +74,10 @@ public class PartitionerConfigReference
 		return referencingColumnName;
 	}
 
-	// public PartitionerConfigLine getReferencedConfigLine()
-	// {
-	// return referencedConfigLine;
-	// }
+	public boolean isPartitionBoundary()
+	{
+		return partitionBoundary;
+	}
 
 	public PartitionerConfigLine getParent()
 	{
@@ -83,7 +87,7 @@ public class PartitionerConfigReference
 	@Override
 	public String toString()
 	{
-		return "PartitionConfigReference [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + "]";
+		return "PartitionConfigReference [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", partitionBoundary=" + partitionBoundary + "]";
 	}
 
 	/**
@@ -130,7 +134,9 @@ public class PartitionerConfigReference
 		private String referencingColumnName = "";
 
 		private final PartitionerConfigLine.LineBuilder parentbuilder;
+
 		private int DLM_Partition_Config_Reference_ID;
+		private boolean partitionBoundary;
 
 		RefBuilder(final PartitionerConfigLine.LineBuilder parentBuilder)
 		{
@@ -174,6 +180,12 @@ public class PartitionerConfigReference
 			return DLM_Partition_Config_Reference_ID;
 		}
 
+		public RefBuilder setIsPartitionBoundary(boolean partitionBoundary)
+		{
+			this.partitionBoundary = partitionBoundary;
+			return this;
+		}
+
 		public LineBuilder endRef()
 		{
 			return parentbuilder.endRef();
@@ -197,7 +209,7 @@ public class PartitionerConfigReference
 		 */
 		/* package */ PartitionerConfigReference build(final PartitionerConfigLine parent)
 		{
-			final PartitionerConfigReference partitionerConfigReference = new PartitionerConfigReference(parent, referencingColumnName, referencedTableName);
+			final PartitionerConfigReference partitionerConfigReference = new PartitionerConfigReference(parent, referencingColumnName, referencedTableName, partitionBoundary);
 			partitionerConfigReference.setDLM_Partition_Config_Reference_ID(DLM_Partition_Config_Reference_ID);
 			return partitionerConfigReference;
 		}
@@ -239,7 +251,7 @@ public class PartitionerConfigReference
 		@Override
 		public String toString()
 		{
-			return "RefBuilder [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", DLM_Partition_Config_Reference_ID=" + DLM_Partition_Config_Reference_ID + "]";
+			return "RefBuilder [referencingColumnName=" + referencingColumnName + ", referencedTableName=" + referencedTableName + ", partitionBoundary=" + partitionBoundary + ", DLM_Partition_Config_Reference_ID=" + DLM_Partition_Config_Reference_ID + "]";
 		}
 	}
 }

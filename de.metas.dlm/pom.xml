@@ -42,12 +42,13 @@
 			<scope>test</scope>
 		</dependency>
 
+<!-- currently not used TODO: remove unless we eventually use it 
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
+ -->
 	</dependencies>
 
 </project>

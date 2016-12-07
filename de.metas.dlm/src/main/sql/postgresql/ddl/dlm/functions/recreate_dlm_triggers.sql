@@ -1,7 +1,6 @@
 ﻿CREATE OR REPLACE FUNCTION dlm.recreate_dlm_triggers(p_table_name text)
   RETURNS void AS
 $BODY$
-DECLARE
 BEGIN
 	PERFORM dlm.drop_dlm_triggers(p_table_name);
 	PERFORM dlm.create_dlm_triggers(p_table_name);

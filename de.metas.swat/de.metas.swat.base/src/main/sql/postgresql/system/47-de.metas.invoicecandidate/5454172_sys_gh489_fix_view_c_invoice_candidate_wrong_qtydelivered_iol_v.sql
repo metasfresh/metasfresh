@@ -1,4 +1,4 @@
-﻿
+
 DROP VIEW IF EXISTS de_metas_invoicecandidate.c_invoice_candidate_wrong_qtydelivered_iol_v;
 CREATE OR REPLACE VIEW de_metas_invoicecandidate.c_invoice_candidate_wrong_qty_iol_v AS 
 SELECT 

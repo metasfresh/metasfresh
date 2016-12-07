@@ -99,6 +99,29 @@ public interface I_DLM_Partition_Config_Reference
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set DLM Partitionierungskonfigzeile.
 	 *
 	 * <br>Type: TableDir
@@ -226,6 +249,31 @@ public interface I_DLM_Partition_Config_Reference
     public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Partitionsgrenze.
+	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPartitionBoundary (boolean IsPartitionBoundary);
+
+	/**
+	 * Get Partitionsgrenze.
+	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPartitionBoundary();
+
+    /** Column definition for IsPartitionBoundary */
+    public static final org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object> COLUMN_IsPartitionBoundary = new org.adempiere.model.ModelColumn<I_DLM_Partition_Config_Reference, Object>(I_DLM_Partition_Config_Reference.class, "IsPartitionBoundary", null);
+    /** Column name IsPartitionBoundary */
+    public static final String COLUMNNAME_IsPartitionBoundary = "IsPartitionBoundary";
 
 	/**
 	 * Get Aktualisiert.
