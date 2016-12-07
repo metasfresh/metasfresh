@@ -394,14 +394,15 @@ stage('Invoke downstream jobs')
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+		echo "Going to notify external systems via zapier webhook"
 		node('linux')
 		{	
 			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 			{
-				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
 				final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
 				
-				sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 			}
 		}
 	} // if(params.MF_SKIP_TO_DIST)
@@ -509,13 +510,14 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\"" 
 }
 
-if(params.MF_SKIP_SQL_MIGRATION_TEST)
+
+stage('Test SQL-Migration')
 {
-	echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-}
-else
-{
-	stage('Test SQL-Migration')
+	if(params.MF_SKIP_SQL_MIGRATION_TEST)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+	}
+	else
 	{
 		node('master')
 		{
@@ -544,16 +546,16 @@ else
 			
 			invokeRemoteInHomeDir("rm -r ${deployDir}"); // cleanup
 		}
-	}
-}
+	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
+} // stage
 
-if(params.MF_SKIP_DEPLOYMENT)
+stage('Deployment')
 {
-	echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
-}
-else
-{
-	stage('Deployment')
+	if(params.MF_SKIP_DEPLOYMENT)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_DEPLOYMENT=${params.MF_SKIP_DEPLOYMENT}"
+	}
+	else
 	{
 		final userInput;
 
@@ -620,7 +622,7 @@ else
 		{
 			echo 'We skip the deployment step because no user clicked on "proceed" within the timeout.'
 		} // if(userinput)
-	} // stage
-} // if(params.MF_SKIP_DEPLOYMENT)
+	} // if(params.MF_SKIP_DEPLOYMENT)
+} // stage
 } // timestamps
 
