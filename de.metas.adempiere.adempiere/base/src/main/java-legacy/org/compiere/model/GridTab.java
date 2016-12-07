@@ -38,6 +38,7 @@ import javax.swing.event.EventListenerList;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
+import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -3346,13 +3347,15 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			calloutExecutor.execute(field);
 		}
+		catch(final CalloutException e)
+		{
+			final String errmsg = AdempiereException.extractMessage(e);
+			log.warn("Failed executing callout on {}. \n Error message: {} \n CalloutInstance: {}", field, errmsg, e.getCalloutInstance(), e);
+			return errmsg;
+		}
 		catch (final Exception e)
 		{
-			String errmsg = e.getLocalizedMessage();
-			if (Check.isEmpty(errmsg, true))
-			{
-				errmsg = e.toString();
-			}
+			final String errmsg = AdempiereException.extractMessage(e);
 
 			log.warn(errmsg, e);
 			return errmsg;

@@ -16,10 +16,8 @@
  *****************************************************************************/
 package org.compiere.impexp;
 
-import java.math.BigDecimal;
-
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -36,16 +34,16 @@ public class CopyImportFormat extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter para : getParameters())
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = para.getParameterName();
+			if (para.getParameter() == null)
 				;
-			else if (name.equals("AD_ImpFormat_ID"))
-				from_AD_ImpFormat_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			else if ("AD_ImpFormat_ID".equals(name))
+				from_AD_ImpFormat_ID = para.getParameterAsInt();
 			else
 				log.error("prepare - Unknown Parameter: " + name);
 		}
@@ -58,6 +56,7 @@ public class CopyImportFormat extends JavaProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("doIt = From=" + from_AD_ImpFormat_ID + " To=" + to_AD_ImpFormat_ID);

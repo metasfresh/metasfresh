@@ -33,12 +33,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelation;
-import org.adempiere.model.MRelationType;
-import org.adempiere.util.MiscUtils;
-import org.adempiere.util.MiscUtils.ArrayKey;
+import org.adempiere.model.RelationTypeZoomProvider;
+import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
@@ -58,6 +56,8 @@ import org.compiere.model.Query;
 import org.compiere.model.X_M_Replenish;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -354,7 +354,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 
 		final List<I_C_OrderLine> removedSOLines = new ArrayList<I_C_OrderLine>();
 
-		for (final MOrderLine salesOrderLinePO : purchaseSchedule.retrieveSOls())
+		for (final org.compiere.model.I_C_OrderLine salesOrderLinePO : purchaseSchedule.retrieveSOls())
 		{
 			final I_C_OrderLine saleOrderLine = InterfaceWrapperHelper.create(salesOrderLinePO, I_C_OrderLine.class);
 
@@ -476,7 +476,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 			keyParams.add(0);
 		}
 
-		return MiscUtils.mkKey(keyParams.toArray());
+		return Util.mkKey(keyParams.toArray());
 	}
 
 	/**
@@ -498,37 +498,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 
 		keyParams.add(0);
 
-		return MiscUtils.mkKey(keyParams.toArray());
-	}
-
-	@Override
-	public Collection<MMPurchaseSchedule> retrieveOrCreateForPO(final MOrder order)
-	{
-		assert !order.isSOTrx() : order;
-
-		final Collection<MMPurchaseSchedule> purchaseScheds = new ArrayList<MMPurchaseSchedule>();
-
-		for (final MOrderLine ol : order.getLines())
-		{
-			final Properties ctx = order.getCtx();
-			final String trxName = order.get_TrxName();
-
-			final List<MMPurchaseSchedule> schedsForLine = MMPurchaseSchedule.retrieveForPOLine(ctx, ol, trxName);
-			if (!schedsForLine.isEmpty())
-			{
-				purchaseScheds.addAll(schedsForLine);
-				continue;
-				// nothing more to do
-			}
-
-			final MMPurchaseSchedule newSched = MMPurchaseSchedule.createForPurchaseOL(ctx, InterfaceWrapperHelper.create(ol, I_C_OrderLine.class), trxName);
-			newSched.setC_BPartner_ID(order.getC_BPartner_ID());
-			newSched.setC_OrderPO_ID(order.get_ID());
-
-			newSched.saveEx();
-		}
-
-		return purchaseScheds;
+		return Util.mkKey(keyParams.toArray());
 	}
 
 	@Override
@@ -784,7 +754,7 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 			final I_M_PurchaseSchedule sched,
 			final String trxName)
 	{
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME, trxName);
+		final RelationTypeZoomProvider relType = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OrderLine.Table_Name, MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME);
 
 		BigDecimal qtyReserved = BigDecimal.ZERO;
 		BigDecimal qtyOrdered = BigDecimal.ZERO;
@@ -798,8 +768,8 @@ public final class PurchaseScheduleBL implements IPurchaseScheduleBL
 			qtyReserved = qtyReserved.add(sol.getQtyReserved());
 
 			// retrieve the purchase order lines that have already been created for 'sol'
-			final List<MOrderLine> pols = MRelation.retrieveDestinations(ctx, relType, sol, trxName);
-			for (final MOrderLine pol : pols)
+			final List<I_C_OrderLine> pols = MRelation.retrieveDestinations(ctx, relType, sol, I_C_OrderLine.class, trxName);
+			for (final I_C_OrderLine pol : pols)
 			{
 				qtyOrdered = qtyOrdered.add(pol.getQtyReserved());
 			}

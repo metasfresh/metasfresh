@@ -50,7 +50,7 @@ public class LocalJasperServer implements IJasperServer
 	private static final Logger logger = LogManager.getLogger(LocalJasperServer.class);
 
 	@Override
-	public byte[] report(int processId, int pinstanceId, final String language, final OutputType outputType) throws Exception
+	public byte[] report(int processId, int pinstanceId, final String adLanguage, final OutputType outputType) throws Exception
 	{
 		//
 		// Load process info
@@ -59,6 +59,7 @@ public class LocalJasperServer implements IJasperServer
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(processId)
 				.setAD_PInstance_ID(pinstanceId)
+				.setReportLanguage(adLanguage)
 				.setJRDesiredOutputType(outputType)
 				.build();
 		
@@ -80,7 +81,7 @@ public class LocalJasperServer implements IJasperServer
 				.setAD_Process_ID(processInfo.getAD_Process_ID())
 				.setAD_PInstance_ID(processInfo.getAD_PInstance_ID())
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
-				.setAD_Language(language)
+				.setAD_Language(processInfo.getReportAD_Language())
 				.setOutputType(processInfo.getJRDesiredOutputType())
 				.setReportTemplatePath(processInfo.getReportTemplate().orElse(null))
 				.setSQLStatement(processInfo.getSQLStatement().orElse(null))

@@ -2,7 +2,6 @@ package org.adempiere.model;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -11,9 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.MRelationExplicitv1.SourceOrTarget;
 import org.adempiere.util.Check;
@@ -21,6 +17,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -89,19 +87,18 @@ public class MRelation extends X_AD_Relation
 			}
 		}
 	}
-	
-	private static List<I_AD_Relation> retrieve(final Properties ctx, final I_AD_RelationType type, final int recordId, final boolean normalDirection, final String trxName)
+
+	private static List<I_AD_Relation> retrieve(final Properties ctx, final int AD_RelationType_ID, final int recordId, final boolean normalDirection, final String trxName)
 	{
 		final IQueryBuilder<I_AD_Relation> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Relation.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_AD_Relation.COLUMNNAME_AD_RelationType_ID, type.getAD_RelationType_ID())
+				.addEqualsFilter(I_AD_Relation.COLUMNNAME_AD_RelationType_ID, AD_RelationType_ID)
 				//
 				.orderBy()
 				.addColumn(I_AD_Relation.COLUMNNAME_SeqNo)
-				.endOrderBy()
-				;
+				.endOrderBy();
 
 		if (normalDirection)
 		{
@@ -111,7 +108,7 @@ public class MRelation extends X_AD_Relation
 		{
 			queryBuilder.addEqualsFilter(I_AD_Relation.COLUMNNAME_Record_Target_ID, recordId);
 		}
-		
+
 		return queryBuilder.create().list(I_AD_Relation.class);
 	}
 
@@ -126,63 +123,88 @@ public class MRelation extends X_AD_Relation
 	 * @param trxName
 	 * @return
 	 */
-	public static <T extends PO> List<T> retrieveDestinations(final Properties ctx, final I_AD_RelationType type, final PO sourcePo, final String trxName)
+	public static <T> List<T> retrieveDestinations(
+			final Properties ctx //
+			, final RelationTypeZoomProvider relationType //
+			, final PO sourcePo //
+			, final Class<T> targetClass, final String trxName //
+	)
 	{
 		Check.assumeNotNull(sourcePo, "sourcePO not null");
 		final String sourceTableName = sourcePo.get_TableName();
 		final int sourceRecordId = sourcePo.get_ID();
 
-		return retrieveDestinations(ctx, type, sourceTableName, sourceRecordId, trxName);
+		return retrieveDestinations(ctx, relationType, sourceTableName, sourceRecordId, targetClass, trxName);
 	}
 
-	public static <T extends PO> List<T> retrieveDestinations(final Properties ctx, final I_AD_RelationType type, final String sourceTableName, final int sourceRecordId, final String trxName)
+	public static <T> List<T> retrieveDestinations(
+			final Properties ctx //
+			, final RelationTypeZoomProvider relationType //
+			, final String sourceTableName, final int sourceRecordId //
+			, final Class<T> targetClass //
+			, final String trxName //
+	)
 	{
-		if (!type.isExplicit())
+		if (!relationType.isExplicit())
 		{
-			throw new AdempiereException("Param 'type' must be explicit. type=" + type);
+			throw new AdempiereException("Param 'type' must be explicit. type=" + relationType);
 		}
 
-		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-		final ITableRefInfo refTargetTable = lookupDAO.retrieveTableRefInfo(type.getAD_Reference_Target_ID());
-		final ITableRefInfo refSourceTable = lookupDAO.retrieveTableRefInfo(type.getAD_Reference_Source_ID());
+		final String relationSourceTableName = relationType.getSourceTableName();
+		final String relationTargetTableName = relationType.getTargetTableName();
 
-		final boolean useNormalDirection = Objects.equals(refSourceTable.getTableName(), sourceTableName);
+		final boolean useNormalDirection = Objects.equals(relationSourceTableName, sourceTableName);
 
-		if (type.isDirected() && !useNormalDirection)
+		if (relationType.isDirected() && !useNormalDirection)
 		{
 			// there is noting to retrieve
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 		final List<T> result = new ArrayList<T>();
 
-		final String destTableName;
+		String destTableName = InterfaceWrapperHelper.getTableNameOrNull(targetClass);
 		if (useNormalDirection)
 		{
-			destTableName = refTargetTable.getTableName();
+			if (destTableName == null)
+			{
+				destTableName = relationTargetTableName;
+			}
+			else
+			{
+				Check.assume(destTableName.equals(relationTargetTableName), "Target class {} shall match {}", targetClass, relationTargetTableName);
+			}
 		}
 		else
 		{
-			destTableName = refSourceTable.getTableName();
+			if (destTableName == null)
+			{
+				destTableName = relationSourceTableName;
+			}
+			else
+			{
+				Check.assume(destTableName.equals(relationSourceTableName), "Target class {} shall match {}", targetClass, relationSourceTableName);
+			}
 		}
 
-		final List<I_AD_Relation> records = retrieve(ctx, type, sourceRecordId, useNormalDirection, trxName);
+		final List<I_AD_Relation> records = retrieve(ctx, relationType.getAD_RelationType_ID(), sourceRecordId, useNormalDirection, trxName);
 
-		addToRetrievedDestinations(ctx, useNormalDirection, result, destTableName, records, trxName);
+		addToRetrievedDestinations(ctx, useNormalDirection, result, destTableName, targetClass, records, trxName);
 
-		if(Objects.equals(refSourceTable.getTableName(), refTargetTable.getTableName()))
+		if (Objects.equals(relationSourceTableName, relationTargetTableName))
 		{
-			records.addAll(retrieve(ctx, type, sourceRecordId, !useNormalDirection, trxName));
-			addToRetrievedDestinations(ctx, !useNormalDirection, result, destTableName, records, trxName);
+			records.addAll(retrieve(ctx, relationType.getAD_RelationType_ID(), sourceRecordId, !useNormalDirection, trxName));
+			addToRetrievedDestinations(ctx, !useNormalDirection, result, destTableName, targetClass, records, trxName);
 		}
 
 		return result;
 	}
 
-	private static <T extends PO> void addToRetrievedDestinations(
+	private static <T> void addToRetrievedDestinations(
 			final Properties ctx //
 			, final boolean useNormalDirection //
 			, final List<T> result //
-			, final String destTableName //
+			, final String targetTableName //
+			, final Class<T> targetClass //
 			, final List<I_AD_Relation> records //
 			, final String trxName //
 	)
@@ -192,15 +214,15 @@ public class MRelation extends X_AD_Relation
 			final T destinationPO;
 			if (useNormalDirection)
 			{
-				destinationPO = (T)TableModelLoader.instance.getPO(ctx, destTableName, rel.getRecord_Target_ID(), trxName);
+				destinationPO = InterfaceWrapperHelper.create(ctx, targetTableName, rel.getRecord_Target_ID(), targetClass, trxName);
 			}
 			else
 			{
-				destinationPO = (T)TableModelLoader.instance.getPO(ctx, destTableName, rel.getRecord_Source_ID(), trxName);
+				destinationPO = InterfaceWrapperHelper.create(ctx, targetTableName, rel.getRecord_Source_ID(), targetClass, trxName);
 			}
 			if (destinationPO == null)
 			{
-				logger.warn("Destination PO with table=" + destTableName
+				logger.warn("Destination PO with " + targetClass
 						+ " and Record_ID=" + (useNormalDirection ? rel.getRecord_Target_ID() : rel.getRecord_Source_ID())
 						+ " doesn't exist; Deleting " + rel);
 				InterfaceWrapperHelper.delete(rel);

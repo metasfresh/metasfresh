@@ -293,7 +293,7 @@ public final class ProcessClassInfo
 	/**
 	 * @return <code>true</code> if we shall run {@link JavaProcess#prepare()} method out of transaction
 	 */
-	public boolean isRunPrepareOutOfTransaction()
+	/* package */public boolean isRunPrepareOutOfTransaction()
 	{
 		return runPrepareOutOfTransaction;
 	}
@@ -301,9 +301,17 @@ public final class ProcessClassInfo
 	/**
 	 * @return <code>true</code> if we shall run {@link JavaProcess#doIt()} method out of transaction
 	 */
-	public boolean isRunDoItOutOfTransaction()
+	/* package */boolean isRunDoItOutOfTransaction()
 	{
 		return runDoItOutOfTransaction;
+	}
+
+	/**
+	 * @return <code>true</code> if at least a part of the process shall be executed out of transaction
+	 */
+	public boolean isRunOutOfTransaction()
+	{
+		return runPrepareOutOfTransaction || runDoItOutOfTransaction;
 	}
 
 	/**

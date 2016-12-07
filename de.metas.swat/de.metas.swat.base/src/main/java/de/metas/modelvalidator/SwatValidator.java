@@ -378,7 +378,10 @@ public class SwatValidator implements ModelValidator
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		configDatabase(); // run it again here because ModelValidator.initialize is run only once
+		if(Ini.isClient())
+		{
+			configDatabase(); // run it again here because ModelValidator.initialize is run only once
+		}
 
 		final Properties ctx = Env.getCtx();
 

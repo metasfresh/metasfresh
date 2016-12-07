@@ -415,7 +415,7 @@ public class MProduct extends X_M_Product
 			int C_UOM_ID = getC_UOM_ID();
 			if (C_UOM_ID == 0)
 				return 0;	// EA
-			m_precision = new Integer(MUOM.getPrecision(getCtx(), C_UOM_ID));
+			m_precision = MUOM.getPrecision(getCtx(), C_UOM_ID);
 		}
 		return m_precision.intValue();
 	}	// getUOMPrecision

@@ -742,7 +742,15 @@ public class CalloutOrder extends CalloutEngine
 			log.warn("init");
 		
 		//
+		// Charge: reset
 		orderLine.setC_Charge(null);
+
+		//
+		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
+		final I_M_Product product = orderLine.getM_Product();
+		orderLine.setC_UOM(Services.get(IProductBL.class).getStockingUOM(product));
+		orderLine.setPrice_UOM(null); // reset; will be set when we update pricing
+		
 		// Set Attribute
 		if (calloutField.getTabInfoContextAsInt("M_Product_ID") == M_Product_ID
 				&& calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID") > 0)
@@ -755,28 +763,8 @@ public class CalloutOrder extends CalloutEngine
 
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
-		// Check/Update Warehouse Setting
-		// int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
-		// "M_Warehouse_ID");
-		// Integer wh = (Integer)mTab.getValue("M_Warehouse_ID");
-		// if (wh != M_Warehouse_ID)
-		// {
-		// mTab.setValue("M_Warehouse_ID", M_Warehouse_ID);
-		// ADialog.warn(,WindowNo, "WarehouseChanged");
-		// }
-
 		if (orderLine.getC_Order().isSOTrx())
 		{
-			final I_M_Product product = orderLine.getM_Product();
-
-			// FIXME: column C_OrderLine.Value no longer exist. Check & delete following lines
-//			// metas: if we have the respective field, display the product value
-//			final GridField fieldValue = mTab.getField("Value");
-//			if (fieldValue != null)
-//			{
-//				mTab.setValue("Value", product.get_Value("Value"));
-//			}
-			
 			if (Services.get(IProductBL.class).isStocked(product))
 			{
 				BigDecimal QtyOrdered = orderLine.getQtyOrdered();

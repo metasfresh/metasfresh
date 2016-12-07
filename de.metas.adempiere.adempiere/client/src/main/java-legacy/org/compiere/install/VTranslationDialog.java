@@ -202,7 +202,7 @@ public class VTranslationDialog extends TranslationController
 		if (AD_Client != null)
 			AD_Client_ID = AD_Client.getKey();
 
-		String startDir = Ini.getAdempiereHome() + File.separator + "data";
+		String startDir = Ini.getMetasfreshHome() + File.separator + "data";
 		JFileChooser chooser = new JFileChooser(startDir);
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

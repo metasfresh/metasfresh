@@ -59,9 +59,9 @@ public class ServerBase implements IServerService
 	private static final AtomicInteger s_no = new AtomicInteger(0);
 	private final int m_no;
 	//
-	private AtomicInteger m_postCount = new AtomicInteger(0);
-	private AtomicInteger m_processCount = new AtomicInteger(0);
-	private AtomicInteger m_cacheResetCount = new AtomicInteger(0);
+	private final AtomicInteger m_postCount = new AtomicInteger(0);
+	private final AtomicInteger m_processCount = new AtomicInteger(0);
+	private final AtomicInteger m_cacheResetCount = new AtomicInteger(0);
 
 	public ServerBase()
 	{
@@ -122,16 +122,27 @@ public class ServerBase implements IServerService
 	{
 		m_processCount.incrementAndGet();
 
-		final ProcessExecutionResult result = ProcessInfo.builder()
-				.setAD_PInstance_ID(adPInstanceId)
-				.setCreateTemporaryCtx()
-				//
-				.buildAndPrepareExecution()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult();
-		
-		return result;
+		final Thread currentThread = Thread.currentThread();
+		final String threadNameBkp = currentThread.getName();
+		try
+		{
+			currentThread.setName("Server_process_" + adPInstanceId);
+
+			final ProcessExecutionResult result = ProcessInfo.builder()
+					.setAD_PInstance_ID(adPInstanceId)
+					.setCreateTemporaryCtx()
+					//
+					.buildAndPrepareExecution()
+					.switchContextWhenRunning()
+					.executeSync()
+					.getResult();
+
+			return result;
+		}
+		finally
+		{
+			currentThread.setName(threadNameBkp);
+		}
 	}	// process
 
 	@Override

@@ -13,9 +13,12 @@
  *****************************************************************************/
 package org.compiere.report;
 
+import java.io.UnsupportedEncodingException;
+
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.print.JRReportViewerProvider;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
@@ -31,15 +34,15 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
-import de.metas.process.Process;
 import de.metas.process.IProcess;
+import de.metas.process.Process;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JasperPrint;
 
 /**
  * Jasper Report Process: this process is used on all AD_Processes which are about creating jasper reports.
- * 
+ *
  * @author rlemeill originaly coming from an application note from compiere.co.uk --- Modifications: Allow Jasper
  *         Reports to be able to be run on VPN profile (i.e: no direct connection to DB). Implemented ClientProcess for
  *         it to run on client.
@@ -139,6 +142,7 @@ public class ReportStarter implements IProcess
 			// Excel reporting
 			case Excel:
 				outputType = OutputType.XLS;
+				break;
 
 			default:
 				throw new AdempiereException("Unknown " + ReportingSystemType.class + ": " + reportingSystemType);
@@ -153,7 +157,7 @@ public class ReportStarter implements IProcess
 		//
 		// Set report data to process execution result
 		final ProcessExecutionResult processExecutionResult = processInfo.getResult();
-		final String reportFilename = "report." + outputType.getFileExtension(); // TODO: find a better name
+		final String reportFilename = extractReportFilename(processInfo, outputType);
 		final String reportContentType = outputType.getContentType();
 		processExecutionResult.setReportData(reportData, reportFilename, reportContentType);
 
@@ -162,6 +166,29 @@ public class ReportStarter implements IProcess
 		if (Ini.isClient() && swingJRReportViewerProvider != null)
 		{
 			swingJRReportViewerProvider.openViewer(reportData, outputType, processInfo);
+		}
+	}
+
+	private static final String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
+	{
+		String fileBasename = pi.getTitle();
+		if (Check.isEmpty(fileBasename, true))
+		{
+			fileBasename = "report_" + pi.getAD_PInstance_ID();
+		}
+
+		final String fileExtension = outputType.getFileExtension();
+
+		final String filename = fileBasename.trim() + "." + fileExtension;
+		try
+		{
+			return java.net.URLEncoder.encode(filename, "UTF-8");
+		}
+		catch (final UnsupportedEncodingException e)
+		{
+			final String fallbackFilename = "report_" + pi.getAD_PInstance_ID() + "." + fileExtension;
+			log.warn("Failed encoding filename '{}'. Returning '{}'", filename, fallbackFilename, e);
+			return fallbackFilename;
 		}
 	}
 
@@ -191,7 +218,7 @@ public class ReportStarter implements IProcess
 	}
 
 	/**
-	 * 
+	 *
 	 * @return {@link JRReportViewerProvider} or null
 	 */
 	private JRReportViewerProvider getJRReportViewerProviderOrNull()

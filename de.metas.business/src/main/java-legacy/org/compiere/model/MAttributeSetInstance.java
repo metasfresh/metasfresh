@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -128,17 +127,6 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 			m_mas = new MAttributeSet(getCtx(), getM_AttributeSet_ID(), get_TrxName());
 		return m_mas;
 	}	// getMAttributeSet
-
-	/**
-	 * Set Description.
-	 * 
-	 * @deprecated Please use {@link IAttributeSetInstanceBL#setDescription(I_M_AttributeSetInstance)}
-	 */
-	@Deprecated
-	public void setDescription()
-	{
-		Services.get(IAttributeSetInstanceBL.class).setDescription(this);
-	}	// setDescription
 
 	/**
 	 * Get Lot No

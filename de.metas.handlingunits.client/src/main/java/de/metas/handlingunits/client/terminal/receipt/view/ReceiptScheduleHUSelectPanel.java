@@ -26,12 +26,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Order;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
@@ -395,58 +392,21 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final ITerminalFactory terminalFactory = getTerminalFactory();
 
 		final ReceiptScheduleHUSelectModel model = getModel();
-		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected
+		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected			
+		
+		// #643 The POReference, partner and location will be taken from the selected receipt schedule
+		final I_M_ReceiptSchedule selectedReceiptSchedule = model.getSelectedReceiptSchedule();
 
-		// # 597: in case the partner was selected it will be automatically set for empties. If it is not, the empties will works for any selected partner
-		int partnerId = model.getC_BPartner_ID(false); // failIfNotSelected = false
-
-		// Location will be automatically set if an order or a receipt schedule (row) is selected
-		int bpLocationId = -1;;
-
-		// check the order first
-		final int orderId = model.getC_Order_ID();
-		if (orderId > 0)
-		{
-
-			final I_C_Order order = InterfaceWrapperHelper.create(terminalContext.getCtx(), orderId, I_C_Order.class, ITrx.TRXNAME_None);
-
-			if (order != null)
-			{
-				// set the partner from order if it was not already selected
-				if (partnerId <= 0)
-				{
-					partnerId = order.getC_BPartner_ID();
-				}
-
-				// set location from order
-				bpLocationId = order.getC_BPartner_Location_ID();
-			}
-
-		}
-
-		// if order was not selected, check the selected row: Receipt Schedule
-		else
-		{
-			final I_M_ReceiptSchedule selectedReceiptSchedule = model.getSelectedReceiptSchedule();
-
-			if (selectedReceiptSchedule != null)
-			{
-				// set the partner from receipt schedule if it was not already selected
-				if (partnerId <= 0)
-				{
-					partnerId = selectedReceiptSchedule.getC_BPartner_ID();
-				}
-				// set the location from receipt schedule
-				bpLocationId = selectedReceiptSchedule.getC_BPartner_Location_ID();
-			}
-		}
 
 		try (
 
 		final ITerminalContextReferences refs = terminalContext.newReferences())
 
 		{
-			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId, partnerId, bpLocationId);
+			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(
+					terminalContext, 
+					warehouseId, 
+					selectedReceiptSchedule);
 			final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
 
 			final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);
