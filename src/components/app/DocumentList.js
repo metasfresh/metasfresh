@@ -99,7 +99,8 @@ class DocumentList extends Component {
                                 }
                             })
                     }else{
-                        this.createNewView(windowType, type, filters, query.refType, query.refId);
+                        console.log(filters)
+                        this.createNewView(windowType, type, [], query && query.refType, query && query.refId);
                     }
                 })
             });

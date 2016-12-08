@@ -4,6 +4,7 @@ import config from '../config';
 import {replace} from 'react-router-redux';
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import qs from 'qs';
 
 export function loginSuccess() {
 	return dispatch => {
@@ -136,14 +137,14 @@ export function browseViewRequest(viewId, page, pageLength, orderBy){
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
-	return () => axios.post(config.API_URL + '/documentView', {
-        documentType: windowType,
-        viewType: viewType,
-        referencing: {
-            documentType: refDocType,
-            documentId: refDocId
-        },
-        filters: filters
+	return () => axios.post(config.API_URL + '/documentView/', {
+        "documentType": windowType,
+        "viewType": viewType,
+        "referencing": (refDocType && refDocId) ? {
+            "documentType": refDocType,
+            "documentId": refDocId
+        }: null,
+        "filters": filters
     });
 }
 
