@@ -280,25 +280,20 @@ public final class Ini implements Serializable
 			ModelValidationEngine.get().beforeSaveProperties();
 		}
 
-		String fileName = getFileName();
+		final String fileName = getFileName();
 		FileOutputStream fos = null;
 		try
 		{
-			File f = new File(fileName);
+			final File f = new File(fileName);
 			f.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
 			fos = new FileOutputStream(f);
-			s_prop.store(fos, "Adempiere");
+			s_prop.store(fos, "metasfresh.properties");
 			fos.flush();
 			fos.close();
 		}
 		catch (Exception e)
 		{
 			log.error("Cannot save Properties to " + fileName + " - " + e.toString());
-			return;
-		}
-		catch (Throwable t)
-		{
-			log.error("Cannot save Properties to " + fileName + " - " + t.toString());
 			return;
 		}
 		log.info("Saved properties to {}", fileName);
@@ -322,9 +317,8 @@ public final class Ini implements Serializable
 	 * @param filename to load
 	 * @return true if first time
 	 */
-	public static boolean loadProperties(String filename)
+	public static boolean loadProperties(final String filename)
 	{
-		boolean loadOK = true;
 		boolean firstTime = false;
 		s_prop = new Properties();
 
@@ -334,7 +328,7 @@ public final class Ini implements Serializable
 		final File propertiesFile = new File(filename).getAbsoluteFile();
 		if (!propertiesFile.exists())
 		{
-			log.info(filename);
+			log.info("File {} does not exist. Allow the user to set initial properties", propertiesFile);
 			firstTime = true;
 			if (isShowLicenseDialog())
 			{
@@ -343,6 +337,7 @@ public final class Ini implements Serializable
 					System.exit(-1);
 				}
 			}
+			saveProperties();
 		}
 
 		try (final FileInputStream fis = new FileInputStream(filename))
@@ -353,18 +348,13 @@ public final class Ini implements Serializable
 		catch (Exception e)
 		{
 			log.warn(filename + " - " + e.toString());
-			loadOK = false;
+
 			// gh #658: for f***'s sake, don't just log a warning. When running in tomcat, this logged warning will go nowhere
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		checkProperties();
 
-		// Save if not exist or could not be read
-		if (!loadOK || firstTime)
-		{
-			saveProperties();
-		}
 		s_loaded = true;
 		log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
 		s_propertyFileName = propertiesFile.toString();

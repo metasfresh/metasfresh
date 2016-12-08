@@ -1395,7 +1395,7 @@
 		
 		<!--this profile is analog to "build-number-env-missing" -->
 		<profile>
-			<id>build-versiov-env-missing</id>
+			<id>build-version-env-missing</id>
 			<activation>
 				<property>
 					<name>!env.BUILD_VERSION</name>
