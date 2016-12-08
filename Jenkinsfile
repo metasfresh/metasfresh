@@ -74,8 +74,7 @@ def createRepo(String repoId)
 {
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
-		echo "Create the repository ${repoId}-releases";
-
+		echo "Create the repository ${repoId}-releases to which to deploy everything we build";
 		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <repository>
   <data>
@@ -98,21 +97,22 @@ def createRepo(String repoId)
 		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
 		
-		echo "Create the repository-group ${repoId}";
-		
+		echo "Create the repository-group ${repoId} from which to resolve everything we need";
 		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
 <repo-group>
   <data>
     <repositories>
+      <!-- include mvn-public which contains everything we need to perform the build-->
+      <repo-group-member>
+        <name>mvn-public-new</name>
+        <id>mvn-public-new</id>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
+      </repo-group-member>
+	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
       <repo-group-member>
         <name>${repoId}-releases</name>
         <id>${repoId}-releases</id>
         <resourceURI>https://repo.metasfresh.com/content/repositories/${repoId}-releases/</resourceURI>
-      </repo-group-member>
-      <repo-group-member>
-        <name>mvn-public-new</name>
-        <id>mvn-public-new</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public-new/</resourceURI>
       </repo-group-member>
     </repositories>
     <name>${repoId}</name>
