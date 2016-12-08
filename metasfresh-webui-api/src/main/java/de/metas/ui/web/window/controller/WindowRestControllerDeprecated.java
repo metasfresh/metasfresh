@@ -1,14 +1,5 @@
 package de.metas.ui.web.window.controller;
 
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_Advanced;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_Advanced_DefaultValue;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_DocumentId;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_Field;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_FieldsList;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_RowId;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_TabId;
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_WindowId;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -60,6 +52,15 @@ import io.swagger.annotations.ApiParam;
 @Deprecated
 public class WindowRestControllerDeprecated
 {
+	private static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
+	private static final String PARAM_DocumentId = WebConfig.PARAM_DocumentId;
+	private static final String PARAM_TabId = WebConfig.PARAM_TabId;
+	private static final String PARAM_RowId = WebConfig.PARAM_RowId;
+	private static final String PARAM_Field = "field";
+	private static final String PARAM_FieldsList = "fields";
+	private static final String PARAM_Advanced = "advanced";
+	private static final String PARAM_Advanced_DefaultValue = "false";
+	
 	@Autowired
 	private UserSession userSession;
 

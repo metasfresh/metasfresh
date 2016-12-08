@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.controller;
 
-import static de.metas.ui.web.window.controller.WindowRestController.PARAM_WindowId;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
@@ -48,6 +47,7 @@ import io.swagger.annotations.ApiParam;
 @Deprecated
 public class DocumentViewControllerDeprecated
 {
+	private static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
 	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_ViewDataType = "viewType";
 	private static final String PARAM_FirstRow = "firstRow";

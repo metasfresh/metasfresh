@@ -75,14 +75,9 @@ import io.swagger.annotations.ApiParam;
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
-	static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
-	static final String PARAM_DocumentId = WebConfig.PARAM_DocumentId;
-	static final String PARAM_TabId = WebConfig.PARAM_TabId;
-	static final String PARAM_RowId = WebConfig.PARAM_RowId;
-	static final String PARAM_Field = "field";
-	static final String PARAM_FieldsList = "fields";
-	static final String PARAM_Advanced = "advanced";
-	static final String PARAM_Advanced_DefaultValue = "false";
+	private static final String PARAM_Advanced = "advanced";
+	private static final String PARAM_Advanced_DefaultValue = "false";
+	private static final String PARAM_FieldsList = "fields";
 
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
@@ -207,8 +202,8 @@ public class WindowRestController
 	public List<JSONDocument> patchIncludedDocument(
 			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentIdStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
+			, @RequestParam(name = "tabId", required = false) final String detailIdStr //
+			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
@@ -295,7 +290,7 @@ public class WindowRestController
 			@PathVariable("type") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
-			, @RequestParam(name = PARAM_RowId, required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
+			, @RequestParam(name = "rowId", required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
 	)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
@@ -306,7 +301,7 @@ public class WindowRestController
 				.build();
 		if (documentPath.getRowIds().isEmpty())
 		{
-			throw new IllegalArgumentException("No " + PARAM_RowId + "(s) specified");
+			throw new IllegalArgumentException("No rowId(s) specified");
 		}
 		return deleteDocuments(documentPath);
 	}

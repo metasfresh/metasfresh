@@ -94,7 +94,22 @@ public final class DocumentPath
 				.setRowId(rowIdStr)
 				.build();
 	}
-	
+
+	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId)
+	{
+		if(Check.isEmpty(detailId, true))
+		{
+			throw new IllegalArgumentException("No detailId provided");
+		}
+		
+		return builder()
+				.setDocumentType(documentType, documentTypeId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.allowNullRowId()
+				.build();
+	}
+
 	/**
 	 * Creates the path of a single document (root document or included document).
 	 * 
