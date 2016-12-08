@@ -34,6 +34,12 @@
 
 		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
 		<cxf.version>3.1.6</cxf.version>
+		
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>1.0.0</metasfresh.version>
+
 	</properties>
 
 	<dependencyManagement>
@@ -74,7 +80,7 @@
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
@@ -351,6 +357,25 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+
+			<!--
+			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<properties>
+						<property>
+							<name>metasfresh.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					</properties>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
