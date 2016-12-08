@@ -31,6 +31,7 @@ this week's release
 ## Fixes
 * metasfresh
   * #664 R_Request Performance Issue
+  * #674 Filter operator "between" broken
   
 * webui
   * #67 Error when introducing parameters to report
