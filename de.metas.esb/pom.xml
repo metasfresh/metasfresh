@@ -36,15 +36,9 @@
 	</properties>
 
 	<modules>
-	<!--
-	we don't need them right now and they cause trouble 
 		<module>../de.metas.document.archive.esb</module>
-	 -->
 		<module>../de.metas.edi.esb.camel</module>
-	<!-- 
-	we don't need them right now and they cause trouble 
 		<module>../de.metas.printing.esb.camel</module>
-	-->
 	</modules>
 
 	<dependencyManagement>
