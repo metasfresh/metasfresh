@@ -51,7 +51,7 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 	build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			string(name: 'MF_BUILD_ID', value: buildId),
+			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId),
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
 			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 		], wait: wait
@@ -65,22 +65,24 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 properties([
 	parameters([
 		string(defaultValue: '', 
-			description: '''If this job is invoked via an updstream build job, than that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
-		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
-Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''', 
-			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
 		string(defaultValue: '', 
-			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
-			name: 'MF_BUILD_ID')
+			description: 'Build number of the upstream job that called us, if any.', 
+			name: 'MF_UPSTREAM_BUILDNO'),
+		string(defaultValue: '', 
+			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.', 
+			name: 'MF_METASFRESH_VERSION'),
+		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere', 
+			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]), 
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
-	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
+	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_UPSTREAM_BUILDNO in each snapshot artifact's version
 ])
 
 final MF_UPSTREAM_BRANCH;
@@ -94,15 +96,15 @@ else
 	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
 	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
 }
-if(params.MF_BUILD_ID)
+if(params.MF_UPSTREAM_BUILDNO)
 {
-	echo "Setting MF_BUILD_ID from params.MF_BUILD_ID=${params.MF_BUILD_ID}"
-	MF_BUILD_ID=params.MF_BUILD_ID
+	echo "Setting MF_UPSTREAM_BUILDNO from params.MF_UPSTREAM_BUILDNO=${params.MF_UPSTREAM_BUILDNO}"
+	MF_UPSTREAM_BUILDNO=params.MF_UPSTREAM_BUILDNO
 }
 else
 {
-	echo "Setting MF_BUILD_ID from env.BUILD_NUMBER=${env.BUILD_NUMBER}"
-	MF_BUILD_ID=env.BUILD_NUMBER
+	echo "Setting MF_UPSTREAM_BUILDNO from env.BUILD_NUMBER=${env.BUILD_NUMBER}"
+	MF_UPSTREAM_BUILDNO=env.BUILD_NUMBER
 }
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
@@ -110,7 +112,7 @@ final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 
 // the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_BUILD_ID into the version anymore. Always go with the build number.
+// never incorporate params.MF_UPSTREAM_BUILDNO into the version anymore. Always go with the build number.
 final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
@@ -137,16 +139,10 @@ echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
-currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
+currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_UPSTREAM_BUILDNO;
+// note: going to set currentBuild.description after we deployed
 
 timestamps 
-{
-// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
-// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
-// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
-// i.e. Dependency convergence error
-// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
-lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 {
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -171,12 +167,27 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
 			stage('Set versions and build metasfresh-webui-api') 
             {
-                // set the artifact version of everything below the webui's pom.xml
+                // update the parent pom version
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+				
+				final String metasfreshVersionString;
+				if(params.MF_METASFRESH_VERSION)
+				{
+					metasfreshVersionString="-Dmetasfresh.version=${params.MF_METASFRESH_VERSION}"; // use the metasfresh version that we were given by the upstream job
+				}
+				else
+				{
+					// figure out the latest metasfresh version that we can use. the pom is edited accordingly by the versions plugin
+					sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-properties"
+					metasfreshVersionString=''; // empty string, because the correct value is already inside the pom
+				}
+			
+				// set the artifact version of everything below the webui's pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
 
+				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} ${metasfreshVersionString} clean deploy"
 
 currentBuild.description="""artifacts (if not yet cleaned up)				
 				<ul>
@@ -192,7 +203,7 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 	{
 		stage('Invoke downstream job') 
 		{
-			invokeDownStreamJobs('metasfresh', MF_BUILD_ID, MF_UPSTREAM_BRANCH, false); // wait=false 
+			invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, false); // wait=false 
 		}
 	}
 	else
@@ -204,5 +215,4 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 	// don't clean up the work space..we do it when we check out next time
 	// step([$class: 'WsCleanup', cleanWhenFailure: false])
 } // node
-} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 } // timestamps   
