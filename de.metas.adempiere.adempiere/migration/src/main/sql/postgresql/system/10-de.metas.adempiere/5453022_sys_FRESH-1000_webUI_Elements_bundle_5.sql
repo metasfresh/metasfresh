@@ -1,7 +1,7 @@
 -- 07.11.2016 18:11
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540526,540015,TO_TIMESTAMP('2016-11-07 18:11:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2016-11-07 18:11:26','YYYY-MM-DD HH24:MI:SS'),100)
-;
+--INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540526,540015,TO_TIMESTAMP('2016-11-07 18:11:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2016-11-07 18:11:26','YYYY-MM-DD HH24:MI:SS'),100)
+--;
 
 -- 07.11.2016 18:11
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
