@@ -151,7 +151,7 @@ public class DocumentViewRestController
 	/**
 	 * Create view
 	 */
-	@RequestMapping(value = "/", method = RequestMethod.PUT)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.PUT)
 	@Deprecated
 	public JSONDocumentViewResult createView_DEPRECATED(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
@@ -166,7 +166,7 @@ public class DocumentViewRestController
 		return createView(jsonRequest);
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
 	public JSONDocumentViewResult createView(@RequestBody final JSONCreateDocumentViewRequest jsonRequest)
 	{
 		userSession.assertLoggedIn();
@@ -181,13 +181,13 @@ public class DocumentViewRestController
 		{
 			throw new IllegalStateException("No fields were found for " + PARAM_ViewDataType + ": " + viewDataType + "(required field characteristic: " + requiredFieldCharacteristic + ")");
 		}
-		
+
 		final DocumentViewCreateRequest.Builder request = DocumentViewCreateRequest.builder()
 				.setEntityDescriptor(entityDescriptor)
 				.setViewFields(fields)
 				.addFilters(JSONDocumentFilter.unwrapList(jsonRequest.getFilters(), entityDescriptor.getFiltersProvider()));
 
-		if(jsonRequest.getReferencing() != null)
+		if (jsonRequest.getReferencing() != null)
 		{
 			final Document referencingDocument = documentCollection.getDocument(jsonRequest.getReferencing().toDocumentPath());
 			final DocumentReference reference = documentReferencesService.getDocumentReference(referencingDocument, adWindowId);

@@ -65,7 +65,7 @@ public class AddressRestController
 				.build();
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
 	public JSONDocument createAddressDocument(@RequestBody final JSONCreateAddressRequest request)
 	{
 		userSession.assertLoggedIn();

@@ -65,7 +65,7 @@ public class ASIRestController
 				.build();
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
 	public JSONDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
 	{
 		userSession.assertLoggedIn();
