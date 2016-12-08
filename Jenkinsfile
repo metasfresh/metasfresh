@@ -104,15 +104,17 @@ def createRepo(String repoId)
 <repo-group>
   <data>
     <repositories>
+	  <!-- include mvn-public that contains everything we need to perform the build-->
+      <repo-group-member>
+        <name>mvn-public-new</name>
+        <id>mvn-public-new</id>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
+      </repo-group-member>
+	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
       <repo-group-member>
         <name>${repoId}-releases</name>
         <id>${repoId}-releases</id>
         <resourceURI>https://repo.metasfresh.com/content/repositories/${repoId}-releases/</resourceURI>
-      </repo-group-member>
-      <repo-group-member>
-        <name>mvn-public-new</name>
-        <id>mvn-public-new</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public-new/</resourceURI>
       </repo-group-member>
     </repositories>
     <name>${repoId}</name>
@@ -394,14 +396,15 @@ stage('Invoke downstream jobs')
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+		echo "Going to notify external systems via zapier webhook"
 		node('linux')
 		{	
 			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 			{
-				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
 				final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
 				
-				sh "curl -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X POST -d \'${jsonPayload}\' ${webhookUrl}"
+				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 			}
 		}
 	} // if(params.MF_SKIP_TO_DIST)
@@ -529,13 +532,13 @@ stage('Test SQL-Migration')
 			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
 
 			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+			final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 			
 			// Look Ma, I'm currying!!
 			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
 			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
 
-			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
+			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
 					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
@@ -593,14 +596,14 @@ stage('Deployment')
 
 				// extract the tar.gz
 				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+				final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 
 				// Look Ma, I'm currying!!
 				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
 				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
 
 				// stop the service, perform the rollout and start the service
-				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
+				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");
 				invokeRemoteInInstallDir('./stop_service.sh');
 				invokeRemoteInInstallDir('./sql_remote.sh');
 				invokeRemoteInInstallDir('./minor_remote.sh');
