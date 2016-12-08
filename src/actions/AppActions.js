@@ -135,8 +135,16 @@ export function browseViewRequest(viewId, page, pageLength, orderBy){
 	return () => axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + pageLength * (page - 1) + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
 }
 
-export function createViewRequest(windowType, viewType, pageLength, filters){
-	return () => axios.put(config.API_URL + '/documentView/?type=' + windowType + '&viewType=' + viewType, filters);
+export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
+	return () => axios.post(config.API_URL + '/documentView', {
+        documentType: windowType,
+        viewType: viewType,
+        referencing: {
+            documentType: refDocType,
+            documentId: refDocId
+        },
+        filters: filters
+    });
 }
 
 export function addNotification(title, msg, time, notifType){

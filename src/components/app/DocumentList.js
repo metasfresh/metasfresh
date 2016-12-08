@@ -71,9 +71,9 @@ class DocumentList extends Component {
         })
     }
 
-    createNewView = (windowType, type, filters) => {
+    createNewView = (windowType, type, filters, refType, refId) => {
         const {dispatch} = this.props;
-        dispatch(createViewRequest(windowType, type, 20, filters)).then((response) => {
+        dispatch(createViewRequest(windowType, type, 20, filters, refType, refId)).then((response) => {
             this.setListData(response.data);
         })
     }
@@ -99,7 +99,7 @@ class DocumentList extends Component {
                                 }
                             })
                     }else{
-                        this.createNewView(windowType, type, filters);
+                        this.createNewView(windowType, type, filters, query.refType, query.refId);
                     }
                 })
             });
