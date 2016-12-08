@@ -33,6 +33,8 @@ import org.adempiere.model.I_AD_Relation;
 import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.MRelation;
 import org.adempiere.model.MRelationType;
+import org.adempiere.model.RelationTypeZoomProvider;
+import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
@@ -200,8 +202,8 @@ public class MMPurchaseSchedule extends X_M_PurchaseSchedule
 			final I_C_OrderLine ol,
 			final String trxName)
 	{
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, RELTYPE_CURRENT_SO_INT_NAME, trxName);
-		final List<MMPurchaseSchedule> result = MRelation.retrieveDestinations(ctx, relType, I_C_OrderLine.Table_Name, ol.getC_OrderLine_ID(), trxName);
+		final RelationTypeZoomProvider relType = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OrderLine.Table_Name, RELTYPE_CURRENT_SO_INT_NAME);
+		final List<MMPurchaseSchedule> result = MRelation.retrieveDestinations(ctx, relType, I_C_OrderLine.Table_Name, ol.getC_OrderLine_ID(), MMPurchaseSchedule.class, trxName);
 
 		if (result.isEmpty())
 		{
@@ -209,16 +211,6 @@ public class MMPurchaseSchedule extends X_M_PurchaseSchedule
 		}
 		assert result.size() == 1 : "Expected one purchase schedule; result=" + result;
 		return result.get(0);
-	}
-
-	public static List<MMPurchaseSchedule> retrieveForPOLine(
-			final Properties ctx,
-			final MOrderLine olPO,
-			final String trxName)
-	{
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, RELTYPE_CURRENT_PO_INT_NAME, trxName);
-
-		return MRelation.retrieveDestinations(ctx, relType, olPO, trxName);
 	}
 
 	public static List<MMPurchaseSchedule> retrieveFor(
@@ -263,24 +255,9 @@ public class MMPurchaseSchedule extends X_M_PurchaseSchedule
 			final I_M_PurchaseSchedule schedule,
 			final String trxName)
 	{
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, RELTYPE_CURRENT_SO_INT_NAME, trxName);
+		final RelationTypeZoomProvider relType = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_M_PurchaseSchedule.Table_Name, RELTYPE_CURRENT_SO_INT_NAME);
 
-		return MRelation.retrieveDestinations(ctx, relType, I_M_PurchaseSchedule.Table_Name, schedule.getM_PurchaseSchedule_ID(), trxName);
-	}
-
-	public List<MOrderLine> retrievePOls()
-	{
-		return retrievePOls(getCtx(), this, get_TrxName());
-	}
-
-	public static List<MOrderLine> retrievePOls(
-			final Properties ctx,
-			final I_M_PurchaseSchedule schedule,
-			final String trxName)
-	{
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, RELTYPE_CURRENT_PO_INT_NAME, trxName);
-
-		return MRelation.retrieveDestinations(ctx, relType, I_M_PurchaseSchedule.Table_Name, schedule.getM_PurchaseSchedule_ID(), trxName);
+		return MRelation.retrieveDestinations(ctx, relType, I_M_PurchaseSchedule.Table_Name, schedule.getM_PurchaseSchedule_ID(), MOrderLine.class, trxName);
 	}
 
 	public static PurchaseScheduleQuery mkQuery(final Properties ctx, final String trxName)

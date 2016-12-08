@@ -17,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.M_Element;
 import org.compiere.util.DB;
@@ -26,7 +27,7 @@ import org.compiere.util.DB;
  *	
  *  @author Marek Mosiewicz http://www.jotel.com.pl
  */
-public class SynchronizeTerminology extends SvrProcess
+public class SynchronizeTerminology extends JavaProcess
 {
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(SynchronizeTerminology.class);

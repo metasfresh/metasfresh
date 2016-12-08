@@ -53,8 +53,6 @@ import org.compiere.model.MCostElement;
 import org.compiere.model.MCostType;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
@@ -65,6 +63,9 @@ import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * Roll-UP Bill of Material
  *
@@ -74,7 +75,7 @@ import org.eevolution.mrp.api.IMRPDAO;
  * @author Teo Sarca, www.arhipac.ro
  */
 @SuppressWarnings("deprecation") // hide those to not polute our Warnings
-public class RollupBillOfMaterial extends SvrProcess
+public class RollupBillOfMaterial extends JavaProcess
 {
 	/* Organization 		*/
 	private int		 		p_AD_Org_ID = 0;
@@ -97,7 +98,7 @@ public class RollupBillOfMaterial extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 

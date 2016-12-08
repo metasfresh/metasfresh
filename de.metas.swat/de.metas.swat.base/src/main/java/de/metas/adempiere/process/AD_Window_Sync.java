@@ -43,16 +43,17 @@ import org.compiere.model.MTab;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class AD_Window_Sync extends SvrProcess
+public class AD_Window_Sync extends JavaProcess
 {
 	private int p_AD_Window_ID = -1;
 	private int p_AD_WindowTo_ID = -1;
@@ -110,7 +111,7 @@ public class AD_Window_Sync extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

@@ -46,6 +46,7 @@ import javax.activation.DataSource;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,9 +65,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MPInstance;
 import org.compiere.model.MPayment;
-import org.compiere.model.MProcess;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MRMA;
@@ -75,8 +74,6 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -90,6 +87,7 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -141,37 +139,21 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return bp;
 	}
 
-	public static ReportEngine getReportEngine(String html, Map<String, Object> attrs)
+	public static ReportEngine getReportEngine(final String html, final Map<String, Object> attrs)
 	{
 		final Properties ctx = Env.getCtx();
-		String text = parseText(ctx, html, false, attrs, null);
+		String text = parseText(ctx, html, false, attrs, ITrx.TRXNAME_None);
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
-		//
-		// Get Process
-		final MProcess process = new Query(Env.getCtx(), MProcess.Table_Name, MProcess.COLUMNNAME_Classname + "=?", null)
-				.setParameters(new Object[] {
-						"de.metas.letters.report.AD_BoilerPlate_Report",
-						// AD_BoilerPlate_Report.class.getCanonicalName()
-				})
-				.firstOnly();
-		// Create Instance
-		final MPInstance pInstance = new MPInstance(process); // adTableId=0, recordId=0
-		pInstance.saveEx();
-		// Create Process Info
-		final ProcessInfoParameter[] params = new ProcessInfoParameter[] {
-				new ProcessInfoParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text, null, null, null)
-		};
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), 0, 0);
-		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
-		pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
-		pi.setParameter(params);
-		// Execute Process
-		if (!process.processIt(pi, null))
-		{
-			throw new AdempiereException(pi.getSummary());
-		}
-		//
+		
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_ProcessByClassname("de.metas.letters.report.AD_BoilerPlate_Report")
+				.addParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text)
+				//
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getProcessInfo();
+		
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}

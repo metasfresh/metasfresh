@@ -42,7 +42,6 @@ import org.compiere.model.MOrg;
 import org.compiere.model.MPayment;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.PO;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -50,6 +49,7 @@ import org.compiere.util.Env;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
+import de.metas.process.JavaProcess;
 import de.schaeffer.compiere.constants.Constants;
 
 /**
@@ -59,7 +59,8 @@ import de.schaeffer.compiere.constants.Constants;
  * @author Karsten Thiemann, kt@schaeffer-ag.de
  *
  */
-public class CCPaymentReserveProcess extends SvrProcess {
+@Deprecated
+public class CCPaymentReserveProcess extends JavaProcess {
 
 	private int TIME_BEFORE_PROMISED = 2; // 2 days
 
@@ -67,21 +68,7 @@ public class CCPaymentReserveProcess extends SvrProcess {
 
 	private StringBuffer errorMessages = new StringBuffer(2000);
 	private StringBuffer errorMessagesToReturn = new StringBuffer(2000);
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.compiere.process.SvrProcess#prepare()
-	 */
-	@Override
-	protected void prepare() {
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.compiere.process.SvrProcess#doIt()
-	 */
+	
 	@Override
 	protected String doIt() throws Exception {
 

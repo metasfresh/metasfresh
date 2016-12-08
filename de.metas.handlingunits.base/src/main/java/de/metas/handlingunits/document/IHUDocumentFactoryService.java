@@ -28,7 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.ProcessInfo;
+
+import de.metas.process.ProcessInfo;
 
 public interface IHUDocumentFactoryService extends ISingletonService, IHUDocumentFactory
 {

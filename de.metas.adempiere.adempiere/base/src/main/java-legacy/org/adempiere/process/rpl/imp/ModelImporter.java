@@ -32,10 +32,11 @@ import org.adempiere.process.rpl.XMLHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -45,7 +46,7 @@ import org.w3c.dom.Document;
  * @see  http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1963487&group_id=176962
  * @version $Id:$
  */
-public class ModelImporter extends SvrProcess {
+public class ModelImporter extends JavaProcess {
 
 	/** Client Parameter */
 	protected int p_AD_Client_ID = 0;
@@ -78,7 +79,7 @@ public class ModelImporter extends SvrProcess {
 		StringBuffer sb = new StringBuffer("AD_Table_ID=").append(AD_Table_ID);
 		sb.append("; Record_ID=").append(getRecord_ID());
 		// Parameter
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
@@ -96,7 +97,7 @@ public class ModelImporter extends SvrProcess {
 		if(p_FileName == null)
 		{
 			// Load XML file and parse it
-			String fileNameOr = org.compiere.util.Ini.getAdempiereHome()
+			String fileNameOr = org.compiere.util.Ini.getMetasfreshHome()
 			+ System.getProperty("file.separator")  
 			+ "data"
 			+ System.getProperty("file.separator")

@@ -1,6 +1,6 @@
 package de.metas.javaclasses.model;
 
-
+import org.compiere.model.I_AD_Column;
 
 /** Generated Interface for AD_JavaClass_Type
  *  @author Adempiere (generated)
@@ -40,34 +40,33 @@ public interface I_AD_JavaClass_Type
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
+
 	/**
-	 * Set EntitĂ¤ts-Art.
-	 * SystementitĂ¤ts-Art
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_EntityType_ID (int AD_EntityType_ID);
+	public void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get EntitĂ¤ts-Art.
-	 * SystementitĂ¤ts-Art
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_EntityType_ID();
+	public java.lang.String getEntityType();
 
-	public org.compiere.model.I_AD_EntityType getAD_EntityType();
-
-	public void setAD_EntityType(org.compiere.model.I_AD_EntityType AD_EntityType);
-
-    /** Column definition for AD_EntityType_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_JavaClass_Type, org.compiere.model.I_AD_EntityType> COLUMN_AD_EntityType_ID = new org.adempiere.model.ModelColumn<I_AD_JavaClass_Type, org.compiere.model.I_AD_EntityType>(I_AD_JavaClass_Type.class, "AD_EntityType_ID", org.compiere.model.I_AD_EntityType.class);
-    /** Column name AD_EntityType_ID */
-    public static final String COLUMNNAME_AD_EntityType_ID = "AD_EntityType_ID";
+    /** Column definition for EntityType */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "EntityType", null);
+    /** Column name EntityType */
+    public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set Java Class Type.

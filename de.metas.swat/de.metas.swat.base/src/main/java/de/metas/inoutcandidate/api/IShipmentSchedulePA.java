@@ -53,16 +53,6 @@ import de.metas.storage.IStorageSegment;
 public interface IShipmentSchedulePA extends ISingletonService
 {
 	/**
-	 * Generate a new AD_PInstance_ID to be used in shipment schedule locking and invalidation.
-	 *
-	 * You will need this method when shipment schedule processing code is called from a place where we don't have an AD_PInstance_ID (i.e. from a not-AD_Process code).
-	 *
-	 * @param ctx
-	 * @return new unique AD_PInstance_ID
-	 */
-	int createADPInstanceId(Properties ctx);
-
-	/**
 	 *
 	 * @param orderLineId
 	 * @param trxName

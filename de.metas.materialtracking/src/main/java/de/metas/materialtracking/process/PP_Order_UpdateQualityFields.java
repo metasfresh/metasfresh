@@ -26,7 +26,6 @@ package de.metas.materialtracking.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -34,6 +33,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderQualityCalculator;
+import de.metas.process.JavaProcess;
 
 /**
  * Updates all Quality Inspection orders which are linked to the material tracking on which given quality inspection order it is.
@@ -41,7 +41,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderQualityCalcul
  * @author tsa
  *
  */
-public class PP_Order_UpdateQualityFields extends SvrProcess
+public class PP_Order_UpdateQualityFields extends JavaProcess
 {
 	// Services
 	private final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);

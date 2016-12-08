@@ -26,13 +26,24 @@ import org.compiere.util.Env;
  * @author Low Heng Sin
  *
  */
-public class SwingViewerProvider implements ReportViewerProvider {
+public class SwingViewerProvider implements ReportViewerProvider
+{
+	public static final transient SwingViewerProvider instance = new SwingViewerProvider();
 
-	public void openViewer(ReportEngine re) {
-		Viewer viewer = new Viewer(re);
-		JFrame top = Env.getWindow(0);
+	private SwingViewerProvider()
+	{
+		super();
+	}
+
+	@Override
+	public void openViewer(ReportEngine re)
+	{
+		final Viewer viewer = new Viewer(re);
+		final JFrame top = Env.getWindow(Env.WINDOW_MAIN);
 		if (top instanceof AMenu)
+		{
 			((AMenu)top).getWindowManager().add(viewer);
+		}
 	}
 
 }

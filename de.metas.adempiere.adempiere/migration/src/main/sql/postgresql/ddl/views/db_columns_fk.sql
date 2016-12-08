@@ -31,7 +31,7 @@ SELECT
 		|| ') REFERENCES '
 		|| v.table_ref
 		-- || ');'||CHR(10) AS cmd  /* for oracle */
-		|| ' DEFERRABLE INITIALLY DEFERRED;'||chr(10) AS sqltext  /* for postgresql */
+		|| ' DEFERRABLE INITIALLY DEFERRED;' AS sqltext  /* for postgresql */
 	--
 	, 'ALTER TABLE ' || v.tablename || ' DROP CONSTRAINT IF EXISTS '
 		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 30)
@@ -129,8 +129,11 @@ WHERE 1=1
 	AND v.tablename NOT IN ('Test')
 	-- Exclude views
 	AND NOT EXISTS (SELECT 1 FROM pg_views WHERE viewname = LOWER (v.tablename))
+	
 	-- Make sure table exists in database
-	AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = LOWER (v.tablename))
+	-- gh #539: this view shall even work for non-existing tables because we want to use it to create a part of the table DDL when the ColumnSync process is executed
+	-- AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = LOWER (v.tablename))
+	
     -- exclude already existing foreign keys
 	/*
 	AND NOT EXISTS (
@@ -143,4 +146,5 @@ WHERE 1=1
 	*/
 -- ORDER BY v.tablename, v.table_ref, v.columnname
 ;
-
+COMMENT ON VIEW db_columns_fk IS 'Can be used to identify and fix missing FK constraints. Also used by org.compiere.model.MColumn.getConstraint()
+See https://github.com/metasfresh/metasfresh/issues/539';

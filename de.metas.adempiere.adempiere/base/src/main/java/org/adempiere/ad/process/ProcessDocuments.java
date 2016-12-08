@@ -36,18 +36,18 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Select all records from AD_Table_ID, with given optional WhereClause for each record, call processIt with given DocAction
  * 
  * @task 05502, copied over from uat
  */
-public class ProcessDocuments extends SvrProcess
+public class ProcessDocuments extends JavaProcess
 {
 	//
 	// services
@@ -75,7 +75,7 @@ public class ProcessDocuments extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

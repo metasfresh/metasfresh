@@ -1,11 +1,11 @@
 package de.metas.banking.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import de.metas.banking.payment.IPaySelectionBL;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_PaySelection_ReActivate extends SvrProcess implements ISvrProcessPrecondition
+public class C_PaySelection_ReActivate extends JavaProcess implements IProcessPrecondition
 {
 	@Override
 	public boolean isPreconditionApplicable(final PreconditionsContext context)

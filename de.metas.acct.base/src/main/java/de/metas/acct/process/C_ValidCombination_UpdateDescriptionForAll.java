@@ -26,6 +26,7 @@ package de.metas.acct.process;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.IAccountBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_ValidCombination;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 /**
@@ -43,7 +43,7 @@ import org.compiere.util.DB;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07546_Name_of_validcombination_%28104158977931%29
  */
-public class C_ValidCombination_UpdateDescriptionForAll extends SvrProcess
+public class C_ValidCombination_UpdateDescriptionForAll extends JavaProcess
 {
 	private final transient IAccountBL accountBL = Services.get(IAccountBL.class);
 

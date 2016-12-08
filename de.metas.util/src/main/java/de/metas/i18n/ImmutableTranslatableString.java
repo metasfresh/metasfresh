@@ -45,13 +45,14 @@ public final class ImmutableTranslatableString implements ITranslatableString
 {
 	public static final ITranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
 	{
-		if ((trlMap == null || trlMap.isEmpty())
-				&& (defaultValue == null || defaultValue.isEmpty()))
+		if (trlMap == null || trlMap.isEmpty())
 		{
-			return ConstantTranslatableString.EMPTY;
+			return ImmutableTranslatableString.constant(defaultValue);
 		}
-
-		return new ImmutableTranslatableString(trlMap, defaultValue);
+		else
+		{
+			return new ImmutableTranslatableString(trlMap, defaultValue);
+		}
 	}
 
 	public static final ITranslatableString ofMap(final Map<String, String> trlMap)
