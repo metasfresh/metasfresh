@@ -72,7 +72,7 @@ class Subheader extends Component {
     handleReferenceClick = (type, filter) => {
         const {dispatch, onClick, windowType, dataId} = this.props;
         dispatch(setFilter(filter, type));
-        dispatch(push("/window/" + type + '?refType=' + type + '&refId=' + dataId));
+        dispatch(push("/window/" + type + '?refType=' + windowType + '&refId=' + dataId));
         onClick();
     }
 
