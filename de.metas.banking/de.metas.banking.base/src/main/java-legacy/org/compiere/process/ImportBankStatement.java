@@ -29,13 +29,16 @@ import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Import Bank Statement from I_BankStatement
  *
  *	author Eldir Tomassen
  *	@version $Id: ImportBankStatement.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportBankStatement extends SvrProcess
+public class ImportBankStatement extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				p_AD_Client_ID = 0;
@@ -55,7 +58,7 @@ public class ImportBankStatement extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

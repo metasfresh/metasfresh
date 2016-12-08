@@ -27,20 +27,16 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Supplier;
 
-import javax.script.ScriptEngine;
-
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Rule;
-import org.compiere.model.MRule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -48,6 +44,9 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
+import de.metas.script.ScriptExecutor;
 
 public final class RuleCalloutInstance implements ICalloutInstance
 {
@@ -57,7 +56,7 @@ public final class RuleCalloutInstance implements ICalloutInstance
 
 		final Properties ctx = Env.getCtx();
 
-		final I_AD_Rule rule = MRule.get(ctx, ruleValue.trim());
+		final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveByValue(ctx, ruleValue.trim());
 		if (rule == null)
 		{
 			throw new CalloutInitException("Cannot find rule for callout value '" + ruleValue + "'");
@@ -67,33 +66,28 @@ public final class RuleCalloutInstance implements ICalloutInstance
 		{
 			throw new CalloutInitException("Invalid callout rule " + rule + ". EventType shall be Callout");
 		}
-		if (!X_AD_Rule.RULETYPE_JSR223ScriptingAPIs.equals(rule.getRuleType()))
-		{
-			throw new CalloutInitException("Invalid callout rule type for " + rule + ". Only JSR223 is supported at the moment.");
-		}
 
 		final String id = RuleCalloutInstance.class.getSimpleName() + "-" + ruleValue.trim();
 		final String script = rule.getScript();
+		final Supplier<ScriptExecutor> scriptExecutorSupplier = ScriptEngineFactory.get().createExecutorSupplier(rule);
 
-		final MRule rulePO = LegacyAdapters.convertToPO(rule);
-		final Supplier<ScriptEngine> scriptEngineSupplier = rulePO.supplyScriptEngine();
-
-		return () -> new RuleCalloutInstance(id, script, scriptEngineSupplier);
+		return () -> new RuleCalloutInstance(id, script, scriptExecutorSupplier);
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(RuleCalloutInstance.class);
 
 	private final String id;
 	private final String script;
-	private final Supplier<ScriptEngine> scriptEngineSupplier;
+	private final Supplier<ScriptExecutor> scriptExecutorSupplier;
 
-	public RuleCalloutInstance(final String id, final String script, final Supplier<ScriptEngine> scriptEngineSupplier)
+
+	public RuleCalloutInstance(final String id, final String script, final Supplier<ScriptExecutor> scriptExecutorSupplier)
 	{
 		super();
 
 		this.id = id;
 		this.script = script;
-		this.scriptEngineSupplier = scriptEngineSupplier;
+		this.scriptExecutorSupplier = scriptExecutorSupplier;
 	}
 
 	@Override
@@ -142,42 +136,23 @@ public final class RuleCalloutInstance implements ICalloutInstance
 		final int windowNo = field.getWindowNo();
 		final Object value = field.getValue();
 		final Object valueOld = field.getOldValue();
+		final GridField gridField = (field instanceof GridField ? (GridField)field : null);
 
-		final ScriptEngine engine = scriptEngineSupplier.get();
-
-		// Window context are W_
-		// Login context are G_
-		MRule.setContext(engine, ctx, windowNo);
-		// now add the callout parameters windowNo, tab, field, value, oldValue to the engine
-		// Method arguments context are A_
-		engine.put(MRule.ARGUMENTS_PREFIX + "WindowNo", windowNo);
-		engine.put(MRule.ARGUMENTS_PREFIX + "Value", value);
-		engine.put(MRule.ARGUMENTS_PREFIX + "OldValue", valueOld);
-		engine.put(MRule.ARGUMENTS_PREFIX + "Ctx", ctx);
-
-		if (field instanceof GridField)
-		{
-			final GridField gridField = (GridField)field;
-			final GridTab gridTab = gridField.getGridTab();
-			engine.put(MRule.ARGUMENTS_PREFIX + "Tab", gridTab);
-			engine.put(MRule.ARGUMENTS_PREFIX + "Field", gridField);
-		}
-
-		String retValue;
 		try
 		{
-			final Object result = engine.eval(script);
-			retValue = result == null ? null : result.toString();
+			scriptExecutorSupplier.get()
+					.putContext(ctx, windowNo)
+					.putArgument("Value", value)
+					.putArgument("OldValue", valueOld)
+					.putArgument("Field", gridField)
+					.putArgument("Tab", gridField == null ? null : gridField.getGridTab())
+					.setThrowExceptionIfResultNotEmpty()
+					.execute(script);
 		}
 		catch (final Exception e)
 		{
-			logger.error("Error while executing callout", e);
-			throw new CalloutExecutionException(this, "Error while executing callout: " + e.getLocalizedMessage(), e);
-		}
-
-		if (!Check.isEmpty(retValue, true))
-		{
-			throw new CalloutExecutionException(this, "Error while executing callout: " + retValue);
+			final String errmsg = CalloutExecutionException.extractMessage(e);
+			throw new CalloutExecutionException(this, errmsg, e);
 		}
 	}
 }

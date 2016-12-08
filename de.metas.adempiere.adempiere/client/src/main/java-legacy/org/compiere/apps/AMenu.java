@@ -70,6 +70,8 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
+import org.compiere.print.ReportCtl;
+import org.compiere.print.SwingViewerProvider;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
@@ -125,7 +127,7 @@ public final class AMenu extends CFrame
 		splash.paint(splash.getGraphics());
 
 		//
-		if (!Adempiere.startupEnvironment(true))  // Load Environment
+		if (!Adempiere.startupEnvironment(true))       // Load Environment
 		{
 			System.exit(1);
 		}
@@ -317,13 +319,15 @@ public final class AMenu extends CFrame
 		// Register Swing ClientUI service
 		Services.registerService(IClientUI.class, new SwingClientUI());
 
+		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
+
 		/**
 		 * Show Login Screen - if not successful - exit
 		 */
 		log.trace("Login");
 
 		final ALogin login = new ALogin(splash, m_ctx);
-		if (!login.initLogin()) 		// no automatic login
+		if (!login.initLogin())      		// no automatic login
 		{
 			// Center the window
 			try
@@ -481,18 +485,6 @@ public final class AMenu extends CFrame
 		// Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		AEnv.addMenuItem("Calculator", null, null, mTools, this);
-//		AEnv.addMenuItem("Calendar", null, null, mTools, this);
-//		AEnv.addMenuItem("Editor", null, null, mTools, this);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			AEnv.addMenuItem("Script", null, null, mTools, this);
-//		if (AEnv.isWorkflowProcess())
-//			AEnv.addMenuItem("WorkFlow", null, null, mTools, this);
-		//@formatter:on
 
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
@@ -872,7 +864,7 @@ public final class AMenu extends CFrame
 		final WindowManager windowManager = getWindowManager();
 
 		// metas: tsa: end: US831: Open one window per session per user (2010101810000044)
-		if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || form.isOneInstanceOnly())  // metas: tsa: us831
+		if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || form.isOneInstanceOnly())       // metas: tsa: us831
 		{
 			final FormFrame ffExisting = windowManager.findForm(AD_Form_ID);
 			if (ffExisting != null)

@@ -1,10 +1,8 @@
 package de.metas.fresh.ordercheckup.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
-import org.compiere.process.SvrProcess;
 
 /*
  * #%L
@@ -34,8 +32,10 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
-public class C_Order_MFGWarehouse_Report_Generate extends SvrProcess implements ISvrProcessPrecondition
+public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(C_Order_MFGWarehouse_Report_Generate.class);

@@ -27,16 +27,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class C_Print_Job_Instructions_Create extends SvrProcess
+public class C_Print_Job_Instructions_Create extends JavaProcess
 {
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
@@ -54,7 +54,7 @@ public class C_Print_Job_Instructions_Create extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

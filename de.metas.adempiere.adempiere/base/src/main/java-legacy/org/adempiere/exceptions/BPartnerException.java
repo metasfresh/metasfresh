@@ -29,7 +29,7 @@ public abstract class BPartnerException extends AdempiereException
 	
 	BPartnerException(String ad_message, I_C_BPartner bp)
 	{
-		super("@"+ad_message+"@ - "+(bp == null ? "?" : bp.getValue()+"_"+bp.getName()));
+		super(buildMsg(ad_message, bp));
 		if (bp != null)
 		{
 			this.C_BPartner_ID = bp.getC_BPartner_ID();
@@ -38,6 +38,26 @@ public abstract class BPartnerException extends AdempiereException
 		{
 			this.C_BPartner_ID = -1;
 		}
+	}
+	
+	private static final String buildMsg(final String ad_message, final I_C_BPartner bp)
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append("@").append(ad_message).append("@");
+		
+		sb.append(" - @C_BPartner_ID@: ");
+		if(bp == null)
+		{
+			sb.append("none");
+		}
+		else
+		{
+			sb.append(bp.getValue()).append("_").append(bp.getName());
+			final int bpartnerId = bp.getC_BPartner_ID();
+			sb.append(" (ID=").append(bpartnerId <= 0 ? "new" : bpartnerId).append(")");
+		}
+		
+		return sb.toString();
 	}
 	
 	/**

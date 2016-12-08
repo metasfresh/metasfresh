@@ -44,8 +44,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -73,8 +71,10 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class CalculateCommission extends SvrProcess
+public class CalculateCommission extends JavaProcess
 {
 	public static final String MSG_CALC_ERROR_UNPROCESSED_CANDIDATES_1P = "CalcErrorUnprocessedCandidates_1P";
 
@@ -247,7 +247,7 @@ public class CalculateCommission extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

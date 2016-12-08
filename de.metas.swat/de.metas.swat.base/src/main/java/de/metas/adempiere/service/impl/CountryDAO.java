@@ -33,13 +33,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.language.ILanguageDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_User_SaveCustomInfo;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_User_SaveCustomInfo;
@@ -50,6 +54,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 
 /**
@@ -170,4 +175,22 @@ public class CountryDAO implements ICountryDAO
 		
 		s_log.debug("#" + s_countries.size() + " - Default=" + s_default);
 	} // loadAllCountries
+
+	@Override
+	@Cached(cacheName = I_C_Region.Table_Name + "#by#C_Country_ID")
+	public List<I_C_Region> retrieveRegions(@CacheCtx final Properties ctx, final int countryId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Region.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_Region.COLUMNNAME_C_Country_ID, countryId)
+				//
+				.orderBy()
+				.addColumn(I_C_Region.COLUMNNAME_Name)
+				.addColumn(I_C_Region.COLUMNNAME_C_Region_ID)
+				.endOrderBy()
+				//
+				.create()
+				.listImmutable(I_C_Region.class);
+
+	}
 }

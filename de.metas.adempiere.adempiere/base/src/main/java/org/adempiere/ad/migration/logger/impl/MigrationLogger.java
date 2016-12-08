@@ -49,6 +49,7 @@ import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Session;
@@ -106,6 +107,7 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_PACKAGE_IMP_DETAIL",
 				"AD_PACKAGE_IMP_INST",
 				"AD_PACKAGE_IMP_PROC",
+				I_AD_Process_Stats.Table_Name.toUpperCase(),
 				"AD_PINSTANCE",
 				"AD_PINSTANCE_LOG",
 				"AD_PINSTANCE_PARA",

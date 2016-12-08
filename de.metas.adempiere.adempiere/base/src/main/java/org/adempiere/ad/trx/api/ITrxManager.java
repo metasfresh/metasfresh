@@ -272,6 +272,11 @@ public interface ITrxManager extends ISingletonService
 	ITrxListenerManager getTrxListenerManagerOrAutoCommit(String trxName);
 
 	/**
+	 * Same as {@link #getTrxListenerManagerOrAutoCommit(String)} but it will use {@link ITrx#TRXNAME_ThreadInherited}.
+	 */
+	ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit();
+
+	/**
 	 *
 	 * @param trx
 	 * @return true if given transaction is "null" (i.e. no transaction)
@@ -380,6 +385,12 @@ public interface ITrxManager extends ISingletonService
 	 * @see #isNull(String)
 	 */
 	<T> void assertModelTrxNameNotNull(T model);
+
+	/**
+	 * @return true if current thread has thread inherited transaction set
+	 */
+	boolean hasThreadInheritedTrx();
+
 
 	/**
 	 * Assumes current thread has thread inherited transaction set.

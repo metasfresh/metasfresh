@@ -14,7 +14,7 @@ public class X_AD_PInstance extends org.compiere.model.PO implements I_AD_PInsta
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 776081161L;
+	private static final long serialVersionUID = 1961801403L;
 
     /** Standard Constructor */
     public X_AD_PInstance (Properties ctx, int AD_PInstance_ID, String trxName)
@@ -43,6 +43,31 @@ public class X_AD_PInstance extends org.compiere.model.PO implements I_AD_PInsta
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** 
+	 * AD_Language AD_Reference_ID=106
+	 * Reference name: AD_Language
+	 */
+	public static final int AD_LANGUAGE_AD_Reference_ID=106;
+	/** Set Sprache.
+		@param AD_Language 
+		Sprache für diesen Eintrag
+	  */
+	@Override
+	public void setAD_Language (java.lang.String AD_Language)
+	{
+
+		set_Value (COLUMNNAME_AD_Language, AD_Language);
+	}
+
+	/** Get Sprache.
+		@return Sprache für diesen Eintrag
+	  */
+	@Override
+	public java.lang.String getAD_Language () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
 
 	/** Set Prozess-Instanz.
 		@param AD_PInstance_ID 

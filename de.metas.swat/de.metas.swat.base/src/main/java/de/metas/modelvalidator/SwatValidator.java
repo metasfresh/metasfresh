@@ -99,7 +99,6 @@ import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
-import de.metas.adempiere.modelvalidator.ProcessValidator;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
@@ -195,7 +194,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new M_InOut(), client); // 03771
 		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
-		engine.addModelValidator(new ProcessValidator(), client);
 		engine.addModelValidator(new C_InvoiceLine(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
@@ -380,7 +378,10 @@ public class SwatValidator implements ModelValidator
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		configDatabase(); // run it again here because ModelValidator.initialize is run only once
+		if(Ini.isClient())
+		{
+			configDatabase(); // run it again here because ModelValidator.initialize is run only once
+		}
 
 		final Properties ctx = Env.getCtx();
 

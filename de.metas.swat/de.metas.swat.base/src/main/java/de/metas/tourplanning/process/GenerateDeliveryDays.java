@@ -32,9 +32,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
 import de.metas.tourplanning.model.I_M_Tour;
@@ -42,7 +42,7 @@ import de.metas.tourplanning.model.I_M_Tour;
 /**
  * @author cg
  */
-public class GenerateDeliveryDays extends SvrProcess
+public class GenerateDeliveryDays extends JavaProcess
 {
 	//
 	// Services
@@ -59,7 +59,7 @@ public class GenerateDeliveryDays extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

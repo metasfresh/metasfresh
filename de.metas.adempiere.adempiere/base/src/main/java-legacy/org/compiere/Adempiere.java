@@ -81,9 +81,9 @@ public class Adempiere
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
 	/**
-	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project <code>pom.xml</code>.<br>
+	 * The version string set by maven if run locally (as opposed to the CI system). Please keep it in sync with the <code>build-version-env-missing</code> profile de.metas.parent project <code>pom.xml</code>.
 	 */
-	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
+	public static final String CLIENT_VERSION_LOCAL_BUILD = "1.0.0";
 
 	/** Main Version String */
 	private static String _mainVersion = "";
@@ -494,9 +494,9 @@ public class Adempiere
 	 *
 	 * @return Home directory
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
-		return Ini.getAdempiereHome();
+		return Ini.getMetasfreshHome();
 	}
 
 	/**
@@ -710,9 +710,9 @@ public class Adempiere
 			String className = system.getEncryptionKey();
 			if (className == null || className.length() == 0)
 			{
-				className = System.getProperty(SecureInterface.ADEMPIERE_SECURE);
+				className = System.getProperty(SecureInterface.METASFRESH_SECURE);
 				if (className != null && className.length() > 0
-						&& !className.equals(SecureInterface.ADEMPIERE_SECURE_DEFAULT))
+						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
 				{
 					SecureEngine.init(className);	// test it
 					system.setEncryptionKey(className);
@@ -770,10 +770,6 @@ public class Adempiere
 			}
 		}
 
-		if (runMode == RunMode.BACKEND)
-		{
-			DB.updateMail();
-		}
 		return true;
 	}	// startupEnvironment
 

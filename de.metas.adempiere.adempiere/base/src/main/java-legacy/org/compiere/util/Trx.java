@@ -22,8 +22,6 @@ import java.beans.VetoableChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -31,6 +29,9 @@ import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.impl.AbstractTrx;
 import org.adempiere.ad.trx.api.impl.JdbcTrxSavepoint;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 //import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 
@@ -228,31 +229,43 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	@Override
 	protected boolean rollbackNative(boolean throwException) throws SQLException
-	// metas: end: 02367
 	{
-		final String m_trxName = getTrxName();
-		// local
-		try
+		final String trxName = getTrxName();
+		
+		//
+		// Get current connection
+		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
+		final Connection connection = m_connection;
+		
+		//
+		// Case: we really have something to rollback (because connection was acquired and used)
+		if (connection != null)
 		{
-			if (m_connection != null)
+			try
 			{
-				m_connection.rollback();
-				log.debug("**** {}", m_trxName);
+				connection.rollback();
+				log.debug("rollbackNative: OK - {}", trxName);
 				// m_active = false;
 				return true;
 			}
-		}
-		catch (SQLException e)
-		{
-			log.error(m_trxName, e);
-			if (throwException)
+			catch (SQLException e)
 			{
-				// m_active = false;
-				throw e;
+				log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
+				if (throwException)
+				{
+					// m_active = false;
+					throw e;
+				}
+				return false;
 			}
 		}
-		// m_active = false;
-		return false;
+		//
+		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
+		else
+		{
+			// => consider this a success because if nothing was done then there is nothing to rollback 
+			return true;
+		}
 	}	// rollback
 
 	@Override
@@ -284,32 +297,43 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	@Override
 	protected boolean commitNative(boolean throwException) throws SQLException
-	// metas: end: 02367
 	{
-		final String m_trxName = getTrxName();
+		final String trxName = getTrxName();
 
-		// local
-		try
+		//
+		// Get current connection
+		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
+		final Connection connection = this.m_connection;
+		
+		//
+		// Case: we really have something to commit (because connection was acquired and used)
+		if (connection != null)
 		{
-			if (m_connection != null)
+			try
 			{
-				m_connection.commit();
-				log.debug("**** {}", m_trxName);
+				connection.commit();
+				log.debug("commitNative: OK - {}", trxName);
 				// m_active = false;
 				return true;
 			}
-		}
-		catch (SQLException e)
-		{
-			log.error(m_trxName, e);
-			if (throwException)
+			catch (SQLException e)
 			{
-				// m_active = false;
-				throw e;
+				log.error("commitNative: FAILED - {} (throwException={})", trxName, throwException, e);
+				if (throwException)
+				{
+					// m_active = false;
+					throw e;
+				}
+				return false;
 			}
 		}
-		// m_active = false;
-		return false;
+		//
+		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
+		else
+		{
+			// => consider this a success because even if nothing was done on this transaction, nothing failed neither
+			return true;
+		}
 	}	// commit
 
 	@Override

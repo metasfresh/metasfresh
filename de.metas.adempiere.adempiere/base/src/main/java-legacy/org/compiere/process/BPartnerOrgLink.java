@@ -26,6 +26,9 @@ import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Link Business Partner to Organization.
  *	Either to existing or create new one
@@ -33,7 +36,7 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: BPartnerOrgLink.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class BPartnerOrgLink extends SvrProcess
+public class BPartnerOrgLink extends JavaProcess
 {
 	/**	Existing Org			*/
 	private int			p_AD_Org_ID;
@@ -56,7 +59,7 @@ public class BPartnerOrgLink extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

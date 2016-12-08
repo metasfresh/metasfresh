@@ -31,14 +31,12 @@ import javax.mail.internet.InternetAddress;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.permissions.OrgPermission;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
@@ -312,32 +310,9 @@ public class MUser extends X_AD_User
 	private List<I_AD_UserBPAccess>	m_bpAccess = null;
 
 	/** Is Administrator */
-	private final Supplier<Boolean> m_isAdministratorSupplier = Suppliers.memoize(new Supplier<Boolean>()
-	{
-		@Override
-		public Boolean get()
-		{
-			return Services.get(IUserRolePermissionsDAO.class)
-					.matchUserRolesPermissionsForUser(getCtx(), getAD_User_ID(), new Predicate<IUserRolePermissions>()
-					{
-
-						@Override
-						public boolean evaluate(final IUserRolePermissions permissions)
-						{
-							if (permissions.getAD_Role_ID() != IUserRolePermissions.SYSTEM_ROLE_ID)
-							{
-								return false;
-							}
-
-							// Shall have at access to system organization
-							if (!permissions.isOrgAccess(OrgPermission.AD_Org_ID_System, true))
-							{
-								return false;
-							}
-							return true;
-						}
-					});
-		}
+	private final Supplier<Boolean> m_isAdministratorSupplier = Suppliers.memoize(() -> {
+		return Services.get(IUserRolePermissionsDAO.class)
+				.matchUserRolesPermissionsForUser(getCtx(), getAD_User_ID(), IUserRolePermissions::isSystemAdministrator);
 	});
 
 	/**

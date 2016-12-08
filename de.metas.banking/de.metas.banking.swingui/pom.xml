@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.metas.banking</groupId>
 		<artifactId>de.metas.banking</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -19,12 +19,12 @@
 		<dependency>
 			<groupId>de.metas.banking</groupId>
 			<artifactId>de.metas.banking.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>

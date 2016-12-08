@@ -24,39 +24,33 @@ package de.metas.adempiere.report.jasper.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
-import java.util.Properties;
 
 import org.adempiere.ad.api.ILanguageBL;
-import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
-import org.compiere.print.MPrintFormat;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import net.sf.jasperreports.engine.JasperPrint;
 
-public class JRClient
+public final class JRClient
 {
-	private static final JRClient instance = new JRClient();
-
 	public static JRClient get()
 	{
 		return instance;
@@ -64,16 +58,23 @@ public class JRClient
 
 	public static final String SYSCONFIG_JRServerClass = "de.metas.adempiere.report.jasper.JRServerClass";
 	public static final String SYSCONFIG_JRServerClass_DEFAULT = "de.metas.adempiere.report.jasper.server.RemoteServletServer";
-	public static final String SYSCONFIG_JasperLanguage = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(JRClient.class);
 
-	private IJasperServer server = null;
+	// NOTE: keep this one after all other static declarations, to avoid NPE on initialization
+	private static final JRClient instance = new JRClient();
+
+	//
+	// ---------------------
+	//
+
+	/** Jasper server supplier */
+	private final ExtendedMemorizingSupplier<IJasperServer> serverSupplier = ExtendedMemorizingSupplier.of(() -> createJasperServer());
 
 	/**
 	 * Force the Jasper servlet cache to reset together with the others.
 	 */
-	private CacheInterface cacheListener = new CacheInterface()
+	private final CacheInterface cacheListener = new CacheInterface()
 	{
 		@Override
 		public int size()
@@ -84,7 +85,10 @@ public class JRClient
 		@Override
 		public int reset()
 		{
-			final IJasperServer server = getJasperServer();
+			// Force recreating of jasper server, just in case the config changed
+			serverSupplier.forget();
+
+			final IJasperServer server = serverSupplier.get();
 			if (server != null)
 			{
 				server.cacheReset();
@@ -95,11 +99,8 @@ public class JRClient
 
 	private JRClient()
 	{
-		init();
-	}
-
-	private void init()
-	{
+		super();
+		
 		// If the instance is not a client, reset the Jasper servlet cache.
 		if (!Ini.isClient())
 		{
@@ -108,11 +109,11 @@ public class JRClient
 		}
 	}
 
-	public JasperPrint createJasperPrint(final Properties ctx, final ProcessInfo pi)
+	public JasperPrint createJasperPrint(final ProcessInfo pi)
 	{
 		try
 		{
-			final Language language = extractLanguage(ctx, pi);
+			final Language language = extractLanguage(pi);
 			return createJasperPrint(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language);
 		}
 		catch (Exception e)
@@ -121,7 +122,7 @@ public class JRClient
 		}
 	}
 
-	public JasperPrint createJasperPrint(final int AD_Process_ID, final int AD_PInstance_ID, final Language language)
+	private JasperPrint createJasperPrint(final int AD_Process_ID, final int AD_PInstance_ID, final Language language)
 	{
 		try
 		{
@@ -133,20 +134,21 @@ public class JRClient
 		}
 	}
 
-	private JasperPrint createJasperPrint0(
-			final int AD_Process_ID, final int AD_PInstance_ID, final Language language) throws Exception
+	private JasperPrint createJasperPrint0(final int AD_Process_ID, final int AD_PInstance_ID, final Language language) throws Exception
 	{
-		byte[] data = getJasperServer().report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), OutputType.JasperPrint);
+		final IJasperServer server = serverSupplier.get();
+		byte[] data = server.report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), OutputType.JasperPrint);
 		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
 		JasperPrint jasperPrint = (JasperPrint)ois.readObject();
 		return jasperPrint;
 	}
 
-	public byte[] report(final int AD_Process_ID, final int AD_PInstance_ID, final Language language, final OutputType outputType)
+	private byte[] report(final int AD_Process_ID, final int AD_PInstance_ID, final Language language, final OutputType outputType)
 	{
 		try
 		{
-			return getJasperServer().report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), outputType);
+			final IJasperServer server = serverSupplier.get();
+			return server.report(AD_Process_ID, AD_PInstance_ID, language.getAD_Language(), outputType);
 		}
 		catch (Exception e)
 		{
@@ -154,12 +156,24 @@ public class JRClient
 		}
 	}
 
-	public byte[] report(final Properties ctx, final ProcessInfo pi, final OutputType outputType)
+	public byte[] report(final ProcessInfo pi)
+	{
+		return report(pi, pi.getJRDesiredOutputType());
+	}
+
+	public byte[] report(final ProcessInfo pi, final OutputType outputType)
 	{
 		try
 		{
-			final Language language = extractLanguage(ctx, pi);
-			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputType);
+			// Make sure the ProcessInfo is persisted because we will need to access it's data (like AD_Table_ID/Record_ID etc)
+			if (pi.getAD_PInstance_ID() <= 0)
+			{
+				Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(pi);
+			}
+
+			final Language language = extractLanguage(pi);
+			final OutputType outputTypeEffective = Util.coalesce(outputType, pi.getJRDesiredOutputType());
+			final byte[] data = report(pi.getAD_Process_ID(), pi.getAD_PInstance_ID(), language, outputTypeEffective);
 			return data;
 		}
 		catch (Exception e)
@@ -168,13 +182,8 @@ public class JRClient
 		}
 	}
 
-	public synchronized IJasperServer getJasperServer()
+	private final IJasperServer createJasperServer()
 	{
-		if (server != null)
-		{
-			return server;
-		}
-
 		final String jrClassname = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerClass, SYSCONFIG_JRServerClass_DEFAULT);
 		logger.info("JasperServer classname: {}", jrClassname);
 
@@ -183,19 +192,26 @@ public class JRClient
 			cl = getClass().getClassLoader();
 		try
 		{
-			server = (IJasperServer)cl.loadClass(jrClassname).newInstance();
+			final IJasperServer server = (IJasperServer)cl.loadClass(jrClassname).newInstance();
+			logger.info("JasperServer instance: " + server);
+			return server;
 		}
 		catch (Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
-		logger.info("JasperServer instance: " + server);
-
-		return server;
 	}
 
-	private static Language extractLanguage(final Properties ctx, final ProcessInfo pi)
+	/**
+	 * Extracts reporting language from given {@link ProcessInfo}.
+	 * 
+	 * @param pi
+	 * @return Language; never returns null
+	 * 
+	 * @implNote Usually the ProcessInfo already has the language set, so this method is just a fallback.
+	 *           If you are thinking to extend how the reporting language is fetched, please check {@link ProcessInfoBuilder}'s getReportLanguage() method.
+	 */
+	private static Language extractLanguage(final ProcessInfo pi)
 	{
 		//
 		// Get Language from ProcessInfo, if any (08023)
@@ -205,47 +221,15 @@ public class JRClient
 			return lang;
 		}
 
-		//
-		// Get status of the InOut Document, if any, to have de_CH in case that document in dr or ip (03614)
-
-		if (lang == null && pi.getWindowNo() > 0)
-		{
-			lang = takeLanguageFromDraftInOut(ctx, pi);
-		}
-
-		//
-		// Get Language directly from window context, if any (08966)
-		if (lang == null && pi.getWindowNo() > 0)
-		{
-			// Note: onlyWindow is true, otherwise the login language would be returned if no other language was found
-			final String languageString = Env.getContext(ctx, pi.getWindowNo(), "AD_Language", true);
-			if (languageString != null && !languageString.equals(""))
-			{
-				lang = Language.getLanguage(languageString);
-			}
-		}
-
-		//
-		// Get Language from the BPartner set in window context, if any (03040)
-		if (lang == null && pi.getWindowNo() > 0)
-		{
-			final Integer C_BPartner_ID = Env.getContextAsInt(ctx, pi.getWindowNo(), "C_BPartner_ID");
-			if (C_BPartner_ID != null)
-			{
-				lang = Services.get(IBPartnerBL.class).getLanguage(ctx, C_BPartner_ID);
-			}
-		}
-
-		
 		// task 09740
 		// In case the report is not linked to a window but it has C_BPartner_ID as parameter and it is set, take the language of that bpartner
 		if (lang == null)
 		{
 			final IRangeAwareParams parameterAsIParams = pi.getParameterAsIParams();
 			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
-			if(bPartnerID > 0)
+			if (bPartnerID > 0)
 			{
-				lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bPartnerID);
+				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), bPartnerID);
 				return lang;
 			}
 		}
@@ -254,7 +238,7 @@ public class JRClient
 		// Get Organization Language if any (03040)
 		if (null == lang)
 		{
-			lang = Services.get(ILanguageBL.class).getOrgLanguage(ctx, pi.getAD_Org_ID());
+			lang = Services.get(ILanguageBL.class).getOrgLanguage(pi.getCtx(), pi.getAD_Org_ID());
 		}
 
 		// If we got an Language already, return it
@@ -264,95 +248,7 @@ public class JRClient
 		}
 
 		//
-		// Fallback: get it from Print Format
-		for (final ProcessInfoParameter pip : pi.getParameter())
-		{
-			if (ProcessInfoParameter.PARAM_PRINT_FORMAT.equals(pip.getParameterName()))
-			{
-				final MPrintFormat pf = (MPrintFormat)pip.getParameter();
-				return pf.getLanguage();
-			}
-		}
-
-		//
 		// Fallback: get it from client context
 		return Env.getLanguage(Env.getCtx());
-	}
-
-	/**
-	 * Method to extract the language from login in case of drafted documents with docType {@link X_C_DocType#DOCBASETYPE_MaterialDelivery}.
-	 * <p>
-	 * TODO: extract some sort of language-provider-SPI
-	 *
-	 * @param ctx
-	 * @param pi
-	 * @return the login language if conditions fulfilled, null otherwise.
-	 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
-	 */
-	private static Language takeLanguageFromDraftInOut(final Properties ctx, final ProcessInfo pi)
-	{
-
-		final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_JasperLanguage, true);
-
-		// in case the sys config is not set, there is no need to continue
-		if (!isUseLoginLanguage)
-		{
-			return null;
-		}
-
-		final String tablename = pi.getTableNameOrNull();
-
-		// the process might not be assigned to a table, but these processes are not covered by this logic
-		// for the document processes, there is always a table
-		if (Check.isEmpty(tablename, true))
-		{
-			return null;
-		}
-
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		final boolean isDocument = docActionBL.isDocumentTable(tablename); // fails for processes
-
-		// Make sure the process is for a document
-		if (!isDocument)
-		{
-			return null;
-		}
-
-		final Class<?> clazz = TableModelClassLoader.instance.getClass(tablename);
-
-		final Object document = pi.getRecord(clazz);
-
-		final I_C_DocType doctype = docActionBL.getDocTypeOrNull(document);
-
-		// make sure the document has a doctype
-		if (doctype == null)
-		{
-			return null; // this shall never happen
-		}
-
-		final String docBaseType = doctype.getDocBaseType();
-
-		// make sure the doctype has a base doctype
-		if (docBaseType == null)
-		{
-			return null;
-		}
-
-		// Nothing to do if not dealing with a sales inout.
-		if (!X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType))
-		{
-			return null;
-		}
-
-		// Nothing to do if the document is not a draft or in progress.
-		if (!docActionBL.isStatusDraftedOrInProgress(document))
-		{
-			return null;
-		}
-
-		// If all the conditions described above are fulfilled, take the language from the login
-		final String languageString = Env.getAD_Language(ctx);
-
-		return Language.getLanguage(languageString);
 	}
 }

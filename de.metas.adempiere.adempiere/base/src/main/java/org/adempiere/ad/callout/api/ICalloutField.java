@@ -10,12 +10,12 @@ package org.adempiere.ad.callout.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,9 +31,9 @@ import org.compiere.util.ValueNamePair;
 
 /**
  * Callout aware field
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface ICalloutField
 {
@@ -110,24 +110,36 @@ public interface ICalloutField
 	@Deprecated
 	void fireDataStatusEEvent(final ValueNamePair errorLog);
 
+	/**
+	 * Put to window context.
+	 */
 	default void putContext(final String name, final String value)
 	{
 		Env.setContext(getCtx(), name, value);
 	}
 
+	/**
+	 * Put to window context.
+	 */
 	default void putContext(final String name, final boolean value)
 	{
-		Env.setContext(getCtx(), name, value);
+		Env.setContext(getCtx(), getWindowNo(), name, value);
 	}
 
+	/**
+	 * Put to window context.
+	 */
 	default void putContext(final String name, final java.util.Date value)
 	{
-		Env.setContext(getCtx(), name, value);
+		Env.setContext(getCtx(), getWindowNo(), name, value);
 	}
 
+	/**
+	 * Put to window context.
+	 */
 	default void putContext(final String name, final int value)
 	{
-		Env.setContext(getCtx(), name, value);
+		Env.setContext(getCtx(), getWindowNo(), name, value);
 	}
 
 	default int getGlobalContextAsInt(final String name)

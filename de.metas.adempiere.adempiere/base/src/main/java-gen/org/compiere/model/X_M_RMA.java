@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -21,18 +5,18 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for M_RMA
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_M_RMA extends PO implements I_M_RMA, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_M_RMA extends org.compiere.model.PO implements I_M_RMA, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1892628100L;
 
     /** Standard Constructor */
     public X_M_RMA (Properties ctx, int M_RMA_ID, String trxName)
@@ -64,41 +48,30 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_RMA[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Amount.
+	/** Set Betrag.
 		@param Amt 
 		Amount
 	  */
-	public void setAmt (BigDecimal Amt)
+	@Override
+	public void setAmt (java.math.BigDecimal Amt)
 	{
 		set_Value (COLUMNNAME_Amt, Amt);
 	}
 
-	/** Get Amount.
+	/** Get Betrag.
 		@return Amount
 	  */
-	public BigDecimal getAmt () 
+	@Override
+	public java.math.BigDecimal getAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amt);
 		if (bd == null)
@@ -106,15 +79,23 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return bd;
 	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
 
-	/** Set Business Partner .
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -123,9 +104,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get Business Partner .
+	/** Get Geschäftspartner.
 		@return Identifies a Business Partner
 	  */
+	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -134,15 +116,23 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Currency getC_Currency() throws RuntimeException
-    {
-		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
-			.getPO(getC_Currency_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
 
-	/** Set Currency.
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
+	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -151,9 +141,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Currency.
+	/** Get Währung.
 		@return The Currency for this record
 	  */
+	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -162,15 +153,23 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_DocType getC_DocType() throws RuntimeException
-    {
-		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
-			.getPO(getC_DocType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
 
-	/** Set Document Type.
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
 	  */
+	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
@@ -179,9 +178,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
-	/** Get Document Type.
+	/** Get Belegart.
 		@return Document type or rules
 	  */
+	@Override
 	public int getC_DocType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
@@ -190,15 +190,23 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Order getC_Order() throws RuntimeException
-    {
-		return (I_C_Order)MTable.get(getCtx(), I_C_Order.Table_Name)
-			.getPO(getC_Order_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
 
-	/** Set Order.
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
 		@param C_Order_ID 
 		Order
 	  */
+	@Override
 	public void setC_Order_ID (int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -207,9 +215,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
 	}
 
-	/** Get Order.
+	/** Get Auftrag.
 		@return Order
 	  */
+	@Override
 	public int getC_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
@@ -218,24 +227,26 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** DocAction AD_Reference_ID=135 */
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
 	public static final int DOCACTION_AD_Reference_ID=135;
 	/** Complete = CO */
 	public static final String DOCACTION_Complete = "CO";
@@ -249,41 +260,46 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 	public static final String DOCACTION_Void = "VO";
 	/** Close = CL */
 	public static final String DOCACTION_Close = "CL";
-	/** Reverse - Correct = RC */
+	/** Reverse_Correct = RC */
 	public static final String DOCACTION_Reverse_Correct = "RC";
-	/** Reverse - Accrual = RA */
+	/** Reverse_Accrual = RA */
 	public static final String DOCACTION_Reverse_Accrual = "RA";
 	/** Invalidate = IN */
 	public static final String DOCACTION_Invalidate = "IN";
-	/** Re-activate = RE */
+	/** Re_Activate = RE */
 	public static final String DOCACTION_Re_Activate = "RE";
-	/** <None> = -- */
+	/** None = -- */
 	public static final String DOCACTION_None = "--";
 	/** Prepare = PR */
 	public static final String DOCACTION_Prepare = "PR";
 	/** Unlock = XL */
 	public static final String DOCACTION_Unlock = "XL";
-	/** Wait Complete = WC */
+	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** Set Document Action.
+	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
 	  */
-	public void setDocAction (String DocAction)
+	@Override
+	public void setDocAction (java.lang.String DocAction)
 	{
 
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Document Action.
+	/** Get Belegverarbeitung.
 		@return The targeted status of the document
 	  */
-	public String getDocAction () 
+	@Override
+	public java.lang.String getDocAction () 
 	{
-		return (String)get_Value(COLUMNNAME_DocAction);
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** DocStatus AD_Reference_ID=131 */
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
 	public static final int DOCSTATUS_AD_Reference_ID=131;
 	/** Drafted = DR */
 	public static final String DOCSTATUS_Drafted = "DR";
@@ -291,7 +307,7 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 	public static final String DOCSTATUS_Completed = "CO";
 	/** Approved = AP */
 	public static final String DOCSTATUS_Approved = "AP";
-	/** Not Approved = NA */
+	/** NotApproved = NA */
 	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
@@ -303,60 +319,57 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 	public static final String DOCSTATUS_Closed = "CL";
 	/** Unknown = ?? */
 	public static final String DOCSTATUS_Unknown = "??";
-	/** In Progress = IP */
+	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Waiting Payment = WP */
+	/** WaitingPayment = WP */
 	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** Waiting Confirmation = WC */
+	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Document Status.
+	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
 	  */
-	public void setDocStatus (String DocStatus)
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
 	{
 
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Document Status.
+	/** Get Belegstatus.
 		@return The current status of the document
 	  */
-	public String getDocStatus () 
+	@Override
+	public java.lang.String getDocStatus () 
 	{
-		return (String)get_Value(COLUMNNAME_DocStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Document No.
+	/** Set Beleg Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
-	public void setDocumentNo (String DocumentNo)
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Beleg Nr..
 		@return Document sequence number of the document
 	  */
-	public String getDocumentNo () 
+	@Override
+	public java.lang.String getDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getDocumentNo());
-    }
 
 	/** Set Generate To.
 		@param GenerateTo 
 		Generate To
 	  */
-	public void setGenerateTo (String GenerateTo)
+	@Override
+	public void setGenerateTo (java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
 	}
@@ -364,37 +377,48 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 	/** Get Generate To.
 		@return Generate To
 	  */
-	public String getGenerateTo () 
+	@Override
+	public java.lang.String getGenerateTo () 
 	{
-		return (String)get_Value(COLUMNNAME_GenerateTo);
+		return (java.lang.String)get_Value(COLUMNNAME_GenerateTo);
 	}
 
-	/** Set Comment/Help.
+	/** Set Kommentar/Hilfe.
 		@param Help 
 		Comment or Hint
 	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
+	/** Get Kommentar/Hilfe.
 		@return Comment or Hint
 	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp () 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
-	public I_M_InOut getInOut() throws RuntimeException
-    {
-		return (I_M_InOut)MTable.get(getCtx(), I_M_InOut.Table_Name)
-			.getPO(getInOut_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_InOut getInOut() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
 
-	/** Set Shipment/Receipt.
+	@Override
+	public void setInOut(org.compiere.model.I_M_InOut InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_InOut_ID, org.compiere.model.I_M_InOut.class, InOut);
+	}
+
+	/** Set Versand/Wareneingang.
 		@param InOut_ID 
 		MaterialShipment Document
 	  */
+	@Override
 	public void setInOut_ID (int InOut_ID)
 	{
 		if (InOut_ID < 1) 
@@ -403,9 +427,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_InOut_ID, Integer.valueOf(InOut_ID));
 	}
 
-	/** Get Shipment/Receipt.
+	/** Get Versand/Wareneingang.
 		@return MaterialShipment Document
 	  */
+	@Override
 	public int getInOut_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_InOut_ID);
@@ -414,18 +439,20 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Approved.
+	/** Set Freigegeben.
 		@param IsApproved 
 		Indicates if this document requires approval
 	  */
+	@Override
 	public void setIsApproved (boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
-	/** Get Approved.
+	/** Get Freigegeben.
 		@return Indicates if this document requires approval
 	  */
+	@Override
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
@@ -438,18 +465,20 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return false;
 	}
 
-	/** Set Sales Transaction.
+	/** Set Verkaufs-Transaktion.
 		@param IsSOTrx 
 		This is a Sales Transaction
 	  */
+	@Override
 	public void setIsSOTrx (boolean IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
 	}
 
-	/** Get Sales Transaction.
+	/** Get Verkaufs-Transaktion.
 		@return This is a Sales Transaction
 	  */
+	@Override
 	public boolean isSOTrx () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSOTrx);
@@ -462,10 +491,11 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return false;
 	}
 
-	/** Set RMA.
+	/** Set Warenrücksendung - Freigabe (RMA).
 		@param M_RMA_ID 
 		Return Material Authorization
 	  */
+	@Override
 	public void setM_RMA_ID (int M_RMA_ID)
 	{
 		if (M_RMA_ID < 1) 
@@ -474,9 +504,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_RMA_ID, Integer.valueOf(M_RMA_ID));
 	}
 
-	/** Get RMA.
+	/** Get Warenrücksendung - Freigabe (RMA).
 		@return Return Material Authorization
 	  */
+	@Override
 	public int getM_RMA_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_RMA_ID);
@@ -485,15 +516,39 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_RMAType getM_RMAType() throws RuntimeException
-    {
-		return (I_M_RMAType)MTable.get(getCtx(), I_M_RMAType.Table_Name)
-			.getPO(getM_RMAType_ID(), get_TrxName());	}
+	/** Set M_RMA_includedTab.
+		@param M_RMA_includedTab M_RMA_includedTab	  */
+	@Override
+	public void setM_RMA_includedTab (java.lang.String M_RMA_includedTab)
+	{
+		set_Value (COLUMNNAME_M_RMA_includedTab, M_RMA_includedTab);
+	}
 
-	/** Set RMA Type.
+	/** Get M_RMA_includedTab.
+		@return M_RMA_includedTab	  */
+	@Override
+	public java.lang.String getM_RMA_includedTab () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_RMA_includedTab);
+	}
+
+	@Override
+	public org.compiere.model.I_M_RMAType getM_RMAType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_RMAType_ID, org.compiere.model.I_M_RMAType.class);
+	}
+
+	@Override
+	public void setM_RMAType(org.compiere.model.I_M_RMAType M_RMAType)
+	{
+		set_ValueFromPO(COLUMNNAME_M_RMAType_ID, org.compiere.model.I_M_RMAType.class, M_RMAType);
+	}
+
+	/** Set Warenrücksendung - Freigabeart.
 		@param M_RMAType_ID 
 		Return Material Authorization Type
 	  */
+	@Override
 	public void setM_RMAType_ID (int M_RMAType_ID)
 	{
 		if (M_RMAType_ID < 1) 
@@ -502,9 +557,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_Value (COLUMNNAME_M_RMAType_ID, Integer.valueOf(M_RMAType_ID));
 	}
 
-	/** Get RMA Type.
+	/** Get Warenrücksendung - Freigabeart.
 		@return Return Material Authorization Type
 	  */
+	@Override
 	public int getM_RMAType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_RMAType_ID);
@@ -517,7 +573,8 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -525,23 +582,26 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -554,15 +614,17 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
@@ -575,13 +637,21 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return false;
 	}
 
-	public I_M_RMA getRef_RMA() throws RuntimeException
-    {
-		return (I_M_RMA)MTable.get(getCtx(), I_M_RMA.Table_Name)
-			.getPO(getRef_RMA_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_RMA getRef_RMA() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Ref_RMA_ID, org.compiere.model.I_M_RMA.class);
+	}
+
+	@Override
+	public void setRef_RMA(org.compiere.model.I_M_RMA Ref_RMA)
+	{
+		set_ValueFromPO(COLUMNNAME_Ref_RMA_ID, org.compiere.model.I_M_RMA.class, Ref_RMA);
+	}
 
 	/** Set Referenced RMA.
 		@param Ref_RMA_ID Referenced RMA	  */
+	@Override
 	public void setRef_RMA_ID (int Ref_RMA_ID)
 	{
 		if (Ref_RMA_ID < 1) 
@@ -592,6 +662,7 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 
 	/** Get Referenced RMA.
 		@return Referenced RMA	  */
+	@Override
 	public int getRef_RMA_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_RMA_ID);
@@ -600,15 +671,23 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_User getSalesRep() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getSalesRep_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
+	}
 
-	/** Set Sales Representative.
+	@Override
+	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
+	{
+		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
+	}
+
+	/** Set Vertriebsbeauftragter.
 		@param SalesRep_ID 
 		Sales Representative or Company Agent
 	  */
+	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
@@ -617,9 +696,10 @@ public class X_M_RMA extends PO implements I_M_RMA, I_Persistent
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Sales Representative.
+	/** Get Vertriebsbeauftragter.
 		@return Sales Representative or Company Agent
 	  */
+	@Override
 	public int getSalesRep_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);

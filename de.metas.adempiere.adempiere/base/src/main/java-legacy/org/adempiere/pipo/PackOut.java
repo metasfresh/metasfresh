@@ -66,12 +66,13 @@ import org.compiere.model.X_AD_Package_Exp;
 import org.compiere.model.X_AD_Package_Exp_Detail;
 import org.compiere.model.X_AD_PrintPaper;
 import org.compiere.model.X_AD_Reference;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 
 /**
@@ -90,7 +91,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * 				https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2847727&group_id=176962
  */
 
-public class PackOut extends SvrProcess
+public class PackOut extends JavaProcess
 {
 	/** Record ID				*/
 	private int p_PackOut_ID = 0;
@@ -135,7 +136,7 @@ public class PackOut extends SvrProcess
 	protected void prepare()
 	{
 		p_PackOut_ID = getRecord_ID();
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 		}		

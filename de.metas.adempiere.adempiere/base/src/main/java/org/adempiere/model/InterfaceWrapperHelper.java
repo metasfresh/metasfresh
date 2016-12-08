@@ -885,26 +885,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static boolean isNull(final Object model, final String columnName)
 	{
-		if (model == null)
-		{
-			return true;
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.isNull(model, columnName);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isNull(model, columnName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isNull(model, columnName);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.isNull(model, columnName);
 	}
 
 	/**
@@ -1408,31 +1389,7 @@ public class InterfaceWrapperHelper
 
 	public static Evaluatee getEvaluatee(final Object model)
 	{
-		if (model == null)
-		{
-			return null;
-		}
-		else if (model instanceof Evaluatee)
-		{
-			final Evaluatee evaluatee = (Evaluatee)model;
-			return evaluatee;
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getStrictPO(model);
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getGridTab(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getWrapper(model).asEvaluatee();
-		}
-		else
-		{
-			throw new AdempiereException("Evaluatee not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.getEvaluatee(model);
 	}
 
 	/**

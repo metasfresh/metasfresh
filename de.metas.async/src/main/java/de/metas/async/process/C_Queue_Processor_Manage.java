@@ -29,13 +29,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Start/Stop/Restart an {@link IQueueProcessor}
@@ -43,7 +43,7 @@ import de.metas.async.processor.IQueueProcessorsExecutor;
  * @author tsa
  * 
  */
-public class C_Queue_Processor_Manage extends SvrProcess
+public class C_Queue_Processor_Manage extends JavaProcess
 {
 	private static final String PARAM_Action = "Action";
 
@@ -64,7 +64,7 @@ public class C_Queue_Processor_Manage extends SvrProcess
 			p_C_Queue_Processor_ID = getRecord_ID();
 		}
 
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
