@@ -74,7 +74,8 @@ def createRepo(String repoId)
 {
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
-		echo "Create the repository ${repoId}-releases to which to deploy everything we build";
+		echo "Create the repository ${repoId}-releases";
+
 		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <repository>
   <data>
@@ -97,12 +98,13 @@ def createRepo(String repoId)
 		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
 		
-		echo "Create the repository-group ${repoId} from which to resolve everything we need";
+		echo "Create the repository-group ${repoId}";
+		
 		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
 <repo-group>
   <data>
     <repositories>
-      <!-- include mvn-public which contains everything we need to perform the build-->
+	  <!-- include mvn-public that contains everything we need to perform the build-->
       <repo-group-member>
         <name>mvn-public-new</name>
         <id>mvn-public-new</id>
@@ -530,7 +532,7 @@ stage('Test SQL-Migration')
 			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
 
 			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+			final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 			
 			// Look Ma, I'm currying!!
 			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
@@ -594,7 +596,7 @@ stage('Deployment')
 
 				// extract the tar.gz
 				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+				final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 
 				// Look Ma, I'm currying!!
 				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
