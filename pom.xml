@@ -30,6 +30,7 @@
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
+					<includeProperties>metasfresh.version</includeProperties> <!-- for now, e.g. don't update the spring-version property -->
 					<properties>
 						<property>
 							<name>metasfresh.version</name>
