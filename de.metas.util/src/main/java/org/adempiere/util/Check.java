@@ -118,7 +118,7 @@ public final class Check
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg + "; Exception: " + ex);
+		Loggables.get().addLog(msg + "; Exception: " + ex);
 
 		if (throwException || logger == null)
 		{

@@ -27,36 +27,14 @@ import ch.qos.logback.classic.Level;
  */
 
 /**
- * Interface implementations can be passed to business logic to perform high-level logging.
+ * Interface implementations can be passed to business logic to perform high-level logging. Use {@link Loggables} to get an instance.
  *
- * NOTE: The signature of this interface's only method is chosen so that all classes like de.metas.process.JavaProcess subclasses can implement it without further code changes.
+ * NOTE: The signature of this interface {@link #addLog(String, Object...)} method is chosen so that all classes like de.metas.process.JavaProcess subclasses can implement it without further code changes.
  *
- * @author ts
- *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public interface ILoggable
 {
-	/** The null loggable which can be used without NPE, but doesn't do anything */
-	public static ILoggable NULL = NullLoggable.instance;
-
-	/**
-	 * Holds the {@link ILoggable} instance of current thread
-	 *
-	 * @deprecated please use the shorter {@link #get()}.
-	 */
-	@Deprecated
-	public static final ThreadLocalLoggableHolder THREADLOCAL = ThreadLocalLoggableHolder.instance;
-
-	/**
-	 * The loggable instance currently associated with this thread.
-	 *
-	 * @return
-	 */
-	public static ILoggable get()
-	{
-		return THREADLOCAL.getLoggable();
-	}
-
 	/**
 	 * Add a log message.
 	 *

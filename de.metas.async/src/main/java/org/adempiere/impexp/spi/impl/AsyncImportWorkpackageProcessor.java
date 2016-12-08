@@ -10,12 +10,12 @@ package org.adempiere.impexp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,10 +31,10 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.ImportProcessResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -42,10 +42,11 @@ import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.logging.LogManager;
 
 /**
  * Workpackage processor used to import records enqueued by {@link AsyncImportProcessBuilder}.
- * 
+ *
  * @author tsa
  *
  */
@@ -86,7 +87,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		final IImportProcess<Object> importProcessor = Services.get(IImportProcessFactory.class).newImportProcessForTableName(importTableName);
 		importProcessor.setCtx(ctx);
-		importProcessor.setLoggable(getLoggable());
+		importProcessor.setLoggable(Loggables.get());
 		importProcessor.setParameters(getParameters());
 		final ImportProcessResult result = importProcessor.run();
 

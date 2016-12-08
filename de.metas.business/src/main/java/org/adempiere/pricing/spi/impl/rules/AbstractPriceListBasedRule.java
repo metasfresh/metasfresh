@@ -1,5 +1,14 @@
 package org.adempiere.pricing.spi.impl.rules;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.util.Loggables;
+import org.compiere.model.MPriceList;
+import org.compiere.util.Trace;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,18 +32,8 @@ package org.adempiere.pricing.spi.impl.rules;
  */
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
-import org.adempiere.util.ILoggable;
-import org.compiere.model.MPriceList;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import org.compiere.util.Trace;
 
 public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
 {
@@ -59,7 +58,7 @@ public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
 		if (pricingCtx.getM_PriceList_ID() <= 0)
 		{
 			final String msg = "pricingCtx {} contains no priceList";
-			ILoggable.THREADLOCAL.getLoggable().addLog(msg, pricingCtx);
+			Loggables.get().addLog(msg, pricingCtx);
 			log.error(msg, pricingCtx);
 			Trace.printStack();
 			return false; // false;

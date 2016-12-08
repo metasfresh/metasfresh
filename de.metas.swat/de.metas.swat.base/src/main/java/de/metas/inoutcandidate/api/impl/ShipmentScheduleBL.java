@@ -54,7 +54,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.api.IMsgBL;
@@ -311,7 +311,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 							final String msg = "Found QtyPicked record with non-zero qty even if the shipment schedule has QtyDelivered=0"
 									+ "\n M_ShipmentSchedule_ID = " + sched.getM_ShipmentSchedule_ID()
 									+ "\n QtyPicked = " + alloc.getQtyPicked();
-							ILoggable.THREADLOCAL.getLoggable().addLog(msg);
+							Loggables.get().addLog(msg);
 
 							final AdempiereException ex = new AdempiereException(msg);
 							logger.warn(ex.getLocalizedMessage(), ex);
@@ -758,7 +758,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return firstRun;
 		}
 
-		final Map<Integer, I_C_OrderLine> olCache = new HashMap<Integer, I_C_OrderLine>();
+		final Map<Integer, I_C_OrderLine> olCache = new HashMap<>();
 		for (final OlAndSched olAndSched : lines)
 		{
 			olCache.put(olAndSched.getOl().getC_OrderLine_ID(), olAndSched.getOl());
@@ -1060,7 +1060,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-		final Set<Integer> alreadyDone = new HashSet<Integer>();
+		final Set<Integer> alreadyDone = new HashSet<>();
 
 		for (final I_C_OrderLine currentLine : orderLines)
 		{

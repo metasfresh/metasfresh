@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.process.DocAction;
@@ -85,15 +85,13 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final ILoggable loggable = getLoggable();
-
 		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 		for (final Object model : models)
 		{
 			final DocAction document = docActionBL.getDocAction(model);
 
 			final DocAction counterDocument = counterDocumentBL.createCounterDocument(document, false);
-			loggable.addLog("Document {0}: created counter document {1}", document, counterDocument);
+			Loggables.get().addLog("Document {0}: created counter document {1}", document, counterDocument);
 		}
 		return Result.SUCCESS;
 	}

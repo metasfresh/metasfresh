@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -122,7 +123,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		final I_DLM_Partition_Config configDB = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(workPackage), dlmConfigId, I_DLM_Partition_Config.class, ITrx.TRXNAME_None);
 		final PartitionerConfig config = partitionerService.loadPartitionConfig(configDB);
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		final ILoggable loggable = Loggables.get();
 
 		final ITableRecordReference tableRefToAttach;
 		final List<Object> recordsToAttach = queueDAO.retrieveItems(workPackage, Object.class, localTrxName); // note that according to the 'schedule' method, there can be max one item
