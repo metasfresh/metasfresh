@@ -10,6 +10,18 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.48.47 (2016-50)
+ 
+ upcoming
+
+## Features 
+* webui
+  * #625 Shipment Schedule Window WebUI
+
+## Fixes
+* metasfresh
+  * #679 Bug in ClientUpdateValidator
+
 # metasfresh 4.47.46 (2016-49)
 
 this week's release
