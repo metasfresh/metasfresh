@@ -10,25 +10,85 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.47.46 (2016-49)
+
+this week's release
+
+## Features 
+* metasfresh
+  * #639 Marginal Return report calculation does not check ad_org_id
+  * #658 make Ini more robust: throw ex if file can't be read
+  * #585 Adjust the remaining Property names
+  * #661 Cultivation Planning report adjustments
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
+  * #59 User friendly URL for Print Endpoint
+  * #45 Dashboard Target area backend support
+  * #567 WebUI - Material Receipt Schedule
+
+## Fixes
+* metasfresh
+  * #664 R_Request Performance Issue
+  * #674 Filter operator "between" broken
+  
+* webui
+  * #67 Error when introducing parameters to report
+  * #70 Add BPLocation Error
+
+# metasfresh 4.46.45 (2016-48)
+
+## Features 
+* webui
+  * #425 Kickstart elasticsearch integration
+    * Add the first prototype of elasticsearch integration in WebUI environment of metasfresh ERP. Data for elasticsearch index is created via metasfresh async framework.
+  * #598 WebUI Dashboard initial Prototype definition
+    * Create a prototype dashboard in new metasfresh WebUI. Current prototype uses kibana for KPI and data visualization.
+
+## Fixes
+* metasfresh
+  * #583 Reports without ad_org_id show wrong results
+    * Add support for multi organisation usage of selected 22 reports.
+  * #620 Marginal Return Report doubled sums for accounting group
+    * Fix the doubled sums in Marginal return report for specific accounting group.    
+  * #656 Bug in Import Format - Copy lines process
+    * Fix a minor Bug in Import format.
+  * #646 Fix support for groovy scripts
+    * Fix groovy Script support and extend fieldsize for script recording.
+
 # metasfresh 4.45.44 (2016-47)
+
+This week's RC
 
 ## Features
 * metasfresh
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Adjust the completion process of Flatrate terms created manually. Now the flatrate term in not completed and can be manually adjusted by the user without reactivating.
   * #563 Report Statistics qty per Week
+    * New sales qty report that shows the sold product quanities per week and in comparison the last 11 weeks.
   * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
+    * Adjustment of Handling Unit permissions in manufacturing order, initially filtering out HU with washing cycle set.
   * #597 Empties mask and functionality with autom. set the selected bpartner
+    * New functionality to add informations about Businsspartner, Location and Purchase Order Reference. This allows the to raise the efficiency when checking and creating purchase invoices via invoice candidates.
   * #576 Report Reclamation result, quality note and minor changes
+    * New reqirements implemented in reclamation report.
   * #539 Add missing FK constraints
+    * Add further missin Foreign Key constraints surfacing during Data Lifecycle Management implementation.
 * webui
   * #567 WebUI - Material Receipt Schedule
+    * Add initial Screen Layout for Material receipt schedule in metasfresh WebUI.
   * #497 WebUI - ShipmentSchedule Window
+    * Add initial Screen Layout for Shipment Schedule in metasfresh WebUI.
 
 ## Fixes
 * metasfresh
   * #589 console error when doing bpartner setup
+    * Fix a minor bug with jax-rs/ jms timeout in Business Partner setup workflow, which contantly popped up in console.
   * #553 Report Account Info adjustments. Add parms date range.
+    * Add the parms date range back into Account Info report in Jasper.
   * #611 IBAN Error for RBS Bank
+    * Add support for RBS Bank in metasfresh IBAN check when creating a new Businesspartner Bankaccount.
 
 # metasfresh 4.44.43 (2016-46)
 

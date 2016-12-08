@@ -18,6 +18,8 @@ package org.compiere.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MRecurring;
  
@@ -27,14 +29,14 @@ import org.compiere.model.MRecurring;
  *	@author Jorg Janke
  *	@version $Id: Recurring.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class Recurring extends SvrProcess
+public class Recurring extends JavaProcess
 {
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

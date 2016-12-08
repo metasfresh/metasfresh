@@ -62,8 +62,6 @@ import org.compiere.model.I_M_PackagingTreeItem;
 import org.compiere.model.MBPartner;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -99,6 +97,8 @@ import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
 import net.miginfocom.swing.MigLayout;
 
@@ -587,11 +587,9 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void unlockUI(ProcessInfo pi)
+	public void unlockUI(final ProcessInfo pi)
 	{
 		getModel().uiLocked = false;
-		// display the process results
-		ProcessInfoUtil.setLogFromDB(pi);
 		//
 		if (waitIndicator != null)
 		{
@@ -604,13 +602,14 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		final FormFrame framePicking = getPickingFrame();
 		framePicking.setEnabled(true);
 		//
-		final StringBuffer iText = new StringBuffer();
+		final ProcessExecutionResult result = pi.getResult();
+		final StringBuilder iText = new StringBuilder();
 		iText.append("<b>") //
-				.append(pi.getSummary()) //
+				.append(result.getSummary()) //
 				.append("</b><br>(") //
 				.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Belegerstellung")) //
 				.append(")<br>") //
-				.append(pi.getLogInfo(true));
+				.append(result.getLogInfo(true));
 
 		SwingPickingTerminalPanel pickPanel = ((SwingPickingTerminalPanel)pickingPanel.getTerminalBasePanel());
 		ITerminalTextPane text = pickPanel.resultTextPane;

@@ -56,8 +56,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MStorage;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -67,6 +65,8 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductBL;
 
 
@@ -80,7 +80,7 @@ import de.metas.product.IProductBL;
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 @Deprecated // please review before considering to re-use
-public class MovementGenerate extends SvrProcess
+public class MovementGenerate extends JavaProcess
 {
 	/**	Manual Selection		*/
 	private boolean 	p_Selection = false;
@@ -126,7 +126,7 @@ public class MovementGenerate extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para: getParameter())
+		for (ProcessInfoParameter para: getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

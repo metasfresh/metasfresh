@@ -40,6 +40,31 @@ public interface I_AD_PInstance
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Sprache.
+	 * Sprache für diesen Eintrag
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Language (java.lang.String AD_Language);
+
+	/**
+	 * Get Sprache.
+	 * Sprache für diesen Eintrag
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_Language();
+
+    /** Column definition for AD_Language */
+    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_AD_PInstance, Object>(I_AD_PInstance.class, "AD_Language", null);
+    /** Column name AD_Language */
+    public static final String COLUMNNAME_AD_Language = "AD_Language";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *

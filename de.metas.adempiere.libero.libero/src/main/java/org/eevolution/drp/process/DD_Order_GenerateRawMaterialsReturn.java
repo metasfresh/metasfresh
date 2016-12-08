@@ -47,8 +47,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -59,6 +57,8 @@ import org.eevolution.model.X_DD_Order;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -69,7 +69,7 @@ import de.metas.storage.IStorageRecord;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
  */
-public class DD_Order_GenerateRawMaterialsReturn extends SvrProcess
+public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 {
 	// Services
 	private final transient IStorageEngineService storageEngineService = Services.get(IStorageEngineService.class);
@@ -86,7 +86,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String parameterName = para.getParameterName();
 			if (I_M_Warehouse.COLUMNNAME_M_Warehouse_ID.equals(parameterName))

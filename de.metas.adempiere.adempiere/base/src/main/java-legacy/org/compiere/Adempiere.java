@@ -494,9 +494,9 @@ public class Adempiere
 	 *
 	 * @return Home directory
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
-		return Ini.getAdempiereHome();
+		return Ini.getMetasfreshHome();
 	}
 
 	/**
@@ -710,9 +710,9 @@ public class Adempiere
 			String className = system.getEncryptionKey();
 			if (className == null || className.length() == 0)
 			{
-				className = System.getProperty(SecureInterface.ADEMPIERE_SECURE);
+				className = System.getProperty(SecureInterface.METASFRESH_SECURE);
 				if (className != null && className.length() > 0
-						&& !className.equals(SecureInterface.ADEMPIERE_SECURE_DEFAULT))
+						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
 				{
 					SecureEngine.init(className);	// test it
 					system.setEncryptionKey(className);
@@ -770,10 +770,6 @@ public class Adempiere
 			}
 		}
 
-		if (runMode == RunMode.BACKEND)
-		{
-			DB.updateMail();
-		}
 		return true;
 	}	// startupEnvironment
 

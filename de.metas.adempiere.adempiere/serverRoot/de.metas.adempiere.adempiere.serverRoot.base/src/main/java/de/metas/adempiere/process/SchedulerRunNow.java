@@ -29,16 +29,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.MScheduler;
-import org.compiere.process.SvrProcess;
 import org.compiere.server.Scheduler;
 
 import de.metas.process.RunOutOfTrx;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class SchedulerRunNow extends SvrProcess
+public class SchedulerRunNow extends JavaProcess
 {
 	private int p_AD_Scheduler_ID = -1;
 

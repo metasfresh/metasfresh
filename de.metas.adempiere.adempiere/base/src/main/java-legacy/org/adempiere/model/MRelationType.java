@@ -13,103 +13,23 @@
  *****************************************************************************/
 package org.adempiere.model;
 
-import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID;
-import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
-import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
-
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.PORelationException;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.POZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Ref_Table;
-import org.compiere.model.I_AD_Reference;
-import org.compiere.model.Lookup;
-import org.compiere.model.MColumn;
-import org.compiere.model.MQuery;
-import org.compiere.model.PO;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
 
 /**
  * Formal definition for a set of data record pairs
  *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
-public class MRelationType extends X_AD_RelationType implements IZoomProvider
+public class MRelationType extends X_AD_RelationType
 {
-
-	private static final Logger logger = LogManager.getLogger(MRelationType.class);
-
-	/**
-	 * Selection for those relation types whose AD_Reference(s) might match a given PO. Only evaluates the table and key
-	 * column of the reference's AD_Ref_Table entries. See {@link #retrieveTypes(PO, int)}.
-	 * <p>
-	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
-	 */
-	private final static String SQL =              //
-	"  SELECT " //
-			+ "    rt.AD_RelationType_ID AS " + COLUMNNAME_AD_RelationType_ID //
-			+ ",   rt.Name AS " + COLUMNNAME_Name //
-			+ ",   rt.IsDirected AS " + COLUMNNAME_IsDirected //
-			+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
-			+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause //
-			+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause //
-			+ "  FROM" //
-			+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
-			+ "  WHERE " //
-			+ "    rt.IsActive='Y'" //
-			+ "    AND ref.IsActive='Y'" //
-			+ "    AND ref.ValidationType='T'" // must have table validation
-			+ "    AND (" // join the source AD_Reference
-			+ "      rt.AD_Reference_Source_ID=ref.AD_Reference_ID" //
-			+ "      OR (" // not directed? -> also join the target AD_Reference
-			+ "        rt.IsDirected='N' " //
-			+ "        AND rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
-			+ "      )" //
-			+ "    )" //
-			+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
-			+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
-			+ "    AND tab.AD_Table_ID=?" //
-			+ "    AND tab.AD_Key=?" //
-			+ "  ORDER BY rt.Name";
-
-	private final static String SQL_WINDOW_NAME = "SELECT Name FROM AD_Window WHERE AD_WINDOW_ID=?";
-
-	private final static String SQL_WINDOW_NAME_TRL = "SELECT Name FROM AD_Window_Trl WHERE AD_WINDOW_ID=?";
-
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 5486148151201672913L;
-
-	private int destinationRefId;
 
 	public MRelationType(Properties ctx, int AD_RelationType_ID, String trxName)
 	{
@@ -121,393 +41,24 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		super(ctx, rs, trxName);
 	}
 
-	/**
-	 * Returns the types that define a relation which contains the given PO. Explicit types are returned even if they
-	 * don't actually contain the given PO.
-	 *
-	 * @param po used to retrieve all relation matching types. A matching relation type needs to fulfill the following:
-	 *            <ul>
-	 *            <li>if directed, then its {@link #getAD_Reference_Source()} needs to be an {@link I_AD_Reference} record
-	 *            whose {@link I_AD_Ref_Table}'s {@value I_AD_Ref_Table#COLUMNNAME_AD_Table_ID} has the given <code>po</code>'s table
-	 *            and whose {@link I_AD_Ref_Table#COLUMNNAME_AD_Key} has the given <code>po</code>'s (first) key column.</li>
-	 *            <li>if not directed, then also its {@link #getAD_Reference_Target()} is evaluated in a way similar to the source reference.</li>
-	 *            </ul>
-	 * @param AD_Window_ID sometimes needed with undirected relations types, in order to decide which is the "destination" (as opposed to "soruce" or target") reference.
-	 * @return
-	 */
-	public static List<IZoomProvider> retrieveZoomProviders(final IZoomSource source)
-	{
-		final String keyColumn = source.getKeyColumnName();
-		if (keyColumn == null)
-		{
-			logger.error("{} does not have a single key column", source);
-			throw PORelationException.throwWrongKeyColumnCount(source);
-		}
+//	/**
+//	 *
+//	 * @param po for non-directed relation types both the <code>po</code> and <code>AD_Window_ID</code> are used to decide if we need to return the <code>AD_Reference_ID</code> or the relation type's source reference or of its target reference.
+//	 * @param AD_Window_ID
+//	 * @return
+//	 */
+//	@Deprecated
+//	private int findDestinationRefId(final PO po, final int windowId)	{
+//		final IZoomSource source = POZoomSource.of(po, windowId);
+//		return findDestinationRefId(source);
+//	}
 
-		final int colId = MColumn.getColumn_ID(source.getTableName(), keyColumn);
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		final Object[] sqlParams = new Object[] { source.getAD_Table_ID(), colId };
-		try
-		{
-			pstmt = DB.prepareStatement(SQL, source.getTrxName());
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			final List<IZoomProvider> result = evalResultSet(source, rs);
-			logger.info("There are {} matching types for {}", result.size(), source);
-
-			return result;
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, SQL, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	private String getDestinationRoleDisplay()
-	{
-		checkDestinationRefId();
-
-		final int colIdx;
-		final String keyValue;
-
-		if (destinationRefId == getAD_Reference_Source_ID())
-		{
-			colIdx = this.get_ColumnIndex(COLUMNNAME_Role_Source);
-			keyValue = getRole_Source();
-		}
-		else
-		{
-			colIdx = this.get_ColumnIndex(COLUMNNAME_Role_Target);
-			keyValue = getRole_Target();
-		}
-
-		if (Check.isEmpty(keyValue))
-		{
-			return "";
-		}
-		final Lookup lookup = this.get_ColumnLookup(colIdx);
-		return lookup.getDisplay(keyValue);
-	}
-
-	private String retrieveWindowName(final int windowId)
-	{
-
-		final boolean baseLanguage = Env.isBaseLanguage(Env.getCtx(), "AD_Window");
-		final String sql = baseLanguage ? SQL_WINDOW_NAME : SQL_WINDOW_NAME_TRL;
-
-		final PreparedStatement pstmt = DB.prepareStatement(sql, null);
-		ResultSet rs = null;
-		try
-		{
-			pstmt.setInt(1, windowId);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				return rs.getString(1);
-			}
-			return null;
-		}
-		catch (SQLException e)
-		{
-			throw new AdempiereException(e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	/**
-	 * Loads actual {@link MRelationType}s from the given result set and verifies if there are any actual zoom targets for each of the given relation types. Those types which have a zoom target are returned.
-	 *
-	 * @param po needed to identify the destination (as opposed to "source" or "target") <code>AD_Window_ID</code> if a relation type is not directed.
-	 * @param AD_Window_ID same as <code>po</code>
-	 * @param rs result set containing the candidate relation types
-	 * @return a list of relation types whose
-	 * @throws SQLException
-	 */
-	private static List<IZoomProvider> evalResultSet(final IZoomSource source, final ResultSet rs) throws SQLException
-	{
-		final List<IZoomProvider> result = new ArrayList<>();
-
-		final Set<Integer> alreadySeen = new HashSet<>();
-
-		while (rs.next())
-		{
-			final int relTypeId = rs.getInt(COLUMNNAME_AD_RelationType_ID);
-			if (!alreadySeen.add(relTypeId))
-			{
-				continue;
-			}
-
-			final MRelationType newType = new MRelationType(source.getCtx(), relTypeId, source.getTrxName());
-
-			// figure out which AD_reference is the destination relative to the given po and AD_Window_ID
-			newType.findDestinationRefId(source);
-
-			final int sourceRefId;
-			if (newType.destinationRefId == newType.getAD_Reference_Target_ID())
-			{
-				sourceRefId = newType.getAD_Reference_Source_ID();
-			}
-			else
-			{
-				sourceRefId = newType.getAD_Reference_Target_ID();
-			}
-
-			final String sourceWhereClause = Services.get(ILookupDAO.class).retrieveTableRefInfo(sourceRefId).getWhereClause();
-			if (Check.isEmpty(sourceWhereClause) || whereClauseMatches(source, sourceWhereClause))
-			{
-				result.add(newType);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 *
-	 * @param po for non-directed relation types both the <code>po</code> and <code>AD_Window_ID</code> are used to decide if we need to return the <code>AD_Reference_ID</code> or the relation type's source reference or of its target reference.
-	 * @param AD_Window_ID
-	 * @return
-	 */
-	@Deprecated
-	private int findDestinationRefId(final PO po, final int windowId)	{
-		final IZoomSource source = POZoomSource.of(po, windowId);
-		return findDestinationRefId(source);
-	}
-
-	private int findDestinationRefId(final IZoomSource source)
-	{
-		destinationRefId = -1;
-
-		if (isDirected())
-		{
-			// the type is directed, so our destination is always the *target* reference
-			destinationRefId = getAD_Reference_Target_ID();
-		}
-		else if (retrieveSourceTableName().equals(retrieveTargetTableName()))
-		{
-			// this relation type is from one table to the same table
-			// use the window-id to distinguish
-			final ITableRefInfo sourceRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(getAD_Reference_Source_ID());
-			if (source.getAD_Window_ID() == retrieveWindowID(source, sourceRefTable))
-			{
-				destinationRefId = getAD_Reference_Target_ID();
-			}
-			else
-			{
-				destinationRefId = getAD_Reference_Source_ID();
-			}
-		}
-		else
-		{
-			if (source.getTableName().equals(retrieveSourceTableName()))
-			{
-				destinationRefId = getAD_Reference_Target_ID();
-			}
-			else
-			{
-				destinationRefId = getAD_Reference_Source_ID();
-			}
-		}
-
-		Check.errorIf(destinationRefId == -1, "No destinationRefId was found for AD_Window_ID={} and IZoomSource={}", source.getAD_Window_ID(), source);
-		return destinationRefId;
-	}
-
-	private static boolean whereClauseMatches(final IZoomSource source, final String where)
-	{
-		if (Check.isEmpty(where, true))
-		{
-			logger.debug("whereClause is empty. Returning true");
-			return true;
-		}
-
-		final String parsedWhere = parseWhereClause(source, where, false);
-		if (Check.isEmpty(parsedWhere))
-		{
-			return false;
-		}
-		final String keyColumn = source.getKeyColumnName();
-		Check.assumeNotEmpty(keyColumn, "keyColumn is not empty for {}", source);
-
-		final StringBuilder whereClause = new StringBuilder();
-		whereClause.append(parsedWhere);
-		whereClause.append(" AND ( ");
-		whereClause.append(keyColumn);
-		whereClause.append("=" + source.getRecord_ID() + " )");
-
-		final boolean match = new Query(source.getCtx(), source.getTableName(), whereClause.toString(), source.getTrxName())
-				.match();
-
-		logger.debug("whereClause='{}' matches source='{}': {}", parsedWhere, source, match);
-		return match;
-	}
-
-	/**
-	 * Parses given <code>where</code>
-	 * 
-	 * @param source zoom source
-	 * @param where where clause to be parsed
-	 * @param throwEx true if an exception shall be thrown in case the parsing failed.
-	 * @return parsed where clause or empty string in case parsing failed and throwEx is <code>false</code>
-	 */
-	public static String parseWhereClause(final IZoomSource source, final String where, final boolean throwEx)
-	{
-		final IStringExpression whereExpr = IStringExpression.compileOrDefault(where, IStringExpression.NULL);
-		if(whereExpr.isNullExpression())
-		{
-			return "";
-		}
-		
-		final Evaluatee evalCtx = source.createEvaluationContext();
-		final OnVariableNotFound onVariableNotFound = throwEx ? OnVariableNotFound.Fail : OnVariableNotFound.ReturnNoResult;
-		final String whereParsed = whereExpr.evaluate(evalCtx, onVariableNotFound);
-		if(whereExpr.isNoResult(whereParsed))
-		{
-			// NOTE: logging as debug instead of warning because this might be a standard use case,
-			// i.e. we are checking if a given where clause has some results, so the method was called with throwEx=false
-			// and if we reached this point it means one of the context variables were not present and it has no default value.
-			// This is perfectly normal, a default value is really not needed because we don't want to execute an SQL command
-			// which would return no result. It's much more efficient to stop here.
-			logger.debug("Could not parse where clause:\n{} \n EvalCtx: {} \n ZoomSource: {}", where, evalCtx, source);
-			return "";
-		}
-		
-		return whereParsed;
-	}
-
-	public void checkDestinationRefId()
-	{
-		if (destinationRefId <= 0)
-		{
-			throw new IllegalStateException(
-					"Can't create a destination query when I don't know which one of the two AD_Reference_ID is the destination.");
-		}
-	}
-
-	/**
-	 *
-	 * @param po
-	 * @return a list with one {@link ZoomInfo} for this relation type.
-	 */
-	@Override
-	public List<ZoomInfoFactory.ZoomInfo> retrieveZoomInfos(final IZoomSource source)
-	{
-		checkDestinationRefId();
-
-		final ITableRefInfo refTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
-
-		final MQuery query = mkQuery(source, refTable);
-		evaluateQuery(query);
-
-		final int windowId = retrieveWindowID(source, refTable);
-
-		String display = getDestinationRoleDisplay();
-		if (Check.isEmpty(display))
-		{
-			display = retrieveWindowName(windowId);
-		}
-		Check.errorIf(Check.isEmpty(display), "Found no display string for, refTable={}, AD_Window_ID={}", refTable, source.getAD_Window_ID());
-
-		final String zoomInfoId = "relationType-"+getAD_RelationType_ID();
-		return ImmutableList.of(ZoomInfo.of(zoomInfoId, windowId, query, display));
-	}
-
-	@Deprecated
-	private MQuery mkQuery(final PO po, final ITableRefInfo refTable)
-	{
-		final IZoomSource source = POZoomSource.of(po);
-		return mkQuery(source, refTable);
-	}
-
-	private MQuery mkQuery(final IZoomSource source, final ITableRefInfo refTable)
-	{
-		// FIXME: avoid direct SQL where clause because it's not friendly with webui
-		
-		final StringBuilder queryWhereClause = new StringBuilder();
-		final String refTableWhereClause = refTable.getWhereClause();
-		if (!Check.isEmpty(refTableWhereClause))
-		{
-			queryWhereClause.append(parseWhereClause(source, refTableWhereClause, true));
-		}
-		else
-		{
-			if (!isExplicit())
-			{
-				throw new AdempiereException("RefTable " + refTable + " has no whereClause, so RelationType " + this + " needs to be explicit");
-			}
-			queryWhereClause.append(" TRUE ");
-		}
-		if (isExplicit())
-		{
-			// "explicit" means that the where clause only defines a superset of possible relation elements.
-			// Therefore, we now need to append the actually existing elements to the wehre clause.
-
-			final String destinationKeyCol = refTable.getKeyColumn();
-
-			queryWhereClause.append(" AND ").append(destinationKeyCol).append(" IN ( -99 ");
-
-			final List<PO> targets = MRelation.retrieveDestinations(getCtx(), this, source.getTableName(), source.getRecord_ID(), get_TrxName());
-			for (final PO target : targets)
-			{
-				assert Objects.equals(target.get_TableName(), refTable.getTableName()) : "target=" + target + "; refTable=" + refTable;
-				queryWhereClause.append(", ");
-				queryWhereClause.append(target.get_ID());
-			}
-
-			queryWhereClause.append(" )");
-		}
-
-		final MQuery query = new MQuery();
-
-		query.addRestriction(queryWhereClause.toString());
-		query.setZoomTableName(retrieveDestinationTableName());
-		query.setZoomColumnName(retrieveDestinationKeyColName());
-
-		return query;
-	}
-
-	/**
-	 *
-	 * @param source
-	 * @param refTable
-	 *
-	 * @return the <code>AD_Window_ID</code> for the given <code>refTable</code> or <code>PO</code>
-	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
-	 */
-	private int retrieveWindowID(final IZoomSource source, final ITableRefInfo refTable)
-	{
-		int windowId = refTable.getOverrideZoomWindow();
-		if(windowId > 0)
-		{
-			return windowId;
-		}
-		
-		
-		final boolean isSOTrx = source.isSOTrx();
-		if (isSOTrx)
-		{
-			windowId = refTable.getZoomWindow();
-		}
-		else
-		{
-			windowId = refTable.getZoomWindowPO();
-		}
-		if (windowId <= 0)
-		{
-			throw PORelationException.throwMissingWindowId(getAD_Reference_Target().getName(), refTable.getTableName(), isSOTrx);
-		}
-		
-		return windowId;
-	}
+//	@Deprecated
+//	private MQuery mkQuery(final PO po, final ITableRefInfo refTable)
+//	{
+//		final IZoomSource source = POZoomSource.of(po);
+//		return mkQuery(source, refTable);
+//	}
 
 	public static I_AD_RelationType retrieveForInternalName(final Properties ctx, final String internalName, final String trxName)
 	{
@@ -516,51 +67,6 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 				.addEqualsFilter(I_AD_RelationType.COLUMNNAME_InternalName, internalName)
 				.create()
 				.firstOnly(I_AD_RelationType.class);
-	}
-
-	private static void evaluateQuery(final MQuery query)
-	{
-		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
-
-		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
-		final int count = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
-		query.setRecordCount(count);
-
-		if (count > 0)
-		{
-			final String sqlFirstKey = "SELECT " + query.getZoomColumnName() + sqlCommon;
-
-			final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
-			query.setZoomValue(firstKey);
-		}
-	}
-
-	private String retrieveSourceTableName()
-	{
-
-		return retrieveTableName(getAD_Reference_Source_ID());
-	}
-
-	private String retrieveTargetTableName()
-	{
-		return retrieveTableName(getAD_Reference_Target_ID());
-	}
-
-	public String retrieveDestinationTableName()
-	{
-		return retrieveTableName(destinationRefId);
-	}
-
-	private String retrieveTableName(final int refId)
-	{
-		final ITableRefInfo refTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(refId);
-		return refTable.getTableName();
-	}
-
-	private String retrieveDestinationKeyColName()
-	{
-		final ITableRefInfo refTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
-		return refTable.getKeyColumn();
 	}
 
 	@Override
@@ -573,7 +79,7 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		sb.append(", Directed=").append(isDirected());
 		sb.append(", Explicit=").append(isExplicit());
 
-		sb.append(", AD_Reference_Destination_RefId=").append(destinationRefId);
+//		sb.append(", AD_Reference_Destination_RefId=").append(destinationRefId);
 
 		sb.append(", AD_Reference_Source_ID=").append(getAD_Reference_Source_ID());
 		sb.append(", Role_Source=").append(getRole_Source());
@@ -586,42 +92,42 @@ public class MRelationType extends X_AD_RelationType implements IZoomProvider
 		return sb.toString();
 	}
 
-	/**
-	 *
-	 * @param <T>
-	 *            The po type to return. Note: As the caller has 'type' and 'sourcePO' specified, the destination POs'
-	 *            table is clear. Therefore, the caller also knows the po type. If not, they can still use 'PO' iteself.
-	 * @param sourcePO
-	 * @return
-	 */
-	public <T extends PO> List<T> retrieveDestinations(final PO sourcePO)
-	{
-		if (this.isExplicit())
-		{
-			return MRelation.retrieveDestinations(sourcePO.getCtx(), this, sourcePO, sourcePO.get_TrxName());
-		}
-		final int destinationRefId = findDestinationRefId(sourcePO, -1);
-		final ITableRefInfo destinationRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
-
-		final MQuery query = mkQuery(sourcePO, destinationRefTable);
-
-		return new Query(sourcePO.getCtx(), query.getZoomTableName(), query.getWhereClause(false), sourcePO.get_TrxName())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(query.getZoomColumnName())
-				.list();
-	}
-
-	public <T> List<T> retrieveDestinations(final PO sourcePO, final Class<T> clazz)
-	{
-		final List<PO> list = retrieveDestinations(sourcePO);
-		final List<T> result = new ArrayList<T>(list.size());
-		for (PO po : list)
-		{
-			T o = InterfaceWrapperHelper.create(po, clazz);
-			result.add(o);
-		}
-
-		return result;
-	}
+//	/**
+//	 *
+//	 * @param <T>
+//	 *            The po type to return. Note: As the caller has 'type' and 'sourcePO' specified, the destination POs'
+//	 *            table is clear. Therefore, the caller also knows the po type. If not, they can still use 'PO' iteself.
+//	 * @param sourcePO
+//	 * @return
+//	 */
+//	private <T extends PO> List<T> retrieveDestinations(final PO sourcePO)
+//	{
+//		if (this.isExplicit())
+//		{
+//			return MRelation.retrieveDestinations(sourcePO.getCtx(), this, sourcePO, sourcePO.get_TrxName());
+//		}
+//		final int destinationRefId = findDestinationRefId(sourcePO, -1);
+//		final ITableRefInfo destinationRefTable = Services.get(ILookupDAO.class).retrieveTableRefInfo(destinationRefId);
+//
+//		final MQuery query = mkQuery(sourcePO, destinationRefTable);
+//
+//		return new Query(sourcePO.getCtx(), query.getZoomTableName(), query.getWhereClause(false), sourcePO.get_TrxName())
+//				.setClient_ID()
+//				.setOnlyActiveRecords(true)
+//				.setOrderBy(query.getZoomColumnName())
+//				.list();
+//	}
+//
+//	public <T> List<T> retrieveDestinations(final PO sourcePO, final Class<T> clazz)
+//	{
+//		final List<PO> list = retrieveDestinations(sourcePO);
+//		final List<T> result = new ArrayList<T>(list.size());
+//		for (PO po : list)
+//		{
+//			T o = InterfaceWrapperHelper.create(po, clazz);
+//			result.add(o);
+//		}
+//
+//		return result;
+//	}
 }

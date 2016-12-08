@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -32,6 +33,7 @@ import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -41,6 +43,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 
@@ -432,9 +435,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	public  boolean	    HasTree = false;
 	/** Table			*/
 	public  int		    AD_Table_ID;
-	/** Primary Link Column   */
+	/** Primary Link Column  (from this tab)  */
 	private int		    AD_Column_ID = 0;
-	/** Parent Tab's Link Column */
+	/** Parent Tab's Link Column (i.e. the AD_Column_ID from parent tab) */
 	private	int			Parent_Column_ID = 0;
 	/** Table Name		*/
 	public  String	    TableName;
@@ -488,7 +491,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	private List<GridFieldVO> _fields = null; // lazy
 	private Optional<GridFieldVO> _keyField = null; // lazy
-	private Optional<GridFieldVO> _parentLinkField = null; // lazy
+	private Set<String> _linkColumnNames = null; // lazy
 	
 	@Override
 	public String toString()
@@ -557,12 +560,42 @@ public class GridTabVO implements Evaluatee, Serializable
 		
 		return null;
 	}
+
+	/** @return field or null if not found */
+	public GridFieldVO getFieldByAD_Column_ID(final int adColumnId)
+	{
+		if(adColumnId <= 0)
+		{
+			return null;
+		}
+		
+		for (final GridFieldVO gridFieldVO : getFields())
+		{
+			if(adColumnId == gridFieldVO.getAD_Column_ID())
+			{
+				return gridFieldVO;
+			}
+		}
+		
+		return null;
+	}
+	
+	/** @return column name or null if not found */
+	public String getColumnNameByAD_Column_ID(final int adColumnId)
+	{
+		final GridFieldVO field = getFieldByAD_Column_ID(adColumnId);
+		return field == null ? null : field.getColumnName();
+	}
+
 	
 	public boolean hasField(final String columnName)
 	{
 		return getFieldByColumnName(columnName) != null;
 	}
 	
+	/**
+	 * @return Key(ID) field or null
+	 */
 	public GridFieldVO getKeyField()
 	{
 		if (_keyField == null)
@@ -583,31 +616,11 @@ public class GridTabVO implements Evaluatee, Serializable
 		
 		return _keyField.orNull();
 	}
-
 	
-	public GridFieldVO getParentLinkField()
+	public String getKeyColumnName()
 	{
-		if (_parentLinkField == null)
-		{
-			GridFieldVO parentLinkField = null;
-			
-			final int parentColumnId = getParent_Column_ID();
-			if (parentColumnId > 0)
-			{
-				for (final GridFieldVO gridFieldVO : getFields())
-				{
-					if (gridFieldVO.getAD_Column_ID() == parentColumnId)
-					{
-						parentLinkField = gridFieldVO;
-						break;
-					}
-				}
-			}
-			
-			_parentLinkField = Optional.fromNullable(parentLinkField);
-		}
-		
-		return _parentLinkField.orNull();
+		final GridFieldVO keyField = getKeyField();
+		return keyField == null ? null : keyField.getColumnName();
 	}
 
 	/**
@@ -843,11 +856,17 @@ public class GridTabVO implements Evaluatee, Serializable
 		return AD_Table_ID;
 	}
 
+	/**
+	 * @return Primary Link Column (from this tab)
+	 */
 	public int getAD_Column_ID()
 	{
 		return AD_Column_ID;
 	}
 
+	/**
+	 * @return Parent Tab's Link Column (i.e. the AD_Column_ID from parent tab)
+	 */
 	public int getParent_Column_ID()
 	{
 		return Parent_Column_ID;
@@ -1059,5 +1078,41 @@ public class GridTabVO implements Evaluatee, Serializable
 	public int getAD_ColumnSortYesNo_ID()
 	{
 		return AD_ColumnSortYesNo_ID;
+	}
+	
+	public Set<String> getLinkColumnNames()
+	{
+		if(_linkColumnNames == null)
+		{
+			_linkColumnNames = buildLinkColumnNames();
+		}
+		return _linkColumnNames;
+	}
+	
+	private Set<String> buildLinkColumnNames()
+	{
+		//
+		// If the link column name was specified, then use it.
+		final int linkColumnId = getAD_Column_ID();
+		if(linkColumnId > 0)
+		{
+			final GridFieldVO linkField = getFieldByAD_Column_ID(linkColumnId);
+			if(linkField != null)
+			{
+				return ImmutableSet.of(linkField.getColumnName());
+			}
+			else
+			{
+				return ImmutableSet.of();
+			}
+		}
+
+		//
+		// Fallback: collect all fields which were marked as possible link column candidates.
+		return getFields()
+				.stream()
+				.filter(field -> field.isParentLink())
+				.map(field -> field.getColumnName())
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 }

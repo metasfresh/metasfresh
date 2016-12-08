@@ -19,4 +19,6 @@ public interface ICalloutExecutor
 
 	int getActiveCalloutInstancesCount();
 
+	ICalloutExecutor newInstanceSharingMasterData();
+
 }

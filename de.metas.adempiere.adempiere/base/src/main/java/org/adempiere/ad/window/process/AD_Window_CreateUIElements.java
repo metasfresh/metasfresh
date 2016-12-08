@@ -22,10 +22,11 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -49,7 +50,7 @@ import com.google.common.collect.Ordering;
  * #L%
  */
 
-public class AD_Window_CreateUIElements extends SvrProcess
+public class AD_Window_CreateUIElements extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception

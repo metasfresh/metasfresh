@@ -40,8 +40,6 @@ import org.compiere.model.MUserMail;
 import org.compiere.model.Query;
 import org.compiere.model.X_R_Group;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.email.EMail;
@@ -49,13 +47,15 @@ import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
  * @author teo_sarca
  *
  */
-public class AD_BoilderPlate_SendToGroup extends SvrProcess
+public class AD_BoilderPlate_SendToGroup extends JavaProcess
 {
 	public static final String CCM_NotificationType_EMail = "E"; 
 	public static final String CCM_NotificationType_Letter = "L";
@@ -66,7 +66,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

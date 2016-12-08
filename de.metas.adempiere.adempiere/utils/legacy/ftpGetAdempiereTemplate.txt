@@ -1,7 +1,0 @@
-open @ADEMPIERE_FTP_SERVER@
-@ADEMPIERE_FTP_USER@
-@ADEMPIERE_FTP_PASSWORD@
-bin
-ls Adempiere.jar
-get Adempiere.jar
-quit

@@ -37,13 +37,13 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MPackage;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Package;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IPackageInfoService;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class PackageLabel extends SvrProcess
+public class PackageLabel extends JavaProcess
 {
 
 	private static final String PARAM_SERVICE_CODE_OVERRIDE = "ServiceCode";
@@ -161,7 +161,7 @@ public class PackageLabel extends SvrProcess
 	protected void prepare()
 	{
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

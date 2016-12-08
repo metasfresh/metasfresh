@@ -1,6 +1,11 @@
 -- 14.11.2016 17:48
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540742,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-11-14 17:48:26','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','Y','N','N','N','Y','N','Y','@PREFIX@de/metas/reports/qty_statistics_week/report.jasper','@PREFIX@de/metas/reports/qty_statistics_week/report_tabular.jasper',0,'Statistik nach Mengen Woche','N','Y',0,0,'Java',TO_TIMESTAMP('2016-11-14 17:48:26','YYYY-MM-DD HH24:MI:SS'),100,'Statistik nach Mengen Woche (Jasper)')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,JasperReport_Tabular,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+--	,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+	VALUES ('3',0,0,540742,'Y','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2016-11-14 17:48:26','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.fresh','Y','Y','N','N','N','Y','N','Y','@PREFIX@de/metas/reports/qty_statistics_week/report.jasper','@PREFIX@de/metas/reports/qty_statistics_week/report_tabular.jasper',0,'Statistik nach Mengen Woche','N','Y'
+-- 	,0,0
+	,'Java',TO_TIMESTAMP('2016-11-14 17:48:26','YYYY-MM-DD HH24:MI:SS'),100,'Statistik nach Mengen Woche (Jasper)')
 ;
 
 -- 14.11.2016 17:48

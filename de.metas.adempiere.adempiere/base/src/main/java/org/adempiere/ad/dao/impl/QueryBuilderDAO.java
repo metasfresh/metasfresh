@@ -74,11 +74,12 @@ public class QueryBuilderDAO extends AbstractQueryBuilderDAO
 
 		final String trxName = queryBuildCtx.getTrxName();
 		final Class<T> modelClass = queryBuildCtx.getModelClass();
+		final String modelTableName = queryBuildCtx.getModelTableName();
 		final IQueryOrderBy queryOrderBy = queryBuildCtx.getQueryOrderBy();
 		final int queryLimit = queryBuildCtx.getQueryLimit();
 		final int queryOnlySelectionId = queryBuildCtx.getQueryOnlySelectionId();
 		final Map<String, Object> queryOptions = queryBuildCtx.getQueryOptions();
-		return new TypedSqlQuery<T>(ctx, modelClass, sqlWhereClause, trxName)
+		return new TypedSqlQuery<T>(ctx, modelClass, modelTableName, sqlWhereClause, trxName)
 				.setParameters(sqlParams)
 				.setPostQueryFilter(nonSqlFilters)
 				.setOrderBy(queryOrderBy)
