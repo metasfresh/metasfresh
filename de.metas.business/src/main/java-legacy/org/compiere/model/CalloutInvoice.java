@@ -191,23 +191,29 @@ public class CalloutInvoice extends CalloutEngine
 
 				// PaymentRule
 				String paymentRule = rs.getString(isSOTrx ? "PaymentRule" : "PaymentRulePO");
-				if (!Check.isEmpty(paymentRule))
-				{
-					final String docBaseType = invoice.getC_DocType().getDocBaseType();
+				
+				if (!Check.isEmpty(paymentRule)) {
+					
+					final I_C_DocType invoiceDocType = invoice.getC_DocType() == null ? invoice.getC_DocTypeTarget()
+							: invoice.getC_DocType();
 
-					// Credits are Payment Term
-					if (invoiceBL.isCreditMemo(docBaseType))
-					{
-						paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit;
+					if (invoiceDocType != null) {
+
+						final String docBaseType = invoiceDocType.getDocBaseType();
+
+						// Credits are Payment Term
+						if (invoiceBL.isCreditMemo(docBaseType)) {
+							paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit;
+						}
+
+						// No Check/Transfer for SO_Trx
+						else if (isSOTrx && (X_C_Invoice.PAYMENTRULE_Check.equals(paymentRule))) {
+							paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit; // Payment
+																			// Term
+						}
+
+						invoice.setPaymentRule(paymentRule);
 					}
-
-					// No Check/Transfer for SO_Trx
-					else if (isSOTrx && (X_C_Invoice.PAYMENTRULE_Check.equals(paymentRule)))
-					{
-						paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit; // Payment Term
-					}
-
-					invoice.setPaymentRule(paymentRule);
 				}
 				// Payment Term
 				final int paymentTermId = new Integer(rs.getInt(isSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
