@@ -118,7 +118,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -458,11 +458,25 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 	public DocumentLayoutDetailQuickInputDescriptor.Builder layoutDetail_QuickInput()
 	{
-		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInput = DocumentLayoutDetailQuickInputDescriptor.builder();
+		final DocumentEntityDescriptor.Builder quickInputDescriptor = documentEntity().getQuickInputDescriptor();
+		if (quickInputDescriptor == null)
+		{
+			return null;
+		}
 
-		// TODO
+		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInputLayout = DocumentLayoutDetailQuickInputDescriptor.builder();
 
-		return quickInput;
+		quickInputDescriptor
+				.getFieldBuilders()
+				.stream()
+				.map(fieldBuilder -> DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(fieldBuilder.getWidgetType())
+						.addField(DocumentLayoutElementFieldDescriptor.builder(fieldBuilder.getFieldName())
+								.setPublicField(true)
+								.setLookupSource(fieldBuilder.getLookupSourceType())))
+				.forEach(element -> quickInputLayout.addElement(element));
+
+		return quickInputLayout;
 	}
 
 	/**
@@ -536,7 +550,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
-		
+
 		//
 		// Fallback: when no elements were found: creating the view using the single row layout
 		{

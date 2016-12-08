@@ -119,6 +119,11 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return !elements.isEmpty();
 	}
 
+	public DocumentLayoutDetailQuickInputDescriptor getQuickInput()
+	{
+		return quickInput;
+	}
+
 	public static final class Builder
 	{
 		public Integer AD_Window_ID;
@@ -257,10 +262,5 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			this.quickInput = quickInput;
 			return this;
 		}
-	}
-	
-	public DocumentLayoutDetailQuickInputDescriptor getQuickInput()
-	{
-		return quickInput;
 	}
 }

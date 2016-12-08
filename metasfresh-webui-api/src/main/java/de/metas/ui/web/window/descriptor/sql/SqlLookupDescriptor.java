@@ -243,7 +243,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		// Parameters
 		private String columnName;
 		private Integer displayType;
-		private Integer AD_Reference_Value_ID;
+		private int AD_Reference_Value_ID = -1;
 		private Integer AD_Val_Rule_ID;
 		private LookupScope scope = LookupScope.DocumentField;
 

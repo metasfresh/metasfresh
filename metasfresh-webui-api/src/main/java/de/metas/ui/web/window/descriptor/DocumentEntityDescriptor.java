@@ -90,10 +90,6 @@ public class DocumentEntityDescriptor
 
 	private final DocumentFieldDependencyMap dependencies;
 
-	// Legacy
-	private final int AD_Tab_ID;
-	private final String tableName;
-	private final boolean isSOTrx;
 
 	private final Map<Characteristic, List<DocumentFieldDescriptor>> fieldsByCharacteristic = new HashMap<>();
 
@@ -105,7 +101,15 @@ public class DocumentEntityDescriptor
 	private final DocumentFilterDescriptorsProvider filtersProvider;
 
 	private final int printProcessId;
+	
+	private final DocumentEntityDescriptor quickInputDescriptor;
 
+
+	// Legacy
+	private final int AD_Tab_ID;
+	private final String tableName;
+	private final boolean isSOTrx;
+	
 	private DocumentEntityDescriptor(final Builder builder)
 	{
 		super();
@@ -125,11 +129,6 @@ public class DocumentEntityDescriptor
 		dataBinding = builder.getOrBuildDataBinding();
 		dependencies = builder.buildDependencies();
 
-		// legacy:
-		AD_Tab_ID = builder.getAD_Tab_ID();
-		tableName = builder.getTableName();
-		isSOTrx = builder.isSOTrx();
-
 		//
 		_id = builder.buildId();
 
@@ -141,6 +140,13 @@ public class DocumentEntityDescriptor
 		filtersProvider = builder.createFiltersProvider();
 
 		printProcessId = builder.getPrintAD_Process_ID();
+		
+		quickInputDescriptor = builder.getQuickInputDescriptor() == null ? null : builder.getQuickInputDescriptor().build();
+		
+		// legacy:
+		AD_Tab_ID = builder.getAD_Tab_ID();
+		tableName = builder.getTableName();
+		isSOTrx = builder.isSOTrx();
 	}
 
 	@Override
@@ -343,6 +349,11 @@ public class DocumentEntityDescriptor
 	{
 		return printProcessId;
 	}
+	
+	public DocumentEntityDescriptor getQuickInputDescriptor()
+	{
+		return quickInputDescriptor;
+	}
 
 	public static final class Builder
 	{
@@ -373,13 +384,16 @@ public class DocumentEntityDescriptor
 		//
 		// Callouts
 		private boolean _calloutsEnabled = true; // enabled by default
+		
+		private int _printProcessId = -1;
+		
+		private DocumentEntityDescriptor.Builder quickInputDescriptor;
 
 		// Legacy
 		private Integer _AD_Tab_ID;
 		private String _tableName;
 		private Boolean _isSOTrx;
 
-		private int _printProcessId = -1;
 
 		private Builder()
 		{
@@ -481,6 +495,11 @@ public class DocumentEntityDescriptor
 		public DocumentFieldDescriptor.Builder getFieldBuilder(final String fieldName)
 		{
 			return _fieldBuilders.get(fieldName);
+		}
+		
+		public Collection<DocumentFieldDescriptor.Builder> getFieldBuilders()
+		{
+			return _fieldBuilders.values();
 		}
 
 		private final void updateFieldBuilders(final Consumer<DocumentFieldDescriptor.Builder> fieldUpdater)
@@ -794,6 +813,17 @@ public class DocumentEntityDescriptor
 		private int getPrintAD_Process_ID()
 		{
 			return _printProcessId;
+		}
+
+		public Builder setQuickInputDescriptor(DocumentEntityDescriptor.Builder quickInputDescriptor)
+		{
+			this.quickInputDescriptor = quickInputDescriptor;
+			return this;
+		}
+		
+		public DocumentEntityDescriptor.Builder getQuickInputDescriptor()
+		{
+			return quickInputDescriptor;
 		}
 	}
 }
