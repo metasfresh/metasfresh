@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2070150932L;
+	private static final long serialVersionUID = -506244645L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -31,6 +31,8 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 			setIsApplySecuritySettings (false);
 // N
 			setIsBetaFunctionality (false);
+			setIsOneInstanceOnly (false);
+// N
 			setIsReport (false);
 			setIsServerProcess (false);
 			setIsUseBPartnerLanguage (true);
@@ -38,6 +40,8 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 			setName (null);
 			setRefreshAllAfterExecution (false);
 // N
+			setType (null);
+// Java
 			setValue (null);
         } */
     }
@@ -463,6 +467,32 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return false;
 	}
 
+	/** Set Allow one instance only.
+		@param IsOneInstanceOnly 
+		At the same time allow to run only one instance of this process
+	  */
+	@Override
+	public void setIsOneInstanceOnly (boolean IsOneInstanceOnly)
+	{
+		set_Value (COLUMNNAME_IsOneInstanceOnly, Boolean.valueOf(IsOneInstanceOnly));
+	}
+
+	/** Get Allow one instance only.
+		@return At the same time allow to run only one instance of this process
+	  */
+	@Override
+	public boolean isOneInstanceOnly () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOneInstanceOnly);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Bericht.
 		@param IsReport 
 		Indicates a Report record
@@ -573,6 +603,28 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return (java.lang.String)get_Value(COLUMNNAME_JasperReport_Tabular);
 	}
 
+	/** Set Wait Timeout.
+		@param LockWaitTimeout 
+		If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
+	  */
+	@Override
+	public void setLockWaitTimeout (int LockWaitTimeout)
+	{
+		set_Value (COLUMNNAME_LockWaitTimeout, Integer.valueOf(LockWaitTimeout));
+	}
+
+	/** Get Wait Timeout.
+		@return If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
+	  */
+	@Override
+	public int getLockWaitTimeout () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LockWaitTimeout);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -667,48 +719,49 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return (java.lang.String)get_Value(COLUMNNAME_ShowHelp);
 	}
 
-	/** Set Statistic Count.
-		@param Statistic_Count 
-		Internal statistics how often the entity was used
-	  */
+	/** Set SQLStatement.
+		@param SQLStatement SQLStatement	  */
 	@Override
-	public void setStatistic_Count (int Statistic_Count)
+	public void setSQLStatement (java.lang.String SQLStatement)
 	{
-		set_Value (COLUMNNAME_Statistic_Count, Integer.valueOf(Statistic_Count));
+		set_Value (COLUMNNAME_SQLStatement, SQLStatement);
 	}
 
-	/** Get Statistic Count.
-		@return Internal statistics how often the entity was used
-	  */
+	/** Get SQLStatement.
+		@return SQLStatement	  */
 	@Override
-	public int getStatistic_Count () 
+	public java.lang.String getSQLStatement () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Statistic_Count);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_SQLStatement);
 	}
 
-	/** Set Statistic Seconds.
-		@param Statistic_Seconds 
-		Internal statistics how many seconds a process took
+	/** 
+	 * Type AD_Reference_ID=540087
+	 * Reference name: AD_Process Type
+	 */
+	public static final int TYPE_AD_Reference_ID=540087;
+	/** SQL = SQL */
+	public static final String TYPE_SQL = "SQL";
+	/** Java = Java */
+	public static final String TYPE_Java = "Java";
+	/** Set Art.
+		@param Type 
+		Type of Validation (SQL, Java Script, Java Language)
 	  */
 	@Override
-	public void setStatistic_Seconds (int Statistic_Seconds)
+	public void setType (java.lang.String Type)
 	{
-		set_Value (COLUMNNAME_Statistic_Seconds, Integer.valueOf(Statistic_Seconds));
+
+		set_Value (COLUMNNAME_Type, Type);
 	}
 
-	/** Get Statistic Seconds.
-		@return Internal statistics how many seconds a process took
+	/** Get Art.
+		@return Type of Validation (SQL, Java Script, Java Language)
 	  */
 	@Override
-	public int getStatistic_Seconds () 
+	public java.lang.String getType () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Statistic_Seconds);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_Type);
 	}
 
 	/** Set Suchschlüssel.

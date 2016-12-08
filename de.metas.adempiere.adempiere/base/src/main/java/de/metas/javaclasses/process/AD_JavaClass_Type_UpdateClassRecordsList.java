@@ -1,11 +1,11 @@
 package de.metas.javaclasses.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.process.Process;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import de.metas.process.Process;
  *
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = true)
-public class AD_JavaClass_Type_UpdateClassRecordsList extends SvrProcess
+public class AD_JavaClass_Type_UpdateClassRecordsList extends JavaProcess
 {
 	private final IJavaClassTypeBL javaClassTypeBL = Services.get(IJavaClassTypeBL.class);
 

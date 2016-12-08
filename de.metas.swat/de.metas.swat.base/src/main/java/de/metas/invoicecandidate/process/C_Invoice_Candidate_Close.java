@@ -6,11 +6,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.SvrProcess;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.ProcessInfo;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * #L%
  */
 
-public class C_Invoice_Candidate_Close extends SvrProcess
+public class C_Invoice_Candidate_Close extends JavaProcess
 {
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);

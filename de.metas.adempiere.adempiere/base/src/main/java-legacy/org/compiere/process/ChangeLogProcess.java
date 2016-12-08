@@ -29,6 +29,9 @@ import org.compiere.model.X_AD_ChangeLog;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 
 /**
  *	Process Change Logs
@@ -39,7 +42,7 @@ import org.compiere.util.DisplayType;
  *  @deprecated We are planning to drop this because we are not using it anymore.
  */
 @Deprecated
-public class ChangeLogProcess extends SvrProcess
+public class ChangeLogProcess extends JavaProcess
 {
 	/** The Change Log (when applied directly)		*/
 	private int				p_AD_ChangeLog_ID = 0;
@@ -89,7 +92,7 @@ public class ChangeLogProcess extends SvrProcess
 	@Override
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

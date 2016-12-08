@@ -43,7 +43,6 @@ import org.compiere.apps.WindowMenu;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.MTreeNode;
-import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CFrame;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -53,6 +52,7 @@ import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 
 /**
@@ -176,15 +176,6 @@ public class FormFrame extends CFrame
 		//      Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		AEnv.addMenuItem("Calculator", null, null, mTools, this);
-//		AEnv.addMenuItem("Calendar", null, null, mTools, this);
-//		AEnv.addMenuItem("Editor", null, null, mTools, this);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			AEnv.addMenuItem("Script", null, null, mTools, this);
-		//@formatter:on
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
 			if (mTools.getComponentCount() > 0)

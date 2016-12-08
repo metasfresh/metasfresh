@@ -23,13 +23,16 @@ import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MBankStatementMatcher;
 import org.compiere.model.X_I_BankStatement;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Bank Statement Matching
  *	
  *  @author Jorg Janke
  *  @version $Id: BankStatementMatcher.java,v 1.3 2006/09/25 00:59:41 jjanke Exp $
  */
-public class BankStatementMatcher extends SvrProcess
+public class BankStatementMatcher extends JavaProcess
 {
 	/**	Matchers					*/
 	MBankStatementMatcher[] m_matchers = null; 
@@ -39,7 +42,7 @@ public class BankStatementMatcher extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

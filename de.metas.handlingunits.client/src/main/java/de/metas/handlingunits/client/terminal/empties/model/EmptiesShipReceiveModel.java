@@ -43,6 +43,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
@@ -65,6 +66,7 @@ import de.metas.handlingunits.inout.IEmptiesInOutProducer;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 
@@ -138,12 +140,16 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	/**
 	 * The BPartner Location for which the empties inout will be created
 	 */
-	private I_C_BPartner_Location _bpLocation = null;
+	private org.compiere.model.I_C_BPartner_Location _bpLocation = null;
 	private final SimpleTableLookup<I_C_BPartner> bpartnerLookup = new SimpleTableLookup<I_C_BPartner>(I_C_BPartner.class, I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_Name);
 	private Date _date;
 	private final BPartnerLocationKeyLayout _bpLocationKeyLayout;
 
-	public EmptiesShipReceiveModel(final ITerminalContext terminalContext, final int warehouseId, final int partnerId, final int bpLocationId)
+	// #643: Order
+	private I_C_Order _order;
+
+	public EmptiesShipReceiveModel(
+			final ITerminalContext terminalContext, final int warehouseId, final I_M_ReceiptSchedule receiptSchedule)
 	{
 		super(terminalContext);
 
@@ -153,21 +159,22 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 		_date = Env.getDate(terminalContext.getCtx()); // use Login date (08306)
 
-		// load bpartner if selected. This will be the suggested bpartner. It is free for the user to change it if needed
-		if (partnerId > 0)
+		if (receiptSchedule != null)
 		{
-			_bpartner = InterfaceWrapperHelper.create(terminalContext.getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+			_bpartner = receiptSchedule.getC_BPartner();
+			_bpLocation = receiptSchedule.getC_BPartner_Location();
+			_order = receiptSchedule.getC_Order();
+		}
+
+		// load bpartner if selected. This will be the suggested bpartner. It is free for the user to change it if needed
+		if (_bpartner != null)
+		{
+
 			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(), _bpartner.getValue());
 
 			// In case the bpartner was selected or taken from order/ receipt schedule, the suggested return type will be ReturnToVendor
 			_bpartnerReturnType = BPartnerReturnType.ReturnToVendor;
 
-		}
-
-		// load location if set. It can be also modified by the user
-		if (bpLocationId > 0)
-		{
-			_bpLocation = InterfaceWrapperHelper.create(terminalContext.getCtx(), bpLocationId, I_C_BPartner_Location.class, ITrx.TRXNAME_None);
 		}
 
 		{
@@ -269,6 +276,9 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		producer.setM_Warehouse(getM_Warehouse());
 
 		producer.setMovementDate(getDate());
+
+		// task #643: Set the order to the producer
+		producer.setC_Order(getOrder());
 
 		addPackingMaterialsFromKeyLayout(producer, getLUKeyLayout());
 		addPackingMaterialsFromKeyLayout(producer, getTUKeyLayout());
@@ -521,5 +531,15 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	public void setDate(final Date date)
 	{
 		_date = date;
+	}
+
+	public void setOrder(I_C_Order order)
+	{
+		_order = order;
+	}
+
+	public I_C_Order getOrder()
+	{
+		return _order;
 	}
 }

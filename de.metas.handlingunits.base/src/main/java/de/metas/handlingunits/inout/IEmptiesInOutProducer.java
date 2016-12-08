@@ -13,19 +13,19 @@ package de.metas.handlingunits.inout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
@@ -67,4 +67,19 @@ public interface IEmptiesInOutProducer
 	 * @return true if empty.
 	 */
 	boolean isEmpty();
+
+	/**
+	 * Set the order based on which the inout is created ( if it was selected)
+	 * 
+	 * @param order
+	 */
+	void setC_Order(I_C_Order order);
+
+	/**
+	 * The order that was selected to created the empties inout based on.
+	 * It's acceptable for it to be null in case it wasn't set
+	 * 
+	 * @return
+	 */
+	I_C_Order getC_Order();
 }

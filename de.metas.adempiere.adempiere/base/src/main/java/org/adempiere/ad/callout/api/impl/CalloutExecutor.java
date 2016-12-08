@@ -335,6 +335,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		return tableCalloutsMap.hasColumnCallouts(field.getColumnName(), executionBlackListIds);
 	}
 
+	@Override
 	public ICalloutExecutor newInstanceSharingMasterData()
 	{
 		return new CalloutExecutor(tableName, tableCalloutsMap, executionBlackListIds);
@@ -350,7 +351,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			super();
 		}
 
-		public CalloutExecutor build()
+		public ICalloutExecutor build()
 		{
 			final ICalloutProvider calloutFactory = getCalloutProvider();
 			final Properties ctx = Env.getCtx(); // FIXME: get rid of ctx!
@@ -358,6 +359,10 @@ public final class CalloutExecutor implements ICalloutExecutor
 			if (tableCalloutsMap == null)
 			{
 				throw new NullPointerException("Got null table callouts map from " + calloutFactory + " for AD_Table_ID=" + tableName);
+			}
+			if(tableCalloutsMap.isEmpty())
+			{
+				return NullCalloutExecutor.instance;
 			}
 			final Set<String> executionBlackListIds = null;
 			return new CalloutExecutor(tableName, tableCalloutsMap, executionBlackListIds);

@@ -22,15 +22,16 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+
+import de.metas.process.JavaProcess;
 
 /**
  * Enable Native Sequence
  * 
  * @author Victor Perez, e-Evolution, S.C.
  */
-public class EnableNativeSequence extends SvrProcess
+public class EnableNativeSequence extends JavaProcess
 {
 	@Override
 	protected void prepare()

@@ -40,6 +40,8 @@ import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductBL;
 
 /**
@@ -50,7 +52,7 @@ import de.metas.product.IProductBL;
  * @author victor.perez@e-evolution.com
  * @contributor: Carlos Ruiz (globalqss) - review backward compatibility - implement mustBeStocked properly
  */
-public class M_Production_Run extends SvrProcess {
+public class M_Production_Run extends JavaProcess {
 
 	/** The Record */
 	private int p_Record_ID = 0;
@@ -64,7 +66,7 @@ public class M_Production_Run extends SvrProcess {
 	 */
 	@Override
 	protected void prepare() {
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)

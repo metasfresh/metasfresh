@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.endcustomer.mf15</groupId>
 		<artifactId>de.metas.endcustomer.mf15</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
@@ -20,7 +20,7 @@
 		<start-class>de.metas.SwingUIApplication</start-class>
 		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
 		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>4.44.43.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.versionInfo>4.47.46.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
 		<launch4j.preCp></launch4j.preCp>
 
 		<!-- NOTE: -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)" -->
@@ -97,13 +97,13 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.swingui</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
@@ -112,7 +112,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 

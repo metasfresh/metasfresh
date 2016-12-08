@@ -44,13 +44,18 @@ import javax.swing.JMenuBar;
 import javax.swing.KeyStroke;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.apps.graph.PAPanel;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -60,18 +65,20 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.apps.wf.WFPanel;
 import org.compiere.grid.tree.VTreePanel;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_AD_User_Roles;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.I_R_RequestType;
 import org.compiere.model.MSession;
 import org.compiere.model.MTreeNode;
+import org.compiere.print.ReportCtl;
+import org.compiere.print.SwingViewerProvider;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 import org.compiere.util.Splash;
@@ -120,7 +127,7 @@ public final class AMenu extends CFrame
 		splash.paint(splash.getGraphics());
 
 		//
-		if (!Adempiere.startupEnvironment(true))  // Load Environment
+		if (!Adempiere.startupEnvironment(true))       // Load Environment
 		{
 			System.exit(1);
 		}
@@ -247,7 +254,7 @@ public final class AMenu extends CFrame
 	private int m_AD_Role_ID;
 
 	// Links
-	private int m_request_Menu_ID = 0;
+	private int m_request_Menu_ID = 237; // hardcoded. Vorgang
 	private int m_note_Menu_ID = 0;
 	private String m_requestSQL = null;
 	// private DecimalFormat m_memoryFormat = DisplayType.getNumberFormat(DisplayType.Integer);
@@ -312,13 +319,15 @@ public final class AMenu extends CFrame
 		// Register Swing ClientUI service
 		Services.registerService(IClientUI.class, new SwingClientUI());
 
+		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
+
 		/**
 		 * Show Login Screen - if not successful - exit
 		 */
 		log.trace("Login");
 
 		final ALogin login = new ALogin(splash, m_ctx);
-		if (!login.initLogin()) 		// no automatic login
+		if (!login.initLogin())      		// no automatic login
 		{
 			// Center the window
 			try
@@ -476,18 +485,6 @@ public final class AMenu extends CFrame
 		// Tools
 		JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		AEnv.addMenuItem("Calculator", null, null, mTools, this);
-//		AEnv.addMenuItem("Calendar", null, null, mTools, this);
-//		AEnv.addMenuItem("Editor", null, null, mTools, this);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			AEnv.addMenuItem("Script", null, null, mTools, this);
-//		if (AEnv.isWorkflowProcess())
-//			AEnv.addMenuItem("WorkFlow", null, null, mTools, this);
-		//@formatter:on
 
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
@@ -709,61 +706,45 @@ public final class AMenu extends CFrame
 	private int getRequests()
 	{
 		// #577
-		// Count the requests for all users that have the same roles as the login user
-		final StringBuilder roleSql = new StringBuilder();
-		roleSql.append(" exists ")
-				.append("( ")
-				.append(" select 1 from ")
-				.append(I_AD_User.Table_Name).append(" u ")
-				.append(" where u.")
-				.append(I_AD_User.COLUMNNAME_AD_User_ID)
-				.append(" = ")
-				.append(I_R_Request.Table_Name).append("."). append(I_R_Request.COLUMNNAME_SalesRep_ID)
-				.append(" and ")
-				.append(" exists ")
-				.append("(")
-				.append(" select 1 from ")
-				.append(I_AD_User_Roles.Table_Name).append(" ur ")
-				.append(" where ")
-				.append(" u.").append(I_AD_User.COLUMNNAME_AD_User_ID)
-				.append(" = ")
-				.append("ur.").append(I_AD_User_Roles.COLUMNNAME_AD_User_ID)
-				.append(" and ")
-				.append(" exists ")
-				.append("(")
-				.append(" select 1 from ")
-				.append(I_AD_User_Roles.Table_Name).append(" ur2 ")
-				.append(" where ")
-				.append("ur.").append(I_AD_User_Roles.COLUMNNAME_AD_Role_ID)
-				.append(" = ")
-				.append("ur2. ").append(I_AD_User_Roles.COLUMNNAME_AD_Role_ID)
-				.append(" and ")
-				.append("ur2.").append(I_AD_User_Roles.COLUMNNAME_AD_User_ID)
-				.append(" = ?")
-				.append(" and ")
-				.append("ur2.").append(I_AD_User_Roles.COLUMNNAME_IsActive)
-				.append(" = 'Y'")
-				.append(" ) ")
-				.append(" ) ")
-				.append(" ) ");
+		// Count the requests based on the where clause in the Window Vorgang, Tab Vorgang
 
 		if (m_requestSQL == null)
-			m_requestSQL = Env.getUserRolePermissions().addAccessSQL("SELECT COUNT(1) FROM R_Request "
-					+ " WHERE ( "
-					// + //"SalesRep_ID=? OR AD_Role_ID=?"
-					+ roleSql.toString()
-					+ " ) AND Processed='N'"
-					+ " AND (DateNextAction IS NULL OR TRUNC(DateNextAction) <= TRUNC(now()))"
-					+ " AND (R_Status_ID IS NULL OR R_Status_ID IN (select R_Status_ID from R_Status where IsClosed='N'))"
-					// #577
-					// Only count the R_Request entries that have request types used for Partner Request Window (the flag IsUseForPartnerRequestWindow is on true)
-					+ " AND (" + I_R_Request.COLUMNNAME_R_RequestType_ID
-					+ " IN ( select " + I_R_RequestType.COLUMNNAME_R_RequestType_ID + " from " + I_R_RequestType.Table_Name
-					+ "  where " + I_R_RequestType.COLUMNNAME_IsUseForPartnerRequestWindow + " = 'Y'))",
-					"R_Request", false, true);	// not qualified - RW
-		int retValue = DB.getSQLValue(null, m_requestSQL, m_AD_User_ID);
+		{
+			m_requestSQL = buildCountRequestsSql();
+		}
+
+		int retValue = DB.getSQLValue(ITrx.TRXNAME_None, m_requestSQL);
 		return retValue;
 	}	// getRequests
+
+	private String buildCountRequestsSql()
+	{
+		final I_AD_Window requestWindow = Services.get(IWindowBL.class).getWindowFromMenu(m_ctx, m_request_Menu_ID);
+		if (requestWindow == null)
+		{
+			// this shall not happen
+			throw new AdempiereException("No window found for menu " + m_request_Menu_ID);
+		}
+
+		final I_AD_Tab requestTab = Services.get(IADWindowDAO.class).retrieveFirstTab(requestWindow);
+
+		if (requestTab == null)
+		{
+			// this shall not happen
+			throw new AdempiereException("No first tab found for window " + requestWindow);
+		}
+
+		final String sqlWindowWhereClause = requestTab.getWhereClause();
+		final String sqlWindowWhereClauseParsed = StringExpressionCompiler.instance.compile(sqlWindowWhereClause)
+				.evaluate(Evaluatees.ofCtx(m_ctx), OnVariableNotFound.Fail);
+
+		return Env.getUserRolePermissions().addAccessSQL(
+				"SELECT COUNT(1) FROM " + I_R_Request.Table_Name + " WHERE " + sqlWindowWhereClauseParsed //
+				, I_R_Request.Table_Name // TableNameIn
+				, false // fullyQualified
+				, true // rw
+		);
+	}
 
 	/**
 	 * Open Request Window
@@ -778,7 +759,7 @@ public final class AMenu extends CFrame
 		// + "WHERE t.AD_Table_ID=?", 417);
 		if (m_request_Menu_ID == 0)
 			m_request_Menu_ID = 237;	// My Requests
-		AMenuStartItem.startMenuItemById(m_request_Menu_ID, msgBL.translate(m_ctx, "R_Request_ID"), this); // async load
+		AMenuStartItem.startMenuItemById(m_request_Menu_ID, msgBL.translate(m_ctx, I_R_Request.COLUMNNAME_R_Request_ID), this); // async load
 	}   // gotoRequests
 
 	/**
@@ -790,7 +771,7 @@ public final class AMenu extends CFrame
 		{
 			// Requests
 			final int requests = getRequests();
-			bRequests.setText(msgBL.translate(m_ctx, "R_Request_ID") + ": " + requests);
+			bRequests.setText(msgBL.translate(m_ctx, I_R_Request.COLUMNNAME_R_Request_ID) + ": " + requests);
 			// Memo
 			final int notes = getNotes();
 			bNotes.setText(msgBL.translate(m_ctx, "AD_Note_ID") + ": " + notes);
@@ -883,7 +864,7 @@ public final class AMenu extends CFrame
 		final WindowManager windowManager = getWindowManager();
 
 		// metas: tsa: end: US831: Open one window per session per user (2010101810000044)
-		if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || form.isOneInstanceOnly())  // metas: tsa: us831
+		if (Ini.isPropertyBool(Ini.P_SINGLE_INSTANCE_PER_WINDOW) || form.isOneInstanceOnly())       // metas: tsa: us831
 		{
 			final FormFrame ffExisting = windowManager.findForm(AD_Form_ID);
 			if (ffExisting != null)

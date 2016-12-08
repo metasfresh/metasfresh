@@ -39,9 +39,10 @@ package org.eevolution.process;
  */
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductLowLevelUpdater;
+
+import de.metas.process.JavaProcess;
 
 /**
  * CalculateLowLevel for MRP
@@ -51,7 +52,7 @@ import org.eevolution.api.IProductLowLevelUpdater;
  * 
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-public class CalculateLowLevel extends SvrProcess
+public class CalculateLowLevel extends JavaProcess
 {
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 

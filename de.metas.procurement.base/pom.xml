@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -19,29 +19,33 @@
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.rfq</groupId>
 			<artifactId>de.metas.rfq</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>

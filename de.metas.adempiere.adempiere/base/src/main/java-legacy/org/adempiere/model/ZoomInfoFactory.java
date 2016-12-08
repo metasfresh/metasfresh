@@ -298,7 +298,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
 		final Set<String> alreadySeenIds = new HashSet<String>();
 
-		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source);
+		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
 		for (final IZoomProvider zoomProvider : zoomProviders)
 		{
 			logger.debug("Checking zoom provider: {}", zoomProvider);
@@ -335,11 +335,11 @@ public class ZoomInfoFactory implements IZoomProvider
 		return result.build();
 	}
 
-	private static List<IZoomProvider> retrieveZoomProviders(final IZoomSource source)
+	private static List<IZoomProvider> retrieveZoomProviders(final String tableName)
 	{
 		final List<IZoomProvider> zoomProviders = new ArrayList<>();
 
-		zoomProviders.addAll(MRelationType.retrieveZoomProviders(source));
+		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
 
 		return zoomProviders;

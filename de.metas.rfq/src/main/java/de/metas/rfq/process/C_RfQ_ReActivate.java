@@ -1,9 +1,9 @@
 package de.metas.rfq.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQ;
 
@@ -35,7 +35,7 @@ import de.metas.rfq.model.I_C_RfQ;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_RfQ_ReActivate extends SvrProcess implements ISvrProcessPrecondition
+public class C_RfQ_ReActivate extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);

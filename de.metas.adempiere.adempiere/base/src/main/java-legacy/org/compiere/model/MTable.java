@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.persistence.TableModelClassLoader;
@@ -36,11 +34,15 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Persistent Table Model
@@ -60,7 +62,7 @@ import org.compiere.util.Env;
 public class MTable extends X_AD_Table
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2367316254623142732L;
 
@@ -75,7 +77,7 @@ public class MTable extends X_AD_Table
 		try
 		{
 			s_cacheLock.lock();
-			
+
 			MTable retValue = s_cache.get (AD_Table_ID);
 			if (retValue != null && Env.isSame(retValue.getCtx(), ctx))
 			{
@@ -85,10 +87,10 @@ public class MTable extends X_AD_Table
 			if (retValue.get_ID () > 0)
 			{
 				final String tableName = retValue.getTableName();
-				
+
 				s_cache.put (AD_Table_ID, retValue);
 				s_cacheTableNameUC2Table.put(tableName.toUpperCase(), retValue);
-				
+
 				// metas
 				if (s_cacheTableName2Id != null)
 				{
@@ -115,11 +117,11 @@ public class MTable extends X_AD_Table
 		{
 			return null;
 		}
-		
+
 		try
 		{
 			s_cacheLock.lock();
-			
+
 			final String tableNameUC = tableName.toUpperCase();
 
 			//
@@ -161,7 +163,7 @@ public class MTable extends X_AD_Table
 				final int adTableId = retValue.getAD_Table_ID();
 				s_cache.put(adTableId, retValue);
 				s_cacheTableNameUC2Table.put(tableNameUC, retValue);
-				
+
 				// metas
 				if (s_cacheTableName2Id != null)
 				{
@@ -175,7 +177,7 @@ public class MTable extends X_AD_Table
 			s_cacheLock.unlock();
 		}
 	}	// get
-	
+
 	/**
 	 * 	Get Table Name
 	 *	@param ctx context
@@ -200,23 +202,23 @@ public class MTable extends X_AD_Table
 
 		return MTable.get(ctx, AD_Table_ID).getTableName();
 	}	//	getTableName
-	
-	
+
+
 	/**	Cache						*/
 	private static final CCache<Integer,MTable> s_cache = new CCache<>("AD_Table", 500, 0);
 	private static final CCache<String,MTable> s_cacheTableNameUC2Table = new CCache<>("AD_Table", 500, 0);
 	private static final ReentrantLock s_cacheLock = new ReentrantLock();
-	
+
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MTable.class);
-	
-	
+
+
 	/** EntityTypes */
 	// metas: tsa: load entity types only when they are needed, else database decoupled testing is not possible. See EntityTypeNames class.
 	//private static MEntityType[] entityTypes = null;
 
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -238,7 +240,7 @@ public class MTable extends X_AD_Table
 			setIsSecurityEnabled (false);
 			setIsView (false);	// N
 			setReplicationType (REPLICATIONTYPE_Local);
-		}	
+		}
 	}	//	MTable
 
 	/**
@@ -251,12 +253,12 @@ public class MTable extends X_AD_Table
 	{
 		super(ctx, rs, trxName);
 	}	//	MTable
-	
+
 	/**	Columns				*/
 	private MColumn[]	m_columns = null;
-	
+
 	private final transient ReentrantLock columnsLoadLock = new ReentrantLock();
-	
+
 	/**
 	 * 	Get Columns
 	 *	@param requery requery
@@ -268,7 +270,7 @@ public class MTable extends X_AD_Table
 		{
 			return m_columns;
 		}
-		
+
 		columnsLoadLock.lock();
 		try
 		{
@@ -306,7 +308,7 @@ public class MTable extends X_AD_Table
 		}
 		return m_columns;
 	}	//	getColumns
-	
+
 	/**
 	 * 	Get Column
 	 *	@param columnName (case insensitive)
@@ -317,11 +319,11 @@ public class MTable extends X_AD_Table
 	public MColumn getColumn (String columnName)
 	{
 		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-		
+
 		final I_AD_Column column = tableDAO.retrieveColumnOrNull(getTableName(), columnName);
 		return LegacyAdapters.convertToPO(column);
 	}	//	getColumn
-	
+
 	/**
 	 * 	Get Key Columns of Table
 	 *	@return key columns
@@ -344,7 +346,7 @@ public class MTable extends X_AD_Table
 		final String[] retValue = list.toArray(new String[list.size()]);
 		return retValue;
 	}	//	getKeyColumns
-	
+
 	/**************************************************************************
 	 * Get PO Class Instance
 	 *
@@ -360,9 +362,9 @@ public class MTable extends X_AD_Table
 		final String tableName = getTableName();
 		return TableModelLoader.instance.getPO(ctx, tableName, Record_ID, trxName);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param tableName
 	 * @return tableName's model class
 	 * @deprecated Please use {@link TableModelClassLoader#getClass(String)}.
@@ -386,7 +388,7 @@ public class MTable extends X_AD_Table
 		//
 		return true;
 	}	//	beforeSave
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -400,7 +402,7 @@ public class MTable extends X_AD_Table
 		// Create/Update table sequences
 		// NOTE: we shall do this only if it's a new table, else we will change the sequence's next value
 		// which could be OK on our local development database,
-		// but when the migration script will be executed on target customer database, their sequences will be wrongly changed (08607) 
+		// but when the migration script will be executed on target customer database, their sequences will be wrongly changed (08607)
 		if (success && newRecord)
 		{
 			Services.get(ISequenceDAO.class).createTableSequenceChecker(getCtx())
@@ -410,72 +412,93 @@ public class MTable extends X_AD_Table
 					.setTrxName(get_TrxName())
 					.run();
 		}
-		
+
 		if (!newRecord && is_ValueChanged(COLUMNNAME_TableName))
 		{
 			Services.get(IADTableDAO.class).onTableNameRename(this);
 		}
-		
+
 		return success;
 	}	//	afterSave
-	
+
 	/**
 	 * 	Get SQL Create
 	 *	@return create table DDL
 	 */
 	public String getSQLCreate()
 	{
-		StringBuffer sb = new StringBuffer("CREATE TABLE ")
-			.append(getTableName()).append(" (");
+		final StringBuffer sb = new StringBuffer("CREATE TABLE ")
+				.append(getTableName())
+				.append(" (");
 		//
 		boolean hasPK = false;
 		boolean hasParents = false;
-		StringBuffer constraints = new StringBuffer();
+		final StringBuffer constraints = new StringBuffer();
+
 		getColumns(true);
+
 		for (int i = 0; i < m_columns.length; i++)
 		{
-			MColumn column = m_columns[i];
-			String colSQL = column.getSQLDDL();
-			if ( colSQL != null )
+			final MColumn column = m_columns[i];
+			final String colSQL = column.getSQLDDL();
+			if (!Check.isEmpty(colSQL, true))
 			{
 				if (i > 0)
+				{
 					sb.append(", ");
-					sb.append(column.getSQLDDL());
+				}
+				sb.append(column.getSQLDDL());
 			}
-			else // virtual column
-				continue;
-			//
+			else
+			{
+				continue; // virtual column
+			}
+
 			if (column.isKey())
+			{
 				hasPK = true;
+			}
 			if (column.isParent())
+			{
 				hasParents = true;
-			String constraint = column.getConstraint(getTableName());
-			if (constraint != null && constraint.length() > 0)
+			}
+
+			final String constraint = column.getConstraint(getTableName());
+			if (!Check.isEmpty(constraint, true))
+			{
 				constraints.append(", ").append(constraint);
+			}
 		}
-		//	Multi Column PK 
+		// Multi Column PK
 		if (!hasPK && hasParents)
 		{
-			StringBuffer cols = new StringBuffer();
+			final StringBuffer cols = new StringBuffer();
 			for (int i = 0; i < m_columns.length; i++)
 			{
-				MColumn column = m_columns[i];
+				final MColumn column = m_columns[i];
 				if (!column.isParent())
+				{
 					continue;
+				}
 				if (cols.length() > 0)
+				{
 					cols.append(", ");
+				}
 				cols.append(column.getColumnName());
 			}
+
 			sb.append(", CONSTRAINT ")
-				.append(getTableName()).append("_Key PRIMARY KEY (")
-				.append(cols).append(")");
+					.append(getTableName()).append("_Key PRIMARY KEY (")
+					.append(cols).append(")");
 		}
 
-		sb.append(constraints)
-			.append(")");
+		sb
+				.append(constraints)
+				.append(")");
+
 		return sb.toString();
-	}	//	getSQLCreate
-	
+	}	// getSQLCreate
+
 	// globalqss
 	/**
 	 * 	Grant independence to GenerateModel from AD_Table_ID
@@ -486,7 +509,7 @@ public class MTable extends X_AD_Table
 	@Deprecated
 	public static int getTable_ID(String tableName)
 	{
-		// metas-ts: adding a unit testing mode, where a table id is returned without DB access. 
+		// metas-ts: adding a unit testing mode, where a table id is returned without DB access.
 		// Note: this method is called from every model interface generated by the model generator class.
 		if (org.compiere.Adempiere.isUnitTestMode())
 		{
@@ -499,7 +522,7 @@ public class MTable extends X_AD_Table
 			return returnValue;
 		}
 		//metas end
-		
+
 		Integer retValue = 0;
 		if (s_cacheTableName2Id != null)
 		{
@@ -510,7 +533,7 @@ public class MTable extends X_AD_Table
 		{
 			return retValue;
 		}
-		
+
 		final String SQL = "SELECT AD_Table_ID FROM AD_Table WHERE TableName = ?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -535,7 +558,7 @@ public class MTable extends X_AD_Table
 			rs = null;
 			pstmt = null;
 		}
-		
+
 		if (retValue != null && retValue > 0)
 		{
 			if (s_cacheTableName2Id != null)
@@ -549,14 +572,14 @@ public class MTable extends X_AD_Table
 			return -1;
 		}
 	}
-	
+
 	/**
 	 * Create query to retrieve one or more PO.
 	 * @param whereClause
 	 * @param trxName
 	 * @return Query
 	 */
-	public Query createQuery(String whereClause, String trxName) 
+	public Query createQuery(String whereClause, String trxName)
 	{
 		return new Query(this.getCtx(), this, whereClause, trxName);
 	}
@@ -572,7 +595,7 @@ public class MTable extends X_AD_Table
 		sb.append (get_ID()).append ("-").append (getTableName()).append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 	//
 	//metas-ts
 	private static final Map<String, Integer> staticTableIds = new HashMap<String, Integer>();
@@ -584,5 +607,5 @@ public class MTable extends X_AD_Table
 		staticTableIds.put(name, id);
 	}
 	//metas end
-	
+
 }	//	MTable

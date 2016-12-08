@@ -59,12 +59,21 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 	}
 
 	@Override
-	public IWorkPackageQueue getQueueForEnqueuing(final Properties ctx,
-			final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	public IWorkPackageQueue getQueueForEnqueuing(final Properties ctx, final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
-		final I_C_Queue_PackageProcessor packageProcessor = Services.get(IQueueDAO.class)
-				.retrievePackageProcessorDefByClass(ctx, packageProcessorClass);
+		final I_C_Queue_PackageProcessor packageProcessor = Services.get(IQueueDAO.class).retrievePackageProcessorDefByClass(ctx, packageProcessorClass);
+		return getQueueForEnqueuing(ctx, packageProcessor);
+	}
 
+	@Override
+	public IWorkPackageQueue getQueueForEnqueuing(final Properties ctx, final String packageProcessorClassname)
+	{
+		final I_C_Queue_PackageProcessor packageProcessor = Services.get(IQueueDAO.class).retrievePackageProcessorDefByClassname(ctx, packageProcessorClassname);
+		return getQueueForEnqueuing(ctx, packageProcessor);
+	}
+
+	private IWorkPackageQueue getQueueForEnqueuing(final Properties ctx, final I_C_Queue_PackageProcessor packageProcessor)
+	{
 		final String internalNameToUse;
 		if (Check.isEmpty(packageProcessor.getInternalName()))
 		{
