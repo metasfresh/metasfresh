@@ -14,7 +14,10 @@ Here come the actual release notes:
  
  upcoming
 
-## Features 
+## Features
+* metasfresh
+  * #677 make customs report faster
+
 * webui
   * #625 Shipment Schedule Window WebUI
 
