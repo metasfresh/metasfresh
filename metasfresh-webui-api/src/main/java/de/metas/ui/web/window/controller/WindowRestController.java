@@ -7,7 +7,6 @@ import java.util.Set;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,19 +27,14 @@ import de.metas.ui.web.process.DocumentPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesList;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -81,37 +75,24 @@ import io.swagger.annotations.ApiParam;
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
-	private static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
-	private static final String PARAM_DocumentId = WebConfig.PARAM_DocumentId;
-	private static final String PARAM_TabId = WebConfig.PARAM_TabId;
-	private static final String PARAM_RowId = WebConfig.PARAM_RowId;
-	private static final String PARAM_Field = "field";
-	private static final String PARAM_FieldsList = "fields";
-	private static final String PARAM_Advanced = "advanced";
-	private static final String PARAM_Advanced_DefaultValue = "false";
-
-	private static final String PARAM_ViewId = "viewId";
-	private static final String PARAM_ViewDataType = "viewType";
-	private static final String PARAM_FirstRow = "firstRow";
-	private static final String PARAM_FirstRow_Description = "first row to fetch (starting from 0)";
-	private static final String PARAM_PageLength = "pageLength";
-	private static final String PARAM_OrderBy = "orderBy";
-	private static final String PARAM_OrderBy_Description = "Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered";
+	static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
+	static final String PARAM_DocumentId = WebConfig.PARAM_DocumentId;
+	static final String PARAM_TabId = WebConfig.PARAM_TabId;
+	static final String PARAM_RowId = WebConfig.PARAM_RowId;
+	static final String PARAM_Field = "field";
+	static final String PARAM_FieldsList = "fields";
+	static final String PARAM_Advanced = "advanced";
+	static final String PARAM_Advanced_DefaultValue = "false";
 
 	private static final Logger logger = LogManager.getLogger(WindowRestController.class);
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@Autowired
-	@Lazy
 	private UserSession userSession;
 
 	@Autowired
 	private DocumentCollection documentCollection;
-
-	@Autowired
-	@Deprecated
-	private DocumentViewRestController documentViewController;
 
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
@@ -123,27 +104,6 @@ public class WindowRestController
 	{
 		return JSONOptions.builder()
 				.setUserSession(userSession);
-	}
-
-	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	@Deprecated
-	public JSONDocumentLayout getLayout_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		
-		final DetailId detailId = DetailId.fromJson(detailIdStr);
-		if (detailId == null)
-		{
-			return getLayout(adWindowId, advanced);
-		}
-		else
-		{
-			return getLayout(adWindowId, detailIdStr, advanced);
-		}
 	}
 
 	@RequestMapping(value = "/{windowId}/layout", method = RequestMethod.GET)
@@ -187,30 +147,6 @@ public class WindowRestController
 		return JSONDocumentLayout.ofDetailTab(detailLayout, jsonOpts);
 	}
 
-	@RequestMapping(value = "/data", method = RequestMethod.GET)
-	@Deprecated
-	public List<JSONDocument> getData_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
-			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setAD_Window_ID(adWindowId)
-				.setDocumentId(idStr)
-				.setDetailId(detailIdStr)
-				.setRowId(rowIdStr)
-				.allowNullRowId()
-				.build();
-		
-		return getData(documentPath, fieldsListStr, advanced);
-	}
-
 	@RequestMapping(value = "/{windowId}/{documentId}", method = RequestMethod.GET)
 	public List<JSONDocument> getData(
 			@PathVariable("windowId") final int adWindowId //
@@ -237,7 +173,7 @@ public class WindowRestController
 		return getData(documentPath, fieldsListStr, advanced);
 	}
 
-	private List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced)
+	List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced)
 	{
 		userSession.assertLoggedIn();
 
@@ -249,30 +185,6 @@ public class WindowRestController
 				.setDataFieldsList(fieldsListStr)
 				.build());
 
-	}
-
-	@RequestMapping(value = "/commit", method = RequestMethod.PATCH)
-	@Deprecated
-	public List<JSONDocument> patchDocument_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-			, @RequestBody final List<JSONDocumentChangedEvent> events)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setAD_Window_ID(adWindowId)
-				.setDocumentId(idStr)
-				.allowNewDocumentId()
-				.setDetailId(detailIdStr)
-				.setRowId(rowIdStr)
-				.allowNewRowId()
-				.build();
-		
-		return patchDocument(documentPath, advanced, events);
 	}
 
 	@RequestMapping(value = "/{windowId}/{documentId}", method = RequestMethod.PATCH)
@@ -311,7 +223,7 @@ public class WindowRestController
 		return patchDocument(documentPath, advanced, events);
 	}
 
-	private List<JSONDocument> patchDocument(final DocumentPath documentPath, final boolean advanced, final List<JSONDocumentChangedEvent> events)
+	List<JSONDocument> patchDocument(final DocumentPath documentPath, final boolean advanced, final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
 
@@ -354,26 +266,6 @@ public class WindowRestController
 		//
 		// Return the changes
 		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
-	}
-
-	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-	@Deprecated
-	public List<JSONDocument> deleteDocuments_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailIdStr //
-			, @RequestParam(name = PARAM_RowId, required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setAD_Window_ID(adWindowId)
-				.setDocumentId(idStr)
-				.setDetailId(detailIdStr)
-				.setRowIdsList(rowIdsListStr)
-				.build();
-		return deleteDocuments(documentPath);
 	}
 
 	@RequestMapping(value = "/{type}/{documentId}", method = RequestMethod.DELETE)
@@ -419,7 +311,7 @@ public class WindowRestController
 		return deleteDocuments(documentPath);
 	}
 
-	private List<JSONDocument> deleteDocuments(final DocumentPath documentPath)
+	List<JSONDocument> deleteDocuments(final DocumentPath documentPath)
 	{
 		userSession.assertLoggedIn();
 
@@ -431,23 +323,6 @@ public class WindowRestController
 			documentCollection.delete(documentPath);
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 		});
-	}
-
-	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)
-	@Deprecated
-	public JSONLookupValuesList getDocumentFieldTypeahead_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String documentId //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
-			, @RequestParam(name = PARAM_Field, required = true) final String fieldName //
-			, @RequestParam(name = "query", required = true) final String query //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		
-		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(adWindowId, documentId, detailId, rowIdStr);
-		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
 
 	/**
@@ -483,29 +358,13 @@ public class WindowRestController
 	}
 
 	/** Typeahead: unified implementation */
-	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
+	JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
 	{
 		userSession.assertLoggedIn();
 
 		return documentCollection.getDocument(documentPath)
 				.getFieldLookupValuesForQuery(fieldName, query)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
-	}
-
-	@RequestMapping(value = "/dropdown", method = RequestMethod.GET)
-	@Deprecated
-	public JSONLookupValuesList getDocumentFieldDropdown_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true, defaultValue = DocumentId.NEW_ID_STRING) final String documentId //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
-			, @RequestParam(name = PARAM_Field, required = true) final String fieldName //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		
-		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(adWindowId, documentId, detailId, rowIdStr);
-		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
 
 	@RequestMapping(value = "/{type}/{documentId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
@@ -532,77 +391,13 @@ public class WindowRestController
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
 
-	private JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
+	JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
-		
+
 		return documentCollection.getDocument(documentPath)
 				.getFieldLookupValues(fieldName)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
-	}
-
-	@RequestMapping(value = "/viewLayout", method = RequestMethod.GET)
-	@Deprecated
-	public JSONDocumentLayoutTab getViewLayout_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return documentViewController.getLayout(adWindowId, viewDataType);
-	}
-
-	/**
-	 * Create view
-	 */
-	@RequestMapping(value = "/view", method = RequestMethod.PUT)
-	@Deprecated
-	public JSONDocumentViewResult createView_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
-			, @RequestParam(name = PARAM_PageLength, required = false, defaultValue = "0") final int pageLength //
-			, @RequestBody final List<JSONDocumentFilter> jsonFilters //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return documentViewController.createView_DEPRECATED(adWindowId, viewDataType, firstRow, pageLength, jsonFilters);
-	}
-
-	@RequestMapping(value = "/view/{" + PARAM_ViewId + "}", method = RequestMethod.DELETE)
-	@Deprecated
-	public void deleteView_DEPRECATED(@PathVariable(PARAM_ViewId) final String viewId)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		documentViewController.deleteView(viewId);
-	}
-
-	@RequestMapping(value = "/view/{" + PARAM_ViewId + "}", method = RequestMethod.GET)
-	@Deprecated
-	public JSONDocumentViewResult browseView_DEPRECATED(
-			@PathVariable(PARAM_ViewId) final String viewId//
-			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
-			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
-			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return documentViewController.browseView(viewId, firstRow, pageLength, orderBysListStr);
-	}
-
-	@RequestMapping(value = "/documentActions", method = RequestMethod.GET)
-	@Deprecated
-	public JSONDocumentActionsList getDocumentActions_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(adWindowId, idStr, detailId, rowIdStr);
-		return getDocumentActions(documentPath);
 	}
 
 	@RequestMapping(value = "/{windowId}/{documentId}/actions", method = RequestMethod.GET)
@@ -615,7 +410,7 @@ public class WindowRestController
 		return getDocumentActions(documentPath);
 	}
 
-	private JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath)
+	JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath)
 	{
 		userSession.assertLoggedIn();
 
@@ -633,20 +428,6 @@ public class WindowRestController
 
 	}
 
-	@RequestMapping(value = "/documentReferences", method = RequestMethod.GET)
-	@Deprecated
-	public JSONDocumentReferencesList getDocumentReferences_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-			, @RequestParam(name = PARAM_TabId, required = false) final String detailId //
-			, @RequestParam(name = PARAM_RowId, required = false) final String rowIdStr //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(adWindowId, idStr, detailId, rowIdStr);
-		return getDocumentReferences(documentPath);
-	}
-
 	@RequestMapping(value = "/{windowId}/{documentId}/references", method = RequestMethod.GET)
 	public JSONDocumentReferencesList getDocumentReferences(
 			@PathVariable("type") final int adWindowId //
@@ -657,24 +438,13 @@ public class WindowRestController
 		return getDocumentReferences(documentPath);
 	}
 
-	private JSONDocumentReferencesList getDocumentReferences(final DocumentPath documentPath)
+	JSONDocumentReferencesList getDocumentReferences(final DocumentPath documentPath)
 	{
 		userSession.assertLoggedIn();
 
 		final Document document = documentCollection.getDocument(documentPath);
 		final Collection<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(document).values();
 		return JSONDocumentReferencesList.of(documentReferences, newJSONOptions().build());
-	}
-
-	@RequestMapping(value = "/documentPrint", method = RequestMethod.GET)
-	@Deprecated
-	public ResponseEntity<byte[]> getDocumentPrint_DEPRECATED(
-			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
-			, @RequestParam(name = PARAM_DocumentId, required = true) final String idStr //
-	)
-	{
-		userSession.assertDeprecatedRestAPIAllowed();
-		return getDocumentPrint(adWindowId, idStr, "report.pdf");
 	}
 
 	@RequestMapping(value = "/{windowId}/{documentId}/print/{filename:.*}", method = RequestMethod.GET)
@@ -684,7 +454,7 @@ public class WindowRestController
 			, @PathVariable("filename") final String filename)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
 
 		final Document document = documentCollection.getDocument(documentPath);
