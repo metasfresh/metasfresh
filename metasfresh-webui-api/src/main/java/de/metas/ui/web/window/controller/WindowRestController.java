@@ -154,6 +154,19 @@ public class WindowRestController
 		return getData(documentPath, fieldsListStr, advanced);
 	}
 
+	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}", method = RequestMethod.GET)
+	public List<JSONDocument> getData(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentIdStr //
+			, @PathVariable("tabId") final String tabIdStr //
+			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
+			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
+	)
+	{
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(DocumentType.Window, adWindowId, documentIdStr, tabIdStr);
+		return getData(documentPath, fieldsListStr, advanced);
+	}
+
 	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}", method = RequestMethod.GET)
 	public List<JSONDocument> getData(
 			@PathVariable("windowId") final int adWindowId //
