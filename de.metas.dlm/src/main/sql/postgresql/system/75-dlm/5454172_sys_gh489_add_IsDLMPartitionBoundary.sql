@@ -1,6 +1,6 @@
--- 07.12.2016 14:57
+ï»¿-- 07.12.2016 14:57
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543253,0,'IsPartitionBoundary',TO_TIMESTAMP('2016-12-07 14:57:30','YYYY-MM-DD HH24:MI:SS'),100,'Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.','de.metas.dlm','Y','Partitionsgrenze','Partitionsgrenze',TO_TIMESTAMP('2016-12-07 14:57:30','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543253,0,'IsPartitionBoundary',TO_TIMESTAMP('2016-12-07 14:57:30','YYYY-MM-DD HH24:MI:SS'),100,'Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.','de.metas.dlm','Y','Partitionsgrenze','Partitionsgrenze',TO_TIMESTAMP('2016-12-07 14:57:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 07.12.2016 14:57
@@ -10,7 +10,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 07.12.2016 14:57
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555687,543253,0,20,540792,'N','IsPartitionBoundary',TO_TIMESTAMP('2016-12-07 14:57:46','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.','de.metas.dlm',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Partitionsgrenze',0,TO_TIMESTAMP('2016-12-07 14:57:46','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555687,543253,0,20,540792,'N','IsPartitionBoundary',TO_TIMESTAMP('2016-12-07 14:57:46','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.','de.metas.dlm',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Partitionsgrenze',0,TO_TIMESTAMP('2016-12-07 14:57:46','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 07.12.2016 14:57
@@ -32,7 +32,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 07.12.2016 14:59
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555687,557469,0,540764,0,TO_TIMESTAMP('2016-12-07 14:59:24','YYYY-MM-DD HH24:MI:SS'),100,'Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.',0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','N','N','Partitionsgrenze',50,50,0,1,1,TO_TIMESTAMP('2016-12-07 14:59:24','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555687,557469,0,540764,0,TO_TIMESTAMP('2016-12-07 14:59:24','YYYY-MM-DD HH24:MI:SS'),100,'Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.',0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','N','N','Partitionsgrenze',50,50,0,1,1,TO_TIMESTAMP('2016-12-07 14:59:24','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 07.12.2016 14:59
@@ -62,22 +62,22 @@ UPDATE AD_Element SET ColumnName='IsDLMPartitionBoundary',Updated=TO_TIMESTAMP('
 
 -- 07.12.2016 15:07
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='IsDLMPartitionBoundary', Name='Partitionsgrenze', Description='Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.', Help=NULL WHERE AD_Element_ID=543253
+UPDATE AD_Column SET ColumnName='IsDLMPartitionBoundary', Name='Partitionsgrenze', Description='Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.', Help=NULL WHERE AD_Element_ID=543253
 ;
 
 -- 07.12.2016 15:07
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='IsDLMPartitionBoundary', Name='Partitionsgrenze', Description='Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.', Help=NULL, AD_Element_ID=543253 WHERE UPPER(ColumnName)='ISDLMPARTITIONBOUNDARY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='IsDLMPartitionBoundary', Name='Partitionsgrenze', Description='Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.', Help=NULL, AD_Element_ID=543253 WHERE UPPER(ColumnName)='ISDLMPARTITIONBOUNDARY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 07.12.2016 15:07
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='IsDLMPartitionBoundary', Name='Partitionsgrenze', Description='Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.', Help=NULL WHERE AD_Element_ID=543253 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='IsDLMPartitionBoundary', Name='Partitionsgrenze', Description='Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.', Help=NULL WHERE AD_Element_ID=543253 AND IsCentrallyMaintained='Y'
 ;
 
 -- 07.12.2016 15:11
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555689,543253,0,20,101,'N','IsDLMPartitionBoundary',TO_TIMESTAMP('2016-12-07 15:11:03','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.','de.metas.dlm',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Partitionsgrenze',0,TO_TIMESTAMP('2016-12-07 15:11:03','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,555689,543253,0,20,101,'N','IsDLMPartitionBoundary',TO_TIMESTAMP('2016-12-07 15:11:03','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.','de.metas.dlm',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Partitionsgrenze',0,TO_TIMESTAMP('2016-12-07 15:11:03','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 07.12.2016 15:11
@@ -88,7 +88,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 07.12.2016 15:14
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555689,557471,0,101,0,TO_TIMESTAMP('2016-12-07 15:14:40','YYYY-MM-DD HH24:MI:SS'),100,'Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.',0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','N','N','Partitionsgrenze',520,520,0,1,1,TO_TIMESTAMP('2016-12-07 15:14:40','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555689,557471,0,101,0,TO_TIMESTAMP('2016-12-07 15:14:40','YYYY-MM-DD HH24:MI:SS'),100,'Falls ja, dann gehÃ¶ren Datensatze, die Ã¼ber die jeweilige Referenz verknÃ¼pft sind nicht zur selben Partition.',0,'de.metas.dlm',0,'Y','Y','Y','Y','N','N','N','N','N','Partitionsgrenze',520,520,0,1,1,TO_TIMESTAMP('2016-12-07 15:14:40','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 07.12.2016 15:14
