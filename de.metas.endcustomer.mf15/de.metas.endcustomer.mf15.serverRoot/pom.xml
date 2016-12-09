@@ -16,29 +16,42 @@
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
 		<metasfresh.version>1.0.0</metasfresh.version>
-		
+
 		<start-class>de.metas.ServerBoot</start-class>
 	</properties>
 
 	<dependencies>
-		<!-- The instrumented jar with all classes from org.adempiere.* and de.metas.* -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${project.groupId}.base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		
+		<!-- 
+		de.metas.fresh.base already comes in as transitive dependency of ${project.groupId}.base (a.k.a. de.metas.endcustomer.mf15.base),
+		but we have it here explicitly because otherwise: 
+		  if e.g. version 2.262 is building de.metas.adempiere.adempiere.serverRoot.base-2.262 was already deployed, 
+		  but de.metas.fresh.base 2.262 was not jet deployed, then this pom's metasfresh.version might be resolved to 2.262
+		  while the metasfresh.version of the de.metas.endcustomer.mf15.base's pom might be resolved to 2.261
+		-->
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.elasticsearch</groupId>
 			<artifactId>de.metas.elasticsearch.server</artifactId>
