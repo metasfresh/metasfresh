@@ -54,11 +54,15 @@ Here come the actual release notes:
   * #658 make Ini more robust: throw ex if file can't be read
     * Fix error with long loading of ini file in Tomcat.
   * #664 R_Request Performance Issue
+    * Swap Table direct references against search in all R_Request table/ subtable fields to reduce current performance issues.
   * #674 Filter operator "between" broken
+    * Fix the operator "between" which is used in filtering/ search criteria.
   
 * webui
   * #67 Error when introducing parameters to report
+    * Fix parameters support for report usage in webui.
   * #70 Add BPLocation Error
+    * Fix Errors that prevented the creation of new Business Partner Location lines in webUI.
 
 # metasfresh 4.46.45 (2016-48)
 
