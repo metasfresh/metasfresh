@@ -56,7 +56,7 @@ class DocumentList extends Component {
         let newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
 
         if(newFilter !== oldFilter){
-            this.updateData('grid', windowType);
+            this.updateData('grid', windowType, true);
         }
     }
 
@@ -78,7 +78,7 @@ class DocumentList extends Component {
         })
     }
 
-    updateData = (type, windowType) => {
+    updateData = (type, windowType, isNewFilter) => {
         const {dispatch,filters, filtersWindowType, query} = this.props;
 
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
@@ -88,7 +88,7 @@ class DocumentList extends Component {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
                 }), () => {
-                    if(query && query.viewId){
+                    if(query && query.viewId && !isNewFilter){
                         dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters))
                             .then((response) => {
                                 this.setListData(response.data);
@@ -99,8 +99,7 @@ class DocumentList extends Component {
                                 }
                             })
                     }else{
-                        console.log(filters)
-                        this.createNewView(windowType, type, [], query && query.refType, query && query.refId);
+                        this.createNewView(windowType, type, filters, query && query.refType, query && query.refId);
                     }
                 })
             });
@@ -206,8 +205,8 @@ class DocumentList extends Component {
     render() {
         const {layout, data} = this.state;
         const {dispatch, windowType, type, filters, page} = this.props;
-
         if(layout && data) {
+            
             return (
                 <div>
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
@@ -221,8 +220,8 @@ class DocumentList extends Component {
                         }
                         <Filters
                             filterData={layout.filters}
+                            filtersActive={data.filters}
                             windowType={windowType}
-                            updateDocList={this.updateData}
                         />
                     </div>
 

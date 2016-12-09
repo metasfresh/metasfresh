@@ -33,6 +33,20 @@ class Filters extends Component {
 		};
 	}
 
+    componentDidMount() {
+        const {dispatch, filtersActive, windowType} = this.props;
+
+        if(filtersActive) {
+            const {filterId, parameters} = filtersActive[0];
+            dispatch(updateFiltersParameters(
+                filterId,
+                parameters[0].parameterName,
+                parameters[0].value,
+                parameters[0].valueTo
+            ));
+        }
+    }
+
 	setSelectedItem = (item, close) => {
 		this.setState(Object.assign({}, this.state, {
 			selectedItem: item
@@ -120,21 +134,30 @@ class Filters extends Component {
     }
 
 	applyFilters = () => {
-		const {filter, dispatch, updateDocList, windowType} = this.props;
+		const {filter, dispatch, windowType} = this.props;
         const notValid = this.isFilterValid(filter);
         if (notValid.length) {
             this.setState(Object.assign({}, this.state, {
                 notValidFields: notValid
             }));
         } else {
-            this.setState(Object.assign({}, this.state, {
-                active: filter.filterId
-            }), () => {
-                dispatch(setFilter(filter, windowType));
-            })
+            console.log(filter)
+            this.setFilter(filter, windowType)
     		this.closeFilterMenu();
         }
 	}
+
+    setFilter = (filter, windowType) => {
+        const {dispatch} = this.props;
+
+        console.log(filter)
+
+        this.setState(Object.assign({}, this.state, {
+            active: filter.filterId
+        }), () => {
+            dispatch(setFilter(filter, windowType));
+        })
+    }
 
 	hideFilter = () => {
 		this.setState(Object.assign({}, this.state, {
@@ -144,7 +167,7 @@ class Filters extends Component {
 	}
 
 	clearFilterData = (clearData) => {
-		const {windowType, updateDocList, dispatch} = this.props;
+		const {windowType, dispatch} = this.props;
 		const {filterDataItem} = this.state;
 
 		let data = '';
@@ -165,7 +188,7 @@ class Filters extends Component {
 	}
 
 	renderFiltersItem = (item, key, isActive) => {
-		const {windowType, updateDocList} = this.props;
+		const {windowType} = this.props;
 		const {filterDataItem, selectedItem, notValidFields} = this.state;
 		return (
 			<FiltersItem
@@ -175,7 +198,6 @@ class Filters extends Component {
 				widgetData={item}
 				item={item}
 				filterDataItem={filterDataItem}
-				updateDocList={updateDocList}
 				closeFilterMenu={this.closeFilterMenu}
 				setSelectedItem={this.setSelectedItem}
 				selectedItem={selectedItem}
@@ -261,7 +283,7 @@ class Filters extends Component {
 	}
 
 	render() {
-        const {filterData} = this.props;
+        const {filterData, filtersActive} = this.props;
 
         let freqFilter = [];
         let notFreqFilter = [];

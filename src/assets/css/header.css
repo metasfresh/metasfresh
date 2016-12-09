@@ -98,16 +98,6 @@
     display: inline-block;
 }
 
-.header-breadcrumb > span:first-of-type > span{
-    min-width: 45px;
-    font-weight: 500;
-    display: inline-block;
-}
-
-.header-breadcrumb > *:first-of-type .menu-overlay-expand {
-    margin-left: 17.5px;
-}
-
 .header-input-id {
     margin: 0 .3rem;
 }
