@@ -105,23 +105,10 @@
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- 
-		de.metas.fresh.base already comes in as transitive dependency of ${project.groupId}.base (a.k.a. de.metas.endcustomer.mf15.base),
-		but we have it here explicitly because otherwise: 
-		  if e.g. version 2.262 is building de.metas.adempiere.adempiere.serverRoot.base-2.262 was already deployed, 
-		  but de.metas.fresh.base 2.262 was not jet deployed, then this pom's metasfresh.version might be resolved to 2.262
-		  while the metasfresh.version of the de.metas.endcustomer.mf15.base's pom might be resolved to 2.261
-		-->
-		<dependency>
-			<groupId>de.metas.fresh</groupId>
-			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.swingui</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
