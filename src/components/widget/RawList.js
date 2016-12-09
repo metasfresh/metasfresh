@@ -59,6 +59,7 @@ class RawList extends Component {
                 onBlur={this.handleBlur}
                 className={
                     "input-dropdown-container " +
+                    (rowId ? "input-dropdown-container-static " : "") +
                     ((rowId && !isModal) ? "input-table " : "")
                 }
             >

@@ -65,7 +65,7 @@ export const getRoutes = (store) => {
                 <Route path="/logout" onEnter={logout} />
             </Route>
             <Route path="/login" component={nextState =>
-                <Login redirect={nextState.location.query.redirect} />
+                <Login redirect={nextState.location.query.redirect} logged={localStorage.isLogged} />
             } />
             <Route path="*" component={NoMatch} />
         </Route>

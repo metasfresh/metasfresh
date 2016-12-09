@@ -653,6 +653,10 @@ body {
     display: block;
 }
 
+.panel {
+    padding-bottom: 100px;
+}
+
 .screen-freeze {
     position: fixed;
     top: 0;
@@ -903,7 +907,7 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .table td {
     width: 75px;
-    overflow: hidden;
+    position: relative;
 }
 
 .th-lg {
@@ -931,7 +935,7 @@ table .rdtPicker table td, .rdtPicker table th {
     max-width: 144px;
 }
 .td-lg .input-dropdown-list {
-    width: 144px;
+    width: auto;
 }
 
 .Lookup .input-icon {

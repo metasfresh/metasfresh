@@ -10,6 +10,16 @@ class Login extends Component {
         super(props);
     }
 
+    componentWillMount(){
+        console.log('component will mount');
+        console.log(this.props.logged);
+        const {logged, dispatch} = this.props;
+        if(logged){
+            console.log('you are logged');
+            dispatch(push("/"));
+        }
+    }
+
     render() {
         const {redirect} = this.props;
         return (
