@@ -48,6 +48,12 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2016-11-23 16:43:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=540612
 ;
 
+-- 21.11.2016 14:37
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- Workaround for inbetween dissappear of this ad_ui_elementGroup in script 5453700.
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540016,540016,TO_TIMESTAMP('2016-11-21 14:37:35','YYYY-MM-DD HH24:MI:SS'),100,'Y','header',5,'primary',TO_TIMESTAMP('2016-11-21 14:37:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
 -- 23.11.2016 16:45
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,500238,0,500221,540016,540621,TO_TIMESTAMP('2016-11-23 16:45:44','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Liefermenge',32,0,0,TO_TIMESTAMP('2016-11-23 16:45:44','YYYY-MM-DD HH24:MI:SS'),100)
