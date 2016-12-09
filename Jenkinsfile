@@ -6,7 +6,7 @@
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
  * TODO: move it into a shared library
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
+def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -49,7 +49,8 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 	build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			string(name: 'MF_BUILD_ID', value: buildId),
+			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
+			string(name: 'MF_METASFRESH_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
 }
@@ -74,7 +75,8 @@ def createRepo(String repoId)
 {
 	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
 	{
-		echo "Create the repository ${repoId}-releases to which to deploy everything we build";
+		echo "Create the repository ${repoId}-releases";
+
 		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <repository>
   <data>
@@ -97,12 +99,13 @@ def createRepo(String repoId)
 		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
 		sh "${createRepoCommand}"
 		
-		echo "Create the repository-group ${repoId} from which to resolve everything we need";
+		echo "Create the repository-group ${repoId}";
+		
 		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
 <repo-group>
   <data>
     <repositories>
-      <!-- include mvn-public which contains everything we need to perform the build-->
+	  <!-- include mvn-public that contains everything we need to perform the build-->
       <repo-group-member>
         <name>mvn-public-new</name>
         <id>mvn-public-new</id>
@@ -272,14 +275,9 @@ final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 // these two are shown in jenkins, for each build
-currentBuild.displayName="build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
-currentBuild.description="task/upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 
 timestamps 
-{
-// while the "main/base" metasfresh stuff builds, no downstream builds should resolve metasfresh theses artifacts because we might end up with dependency convergence errors
-// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
-lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 {
 node('agent && linux')
 {
@@ -372,7 +370,6 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 		} // withMaven
 	} // configFileProvider
 } // node			
-} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -387,10 +384,10 @@ stage('Invoke downstream jobs')
 	{
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
-			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		}
 	
-		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
@@ -400,7 +397,7 @@ stage('Invoke downstream jobs')
 			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 			{
 				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
-				final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+				final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
 				
 				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 			}
@@ -408,14 +405,6 @@ stage('Invoke downstream jobs')
 	} // if(params.MF_SKIP_TO_DIST)
 }
 
-	
-// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
-// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
-// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
-// i.e. Dependency convergence error
-// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
-lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
-{
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
 {
@@ -477,7 +466,6 @@ ${currentBuild.description}"""
 	// don't clean up the work space..we do it when we check out next time
 	// step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
-} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // we need this one for both "Test-SQL" and "Deployment
 def downloadForDeployment = { String groupId, String artifactId, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
@@ -530,13 +518,13 @@ stage('Test SQL-Migration')
 			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
 
 			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-			final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+			final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 			
 			// Look Ma, I'm currying!!
 			final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
 			invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
 
-			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");				
+			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
 					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
@@ -594,14 +582,14 @@ stage('Deployment')
 
 				// extract the tar.gz
 				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
-				final deployDir="/home/${sshTargetUser}/${fileAndDirName}"
+				final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 
 				// Look Ma, I'm currying!!
 				final invokeRemoteInHomeDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}");				
 				invokeRemoteInHomeDir("mkdir -p ${deployDir} && mv ${fileAndDirName}.${packaging} ${deployDir} && cd ${deployDir} && tar -xf ${fileAndDirName}.${packaging}")
 
 				// stop the service, perform the rollout and start the service
-				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "/home/${sshTargetUser}/${fileAndDirName}/dist/install");
+				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");
 				invokeRemoteInInstallDir('./stop_service.sh');
 				invokeRemoteInInstallDir('./sql_remote.sh');
 				invokeRemoteInInstallDir('./minor_remote.sh');

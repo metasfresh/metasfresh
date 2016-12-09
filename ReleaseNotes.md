@@ -10,13 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.48.46 (2016-50)
+# metasfresh 4.48.47 (2016-50)
  
  upcoming
 
-## Features 
+## Features
+* metasfresh
+  * #677 make customs report faster
+  * #541 Remove PiPo from metasfresh removing code and data
+
 * webui
   * #625 Shipment Schedule Window WebUI
+  * #687 webUI bundle
+## Fixes
+* metasfresh
+  * #679 Bug in ClientUpdateValidator
 
 # metasfresh 4.47.46 (2016-49)
 
