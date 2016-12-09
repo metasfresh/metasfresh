@@ -23,6 +23,12 @@
 
 		<!-- From spring-boot-dependencies -->
 		<jackson.version>2.6.5</jackson.version>
+		
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>1.0.0</metasfresh.version>
+		
 	</properties>
 
 	<dependencyManagement>
@@ -69,7 +75,7 @@
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<exclusions>
 				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base !!! -->
 				<exclusion>
@@ -81,7 +87,7 @@
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
 
@@ -119,7 +125,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
