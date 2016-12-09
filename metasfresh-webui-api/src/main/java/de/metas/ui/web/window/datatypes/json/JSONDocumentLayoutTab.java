@@ -139,7 +139,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 		
-		this.quickInput = JSONDocumentLayoutTabQuickInput.fromNullable(detail.getQuickInput(), jsonOpts);
+		this.quickInput = JSONDocumentLayoutTabQuickInput.fromNullable(detail.getQuickInput().orElse(null), jsonOpts);
 	}
 
 	private JSONDocumentLayoutTab(

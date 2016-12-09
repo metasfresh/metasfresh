@@ -526,10 +526,10 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.disableCallouts()
 				.setDataBinding(DocumentEntityDataBindingDescriptorBuilder.NULL)
 				// Defaults:
-				.setDetailId(null)
-				.setAD_Tab_ID(0)
+				.setDetailId(documentDescriptor.getDetailId())
+				.setAD_Tab_ID(documentDescriptor.getAD_Tab_ID())
 				.setTableName(documentDescriptor.getTableName())
-				.setIsSOTrx(true)
+				.setIsSOTrx(documentDescriptor.isSOTrx())
 				//
 				;
 
@@ -546,7 +546,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setReadonlyLogic(ILogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE));
+				.setDisplayLogic(ILogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField));
 
 		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("M_HU_PI_Item_Product_ID")
 				.setCaption(Services.get(IMsgBL.class).translatable("M_HU_PI_Item_Product_ID"))
@@ -561,7 +562,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setReadonlyLogic(ILogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE));
+				.setDisplayLogic(ILogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField));
 		
 		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("Qty")
 				.setCaption(Services.get(IMsgBL.class).translatable("Qty"))
@@ -569,7 +571,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setReadonlyLogic(ILogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE));
+				.setDisplayLogic(ILogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField));
 		
 		documentDescriptor.setQuickInputDescriptor(quickInputDescriptor);
 	}
