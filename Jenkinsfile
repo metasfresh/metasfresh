@@ -5,7 +5,7 @@
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
+def invokeDownStreamJobs(String jobFolderName, String upstreamBranch, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -49,7 +49,6 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 	build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId),
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
 			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 		], wait: wait
@@ -278,8 +277,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
-				// here we don't have tests
-				junit '**/target/surefire-reports/*.xml'
+				// in metasfresh-parent we don't have tests
+				// junit '**/target/surefire-reports/*.xml'
             }
 		}
 	}
@@ -288,7 +287,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	{	
 		if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 		{
-			invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, false); // wait=false 
+			invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BRANCH, false); // wait=false 
 		}
 		else
 		{
