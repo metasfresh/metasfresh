@@ -167,8 +167,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
 			stage('Set versions and build metasfresh-webui-api') 
             {
-				final String mavenUpdatePropertyParam;
 				final String mavenUpdateParentParam=''; // empty string for now. Uncomment the two assignements in the if and else *if* and when metasfresh-webui switcheds its parent pom to de.metas.parent
+				final String mavenUpdatePropertyParam;
 				if(params.MF_METASFRESH_VERSION)
 				{
 					// mavenUpdateParentParam="-DparentVersion=${params.MF_METASFRESH_VERSION}"
