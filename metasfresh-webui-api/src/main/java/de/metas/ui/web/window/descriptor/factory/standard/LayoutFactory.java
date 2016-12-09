@@ -458,23 +458,38 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 	public DocumentLayoutDetailQuickInputDescriptor.Builder layoutDetail_QuickInput()
 	{
-		final DocumentEntityDescriptor.Builder quickInputDescriptor = documentEntity().getQuickInputDescriptor();
+		final DocumentEntityDescriptor.Builder documentEntityDescriptor = documentEntity();
+		final DocumentEntityDescriptor.Builder quickInputDescriptor = documentEntityDescriptor.getQuickInputDescriptor();
 		if (quickInputDescriptor == null)
 		{
 			return null;
 		}
 
-		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInputLayout = DocumentLayoutDetailQuickInputDescriptor.builder();
+		// FIXME: hardcoded quickInput for Order lines
 
-		quickInputDescriptor
-				.getFieldBuilders()
-				.stream()
-				.map(fieldBuilder -> DocumentLayoutElementDescriptor.builder()
-						.setWidgetType(fieldBuilder.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(fieldBuilder.getFieldName())
+		if (!org.compiere.model.I_C_OrderLine.Table_Name.equals(documentEntityDescriptor.getTableName()))
+		{
+			return null;
+		}
+
+		final DocumentFieldDescriptor.Builder field_M_Product_ID = quickInputDescriptor.getFieldBuilder("M_Product_ID");
+		final DocumentFieldDescriptor.Builder field_M_HU_PI_Item_Product_ID = quickInputDescriptor.getFieldBuilder("M_HU_PI_Item_Product_ID");
+		final DocumentFieldDescriptor.Builder field_Qty = quickInputDescriptor.getFieldBuilder("Qty");
+
+		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInputLayout = DocumentLayoutDetailQuickInputDescriptor.builder()
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(field_M_Product_ID.getWidgetType())
+						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_Product_ID.getFieldName())
 								.setPublicField(true)
-								.setLookupSource(fieldBuilder.getLookupSourceType())))
-				.forEach(element -> quickInputLayout.addElement(element));
+								.setLookupSource(field_M_Product_ID.getLookupSourceType()))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PI_Item_Product_ID.getFieldName())
+								.setPublicField(true)
+								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(field_Qty.getWidgetType())
+						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
+								.setPublicField(true)
+								.setLookupSource(field_Qty.getLookupSourceType())));
 
 		return quickInputLayout;
 	}

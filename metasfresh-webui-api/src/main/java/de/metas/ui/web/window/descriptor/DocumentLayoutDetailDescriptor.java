@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -53,7 +54,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final ITranslatableString emptyResultHint;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
-	private final DocumentLayoutDetailQuickInputDescriptor quickInput;
+	private final Optional<DocumentLayoutDetailQuickInputDescriptor> quickInput;
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
@@ -65,7 +66,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
-		quickInput = builder.quickInput == null ? null : builder.quickInput.build();
+		quickInput = builder.buildQuickInput();
 	}
 
 	@Override
@@ -119,7 +120,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return !elements.isEmpty();
 	}
 
-	public DocumentLayoutDetailQuickInputDescriptor getQuickInput()
+	public Optional<DocumentLayoutDetailQuickInputDescriptor> getQuickInput()
 	{
 		return quickInput;
 	}
@@ -135,7 +136,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 		
-		private DocumentLayoutDetailQuickInputDescriptor.Builder quickInput;
+		private DocumentLayoutDetailQuickInputDescriptor.Builder _quickInput;
 
 		private Builder()
 		{
@@ -259,8 +260,17 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		
 		public Builder setQuickInput(DocumentLayoutDetailQuickInputDescriptor.Builder quickInput)
 		{
-			this.quickInput = quickInput;
+			this._quickInput = quickInput;
 			return this;
+		}
+		
+		private Optional<DocumentLayoutDetailQuickInputDescriptor> buildQuickInput()
+		{
+			if(_quickInput == null)
+			{
+				return Optional.empty();
+			}
+			return Optional.of(_quickInput.build());
 		}
 	}
 }
