@@ -28,30 +28,41 @@ Here come the actual release notes:
 
 # metasfresh 4.47.46 (2016-49)
 
-this week's release
-
 ## Features 
 * metasfresh
   * #639 Marginal Return report calculation does not check ad_org_id
-  * #658 make Ini more robust: throw ex if file can't be read
+    * Extend the marginal return report with ad_org_id parm to allow to seperate user for other organisations.
   * #585 Adjust the remaining Property names
+    * Change properties to metasfresh namespace.
   * #661 Cultivation Planning report adjustments
+    * Adjustments made to the cultivation planning report in procurement.
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Avoid automatic completion of flatrate term contracts when triffered manually from process gear. This allows the user to record further adjustments after creation.
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
+    * Setup an initial set of 10 key perfroamnce indicators for the new metasfresh webui.
   * #59 User friendly URL for Print Endpoint
+    * Add a user frindly/ comprehensive endpoint for document printing tab in webUI.
   * #45 Dashboard Target area backend support
+    * Add support for Target widgets and target widget area in webUI dashboard
   * #567 WebUI - Material Receipt Schedule
+    * Initial set of windows, grid views, sidelist and elements and fields for material receipt schedule window.
 
 ## Fixes
 * metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+    * Fix error with long loading of ini file in Tomcat.
   * #664 R_Request Performance Issue
+    * Swap Table direct references against search in all R_Request table/ subtable fields to reduce current performance issues.
   * #674 Filter operator "between" broken
+    * Fix the operator "between" which is used in filtering/ search criteria.
   
 * webui
   * #67 Error when introducing parameters to report
+    * Fix parameters support for report usage in webui.
   * #70 Add BPLocation Error
+    * Fix Errors that prevented the creation of new Business Partner Location lines in webUI.
 
 # metasfresh 4.46.45 (2016-48)
 

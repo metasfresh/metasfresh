@@ -435,13 +435,33 @@ node('agent && linux && libc6-i386')
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
 		
-				// *Now* set the artifact versions of everything below de.metas.endcustomer.mf15/pom.xml and also update their metas dependencies to the latest versions
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+				final String mavenUpdatePropertyParam;
+				final String mavenUpdateParentParam;
+				if(!params.MF_SKIP_TO_DIST)
+				{
+					mavenUpdateParentParam="-DparentVersion=${BUILD_VERSION}"
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}"; // update the property, use the metasfresh version that the "main" part of this pipeline was build with
+				}
+				else
+				{
+					mavenUpdateParentParam=''; // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so use the latest
+					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the property, but use the latest version
+				}
+		
+				// update the parent pom version
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
+				
+				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
+
+				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.endcustomer.sp80*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+
+				// do the actual building and deployment
+					// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+				// about -Dmaven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 			
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				// about -Dmaven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} help:all-profiles clean deploy"
 
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
@@ -527,7 +547,7 @@ stage('Test SQL-Migration')
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
-					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
+					.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 					.toLowerCase(); // also, DB names are generally in lowercase
 
 			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
