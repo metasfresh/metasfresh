@@ -28,13 +28,12 @@ Here come the actual release notes:
 
 # metasfresh 4.47.46 (2016-49)
 
-this week's release
-
 ## Features 
 * metasfresh
   * #639 Marginal Return report calculation does not check ad_org_id
-  * #658 make Ini more robust: throw ex if file can't be read
+    * Extend the marginal return report with ad_org_id parm to allow to seperate user for other organisations.
   * #585 Adjust the remaining Property names
+    * Change properties to metasfresh namespace.
   * #661 Cultivation Planning report adjustments
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
 
@@ -46,6 +45,8 @@ this week's release
 
 ## Fixes
 * metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+    * Fix error with long loading of ini file in Tomcat.
   * #664 R_Request Performance Issue
   * #674 Filter operator "between" broken
   
