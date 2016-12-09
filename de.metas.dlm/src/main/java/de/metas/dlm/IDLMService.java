@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
@@ -11,6 +12,8 @@ import org.compiere.model.I_AD_Column;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Config;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
@@ -86,4 +89,42 @@ public interface IDLMService extends ISingletonService
 	List<TableReferenceDescriptor> retrieveTableRecordReferences();
 
 	Stream<IQueryBuilder<IDLMAware>> retrieveDLMTableNames(IContextAware ctxAware, int dlmPartitionId);
+
+	/**
+	 * Create a {@link Partition} instance for the given database record and also load both the {@link PartitionConfig} the that DB record references (see {@link #loadPartitionConfig(I_DLM_Partition_Config)})
+	 * and all records which reference the partition.
+	 *
+	 * @param partitionDB
+	 * @return
+	 */
+	Partition loadPartition(I_DLM_Partition partitionDB);
+
+	/**
+	 * Create or update a {@link I_DLM_Partition} record for the given <code>partition</code> and update the {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} values of the given <code>partition</code>'s records.
+	 *
+	 * @param partition
+	 * @param runInOwnTrx if <code>true</code>, then this method will create a dedicated transaction using {@link ITrxManager#run(org.compiere.util.TrxRunnable)} to perform the actual storing in.
+	 * @return a news instance that represents the just-stored partition
+	 */
+	Partition storePartition(Partition partition, boolean runInOwnTrx);
+
+	/**
+	 * Create a new config instance for the given database record.
+	 *
+	 * @param configDB. The DB data to load. If <code>null</code>, then return an empty config. Never return <code>null</code>.
+	 * @return
+	 */
+	PartitionConfig loadPartitionConfig(I_DLM_Partition_Config configDB);
+
+	PartitionConfig loadDefaultPartitionConfig();
+
+	/**
+	 * Persist the given config in the DB and update the ID properties on the given <code>config</code> that is stored.
+	 * <p>
+	 * Does <b>not</b> touch existing DB records which are missing in the given <code>config</code>.
+	 *
+	 * @param config
+	 * @return
+	 */
+	PartitionConfig storePartitionConfig(PartitionConfig config);
 }

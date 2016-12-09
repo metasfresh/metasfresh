@@ -46,7 +46,7 @@ import de.metas.dlm.model.IDLMAware;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class IterateResult
+public class CreatePartitionIterateResult implements IStorableIterateResult
 {
 	private final Iterator<WorkQueue> iterator;
 
@@ -77,7 +77,7 @@ public class IterateResult
 	 */
 	private Partition partition = new Partition();
 
-	public IterateResult(
+	public CreatePartitionIterateResult(
 			final Iterator<WorkQueue> initialQueue,
 			final IContextAware ctxAware)
 	{
@@ -87,22 +87,23 @@ public class IterateResult
 		queueItemsToDelete = new ArrayList<>();
 	}
 
-	/**
-	 * Adds the given <code>tableRecordReference</code> to the result, and also declares that the table reference belongs to the given <code>dlmPartitionId</code>.
-	 * <p>
-	 * Note that <code>tableRecordReference</code> was not yet added earlier <b>and</b> if <code>dlmPartitionId</code> is less or equal zero,
-	 * then this method also adds the given record to the in-memory-queues so that it will eventually be returned by {@link #nextFromQueue()}.
+	/*
+	 * (non-Javadoc)
 	 *
-	 * In case of <code>dlmPartitionId</code> being greater than zero, we don't need to add it to the queue, because it si an "edge" record that marks the "border" to an already existing partition.
-	 *
-	 * @param tableRecordReference
-	 * @param dlmPartitionId
-	 * @return
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#add(org.adempiere.util.lang.ITableRecordReference, int)
 	 */
-	public boolean add(final ITableRecordReference tableRecordReference, final int dlmPartitionId)
+	@Override
+	public boolean addReferencedRecord(final ITableRecordReference IGNORED, final ITableRecordReference referencedRecord, final int dlmPartitionId)
 	{
 		final boolean neverAddToqueue = false;
-		return add0(tableRecordReference, dlmPartitionId, neverAddToqueue);
+		return add0(referencedRecord, dlmPartitionId, neverAddToqueue);
+	}
+
+	@Override
+	public boolean addReferencingRecord(final ITableRecordReference referencingRecord, final ITableRecordReference IGNORED, final int dlmPartitionId)
+	{
+		final boolean neverAddToqueue = false;
+		return add0(referencingRecord, dlmPartitionId, neverAddToqueue);
 	}
 
 	private boolean add0(
@@ -130,17 +131,24 @@ public class IterateResult
 		return added;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#clearAfterPartitionStored(de.metas.dlm.Partition)
+	 */
+	@Override
 	public void clearAfterPartitionStored(final Partition partition)
 	{
-		this.dlmPartitionId2Record.clear();
-		this.tableName2Record.clear();
-		this.queueItemsToDelete.clear();
+		dlmPartitionId2Record.clear();
+		tableName2Record.clear();
+		queueItemsToDelete.clear();
 
-		this.size = 0;
+		size = 0;
 		this.partition = partition;
 	}
 
-	boolean contains(final ITableRecordReference tableRecordReference)
+	@Override
+	public boolean contains(final ITableRecordReference tableRecordReference)
 	{
 		final Set<ITableRecordReference> records = tableName2Record.get(mkKey(tableRecordReference));
 		if (records == null)
@@ -155,12 +163,14 @@ public class IterateResult
 		return tableRecordReference.getTableName();
 	}
 
-	Map<Integer, Set<ITableRecordReference>> getDlmPartitionId2Record()
+	@Override
+	public Map<Integer, Set<ITableRecordReference>> getDlmPartitionId2Record()
 	{
 		return ImmutableMap.copyOf(dlmPartitionId2Record);
 	}
 
-	Map<String, Collection<ITableRecordReference>> getTableName2Record()
+	@Override
+	public Map<String, Collection<ITableRecordReference>> getTableName2Record()
 	{
 		final Map<String, Collection<ITableRecordReference>> result = new HashMap<>();
 		tableName2Record.entrySet().forEach(e -> {
@@ -170,25 +180,35 @@ public class IterateResult
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#size()
+	 */
+	@Override
 	public int size()
 	{
 		return size;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#isQueueEmpty()
+	 */
+	@Override
 	public boolean isQueueEmpty()
 	{
 		final boolean iteratorEmpty = !iterator.hasNext();
 		return iteratorEmpty && queueItemsToProcess.isEmpty();
 	}
 
-	/**
-	 * Returns the next record from out work queue.
-	 * If the record entered the queue as "initital result" via {@link #IterateResult(Iterator, IContextAware)}, then the record is now also loaded and added to this instance properly
-	 * together with its <code>DLM_Partition_ID</code> that is known only after loading. So, after this method was called, {@link #size()} might have increated by one.
+	/*
+	 * (non-Javadoc)
 	 *
-	 * @return
-	 * @see #add(ITableRecordReference, int)
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#nextFromQueue()
 	 */
+	@Override
 	public ITableRecordReference nextFromQueue()
 	{
 		final WorkQueue result = nextFromQueue0();
@@ -216,11 +236,23 @@ public class IterateResult
 		return queueItemsToProcess.removeFirst();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#getQueueRecordsToStore()
+	 */
+	@Override
 	public List<WorkQueue> getQueueRecordsToStore()
 	{
 		return queueItemsToProcess;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see de.metas.dlm.partitioner.impl.IIterateResult#getQueueRecordsToDelete()
+	 */
+	@Override
 	public List<WorkQueue> getQueueRecordsToDelete()
 	{
 		return queueItemsToDelete;
@@ -241,5 +273,4 @@ public class IterateResult
 				+ ", size=" + size + ", tableName2Record.size()=" + tableName2Record.size() + ", dlmPartitionId2Record.size()=" + dlmPartitionId2Record.size()
 				+ ", ctxAware=" + ctxAware + ", partition=" + partition + "]";
 	}
-
 }

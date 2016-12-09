@@ -10,7 +10,6 @@ import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPrecondition.PreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 

@@ -50,7 +50,7 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final int ad_Reference_ID = ref.getDLM_Referencing_Column().getAD_Reference_ID();
-		if(!DisplayType.isLookup(ad_Reference_ID))
+		if (!DisplayType.isLookup(ad_Reference_ID))
 		{
 			return;
 		}

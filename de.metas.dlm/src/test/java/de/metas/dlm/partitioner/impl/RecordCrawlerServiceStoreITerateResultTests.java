@@ -22,7 +22,7 @@ import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 
 /*
  * #%L
@@ -46,15 +46,15 @@ import de.metas.dlm.partitioner.config.PartitionerConfig;
  * #L%
  */
 
-public class PartitionerServiceStoreITerateResultTests
+public class RecordCrawlerServiceStoreITerateResultTests
 {
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private final PartitionerService partitionerService = new PartitionerService(); // this is the class under test
 	private I_DLM_Partition p1;
 
+	private final RecordCrawlerService recordCrawlerService = new RecordCrawlerService(); // this is the class under test
 	private final PlainContextAware ctxAware = PlainContextAware.newOutOfTrx(Env.getCtx());
-	private final PartitionerConfig config = PartitionerConfig.builder().build();
+	private final PartitionConfig config = PartitionConfig.builder().build();
 
 	@Before
 	public void before()
@@ -66,7 +66,7 @@ public class PartitionerServiceStoreITerateResultTests
 	}
 
 	/**
-	 * Scenario: {@link PartitionerService#storeIterateResult(de.metas.dlm.partitioner.config.PartitionerConfig, IterateResult, org.adempiere.model.IContextAware)} is called for the first time, after an initital queue was loaded from DB.
+	 * Scenario: {@link PartitionerService#storeIterateResult(de.metas.dlm.partitioner.config.PartitionConfig, CreatePartitionIterateResult, org.adempiere.model.IContextAware)} is called for the first time, after an initital queue was loaded from DB.
 	 * <p>
 	 * The records from that queue already have a <code>DLM_PArtition_ID</code>.
 	 *
@@ -82,7 +82,7 @@ public class PartitionerServiceStoreITerateResultTests
 	 *
 	 * @return
 	 */
-	private IterateResult testStoreIterateResultWithInitialQueue0()
+	private CreatePartitionIterateResult testStoreIterateResultWithInitialQueue0()
 	{
 		final I_AD_Tab tab = InterfaceWrapperHelper.newInstance(I_AD_Tab.class);
 		final IDLMAware tabDLMAware = InterfaceWrapperHelper.create(tab, IDLMAware.class);
@@ -98,12 +98,12 @@ public class PartitionerServiceStoreITerateResultTests
 
 		final Iterator<WorkQueue> initialQueue = Collections.singletonList(WorkQueue.of(workQueueDB)).iterator();
 
-		final IterateResult result = new IterateResult(initialQueue, ctxAware);
+		final CreatePartitionIterateResult result = new CreatePartitionIterateResult(initialQueue, ctxAware);
 		result.nextFromQueue(); //
 		assertThat(result.size(), is(1));
 
 		// call the method under test
-		partitionerService.storeIterateResult0(config, result, ctxAware);
+		recordCrawlerService.storeIterateResult0(config, result, ctxAware);
 
 		assertThat(result.getPartition().getDLM_Partition_ID(), is(p1.getDLM_Partition_ID()));
 		assertThat(result.getDlmPartitionId2Record().isEmpty(), is(true));
@@ -112,13 +112,13 @@ public class PartitionerServiceStoreITerateResultTests
 	}
 
 	/**
-	 * Scenario: {@link PartitionerService#storeIterateResult(de.metas.dlm.partitioner.config.PartitionerConfig, IterateResult, org.adempiere.model.IContextAware)} was called once, so
-	 * {@link IterateResult#getPartition()} is a stored partition.<br>
+	 * Scenario: {@link PartitionerService#storeIterateResult(de.metas.dlm.partitioner.config.PartitionConfig, CreatePartitionIterateResult, org.adempiere.model.IContextAware)} was called once, so
+	 * {@link CreatePartitionIterateResult#getPartition()} is a stored partition.<br>
 	 * For this part we rerun the code of {@link #testStoreIterateResultWithInitialQueue()}
 	 * <p>
 	 * Now {@link PartitionerService} iterates further and finds only records that belong to a different partition.
 	 * <p>
-	 * So {@link PartitionerService#storeIterateResult(PartitionerConfig, IterateResult, org.adempiere.model.IContextAware)} is now called with two different <code>DLM_PArtition_ID</code>s, and none of them is 0.
+	 * So {@link PartitionerService#storeIterateResult(PartitionConfig, CreatePartitionIterateResult, org.adempiere.model.IContextAware)} is now called with two different <code>DLM_PArtition_ID</code>s, and none of them is 0.
 	 * This shall be OK and the two parttions shall be merged into one.
 	 *
 	 *
@@ -126,8 +126,7 @@ public class PartitionerServiceStoreITerateResultTests
 	@Test
 	public void testStoreIterateResultWithInitialQueue2()
 	{
-
-		final IterateResult result = testStoreIterateResultWithInitialQueue0();
+		final CreatePartitionIterateResult result = testStoreIterateResultWithInitialQueue0();
 
 		final I_DLM_Partition p2 = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
 		InterfaceWrapperHelper.save(p2);
@@ -140,10 +139,10 @@ public class PartitionerServiceStoreITerateResultTests
 		InterfaceWrapperHelper.save(field);
 		final ITableRecordReference tableRecordReference = ITableRecordReference.FromModelConverter.convert(field);
 
-		result.add(tableRecordReference, p2.getDLM_Partition_ID());
+		result.addReferencingRecord(tableRecordReference, null, p2.getDLM_Partition_ID());
 
 		// invoke the method under test
-		partitionerService.storeIterateResult0(config, result, ctxAware);
+		recordCrawlerService.storeIterateResult0(config, result, ctxAware);
 
 		assertThat(result.getPartition().getDLM_Partition_ID(), is(p1.getDLM_Partition_ID()));
 	}

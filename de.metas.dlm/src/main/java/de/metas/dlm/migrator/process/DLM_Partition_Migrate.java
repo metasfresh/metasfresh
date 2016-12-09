@@ -10,10 +10,10 @@ import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.process.JavaProcess;
 
 /*
@@ -48,8 +48,8 @@ public class DLM_Partition_Migrate extends JavaProcess
 
 		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
-		final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
 		final IMigratorService migratorService = Services.get(IMigratorService.class);
+		final IDLMService dlmService = Services.get(IDLMService.class);
 
 		final Iterator<I_DLM_Partition> partitionsToMigrate = queryBL.createQueryBuilder(I_DLM_Partition.class, this)
 				.addOnlyActiveRecordsFilter()
@@ -69,11 +69,11 @@ public class DLM_Partition_Migrate extends JavaProcess
 					@Override
 					public void process(final I_DLM_Partition item) throws Exception
 					{
-						final Partition partition = partitionerService.loadPartition(item);
+						final Partition partition = dlmService.loadPartition(item);
 						final Partition migratedPartition = migratorService.migratePartition(partition);
 
 						addLog("Migrated partition={} with result={}", partition, migratedPartition);
-						partitionerService.storePartition(migratedPartition, false);
+						dlmService.storePartition(migratedPartition, false);
 					}
 				})
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)

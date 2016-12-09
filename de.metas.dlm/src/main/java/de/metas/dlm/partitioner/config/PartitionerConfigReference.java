@@ -180,7 +180,7 @@ public class PartitionerConfigReference
 			return DLM_Partition_Config_Reference_ID;
 		}
 
-		public RefBuilder setIsPartitionBoundary(boolean partitionBoundary)
+		public RefBuilder setIsPartitionBoundary(final boolean partitionBoundary)
 		{
 			this.partitionBoundary = partitionBoundary;
 			return this;

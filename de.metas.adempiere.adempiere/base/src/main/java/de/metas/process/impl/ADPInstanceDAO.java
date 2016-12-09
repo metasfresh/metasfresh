@@ -358,7 +358,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return ImmutableList.of();
 		}
 
-		final String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
+		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
 				+ "ORDER BY Log_ID";
@@ -376,7 +376,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			while (rs.next())
 			{
 				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
 				log.markAsSavedInDB();
 				logs.add(log);
 			}
@@ -431,7 +431,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 						AD_PInstance_ID,
 						log.getLog_ID(),
 						log.getP_Date(),
-						log.getP_ID() == 0 ? null : log.getP_ID(),
 						log.getP_Number(),
 						log.getP_Msg()
 				};

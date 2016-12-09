@@ -39,7 +39,7 @@ public class DLMService extends AbstractDLMService
 	}
 
 	@Override
-	void executeDBFunction_update_partition_size(int dlm_Partition_ID, String trxName)
+	void executeDBFunction_update_partition_size(final int dlm_Partition_ID, final String trxName)
 	{
 		DB.executeFunctionCallEx(trxName, "select dlm.update_partition_size(?)", new Object[] { dlm_Partition_ID });
 	}

@@ -27,12 +27,13 @@ import org.junit.Test;
 import ch.qos.logback.classic.Level;
 import de.metas.dlm.Partition;
 import de.metas.dlm.exception.DLMReferenceException;
+import de.metas.dlm.impl.PlainDLMService;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
@@ -59,7 +60,7 @@ import de.metas.logging.LogManager;
  */
 
 /**
- * Different tests for {@link PartitionerServiceOld#createPartition0(PartitionerConfig)}.
+ * Different tests for {@link PartitionerServiceOld#createPartition0(PartitionConfig)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -67,6 +68,7 @@ import de.metas.logging.LogManager;
 public class PartitionerServiceCreatePartitionTests
 {
 	private final PartitionerService partitionerService = new PartitionerService();
+	private final PlainDLMService dlmService = new PlainDLMService();
 
 	@Before
 	public void before()
@@ -92,7 +94,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testEmptyConfig()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder().build();
+		final PartitionConfig config = PartitionConfig.builder().build();
 
 		partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(config).build());
 	}
@@ -108,7 +110,7 @@ public class PartitionerServiceCreatePartitionTests
 		table.setTableName(I_C_Payment.Table_Name);
 		InterfaceWrapperHelper.save(table);
 
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line(I_C_Payment.Table_Name).endLine()
 				.build();
 		final List<Partition> partitions = partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(config).build());
@@ -123,7 +125,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testOneRecordForPartioning()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line(I_C_Payment.Table_Name).endLine()
 				.build();
 
@@ -149,7 +151,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testReference1()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line(I_C_Invoice.Table_Name)
 				.ref().setReferencedTableName(I_C_Order.Table_Name).setReferencingColumnName(I_C_Invoice.COLUMNNAME_C_Order_ID).endRef()
 				.line(I_C_Order.Table_Name).endLine()
@@ -165,7 +167,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testReference2()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line(I_C_Invoice.Table_Name)
 				.ref().setReferencedTableName(I_C_Order.Table_Name).setReferencingColumnName(I_C_Invoice.COLUMNNAME_C_Order_ID).endRef()
 				.endLine()
@@ -176,7 +178,7 @@ public class PartitionerServiceCreatePartitionTests
 	}
 
 	/**
-	 * Tests the "self-extending" of {@link PartitionerConfig}'s from DLMExceptions.
+	 * Tests the "self-extending" of {@link PartitionConfig}'s from DLMExceptions.
 	 */
 	@Test
 	public void testDLMException()
@@ -185,7 +187,7 @@ public class PartitionerServiceCreatePartitionTests
 		// create a config that only covers the C_Order table.
 		// we expect the partitioner to create an augmented version of this config.
 		// the augmented version shall in addition have a line with tableName=C_Invoice and a reference with referencingColumn=C_Order_ID and referencedTable=C_Order
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line(I_C_Order.Table_Name).endLine()
 				.build();
 
@@ -196,7 +198,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test(timeout = 10000) // timeout to make sure this test doesn'T run forever in case of a bug
 	public void testCircularReferences()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 
 				// order -> payment
 				.line(I_C_Order.Table_Name)
@@ -262,13 +264,13 @@ public class PartitionerServiceCreatePartitionTests
 	}
 
 	/**
-	 * Verify that a record won't be added to another partition after if was processed via {@link PartitionerServiceOld#createPartition0(PartitionerConfig)}.
+	 * Verify that a record won't be added to another partition after if was processed via {@link PartitionerServiceOld#createPartition0(PartitionConfig)}.
 	 */
 	@Test
 	public void testPartition_stored()
 	{
 		final Partition partition = testCircularReferences_within_same_table0();
-		partitionerService.storePartition(partition, false);
+		dlmService.storePartition(partition, false);
 
 		// make sure the DLM_Partition_ID was updated within the records that we found
 		partitionerService.loadWithAllRecords(partition).getRecordsFlat().stream().forEach(r -> {
@@ -303,7 +305,7 @@ public class PartitionerServiceCreatePartitionTests
 
 	private List<Partition> test_multiple_roots0()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 
 				// invoice -> order
 				.line(I_C_Invoice.Table_Name)
@@ -345,7 +347,7 @@ public class PartitionerServiceCreatePartitionTests
 
 	private Partition testCircularReferences_within_same_table0()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 
 				// invoice -> credit-memo
 				.line(I_C_Invoice.Table_Name)
@@ -390,7 +392,7 @@ public class PartitionerServiceCreatePartitionTests
 		return partitions.get(0);
 	}
 
-	private Partition testWithOrderAndInvoice(final PartitionerConfig config)
+	private Partition testWithOrderAndInvoice(final PartitionConfig config)
 	{
 		//
 		// create an order *and* an invoice that references the order
@@ -462,7 +464,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testADTableID_RecordID()
 	{
-		final PartitionerConfig config = createADTableID_RecordIDConfig();
+		final PartitionConfig config = createADTableID_RecordIDConfig();
 
 		// create an order
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
@@ -493,7 +495,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testADTableID_RecordID_ignore_unrelated()
 	{
-		final PartitionerConfig config = createADTableID_RecordIDConfig();
+		final PartitionConfig config = createADTableID_RecordIDConfig();
 
 		// create another, unrelated order2
 		final I_C_Order order2 = InterfaceWrapperHelper.newInstance(I_C_Order.class);
@@ -532,9 +534,9 @@ public class PartitionerServiceCreatePartitionTests
 	 *
 	 * @return
 	 */
-	private PartitionerConfig createADTableID_RecordIDConfig()
+	private PartitionConfig createADTableID_RecordIDConfig()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 
 				// request -> order, via AD_Table_ID/Record_ID, as indicated by the referencing column name
 				.line(I_R_Request.Table_Name)
@@ -552,7 +554,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testADTableID_RecordID_multiple_roots()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 
 				// invoice -> order
 				.line(I_C_Invoice.Table_Name)
@@ -615,7 +617,7 @@ public class PartitionerServiceCreatePartitionTests
 	@Test
 	public void testUnrelatedRecords1()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				// invoice
 				.line(I_C_Invoice.Table_Name)
 				.endLine().build();
@@ -637,14 +639,13 @@ public class PartitionerServiceCreatePartitionTests
 		assertThat(partitions.get(0).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(invoice1)));
 	}
 
-
 	/**
 	 * Verifies that two unrelated records do not end up in one single partition.
 	 */
 	@Test
 	public void testUnrelatedRecords2()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				// invoice
 				.line(I_C_Invoice.Table_Name)
 				.line(I_C_Order.Table_Name)

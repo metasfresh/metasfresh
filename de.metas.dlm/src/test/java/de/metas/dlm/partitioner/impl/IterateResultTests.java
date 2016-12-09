@@ -55,7 +55,7 @@ public class IterateResultTests
 		final Iterator<WorkQueue> initialQueue = new ArrayList<WorkQueue>().iterator();
 		final IContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();
 
-		final IterateResult iterateResult = new IterateResult(initialQueue, ctxAware);
+		final IIterateResult iterateResult = new CreatePartitionIterateResult(initialQueue, ctxAware);
 		assertThat(iterateResult.isQueueEmpty(), is(true));
 	}
 
@@ -75,7 +75,7 @@ public class IterateResultTests
 		final Iterator<WorkQueue> initialQueue = ImmutableList.of(WorkQueue.of(tableRecordReference)).iterator();
 		final IContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();
 
-		final IterateResult iterateResult = new IterateResult(initialQueue, ctxAware);
+		final IIterateResult iterateResult = new CreatePartitionIterateResult(initialQueue, ctxAware);
 
 		assertThat(iterateResult.isQueueEmpty(), is(false));
 		assertThat(iterateResult.nextFromQueue(), is(tableRecordReference));
@@ -99,7 +99,7 @@ public class IterateResultTests
 		final Iterator<WorkQueue> initialQueue = ImmutableList.of(WorkQueue.of(tableRecordReference1)).iterator();
 		final IContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();
 
-		final IterateResult iterateResult = new IterateResult(initialQueue, ctxAware);
+		final CreatePartitionIterateResult iterateResult = new CreatePartitionIterateResult(initialQueue, ctxAware);
 
 		assertThat(iterateResult.isQueueEmpty(), is(false));
 		assertThat(iterateResult.contains(tableRecordReference1), is(false)); // tableRecordReference1 was not yet accessed. in order for it to be contained, result would need to get its DLM_PArtiton_ID and therefore would need to get it from the iterator.
@@ -109,7 +109,7 @@ public class IterateResultTests
 		assertThat(iterateResult.isQueueEmpty(), is(true));
 		assertThat(iterateResult.size(), is(1));
 
-		iterateResult.add(tableRecordReference2, 0);
+		iterateResult.addReferencedRecord(null, tableRecordReference2, 0);
 		assertThat(iterateResult.size(), is(2));
 
 		assertThat(iterateResult.isQueueEmpty(), is(false));

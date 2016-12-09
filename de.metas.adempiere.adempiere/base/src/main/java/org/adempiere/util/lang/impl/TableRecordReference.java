@@ -214,6 +214,9 @@ public final class TableRecordReference implements ITableRecordReference
 				.toString();
 	}
 
+	/**
+	 * Returns <code>true</code> if both this and the given <code>obj</code> are TableRecordReferences and have the same <code>AD_Table_ID</code> and <code>Record_ID</code>.
+	 */
 	@Override
 	public boolean equals(final Object obj)
 	{

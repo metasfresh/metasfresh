@@ -23,13 +23,14 @@ import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequest;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 
 /*
  * #%L
@@ -110,6 +111,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 		final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
+		final IDLMService dlmService = Services.get(IDLMService.class);
 
 		final IParams workpackageParams = workpackageParamDAO.retrieveWorkpackageParams(workPackage);
 
@@ -121,7 +123,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 
 		final int dlmConfigId = workpackageParams.getParameterAsInt(PARAM_DLM_PARTITION_CONFIG_ID);
 		final I_DLM_Partition_Config configDB = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(workPackage), dlmConfigId, I_DLM_Partition_Config.class, ITrx.TRXNAME_None);
-		final PartitionerConfig config = partitionerService.loadPartitionConfig(configDB);
+		final PartitionConfig config = dlmService.loadPartitionConfig(configDB);
 
 		final ILoggable loggable = Loggables.get();
 

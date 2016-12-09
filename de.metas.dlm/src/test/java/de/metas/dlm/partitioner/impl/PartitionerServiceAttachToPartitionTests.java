@@ -21,7 +21,7 @@ import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Record_V;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 
 /*
  * #%L
@@ -60,7 +60,7 @@ public class PartitionerServiceAttachToPartitionTests
 	private I_C_Queue_Block block;
 	private I_C_Queue_WorkPackage workpackage;
 	private I_C_Queue_Element element;
-	private PartitionerConfig config;
+	private PartitionConfig config;
 
 	@Before
 	public void setup()
@@ -88,7 +88,7 @@ public class PartitionerServiceAttachToPartitionTests
 		element.setC_Queue_WorkPackage(workpackage);
 		InterfaceWrapperHelper.save(element);
 
-		config = PartitionerConfig.builder()
+		config = PartitionConfig.builder()
 				.line(I_AD_PInstance.Table_Name)
 				.line(I_C_Queue_Block.Table_Name)
 				.ref().setReferencedTableName(I_AD_PInstance.Table_Name).setReferencingColumnName(I_C_Queue_Block.COLUMNNAME_AD_PInstance_Creator_ID).endRef()
@@ -204,9 +204,9 @@ public class PartitionerServiceAttachToPartitionTests
 	 * @param model
 	 * @return
 	 */
-	private IterateResult mkMethodParam(final IDLMAware model)
+	private CreatePartitionIterateResult mkMethodParam(final IDLMAware model)
 	{
-		return new IterateResult(
+		return new CreatePartitionIterateResult(
 				Collections.singletonList(
 						WorkQueue.of(ITableRecordReference.FromModelConverter.convert(model))).iterator(),
 				PlainContextAware.newWithThreadInheritedTrx());

@@ -49,11 +49,11 @@ public class PartitionerConfigLine
 {
 
 	private final String tablename;
-	private final PartitionerConfig parent;
+	private final PartitionConfig parent;
 	private final List<PartitionerConfigReference> references = new ArrayList<>();
 	private int DLM_Partition_Config_Line_ID = 0;
 
-	private PartitionerConfigLine(final PartitionerConfig parent, final String tableName)
+	private PartitionerConfigLine(final PartitionConfig parent, final String tableName)
 	{
 		Check.assumeNotNull(parent, "Paramter 'parent is not null");
 		Check.assumeNotEmpty(tableName, "Parameter 'tableName' is not empty");
@@ -81,7 +81,7 @@ public class PartitionerConfigLine
 		return references;
 	}
 
-	public PartitionerConfig getParent()
+	public PartitionConfig getParent()
 	{
 		return parent;
 	}
@@ -97,7 +97,7 @@ public class PartitionerConfigLine
 	}
 
 	/**
-	 * To be invoked by {@link IPartitionerService#storePartitionConfig(PartitionerConfig)} after a {@link I_DLM_Partition_Config_Line}
+	 * To be invoked by {@link IPartitionerService#storePartitionConfig(PartitionConfig)} after a {@link I_DLM_Partition_Config_Line}
 	 * record was created or updated for this instance.
 	 *
 	 * @param DLM_Partition_Config_Line_ID
@@ -131,7 +131,7 @@ public class PartitionerConfigLine
 
 	public static class LineBuilder
 	{
-		private final PartitionerConfig.Builder parentBuilder;
+		private final PartitionConfig.Builder parentBuilder;
 
 		private String tableName;
 
@@ -141,7 +141,7 @@ public class PartitionerConfigLine
 
 		private int dlm_Partition_Config_Line_ID;
 
-		LineBuilder(final PartitionerConfig.Builder parentBuilder)
+		LineBuilder(final PartitionConfig.Builder parentBuilder)
 		{
 			this.parentBuilder = parentBuilder;
 		}
@@ -180,12 +180,12 @@ public class PartitionerConfigLine
 			return endLine().line(tableName);
 		}
 
-		public PartitionerConfig.Builder endLine()
+		public PartitionConfig.Builder endLine()
 		{
 			return parentBuilder;
 		}
 
-		public PartitionerConfigLine buildLine(final PartitionerConfig parent)
+		public PartitionerConfigLine buildLine(final PartitionConfig parent)
 		{
 			buildLine = new PartitionerConfigLine(parent, tableName);
 			buildLine.setDLM_Partition_Config_Line_ID(dlm_Partition_Config_Line_ID);

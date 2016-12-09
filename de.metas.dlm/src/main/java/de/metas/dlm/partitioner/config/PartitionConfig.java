@@ -43,7 +43,7 @@ import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PartitionerConfig
+public class PartitionConfig
 {
 	/**
 	 * If this instance is already persisted on DB, then this is its key.
@@ -56,7 +56,7 @@ public class PartitionerConfig
 
 	private final boolean changed;
 
-	private PartitionerConfig(final String name, final boolean changed)
+	private PartitionConfig(final String name, final boolean changed)
 	{
 		lines = new ArrayList<>();
 		this.name = name;
@@ -64,7 +64,7 @@ public class PartitionerConfig
 	}
 
 	/**
-	 * See {@link PartitionerConfig.Builder#setDLM_Partition_Config_ID(int)} and {@link #getDLM_Partition_Config_ID()}.
+	 * See {@link PartitionConfig.Builder#setDLM_Partition_Config_ID(int)} and {@link #getDLM_Partition_Config_ID()}.
 	 *
 	 * @return
 	 */
@@ -74,7 +74,7 @@ public class PartitionerConfig
 	}
 
 	/**
-	 * To be invoked by {@link IPartitionerService#storePartitionConfig(PartitionerConfig)} after a {@link I_DLM_Partition_Config}
+	 * To be invoked by {@link IPartitionerService#storePartitionConfig(PartitionConfig)} after a {@link I_DLM_Partition_Config}
 	 * record was created or updated for this instance.
 	 *
 	 * @param dlm_Partition_Config_ID
@@ -147,7 +147,7 @@ public class PartitionerConfig
 	 * @param config
 	 * @return
 	 */
-	public static Builder builder(final PartitionerConfig config)
+	public static Builder builder(final PartitionConfig config)
 	{
 		return new Builder(config);
 	}
@@ -161,12 +161,12 @@ public class PartitionerConfig
 	@Override
 	public boolean equals(final Object other)
 	{
-		if (!(other instanceof PartitionerConfig))
+		if (!(other instanceof PartitionConfig))
 		{
 			return false;
 		}
 
-		final PartitionerConfig otherConfig = (PartitionerConfig)other;
+		final PartitionConfig otherConfig = (PartitionConfig)other;
 
 		return new EqualsBuilder().append(name, otherConfig.name)
 				.append(lines, otherConfig.lines)
@@ -202,12 +202,12 @@ public class PartitionerConfig
 			this(null);
 		}
 
-		public Builder(final PartitionerConfig config)
+		public Builder(final PartitionConfig config)
 		{
 			initializeFromconfig(config);
 		}
 
-		private void initializeFromconfig(final PartitionerConfig config)
+		private void initializeFromconfig(final PartitionConfig config)
 		{
 			if (config == null)
 			{
@@ -242,7 +242,7 @@ public class PartitionerConfig
 		}
 
 		/**
-		 * Sets the primary key of the {@link I_DLM_Partition_Config} records that already exists for the {@link PartitionerConfig} instances that we want to build.
+		 * Sets the primary key of the {@link I_DLM_Partition_Config} records that already exists for the {@link PartitionConfig} instances that we want to build.
 		 * This information is important when a config is persisted because it determines if a {@link I_DLM_Partition_Config} record shall be loaded and updated rather than inserted.
 		 *
 		 * @param dlm_Partition_Config_ID
@@ -302,11 +302,11 @@ public class PartitionerConfig
 
 		}
 
-		public PartitionerConfig build()
+		public PartitionConfig build()
 		{
 			assertLineTableNamesUnique();
 
-			final PartitionerConfig partitionerConfig = new PartitionerConfig(name, changed);
+			final PartitionConfig partitionerConfig = new PartitionConfig(name, changed);
 			partitionerConfig.setDLM_Partition_Config_ID(DLM_Partition_Config_ID);
 
 			// first build the lines

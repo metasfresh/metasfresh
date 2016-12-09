@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
@@ -57,7 +57,7 @@ public class DLM_Partition_Config_Add_TableRecord_LinesTests
 	@Test
 	public void test()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line(I_AD_Field.Table_Name)
 				.line(I_AD_Tab.Table_Name)
 				.endLine().build();

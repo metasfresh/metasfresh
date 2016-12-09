@@ -40,12 +40,12 @@ public class ConfigTests
 {
 
 	/**
-	 * Verifies that {@link PartitionerConfig#getReferences(String)} works.
+	 * Verifies that {@link PartitionConfig#getReferences(String)} works.
 	 */
 	@Test
 	public void testGetReferences()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder()
+		final PartitionConfig config = PartitionConfig.builder()
 				.line("ABC")
 				.ref().setReferencedTableName("MNO").setReferencingColumnName("ABC_columnName").endRef()
 				.line("MNO") // this one is referenced by both "ABC" and "XYZ"

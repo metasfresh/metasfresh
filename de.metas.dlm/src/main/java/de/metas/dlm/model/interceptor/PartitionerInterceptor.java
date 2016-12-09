@@ -18,12 +18,13 @@ import org.compiere.model.I_AD_Column;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequest;
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
@@ -66,7 +67,9 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		final PartitionerConfig config = Services.get(IPartitionerService.class).loadDefaultPartitionerConfig();
+		final IDLMService dlmService = Services.get(IDLMService.class);
+
+		final PartitionConfig config = dlmService.loadDefaultPartitionConfig();
 
 		config.getLines().forEach(line -> {
 			engine.addModelChange(line.getTableName(), AddToPartitionInterceptor.INSTANCE);
@@ -106,7 +109,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 		}
 
 		@Override
-		protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+		protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 		{
 			// nothing to do
 		}
@@ -121,7 +124,9 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 				return; // Nothing to do.
 			}
 
-			final PartitionerConfig config = Services.get(IPartitionerService.class).loadDefaultPartitionerConfig();
+			final IDLMService dlmService = Services.get(IDLMService.class);
+
+			final PartitionConfig config = dlmService.loadDefaultPartitionConfig();
 
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			final Optional<PartitionerConfigLine> configLine = config.getLine(tableName);
@@ -159,7 +164,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 		}
 
 		@Override
-		protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+		protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 		{
 			// nothing to do
 		}
@@ -181,7 +186,9 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 			}
 
 			final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
-			final PartitionerConfig config = partitionerService.loadDefaultPartitionerConfig();
+			final IDLMService dlmService = Services.get(IDLMService.class);
+
+			final PartitionConfig config = dlmService.loadDefaultPartitionConfig();
 
 			final ITableRecordReference recordReference = ITableRecordReference.FromReferencedModelConverter.convert(model);
 			final Optional<PartitionerConfigLine> referencedLine = config.getLine(recordReference.getTableName());
@@ -194,14 +201,14 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 			final TableReferenceDescriptor descriptor = TableReferenceDescriptor.of(modelTableName, ITableRecordReference.COLUMNNAME_Record_ID, recordReference.getTableName());
 
-			final PartitionerConfig augmentedConfig = partitionerService.augmentPartitionerConfig(config, Collections.singletonList(descriptor));
+			final PartitionConfig augmentedConfig = partitionerService.augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			if (!augmentedConfig.isChanged())
 			{
 				return; // we are done
 			}
 
 			// now that the augmented config is stored, further changes will be handeled by AddToPartitionInterceptor.
-			partitionerService.storePartitionConfig(augmentedConfig);
+			dlmService.storePartitionConfig(augmentedConfig);
 
 			// however, for the current 'model', we need to enqueue it ourselves
 			final CreatePartitionAsyncRequest request = PartitionRequestFactory.asyncBuilder()

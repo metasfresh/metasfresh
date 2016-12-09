@@ -32,19 +32,19 @@ import org.junit.Test;
 public class PartitionerConfigBuilderTest
 {
 	/**
-	 * Verifies tha {@link PartitionerConfig#builder()} works.
+	 * Verifies tha {@link PartitionConfig#builder()} works.
 	 */
 	@Test
 	public void testConfigBuilder()
 	{
-		final PartitionerConfig config = createAndCheckBuilder0();
+		final PartitionConfig config = createAndCheckBuilder0();
 		assertThat(config.getLines().size(), is(2));
 	}
 
 	@Test
 	public void testConfigBuilderExtendLine()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder().setDLM_Partition_Config_ID(1)
+		final PartitionConfig config = PartitionConfig.builder().setDLM_Partition_Config_ID(1)
 				.line("ABC").setDLM_Partition_Config_Line(2)
 				.ref().setReferencedTableName("123").setReferencingColumnName("ABC_columnName1").setDLM_Partition_Config_Reference_ID(3).endRef()
 				.line("ABC")
@@ -66,16 +66,16 @@ public class PartitionerConfigBuilderTest
 	}
 
 	/**
-	 * Verifies that {@link PartitionerConfig#builder(PartitionerConfig)} works.
+	 * Verifies that {@link PartitionConfig#builder(PartitionConfig)} works.
 	 * If this test fails, I recommend to first check if {@link #testConfigBuilder()} also fails.
 	 */
 	@Test
 	public void testExtendConfigBuilder()
 	{
-		final PartitionerConfig config = createAndCheckBuilder0();
+		final PartitionConfig config = createAndCheckBuilder0();
 		assertThat(config.getLines().size(), is(2));
 
-		final PartitionerConfig extendedConfig = PartitionerConfig.builder(config)
+		final PartitionConfig extendedConfig = PartitionConfig.builder(config)
 				.line("XYZ")
 				.ref().setReferencedTableName("123").setReferencingColumnName("XYZ_columnName").endRef()
 				.endLine()
@@ -92,9 +92,9 @@ public class PartitionerConfigBuilderTest
 		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().get(0).getReferencingColumnName(), is("XYZ_columnName"));
 	}
 
-	private PartitionerConfig createAndCheckBuilder0()
+	private PartitionConfig createAndCheckBuilder0()
 	{
-		final PartitionerConfig config = PartitionerConfig.builder().setDLM_Partition_Config_ID(1)
+		final PartitionConfig config = PartitionConfig.builder().setDLM_Partition_Config_ID(1)
 				.line("ABC").setDLM_Partition_Config_Line(2)
 				.ref().setReferencedTableName("123").setReferencingColumnName("ABC_columnName").setDLM_Partition_Config_Reference_ID(3).endRef()
 				.line("123").setDLM_Partition_Config_Line(4)
@@ -108,7 +108,7 @@ public class PartitionerConfigBuilderTest
 		return config;
 	}
 
-	private void checkConfig(final PartitionerConfig config)
+	private void checkConfig(final PartitionConfig config)
 	{
 		assertThat(config.getDLM_Partition_Config_ID(), is(1));
 		assertThat(config.getLines().get(0).getTableName(), is("ABC"));

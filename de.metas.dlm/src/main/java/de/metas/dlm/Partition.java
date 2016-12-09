@@ -17,7 +17,7 @@ import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.dlm.partitioner.IPartitionerService;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 
 /*
  * #%L
@@ -57,7 +57,7 @@ public class Partition
 	/**
 	 * the method is final, but as of now, the config is *not* immutable.
 	 */
-	private final PartitionerConfig config;
+	private final PartitionConfig config;
 
 	private final boolean configChanged;
 
@@ -94,7 +94,7 @@ public class Partition
 	 * @param DLM_Partition_ID
 	 * @return
 	 */
-	public static Partition loadedPartition(final PartitionerConfig config,
+	public static Partition loadedPartition(final PartitionConfig config,
 			final Map<String, Collection<ITableRecordReference>> records,
 			final boolean complete,
 			final int currentDLMLevel,
@@ -108,7 +108,7 @@ public class Partition
 	}
 
 	private Partition(
-			final PartitionerConfig config,
+			final PartitionConfig config,
 			final boolean configChanged,
 			final Map<String, Collection<ITableRecordReference>> records,
 			final boolean recordsChanged,
@@ -166,7 +166,7 @@ public class Partition
 		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
 	}
 
-	public Partition withConfig(final PartitionerConfig config)
+	public Partition withConfig(final PartitionConfig config)
 	{
 		final boolean configChanged = true;
 		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
@@ -202,7 +202,7 @@ public class Partition
 	public Partition()
 	{
 		this(
-				PartitionerConfig.builder().build(),
+				PartitionConfig.builder().build(),
 				false,
 				Collections.emptyMap(),
 				false,
@@ -253,8 +253,7 @@ public class Partition
 		return complete;
 	}
 
-
-	public PartitionerConfig getConfig()
+	public PartitionConfig getConfig()
 	{
 		return config;
 	}
@@ -292,16 +291,16 @@ public class Partition
 
 	public static class WorkQueue
 	{
-		public static WorkQueue of(I_DLM_Partition_Workqueue workqueueDB)
+		public static WorkQueue of(final I_DLM_Partition_Workqueue workqueueDB)
 		{
 			final ITableRecordReference tableRecordRef = ITableRecordReference.FromReferencedModelConverter.convert(workqueueDB);
 
-			WorkQueue result = new WorkQueue(tableRecordRef);
+			final WorkQueue result = new WorkQueue(tableRecordRef);
 			result.setDLM_Partition_Workqueue_ID(workqueueDB.getDLM_Partition_Workqueue_ID());
 			return result;
 		}
 
-		public static WorkQueue of(ITableRecordReference tableRecordRef)
+		public static WorkQueue of(final ITableRecordReference tableRecordRef)
 		{
 			return new WorkQueue(tableRecordRef);
 		}
@@ -310,7 +309,7 @@ public class Partition
 
 		private int dlmPartitionWorkqueueId;
 
-		private WorkQueue(ITableRecordReference tableRecordReference)
+		private WorkQueue(final ITableRecordReference tableRecordReference)
 		{
 			this.tableRecordReference = tableRecordReference;
 		}
@@ -326,9 +325,9 @@ public class Partition
 
 		}
 
-		public void setDLM_Partition_Workqueue_ID(int dlm_Partition_Workqueue_ID)
+		public void setDLM_Partition_Workqueue_ID(final int dlm_Partition_Workqueue_ID)
 		{
-			this.dlmPartitionWorkqueueId = dlm_Partition_Workqueue_ID;
+			dlmPartitionWorkqueueId = dlm_Partition_Workqueue_ID;
 		}
 
 	}

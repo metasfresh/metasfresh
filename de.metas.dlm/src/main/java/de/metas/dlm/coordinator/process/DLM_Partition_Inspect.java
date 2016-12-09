@@ -12,10 +12,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 
+import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.process.JavaProcess;
 
 /*
@@ -58,8 +58,8 @@ public class DLM_Partition_Inspect extends JavaProcess
 
 		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
-		final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
 		final ICoordinatorService coordinatorService = Services.get(ICoordinatorService.class);
+		final IDLMService dlmService = Services.get(IDLMService.class);
 
 		final ICompositeQueryFilter<I_DLM_Partition> dateNextInspectionFilter = queryBL.createCompositeQueryFilter(I_DLM_Partition.class)
 				.setJoinOr()
@@ -85,11 +85,11 @@ public class DLM_Partition_Inspect extends JavaProcess
 					@Override
 					public void process(final I_DLM_Partition item) throws Exception
 					{
-						final Partition partition = partitionerService.loadPartition(item);
+						final Partition partition = dlmService.loadPartition(item);
 						final Partition validatedPartition = coordinatorService.inspectPartition(partition);
 
 						addLog("Inspected partition={} with result={}", partition, validatedPartition);
-						partitionerService.storePartition(validatedPartition, false);
+						dlmService.storePartition(validatedPartition, false);
 					}
 				})
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)

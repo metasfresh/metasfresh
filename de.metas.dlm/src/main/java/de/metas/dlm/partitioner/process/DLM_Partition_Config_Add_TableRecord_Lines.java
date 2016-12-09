@@ -10,7 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -57,15 +57,15 @@ public class DLM_Partition_Config_Add_TableRecord_Lines extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PartitionerConfig config = partitionerService.loadPartitionConfig(configDB);
+		final PartitionConfig config = dlmService.loadPartitionConfig(configDB);
 		final List<TableReferenceDescriptor> tableRecordReferences = dlmService.retrieveTableRecordReferences();
 
 		// get those descriptors whose referencedTableName is the table name of at least one line
 		final List<TableReferenceDescriptor> descriptors = retainRelevantDescriptors(config, tableRecordReferences);
 
-		final PartitionerConfig augmentedConfig = partitionerService.augmentPartitionerConfig(config, descriptors);
+		final PartitionConfig augmentedConfig = partitionerService.augmentPartitionerConfig(config, descriptors);
 
-		partitionerService.storePartitionConfig(augmentedConfig);
+		dlmService.storePartitionConfig(augmentedConfig);
 
 		return MSG_OK;
 	}
@@ -78,7 +78,7 @@ public class DLM_Partition_Config_Add_TableRecord_Lines extends JavaProcess
 	 * @return
 	 */
 	@VisibleForTesting
-	/* package */ List<TableReferenceDescriptor> retainRelevantDescriptors(final PartitionerConfig config, final List<TableReferenceDescriptor> descriptors)
+	/* package */ List<TableReferenceDescriptor> retainRelevantDescriptors(final PartitionConfig config, final List<TableReferenceDescriptor> descriptors)
 	{
 		return descriptors.stream()
 				.filter(r -> config.getLine(r.getReferencedTableName()).isPresent())

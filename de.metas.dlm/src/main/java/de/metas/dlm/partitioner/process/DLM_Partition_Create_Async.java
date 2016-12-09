@@ -3,15 +3,18 @@ package de.metas.dlm.partitioner.process;
 import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.dlm.IDLMService;
+import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition_Config;
-import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequest;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.process.Param;
 
 /*
@@ -38,7 +41,7 @@ import de.metas.process.Param;
 
 public class DLM_Partition_Create_Async extends AbstractDLM_Partition_Create
 {
-	private final IPartitionerService partitionerService = Services.get(IPartitionerService.class);
+	private final IDLMService dlmService = Services.get(IDLMService.class);
 
 	@Param(mandatory = true, parameterName = I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID)
 	private I_DLM_Partition_Config configDB;
@@ -60,14 +63,27 @@ public class DLM_Partition_Create_Async extends AbstractDLM_Partition_Create
 	@Param(mandatory = true, parameterName = "DLMOldestFirst")
 	private boolean oldestFirst;
 
+	@Param(mandatory = false, parameterName = "AD_Table_ID")
+	private I_AD_Table adTable;
+
+	@Param(mandatory = false, parameterName = "Record_ID")
+	private int recordId;
+
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PartitionerConfig config = partitionerService.loadPartitionConfig(configDB);
+		ITableRecordReference recordToAttach = null;
+		if (adTable != null && recordId > 0)
+		{
+			recordToAttach = TableRecordReference.of(adTable.getAD_Table_ID(), recordId);
+		}
+
+		final PartitionConfig config = dlmService.loadPartitionConfig(configDB);
 
 		final CreatePartitionAsyncRequest request = PartitionRequestFactory.asyncBuilder()
 				.setConfig(config)
 				.setOldestFirst(oldestFirst)
+				.setRecordToAttach(recordToAttach)
 				.setPartitionToComplete(getPartitionToCompleteOrNull())
 				.setOnNotDLMTable(OnNotDLMTable.FAIL) // the processing will run unattended. See the javadoc of ADD_TO_DLM on why it's not an option.
 				.setCount(count)

@@ -38,7 +38,7 @@ public class PlainDLMService extends AbstractDLMService
 	}
 
 	@Override
-	void executeDBFunction_update_partition_size(int dlm_Partition_ID, String trxName)
+	void executeDBFunction_update_partition_size(final int dlm_Partition_ID, final String trxName)
 	{
 		// nothing to do
 	}

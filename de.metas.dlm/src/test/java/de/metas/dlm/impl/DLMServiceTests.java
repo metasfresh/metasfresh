@@ -1,6 +1,7 @@
 package de.metas.dlm.impl;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
@@ -17,6 +18,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.dlm.Partition;
+import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_AD_Table;
+import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Record_V;
 import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
@@ -44,6 +50,8 @@ import de.metas.logging.LogManager;
 
 public class DLMServiceTests
 {
+	private final DLMService dlmService = new DLMService(); // this is the class under test
+
 	@Before
 	public void before()
 	{
@@ -94,7 +102,7 @@ public class DLMServiceTests
 			InterfaceWrapperHelper.save(tableIDIDColumn);
 		}
 
-		final List<TableReferenceDescriptor> tableRecordReferences = new DLMService().retrieveTableRecordReferences();
+		final List<TableReferenceDescriptor> tableRecordReferences = dlmService.retrieveTableRecordReferences();
 
 		// assert that there are two records, one about AD_Fleid, one about AD_Element
 		assertThat(tableRecordReferences.size(), is(2));
@@ -108,6 +116,63 @@ public class DLMServiceTests
 		final TableReferenceDescriptor adFieldReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Field.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
 		assertThat(adFieldReferenceDescriptor.getReferencingTableName(), is(I_AD_ChangeLog.Table_Name));
 		assertThat(adFieldReferenceDescriptor.getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
+	}
 
+	@Test
+	public void testLoadEmptyPartition()
+	{
+		final I_DLM_Partition partitionDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
+		InterfaceWrapperHelper.save(partitionDB);
+
+		final Partition partition = dlmService.loadPartition(partitionDB);
+		assertNotNull(partition);
+
+		assertThat(partition.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+	}
+
+	/**
+	 * Verifies that {@link PartitionerServiceOld#loadPartition(I_DLM_Partition)} can load {@link IDLMAware}s that references a given partition via their {@link I_DLM_Partition_Record}s.
+	 */
+	@Test
+	public void testLoadPartition()
+	{
+		final I_DLM_Partition partitionDB = InterfaceWrapperHelper.newInstance(I_DLM_Partition.class);
+		InterfaceWrapperHelper.save(partitionDB);
+
+		//
+		// create an AD_Table record and have it reference the0 partitionDB via a I_DLM_Partition_Record
+		final I_AD_Table table = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
+		InterfaceWrapperHelper.save(table);
+
+		final I_DLM_Partition_Record_V tablePartitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class);
+		tablePartitionRecord.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
+		tablePartitionRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_AD_Table.class));
+		tablePartitionRecord.setRecord_ID(table.getAD_Table_ID());
+		InterfaceWrapperHelper.save(tablePartitionRecord);
+
+		//
+		// create an AD_Column record and have it reference the0 partitionDB via another I_DLM_Partition_Record
+		final I_AD_Column column = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
+		InterfaceWrapperHelper.save(column);
+
+		final I_DLM_Partition_Record_V columnPartitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class);
+		columnPartitionRecord.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
+		columnPartitionRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_AD_Column.class));
+		columnPartitionRecord.setRecord_ID(column.getAD_Column_ID());
+		InterfaceWrapperHelper.save(columnPartitionRecord);
+
+		// method under test
+		final Partition partition = dlmService.loadPartition(partitionDB);
+
+		assertNotNull(partition);
+		assertThat(partition.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+
+		// we do not attempt to load partitioned records anymore, because there might be too many
+		assertThat(partition.getRecords().isEmpty(), is(true));
+		// assertThat(partition.getRecordsFlat().size(), is(2));
+
+		// verify that it's not the I_DLM_Partition_Records we got back, but the AD_table record and the AD_column record.
+		// assertThat(partition.getRecordsFlat().stream().anyMatch(i -> InterfaceWrapperHelper.getModelTableName(i).equals(org.compiere.model.I_AD_Table.Table_Name)), is(true));
+		// assertThat(partition.getRecordsFlat().stream().anyMatch(i -> InterfaceWrapperHelper.getModelTableName(i).equals(I_AD_Column.Table_Name)), is(true));
 	}
 }

@@ -129,7 +129,7 @@ public class DLMExceptionWrapperTests
 		final DBException dbException = DLMReferenceExceptionWrapper.INSTANCE.wrapIfNeededOrReturnNull(mockedPSQLException);
 		assertThat(dbException, instanceOf(DLMReferenceException.class));
 
-		DLMReferenceException dlmException = (DLMReferenceException)dbException;
+		final DLMReferenceException dlmException = (DLMReferenceException)dbException;
 		final TableReferenceDescriptor tableReferenceDescriptor = dlmException.getTableReferenceDescriptor();
 
 		// the descriptor needs to contain the "real" table and column names, not the lower-case versions that were returned by postgresl.

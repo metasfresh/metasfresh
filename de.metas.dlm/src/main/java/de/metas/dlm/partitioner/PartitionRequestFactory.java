@@ -11,7 +11,7 @@ import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest.OnNotDLMTable;
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
-import de.metas.dlm.partitioner.config.PartitionerConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig;
 
 /*
  * #%L
@@ -81,12 +81,12 @@ public class PartitionRequestFactory
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 * @param <T> actual type of this builder. Used such that if this builder is an AsyncPartitionerRequestBuilder, then e.g.
-	 *            {@link #setConfig(PartitionerConfig)} shall return not {@link PartitionerRequestBuilder}, but {@link AsyncPartitionerRequestBuilder}
+	 *            {@link #setConfig(PartitionConfig)} shall return not {@link PartitionerRequestBuilder}, but {@link AsyncPartitionerRequestBuilder}
 	 */
 	@SuppressWarnings("unchecked")
 	public static class PartitionerRequestBuilder<T extends PartitionerRequestBuilder>
 	{
-		private PartitionerConfig config;
+		private PartitionConfig config;
 		private boolean oldestFirst = true;
 		private OnNotDLMTable onNotDLMTable = OnNotDLMTable.FAIL;
 		private ITableRecordReference recordToAttach;
@@ -108,7 +108,7 @@ public class PartitionRequestFactory
 			return new CreatePartitionRequest(config, oldestFirst, recordToAttach, partitionToComplete, onNotDLMTable);
 		}
 
-		public T setConfig(final PartitionerConfig config)
+		public T setConfig(final PartitionConfig config)
 		{
 			this.config = config;
 			return (T)this;
@@ -243,7 +243,7 @@ public class PartitionRequestFactory
 			FAIL
 		}
 
-		private final PartitionerConfig config;
+		private final PartitionConfig config;
 
 		private final boolean oldestFirst;
 
@@ -254,7 +254,7 @@ public class PartitionRequestFactory
 		private final I_DLM_Partition partitionToComplete;
 
 		private CreatePartitionRequest(
-				final PartitionerConfig config,
+				final PartitionConfig config,
 				final boolean oldestFirst,
 				final ITableRecordReference recordToAttach,
 				final I_DLM_Partition partitionToComplete,
@@ -269,7 +269,7 @@ public class PartitionRequestFactory
 			this.onNotDLMTable = onNotDLMTable;
 		}
 
-		public PartitionerConfig getConfig()
+		public PartitionConfig getConfig()
 		{
 			return config;
 		}
