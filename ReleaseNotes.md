@@ -35,13 +35,19 @@ Here come the actual release notes:
   * #585 Adjust the remaining Property names
     * Change properties to metasfresh namespace.
   * #661 Cultivation Planning report adjustments
+    * Adjustments made to the cultivation planning report in procurement.
   * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Avoid automatic completion of flatrate term contracts when triffered manually from process gear. This allows the user to record further adjustments after creation.
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
+    * Setup an initial set of 10 key perfroamnce indicators for the new metasfresh webui.
   * #59 User friendly URL for Print Endpoint
+    * Add a user frindly/ comprehensive endpoint for document printing tab in webUI.
   * #45 Dashboard Target area backend support
+    * Add support for Target widgets and target widget area in webUI dashboard
   * #567 WebUI - Material Receipt Schedule
+    * Initial set of windows, grid views, sidelist and elements and fields for material receipt schedule window.
 
 ## Fixes
 * metasfresh
