@@ -113,6 +113,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass(), client); // 04599
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type(), client); // 04599
+		
+		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance, client); // FRESH-727
 
 		//
 		// Currency
@@ -147,12 +149,19 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// gh-issue #288
 		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
+		
+		//
+		// Script/Rule engine
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance, client);
 	}
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
+		
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
 	}
 
 	@Override

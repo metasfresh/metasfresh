@@ -25,19 +25,17 @@ package de.metas.inoutcandidate.async;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.util.DB;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  * Workpackage used to update all invalid {@link I_M_ShipmentSchedule}s.
@@ -71,8 +69,8 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 		final int adClientId = workpackage.getAD_Client_ID();
 		final int adUserId = workpackage.getCreatedBy();
-		final int adPInstanceId = DB.getNextID(ctx, I_AD_PInstance.Table_Name, ITrx.TRXNAME_None);
-		boolean updateOnlyLocked = false; // if true, it won't create missing candidates
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
+		final boolean updateOnlyLocked = false; // if true, it won't create missing candidates
 		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adClientId, adUserId, adPInstanceId, updateOnlyLocked, localTrxName);
 
 		getLoggable().addLog("Updated " + updatedCount + " shipment schedule entries");

@@ -28,13 +28,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventListener;
 import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Assert;
+
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventListener;
 
 /**
  * Listens to InvoiceGenerated topic, collects the invoices which were notified and later can compare with a given list.
@@ -62,7 +63,7 @@ public class InvoiceGeneratedNotificationChecker implements IEventListener
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		final ITableRecordReference invoiceRecord = event.getProperty(InvoiceGeneratedEventBus.EVENT_PROPERTY_InvoiceRecord);
+		final ITableRecordReference invoiceRecord = event.getRecord();
 		final int invoiceId = invoiceRecord.getRecord_ID();
 
 		notifiedInvoiceIds.add(invoiceId);

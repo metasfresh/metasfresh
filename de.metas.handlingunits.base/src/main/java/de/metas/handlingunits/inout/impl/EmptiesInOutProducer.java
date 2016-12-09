@@ -13,15 +13,14 @@ package de.metas.handlingunits.inout.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -39,6 +38,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.LazyInitializer;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
@@ -71,6 +71,11 @@ import de.metas.inout.IInOutBL;
 	private String _movementType = null;
 	private I_M_Warehouse _warehouse = null;
 	private Date _movementDate = null;
+
+	/**
+	 * #643 The order on based on which the empties inout is created (if it was selected)
+	 */
+	private I_C_Order _order = null;
 
 	/**
 	 * InOut header reference.
@@ -229,6 +234,25 @@ import de.metas.inout.IInOutBL;
 			final I_M_Warehouse warehouse = getM_WarehouseToUse();
 			inout.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		}
+		
+		// 
+		// task #643: Add order related details
+		{
+			final I_C_Order order = getC_Order();
+			
+			if(order == null)
+			{
+				//nothing to do. The order was not selected
+			}
+			else
+			{
+				// if the order was selected, set its poreference to the inout
+				final String poReference = order.getPOReference();
+				
+				inout.setPOReference(poReference);
+				inout.setC_Order(order);
+			}
+		}
 
 		// NOTE: don't save it. it will be saved later by "inoutLinesBuilder"
 		// InterfaceWrapperHelper.save(inout);
@@ -341,5 +365,18 @@ import de.metas.inout.IInOutBL;
 		final Properties ctx = getCtx();
 		final Timestamp movementDate = Env.getDate(ctx); // use Login date (08306)
 		return movementDate;
+	}
+
+	@Override
+	public void setC_Order(final I_C_Order order)
+	{
+		assertConfigurable();
+		_order = order;
+	}
+	
+	@Override
+	public I_C_Order getC_Order()
+	{
+		return _order;
 	}
 }

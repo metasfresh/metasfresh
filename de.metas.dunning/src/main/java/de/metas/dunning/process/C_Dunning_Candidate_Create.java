@@ -26,8 +26,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -38,6 +36,8 @@ import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.spi.IDunnableSource;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Process responsible for generating dunning candidates for all configured {@link IDunnableSource}s
@@ -45,7 +45,7 @@ import de.metas.dunning.spi.IDunnableSource;
  * @author tsa
  * 
  */
-public class C_Dunning_Candidate_Create extends SvrProcess
+public class C_Dunning_Candidate_Create extends JavaProcess
 {
 	private static final String PARAM_DunningDate = "DunningDate";
 	private Timestamp p_DunningDate = null;
@@ -62,7 +62,7 @@ public class C_Dunning_Candidate_Create extends SvrProcess
 		p_DunningDate = Env.getContextAsDate(getCtx(), "#Date");
 		p_IsFullUpdate = false;
 
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

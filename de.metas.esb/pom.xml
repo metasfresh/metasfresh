@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent.general</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<groupId>de.metas.esb</groupId>
 	<artifactId>de.metas.esb</artifactId>
-	<version>3-development-SNAPSHOT</version>
+	<version>1.0.0</version>
 
 	<packaging>pom</packaging>
 

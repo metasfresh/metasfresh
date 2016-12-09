@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -11,11 +11,6 @@
 	<groupId>de.metas.commission</groupId>
 	<artifactId>de.metas.commission</artifactId>
 	<packaging>pom</packaging>
-
-	<properties>
-		<migration-sql-basedir>50-sw01_commission</migration-sql-basedir>
-		<!-- migration-sql-basedir>50-de.metas.commission</migration-sql-basedir -->
-	</properties>
 
 	<modules>
 		<module>de.metas.commission.base</module>

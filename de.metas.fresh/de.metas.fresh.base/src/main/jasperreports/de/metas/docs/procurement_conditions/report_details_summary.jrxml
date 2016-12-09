@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-12-06T12:38:32 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/procurement_conditions/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -32,16 +34,21 @@
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<detail>
-		<band height="76" splitType="Stretch">
+		<band height="66" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832" key="textField-16" x="37" y="0" width="135" height="76" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="135" height="66" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uomprice}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="172" y="0" width="385" height="76"/>
+				<reportElement key="textField-16" x="172" y="0" width="385" height="66" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
@@ -50,14 +57,14 @@
 		</band>
 		<band height="46">
 			<textField>
-				<reportElement uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832" key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{quality}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="172" y="0" width="385" height="46"/>
+				<reportElement key="textField-16" x="172" y="0" width="385" height="46" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
@@ -66,30 +73,31 @@
 		</band>
 		<band height="25">
 			<textField>
-				<reportElement uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832" key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shipping}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="172" y="0" width="385" height="25"/>
+				<reportElement key="textField-16" x="172" y="0" width="385" height="25" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{note3}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="80">
+		<band height="60">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832" key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shortcoming}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="172" y="0" width="385" height="80"/>
+				<reportElement key="textField-16" x="172" y="0" width="385" height="60" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
@@ -98,14 +106,14 @@
 		</band>
 		<band height="30">
 			<textField isStretchWithOverflow="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="172" y="0" width="385" height="30"/>
+				<reportElement key="textField-16" x="172" y="0" width="385" height="30" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{note5}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832" key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -114,27 +122,27 @@
 		</band>
 		<band height="100">
 			<textField>
-				<reportElement uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049" key="textField-16" x="37" y="21" width="135" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="21" width="135" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{signature1}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="2d2bef7b-44cf-45d4-b528-93208eb77818" x="172" y="32" width="366" height="1"/>
+				<reportElement x="172" y="32" width="366" height="1" uuid="2d2bef7b-44cf-45d4-b528-93208eb77818"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<textField>
-				<reportElement uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049" key="textField-16" x="37" y="58" width="135" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="58" width="135" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
 					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{signature2}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="2d2bef7b-44cf-45d4-b528-93208eb77818" x="172" y="70" width="366" height="1"/>
+				<reportElement x="172" y="70" width="366" height="1" uuid="2d2bef7b-44cf-45d4-b528-93208eb77818"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</graphicElement>

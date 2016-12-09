@@ -16,11 +16,14 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Synchronize Column with Database
@@ -32,7 +35,7 @@ import org.compiere.util.AdempiereUserError;
  *  	<li>BF [ 2854358 ] SyncColumn should load table in transaction
  *  		https://sourceforge.net/tracker/?func=detail&aid=2854358&group_id=176962&atid=879332
  */
-public class ColumnSync extends SvrProcess implements ISvrProcessPrecondition
+public class ColumnSync extends JavaProcess implements IProcessPrecondition
 {
 	/** The Column				*/
 	private int			p_AD_Column_ID = 0;
@@ -43,7 +46,7 @@ public class ColumnSync extends SvrProcess implements ISvrProcessPrecondition
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

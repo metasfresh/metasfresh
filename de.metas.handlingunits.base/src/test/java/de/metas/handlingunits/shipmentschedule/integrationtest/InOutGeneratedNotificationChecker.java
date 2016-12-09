@@ -63,7 +63,7 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		final ITableRecordReference inoutRecord = event.getProperty(InOutGeneratedEventBus.EVENT_PROPERTY_InOutRecord);
+		final ITableRecordReference inoutRecord = event.getRecord();
 		final int inoutId = inoutRecord.getRecord_ID();
 
 		notifiedInOutIds.add(inoutId);

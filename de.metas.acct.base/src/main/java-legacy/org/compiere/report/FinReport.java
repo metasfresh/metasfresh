@@ -26,10 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IFactAcctCubeBL;
@@ -52,14 +48,16 @@ import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.MPrintFormatItem;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
+
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+import de.metas.logging.LogManager;
 
 /**
  * Financial Report Engine
@@ -69,7 +67,7 @@ import org.compiere.util.TrxRunnable2;
  *
  * @version $Id: FinReport.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
-public class FinReport extends SvrProcess
+public class FinReport extends JavaProcess
 {
 	// Services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -135,7 +133,7 @@ public class FinReport extends SvrProcess
 		StringBuilder sb = new StringBuilder("Record_ID=")
 				.append(getRecord_ID());
 		// Parameter
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -418,13 +416,9 @@ public class FinReport extends SvrProcess
 		scaleResults();
 
 		// Create Report
-		if (Ini.isClient())
-			getProcessInfo().setTransientObject(getPrintFormat());
-		else
-			getProcessInfo().setSerializableObject(getPrintFormat());
+		getResult().setPrintFormat(getPrintFormat());
 
-		log.debug((System.currentTimeMillis() - m_start) + " ms");
-		return "";
+		return MSG_OK;
 	}	// doIt
 
 	/**************************************************************************
@@ -1918,5 +1912,10 @@ public class FinReport extends SvrProcess
 			return PA_ReportLine_ID;
 		}
 
+	}
+	
+	protected final MReport getPA_Report()
+	{
+		return m_report;
 	}
 }	// FinReport

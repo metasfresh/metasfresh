@@ -33,6 +33,10 @@ public interface IQueryBL extends ISingletonService
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
 
+	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Properties ctx, String trxName);
+
+	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
+
 	/**
 	 *
 	 * @return
@@ -46,6 +50,8 @@ public interface IQueryBL extends ISingletonService
 	IQueryOrderBy createSqlQueryOrderBy(String orderBy);
 
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(Class<T> modelClass);
+	
+	ICompositeQueryFilter<Object> createCompositeQueryFilter(String modelTableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);
 

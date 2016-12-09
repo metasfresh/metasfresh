@@ -1,90 +1,56 @@
 package de.metas.adempiere.ait.helper;
 
-/*
- * #%L
- * de.metas.adempiere.ait
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
-import org.compiere.model.MPInstance;
-import org.compiere.model.MPInstancePara;
-import org.compiere.model.MProcess;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfo;
 import org.compiere.process.StateEngine;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Trx;
-import org.compiere.wf.MWFProcess;
 
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
+
+@SuppressWarnings("unused")
 public class ProcessHelper
 {
 	private final IHelper helper;
 	private int processId;
-	private Class<? extends SvrProcess> clazz;
+	private Class<? extends JavaProcess> clazz;
 	private int tableId = -1;
 	private int recordId = 0;
 	private final Map<String, Object> parameters = new Hashtable<String, Object>();
 	private ProcessInfo pi;
-	private SvrProcess svrProcess;
+	private JavaProcess javaProcess;
 	private boolean result;
 	private String resultMsg = null;
 	private List<Integer> selection;
 
 	private int expectedProcessId;
-	private Class<? extends SvrProcess> expectedClass;
+	private Class<? extends JavaProcess> expectedClass;
 	
 	public static final String DEFAULT_ExpectedWFState = StateEngine.STATE_Completed;
 	private String expectedWFState = DEFAULT_ExpectedWFState;
 	
 	private final List<IProcessHelperListener> listeners = new ArrayList<IProcessHelperListener>();
 	
-	private MProcess process;
-	private MPInstance pinstance;
+	private I_AD_Process process;
+	private I_AD_PInstance pinstance;
 
 	private Class<? extends Exception> expectedException;
 	
@@ -96,14 +62,14 @@ public class ProcessHelper
 		this.trxName = helper.getTrxName();
 	}
 
-	public void quickRun(Class<? extends SvrProcess> clazz, Object record)
+	public void quickRun(Class<? extends JavaProcess> clazz, Object record)
 	{
 		setProcessClass(clazz)
 				.setPO(record)
 				.run();
 	}
 	
-	public ProcessHelper setProcessClass(Class<? extends SvrProcess> clazz)
+	public ProcessHelper setProcessClass(Class<? extends JavaProcess> clazz)
 	{
 		this.clazz = clazz;
 		return this;
@@ -195,114 +161,118 @@ public class ProcessHelper
 
 	public void run(final String tabWhereClause)
 	{
-		assertNull("This helper was already run", svrProcess);
+		throw new UnsupportedOperationException();
 		
-		// Call beforeRun listeners
-		for (IProcessHelperListener listener : listeners)
-		{
-			listener.beforeRun(this);
-		}
-		
-		// committing the helper's transaction to make sure that there are no locked rows and that intermediate results are avaialable 
-		// when the process/workflow transaction tries to do its work.
-		helper.commitTrx(false);
-		
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		if (processId <= 0)
-		{
-			processId = processPA.retrieveProcessId(clazz, null);
-			assertTrue("No process found for " + clazz, processId > 0);
-		}
-		this.process = MProcess.get(helper.getCtx(), processId);
-		assertNotNull("No process found for " + processId, process);
-
-		if (expectedProcessId > 0)
-		{
-			assertEquals("Wrong AD_Process_ID for " + this.process.getClassname(), expectedProcessId, processId);
-		}
-		if (expectedClass != null)
-		{
-			assertEquals("Wrong process class for AD_Process_ID=" + processId, expectedClass.getName(), this.process.getClassname());
-		}
-
-		createPInstance();
-		helper.createT_Selection(pinstance.getAD_PInstance_ID(), getSelectionIds());
-
-		this.pi = new ProcessInfo("TestRun_" + clazz + "_" + processId + "_" + pinstance.getAD_PInstance_ID(), processId);
-		pi.setAD_Client_ID(Env.getAD_Client_ID(helper.getCtx()));
-		pi.setAD_Org_ID(Env.getAD_Org_ID(helper.getCtx()));
-		pi.setAD_User_ID(Env.getAD_User_ID(helper.getCtx()));
-		pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
-		pi.setTable_ID(tableId);
-		pi.setRecord_ID(recordId);
-		pi.setIsBatch(false);
-		pi.setClassName(process.getClassname());
-		
-		if (!Check.isEmpty(tabWhereClause, true))
-		{
-			pi.setWhereClause(tabWhereClause);
-		}
-
-		if (!Check.isEmpty(pi.getClassName(), true))
-		{
-			Trx trx = getTrx();
-			if (trx != null)
-				this.result = ProcessUtil.startJavaProcessWithoutTrxClose(helper.getCtx(), pi, trx);
-			else
-			{
-				final String localTrxName = Services.get(ITrxManager.class).createTrxName(getClass().getSimpleName() + "_run", false);
-				DB.saveConstraints();
-				try
-				{
-					DB.getConstraints().addAllowedTrxNamePrefix(localTrxName);
-					trx = Trx.get(localTrxName, true);
-					this.result = ProcessUtil.startJavaProcess(helper.getCtx(), pi, trx);
-				}
-				finally
-				{
-					DB.restoreConstraints();
-					assertFalse("Trx " + trx + " is not closed", trx.isActive());
-					trx.rollback();
-					trx.close();
-					trx = null;
-				}
-			}
-		}
-		else if (process.getAD_Workflow_ID() > 0)
-		{
-			final MWFProcess wfp = ProcessUtil.startWorkFlow(helper.getCtx(), pi, process.getAD_Workflow_ID());
-			assertNotNull("WF Process not created", wfp);
-			this.resultMsg = wfp.getProcessMsg();
-
-			final StateEngine wfStateEngine = wfp.getState();
-			assertNotNull("No state engine found for wf process: " + wfp, wfStateEngine);
-
-			final String wfState = wfStateEngine.getState();
-			assertEquals("WF state not completed: State=" + wfState + "(" + wfStateEngine.getStateInfo() + "), ProcessMsg=" + resultMsg,
-					expectedWFState, wfState);
-
-			this.result = true;
-		}
-		else
-		{
-			fail("Running process " + process + " is not supported");
-		}
-		if (expectedException == null)
-		{
-			assertTrue("Process " + svrProcess + " returned 'false' with message: " + pi.getSummary(), result);
-		}
-		else
-		{
-			assertFalse("Process " + svrProcess + " was expected to fail, but it suceeded with message: " + pi.getSummary(), result);
-			assertThat("Process " + svrProcess + " was expected to fail with an exception", 
-					pi.getThrowable(), instanceOf(expectedException));
-		}
-		
-		// Call afterRun listeners
-		for (IProcessHelperListener listener : listeners)
-		{
-			listener.afterRun(this);
-		}
+		// TODO: check/re-implemented if needed.
+//		
+//		assertNull("This helper was already run", javaProcess);
+//		
+//		// Call beforeRun listeners
+//		for (IProcessHelperListener listener : listeners)
+//		{
+//			listener.beforeRun(this);
+//		}
+//		
+//		// committing the helper's transaction to make sure that there are no locked rows and that intermediate results are avaialable 
+//		// when the process/workflow transaction tries to do its work.
+//		helper.commitTrx(false);
+//		
+//		final IProcessPA processPA = Services.get(IProcessPA.class);
+//		if (processId <= 0)
+//		{
+//			processId = processPA.retrieveProcessId(clazz, null);
+//			assertTrue("No process found for " + clazz, processId > 0);
+//		}
+//		this.process = MProcess.get(helper.getCtx(), processId);
+//		assertNotNull("No process found for " + processId, process);
+//
+//		if (expectedProcessId > 0)
+//		{
+//			assertEquals("Wrong AD_Process_ID for " + this.process.getClassname(), expectedProcessId, processId);
+//		}
+//		if (expectedClass != null)
+//		{
+//			assertEquals("Wrong process class for AD_Process_ID=" + processId, expectedClass.getName(), this.process.getClassname());
+//		}
+//
+//		createPInstance();
+//		helper.createT_Selection(pinstance.getAD_PInstance_ID(), getSelectionIds());
+//
+//		this.pi = new ProcessInfo("TestRun_" + clazz + "_" + processId + "_" + pinstance.getAD_PInstance_ID(), processId);
+//		pi.setAD_Client_ID(Env.getAD_Client_ID(helper.getCtx()));
+//		pi.setAD_Org_ID(Env.getAD_Org_ID(helper.getCtx()));
+//		pi.setAD_User_ID(Env.getAD_User_ID(helper.getCtx()));
+//		pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
+//		pi.setTable_ID(tableId);
+//		pi.setRecord_ID(recordId);
+//		pi.setIsBatch(false);
+//		pi.setClassName(process.getClassname());
+//		
+//		if (!Check.isEmpty(tabWhereClause, true))
+//		{
+//			pi.setWhereClause(tabWhereClause);
+//		}
+//
+//		if (!Check.isEmpty(pi.getClassName(), true))
+//		{
+//			Trx trx = getTrx();
+//			if (trx != null)
+//				this.result = ProcessUtil.startJavaProcessWithoutTrxClose(helper.getCtx(), pi, trx);
+//			else
+//			{
+//				final String localTrxName = Services.get(ITrxManager.class).createTrxName(getClass().getSimpleName() + "_run", false);
+//				DB.saveConstraints();
+//				try
+//				{
+//					DB.getConstraints().addAllowedTrxNamePrefix(localTrxName);
+//					trx = Trx.get(localTrxName, true);
+//					this.result = ProcessUtil.startJavaProcess(helper.getCtx(), pi, trx);
+//				}
+//				finally
+//				{
+//					DB.restoreConstraints();
+//					assertFalse("Trx " + trx + " is not closed", trx.isActive());
+//					trx.rollback();
+//					trx.close();
+//					trx = null;
+//				}
+//			}
+//		}
+//		else if (process.getAD_Workflow_ID() > 0)
+//		{
+//			final MWFProcess wfp = ProcessUtil.startWorkFlow(helper.getCtx(), pi, process.getAD_Workflow_ID());
+//			assertNotNull("WF Process not created", wfp);
+//			this.resultMsg = wfp.getProcessMsg();
+//
+//			final StateEngine wfStateEngine = wfp.getState();
+//			assertNotNull("No state engine found for wf process: " + wfp, wfStateEngine);
+//
+//			final String wfState = wfStateEngine.getState();
+//			assertEquals("WF state not completed: State=" + wfState + "(" + wfStateEngine.getStateInfo() + "), ProcessMsg=" + resultMsg,
+//					expectedWFState, wfState);
+//
+//			this.result = true;
+//		}
+//		else
+//		{
+//			fail("Running process " + process + " is not supported");
+//		}
+//		if (expectedException == null)
+//		{
+//			assertTrue("Process " + javaProcess + " returned 'false' with message: " + pi.getSummary(), result);
+//		}
+//		else
+//		{
+//			assertFalse("Process " + javaProcess + " was expected to fail, but it suceeded with message: " + pi.getSummary(), result);
+//			assertThat("Process " + javaProcess + " was expected to fail with an exception", 
+//					pi.getThrowable(), instanceOf(expectedException));
+//		}
+//		
+//		// Call afterRun listeners
+//		for (IProcessHelperListener listener : listeners)
+//		{
+//			listener.afterRun(this);
+//		}
 	}
 
 	public void run()
@@ -317,44 +287,30 @@ public class ProcessHelper
 		{
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false);
 
-			this.pinstance = new MPInstance(helper.getCtx(), processId, tableId, recordId);
-			pinstance.saveEx();
+			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+			this.pinstance = adPInstanceDAO.createAD_PInstance(helper.getCtx(), processId, tableId, recordId);
 
 			//
 			// Add parameters:
-			int seqNo = 10;
+			final List<ProcessInfoParameter> piParams = new ArrayList<>();
 			for (Map.Entry<String, Object> e : parameters.entrySet())
 			{
 				final String name = e.getKey();
 				final Object value = e.getValue();
-				MPInstancePara para = new MPInstancePara(pinstance, seqNo);
 				if (value == null)
-					; // skip
-				else if (value instanceof Integer)
-					para.setParameter(name, (Integer)value);
-				else if (value instanceof BigDecimal)
-					para.setParameter(name, (BigDecimal)value);
-				else if (value instanceof Boolean)
-					para.setParameter(name, (Boolean)value);
-				else if (value instanceof Timestamp)
-					para.setParameter(name, (Timestamp)value);
-				else if (value instanceof String)
-					para.setParameter(name, (String)value);
-				else
-					fail("Parameter type " + value.getClass() + " not supported for " + name + "=" + value);
-				para.saveEx();
-				seqNo += 10;
+				{
+					continue;
+				}
+				
+				piParams.add(ProcessInfoParameter.ofValueObject(name, value));
 			}
+			
+			adPInstanceDAO.saveParameterToDB(pinstance.getAD_PInstance_ID(), piParams);
 		}
 		finally
 		{
 			DB.restoreConstraints();
 		}
-	}
-
-	public SvrProcess getSvrProcess()
-	{
-		return svrProcess;
 	}
 
 	public ProcessInfo getProcessInfo()
@@ -379,7 +335,7 @@ public class ProcessHelper
 		return this;
 	}
 
-	public ProcessHelper setExpectedClass(Class<? extends SvrProcess> clazz)
+	public ProcessHelper setExpectedClass(Class<? extends JavaProcess> clazz)
 	{
 		this.expectedClass = clazz;
 		return this;

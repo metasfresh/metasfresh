@@ -15,11 +15,11 @@ import java.util.List;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,15 +46,6 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	String retrieveWindowName(int adWindowId);
 
-	/**
-	 * Loads and returns the given window (cached).
-	 * 
-	 * @param ctx
-	 * @param adWindowId whe window's <code>AD_Window_ID</code>.
-	 * @return
-	 */
-	I_AD_Window retrieveWindow(Properties ctx, int adWindowId);
-
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 
 	List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
@@ -74,5 +65,13 @@ public interface IADWindowDAO extends ISingletonService
 	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
 
 	void moveElement(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup toUIElementGroup);
+
+	/**
+	 * Retrieve the first tab of the given window (seqNo = 10)
+	 * 
+	 * @param window
+	 * @return
+	 */
+	I_AD_Tab retrieveFirstTab(I_AD_Window window);
 
 }

@@ -27,8 +27,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -52,10 +50,12 @@ import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.model.MProduct;
 import org.compiere.swing.CMenuItem;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**

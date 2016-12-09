@@ -7,6 +7,7 @@ import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
 import org.compiere.model.PO;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -194,6 +195,12 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	{
 		return POWrapper.isValueChanged(model, columnNames);
 	}
+	
+	@Override
+	public boolean isNull(final Object model, final String columnName)
+	{
+		return POWrapper.isNull(model, columnName);
+	}
 
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
@@ -212,6 +219,12 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	public <T extends PO> T getPO(final Object model, final boolean strict)
 	{
 		// always strict, else other wrapper helpers will handle it!
+		return POWrapper.getStrictPO(model);
+	}
+	
+	@Override
+	public Evaluatee getEvaluatee(final Object model)
+	{
 		return POWrapper.getStrictPO(model);
 	}
 }

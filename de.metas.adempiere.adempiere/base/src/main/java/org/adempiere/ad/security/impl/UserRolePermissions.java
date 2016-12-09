@@ -331,6 +331,22 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return AD_User_ID;
 	}	// getAD_User_ID
+	
+	@Override
+	public boolean isSystemAdministrator()
+	{
+		if (getAD_Role_ID() != SYSTEM_ROLE_ID)
+		{
+			return false;
+		}
+
+		// Shall have at access to system organization
+		if (!isOrgAccess(OrgPermission.AD_Org_ID_System, true))
+		{
+			return false;
+		}
+		return true;
+	}
 
 	/**************************************************************************
 	 * Get Client Where Clause Value

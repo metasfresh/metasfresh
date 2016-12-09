@@ -4,18 +4,18 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -47,8 +47,8 @@ import de.metas.order.process.impl.CreatePOFromSOsAggregator;
  * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
 public class C_Order_CreatePOFromSOs
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 
 	private Timestamp p_DatePromised_From;

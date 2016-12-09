@@ -79,7 +79,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.swing.CPanel;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -87,7 +86,9 @@ import org.compiere.util.Msg;
 import org.eevolution.model.MPPOrder;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.logging.LogManager;
 
 /**
@@ -97,7 +98,7 @@ import de.metas.logging.LogManager;
 @SuppressWarnings("all")
 // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 public class VOrderPlanning extends CPanel
-		implements FormPanel, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, ASyncProcess
+		implements FormPanel, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, IProcessExecutionListener
 {
 	/** Creates new form VOrderPlanning */
 	public VOrderPlanning()
@@ -383,18 +384,7 @@ public class VOrderPlanning extends CPanel
 	}
 
 	@Override
-	public void executeASync(org.compiere.process.ProcessInfo processInfo)
-	{
-	}
-
-	@Override
-	public boolean isUILocked()
-	{
-		return false;
-	}
-
-	@Override
-	public void lockUI(org.compiere.process.ProcessInfo processInfo)
+	public void lockUI(de.metas.process.ProcessInfo processInfo)
 	{
 	}
 
@@ -409,7 +399,7 @@ public class VOrderPlanning extends CPanel
 	}
 
 	@Override
-	public void unlockUI(org.compiere.process.ProcessInfo processInfo)
+	public void unlockUI(de.metas.process.ProcessInfo processInfo)
 	{
 	}
 

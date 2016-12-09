@@ -38,21 +38,33 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 public class QueryBL implements IQueryBL
 {
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
-			final Properties ctx,
-			final String trxName)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, final String trxName)
 	{
 		return new QueryBuilder<T>(modelClass)
 				.setContext(ctx, trxName);
 	}
 
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
-			final Object contextProvider)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Object contextProvider)
 	{
 		return new QueryBuilder<T>(modelClass)
 				.setContext(contextProvider);
 	}
+	
+	@Override
+	public IQueryBuilder<Object> createQueryBuilder(final String modelTableName, final Properties ctx, final String trxName)
+	{
+		return QueryBuilder.createForTableName(modelTableName)
+				.setContext(ctx, trxName);
+	}
+
+	@Override
+	public IQueryBuilder<Object> createQueryBuilder(final String modelTableName, final Object contextProvider)
+	{
+		return QueryBuilder.createForTableName(modelTableName)
+				.setContext(contextProvider);
+	}
+
 
 	@Deprecated
 	@Override
@@ -77,6 +89,12 @@ public class QueryBL implements IQueryBL
 	public <T> ICompositeQueryFilter<T> createCompositeQueryFilter(final Class<T> modelClass)
 	{
 		return new CompositeQueryFilter<T>(modelClass);
+	}
+	
+	@Override
+	public ICompositeQueryFilter<Object> createCompositeQueryFilter(final String modelTableName)
+	{
+		return new CompositeQueryFilter<>(modelTableName);
 	}
 
 	@Override

@@ -38,6 +38,7 @@ import javax.swing.event.EventListenerList;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
+import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,7 +46,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -88,6 +88,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IProcessPrecondition;
 
 /**
  * Tab Model.
@@ -138,7 +139,7 @@ import de.metas.logging.MetasfreshLastError;
  * @author Paul Bowden, phib BF 2900767 Zoom to child tab - inefficient queries
  * @see https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
  */
-public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord, ISvrProcessPrecondition.PreconditionsContext
+public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord, IProcessPrecondition.PreconditionsContext
 {
 
 	/**
@@ -3346,13 +3347,15 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			calloutExecutor.execute(field);
 		}
+		catch(final CalloutException e)
+		{
+			final String errmsg = AdempiereException.extractMessage(e);
+			log.warn("Failed executing callout on {}. \n Error message: {} \n CalloutInstance: {}", field, errmsg, e.getCalloutInstance(), e);
+			return errmsg;
+		}
 		catch (final Exception e)
 		{
-			String errmsg = e.getLocalizedMessage();
-			if (Check.isEmpty(errmsg, true))
-			{
-				errmsg = e.toString();
-			}
+			final String errmsg = AdempiereException.extractMessage(e);
 
 			log.warn(errmsg, e);
 			return errmsg;

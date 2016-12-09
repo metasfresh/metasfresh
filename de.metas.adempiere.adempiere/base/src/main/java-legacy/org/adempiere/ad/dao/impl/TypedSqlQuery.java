@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
@@ -47,7 +46,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
@@ -55,7 +53,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
 
 /**
  *
@@ -75,7 +76,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private final String tableName;
 	private String sqlFrom = null;
 	private POInfo _poInfo;
-	private Class<T> modelClass = null;
+	private final Class<T> modelClass;
 	private String whereClause;
 	private final String trxName;
 
@@ -84,7 +85,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private IQueryFilter<T> postQueryFilter;
 	private boolean applyAccessFilter = false;
 	private boolean applyAccessFilterRW = false;
-	// private boolean applyAccessFilterFullyQualified = true; // metas: shall not be used
 	private boolean onlyActiveRecords = false;
 	private boolean onlyClient_ID = false;
 	private int onlySelection_ID = -1;
@@ -100,10 +100,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @param tableName
 	 * @param whereClause
 	 * @param trxName
-	 * @deprecated Please use {@link #TypedSqlQuery(Properties, Class, String, String)}
 	 */
-	@Deprecated
-	protected TypedSqlQuery(final Properties ctx, final String tableName, final String whereClause, final String trxName)
+	protected TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String tableName, final String whereClause, final String trxName)
 	{
 		super();
 		Check.assumeNotNull(ctx, "ctx not null");
@@ -113,14 +111,21 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.tableName = tableName;
 		this.whereClause = whereClause;
 		this.trxName = trxName;
+		
+		this.modelClass = modelClass;
 	}
 
-	public TypedSqlQuery(Properties ctx, Class<T> modelClass, String whereClause, String trxName)
+	public TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String whereClause, final String trxName)
 	{
-		this(ctx,
-				InterfaceWrapperHelper.getTableName(modelClass),
-				whereClause,
-				trxName);
+		super();
+		Check.assumeNotNull(ctx, "ctx not null");
+		Check.assumeNotNull(modelClass, "Parameter modelClass is not null");
+
+		this.ctx = ctx;
+		this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		this.whereClause = whereClause;
+		this.trxName = trxName;
+
 
 		this.modelClass = modelClass;
 	}
@@ -265,13 +270,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public <ET extends T> List<ET> list(Class<ET> clazz) throws DBException
 	{
 		final List<ET> list;
-		if (limit > 0)
+		if (limit > 0 && limit <= 100)
 		{
-			list = new ArrayList<ET>(limit);
+			list = new ArrayList<>(limit);
 		}
 		else
 		{
-			list = new ArrayList<ET>();
+			// TODO: check if we shall go with LinkedList in this case
+			list = new ArrayList<>();
 		}
 
 		final String sql = buildSQL(null, true);
@@ -1265,51 +1271,23 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer();
-		sb.append("Query[");
-		sb.append(getTableName());
-		sb.append(", Where=").append(whereClause);
-		sb.append(", From=").append(getSqlFrom());
-		if (postQueryFilter != null)
-		{
-			sb.append(", Post-Filter=").append(postQueryFilter);
-		}
-		if (unions != null && !unions.isEmpty())
-		{
-			sb.append(", UNIONS=").append(unions);
-		}
-		if (parameters != null && !parameters.isEmpty())
-			sb.append(", Params=").append(parameters.toString());
-		if (queryOrderBy != null)
-			sb.append(", OrderBy=").append(queryOrderBy);
-		//
-		// metas: limit & offset
-		if (limit > 0)
-		{
-			sb.append(", Limit=").append(limit);
-		}
-		if (offset >= 0)
-		{
-			sb.append(", Offset=").append(offset);
-		}
-
-		sb.append(", trxName=").append(trxName);
-		sb.append(", Options=");
-		if (applyAccessFilter)
-			sb.append("ApplyAccessFilter;");
-		// metas: commented out because we don't use it anymore (considering always true)
-		// if (applyAccessFilterFullyQualified)
-		// sb.append("ApplyAccessFilterFQ;");
-		if (applyAccessFilterRW)
-			sb.append("ApplyAccessFilterRW;");
-		if (onlyActiveRecords)
-			sb.append("OnlyActive;");
-		if (onlySelection_ID > 0)
-			sb.append("OnlySelection=").append(onlySelection_ID).append(";");
-		if (options != null && !options.isEmpty())
-			sb.append(options.toString()).append(";");
-		sb.append("]");
-		return sb.toString();
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("tableName", tableName)
+				.add("whereClause", whereClause)
+				.add("SqlFrom", this.sqlFrom)
+				.add("postQueryFilter", postQueryFilter)
+				.add("unions", unions != null && !unions.isEmpty() ? unions : null)
+				.add("parameters", parameters != null && !parameters.isEmpty() ? parameters : null)
+				.add("limit", limit > 0 ? limit : null)
+				.add("offset", offset > 0 ? offset : null)
+				.add("trxName", trxName)
+				.add("applyAccessFilter", applyAccessFilter ? Boolean.TRUE : null)
+				.add("applyAccessFilterRW", applyAccessFilterRW ? Boolean.TRUE : null)
+				.add("onlyActiveRecords", onlyActiveRecords ? Boolean.TRUE : null)
+				.add("onlySelection_ID", onlySelection_ID > 0 ? onlySelection_ID : null)
+				.add("options", options != null && !options.isEmpty() ? options : null)
+				.toString();
 	}
 
 	// metas
@@ -1455,7 +1433,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	protected TypedSqlQuery<T> newInstance()
 	{
-		return new TypedSqlQuery<T>(ctx, tableName, whereClause, trxName);
+		return new TypedSqlQuery<T>(ctx, modelClass, tableName, whereClause, trxName);
 	}
 
 	/**
@@ -1466,11 +1444,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public TypedSqlQuery<T> copy()
 	{
 		final TypedSqlQuery<T> queryTo = newInstance();
-		// queryTo.ctx = ctx;
 		queryTo.sqlFrom = sqlFrom;
 		queryTo.whereClause = whereClause;
 		queryTo.postQueryFilter = postQueryFilter;
-		// queryTo.trxName = trxName;
 		//
 		queryTo.queryOrderBy = queryOrderBy;
 		queryTo.applyAccessFilter = applyAccessFilter;
@@ -1531,7 +1507,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public int createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
-		final int newSelectionId = DB.getNextID(getCtx(), I_AD_PInstance.Table_Name, ITrx.TRXNAME_None);
+		final int newSelectionId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(getCtx());
 
 		// Populate the selection
 		final int count = createSelection(newSelectionId);

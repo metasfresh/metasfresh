@@ -5,21 +5,17 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.printing.ait</groupId>
 	<artifactId>de.metas.printing.ait</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<description>Print Processing (Mass &amp; Single) - AITs</description>
-
-	<properties>
-		<de.metas.printing.esb.camel.version>${metasfresh-dependency.version}</de.metas.printing.esb.camel.version>
-		<de.metas.printing.printing-client.version>${metasfresh-dependency.version}</de.metas.printing.printing-client.version>
-	</properties>
 
 	<dependencies>
 
@@ -38,6 +34,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 			<exclusions>
@@ -56,6 +53,7 @@
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
+			<version>1.0.0</version>
 			<type>jar</type>
 			<scope>test</scope>
 			<exclusions>
@@ -64,6 +62,7 @@
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -72,13 +71,13 @@
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
-			<version>${de.metas.printing.esb.camel.version}</version>
+			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
-			<version>${de.metas.printing.esb.camel.version}</version>
+			<version>1.0.0</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -87,14 +86,14 @@
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client</artifactId>
-			<version>${de.metas.printing.printing-client.version}</version>
+			<version>1.0.0</version>
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client</artifactId>
-			<version>${de.metas.printing.printing-client.version}</version>
+			<version>1.0.0</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -242,16 +241,19 @@
 			<!-- needed because of TestClientUI class -->
 			<groupId>de.metas.adempiere.ait</groupId>
 			<artifactId>de.metas.adempiere.ait</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>

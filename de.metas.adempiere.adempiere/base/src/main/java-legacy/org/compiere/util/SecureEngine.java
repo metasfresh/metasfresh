@@ -32,13 +32,13 @@ public class SecureEngine
 {
 	/**
 	 * 	Initialize Security
-	 *	@param ctx context with ADEMPIERE_SECURE class name
+	 *	@param ctx context with METASFRESH_SECURE class name
 	 */
-	public static void init (Properties ctx)
+	public static void init (final Properties ctx)
 	{
 		if (s_engine == null)
 		{
-			String className = ctx.getProperty(SecureInterface.ADEMPIERE_SECURE);
+			String className = ctx.getProperty(SecureInterface.METASFRESH_SECURE);
 			s_engine = new SecureEngine(className);
 		}
 	}	//	init
@@ -169,7 +169,7 @@ public class SecureEngine
 	{
 		String realClass = className;
 		if (realClass == null || realClass.length() == 0)
-			realClass = SecureInterface.ADEMPIERE_SECURE_DEFAULT;
+			realClass = SecureInterface.METASFRESH_SECURE_DEFAULT;
 		Exception cause = null;
 		try
 		{
@@ -183,7 +183,7 @@ public class SecureEngine
 		if (implementation == null)
 		{
 			String msg = "Could not initialize: " + realClass + " - " + cause.toString()
-				+ "\nCheck start script parameter ADEMPIERE_SECURE"; 
+					+ "\nCheck start script parameter: " + SecureInterface.METASFRESH_SECURE;
 			log.error(msg);
 			System.err.println(msg);
 			System.exit(10);
