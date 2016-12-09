@@ -275,8 +275,7 @@ final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 // these two are shown in jenkins, for each build
-currentBuild.displayName="build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
-currentBuild.description="task/upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 
 timestamps 
 {
