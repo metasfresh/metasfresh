@@ -17,10 +17,11 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * #677 make customs report faster
+  * #541 Remove PiPo from metasfresh removing code and data
 
 * webui
   * #625 Shipment Schedule Window WebUI
-
+  * #687 webUI bundle
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
