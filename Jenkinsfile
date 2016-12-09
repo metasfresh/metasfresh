@@ -437,15 +437,15 @@ node('agent && linux && libc6-i386')
 		
 				final String mavenUpdatePropertyParam;
 				final String mavenUpdateParentParam;
-				if(params.MF_METASFRESH_VERSION)
+				if(!params.MF_SKIP_TO_DIST)
 				{
-					mavenUpdateParentParam="-DparentVersion=${params.MF_METASFRESH_VERSION}"
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${params.MF_METASFRESH_VERSION}"; // update the property, use the metasfresh version that we were given by the upstream job
+					mavenUpdateParentParam="-DparentVersion=${BUILD_VERSION}"
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}"; // update the property, use the metasfresh version that the "main" part of this pipeline was build with
 				}
 				else
 				{
-					mavenUpdateParentParam=''; // empty string, because the correct value is already written into the pom by the following update-properties goal
-					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // still update the property, but use the latest version
+					mavenUpdateParentParam=''; // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so use the latest
+					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the property, but use the latest version
 				}
 		
 				// update the parent pom version
