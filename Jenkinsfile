@@ -201,21 +201,18 @@ node('agent && linux') // shall only run on a jenkins agent with linux
             }
 		}
 	}
-   
-	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+ } // node
+ 
+if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+{
+	stage('Invoke downstream job') 
 	{
-		stage('Invoke downstream job') 
-		{
-			invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, false); // wait=false 
-		}
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, false); // wait=false 
 	}
-	else
-	{
-		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
-	}
+}
+else
+{
+	echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
+}
 
-	// clean up the work space, including the local maven repositories that the withMaven steps created
-	// don't clean up the work space..we do it when we check out next time
-	// step([$class: 'WsCleanup', cleanWhenFailure: false])
-} // node
 } // timestamps   
