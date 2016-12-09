@@ -196,14 +196,16 @@ public class WindowQuickInputRestController
 				.getIncludedEntityByDetailId(detailId)
 				.getQuickInputDescriptor();
 
-		final Document quickInputDocument = Document.builder()
-				.setEntityDescriptor(quickInputDescriptor)
-				// .setParentDocument(parentDocument) // TODO: we would need it for context variables evaluation in lookups and other logics
-				.setDocumentIdSupplier(() -> nextDocumentId.getAndIncrement())
-				.initializeAsNewDocument()
-				.build();
+		return Execution.callInNewExecution("quickInput.create", () -> {
+			final Document quickInputDocument = Document.builder()
+					.setEntityDescriptor(quickInputDescriptor)
+					// .setParentDocument(parentDocument) // TODO: we would need it for context variables evaluation in lookups and other logics
+					.setDocumentIdSupplier(() -> nextDocumentId.getAndIncrement())
+					.initializeAsNewDocument()
+					.build();
 
-		return QuickInput.of(adWindowId, documentIdStr, detailId, quickInputDocument);
+			return QuickInput.of(adWindowId, documentIdStr, detailId, quickInputDocument);
+		});
 	}
 
 	private QuickInput getQuickInputForWriting(final int quickInputId)
