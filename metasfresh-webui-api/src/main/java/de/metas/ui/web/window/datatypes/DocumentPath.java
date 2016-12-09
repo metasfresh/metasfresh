@@ -134,7 +134,7 @@ public final class DocumentPath
 	private final DocumentId documentId;
 	private final DetailId detailId;
 	private final Set<DocumentId> rowIds;
-	private final DocumentId singleRowId;
+	private final transient DocumentId singleRowId;
 
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
