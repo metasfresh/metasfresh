@@ -166,27 +166,31 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
             stage('Set versions and build metasfresh-procurement-webui') 
             {
-               // update the parent pom version
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
-
-				final String metasfreshVersionString;
+				final String mavenUpdateParentParam; // empty string for now. Uncomment the two assignements in the if and else *if* and when metasfresh-webui switcheds its parent pom to de.metas.parent
+				final String mavenUpdatePropertyParam;
 				if(params.MF_METASFRESH_VERSION)
 				{
-					metasfreshVersionString="-Dmetasfresh.version=${params.MF_METASFRESH_VERSION}"; // use the metasfresh version that we were given by the upstream job
+					// mavenUpdateParentParam="-DparentVersion=${params.MF_METASFRESH_VERSION}"
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${params.MF_METASFRESH_VERSION}"; // update the property, use the metasfresh version that we were given by the upstream job
 				}
 				else
 				{
-					// figure out the latest metasfresh version that we can use. the pom is edited accordingly by the versions plugin
-					sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-properties"
-					metasfreshVersionString=''; // empty string, because the correct value is already inside the pom
+					// mavenUpdateParentParam=''; // use the latest parent
+					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // still update the property, but use the latest version
 				}
 				
+                // update the parent pom version
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
+
+				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
+				
 				// set the artifact version of everything below the webui's pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.procurement*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} ${metasfreshVersionString} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				
 				currentBuild.description="""artifacts (if not yet cleaned up)				
 				<ul>
