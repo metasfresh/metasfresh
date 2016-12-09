@@ -90,7 +90,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		_staleDocumentIds = new HashSet<>(from._staleDocumentIds);
 
 		// Deep-copy documents map
-		this._documents = new LinkedHashMap<>(Maps.transformValues(from._documents, (includedDocumentOrig) -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
+		_documents = new LinkedHashMap<>(Maps.transformValues(from._documents, (includedDocumentOrig) -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
 	}
 
 	@Override
@@ -128,7 +128,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return !_staleDocumentIds.isEmpty();
 	}
 
-	private final boolean isStale(DocumentId documentId)
+	private final boolean isStale(final DocumentId documentId)
 	{
 		return _staleDocumentIds.contains(documentId);
 	}
@@ -175,7 +175,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 		//
 		// Check loaded collection
-		Document documentExisting = _documents.get(documentId);
+		final Document documentExisting = _documents.get(documentId);
 		if (documentExisting != null)
 		{
 			if (isStale(documentId))

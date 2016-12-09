@@ -159,7 +159,7 @@ public class DocumentCollection
 
 		return rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
 	}
-
+	
 	/**
 	 * Gets or creates a new document (writable mode)
 	 *
