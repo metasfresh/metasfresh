@@ -21,6 +21,8 @@ import com.google.common.base.MoreObjects;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.exceptions.NotImplementedException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTabQuickInput;
@@ -130,9 +132,7 @@ public class WindowQuickInputRestController
 		userSession.assertLoggedIn();
 
 		return getQuickInputReadonly(quickInputId)
-				.getQuickInputDocument()
-				.getFieldLookupValuesForQuery(fieldName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.getFieldTypeaheadValues(fieldName, query);
 	}
 
 	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
@@ -144,9 +144,7 @@ public class WindowQuickInputRestController
 		userSession.assertLoggedIn();
 
 		return getQuickInputReadonly(quickInputId)
-				.getQuickInputDocument()
-				.getFieldLookupValues(fieldName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.getFieldDropdownValues(fieldName);
 	}
 
 	@PatchMapping("/{quickInputId}")
@@ -170,7 +168,7 @@ public class WindowQuickInputRestController
 		final QuickInput quickInput = getQuickInputReadonly(quickInputId);
 
 		return Execution.callInNewExecution("quickInput.complete", () -> {
-			final Document document = quickInput.complete(documentsCollection);
+			final Document document = quickInput.complete();
 			return JSONDocument.ofDocument(document, newJSONOptions());
 		});
 	}
@@ -199,23 +197,32 @@ public class WindowQuickInputRestController
 		return Execution.callInNewExecution("quickInput.create", () -> {
 			final Document quickInputDocument = Document.builder()
 					.setEntityDescriptor(quickInputDescriptor)
-					// .setParentDocument(parentDocument) // TODO: we would need it for context variables evaluation in lookups and other logics
+					// .setShadowParentDocumentEvaluatee(parentDocument) // TODO: we would need it for context variables evaluation in lookups and other logics
 					.setDocumentIdSupplier(() -> nextDocumentId.getAndIncrement())
 					.initializeAsNewDocument()
 					.build();
 
-			return QuickInput.of(adWindowId, documentIdStr, detailId, quickInputDocument);
+			return QuickInput.of(adWindowId, documentIdStr, detailId, quickInputDocument)
+					.bindRootDocument(documentsCollection);
 		});
 	}
 
 	private QuickInput getQuickInputForWriting(final int quickInputId)
 	{
-		return getQuickInputReadonly(quickInputId).copy(CopyMode.CheckOutWritable);
+		return getQuickInput(quickInputId, CopyMode.CheckOutWritable);
 	}
 
 	private QuickInput getQuickInputReadonly(final int quickInputId)
 	{
-		return _quickInputDocuments.getOrElseThrow(quickInputId, () -> new EntityNotFoundException("No quick input document found for ID=" + quickInputId));
+		return getQuickInput(quickInputId, CopyMode.CheckInReadonly);
+	}
+
+	private QuickInput getQuickInput(final int quickInputId, final CopyMode copyMode)
+	{
+		return _quickInputDocuments
+				.getOrElseThrow(quickInputId, () -> new EntityNotFoundException("No quick input document found for ID=" + quickInputId))
+				.copy(copyMode)
+				.bindRootDocument(documentsCollection);
 	}
 
 	private void putQuickInputDocument(final QuickInput quickInput)
@@ -231,27 +238,27 @@ public class WindowQuickInputRestController
 			return new QuickInput(adWindowId, documentId, detailId, quickInputDocument);
 		}
 
-		private final int adWindowId;
-		private final String documentId;
+		private final DocumentPath rootDocumentPath;
 		private final DetailId detailId;
 		private final Document quickInputDocument;
+
+		private transient Document rootDocument;
 
 		private QuickInput(final int adWindowId, final String documentId, final DetailId detailId, final Document quickInputDocument)
 		{
 			super();
-			this.adWindowId = adWindowId;
-			this.documentId = documentId;
+			rootDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
 			this.detailId = detailId;
 
 			Check.assumeNotNull(quickInputDocument, "Parameter quickInputDocument is not null");
 			this.quickInputDocument = quickInputDocument;
 		}
 
+		/** Copy constructor */
 		private QuickInput(final QuickInput from, final CopyMode copyMode)
 		{
 			super();
-			adWindowId = from.adWindowId;
-			documentId = from.documentId;
+			rootDocumentPath = from.rootDocumentPath;
 			detailId = from.detailId;
 			quickInputDocument = from.quickInputDocument.copy(copyMode);
 		}
@@ -261,8 +268,7 @@ public class WindowQuickInputRestController
 		{
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
-					.add("adWindowId", adWindowId)
-					.add("documentId", documentId)
+					.add("rootDocumentPath", rootDocumentPath)
 					.add("detailId", detailId)
 					.add("quickInputDocument", quickInputDocument)
 					.toString();
@@ -283,6 +289,23 @@ public class WindowQuickInputRestController
 			return new QuickInput(this, copyMode);
 		}
 
+		public QuickInput bindRootDocument(final DocumentCollection documentsCollection)
+		{
+			rootDocument = documentsCollection.getDocument(rootDocumentPath);
+			quickInputDocument.setShadowParentDocumentEvaluatee(rootDocument.asEvaluatee());
+
+			return this;
+		}
+
+		public Document getRootDocument()
+		{
+			if (rootDocument == null)
+			{
+				throw new IllegalStateException("root document not set for " + this);
+			}
+			return rootDocument;
+		}
+
 		public void processValueChanges(final List<JSONDocumentChangedEvent> events)
 		{
 			quickInputDocument.processValueChanges(events, () -> "direct update from rest API");
@@ -291,10 +314,25 @@ public class WindowQuickInputRestController
 		/**
 		 * @return newly created document
 		 */
-		public Document complete(final DocumentCollection documentsCollection)
+		public Document complete()
 		{
+			
 			// TODO call the API to create the new Document and return it!
 			throw new NotImplementedException();
+		}
+
+		public JSONLookupValuesList getFieldDropdownValues(final String fieldName)
+		{
+			return getQuickInputDocument()
+					.getFieldLookupValues(fieldName)
+					.transform(JSONLookupValuesList::ofLookupValuesList);
+		}
+
+		public JSONLookupValuesList getFieldTypeaheadValues(final String fieldName, final String query)
+		{
+			return getQuickInputDocument()
+					.getFieldLookupValuesForQuery(fieldName, query)
+					.transform(JSONLookupValuesList::ofLookupValuesList);
 		}
 
 	}
