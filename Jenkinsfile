@@ -6,7 +6,7 @@
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
  * TODO: move it into a shared library
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
+def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -49,7 +49,8 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 	build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			string(name: 'MF_BUILD_ID', value: buildId),
+			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
+			string(name: 'MF_METASFRESH_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
 }
@@ -274,14 +275,9 @@ final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 // these two are shown in jenkins, for each build
-currentBuild.displayName="build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
-currentBuild.description="task/upstream branch: ${MF_UPSTREAM_BRANCH}; upstream build id: " + params.MF_BUILD_ID ?: '(none)';
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 
 timestamps 
-{
-// while the "main/base" metasfresh stuff builds, no downstream builds should resolve metasfresh theses artifacts because we might end up with dependency convergence errors
-// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
-lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 {
 node('agent && linux')
 {
@@ -374,7 +370,6 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 		} // withMaven
 	} // configFileProvider
 } // node			
-} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -389,10 +384,10 @@ stage('Invoke downstream jobs')
 	{
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
-			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		}
 	
-		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, true); // wait=true
+		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
@@ -402,7 +397,7 @@ stage('Invoke downstream jobs')
 			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 			{
 				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
-				final jsonPayload = "{\"MF_BUILD_ID\":\"${MF_BUILD_ID}\",\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\"}"
+				final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
 				
 				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 			}
@@ -410,14 +405,6 @@ stage('Invoke downstream jobs')
 	} // if(params.MF_SKIP_TO_DIST)
 }
 
-	
-// make sure not to be in this stage while the "main/base" metasfresh stuff builds somewhere else. 
-// otherwise we might end up with a never version of de.metas.adempiere.adempiere.serverRoot.base (which was already build&deployed) 
-// and an older version of de.metas.fresh:de.metas.fresh.base (which in turn also dependy on an older serverRoot version)
-// i.e. Dependency convergence error
-// note that we have the lock outside of "node" so to not wait while squatting on and blocking a node"
-lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
-{
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
 {
@@ -448,13 +435,33 @@ node('agent && linux && libc6-i386')
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
 				])
 		
-				// *Now* set the artifact versions of everything below de.metas.endcustomer.mf15/pom.xml and also update their metas dependencies to the latest versions
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+				final String mavenUpdatePropertyParam;
+				final String mavenUpdateParentParam;
+				if(!params.MF_SKIP_TO_DIST)
+				{
+					mavenUpdateParentParam="-DparentVersion=${BUILD_VERSION}"
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}"; // update the property, use the metasfresh version that the "main" part of this pipeline was build with
+				}
+				else
+				{
+					mavenUpdateParentParam=''; // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so use the latest
+					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the property, but use the latest version
+				}
+		
+				// update the parent pom version
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
+				
+				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
+
+				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.endcustomer.sp80*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+
+				// do the actual building and deployment
+					// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+				// about -Dmaven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 			
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				// about -Dmaven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} help:all-profiles clean deploy"
 
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run? 
@@ -479,7 +486,6 @@ ${currentBuild.description}"""
 	// don't clean up the work space..we do it when we check out next time
 	// step([$class: 'WsCleanup', cleanWhenFailure: true])
 } // node
-} // lock("metasfresh-main-build-${MF_UPSTREAM_BRANCH}")
 
 // we need this one for both "Test-SQL" and "Deployment
 def downloadForDeployment = { String groupId, String artifactId, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
@@ -541,7 +547,7 @@ stage('Test SQL-Migration')
 			final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");				
 			final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 			final VALIDATE_MIGRATION_TEST_DB="tmp-mf15-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${BUILD_VERSION}"
-					.replaceAll('[^a-zA-B0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
+					.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 					.toLowerCase(); // also, DB names are generally in lowercase
 
 			invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
