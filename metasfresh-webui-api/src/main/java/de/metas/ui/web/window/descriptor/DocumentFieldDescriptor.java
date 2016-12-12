@@ -154,7 +154,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		dependencies = builder.buildDependencies();
 
-		callouts = ImmutableList.copyOf(builder.callouts);
+		callouts = ImmutableList.copyOf(builder.getCallouts());
 	}
 
 	@Override
@@ -843,7 +843,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public ILogicExpression getReadonlyLogic()
+		private ILogicExpression getReadonlyLogic()
 		{
 			return _readonlyLogic;
 		}
