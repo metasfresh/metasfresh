@@ -46,13 +46,16 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
 	
-	build job: jobName, 
+	final buildResult = build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
-			string(name: 'MF_METASFRESH_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
+			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
+	;
+	
+	echo "buildResult=${buildResult}"
 }
 
 def boolean isRepoExists(String repoId)
@@ -203,6 +206,12 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
 			name: 'MF_UPSTREAM_BRANCH'),
+		string(defaultValue: '', 
+			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_VERSION', 
+			name: 'MF_UPSTREAM_JOBNAME'),
+		string(defaultValue: '',
+			description: 'Version of the upstream job's artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.', 
+			name: 'MF_UPSTREAM_VERSION'),
 		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
 		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
