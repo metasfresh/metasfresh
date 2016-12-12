@@ -124,9 +124,15 @@
 		<!-- needed to access microsoft COM components outlook,excel,... via groovy , see issue #695 -->
 		<dependency>
 			<groupId>org.codehaus.groovy.modules.scriptom</groupId>
-			<artifactId>scriptom</artifactId>	<!-- groovy to jacob -->
+			<artifactId>scriptom</artifactId>	<!-- Windows COM scripting for Groovy based on Java COM Bridge -->
 			<version>1.6.0</version>
 			<scope>runtime</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>net.sf.jacob-project</groupId>
+					<artifactId>jacob</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.hynnet</groupId>
