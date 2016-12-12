@@ -298,6 +298,12 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
+			else if (!gridFieldVO.isUpdateable())
+			{
+				// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
+				// But here, on Webui we no longer have this concept, since we are auto-saving it.
+				readonlyLogic = ConstantLogicExpression.TRUE;
+			}
 			else
 			{
 				readonlyLogic = gridFieldVO.getReadOnlyLogic();
