@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,11 +15,11 @@ package de.metas.inoutcandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,12 +29,16 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -41,6 +47,8 @@ import org.compiere.model.X_C_DocType;
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.inout.api.IQualityNoteDAO;
+import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -74,6 +82,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 			receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, line);
 		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
+		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
+
 		receiptSchedule.setAD_Org_ID(line.getAD_Org_ID());
 		receiptSchedule.setIsActive(true); // make sure it's active
 
@@ -144,7 +156,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			//
 			// Destination Warehouse
-			final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
 			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
 			receiptSchedule.setM_Warehouse_Dest(warehouseDest);
@@ -155,9 +166,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 			receiptSchedule.setM_Product_ID(line.getM_Product_ID());
 
+			receiptSchedule.setC_UOM_ID(line.getC_UOM_ID());
+
 			Services.get(IAttributeSetInstanceBL.class).cloneASI(receiptSchedule, line);
 
-			receiptSchedule.setC_UOM_ID(line.getC_UOM_ID());
+			// task #653
+			// Set the LotNumberDate as attribute in the new receipt schedule's ASI
+			createLotNumberDateAI(receiptSchedule, order);
+
 		}
 
 		//
@@ -181,6 +197,54 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// Save & return
 		InterfaceWrapperHelper.save(receiptSchedule);
 		return receiptSchedule;
+	}
+
+	/**
+	 * Create LotNumberDate Attribute instance and set it in the receipt shcedule's ASI
+	 * 
+	 * @param receiptSchedule
+	 * @param order
+	 */
+	private void createLotNumberDateAI(final I_M_ReceiptSchedule receiptSchedule, final I_C_Order order)
+	{
+
+		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
+
+		final I_M_AttributeSetInstance rsASI = receiptSchedule.getM_AttributeSetInstance();
+
+		final I_M_Attribute lotNumberDateAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberDateAttribute(ctx);
+
+		if (lotNumberDateAttr == null)
+		{
+			// nothing to do
+
+		}
+		else
+		{
+
+			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+			final int lotNumberDateAttrID = lotNumberDateAttr.getM_Attribute_ID();
+			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberDateAttrID, trxName);
+
+			if (lotNumberDateAI == null)
+			{
+				lotNumberDateAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberDateAttrID, trxName);
+			}
+
+			final de.metas.order.model.I_C_Order orderModel = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
+			final Timestamp lotNumberDate = orderModel.getLotNumberDate();
+
+			// provide the lotNumberDate in the ASI 
+			if (lotNumberDate != null)
+			{
+				lotNumberDateAI.setValueDate(lotNumberDate);
+
+				// save the attribute instance
+				InterfaceWrapperHelper.save(lotNumberDateAI);
+			}
+
+		}
 	}
 
 	/**
