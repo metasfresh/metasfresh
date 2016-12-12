@@ -4,9 +4,11 @@
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ * Returns the URL of the deployed downstream artifact.
+ *
  * TODO: move it into a shared library
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
+def String invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -55,7 +57,14 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		], wait: wait
 	;
 	
-	echo "buildResult=${buildResult}"
+	final buildDescription = buildResult.getDescription();
+	echo "buildDescription=${buildDescription}";
+	
+	final matcher = buildDescription =~ '.*href=\"(.+)\".*';
+	final artifactURL = matcher[0][1];
+	echo "artifactURL=${artifactURL}";
+	
+	return artifactURL;
 }
 
 def boolean isRepoExists(String repoId)
@@ -380,6 +389,9 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 	} // configFileProvider
 } // node			
 
+// this map is populated in the "Invoke downstream jobs" stage
+final EXTERNAL_ARTIFACT_URLS = [:];
+
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
 // TODO: invoke them in parallel
@@ -387,16 +399,25 @@ stage('Invoke downstream jobs')
 {
 	if(params.MF_SKIP_TO_DIST) 
 	{
-		echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+		
+		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui.. 
+		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_VERSION is set
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
+		{
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
+			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${metasfresh-webui}"
+		}
+		// TODO: also handle procurement-webui
 	}
 	else
 	{
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
-			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		}
 	
-		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+		EXTERNAL_ARTIFACT_URLS['metasfresh-procurement-webui'] = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
@@ -497,7 +518,7 @@ ${currentBuild.description}"""
 } // node
 
 // we need this one for both "Test-SQL" and "Deployment
-def downloadForDeployment = { String groupId, String artifactId, String packaging, String version, String classifier, String sshTargetHost, String sshTargetUser ->
+def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
 	final packagingPart=packaging ? ":${packaging}" : ""
 	final classifierPart=classifier ? ":${classifier}" : ""
@@ -623,17 +644,26 @@ stage('Deployment')
 				invokeRemoteInInstallDir('./sql_remote.sh');
 				invokeRemoteInInstallDir('./minor_remote.sh');
 				invokeRemoteInInstallDir('./start_service.sh');
-
+			
 				// clean up what we just rolled out
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
 				
-				final webuiApiServerArtifactURL='';
-				// also provide the webui-api and procurement-webui; TODO actually deploy them
-				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', webuiVersion, 'jar', null, sshTargetHost, sshTargetUser);
-				invokeRemoteInHomeDir("redeploy_metasfresh_webui_api_server.sh ")
+				final paramWebuiApiServerArtifactURL;
+				if(EXTERNAL_ARTIFACT_URLS.metasfresh-webui)
+				{
+					echo "Deploying metasfresh-webui from URL ${EXTERNAL_ARTIFACT_URLS.metasfresh-webui}"
+					paramWebuiApiServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS.metasfresh-webui}"
+				}
+				else
+				{
+					echo "Deploying latest metasfresh-webui (see console to check what is really deployed)"
+					paramWebuiApiServerArtifactURL=''; // get the latest metasfresh-webui-api
+				}
+				invokeRemote(sshTargetHost, sshTargetUser, "/home/opt/metasfresh-webui-api/scripts", "update_metasfresh_webui_api_server.sh ${paramWebuiApiServerArtifactURL}");
 				
-				//downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
-
+				echo "Building and installing the latest metasfresh-webui-frontend"
+				invokeRemote(sshTargetHost, sshTargetUser, "/home/opt/metasfresh-webui-frontend/scripts", "update_metasfresh_webui_frontend.sh");
+				
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
 				step([$class: 'WsCleanup', cleanWhenFailure: false])
 			} // node
