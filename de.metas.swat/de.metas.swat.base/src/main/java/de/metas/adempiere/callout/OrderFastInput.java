@@ -28,6 +28,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Shipper_ID;
 import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -230,7 +231,7 @@ public class OrderFastInput extends CalloutEngine
 			final IGridTabRowBuilder builder = orderLineBuilders.getGridTabRowBuilder(recordId);
 			log.info("Calling addOrderLine for recordId=" + recordId + " and with builder=" + builder);
 
-			addOrderLine(calloutField.getCtx(), order, builder);
+			addOrderLine(calloutField.getCtx(), order, builder::apply);
 		}
 		calloutField.getCalloutRecord().dataRefreshRecursively();
 
@@ -257,13 +258,13 @@ public class OrderFastInput extends CalloutEngine
 		});
 	}
 
-	private boolean addOrderLine(final Properties ctx, final I_C_Order order, final IGridTabRowBuilder builder)
+	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<Object> orderLineCustomizer)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
-		builder.apply(ol); // note that we also get the M_Product_ID from the builder
+		orderLineCustomizer.accept(ol); // note that we also get the M_Product_ID from the builder
 
 		if (ol.getC_UOM_ID() <= 0 && ol.getM_Product_ID() > 0)
 		{
@@ -295,7 +296,7 @@ public class OrderFastInput extends CalloutEngine
 
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order
 		final String dontUpdateOrderLock = OL_DONT_UPDATE_ORDER + order.getC_Order_ID();
-		Env.setContext(ctx, dontUpdateOrderLock, "Y");
+		Env.setContext(ctx, dontUpdateOrderLock, true);
 		try
 		{
 			InterfaceWrapperHelper.save(ol);
@@ -305,7 +306,7 @@ public class OrderFastInput extends CalloutEngine
 			Env.removeContext(ctx, dontUpdateOrderLock);
 		}
 
-		return true;
+		return ol;
 	}
 
 	/**
