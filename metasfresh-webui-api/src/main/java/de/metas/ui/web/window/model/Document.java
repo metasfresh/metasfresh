@@ -94,8 +94,6 @@ public final class Document
 	private static final ReasonSupplier REASON_Value_Refreshing = () -> "direct set on Document (refresh)";
 	private static final ReasonSupplier REASON_Value_ParentLinkUpdateOnSave = () -> "parent link update on save";
 
-	private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
-
 	//
 	// Descriptors & paths
 	private final DocumentEntityDescriptor entityDescriptor;
@@ -128,8 +126,12 @@ public final class Document
 	private final Map<DetailId, IncludedDocumentsCollection> includedDocuments;
 
 	//
-	// Misc
+	// Evaluatee
 	private DocumentEvaluatee _evaluatee; // lazy
+	private transient DocumentEvaluatee _shadowParentEvaluatee;
+
+	//
+	// Misc
 	private Map<String, Object> _dynAttributes = null; // lazy
 
 	@FunctionalInterface
@@ -147,20 +149,11 @@ public final class Document
 	private Document(final Builder builder)
 	{
 		super();
-		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor");
-		_parentDocument = builder.parentDocument;
+		entityDescriptor = builder.getEntityDescriptor();
+		_parentDocument = builder.getParentDocument();
 		documentPath = builder.getDocumentPath();
-		if (_parentDocument == null)
-		{
-			windowNo = nextWindowNo.incrementAndGet();
-			_writable = builder.isNewDocument();
-		}
-		else
-		{
-			windowNo = _parentDocument.getWindowNo();
-			_writable = _parentDocument.isWritable();
-		}
-
+		windowNo = builder.getWindowNo();
+		_writable = builder.isWritable();
 		_new = builder.isNewDocument();
 
 		//
@@ -209,7 +202,10 @@ public final class Document
 		// Initialize field callout executor
 		fieldCalloutExecutor = entityDescriptor.createFieldsCalloutExecutor();
 
+		//
+		// Evaluatee
 		_evaluatee = null; // lazy
+		_shadowParentEvaluatee = null;
 
 		//
 		// Set default dynamic attributes
@@ -303,6 +299,7 @@ public final class Document
 		fieldCalloutExecutor = entityDescriptor.createFieldsCalloutExecutor();
 
 		_evaluatee = null; // lazy
+		_shadowParentEvaluatee = null; // never copy it!
 
 		//
 		// Copy dynamic attributes
@@ -459,7 +456,7 @@ public final class Document
 		private final DocumentType documentType;
 		private final int documentTypeId;
 		private final Evaluatee evaluatee;
-		private final Document parentDocument;
+		private final DocumentId parentDocumentId;
 
 		private InitialFieldValueSupplier(final Document document, final IntSupplier documentIdSupplier)
 		{
@@ -474,7 +471,8 @@ public final class Document
 
 			evaluatee = document.asEvaluatee();
 
-			parentDocument = document.getParentDocument();
+			final Document parentDocument = document.getParentDocument();
+			parentDocumentId = parentDocument == null ? null : parentDocument.getDocumentId();
 		}
 
 		@Override
@@ -502,10 +500,9 @@ public final class Document
 			// Parent link field
 			if (fieldDescriptor.isParentLink())
 			{
-				if (parentDocument != null)
+				if (parentDocumentId != null)
 				{
-					final int value = parentDocument.getDocumentIdAsInt();
-					return value;
+					return parentDocumentId.toInt();
 				}
 			}
 
@@ -622,6 +619,8 @@ public final class Document
 	@Override
 	public final String toString()
 	{
+		// NOTE: keep it short
+
 		final Document parentDocument = getParentDocument();
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
@@ -661,14 +660,46 @@ public final class Document
 		return entityDescriptor;
 	}
 
-	public Document getParentDocument()
+	/* package */ Document getParentDocument()
 	{
 		return _parentDocument;
 	}
 
+	/* package */ DocumentEvaluatee getParentDocumentEvaluateeOrNull()
+	{
+		if (_shadowParentEvaluatee != null)
+		{
+			return _shadowParentEvaluatee;
+		}
+
+		final Document parentDocument = getParentDocument();
+		if (parentDocument != null)
+		{
+			return parentDocument.asEvaluatee();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Sets a {@link DocumentEvaluatee} which will be used as a parent evaluatee for {@link #asEvaluatee()}.
+	 *
+	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(CopyMode)}.
+	 *
+	 * @param shadowParentDocumentEvaluatee
+	 */
+	public void setShadowParentDocumentEvaluatee(final DocumentEvaluatee shadowParentDocumentEvaluatee)
+	{
+		if (getParentDocument() != null)
+		{
+			throw new IllegalStateException("Cannot set a shadow parent DocumentEvaluatee when document has a parent: " + this);
+		}
+		_shadowParentEvaluatee = shadowParentDocumentEvaluatee;
+	}
+
 	public Document getRootDocument()
 	{
-		Document parent = _parentDocument;
+		Document parent = getParentDocument();
 		if (parent == null)
 		{
 			return this;
@@ -902,7 +933,7 @@ public final class Document
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
 		final String expectedDocStatus = null; // N/A
 		Services.get(IDocActionBL.class).processEx(this, docAction, expectedDocStatus);
-		
+
 		//
 		// Refresh it
 		// and also mark all included documents as stale because it might be that processing add/removed/changed some data in included documents too
@@ -1162,7 +1193,7 @@ public final class Document
 		return fieldCalloutExecutor;
 	}
 
-	public boolean isProcessed()
+	/* package */ boolean isProcessed()
 	{
 		final IDocumentFieldView processedField = getFieldOrNull("Processed");
 		if (processedField != null)
@@ -1351,10 +1382,13 @@ public final class Document
 		//
 		// Update parent link field
 		// TODO: i think this is no longer needed since we preallocate the IDs
-		final Document parentDocument = getParentDocument();
-		if (parentLinkField != null && parentDocument != null)
+		if (parentLinkField != null)
 		{
-			setValue(parentLinkField, parentDocument.getDocumentIdAsInt(), REASON_Value_ParentLinkUpdateOnSave);
+			final Document parentDocument = getParentDocument();
+			if (parentDocument != null)
+			{
+				setValue(parentLinkField, parentDocument.getDocumentIdAsInt(), REASON_Value_ParentLinkUpdateOnSave);
+			}
 		}
 
 		//
@@ -1434,6 +1468,9 @@ public final class Document
 
 		private DocumentPath _documentPath;
 
+		private Integer _windowNo;
+		private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
+
 		private Builder()
 		{
 			super();
@@ -1482,6 +1519,12 @@ public final class Document
 			return this;
 		}
 
+		private DocumentEntityDescriptor getEntityDescriptor()
+		{
+			Preconditions.checkNotNull(entityDescriptor, "entityDescriptor");
+			return entityDescriptor;
+		}
+
 		public Builder setParentDocument(final Document parentDocument)
 		{
 			this.parentDocument = parentDocument;
@@ -1514,6 +1557,11 @@ public final class Document
 			return this;
 		}
 
+		private Document getParentDocument()
+		{
+			return parentDocument;
+		}
+
 		private DocumentPath getDocumentPath()
 		{
 			if (_documentPath == null)
@@ -1529,6 +1577,34 @@ public final class Document
 				}
 			}
 			return _documentPath;
+		}
+
+		private int getWindowNo()
+		{
+			if (_windowNo == null)
+			{
+				if (parentDocument == null)
+				{
+					_windowNo = nextWindowNo.incrementAndGet();
+				}
+				else
+				{
+					_windowNo = parentDocument.getWindowNo();
+				}
+			}
+			return _windowNo;
+		}
+
+		private boolean isWritable()
+		{
+			if (parentDocument == null)
+			{
+				return isNewDocument();
+			}
+			else
+			{
+				return parentDocument.isWritable();
+			}
 		}
 	}
 }

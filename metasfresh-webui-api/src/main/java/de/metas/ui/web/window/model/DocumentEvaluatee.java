@@ -58,7 +58,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	/* package */ DocumentEvaluatee(final Document document)
 	{
 		super();
-		_document = document;
+		_document = document; // note: we assume it's not null
 	}
 
 	@Override
@@ -74,14 +74,9 @@ public final class DocumentEvaluatee implements Evaluatee
 		return _document.getCtx();
 	}
 
-	private DocumentEvaluatee getParent()
+	private DocumentEvaluatee getParentEvaluateeOrNull()
 	{
-		return _document.getParentDocument().asEvaluatee();
-	}
-
-	private boolean hasParent()
-	{
-		return _document.getParentDocument() != null;
+		return _document.getParentDocumentEvaluateeOrNull();
 	}
 
 	/* package */Document getDocument()
@@ -174,7 +169,7 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		return valueObj == null ? defaultValue : convertToBigDecimal(variableName, valueObj);
 	}
-
+	
 	private Optional<Object> getValueIfExists(final String variableName, final Class<?> targetType)
 	{
 		if (variableName == null)
@@ -182,11 +177,15 @@ public final class DocumentEvaluatee implements Evaluatee
 			return Optional.empty();
 		}
 
-		if (WindowConstants.CONTEXTVAR_NextLineNo.equals(variableName) && hasParent())
+		if (WindowConstants.CONTEXTVAR_NextLineNo.equals(variableName))
 		{
-			final DetailId detailId = _document.getEntityDescriptor().getDetailId();
-			final int nextLineNo = _document.getParentDocument().getIncludedDocumentsCollection(detailId).getNextLineNo();
-			return Optional.of(nextLineNo);
+			final Document parentDocument = _document.getParentDocument();
+			if(parentDocument != null)
+			{
+				final DetailId detailId = _document.getEntityDescriptor().getDetailId();
+				final int nextLineNo = parentDocument.getIncludedDocumentsCollection(detailId).getNextLineNo();
+				return Optional.of(nextLineNo);
+			}
 		}
 		
 		if(IValidationContext.PARAMETER_ContextTableName.equals(variableName))
@@ -230,10 +229,11 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		//
 		// Check parent
-		if (hasParent())
+		final DocumentEvaluatee parentEvaluatee = getParentEvaluateeOrNull();
+		boolean hasParentEvaluatee = parentEvaluatee != null;
+		if (hasParentEvaluatee)
 		{
-			final DocumentEvaluatee parent = getParent();
-			final Optional<Object> value = parent.getValueIfExists(variableName, targetType);
+			final Optional<Object> value = parentEvaluatee.getValueIfExists(variableName, targetType);
 			if (value.isPresent())
 			{
 				return value;
@@ -242,7 +242,7 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		//
 		// Fallback: Check again the documentField and assume some defaults
-		if (!hasParent())
+		if (!hasParentEvaluatee)
 		{
 			if (documentField != null)
 			{
