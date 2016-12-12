@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-17T15:54:35 -->
+<!-- 2016-11-17T13:51:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_logo" pageWidth="320" pageHeight="60" orientation="Landscape" columnWidth="320" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="ceb96d40-3d02-46e8-ad34-1af520f6dcc8">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,6 +12,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 
@@ -37,7 +38,7 @@ FROM
 	INNER JOIN C_BPartner_Location bpl 	ON bp.C_BPartner_ID = bpl.C_BPartner_ID AND bpl.isActive = 'Y'
 	INNER JOIN C_location l 	   	ON bpl.c_location_id = l.c_location_id AND l.isActive = 'Y'
 WHERE
-	o.ad_org_id = 1000000 AND o.isActive = 'Y'
+	o.ad_org_id = COALESCE($P{AD_Org_ID}, 1000000) o.isActive = 'Y'
 ORDER BY
 	IsBillTo DESC,
 	IsBillToDefault DESC,
