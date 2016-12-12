@@ -4,18 +4,9 @@ import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
 
 
-import {
-    getRootBreadcrumb
-} from '../actions/MenuActions';
-
 export class Dashboard extends Component {
     constructor(props){
         super(props);
-    }
-
-    componentDidMount = () => {
-        const {dispatch} = this.props;
-        dispatch(getRootBreadcrumb());
     }
 
     render() {

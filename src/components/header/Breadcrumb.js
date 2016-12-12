@@ -16,10 +16,34 @@ class Breadcrumb extends Component {
     }
 
 	render() {
-        const {breadcrumb, windowType, docNo, docNoData, docSummaryData, dataId, siteName, menuOverlay, handleMenuOverlay} = this.props;
+        const {
+            breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData, dataId,
+            siteName, menuOverlay, handleMenuOverlay
+        } = this.props;
 
         return (
             <span className="header-breadcrumb">
+                <span>
+                    <div
+                        className={"notification-container pointer " +
+                            (menuOverlay === homemenu.nodeId ? "notification-open " : "")}
+                        onClick={ e => handleMenuOverlay(e, homemenu.nodeId) }
+                    >
+                        <span className={"notification"}>
+                            <i className="meta-icon-menu" />
+                        </span>
+                    </div>
+                    {menuOverlay === homemenu.nodeId &&
+                        <MenuOverlay
+                            nodeId={homemenu.nodeId}
+                            node={homemenu}
+                            onClickOutside={e => handleMenuOverlay(e, "")}
+                            disableOnClickOutside={menuOverlay !== homemenu.nodeId}
+                            siteName={siteName}
+                        />
+                    }
+                </span>
+
                 {breadcrumb && breadcrumb.map((item, index) =>
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
@@ -41,6 +65,7 @@ class Breadcrumb extends Component {
                         }
                     </span>
                 )}
+
                 {docNo && <span className="divider">/</span>}
 
                 {docNo && <span className="header-input-id header-input-sm">

@@ -1,10 +1,11 @@
-import * as types from '../constants/ActionTypes';
+import * as types from '../constants/MenuTypes';
 import update from 'react-addons-update';
 
 const initialState = {
     breadcrumb: [],
     references: [],
-    actions: []
+    actions: [],
+    homemenu: {}
 }
 
 export default function menuHandler(state = initialState, action) {
@@ -12,6 +13,10 @@ export default function menuHandler(state = initialState, action) {
         case types.SET_BREADCRUMB:
             return Object.assign({}, state, {
                 breadcrumb: action.breadcrumb
+            })
+        case types.SET_HOMEMENU:
+            return Object.assign({}, state, {
+                homemenu: action.homemenu
             })
         case types.SET_REFERENCES:
             return Object.assign({}, state, {
