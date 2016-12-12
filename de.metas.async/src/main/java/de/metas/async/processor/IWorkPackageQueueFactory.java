@@ -49,4 +49,15 @@ public interface IWorkPackageQueueFactory extends ISingletonService
 	 * @return a queue for the given work package processor (as specified by its class)
 	 */
 	IWorkPackageQueue getQueueForEnqueuing(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
+	
+
+	/**
+	 * Return a queue instance for a particular <b>work package processor</b>, in order to create new work-packages for it.
+	 * 
+	 * @param ctx
+	 * @param packageProcessorClassname
+	 * @return a queue for the given work package processor (as specified by its class)
+	 */
+	IWorkPackageQueue getQueueForEnqueuing(Properties ctx, String packageProcessorClassname);
+
 }

@@ -110,7 +110,7 @@ WHERE hdr.isActive = 'Y'
 LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = $2 and vat.isActive = 'Y'
 
 WHERE fa.c_period_id = $1
-      AND fa.postingtype='A'
+      AND fa.postingtype IN ('A', 'Y')
       AND  fa.ad_org_id = $4
       AND ( CASE WHEN vat.vatcode IS NULL THEN TRUE ELSE vat.vatcode = fa.VatCode END )
       AND ( CASE WHEN $3 IS NULL THEN TRUE ELSE $3 = fa.account_id END )

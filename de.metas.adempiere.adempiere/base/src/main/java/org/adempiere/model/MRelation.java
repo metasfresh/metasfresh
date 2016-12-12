@@ -1,53 +1,24 @@
 package org.adempiere.model;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.MRelationExplicitv1.SourceOrTarget;
 import org.adempiere.util.Check;
-import org.compiere.model.MRefTable;
-import org.compiere.model.MReference;
-import org.compiere.model.MTable;
+import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -116,28 +87,29 @@ public class MRelation extends X_AD_Relation
 			}
 		}
 	}
-	
-	private static List<MRelation> retrieve(final Properties ctx, final I_AD_RelationType type, final int recordId, final boolean normalDirection, final String trxName)
-	{
 
-		final StringBuilder wc = new StringBuilder();
-		wc.append(COLUMNNAME_AD_RelationType_ID + "=? AND ");
+	private static List<I_AD_Relation> retrieve(final Properties ctx, final int AD_RelationType_ID, final int recordId, final boolean normalDirection, final String trxName)
+	{
+		final IQueryBuilder<I_AD_Relation> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Relation.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Relation.COLUMNNAME_AD_RelationType_ID, AD_RelationType_ID)
+				//
+				.orderBy()
+				.addColumn(I_AD_Relation.COLUMNNAME_SeqNo)
+				.endOrderBy();
 
 		if (normalDirection)
 		{
-			wc.append(COLUMNNAME_Record_Source_ID + "=?");
+			queryBuilder.addEqualsFilter(I_AD_Relation.COLUMNNAME_Record_Source_ID, recordId);
 		}
 		else
 		{
-			wc.append(COLUMNNAME_Record_Target_ID + "=?");
+			queryBuilder.addEqualsFilter(I_AD_Relation.COLUMNNAME_Record_Target_ID, recordId);
 		}
 
-		return new Query(ctx, Table_Name, wc.toString(), trxName)
-				.setParameters(type.getAD_RelationType_ID(), recordId)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(COLUMNNAME_SeqNo)
-				.list();
+		return queryBuilder.create().list(I_AD_Relation.class);
 	}
 
 	/**
@@ -151,158 +123,109 @@ public class MRelation extends X_AD_Relation
 	 * @param trxName
 	 * @return
 	 */
-	public static <T extends PO> List<T> retrieveDestinations(final Properties ctx, final I_AD_RelationType type, final PO sourcePo, final String trxName)
+	public static <T> List<T> retrieveDestinations(
+			final Properties ctx //
+			, final RelationTypeZoomProvider relationType //
+			, final PO sourcePo //
+			, final Class<T> targetClass, final String trxName //
+	)
 	{
 		Check.assumeNotNull(sourcePo, "sourcePO not null");
-		final int sourceTableId = sourcePo.get_Table_ID();
+		final String sourceTableName = sourcePo.get_TableName();
 		final int sourceRecordId = sourcePo.get_ID();
 
-		return retrieveDestinations(ctx, type, sourceTableId, sourceRecordId, trxName);
+		return retrieveDestinations(ctx, relationType, sourceTableName, sourceRecordId, targetClass, trxName);
 	}
 
-	public static void mkTransition(
-			final Properties ctx,
-			final I_AD_RelationType typeAB, final I_AD_RelationType typeBC, final I_AD_RelationType transitionTypeAC,
-			final int pivotTableId, final int pivotRecordId,
-			final String trxName)
+	public static <T> List<T> retrieveDestinations(
+			final Properties ctx //
+			, final RelationTypeZoomProvider relationType //
+			, final String sourceTableName, final int sourceRecordId //
+			, final Class<T> targetClass //
+			, final String trxName //
+	)
 	{
-		checkParam(typeAB.isExplicit(),
-				"typeAB expected to be explicit; typeAB=" + typeAB);
-
-		checkParam(typeBC.isExplicit(),
-				"typeBC expected to be explicit; typeBC=" + typeBC);
-
-		checkParam(transitionTypeAC.isExplicit(),
-				"transitionTypeAC expected to be explicit; transitionTypeAC=" + transitionTypeAC);
-
-		checkParam(typeAB.getAD_Reference_Source_ID() == transitionTypeAC.getAD_Reference_Source_ID(),
-				"source-references of typeAB and transitionTypeAC expected to be equal; typeAB=" + typeAB + "; transitionTypeAC=" + transitionTypeAC);
-
-		checkParam(typeBC.getAD_Reference_Target_ID() == transitionTypeAC.getAD_Reference_Target_ID(),
-				"target-references of typeBC and transitionTypeAC expected to be equal; typeBC=" + typeBC + "; typeBC=" + typeBC);
-
-		final MRefTable targetRefTableTypeAB = MReference.retrieveRefTable(ctx, typeAB.getAD_Reference_Target_ID(), trxName);
-		checkParam(targetRefTableTypeAB.getAD_Table_ID() == pivotTableId,
-				"AD_Table_ID of typeAB's target-reference expected to be equal to pivotTableId; targetRefTableTypeAB=" + targetRefTableTypeAB + "; pivotTableId=" + pivotTableId);
-
-		final MRefTable sourceRefTableTypeBC = MReference.retrieveRefTable(ctx, typeBC.getAD_Reference_Source_ID(), trxName);
-		checkParam(sourceRefTableTypeBC.getAD_Table_ID() == pivotTableId,
-				"AD_Table_ID of typeBC's source-reference expected to be equal to pivotTableId; sourceRefTableTypeBC=" + sourceRefTableTypeBC + "; pivotTableId=" + pivotTableId);
-
-		final StringBuilder sqlInsert = new StringBuilder();
-		sqlInsert.append(" INSERT INTO AD_Relation (");
-		sqlInsert.append(" 	Record_Source_ID, Record_Target_ID, AD_relationType_ID, ");
-		sqlInsert.append(" 	AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)");
-		sqlInsert.append(" ");
-		sqlInsert.append(" SELECT ");
-		sqlInsert.append(" 	ab.Record_Source_ID, bc.Record_Target_ID, ?, ");
-		sqlInsert.append(" 	?, ?, ?, ?, ?, ?");
-		sqlInsert.append(" FROM AD_Relation ab, AD_Relation bc ");
-		sqlInsert.append(" WHERE");
-		sqlInsert.append(" 	ab.Record_Target_ID=?");
-		sqlInsert.append(" 	AND ab.Record_Target_ID=bc.Record_Source_ID");
-		sqlInsert.append(" 	AND NOT EXISTS (");
-		sqlInsert.append(" 		select 1 ");
-		sqlInsert.append(" 		from AD_Relation ac_ex ");
-		sqlInsert.append(" 		where ac_ex.AD_relationType_ID=?");
-		sqlInsert.append(" 			and ac_ex.Record_Source_ID=ab.Record_Source_ID and ac_ex.Record_Target_ID=bc.Record_Target_ID");
-		sqlInsert.append(" 	)");
-		sqlInsert.append(" ;");
-
-		Trx.run(trxName, new TrxRunnable()
+		if (!relationType.isExplicit())
 		{
-			@Override
-			public void run(String trxName)
-			{
-				final PreparedStatement pstmt = DB.prepareStatement(sqlInsert.toString(), trxName);
-
-				try
-				{
-					pstmt.setInt(1, transitionTypeAC.getAD_RelationType_ID()); // AD_relationType_ID
-					pstmt.setInt(2, Env.getAD_Client_ID(ctx)); // AD_Client_ID
-					pstmt.setInt(3, Env.getAD_Org_ID(ctx)); // AD_Org_ID
-					pstmt.setTimestamp(4, new Timestamp(System.currentTimeMillis())); // Created
-					pstmt.setInt(5, Env.getAD_User_ID(ctx)); // CreatedBy
-					pstmt.setTimestamp(6, new Timestamp(System.currentTimeMillis())); // Updated
-					pstmt.setInt(7, Env.getAD_User_ID(ctx)); // UpdatedBy
-					pstmt.setInt(8, pivotRecordId); // ab.Record_Target_ID
-					pstmt.setInt(9, transitionTypeAC.getAD_RelationType_ID()); // ac_ex.AD_relationType_ID
-
-					final int insertCnt = pstmt.executeUpdate();
-					logger.info("Inserted " + insertCnt + " new AD_Relation records for relType=" + transitionTypeAC);
-				}
-				catch (SQLException e)
-				{
-					throw new DBException(e);
-				}
-			}
-		});
-	}
-
-	public static <T> List<T> retrieveDestinations(final Properties ctx, final I_AD_RelationType type, final int sourceTableId, final int sourceRecordId, final String trxName)
-	{
-		if (!type.isExplicit())
-		{
-			throw new AdempiereException("Param 'type' must be explicit. type=" + type);
+			throw new AdempiereException("Param 'type' must be explicit. type=" + relationType);
 		}
 
-		final MReference refTarget = (MReference)type.getAD_Reference_Target();
-		final MRefTable refTargetTable = refTarget.retrieveRefTable();
+		final String relationSourceTableName = relationType.getSourceTableName();
+		final String relationTargetTableName = relationType.getTargetTableName();
 
-		final MReference refSource = (MReference)type.getAD_Reference_Source();
-		final MRefTable refSourceTable = refSource.retrieveRefTable();
+		final boolean useNormalDirection = Objects.equals(relationSourceTableName, sourceTableName);
 
-		final boolean useNormalDirection = refSourceTable.getAD_Table_ID() == sourceTableId;
-
-		if (type.isDirected() && !useNormalDirection)
+		if (relationType.isDirected() && !useNormalDirection)
 		{
 			// there is noting to retrieve
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 		final List<T> result = new ArrayList<T>();
 
-		final MTable destTable;
+		String destTableName = InterfaceWrapperHelper.getTableNameOrNull(targetClass);
 		if (useNormalDirection)
 		{
-			destTable = (MTable)refTargetTable.getAD_Table();
+			if (destTableName == null)
+			{
+				destTableName = relationTargetTableName;
+			}
+			else
+			{
+				Check.assume(destTableName.equals(relationTargetTableName), "Target class {} shall match {}", targetClass, relationTargetTableName);
+			}
 		}
 		else
 		{
-			destTable = (MTable)refSourceTable.getAD_Table();
+			if (destTableName == null)
+			{
+				destTableName = relationSourceTableName;
+			}
+			else
+			{
+				Check.assume(destTableName.equals(relationSourceTableName), "Target class {} shall match {}", targetClass, relationSourceTableName);
+			}
 		}
 
-		final List<MRelation> records = retrieve(ctx, type, sourceRecordId, useNormalDirection, trxName);
+		final List<I_AD_Relation> records = retrieve(ctx, relationType.getAD_RelationType_ID(), sourceRecordId, useNormalDirection, trxName);
 
-		addToRetrievedDestinations(useNormalDirection, result, destTable, records, trxName);
+		addToRetrievedDestinations(ctx, useNormalDirection, result, destTableName, targetClass, records, trxName);
 
-		if (refSourceTable.getAD_Table_ID() == refTargetTable.getAD_Table_ID())
+		if (Objects.equals(relationSourceTableName, relationTargetTableName))
 		{
-			records.addAll(retrieve(ctx, type, sourceRecordId, !useNormalDirection, trxName));
-			addToRetrievedDestinations(!useNormalDirection, result, destTable, records, trxName);
+			records.addAll(retrieve(ctx, relationType.getAD_RelationType_ID(), sourceRecordId, !useNormalDirection, trxName));
+			addToRetrievedDestinations(ctx, !useNormalDirection, result, destTableName, targetClass, records, trxName);
 		}
 
 		return result;
 	}
 
-	private static <T> void addToRetrievedDestinations(final boolean useNormalDirection, final List<T> result, final MTable destTable, final List<MRelation> records, final String trxName)
+	private static <T> void addToRetrievedDestinations(
+			final Properties ctx //
+			, final boolean useNormalDirection //
+			, final List<T> result //
+			, final String targetTableName //
+			, final Class<T> targetClass //
+			, final List<I_AD_Relation> records //
+			, final String trxName //
+	)
 	{
-		for (final MRelation rel : records)
+		for (final I_AD_Relation rel : records)
 		{
 			final T destinationPO;
 			if (useNormalDirection)
 			{
-				destinationPO = (T)destTable.getPO(rel.getRecord_Target_ID(), trxName);
+				destinationPO = InterfaceWrapperHelper.create(ctx, targetTableName, rel.getRecord_Target_ID(), targetClass, trxName);
 			}
 			else
 			{
-				destinationPO = (T)destTable.getPO(rel.getRecord_Source_ID(), trxName);
+				destinationPO = InterfaceWrapperHelper.create(ctx, targetTableName, rel.getRecord_Source_ID(), targetClass, trxName);
 			}
 			if (destinationPO == null)
 			{
-				logger.warn("Destination PO with table=" + destTable
+				logger.warn("Destination PO with " + targetClass
 						+ " and Record_ID=" + (useNormalDirection ? rel.getRecord_Target_ID() : rel.getRecord_Source_ID())
 						+ " doesn't exist; Deleting " + rel);
-				rel.deleteEx(false);
+				InterfaceWrapperHelper.delete(rel);
 				continue;
 			}
 			result.add(destinationPO);

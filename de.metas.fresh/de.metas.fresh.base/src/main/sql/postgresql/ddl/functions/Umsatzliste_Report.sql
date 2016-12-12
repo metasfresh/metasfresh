@@ -1,12 +1,10 @@
-DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying);
-
 DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
 
 DROP TABLE IF EXISTS report.umsatzreport_report;
 
-DROP FUNCTION IF EXISTS report.Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying);
-
 DROP FUNCTION IF EXISTS report.Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
+DROP FUNCTION IF EXISTS report.Umsatzreport_Report_Sub (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
 
 DROP TABLE IF EXISTS report.Umsatzreport_Report_Sub;
 
@@ -25,14 +23,15 @@ CREATE TABLE report.Umsatzreport_Report_Sub
 	lastyearsum numeric,
 	yeardifference numeric,
 	yeardiffpercentage numeric,
-	attributesetinstance character varying(60)
+	attributesetinstance character varying(60),
+	ad_org_id numeric
 )
 WITH (
 	OIDS=FALSE
 );
 
 
-CREATE FUNCTION report.Umsatzreport_Report_Sub(IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric ) RETURNS SETOF report.Umsatzreport_Report_Sub AS
+CREATE FUNCTION report.Umsatzreport_Report_Sub(IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric) RETURNS SETOF report.Umsatzreport_Report_Sub AS
 $BODY$
 SELECT
 	CASE WHEN Length(name) <= 45 THEN name ELSE substring(name FOR 43 ) || '...' END AS name,
@@ -52,8 +51,8 @@ SELECT
 	CASE WHEN SameYearSum - LastYearSum != 0 AND LastYearSum != 0
 		THEN (SameYearSum - LastYearSum) / LastYearSum * 100 ELSE NULL
 	END AS YearDiffPercentage,
-	Attributes as attributesetinstance
-
+	Attributes as attributesetinstance,
+	ad_org_id
 FROM
 	(
 		SELECT
@@ -66,7 +65,8 @@ FROM
 			SUM( CASE WHEN fap.C_Year_ID = p.C_Year_ID AND fap.periodNo <= p.PeriodNo THEN AmtAcct ELSE 0 END ) AS SameYearSum,
 			SUM( CASE WHEN fa.C_Period_ID = pp.C_Period_ID THEN AmtAcct ELSE 0 END ) AS SamePeriodLastYearSum,
 			SUM( CASE WHEN fap.C_Year_ID = pp.C_Year_ID AND fap.periodNo <= pp.PeriodNo THEN AmtAcct ELSE 0 END ) AS LastYearSum,
-			att.Attributes
+			att.Attributes,
+			fa.ad_org_id
 		FROM
 			C_Period p
 			INNER JOIN C_Year y ON p.C_Year_ID = y.C_Year_ID AND y.isActive = 'Y'
@@ -80,7 +80,7 @@ FROM
 				SELECT 	
 					fa.M_Product_ID, fa.C_Period_ID, fa.C_BPartner_ID,
 					CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct,
-					il.M_AttributeSetInstance_ID
+					il.M_AttributeSetInstance_ID, fa.ad_org_id
 					 
 				FROM 	
 					Fact_Acct fa 
@@ -130,22 +130,27 @@ FROM
 					GROUP BY M_AttributeSetInstance_ID
 					) att ON $3 = att.M_AttributeSetInstance_ID
 		WHERE
+
 			p.C_Period_ID = $1 AND p.isActive = 'Y'
-			
+			AND fa.ad_org_id = $4
+
 		GROUP BY
 			bp.name,
 			p.EndDate,
 			pp.EndDate,
 			y.fiscalYear,
 			py.fiscalYear,
-			att.Attributes
+			att.Attributes,
+			fa.ad_org_id
 	) a
 ORDER BY
 	SameYearSum DESC$BODY$
 LANGUAGE sql STABLE;
 
 
+
 DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
+DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
 
 DROP TABLE IF EXISTS report.umsatzreport_report;
 
@@ -165,6 +170,7 @@ CREATE TABLE report.umsatzreport_report
 	yeardifference numeric,
 	yeardiffpercentage numeric,
 	attributesetinstance character varying(60),
+	ad_org_id numeric,
 	unionorder integer
 )
 WITH (
@@ -172,9 +178,9 @@ WITH (
 );
 
 
-CREATE FUNCTION report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric) RETURNS SETOF report.umsatzreport_report AS
+CREATE FUNCTION report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric) RETURNS SETOF report.umsatzreport_report AS
 $BODY$
-	SELECT *, 1 AS UnionOrder FROM report.Umsatzreport_Report_Sub ($1, $2, $3)
+	SELECT *, 1 AS UnionOrder FROM report.Umsatzreport_Report_Sub ($1, $2, $3, $4)
 UNION ALL
 	SELECT 
 		null as name, 
@@ -195,16 +201,18 @@ UNION ALL
 			THEN (SUM( SameYearSum ) - SUM( LastYearSum ) ) / SUM( LastYearSum ) * 100 ELSE NULL
 		END AS YearDiffPercentage,
 		attributesetinstance,
+		ad_org_id,
 		2 AS UnionOrder
 		
 	FROM 
-		report.Umsatzreport_Report_Sub ($1, $2, $3)
+		report.Umsatzreport_Report_Sub ($1, $2, $3, $4)
 	GROUP BY
 		PeriodEnd,
 		LastYearPeriodEnd,
 		Year,
 		LastYear,
-		attributesetinstance
+		attributesetinstance,
+		ad_org_id
 ORDER BY
 	UnionOrder, SameYearSum DESC
 $BODY$

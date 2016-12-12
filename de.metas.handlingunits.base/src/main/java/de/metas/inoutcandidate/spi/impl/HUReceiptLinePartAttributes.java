@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -38,6 +37,8 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.inout.api.IQualityNoteDAO;
+import de.metas.inout.model.I_M_QualityNote;
 
 /* package */class HUReceiptLinePartAttributes implements IHUReceiptLinePartAttributes
 {
@@ -118,7 +119,9 @@ import de.metas.handlingunits.model.I_M_HU;
 		return key;
 	}
 
-	/** @return Quality discount percent (between 0..100) */
+	/**
+	 * @return Quality discount percent (between 0..100)
+	 */
 	@Override
 	public BigDecimal getQualityDiscountPercent()
 	{
@@ -170,6 +173,27 @@ import de.metas.handlingunits.model.I_M_HU;
 
 		final int subProducerBPartnerId = attributeStorage.getValueAsInt(attr_SubProducerBPartner);
 		return subProducerBPartnerId <= 0 ? -1 : subProducerBPartnerId; // make sure we use same value for N/A
+	}
+
+	@Override
+	public I_M_QualityNote getQualityNote()
+	{
+		final IAttributeStorage attributeStorage = getAttributeStorage();
+
+		if (!attributeStorage.hasAttribute(attr_QualityNotice))
+		{
+			return null;
+		}
+
+		// if the quality notice is set, then take it's name. It must have a qualityDiscount% to be set
+		final Object qualityNoticeCode = attributeStorage.getValue(attr_QualityNotice);
+		if (qualityNoticeCode == null)
+		{
+			return null;
+		}
+
+		return Services.get(IQualityNoteDAO.class).retrieveQualityNoteForValue(huContext.getCtx(), qualityNoticeCode.toString());
+
 	}
 
 }

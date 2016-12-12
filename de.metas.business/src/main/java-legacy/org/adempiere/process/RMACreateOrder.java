@@ -24,9 +24,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.process.JavaProcess;
 
 /**
  *  Creates Order from RMA document
@@ -34,7 +34,7 @@ import de.metas.adempiere.model.I_C_Order;
  *  @author Ashley Ramdass
  */
 
-public class RMACreateOrder extends SvrProcess
+public class RMACreateOrder extends JavaProcess
 {
 	
 	private int rmaId = 0;

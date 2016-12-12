@@ -1,6 +1,7 @@
 DROP FUNCTION IF EXISTS report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1));
+DROP FUNCTION IF EXISTS report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1), IN ad_org_id numeric);
 
-CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1)) RETURNS TABLE
+CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN StartDate date, IN EndDate date, IN isSOTrx char(1), IN ad_org_id numeric) RETURNS TABLE
 	(
 	BP_Value Character Varying,
 	BP_Name Character Varying, 
@@ -11,7 +12,8 @@ CREATE FUNCTION report.umsatzliste_report_details(IN C_BPartner_ID numeric, IN S
 	TotalOrdered numeric,
 	IsPackingMaterial boolean,
 	Month timestamp with time zone,
-	ISO_Code char(3)
+	ISO_Code char(3),
+	ad_org_id numeric
 	)
 AS 
 $$
@@ -25,7 +27,8 @@ SELECT
 	SUM( CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END * ic.PriceActual ) AS TotalOrdered,
 	p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y') AS IsPackingMaterial,
 	date_trunc( 'month', ic.Date ) AS Month,
-	c.ISO_Code
+	c.ISO_Code,
+	ic.ad_org_id
 FROM
 	(
 		SELECT
@@ -40,7 +43,8 @@ FROM
 			ac.C_Currency_ID AS Base_Currency_ID,
 
 			-- Date for filtering
-			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date
+			COALESCE ( i.DateAcct, ic.DeliveryDate, icq.DatePromised ) AS Date,
+			ic.AD_Org_ID
 		FROM
 			C_Invoice_Candidate ic
 			INNER JOIN (
@@ -97,7 +101,8 @@ FROM
 	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 	INNER JOIN C_Currency c ON ic.Base_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 WHERE
-	Date::date >= $2 AND Date::date <= $3
+	ic.AD_Org_ID = $5
+	AND Date::date >= $2 AND Date::date <= $3
 	AND COALESCE( ic.PriceActual, 0 ) != 0
 	AND ( ic.QtyInvoiced != 0 OR ic.QtyInvoicable != 0
 	OR (CASE WHEN s_Ordered != Sign( ic.QtyOpen ) THEN 0 ELSE ic.QtyOpen END) != 0 )
@@ -109,7 +114,8 @@ GROUP BY
 	p.Name,
 	p.M_Product_Category_ID,
 	date_trunc( 'month', ic.Date ),
-	c.ISO_Code
+	c.ISO_Code,
+	ic.ad_org_id
 ORDER BY
 	date_trunc( 'month', ic.Date ),
 	bp.Value,

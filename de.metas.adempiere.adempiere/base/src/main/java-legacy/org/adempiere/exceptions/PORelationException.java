@@ -13,7 +13,8 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
+import java.util.Collection;
+
 import org.compiere.util.DisplayType;
 
 /**
@@ -24,13 +25,13 @@ import org.compiere.util.DisplayType;
 @SuppressWarnings("serial")
 public class PORelationException extends AdempiereException
 {
-	public static void throwWrongKeyColumnCount(final IZoomSource source)
+	public static PORelationException throwWrongKeyColumnCount(final String tableName, final Collection<String> allKeyColumnNames)
 	{
-		final Object[] msgParams = new Object[] { source.toString(), source.getKeyColumnNames().size() };
+		final Object[] msgParams = new Object[] { tableName, allKeyColumnNames.size() };
 		throw new PORelationException(MSG_ERR_KEY_COLUMNS_2P, msgParams);
 	}
 
-	public static void throwMissingWindowId(final String referenceName, final String tableName, final boolean isSOTrx)
+	public static PORelationException throwMissingWindowId(final String referenceName, final String tableName, final boolean isSOTrx)
 	{
 		final Object[] msgParams = { referenceName, tableName, DisplayType.toBooleanString(isSOTrx) };
 		throw new PORelationException(MSG_ERR_WINDOW_3P, msgParams);

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -22,35 +22,38 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
+import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Persistent Column Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MColumn.java,v 1.6 2006/08/09 05:23:49 jjanke Exp $
  */
 public class MColumn extends X_AD_Column
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6543789555737635129L;
 
 	/**
 	 * Get MColumn from Cache
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Column_ID id
 	 * @return MColumn
@@ -69,7 +72,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get Column Name
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Column_ID id
 	 * @return Column Name or null
@@ -90,7 +93,7 @@ public class MColumn extends X_AD_Column
 
 	/**************************************************************************
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Column_ID
 	 * @param trxName transaction
@@ -120,7 +123,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -132,7 +135,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Parent Constructor
-	 * 
+	 *
 	 * @param parent table
 	 */
 	public MColumn(MTable parent)
@@ -145,7 +148,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Is Standard Column
-	 * 
+	 *
 	 * @return true for AD_Client_ID, etc.
 	 */
 	public boolean isStandardColumn()
@@ -163,7 +166,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Is Virtual Column
-	 * 
+	 *
 	 * @return true if virtual column
 	 * @deprecated please use {@link IADTableDAO#isVirtualColumn(I_AD_Column)}
 	 */
@@ -176,7 +179,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Is the Column Encrypted?
-	 * 
+	 *
 	 * @return true if encrypted
 	 */
 	public boolean isEncrypted()
@@ -187,7 +190,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Set Encrypted
-	 * 
+	 *
 	 * @param IsEncrypted encrypted
 	 */
 	public void setIsEncrypted(boolean IsEncrypted)
@@ -197,7 +200,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Before Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @return true
 	 */
@@ -205,7 +208,7 @@ public class MColumn extends X_AD_Column
 	protected boolean beforeSave(boolean newRecord)
 	{
 		int displayType = getAD_Reference_ID();
-		if (DisplayType.isLOB(displayType)) 	// LOBs are 0
+		if (DisplayType.isLOB(displayType))  	// LOBs are 0
 		{
 			if (getFieldLength() != 0)
 				setFieldLength(0);
@@ -249,6 +252,13 @@ public class MColumn extends X_AD_Column
 		// Virtual Column
 		if (isVirtualColumn())
 		{
+			// Make sure there are no context variables in ColumnSQL
+			final String columnSql = getColumnSQL();
+			if (columnSql != null && columnSql.indexOf(CtxName.NAME_Marker) >= 0)
+			{
+				throw new AdempiereException("Context variables are not allowed in ColumnSQL: " + columnSql);
+			}
+			
 			if (isMandatory())
 				setIsMandatory(false);
 			if (isUpdateable())
@@ -290,7 +300,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @param success success
 	 * @return success
@@ -320,7 +330,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get SQL Add command
-	 * 
+	 *
 	 * @param table table
 	 * @return sql
 	 */
@@ -344,7 +354,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get SQL DDL
-	 * 
+	 *
 	 * @return columnName datataype ..
 	 */
 	public String getSQLDDL()
@@ -360,7 +370,7 @@ public class MColumn extends X_AD_Column
 		if (defaultValue != null
 				&& defaultValue.length() > 0
 				&& defaultValue.indexOf('@') == -1		// no variables
-				&& (!(DisplayType.isID(getAD_Reference_ID()) && defaultValue.equals("-1"))))   // not for ID's with default -1
+				&& (!(DisplayType.isID(getAD_Reference_ID()) && defaultValue.equals("-1"))))    // not for ID's with default -1
 		{
 			if (DisplayType.isText(getAD_Reference_ID())
 					|| getAD_Reference_ID() == DisplayType.List
@@ -394,7 +404,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get SQL Modify command
-	 * 
+	 *
 	 * @param table table
 	 * @param setNullOption generate null / not null statement
 	 * @return sql separated by ;
@@ -419,7 +429,7 @@ public class MColumn extends X_AD_Column
 		if (defaultValue != null
 				&& defaultValue.length() > 0
 				&& defaultValue.indexOf('@') == -1		// no variables
-				&& (!(DisplayType.isID(displayType) && defaultValue.equals("-1"))))   // not for ID's with default -1
+				&& (!(DisplayType.isID(displayType) && defaultValue.equals("-1"))))    // not for ID's with default -1
 		{
 			if (DisplayType.isText(displayType)
 					|| displayType == DisplayType.List
@@ -471,7 +481,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get SQL Data Type
-	 * 
+	 *
 	 * @return e.g. NVARCHAR2(60)
 	 */
 	private String getSQLDataType()
@@ -484,7 +494,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get Table Constraint
-	 * 
+	 *
 	 * @param tableName table name
 	 * @return table constraint
 	 */
@@ -495,20 +505,32 @@ public class MColumn extends X_AD_Column
 			final String constraintName = tableName + "_Key";
 			return "CONSTRAINT " + constraintName + " PRIMARY KEY (" + getColumnName() + ")";
 		}
-		/**
-		 * if (getAD_Reference_ID() == DisplayType.TableDir
-		 * || getAD_Reference_ID() == DisplayType.Search)
-		 * return "CONSTRAINT " ADTable_ADTableTrl
-		 * + " FOREIGN KEY (" + getColumnName() + ") REFERENCES "
-		 * + AD_Table(AD_Table_ID) ON DELETE CASCADE
-		 **/
+		else if (DisplayType.isID(getAD_Reference_ID()) && !isDDL_NoForeignKey())
+		{
+			// gh #539 Add missing FK constraints
+			// create a FK-constraint, using the same view we also used to "manually" create FK-constraints in the past.
 
+			// get an FK-constraint for this table, if any
+			// this returns something like
+			// "ALTER TABLE A_Asset_Change ADD CONSTRAINT ADepreciationCalcT_AAssetChang FOREIGN KEY (A_Depreciation_Calc_Type) REFERENCES A_Depreciation_Method DEFERRABLE INITIALLY DEFERRED;"
+			final String fkConstraintDDL = DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT SqlText FROM db_columns_fk WHERE TableName=? AND ColumnName=?", tableName, getColumnName());
+			if (!Check.isEmpty(fkConstraintDDL, true))
+			{
+				// remove the "ALTER TABLE ... ADD" and the trailing ";"
+				// the (?iu) means the the patters is created with Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+				// thanks to https://blogs.oracle.com/xuemingshen/entry/case_insensitive_matching_in_java
+				final String constraint = fkConstraintDDL
+						.replaceFirst("(?iu)ALTER *TABLE *" + tableName + " *ADD *", "")
+						.replaceFirst(";$", "");
+				return constraint;
+			}
+		}
 		return "";
 	}	// getConstraint
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -522,7 +544,7 @@ public class MColumn extends X_AD_Column
 	// begin vpj-cd e-evolution
 	/**
 	 * get Column ID
-	 * 
+	 *
 	 * @param String windowName
 	 * @param String columnName
 	 * @return int retValue
@@ -557,7 +579,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Get Table Id for a column
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Column_ID id
 	 * @param trxName transaction
@@ -571,7 +593,7 @@ public class MColumn extends X_AD_Column
 
 	/**
 	 * Sync this column with the database
-	 * 
+	 *
 	 * @return
 	 */
 	public String syncDatabase()

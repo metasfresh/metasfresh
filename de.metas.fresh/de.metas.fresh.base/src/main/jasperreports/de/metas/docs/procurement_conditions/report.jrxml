@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T14:16:05 -->
+<!-- 2016-12-05T16:24:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/docs/procurement_conditions/report" uuid="490a428d-c762-47b4-ac10-378dad05cce6">
 	<property name="ireport.zoom" value="1.3310000000000004"/>
 	<property name="ireport.x" value="0"/>
@@ -19,9 +19,10 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="269" splitType="Stretch">
+		<band height="275" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="-20" y="116" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700"/>
+				<reportElement key="subreport-8" x="-20" y="116" width="595" height="159" uuid="57fee363-fabe-49b7-9652-20fecfd01700"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>

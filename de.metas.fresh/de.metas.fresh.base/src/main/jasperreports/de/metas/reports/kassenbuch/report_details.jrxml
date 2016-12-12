@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-14T11:19:35 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true" uuid="a485e2fe-26b7-4576-af8b-022e8323f2b1">
+<!-- 2016-11-17T12:00:17 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true" uuid="36531cc0-781b-418e-9483-a9b925c4d7fe">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -11,6 +11,7 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<style name="Crosstab Data Text" hTextAlign="Center" hImageAlign="Center"/>
 	<parameter name="C_Period_ID" class="java.math.BigDecimal"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[select
 
@@ -54,7 +55,9 @@ left join fact_acct acct on 	acct.datetrx = p.datetrx AND acct.isActive = 'Y'
 left join c_period pd on 	pd.c_period_id = acct.c_period_id AND pd.isActive = 'Y'
 
 where pd.c_period_id = $P{C_Period_ID} and bank.c_bank_id = 9920529 and p.docstatus NOT IN ('RE','VO')
-	AND p.ad_org_id = 1000000 AND cash.isActive = 'Y'
+
+	AND p.ad_org_id = $P{AD_Org_ID} AND cash.isActive = 'Y'
+
 group
 	by p.datetrx,p.documentno,p.c_payment_id,p.payamt,d.name,gl.name,c.cursymbol,bank.name,cb.name, pd.name,i.documentno;]]>
 	</queryString>
@@ -88,13 +91,13 @@ group
 		<groupFooter>
 			<band height="64" splitType="Stretch">
 				<rectangle>
-					<reportElement key="rectangle" x="555" y="0" width="166" height="48" uuid="6251cbfe-a0f1-4774-8249-9f76cee18bf4"/>
+					<reportElement key="rectangle" x="555" y="0" width="166" height="48" uuid="d5cab643-a90d-4c68-8f77-3a49b571f958"/>
 				</rectangle>
 				<rectangle>
-					<reportElement key="rectangle-3" x="0" y="50" width="782" height="14" forecolor="#999999" backcolor="#808080" uuid="ec751b85-03e3-47f8-b55e-4409ed63c598"/>
+					<reportElement key="rectangle-3" x="0" y="50" width="782" height="14" forecolor="#999999" backcolor="#808080" uuid="f254398e-7055-4630-a127-eefbb8336a7d"/>
 				</rectangle>
 				<staticText>
-					<reportElement key="staticText" x="562" y="12" width="58" height="12" uuid="68660ba4-97bd-400f-8ed7-0c386e587767"/>
+					<reportElement key="staticText" x="562" y="12" width="58" height="12" uuid="145766cd-3e8b-440e-8115-38072a26a466"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -107,7 +110,7 @@ group
 					<text><![CDATA[Einnahmen]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="staticText" x="562" y="24" width="58" height="12" uuid="c142a5dd-22f9-4f09-bb00-cff3af7ad1b0"/>
+					<reportElement key="staticText" x="562" y="24" width="58" height="12" uuid="75b145e9-4a68-4208-b723-9beb3b96b154"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -120,7 +123,7 @@ group
 					<text><![CDATA[Ausgaben]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="staticText" x="562" y="36" width="58" height="12" uuid="8bb932da-1f1d-468a-9589-633d041200df"/>
+					<reportElement key="staticText" x="562" y="36" width="58" height="12" uuid="fcfb30c9-0497-4241-bd18-722fd09bff2e"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,7 +136,7 @@ group
 					<text><![CDATA[Endbestand]]></text>
 				</staticText>
 				<staticText>
-					<reportElement key="staticText" x="562" y="0" width="58" height="12" uuid="9def4402-571b-4705-a29a-ea59d083eca6"/>
+					<reportElement key="staticText" x="562" y="0" width="58" height="12" uuid="57a7a85c-3133-4bbf-9283-8fe48993f109"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -146,7 +149,7 @@ group
 					<text><![CDATA[Anfangsbestand]]></text>
 				</staticText>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField" x="620" y="12" width="40" height="12" uuid="f715e844-39d7-4d5e-b481-ea691dd5b23f"/>
+					<reportElement key="textField" x="620" y="12" width="40" height="12" uuid="d8f4a8b5-de0a-4c3c-ad05-65583f8a4feb"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -159,7 +162,7 @@ group
 					<textFieldExpression><![CDATA[$V{sum_einnahme}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField" x="620" y="24" width="40" height="12" uuid="e0f054d4-009e-4ff2-b7f5-d89ef593f1b4"/>
+					<reportElement key="textField" x="620" y="24" width="40" height="12" uuid="b094ae31-b884-4bae-a6f4-56d1cf9cec0b"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -172,26 +175,32 @@ group
 					<textFieldExpression><![CDATA[$V{sum_ausgabe}]]></textFieldExpression>
 				</textField>
 				<subreport isUsingCache="true">
-					<reportElement x="620" y="0" width="101" height="12" uuid="37a15743-fbb1-4fa6-ba72-f905e3260c58"/>
+					<reportElement x="620" y="0" width="101" height="12" uuid="9ae207d4-e9e1-4919-b988-4461ff910583"/>
 					<subreportParameter name="C_Period_ID">
 						<subreportParameterExpression><![CDATA[$P{C_Period_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="AD_Org_ID">
+						<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					<subreportExpression><![CDATA["de/metas/reports/kassenbuch/anfangsbestand.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport" x="620" y="36" width="101" height="12" uuid="4364149f-ae8d-41f2-a68b-da4d9143beb5"/>
+					<reportElement key="subreport" x="620" y="36" width="101" height="12" uuid="df7ac389-22ba-48fb-a9c4-9a5b5deeee15"/>
 					<subreportParameter name="C_Period_ID">
 						<subreportParameterExpression><![CDATA[$P{C_Period_ID}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="AD_Org_ID">
+						<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					<subreportExpression><![CDATA["de/metas/reports/kassenbuch/endbestand.jasper"]]></subreportExpression>
 				</subreport>
 				<line>
-					<reportElement key="line" x="562" y="35" width="104" height="1" uuid="3ccaee58-256a-45ee-88cb-e090c24cce45"/>
+					<reportElement key="line" x="562" y="35" width="104" height="1" uuid="94215d4e-367f-4e27-84cd-0f3c02205129"/>
 				</line>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField" x="662" y="12" width="4" height="12" uuid="0d756da3-45a3-4b72-840d-b7765973925c"/>
+					<reportElement key="textField" x="662" y="12" width="4" height="12" uuid="350dda48-b3a9-4878-875c-b157d6253176"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -204,7 +213,7 @@ group
 					<textFieldExpression><![CDATA[$F{wahrung}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField" x="662" y="24" width="4" height="12" uuid="ad9b0c81-75e3-4513-b8e1-37947287fbb0"/>
+					<reportElement key="textField" x="662" y="24" width="4" height="12" uuid="d5d8aa66-e0c3-47af-b8fc-728581cb0fc7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,10 +237,10 @@ group
 	<pageHeader>
 		<band height="16" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="0" width="782" height="16" forecolor="#999999" backcolor="#808080" uuid="62ad2a7f-22b9-4393-b91d-09aef89be2ba"/>
+				<reportElement key="rectangle-1" x="0" y="0" width="782" height="16" forecolor="#999999" backcolor="#808080" uuid="f85e75bc-90c8-43ac-8e24-cd6158e5bda3"/>
 			</rectangle>
 			<staticText>
-				<reportElement key="staticText" x="112" y="0" width="45" height="16" forecolor="#FFFFFF" uuid="120d24ff-37d8-4e65-a769-2a12213d002a"/>
+				<reportElement key="staticText" x="112" y="0" width="45" height="16" forecolor="#FFFFFF" uuid="c2d20786-3d9c-4bd4-932f-a9ebea2416f6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -244,7 +253,7 @@ group
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText" x="177" y="0" width="74" height="16" forecolor="#FFFFFF" uuid="e5de8824-cc9e-4634-9a33-56273fc27b99"/>
+				<reportElement key="staticText" x="177" y="0" width="74" height="16" forecolor="#FFFFFF" uuid="38715fe0-3647-421a-8fd4-4b66a91709d0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -257,7 +266,7 @@ group
 				<text><![CDATA[Beschreibung]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="53" y="0" width="49" height="16" forecolor="#FFFFFF" uuid="770de858-c115-4df5-a2f6-2362f7ea01df"/>
+				<reportElement key="textField" x="53" y="0" width="49" height="16" forecolor="#FFFFFF" uuid="99dc13c5-ead7-470e-aad5-c721ff010ddf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,7 +279,7 @@ group
 				<textFieldExpression><![CDATA[$F{periode}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText" x="13" y="0" width="39" height="16" forecolor="#FFFFFF" uuid="1afda8bb-66d4-49fd-abf3-a8cc2e061b4b"/>
+				<reportElement key="staticText" x="13" y="0" width="39" height="16" forecolor="#FFFFFF" uuid="81803a90-90e0-4c7f-a796-e36f9f8bf500"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -283,7 +292,7 @@ group
 				<text><![CDATA[Zeitraum:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText" x="268" y="0" width="79" height="16" forecolor="#FFFFFF" uuid="7c409dd1-7191-4b6d-82bb-d88cfc72dbb8"/>
+				<reportElement key="staticText" x="268" y="0" width="79" height="16" forecolor="#FFFFFF" uuid="c0620986-c38c-4b8e-b5e7-748d2e3f559f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -296,7 +305,7 @@ group
 				<text><![CDATA[Zahlungsnummer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText" x="361" y="0" width="80" height="16" forecolor="#FFFFFF" uuid="474bf9af-6063-42f5-b358-36367608cbba"/>
+				<reportElement key="staticText" x="361" y="0" width="80" height="16" forecolor="#FFFFFF" uuid="f80ca393-6369-4466-b1fc-00896ca7e7a4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -309,7 +318,7 @@ group
 				<text><![CDATA[Einnahmen]]></text>
 			</staticText>
 			<staticText>
-				<reportElement key="staticText" x="453" y="0" width="80" height="16" forecolor="#FFFFFF" uuid="46c2ad13-7a5d-4b4d-bdf7-893067708d53"/>
+				<reportElement key="staticText" x="453" y="0" width="80" height="16" forecolor="#FFFFFF" uuid="50fe740f-4ca4-4d47-8fca-e472350cd41a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -329,12 +338,12 @@ group
 	<detail>
 		<band height="11" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" forecolor="#FFFFCC" backcolor="#FFFFCC" uuid="e703a175-dad8-4fa6-93f7-5aa3b03f0bc9">
+				<reportElement key="rectangle-2" x="0" y="0" width="782" height="11" forecolor="#FFFFCC" backcolor="#FFFFCC" uuid="9ed54cd2-aa0b-4d1f-a849-1bfcb11fd0aa">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Zeile_COUNT}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="112" y="0" width="45" height="11" uuid="d8287ee3-86ef-4808-9bbf-3f83309f3160"/>
+				<reportElement key="textField" x="112" y="0" width="45" height="11" uuid="b16c9df3-a94d-4565-9354-4af7be00ac73"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -347,7 +356,7 @@ group
 				<textFieldExpression><![CDATA[$F{datetrx}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="177" y="0" width="64" height="11" uuid="23ad411f-e4ac-48df-9144-66fbf16c72d8"/>
+				<reportElement key="textField" x="177" y="0" width="64" height="11" uuid="e9d0b51c-9638-4640-966e-f89031c4c3bd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -360,7 +369,7 @@ group
 				<textFieldExpression><![CDATA[$F{beschreibung}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField" x="204" y="0" width="45" height="11" uuid="f46e412f-cea5-4c41-8c93-0f1ab31040bf"/>
+				<reportElement key="textField" x="204" y="0" width="45" height="11" uuid="84ac6c8e-c0d7-4764-b389-9c93beeaec0f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -373,7 +382,7 @@ group
 				<textFieldExpression><![CDATA[$F{rechnung}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="268" y="0" width="79" height="11" uuid="ca969739-29e2-434b-8ac1-2eada971157f"/>
+				<reportElement key="textField" x="268" y="0" width="79" height="11" uuid="a305da83-b86c-4dc8-8b33-5ab002377434"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -386,7 +395,7 @@ group
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" x="353" y="0" width="80" height="11" uuid="954633e0-3b47-44fa-9208-e603aa014c84"/>
+				<reportElement key="textField" x="353" y="0" width="80" height="11" uuid="4d60497c-109d-45ce-a189-a0d781b90630"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -399,7 +408,7 @@ group
 				<textFieldExpression><![CDATA[$F{einnahme}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField" x="446" y="0" width="80" height="11" uuid="6be1613d-75aa-450f-95da-f65202185426"/>
+				<reportElement key="textField" x="446" y="0" width="80" height="11" uuid="aae940f2-f4f2-4beb-b4d2-2d76823fa0dd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -412,7 +421,7 @@ group
 				<textFieldExpression><![CDATA[$F{ausgabe}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="435" y="0" width="4" height="11" uuid="9cc584c4-4ea2-4d6f-805a-2f6257aab730"/>
+				<reportElement key="textField" x="435" y="0" width="4" height="11" uuid="d5871968-40e6-47c6-a27c-3c5166487ca5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -425,7 +434,7 @@ group
 				<textFieldExpression><![CDATA[$F{wahrung}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="528" y="0" width="4" height="11" uuid="4859e9a4-402c-43f9-8329-6ad2e7fb7599"/>
+				<reportElement key="textField" x="528" y="0" width="4" height="11" uuid="30693403-eed0-4927-93af-c4af401919cf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

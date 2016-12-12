@@ -109,6 +109,7 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.GridWorkbench;
 import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
@@ -117,13 +118,10 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
 import org.compiere.model.PO;
+import org.compiere.model.X_AD_Process;
 import org.compiere.print.AReport;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessClassInfo;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.swing.CPanel;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -132,10 +130,15 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.IProcessExecutionListener;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ui.AProcess;
+import de.metas.process.ui.ProcessDialog;
 
 /**
  * Main Panel of application window.
@@ -177,7 +180,7 @@ import de.metas.logging.MetasfreshLastError;
  */
 // metas: removed final modifier
 public class APanel extends CPanel
-		implements DataStatusListener, ChangeListener, ActionListener, ASyncProcess, IProcessEventListener // metas
+		implements DataStatusListener, ChangeListener, ActionListener, IProcessExecutionListener, IProcessEventListener // metas
 {
 	/**
 	 * 
@@ -487,18 +490,6 @@ public class APanel extends CPanel
 		// Tools
 		final JMenu mTools = AEnv.getMenu("Tools");
 		menuBar.add(mTools);
-
-		// metas-tsa: Drop unneeded menu items (09271)
-		//@formatter:off
-//		aCalculator = addAction("Calculator",	mTools, 	null,	false);
-//		aCalendar = addAction("Calendar",		mTools, 	null,	false);
-//		aEditor =	addAction("Editor",			mTools, 	null,	false);
-//		MUser user = MUser.get(Env.getCtx());
-//		if (user.isAdministrator())
-//			aScript = addAction("Script",	        mTools, 	null,	false);
-//		if (AEnv.isWorkflowProcess())
-//			aWorkflow = addAction("WorkFlow",	mTools,		null,	false);
-		//@formatter:on
 
 		if ("Y".equals(Env.getContext(m_ctx, "#SysAdmin")))  	// set in DB.loginDB
 			aWinSize = addAction("WinSize", mTools, null, false, false);
@@ -2560,30 +2551,25 @@ public class APanel extends CPanel
 	private void cmd_print(boolean printPreview)
 	{
 		// Get process defined for this tab
-		int AD_Process_ID = m_curTab.getAD_Process_ID();
-		log.info("ID=" + AD_Process_ID);
+		final int AD_Process_ID = m_curTab.getAD_Process_ID();
+		log.info("AD_Process_ID={}", AD_Process_ID);
 
 		// No report defined
-		if (AD_Process_ID == 0)
+		if (AD_Process_ID <= 0)
 		{
 			cmd_report();
 			return;
 		}
 
 		cmd_save(false);
-		//
-		int table_ID = m_curTab.getAD_Table_ID();
-		int record_ID = m_curTab.getRecord_ID();
-		ProcessInfo pi = new ProcessInfo(getTitle(), AD_Process_ID, table_ID, record_ID);
-		pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-		pi.setPrintPreview(printPreview);
-		pi.setWindowNo(m_curWindowNo); // metas: 03040
-		pi.setTabNo(getTabNo());
-
-		ProcessCtl.process(this, m_curWindowNo, pi, ITrx.TRX_None); // calls lockUI, unlockUI
-		statusBar.setStatusLine(pi.getSummary(), pi.isError());
-	}   // cmd_print
+		
+		ProcessDialog.builder()
+				.setAD_Process_ID(AD_Process_ID)
+				.setFromGridTab(m_curTab)
+				.setPrintPreview(printPreview)
+				.setProcessExecutionListener(this)
+				.showModal(getCurrentFrame());
+	}
 
 	/**
 	 * Find - Set Query
@@ -2631,19 +2617,37 @@ public class APanel extends CPanel
 	private void cmd_attachment()
 	{
 		int record_ID = m_curTab.getRecord_ID();
-		log.info("Record_ID=" + record_ID);
+		log.info("Record_ID={}", record_ID);
 		if (record_ID == -1)  	// No Key
 		{
 			aAttachment.setEnabled(false);
 			return;
 		}
 
-		// Attachment va =
-		new Attachment(getCurrentFrame(), m_curWindowNo,
-				m_curTab.getAD_AttachmentID(), m_curTab.getAD_Table_ID(), record_ID, null);
-		//
-		m_curTab.loadAttachments();				// reload
-		aAttachment.setPressed(m_curTab.hasAttachment());
+		final Attachment va = new Attachment(
+				getCurrentFrame() //
+				, m_curWindowNo //
+				, m_curTab.getAD_AttachmentID() //
+				, m_curTab.getAD_Table_ID(), record_ID //
+		);
+		va.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowOpened(WindowEvent e)
+			{
+				va.requestFocus();
+			}
+			
+			@Override
+			public void windowClosed(final WindowEvent e)
+			{
+				m_curTab.loadAttachments();				// reload
+				
+				aAttachment.setPressed(m_curTab.hasAttachment());
+			}
+		});
+		
+		AEnv.showCenterScreen(va);
 	}	// attachment
 
 	/**
@@ -2826,8 +2830,7 @@ public class APanel extends CPanel
 	 * 
 	 * @param vButton button
 	 */
-	// metas: tsa: changed to protected
-	protected void actionButton(final VButton vButton)
+	public void actionButton(final VButton vButton)
 	{
 		try
 		{
@@ -2929,7 +2932,7 @@ public class APanel extends CPanel
 			}
 
 			isProcessMandatory = true;
-			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, vButton, record_ID);
+			final VDocAction vda = new VDocAction(m_curWindowNo, m_curTab, record_ID);
 			// Something to select from?
 			if (vda.getNumberOfOptions() == 0)
 			{
@@ -3072,13 +3075,14 @@ public class APanel extends CPanel
 			String title = vButton.getDescription();
 			if (title == null || title.length() == 0)
 				title = vButton.getName();
-			final ProcessInfo pi = new ProcessInfo(title, vButton.getProcess_ID(), table_ID, record_ID);
-			pi.setWindowNo(m_curWindowNo);
-			pi.setTabNo(getTabNo());
-			pi.setAD_User_ID(Env.getAD_User_ID(m_ctx));
-			pi.setAD_Client_ID(Env.getAD_Client_ID(m_ctx));
-			pi.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal());
-			pi.setGridTabSummaryInfo(m_curTab.getSummaryInfo());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(m_ctx)
+					.setAD_Process_ID(vButton.getProcess_ID())
+					.setTitle(title)
+					.setRecord(table_ID, record_ID)
+					.setWindowNo(m_curWindowNo).setTabNo(getTabNo())
+					.setWhereClause(m_curTab.getTableModel().getSelectWhereClauseFinal())
+					.build();
 			ff.setProcessInfo(pi);
 			ff.addWindowListener(new WindowAdapter()
 			{
@@ -3116,19 +3120,13 @@ public class APanel extends CPanel
 		// Call Process
 		else
 		{
-			final ProcessModalDialog dialog = new ProcessModalDialog(
-					m_curTab,   // gridTab
-					this,   // ASyncProcess aProcess
-					vButton.getProcess_ID(),   // AD_Process_ID
-					table_ID, record_ID,   // AD_Table_ID, Record_ID
-					startWOasking  // autoStart
-			);
-			if (dialog.isValidDialog())
-			{
-				dialog.validate();
-				dialog.pack();
-				AEnv.showCenterWindow(Env.getWindow(m_curWindowNo), dialog);
-			}
+			ProcessDialog.builder()
+					.setFromGridTab(m_curTab)
+					.setProcessExecutionListener(this)
+					.setAD_Process_ID(vButton.getProcess_ID())
+					.setShowHelp(startWOasking ? X_AD_Process.SHOWHELP_RunSilently_TakeDefaults : null)
+					.setAllowProcessReRun(startWOasking ? Boolean.FALSE : null)
+					.showModal(getCurrentFrame());
 		}
 	}	// actionButton
 
@@ -3175,8 +3173,10 @@ public class APanel extends CPanel
 		// Process Result
 		if (notPrint)   // refresh if not print
 		{
+			final ProcessExecutionResult result = pi.getResult();
+
 			// Refresh data
-			if (pi.isRefreshAllAfterExecution())
+			if (result.isRefreshAllAfterExecution())
 			{
 				final boolean retainCurrentRowIfAny = false;
 				m_curTab.dataRefreshAll(retainCurrentRowIfAny);
@@ -3188,32 +3188,20 @@ public class APanel extends CPanel
 
 			//
 			// Select record after execution (if any)
-			if (pi.getRecordToSelectAfterExecution() != null)
+			if (result.getRecordToSelectAfterExecution() != null)
 			{
-				m_curTab.setCurrentRowByRecord(pi.getRecordToSelectAfterExecution());
+				m_curTab.setCurrentRowByRecord(result.getRecordToSelectAfterExecution());
 			}
 
 			// Timeout
-			if (pi.isTimeout())  		// set temporarily to R/O
+			if (result.isTimeout())  		// set temporarily to R/O
 			{
-				Env.setContext(m_ctx, m_curWindowNo, "Processed", "Y");
+				Env.setContext(m_ctx, m_curWindowNo, "Processed", true);
 			}
 
 			m_curGC.dynamicDisplay(0);
 
 			updateStatusLine(pi);
-
-			// Show process logs if any
-			if (pi.isShowProcessLogs())
-			{
-				ProcessInfoUtil.setLogFromDB(pi);
-
-				final String logInfo = pi.getLogInfo();
-				if (logInfo.length() > 0)
-				{
-					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
-				}
-			}
 		}
 		else
 		{
@@ -3223,11 +3211,31 @@ public class APanel extends CPanel
 
 	private final void updateStatusLine(final ProcessInfo pi)
 	{
+		final ProcessExecutionResult result = pi.getResult();
+		
 		// Update Status Line
-		setStatusLine(pi.getSummary(), pi.isError());
-		if (pi.isError())
+		setStatusLine(result.getSummary(), result.isError());
+
+		//
+		// If the error or the process logs was not already reported to user, we shall display a popup now
+		if(!result.isErrorWasReportedToUser())
 		{
-			ADialog.error(m_curWindowNo, this, null, pi.getSummary());
+			// Show error if any
+			if (result.isError())
+			{
+				ADialog.error(m_curWindowNo, this, null, result.getSummary());
+				result.setErrorWasReportedToUser();
+			}
+			// Show process logs if any
+			else if (result.isShowProcessLogs())
+			{
+				final String logInfo = result.getLogInfo();
+				if(!Check.isEmpty(logInfo, true))
+				{
+					ADialog.info(m_curWindowNo, this, Env.getHeader(m_ctx, m_curWindowNo), pi.getTitle(), logInfo);	// clear text
+					result.setErrorWasReportedToUser();
+				}
+			}
 		}
 	}
 
@@ -3236,23 +3244,10 @@ public class APanel extends CPanel
 	 * 
 	 * @return true, if UI is locked
 	 */
-	@Override
-	public boolean isUILocked()
+	private boolean isUILocked()
 	{
 		return m_isLocked;
 	}   // isLoacked
-
-	/**
-	 * Method to be executed async.
-	 * Called from the ASyncProcess worker
-	 * 
-	 * @param pi process info
-	 */
-	@Override
-	public void executeASync(ProcessInfo pi)
-	{
-		log.info("-");
-	}   // executeASync
 
 	/**
 	 * Get Current Tab

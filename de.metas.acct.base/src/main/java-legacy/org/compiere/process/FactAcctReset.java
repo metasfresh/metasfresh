@@ -48,13 +48,16 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Accounting Fact Reset
  *	
  *  @author Jorg Janke
  *  @version $Id: FactAcctReset.java,v 1.5 2006/09/21 21:05:02 jjanke Exp $
  */
-public class FactAcctReset extends SvrProcess
+public class FactAcctReset extends JavaProcess
 {
 	/**	Client Parameter		*/
 	private int		p_AD_Client_ID = 0;
@@ -74,7 +77,7 @@ public class FactAcctReset extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

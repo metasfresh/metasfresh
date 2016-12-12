@@ -42,8 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MProcess;
-import org.compiere.process.ProcessInfoParameter;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
@@ -53,6 +52,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
 import de.metas.logging.LogManager;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 import net.sf.jasperreports.engine.JRException;
@@ -61,6 +62,7 @@ import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
@@ -304,9 +306,7 @@ public class JasperEngine extends AbstractReportEngine
 
 	private final String getReportPath(final int adProcessId, final Map<String, Object> jrParameters) throws JRException
 	{
-		final MProcess process = MProcess.get(Env.getCtx(), adProcessId);
-		Check.assumeNotNull(process, "process not null");
-
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(Env.getCtx(), adProcessId);
 		final String reportPath = process.getJasperReport();
 		final String reportPath_Tabular = process.getJasperReport_Tabular();
 
@@ -503,6 +503,22 @@ public class JasperEngine extends AbstractReportEngine
 		// and assume that cells which shall not be locked are particularly specified.
 		jasperPrint.setProperty(XlsReportConfiguration.PROPERTY_CELL_LOCKED, "true");
 
+		// there are cases when we don't want the cells to be blocked by password
+		// in those cases we put in jrxml the password property with empty value,  which will indicate we don't want password
+		// if there is no such property we take default password. If empty we set no password and if set, we use that password from the report
+		if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD) == null)
+		{
+			//do nothing;
+		}
+		else if(jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD).isEmpty())
+		{
+			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, null);
+		}
+		else
+		{
+			exporter.setParameter(JRXlsAbstractExporterParameter.PASSWORD, jasperPrint.getProperty(XlsReportConfiguration.PROPERTY_PASSWORD));
+		}
+		
 		exporter.exportReport();
 	}
 }

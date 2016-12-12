@@ -2993,7 +2993,7 @@ public abstract class PO
 		}
 		if (s_docWFMgr != null)
 		{
-			s_docWFMgr.process(this, p_info.getAD_Table_ID());
+			s_docWFMgr.process(this);
 		}
 	}
 
@@ -3349,7 +3349,7 @@ public abstract class PO
 			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
 			if (idNew <= 0)
 			{
-				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ")");
+				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
 				// log.error(ex.getLocalizedMessage(), ex);
 				// return false;
 				throw ex;
@@ -5092,7 +5092,7 @@ public abstract class PO
 		return m_translations;
 	}
 
-	private POInfoModelTranslationMap m_translations = null;
+	private IModelTranslationMap m_translations = null;
 
 	public final POInfo getPOInfo()
 	{
@@ -5104,7 +5104,9 @@ public abstract class PO
 	private POCacheLocal get_POCacheLocal(String columnName, String refTableName)
 	{
 		if (m_poCacheLocals == null)
-			m_poCacheLocals = new HashMap<String, POCacheLocal>();
+		{
+			m_poCacheLocals = new HashMap<>();
+		}
 
 		POCacheLocal poCache = m_poCacheLocals.get(columnName);
 		if (poCache != null && !refTableName.equals(poCache.getTableName()))
@@ -5121,14 +5123,20 @@ public abstract class PO
 		return poCache;
 	}
 
-	public final <T> T get_ValueAsPO(String columnName, Class<T> refClass)
+	public final <T> T get_ValueAsPO(final String columnName, final Class<T> refClass)
 	{
 		final String refTableName = InterfaceWrapperHelper.getTableName(refClass);
 		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
 		return poCache == null ? null : poCache.get(refClass);
 	}
 
-	public final <T> void set_ValueFromPO(String columnName, Class<T> refClass, Object obj)
+	public final Object get_ValueAsPO(final String columnName, final String refTableName)
+	{
+		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);
+		return poCache == null ? null : poCache.get();
+	}
+
+	public final <T> void set_ValueFromPO(final String columnName, final Class<T> refClass, final Object obj)
 	{
 		final String refTableName = InterfaceWrapperHelper.getTableName(refClass);
 		final POCacheLocal poCache = get_POCacheLocal(columnName, refTableName);

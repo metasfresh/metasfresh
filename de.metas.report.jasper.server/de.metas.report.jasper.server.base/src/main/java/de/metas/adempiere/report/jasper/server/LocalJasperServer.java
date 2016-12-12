@@ -25,16 +25,11 @@ package de.metas.adempiere.report.jasper.server;
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.MPInstance;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -44,9 +39,10 @@ import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.JasperEngine;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.report.engine.IReportEngine;
 import de.metas.report.engine.ReportContext;
-import de.metas.report.model.I_AD_Process;
 import de.metas.report.xls.engine.XlsReportEngine;
 
 public class LocalJasperServer implements IJasperServer
@@ -54,61 +50,47 @@ public class LocalJasperServer implements IJasperServer
 	private static final Logger logger = LogManager.getLogger(LocalJasperServer.class);
 
 	@Override
-	public byte[] report(int processId, int pinstanceId, final String language, final OutputType outputType) throws Exception
+	public byte[] report(int processId, int pinstanceId, final String adLanguage, final OutputType outputType) throws Exception
 	{
-		final Properties ctx = Env.newTemporaryCtx();
-
 		//
-		// Load processId, tableId, recordId
-		int tableId = -1;
-		int recordId = -1;
-		if (pinstanceId <= 0)
-		{
-			final MPInstance pinstance = new MPInstance(ctx, processId, 0, 0);
-			pinstance.saveEx();
-			logger.info("Given AD_PInstance_ID was 0; Created new {}", pinstance);
-			pinstanceId = pinstance.getAD_PInstance_ID();
-		}
-		else
-		{
-			final I_AD_PInstance pinstance = new MPInstance(ctx, pinstanceId, ITrx.TRXNAME_None);
-			if (pinstance.getAD_PInstance_ID() != pinstanceId)
-			{
-				throw new AdempiereException("@NotFound@ @AD_PInstance_ID@ " + pinstanceId);
-			}
-			if (processId > 0 && pinstance.getAD_Process_ID() != processId)
-			{
-				throw new AdempiereException("@Invalid@ @AD_Process_ID@ (" + processId + " != " + pinstance.getAD_Process_ID());
-			}
-			processId = pinstance.getAD_Process_ID();
-			tableId = pinstance.getAD_Table_ID();
-			recordId = pinstance.getRecord_ID();
-
-			// Update context from AD_PInstance
-			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, pinstance.getAD_Client_ID());
-			Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, pinstance.getAD_Org_ID());
-			Env.setContext(ctx, Env.CTXNAME_AD_User_ID, pinstance.getAD_User_ID());
-			Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, pinstance.getAD_Role_ID());
-
-			// Override the context using the values from record (if any)
-			// NOTE: setting the AD_Org_ID from document (if any) is very important for retrieving things like organization logo which is displayed in reports.
-			updateContextFromRecord(ctx, tableId, recordId);
-		}
-
-		//
-		// Create report context
-		final ReportContext reportContext = ReportContext.builder()
-				.setCtx(ctx)
-				.setAD_Process(InterfaceWrapperHelper.create(ctx, processId, I_AD_Process.class, ITrx.TRXNAME_None))
+		// Load process info
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.newTemporaryCtx())
+				.setCreateTemporaryCtx()
+				.setAD_Process_ID(processId)
 				.setAD_PInstance_ID(pinstanceId)
-				.setRecord(tableId, recordId)
-				.setAD_Language(language)
-				.setOutputType(outputType)
+				.setReportLanguage(adLanguage)
+				.setJRDesiredOutputType(outputType)
+				.build();
+		
+		//
+		// If there is no AD_PInstance already, we need to create it now
+		if(processInfo.getAD_PInstance_ID() <= 0)
+		{
+			Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(processInfo);
+		}
+		
+		// Override the context using the values from record (if any)
+		// NOTE: setting the AD_Org_ID from document (if any) is very important for retrieving things like organization logo which is displayed in reports.
+		updateContextFromRecord(processInfo);
+
+		//
+		// Create report context based on processInfo
+		final ReportContext reportContext = ReportContext.builder()
+				.setCtx(processInfo.getCtx())
+				.setAD_Process_ID(processInfo.getAD_Process_ID())
+				.setAD_PInstance_ID(processInfo.getAD_PInstance_ID())
+				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
+				.setAD_Language(processInfo.getReportAD_Language())
+				.setOutputType(processInfo.getJRDesiredOutputType())
+				.setReportTemplatePath(processInfo.getReportTemplate().orElse(null))
+				.setSQLStatement(processInfo.getSQLStatement().orElse(null))
+				.setApplySecuritySettings(processInfo.isReportApplySecuritySettings())
 				.build();
 
 		//
 		// Create the report
-		try (IAutoCloseable contextRestorer = Env.switchContext(ctx))
+		try (final IAutoCloseable contextRestorer = Env.switchContext(reportContext.getCtx()))
 		{
 			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			final IReportEngine engine = createReportEngine(reportContext);
@@ -151,17 +133,17 @@ public class LocalJasperServer implements IJasperServer
 	 * @param adTableId record's AD_Table_ID
 	 * @param recordId record's ID
 	 */
-	private final void updateContextFromRecord(final Properties ctx, final int adTableId, final int recordId)
+	private static final void updateContextFromRecord(final ProcessInfo processInfo)
 	{
-		if (adTableId <= 0 || recordId <= 0)
+		if(!processInfo.isRecordSet())
 		{
 			return;
 		}
 
 		try
 		{
-			final IContextAware context = new PlainContextAware(ctx);
-			final Object record = new TableRecordReference(adTableId, recordId).getModel(context);
+			final Properties ctx = processInfo.getCtx();
+			final Object record = processInfo.getRecord(Object.class);
 			final Integer adClientId = InterfaceWrapperHelper.getValueOrNull(record, "AD_Client_ID");
 			if (adClientId != null)
 			{
@@ -173,9 +155,9 @@ public class LocalJasperServer implements IJasperServer
 				Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrgId);
 			}
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			logger.warn("Failed while populating the context from record. Ignored", e);
+			logger.warn("Failed while populating the context from record. Ignored. \n ProcessInfo: {}", processInfo, ex);
 		}
 	}
 

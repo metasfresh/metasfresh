@@ -58,6 +58,8 @@ public interface ILookupDAO extends ISingletonService
 	 */
 	interface ITableRefInfo
 	{
+		String getName();
+		
 		String getTableName();
 
 		String getKeyColumn();
@@ -166,6 +168,8 @@ public interface ILookupDAO extends ISingletonService
 	boolean isTableReference(int AD_Reference_Value_ID);
 
 	ITableRefInfo retrieveTableDirectRefInfo(String columnName);
+	
+	ITableRefInfo retrieveAccountTableRefInfo();
 
 	ILookupDisplayInfo retrieveLookupDisplayInfo(ITableRefInfo tableRefInfo);
 

@@ -31,8 +31,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Create BP relation from document.
@@ -43,7 +44,7 @@ import org.compiere.process.SvrProcess;
  *      %282010122110000025%29
  *
  */
-public class CreateBPRelationFromDocument extends SvrProcess
+public class CreateBPRelationFromDocument extends JavaProcess
 {
 	public static String PARAM_C_BPartner_ID = I_C_BP_Relation.COLUMNNAME_C_BPartner_ID;
 	public static String PARAM_C_BPartner_Location_ID = I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID;
@@ -66,7 +67,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)

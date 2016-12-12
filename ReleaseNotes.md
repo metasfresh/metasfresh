@@ -8,22 +8,178 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-
 Here come the actual release notes:
 
-# metasfresh 4.42.41 (2016-44)
+# metasfresh 4.48.47 (2016-50)
+ 
+ upcoming
 
-upcoming
+## Features
+* metasfresh
+  * #677 make customs report faster
+  * #541 Remove PiPo from metasfresh removing code and data
+
+* webui
+  * #625 Shipment Schedule Window WebUI
+  * #687 webUI bundle
+## Fixes
+* metasfresh
+  * #679 Bug in ClientUpdateValidator
+
+# metasfresh 4.47.46 (2016-49)
+
+## Features 
+* metasfresh
+  * #639 Marginal Return report calculation does not check ad_org_id
+    * Extend the marginal return report with ad_org_id parm to allow to seperate user for other organisations.
+  * #585 Adjust the remaining Property names
+    * Change properties to metasfresh namespace.
+  * #661 Cultivation Planning report adjustments
+    * Adjustments made to the cultivation planning report in procurement.
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Avoid automatic completion of flatrate term contracts when triffered manually from process gear. This allows the user to record further adjustments after creation.
+
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
+    * Setup an initial set of 10 key perfroamnce indicators for the new metasfresh webui.
+  * #59 User friendly URL for Print Endpoint
+    * Add a user frindly/ comprehensive endpoint for document printing tab in webUI.
+  * #45 Dashboard Target area backend support
+    * Add support for Target widgets and target widget area in webUI dashboard
+  * #567 WebUI - Material Receipt Schedule
+    * Initial set of windows, grid views, sidelist and elements and fields for material receipt schedule window.
+
+## Fixes
+* metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+    * Fix error with long loading of ini file in Tomcat.
+  * #664 R_Request Performance Issue
+    * Swap Table direct references against search in all R_Request table/ subtable fields to reduce current performance issues.
+  * #674 Filter operator "between" broken
+    * Fix the operator "between" which is used in filtering/ search criteria.
+  
+* webui
+  * #67 Error when introducing parameters to report
+    * Fix parameters support for report usage in webui.
+  * #70 Add BPLocation Error
+    * Fix Errors that prevented the creation of new Business Partner Location lines in webUI.
+
+# metasfresh 4.46.45 (2016-48)
+
+## Features 
+* webui
+  * #425 Kickstart elasticsearch integration
+    * Add the first prototype of elasticsearch integration in WebUI environment of metasfresh ERP. Data for elasticsearch index is created via metasfresh async framework.
+  * #598 WebUI Dashboard initial Prototype definition
+    * Create a prototype dashboard in new metasfresh WebUI. Current prototype uses kibana for KPI and data visualization.
+
+## Fixes
+* metasfresh
+  * #583 Reports without ad_org_id show wrong results
+    * Add support for multi organisation usage of selected 22 reports.
+  * #620 Marginal Return Report doubled sums for accounting group
+    * Fix the doubled sums in Marginal return report for specific accounting group.    
+  * #656 Bug in Import Format - Copy lines process
+    * Fix a minor Bug in Import format.
+  * #646 Fix support for groovy scripts
+    * Fix groovy Script support and extend fieldsize for script recording.
+
+# metasfresh 4.45.44 (2016-47)
+
+This week's RC
+
+## Features
+* metasfresh
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Adjust the completion process of Flatrate terms created manually. Now the flatrate term in not completed and can be manually adjusted by the user without reactivating.
+  * #563 Report Statistics qty per Week
+    * New sales qty report that shows the sold product quanities per week and in comparison the last 11 weeks.
+  * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
+    * Adjustment of Handling Unit permissions in manufacturing order, initially filtering out HU with washing cycle set.
+  * #597 Empties mask and functionality with autom. set the selected bpartner
+    * New functionality to add informations about Businsspartner, Location and Purchase Order Reference. This allows the to raise the efficiency when checking and creating purchase invoices via invoice candidates.
+  * #576 Report Reclamation result, quality note and minor changes
+    * New reqirements implemented in reclamation report.
+  * #539 Add missing FK constraints
+    * Add further missin Foreign Key constraints surfacing during Data Lifecycle Management implementation.
+* webui
+  * #567 WebUI - Material Receipt Schedule
+    * Add initial Screen Layout for Material receipt schedule in metasfresh WebUI.
+  * #497 WebUI - ShipmentSchedule Window
+    * Add initial Screen Layout for Shipment Schedule in metasfresh WebUI.
+
+## Fixes
+* metasfresh
+  * #589 console error when doing bpartner setup
+    * Fix a minor bug with jax-rs/ jms timeout in Business Partner setup workflow, which contantly popped up in console.
+  * #553 Report Account Info adjustments. Add parms date range.
+    * Add the parms date range back into Account Info report in Jasper.
+  * #611 IBAN Error for RBS Bank
+    * Add support for RBS Bank in metasfresh IBAN check when creating a new Businesspartner Bankaccount.
+
+# metasfresh 4.44.43 (2016-46)
+
+## Features
+* metasfresh
+  * #553 Report Account Info adjustments. Add parms date range.
+    * Enhancing the Filter parms to allow variable daterange for selection.
+  * #557 Report Saldenbilanz & Account Info native Excel Export
+    * Now Allowing an Excel Export though Report viewer process.
+  * #558 Marginal return calculation - Accountings without c_activity_id
+    * Marginal Return now considers specific records without activity to be calculated on account specific one.
+  * #568 Change on Report "Lieferschein" for one specific Customer
+    * Add properties File for Shipment Report.
+  * #555 Businesspartner Location isEDI shall not be ticked by default
+    * Don't set the Flag isEDI per default when recording new Businesspartner Loactions.
+  * #548 keep M_QualityNote and M_AttributeValue in sync
+    * New Functionality to sync the M_QualityNote and M_AttributeValue for R_Request complaints usage.
+  * #577 Button Request shows too many results
+    * Adjust the Filtering of Request Button in main menue and show Role Based counter.
+  * #565 Report Revenue per Week and BPartner also show qty
+    * Add a new Quantity value in reports Revenue per week and week Businesspartner.
+  * #416 Extended async notification features
+    * Prepare the notification features for WebUI exposure in metasfresh nextGen.
+ 
+## Fixes
+* metasfresh
+  * #578 Request Window Attachment Image too large in viewer
+    * Fixes a Bug that scales window too large after uplaoding a large image.
+
+# metasfresh 4.43.42 (2016-45)
+
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
+    * Added a new filter in saldobilanz report to exclude the year end accountings (profit & loss) from report.
+
+* metasfresh-webui
+  * #41 Implement Dashboard REST endpoint
+    * Added a new REST-API endpoint for WebUI KPI widgets.
+
+## Fixes
+* metasfresh
+  * #552 division by 0 in costprice report
+    * Fixed a division by 0 Bug in costprice report.
+
+* metasfresh-webui
+  * #40 Account fields are not working
+    * Fix in new WebUI Implementation. An exception occured because of Field Type account.
+  
+# metasfresh 4.42.41 (2016-44)
 
 ## Features
 * metasfresh
  * #500 Migration: Create Requests for all inout lines with quality issues
+   * SQL Migration Path for all Material Receipts with Quality Issues. Reclamation requests are created.
  * #514 Reclamations report: group the inouts with ff.
+   * Create a new Report to analyze the Performance Issues in Vendor receipts/ customer deliveries. The report shows all details to performance issues (Quanitity-, Quality-, Delivery-, Receipt-Performance).
 
 ## Fixes
 * metasfresh
  * FRESH-823:#536 Context bug in MLookup
+   * Fixed a minor context Bug in MLookup Fields.
  * #540 Table and Columns - IsLazyLoading flag is not displayed
+   * Fixed a Bug that occured in Table and Columns Definition, preventing isLazyLoading to be shown.
 
 
 # metasfresh 4.41.40 (2016-43)

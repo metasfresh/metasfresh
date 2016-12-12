@@ -922,6 +922,12 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 		return trx.getTrxListenerManager();
 	}
+	
+	@Override
+	public ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit()
+	{
+		return getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
+	}
 
 	@Override
 	public final boolean isNull(final ITrx trx)
@@ -1083,25 +1089,35 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public void assertThreadInheritedTrxExists()
 	{
-		final String trxName = getThreadInheritedTrxName();
-		Check.assume(!isNull(trxName), "ThreadInherited transaction shall be set at this point");
+		Check.assume(hasThreadInheritedTrx(), "ThreadInherited transaction shall be set at this point");
 	}
 
 	@Override
 	public void assertThreadInheritedTrxNotExists()
 	{
-		final String trxName = getThreadInheritedTrxName();
-		Check.assume(isNull(trxName), "ThreadInherited transaction shall NOT be set at this point");
+		Check.assume(!hasThreadInheritedTrx(), "ThreadInherited transaction shall NOT be set at this point");
 	}
 
 
 	@Override
 	public String setThreadInheritedTrxName(final String trxName)
 	{
+		if (ITrx.TRXNAME_ThreadInherited.equals(trxName))
+		{
+			throw new TrxException("Setting the thread inherited transaction to " + trxName + " is not allowed");
+		}
+		
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
 
 		return trxNameOld;
+	}
+
+	@Override
+	public boolean hasThreadInheritedTrx()
+	{
+		final String threadInheritedTrxName = getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
+		return !isNull(threadInheritedTrxName);
 	}
 
 	@Override

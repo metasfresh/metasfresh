@@ -58,14 +58,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MSequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -90,6 +88,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.process.IADPInstanceDAO;
 
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
@@ -793,7 +792,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public InvoiceCandRecomputeTag generateNewRecomputeTag()
 	{
-		final int adPInstanceId = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, I_AD_PInstance.Table_Name);
+		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(Env.getCtx());
 		return InvoiceCandRecomputeTag.ofAD_PInstance_ID(adPInstanceId);
 	}
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-14T10:21:22 -->
+<!-- 2016-11-17T12:00:37 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a6820c4a-3730-4e0f-8743-00afb583c2f0">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -41,7 +41,7 @@ FROM
 	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id AND l.isActive = 'Y'
 	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id AND t.isActive = 'Y'
 WHERE
-	o.ad_org_id = 1000000 AND o.isActive = 'Y'
+	o.ad_org_id = $P{AD_Org_ID} AND o.isActive = 'Y'
 group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 	</queryString>
 	<field name="orgname" class="java.lang.String"/>

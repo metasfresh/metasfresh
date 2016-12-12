@@ -44,8 +44,10 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MRelationType;
+import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
@@ -55,6 +57,8 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrder;
@@ -125,17 +129,9 @@ public class OLCandBL implements IOLCandBL
 
 		//
 		// 1. Get the ol-candidates to process (using relation)
-		final MRelationType relationType = MRelationType.retrieveForInternalName(ctx, mkRelationTypeInternalName(processor), trxName);
-		if (relationType == null)
-		{
-			final String msg = "No relation type has been configured for" + processor;
-			logProcess(process, msg);
-			throw new AdempiereException(msg);
-		}
-
-		//
-		// FIXME retrieve (AND FILTER) the candidates directly, and not with M..., please
-		final List<I_C_OLCand> allCandidates = relationType.retrieveDestinations(InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class);
+		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
+		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
 		if (orderCandidates.isEmpty())
 		{
@@ -1015,15 +1011,15 @@ public class OLCandBL implements IOLCandBL
 
 		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
 
-		final MRelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), null);
+		final I_AD_RelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), ITrx.TRXNAME_None);
 
-		final MRelationType relType;
+		final I_AD_RelationType relType;
 
-		final MReference refSource;
-		final MRefTable refTableSource;
+		final I_AD_Reference refSource;
+		final I_AD_Ref_Table refTableSource;
 
-		final MReference refTarget;
-		final MRefTable refTableTarget;
+		final I_AD_Reference refTarget;
+		final I_AD_Ref_Table refTableTarget;
 
 		final int orgId = 0;
 
@@ -1037,12 +1033,12 @@ public class OLCandBL implements IOLCandBL
 			refSource.setEntityType(entityType);
 			refSource.setName(mkNameOfSourceRef(ctx, model));
 			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
-			refSource.saveEx();
-			relType.setAD_Reference_Source_ID(refSource.get_ID());
+			InterfaceWrapperHelper.save(refSource);
+			relType.setAD_Reference_Source_ID(refSource.getAD_Reference_ID());
 
 			refTableSource = new MRefTable(ctx, 0, trxName);
 			refTableSource.setAD_Org_ID(orgId);
-			refTableSource.setAD_Reference_ID(refSource.get_ID());
+			refTableSource.setAD_Reference_ID(refSource.getAD_Reference_ID());
 			refTableSource.setEntityType(entityType);
 
 			refTarget = new MReference(ctx, 0, trxName);
@@ -1050,28 +1046,28 @@ public class OLCandBL implements IOLCandBL
 			refTarget.setEntityType(entityType);
 			refTarget.setName(mkNameOfTargetRef(ctx, model));
 			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
-			refTarget.saveEx();
-			relType.setAD_Reference_Target_ID(refTarget.get_ID());
+			InterfaceWrapperHelper.save(refTarget);
+			relType.setAD_Reference_Target_ID(refTarget.getAD_Reference_ID());
 
 			refTableTarget = new MRefTable(ctx, 0, trxName);
 			refTableTarget.setAD_Org_ID(orgId);
-			refTableTarget.setAD_Reference_ID(refTarget.get_ID());
+			refTableTarget.setAD_Reference_ID(refTarget.getAD_Reference_ID());
 			refTableTarget.setEntityType(entityType);
 		}
 		else
 		{
 			relType = retrievedRelType;
-			refSource = (MReference)relType.getAD_Reference_Source();
-			refTableSource = MReference.retrieveRefTable(ctx, refSource.get_ID(), trxName);
+			refSource = relType.getAD_Reference_Source();
+			refTableSource = MReference.retrieveRefTable(ctx, refSource.getAD_Reference_ID(), trxName);
 
-			refTarget = (MReference)relType.getAD_Reference_Target();
-			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.get_ID(), trxName);
+			refTarget = relType.getAD_Reference_Target();
+			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.getAD_Reference_ID(), trxName);
 
 		}
 		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
-		relType.saveEx();
+		InterfaceWrapperHelper.save(relType);
 
 		// source reference
 		refTableSource.setAD_Table_ID(model.getAdTableSourceId());
@@ -1086,7 +1082,7 @@ public class OLCandBL implements IOLCandBL
 		refTableSource.setAD_Display(keyColumnSourceId);
 
 		refTableSource.setWhereClause(keyColumnsSource[0] + "=" + model.getRecordSourceId());
-		refTableSource.saveEx();
+		InterfaceWrapperHelper.save(refTableSource);
 
 		// target reference
 		refTableTarget.setAD_Table_ID(model.getAdTableTargetId());
@@ -1110,7 +1106,7 @@ public class OLCandBL implements IOLCandBL
 			targetWhereClauseToUse = model.getTargetWhereClause();
 		}
 		refTableTarget.setWhereClause(targetWhereClauseToUse);
-		refTableTarget.saveEx();
+		InterfaceWrapperHelper.save(refTableTarget);
 	}
 
 	private String mkNameOfSourceRef(

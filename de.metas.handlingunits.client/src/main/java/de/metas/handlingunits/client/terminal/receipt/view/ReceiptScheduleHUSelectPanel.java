@@ -392,10 +392,21 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 		final ITerminalFactory terminalFactory = getTerminalFactory();
 
 		final ReceiptScheduleHUSelectModel model = getModel();
-		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected
-		try (final ITerminalContextReferences refs = terminalContext.newReferences())
+		final int warehouseId = model.getM_Warehouse_ID(true); // failIfNotSelected			
+		
+		// #643 The POReference, partner and location will be taken from the selected receipt schedule
+		final I_M_ReceiptSchedule selectedReceiptSchedule = model.getSelectedReceiptSchedule();
+
+
+		try (
+
+		final ITerminalContextReferences refs = terminalContext.newReferences())
+
 		{
-			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(terminalContext, warehouseId);
+			final EmptiesShipReceiveModel emptiesShipReceiveModel = new EmptiesShipReceiveModel(
+					terminalContext, 
+					warehouseId, 
+					selectedReceiptSchedule);
 			final EmptiesShipReceivePanel emptiesShipReceivePanel = new EmptiesShipReceivePanel(emptiesShipReceiveModel);
 
 			final String title = msgBL.translate(terminalContext.getCtx(), ACTION_EmptiesShipReceive);
@@ -403,6 +414,7 @@ public class ReceiptScheduleHUSelectPanel extends AbstractHUSelectPanel<ReceiptS
 
 			dialog.activate();
 		}
+
 	}
 
 	/**

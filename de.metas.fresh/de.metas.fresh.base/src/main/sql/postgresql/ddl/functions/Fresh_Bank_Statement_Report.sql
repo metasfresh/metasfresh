@@ -1,5 +1,6 @@
 DROP FUNCTION IF EXISTS report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo date);
-CREATE FUNCTION report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo date) 
+DROP FUNCTION IF EXISTS report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo date, IN AD_Org_ID numeric);
+CREATE FUNCTION report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo date, IN AD_Org_ID numeric) 
 	RETURNS TABLE ( 
 		BankstatementNo text, 
 		BPartnerName text, 
@@ -8,7 +9,8 @@ CREATE FUNCTION report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo
 		Valutadate timestamp,
 		LineNo numeric, 
 		StatementAmount numeric,
-		SummaryBooking character
+		SummaryBooking character,
+		AD_Org_ID numeric
 	) AS 
 $$
 	SELECT 
@@ -19,7 +21,8 @@ $$
 	bstl.Valutadate AS Valutadate, 
 	bstl.Line AS LineNo, 
 	bstl.StmtAmt AS StatementAmount,
-	bstl.isMultiplePaymentOrInvoice AS SummaryBooking
+	bstl.isMultiplePaymentOrInvoice AS SummaryBooking,
+	bstl.AD_Org_ID
 
 FROM C_BankStatementLine bstl
 
@@ -31,9 +34,9 @@ INNER JOIN C_BPartner bp
 	ON bp.C_BPartner_ID = bpbacc.C_BPartner_ID AND bp.isActive = 'Y'
 
 WHERE bst.StatementDate >=$1 AND bst.StatementDate <=$2 AND bstl.isActive = 'Y'
+	AND bstl.ad_org_id = $3
+
 
 ORDER BY BankstatementNo, LineNo
 $$ 
 LANGUAGE sql STABLE;
-
-ALTER FUNCTION report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo date) OWNER TO adempiere;

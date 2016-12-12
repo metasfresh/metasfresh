@@ -77,15 +77,14 @@ public class DD_Order
 			return;
 		}
 
-		final boolean isSOTrx = ddOrder.isSOTrx();
-
 		//
 		// BPartner Location (i.e. ShipTo)
-		final I_C_BPartner_Location shipToLocation = CalloutInOut.suggestShipToLocation(calloutField.getCtx(), calloutField.getWindowNo(), bpartner);
+		final I_C_BPartner_Location shipToLocation = CalloutInOut.suggestShipToLocation(calloutField, bpartner);
 		ddOrder.setC_BPartner_Location(shipToLocation);
 
 		//
 		// BPartner Contact
+		final boolean isSOTrx = ddOrder.isSOTrx();
 		if (!isSOTrx)
 		{
 			I_AD_User contact = null;

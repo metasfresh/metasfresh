@@ -78,13 +78,19 @@ FROM
 		FROM
 			(
 				SELECT fa.Account_ID
-					, COALESCE(ap.C_Activity_ID, a.C_Activity_ID) as C_Activity_ID
-					, CASE WHEN postingtype = 'A' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance
+					, COALESCE(ap.C_Activity_ID, a.C_Activity_ID, aev.C_Activity_ID) as C_Activity_ID
+					, CASE WHEN postingtype in ('A','Y') THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Balance
 					, CASE WHEN postingtype = 'B' THEN AmtAcctCr - AmtAcctDr ELSE 0 END AS Budget,
 					fa.ad_org_id
 				FROM Fact_Acct fa
 				left outer join C_Activity a on (a.C_Activity_ID=fa.C_Activity_ID) AND a.isActive = 'Y'
 				left outer join C_Activity ap on (ap.C_Activity_ID=a.Parent_Activity_ID) AND ap.isActive = 'Y'
+
+				-- another left join with c_element on fact_acct account_id 
+				-- in case of c_activity in fact_acct is null, to take the default one from c_elementvalue (FRESH-845)
+				left outer join C_ElementValue ev ON fa.Account_ID = ev.C_ElementValue_ID AND ev.isActive = 'Y'
+				left outer join C_Activity aev ON ev.C_Activity_ID = aev.C_Activity_ID AND aev.isActive = 'Y'
+
 				WHERE
 				CASE WHEN postingtype = 'B' THEN
 					dateacct::date <= (select enddate from c_period where c_period_id=report.Get_Period( 1000000, $1 ) AND isActive = 'Y')

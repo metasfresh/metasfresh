@@ -30,16 +30,15 @@ import java.util.Properties;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;
 
-public class ValidateSponsors extends SvrProcess
+public class ValidateSponsors extends JavaProcess
 {
 
 	final static Logger logger = LogManager.getLogger(ValidateSponsors.class);
@@ -86,7 +85,7 @@ public class ValidateSponsors extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final Object[] params = readParameters(getCtx(), getParameter());
+		final Object[] params = readParameters(getCtx(), getParametersAsArray());
 		orgId = (Integer)params[0];
 
 	}

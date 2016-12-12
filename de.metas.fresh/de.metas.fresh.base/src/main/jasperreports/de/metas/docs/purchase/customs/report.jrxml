@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T15:13:11 -->
+<!-- 2016-12-07T15:32:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/customs/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="RECORD_ID" class="java.lang.Integer">
+	<parameter name="RECORD_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[new Integer(0)]]></defaultValueExpression>
 	</parameter>
 	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
@@ -22,36 +22,8 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT DISTINCT
-	ol.AD_Org_ID,
-	ol.C_OrderLine_ID,
-	ol.C_Order_ID,
-	EXISTS(
-		SELECT 0
-		FROM
-			M_ReceiptSchedule rs2
-			INNER JOIN M_ReceiptSchedule_Alloc rsa2 ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID AND rsa2.isActive = 'Y'
-			INNER JOIN M_InOutLine iol ON iol.M_InOutLine_ID = rsa.M_InOutLine_ID AND iol.isActive = 'Y'
-			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
-			-- Find out if the assigned HUs have snapshots
-			INNER JOIN M_HU_Assignment thuas ON iol.M_InOutLine_ID = thuas.Record_ID AND thuas.isActive = 'Y'
-			-- Get snapshot weight
-			INNER JOIN M_HU_Attribute_Snapshot thuwns ON thuas.M_HU_ID = thuwns.M_HU_ID AND thuwns.isActive = 'Y'
-				AND thuwns.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'WeightNet'))
-				AND thuwns.Snapshot_UUID = io.Snapshot_UUID
-		WHERE
-			rs.AD_Table_ID = ( SELECT Get_Table_ID('C_OrderLine') ) AND rs.Record_ID = ol.C_OrderLine_ID AND rs2.isActive = 'Y'
-	) AS HasWeightSnapshot
-FROM
-	-- Get an orderline for the given in out id
-	M_InOutLine iol
-	INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
-	INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID AND rs.AD_Table_ID = ( SELECT Get_Table_ID('C_OrderLine') )
-	INNER JOIN C_OrderLine ol ON rs.Record_ID = ol.C_OrderLine_ID
-WHERE
-	iol.M_InOut_ID = $P{RECORD_ID} AND iol.isActive = 'Y'
-LIMIT 1
-;]]>
+		<![CDATA[SELECT * FROM 
+de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID});]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="c_orderline_id" class="java.math.BigDecimal"/>

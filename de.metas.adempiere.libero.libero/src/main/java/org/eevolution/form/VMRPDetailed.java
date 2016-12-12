@@ -128,7 +128,6 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.compiere.util.ASyncProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -154,6 +153,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessExecutionListener;
 import de.metas.logging.LogManager;
 
 /**
@@ -166,7 +166,7 @@ import de.metas.logging.LogManager;
  */
 public class VMRPDetailed
 		extends CPanel
-		implements FormPanel2, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, ASyncProcess
+		implements FormPanel2, ActionListener, VetoableChangeListener, ChangeListener, ListSelectionListener, TableModelListener, IProcessExecutionListener
 {
 	// Services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -302,7 +302,6 @@ public class VMRPDetailed
 
 	/** Worker */
 	private Worker m_worker = null;
-	private boolean _uiLocked = false;
 
 	/** Static Layout */
 	private final CPanel southPanel = new CPanel();
@@ -1092,12 +1091,6 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public void executeASync(final org.compiere.process.ProcessInfo processInfo)
-	{
-		// nothing
-	}
-
-	@Override
 	public void stateChanged(final ChangeEvent e)
 	{
 		// nothing
@@ -1110,25 +1103,17 @@ public class VMRPDetailed
 	}
 
 	@Override
-	public boolean isUILocked()
-	{
-		return _uiLocked;
-	}
-
-	@Override
-	public void lockUI(final org.compiere.process.ProcessInfo processInfo)
+	public void lockUI(final de.metas.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		confirmPanel.getRefreshButton().setEnabled(false);
-		_uiLocked = true;
 	}
 
 	@Override
-	public void unlockUI(final org.compiere.process.ProcessInfo processInfo)
+	public void unlockUI(final de.metas.process.ProcessInfo processInfo)
 	{
 		setCursor(Cursor.getDefaultCursor());
 		confirmPanel.getRefreshButton().setEnabled(true);
-		_uiLocked = false;
 	}
 
 	@Override

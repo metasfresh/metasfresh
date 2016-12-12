@@ -48,8 +48,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
 import org.compiere.model.MSysConfig;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
 import org.eevolution.exceptions.CRPException;
 import org.eevolution.model.MPPOrder;
@@ -58,6 +56,9 @@ import org.eevolution.model.MPPOrderWorkflow;
 import org.eevolution.model.RoutingService;
 import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.reasoner.CRPReasoner;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Capacity Requirement Planning
@@ -68,7 +69,7 @@ import org.eevolution.model.reasoner.CRPReasoner;
  * @author Teo Sarca, www.arhipac.ro
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
-public class CRP extends SvrProcess
+public class CRP extends JavaProcess
 {
 	public static final String FORWARD_SCHEDULING = "F";
 	public static final String BACKWARD_SCHEDULING = "B";
@@ -88,7 +89,7 @@ public class CRP extends SvrProcess
 
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)

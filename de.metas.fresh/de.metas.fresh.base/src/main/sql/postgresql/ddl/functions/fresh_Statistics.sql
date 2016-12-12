@@ -4,6 +4,11 @@ DROP FUNCTION IF EXISTS report.fresh_statistics (
 	IN C_Period_ID numeric, IN issotrx character varying, IN C_BPartner_ID numeric, IN C_Activity_ID numeric,
 	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric
 );
+DROP FUNCTION IF EXISTS report.fresh_statistics ( 
+	IN C_Period_ID numeric, IN issotrx character varying, IN C_BPartner_ID numeric, IN C_Activity_ID numeric,
+	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric
+);
+
 
 DROP TABLE IF EXISTS report.fresh_statistics;
 
@@ -50,7 +55,8 @@ CREATE TABLE report.fresh_statistics
   param_activity character varying(60),
   param_product character varying(255),
   param_product_category character varying(60),
-  param_attributes character varying(255)
+  param_attributes character varying(255),
+  ad_org_id numeric
 )
 WITH (
   OIDS=FALSE
@@ -58,7 +64,7 @@ WITH (
 
 /* ***************************************************************** */
 
-CREATE FUNCTION report.fresh_statistics
+CREATE OR REPLACE FUNCTION report.fresh_statistics
 	(
 		IN C_Period_ID numeric, 
 		IN issotrx character varying,
@@ -66,7 +72,8 @@ CREATE FUNCTION report.fresh_statistics
 		IN C_Activity_ID numeric,
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric
+		IN M_AttributeSetInstance_ID numeric,
+		IN AD_Org_ID numeric
 	) 
   RETURNS SETOF report.fresh_statistics AS
 $BODY$
@@ -83,11 +90,14 @@ SELECT
 	to_char( COALESCE(Col12, Col11, Col10, Col9, Col8, Col7, Col6, Col5, Col4, Col3, Col2, Col1), 'DD.MM.YYYY' ) AS StartDate,
 	to_char( EndDate, 'DD.MM.YYYY' ) AS EndDate,
 	CASE WHEN $2 = 'N' THEN 'Einkauf' WHEN $2 = 'Y' THEN 'Verkauf' ELSE 'alle' END AS param_IsSOTrx,
+
 	COALESCE ((SELECT name FROM C_BPartner WHERE C_BPartner_ID = $3 AND isActive = 'Y'), 'alle' ) AS param_bp,
 	COALESCE ((SELECT name FROM C_Activity WHERE C_Activity_ID = $4 AND isActive = 'Y'), 'alle' ) AS param_Activity,
 	COALESCE ((SELECT name FROM M_Product WHERE M_Product_ID = $5 AND isActive = 'Y'), 'alle' ) AS param_product,
 	COALESCE ((SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $6 AND isActive = 'Y'), 'alle' ) AS param_Product_Category,
-	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $7), 'alle') AS Param_Attributes
+	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $7), 'alle') AS Param_Attributes,
+	a.ad_org_id
+
 FROM
 	(
 		SELECT
@@ -119,7 +129,8 @@ FROM
 					(p1.C_Period_ID, p2.C_Period_ID, p3.C_Period_ID, p4.C_Period_ID, p5.C_Period_ID, p6.C_Period_ID, 
 					p7.C_Period_ID, p8.C_Period_ID, p9.C_Period_ID, p10.C_Period_ID, p11.C_Period_ID, p12.C_Period_ID)
 				THEN fa.AmtAcct ELSE 0 END
-			) AS TotalAmt
+			) AS TotalAmt,
+			fa.ad_org_id
 		FROM
 			C_Period p1
 			LEFT OUTER JOIN C_Period p2 ON p2.C_Period_ID = report.fresh_Get_Predecessor_Period(p1.C_Period_ID) AND p2.isActive = 'Y'
@@ -189,13 +200,15 @@ FROM
 				-- ... else deactivate the filter 
 				ELSE TRUE END
 			)
+			AND fa.ad_org_id = $8
 		GROUP BY
 			fa.C_BPartner_ID,
 			fa.M_Product_ID,
 			fa.C_UOM_ID, 
 			p1.EndDate,
 			p1.StartDate, p2.StartDate, p3.StartDate, p4.StartDate, p5.StartDate, p6.StartDate, 
-			p7.StartDate, p8.StartDate, p9.StartDate, p10.StartDate, p11.StartDate, p12.StartDate
+			p7.StartDate, p8.StartDate, p9.StartDate, p10.StartDate, p11.StartDate, p12.StartDate,
+			fa.ad_org_id
 	) a
 	INNER JOIN C_UOM uom ON a.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
@@ -206,5 +219,5 @@ ORDER BY
 $BODY$
 LANGUAGE sql VOLATILE;
 
-COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric) IS 'Making this function volatile is currently our only known way to avoid
+COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric,numeric) IS 'Making this function volatile is currently our only known way to avoid
 http://postgresql.nabble.com/BUG-8393-quot-ERROR-failed-to-locate-grouping-columns-quot-on-grouping-by-varchar-returned-from-funcn-td5768367.html';

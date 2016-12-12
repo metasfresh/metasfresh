@@ -18,6 +18,8 @@ package org.compiere.process;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
@@ -30,7 +32,7 @@ import org.compiere.model.MInvoiceLine;
  *  @author Jorg Janke
  *  @version $Id: InOutCreateInvoice.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class InOutCreateInvoice extends SvrProcess
+public class InOutCreateInvoice extends JavaProcess
 {
 	/**	Shipment					*/
 	private int 	p_M_InOut_ID = 0;
@@ -44,7 +46,7 @@ public class InOutCreateInvoice extends SvrProcess
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

@@ -1,5 +1,7 @@
 package org.adempiere.util.lang.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,11 +31,17 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.text.annotation.ToStringBuilder;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -50,19 +58,19 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 public final class TableRecordReference implements ITableRecordReference
 {
 	/**
-	 * Creates an {@link ITableRecordReference} from the given model.
+	 * Creates an {@link TableRecordReference} from the given model.
 	 * <p>
 	 * <b>IMPORTANT:</b> if this method does not inspect the given model's <code>AD_Table_ID</code> and <code>Record_ID</code> but instead returns just <code>model</code>, wrapped up as
-	 * {@link ITableRecordReference}.
+	 * {@link TableRecordReference}.
 	 *
-	 * @param model model interface or {@link ITableRecordReference}; <code>null</code> is NOT allowed
-	 * @return {@link ITableRecordReference}; never returns null
+	 * @param model model interface or {@link TableRecordReference}; <code>null</code> is NOT allowed
+	 * @return {@link TableRecordReference}; never returns null
 	 */
-	public static final ITableRecordReference of(final Object model)
+	public static final TableRecordReference of(final Object model)
 	{
-		if (model instanceof ITableRecordReference)
+		if (model instanceof TableRecordReference)
 		{
-			return (ITableRecordReference)model;
+			return (TableRecordReference)model;
 		}
 		return new TableRecordReference(model);
 	}
@@ -71,9 +79,9 @@ public final class TableRecordReference implements ITableRecordReference
 	 * Same as {@link #of(Object)} but in case <code>model</code> is null then it will return null.
 	 *
 	 * @param model
-	 * @return {@link ITableRecordReference} or null
+	 * @return {@link TableRecordReference} or null
 	 */
-	public static final ITableRecordReference ofOrNull(final Object model)
+	public static final TableRecordReference ofOrNull(final Object model)
 	{
 		if (model == null)
 		{
@@ -81,12 +89,39 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 		return of(model);
 	}
+	
+	public static final TableRecordReference of(final int adTableId, final int recordId)
+	{
+		return new TableRecordReference(adTableId, recordId);
+	}
+	
+	public static final TableRecordReference of(final String tableName, final int recordId)
+	{
+		return new TableRecordReference(tableName, recordId);
+	}
+	
+	/**
+	 * @return immutable list of {@link TableRecordReference}s
+	 */
+	public static final List<ITableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
+	{
+		if(recordIds == null || recordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
+		return recordIds
+				.stream()
+				.map(modelId -> of(tableName, modelId))
+				.collect(GuavaCollectors.toImmutableList());
+	}
 
-	private final int adTableId;
+	private final transient int adTableId;
+	@JsonProperty("tableName")
 	private final String tableName;
+	@JsonProperty("recordId")
 	private final int recordId;
-	@ToStringBuilder(skip = true)
-	private Integer _hashcode;
+	private transient Integer _hashcode;
 
 	/** Cached model */
 	private transient Object model = null;
@@ -115,7 +150,8 @@ public final class TableRecordReference implements ITableRecordReference
 	 * @param tableName
 	 * @param recordId
 	 */
-	public TableRecordReference(final String tableName, final int recordId)
+	@JsonCreator
+	public TableRecordReference(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
 	{
 		super();
 
@@ -139,9 +175,14 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Override
-	public String getTableName()
+	public String toString()
 	{
-		return tableName;
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("tableName", tableName)
+				.add("recordId", recordId)
+				.add("model", model)
+				.toString();
 	}
 
 	@Override
@@ -180,12 +221,20 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Override
+	public String getTableName()
+	{
+		return tableName;
+	}
+
+	@Override
+	@JsonIgnore
 	public int getAD_Table_ID()
 	{
 		return adTableId;
 	}
 
 	@Override
+	@JsonIgnore
 	public int getRecord_ID()
 	{
 		return recordId;
@@ -235,16 +284,4 @@ public final class TableRecordReference implements ITableRecordReference
 
 		// TODO: why the ctx is not validated, like org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal.getValue(Class<RT>) does?
 	}
-
-	@Override
-	public String toString()
-	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("TableRecordReference [tableName=").append(tableName);
-		builder.append(", recordId=").append(recordId);
-		builder.append(", model=").append(model);
-		builder.append("]");
-		return builder.toString();
-	}
-
 }

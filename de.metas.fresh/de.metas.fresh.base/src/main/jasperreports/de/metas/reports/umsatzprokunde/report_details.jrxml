@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-17T10:16:50 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzprokunde/report" uuid="dafd9090-681a-4fe8-8fa0-c3d20074d175">
+<!-- 2016-11-16T14:47:14 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="842" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzprokunde/report" uuid="fe9c09b2-a24c-4b98-8924-365c854b39a8">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -24,7 +24,8 @@
 	p_name,			cursymbol,
 	sum(umsatz0) as priceactual_now,
 	sum(umsatz1) as priceactual_last,
-	sum(umsatz2) as priceactual_before_last
+	sum(umsatz2) as priceactual_before_last,
+	ad_org_id
 FROM (
 	SELECT
 		produktumsatz.ad_org_id,		
@@ -64,7 +65,8 @@ FROM (
 			FROM 
 				c_invoiceline il
 			WHERE
-				ad_org_id::text LIKE '%'||$P{AD_Org_ID}||'%' AND il.isActive = 'Y'
+
+				ad_org_id = $P{AD_Org_ID} AND il.isActive = 'Y'
 			GROUP BY
 				il.c_invoice_id,
 				il.m_product_id
@@ -80,7 +82,7 @@ FROM (
 )as kundenumsatz
 WHERE
 	c_bpartner_id::text LIKE '%'||$P{C_BPartner_ID}||'%'
-	AND ad_org_id::text LIKE '%'||$P{AD_Org_ID}||'%'
+	AND ad_org_id = $P{AD_Org_ID}
 GROUP BY
 	bp_name,
 	bp_value,
@@ -89,7 +91,8 @@ GROUP BY
 	pc_name,
 	p_value,
 	p_name,
-	cursymbol
+	cursymbol,
+	ad_org_id
 ORDER BY
 	bp_value,	
 	monat,
@@ -107,6 +110,8 @@ ORDER BY
 	<field name="priceactual_now" class="java.math.BigDecimal"/>
 	<field name="priceactual_last" class="java.math.BigDecimal"/>
 	<field name="priceactual_before_last" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	
 	<variable name="gesamt_summe1" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{priceactual_now}]]></variableExpression>
 	</variable>
@@ -148,7 +153,7 @@ ORDER BY
 		<groupHeader>
 			<band height="14" splitType="Stretch">
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-15" x="0" y="1" width="52" height="13" uuid="c71b0263-db96-485c-bf8d-f2ce2edf944a"/>
+					<reportElement key="textField-15" x="0" y="1" width="52" height="13" uuid="128b39c1-bfe3-4eb5-bb17-c6cfbae19ec5"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -161,7 +166,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-16" x="53" y="1" width="277" height="13" uuid="aa324d8f-9566-4a7d-8535-4e950941a3cb"/>
+					<reportElement key="textField-16" x="53" y="1" width="277" height="13" uuid="db121578-8891-414a-9597-55168ccf3156"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -174,7 +179,7 @@ ORDER BY
 					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line-1" x="0" y="13" width="780" height="1" uuid="2742dc78-85e4-415a-871c-aa7732798b94">
+					<reportElement key="line-1" x="0" y="13" width="780" height="1" uuid="b72b6437-6ff1-474a-b6e5-6cfe3b73bc22">
 						<printWhenExpression><![CDATA[new Boolean(
 $P{monate_drucken}.equals("Y")? 
 		true :
@@ -189,7 +194,7 @@ $P{monate_drucken}.equals("Y")?
 					</reportElement>
 				</line>
 				<textField evaluationTime="Group" evaluationGroup="Kunde" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-17" x="550" y="1" width="58" height="13" uuid="ff71fa9c-e7b8-47b4-8a74-ff1fbf414dae"/>
+					<reportElement key="textField-17" x="550" y="1" width="58" height="13" uuid="340ee3c3-75ff-48cb-95b3-889ecba5a03c"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -202,7 +207,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$V{kunden_summe1}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Kunde" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-18" x="633" y="1" width="58" height="13" uuid="64800f6e-49e7-43e0-b9d8-afc56a46b261"/>
+					<reportElement key="textField-18" x="633" y="1" width="58" height="13" uuid="c49ec207-6cd9-4ecc-abcb-2cad8fc61fe0"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -215,7 +220,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$V{kunden_summe2}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-19" x="608" y="1" width="4" height="13" uuid="65e302a7-06c7-446f-9c7b-23d6cdd389e4"/>
+					<reportElement key="textField-19" x="608" y="1" width="4" height="13" uuid="4479d13a-41f6-4255-b8ce-32ad686adf06"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,7 +233,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Kunde" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-20" x="712" y="1" width="58" height="13" uuid="23b00e01-6d9c-462d-aa69-59a9901addbd"/>
+					<reportElement key="textField-20" x="712" y="1" width="58" height="13" uuid="6dd58ba6-c3e1-4b82-bb28-b7183904a0c0"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -241,7 +246,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$V{kunden_summe3}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-21" x="770" y="1" width="6" height="13" uuid="97a8760f-571d-4a69-8e93-787944ac5eb0"/>
+					<reportElement key="textField-21" x="770" y="1" width="6" height="13" uuid="93041cdf-2636-402d-86f1-2c2dbf09f1a2"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -254,7 +259,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-53" x="692" y="1" width="4" height="13" uuid="e12ce848-c1dd-4774-a211-a4cbf00697c0"/>
+					<reportElement key="textField-53" x="692" y="1" width="4" height="13" uuid="c174ce23-4e11-48e4-b0d3-bd1ad654c740"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -278,7 +283,7 @@ $P{monate_drucken}.equals("Y")?
 			<band height="16" splitType="Stretch">
 				<printWhenExpression><![CDATA[new Boolean($P{monate_drucken}.equals("Y") ? true : false)]]></printWhenExpression>
 				<textField evaluationTime="Group" evaluationGroup="Monat" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-55" x="550" y="3" width="58" height="12" uuid="afd87747-e85b-4f37-9041-584c04fb9b05"/>
+					<reportElement key="textField-55" x="550" y="3" width="58" height="12" uuid="ecaa2dda-2082-47d6-8495-97f0c5cec7ee"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -291,7 +296,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$V{monat_summe1}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Monat" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-56" x="633" y="3" width="58" height="12" uuid="f702d984-a458-44da-9861-378e17b02cf6"/>
+					<reportElement key="textField-56" x="633" y="3" width="58" height="12" uuid="bbd122d2-c6f9-4f2a-93a1-52bdef9d3674"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -304,7 +309,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$V{monat_summe2}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-57" x="608" y="3" width="4" height="12" uuid="b65761b4-a70e-41c2-8cb7-806b64981473"/>
+					<reportElement key="textField-57" x="608" y="3" width="4" height="12" uuid="2bb34073-82c9-4416-a4c7-52c78de88b1b"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -317,7 +322,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Monat" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-58" x="712" y="3" width="58" height="12" uuid="550d39bf-e90b-4ec4-b0a9-8c2a6e5484ab"/>
+					<reportElement key="textField-58" x="712" y="3" width="58" height="12" uuid="6a99a054-a902-4ffc-b411-3e012c7e3648"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -330,7 +335,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$V{monat_summe3}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-59" x="770" y="3" width="6" height="12" uuid="cc267a39-e581-4c6d-acf0-b44e305fb29e"/>
+					<reportElement key="textField-59" x="770" y="3" width="6" height="12" uuid="a9da7484-95bb-4c40-869d-58ff4e7ecf32"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -343,7 +348,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-60" x="692" y="3" width="4" height="12" uuid="07dadaf6-350c-4e43-a83b-a87d5f403249"/>
+					<reportElement key="textField-60" x="692" y="3" width="4" height="12" uuid="cbc8936c-f639-4888-b204-671ceb601376"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -356,7 +361,7 @@ $P{monate_drucken}.equals("Y")?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MMMMM" isBlankWhenNull="false">
-					<reportElement key="textField-61" x="24" y="4" width="71" height="12" uuid="ae897287-1b4a-4a34-9aff-a5ca737c4d02"/>
+					<reportElement key="textField-61" x="24" y="4" width="71" height="12" uuid="134ab02e-e408-462e-9a2b-be5b6c9982c7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -380,7 +385,7 @@ $P{monate_drucken}.equals("Y")?
 ($F{monat}.intValue()==12 ? $R{december}: " ")))))))))))]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line-3" x="23" y="15" width="758" height="1" uuid="2f99a361-3af7-437a-83f6-71a5a5428fa6">
+					<reportElement key="line-3" x="23" y="15" width="758" height="1" uuid="187074a8-ec02-405f-b4ee-bbb6181b6310">
 						<printWhenExpression><![CDATA[new Boolean(
 $P{prodkat_drucken}.equals( "Y" )?
 	($P{produkte_drucken}.equals( "N" )? true : false):
@@ -399,7 +404,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 			<band height="13" splitType="Stretch">
 				<printWhenExpression><![CDATA[new Boolean ($P{prodkat_drucken}.equals( "Y" )?true:false)]]></printWhenExpression>
 				<textField pattern="MMMMM" isBlankWhenNull="false">
-					<reportElement key="textField-62" x="47" y="0" width="101" height="12" uuid="42c3fb76-67d6-48d4-ac58-6fb6c2eb6ab8"/>
+					<reportElement key="textField-62" x="47" y="0" width="101" height="12" uuid="7b730a1d-9aec-47a0-88a1-fbb2ee7daf32"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -412,7 +417,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$F{pc_name}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Produktkategorie" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-63" x="550" y="1" width="58" height="12" uuid="7158fb43-8631-4654-8c7c-690a271bcce5"/>
+					<reportElement key="textField-63" x="550" y="1" width="58" height="12" uuid="fcec9dfb-9fa4-499b-8619-aeb25aed2550"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -425,7 +430,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$V{prodkat_summe1}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Produktkategorie" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-64" x="633" y="1" width="58" height="12" uuid="5bbdf0f0-6740-4592-8e05-168cde16abed"/>
+					<reportElement key="textField-64" x="633" y="1" width="58" height="12" uuid="25b52d73-ccb0-41b5-ae89-85a2edbd273d"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -438,7 +443,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$V{prodkat_summe2}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-65" x="608" y="1" width="4" height="12" uuid="d4e892a0-4a14-4497-9df0-cf32bc973b5e"/>
+					<reportElement key="textField-65" x="608" y="1" width="4" height="12" uuid="70cb7c36-92fc-41ff-923b-7a4ff05d6e41"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -451,7 +456,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Produktkategorie" pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-66" x="712" y="1" width="58" height="12" uuid="942b8cd5-0665-47b1-8c1b-f7b4b546d06a"/>
+					<reportElement key="textField-66" x="712" y="1" width="58" height="12" uuid="66716f91-f0ad-445d-81ec-4fe56f1f0675"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -464,7 +469,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$V{prodkat_summe3}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-67" x="770" y="1" width="6" height="12" uuid="599d6bd6-00f8-46b3-98a6-2d3f296b3bc9"/>
+					<reportElement key="textField-67" x="770" y="1" width="6" height="12" uuid="2ec2afda-382d-4f04-8a69-dcb9a38bca8b"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -477,7 +482,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00" isBlankWhenNull="false">
-					<reportElement key="textField-68" x="692" y="1" width="4" height="12" uuid="5963d9fc-fbc9-44ab-8cdf-1bb839bd2339"/>
+					<reportElement key="textField-68" x="692" y="1" width="4" height="12" uuid="97a26d9d-cb39-4e40-b673-cd5027438517"/>
 					<box leftPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -490,7 +495,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line-2" x="47" y="12" width="734" height="1" uuid="af044aef-04d6-4e42-bd50-25f3e33e9237">
+					<reportElement key="line-2" x="47" y="12" width="734" height="1" uuid="e3103b01-ba52-41ea-84e8-4be4593fce52">
 						<printWhenExpression><![CDATA[new Boolean($P{produkte_drucken}.equals( "Y" )?true:false)]]></printWhenExpression>
 					</reportElement>
 				</line>
@@ -509,13 +514,13 @@ $P{prodkat_drucken}.equals( "Y" )?
 	<pageHeader>
 		<band height="25" splitType="Stretch">
 			<rectangle>
-				<reportElement key="rectangle-1" x="-1" y="1" width="782" height="11" backcolor="#808080" uuid="6aa36d4b-37cf-455d-929f-22e6c17280a1"/>
+				<reportElement key="rectangle-1" x="-1" y="1" width="782" height="11" backcolor="#808080" uuid="10e583c6-51c7-458b-bb86-37a2ab2f3dc1"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-3" x="0" y="0" width="53" height="12" forecolor="#FFFFFF" uuid="004b6a81-57c6-4329-b54b-0e4cb562a737"/>
+				<reportElement key="textField-3" x="0" y="0" width="53" height="12" forecolor="#FFFFFF" uuid="99dfd1e5-c2f1-47f0-bae1-78b3d2a040a9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -528,7 +533,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-4" x="52" y="0" width="149" height="12" forecolor="#FFFFFF" uuid="72078af2-0711-4484-ae37-90e8f4be022b"/>
+				<reportElement key="textField-4" x="52" y="0" width="149" height="12" forecolor="#FFFFFF" uuid="2bcbf65a-f817-4b98-a166-e65cd22aa6ae"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -541,7 +546,7 @@ $P{prodkat_drucken}.equals( "Y" )?
 				<textFieldExpression><![CDATA[$R{customername}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-7" x="548" y="12" width="60" height="12" uuid="bd865299-72cc-4f38-8d23-fbb7f85e6347">
+				<reportElement key="textField-7" x="548" y="12" width="60" height="12" uuid="4faa37bf-2eec-479b-8bad-5bac84639b31">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -560,7 +565,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$V{gesamt_summe1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-11" x="633" y="12" width="58" height="12" uuid="610562a9-0b79-4db7-a78b-5e2c34f74e77">
+				<reportElement key="textField-11" x="633" y="12" width="58" height="12" uuid="e719cf1f-543d-4903-8cc1-3dbad584439e">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -579,7 +584,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$V{gesamt_summe2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-12" x="711" y="12" width="59" height="12" uuid="e17df4a0-ced5-4cff-9b81-7316404d3306">
+				<reportElement key="textField-12" x="711" y="12" width="59" height="12" uuid="4b6dfdc3-104b-48ff-931e-24366598142e">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -598,7 +603,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$V{gesamt_summe3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-50" x="447" y="12" width="101" height="12" uuid="f869ddab-804a-4db8-a543-7b3f77d9ff2f">
+				<reportElement key="textField-50" x="447" y="12" width="101" height="12" uuid="aabe7efa-9eb8-4349-a65e-db87dca1e2be">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -617,7 +622,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-54" x="432" y="1" width="106" height="12" forecolor="#FFFFFF" uuid="54dd539b-2c32-49dc-adb0-c17e87efccda"/>
+				<reportElement key="textField-54" x="432" y="1" width="106" height="12" forecolor="#FFFFFF" uuid="aefd8338-f76c-4159-931e-426d14e2f505"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -630,7 +635,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$R{umsatz}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField-77" x="548" y="1" width="65" height="12" forecolor="#FFFFFF" uuid="3ae935ca-0fef-4ed9-9aa3-dde3d73b6efb"/>
+				<reportElement key="textField-77" x="548" y="1" width="65" height="12" forecolor="#FFFFFF" uuid="022d82fe-9c27-40c6-ba1e-7abbf2912ec4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -643,7 +648,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$R{currentyear}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField-78" x="634" y="1" width="65" height="12" forecolor="#FFFFFF" uuid="8f858785-c847-48f9-8792-e8a1a69e6aaf"/>
+				<reportElement key="textField-78" x="634" y="1" width="65" height="12" forecolor="#FFFFFF" uuid="dd4e138c-ee29-4c4d-9415-2fb7dea6e602"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -656,7 +661,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$R{lastyear}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="false">
-				<reportElement key="textField-79" x="710" y="1" width="65" height="12" forecolor="#FFFFFF" uuid="13eb28f7-e210-439e-b58b-6444018cbf5b"/>
+				<reportElement key="textField-79" x="710" y="1" width="65" height="12" forecolor="#FFFFFF" uuid="2d814706-225f-4d37-bfbc-150359e8a0a2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -669,7 +674,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$R{yearbeforelast}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-80" x="608" y="12" width="4" height="12" uuid="2e11702c-22c9-4c2e-87de-be5b5407e93a">
+				<reportElement key="textField-80" x="608" y="12" width="4" height="12" uuid="ef7e0928-9cd7-4314-8501-291c50e41d1b">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -688,7 +693,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-81" x="692" y="12" width="4" height="12" uuid="e2e55ee0-f241-46f3-b204-212b5ef11ea8">
+				<reportElement key="textField-81" x="692" y="12" width="4" height="12" uuid="6290a755-94b7-417f-94e9-938a153b6ffa">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -707,7 +712,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-82" x="770" y="12" width="6" height="12" uuid="4923a5bc-d240-4fda-95b8-57df1cf80fc1">
+				<reportElement key="textField-82" x="770" y="12" width="6" height="12" uuid="670a4f3b-1012-4a9f-a965-2cdf0ca82361">
 					<printWhenExpression><![CDATA[$V{gesamt_summe1}.intValue() != 0 || 
 $V{gesamt_summe2}.intValue() != 0 || 
 $V{gesamt_summe3}.intValue() != 0 ? 
@@ -734,7 +739,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $P{produkte_drucken}.equals( "Y" )?true:false)]]></printWhenExpression>
 			<rectangle>
-				<reportElement key="rectangle-2" x="72" y="1" width="709" height="11" backcolor="#FFFFCC" uuid="796f9df2-8f0b-40f2-bd08-ea62b0e6f009">
+				<reportElement key="rectangle-2" x="72" y="1" width="709" height="11" backcolor="#FFFFCC" uuid="66a0015b-70ed-40c4-ad04-90083f246376">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{Monat_COUNT}.intValue()%2)==0)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -742,7 +747,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				</graphicElement>
 			</rectangle>
 			<textField pattern="MMMMM" isBlankWhenNull="false">
-				<reportElement key="textField-69" x="75" y="0" width="57" height="12" uuid="30b40b68-1cbf-4e05-9c92-cda6f509141b"/>
+				<reportElement key="textField-69" x="75" y="0" width="57" height="12" uuid="4656cb03-9c70-48a2-98bd-e2c987a2494e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -755,7 +760,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MMMMM" isBlankWhenNull="false">
-				<reportElement key="textField-70" x="132" y="0" width="357" height="12" uuid="ac998841-6c9a-41e2-b0e7-6658c0a77f72"/>
+				<reportElement key="textField-70" x="132" y="0" width="357" height="12" uuid="56a7e79c-fec8-4c63-a87d-c660a507c2b8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -768,7 +773,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-71" x="550" y="0" width="58" height="12" uuid="4035cb28-7b4c-4904-9664-835fd5ea4195"/>
+				<reportElement key="textField-71" x="550" y="0" width="58" height="12" uuid="7b647d65-63bc-47ee-b361-c43707de5312"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -781,7 +786,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{priceactual_now}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-72" x="633" y="0" width="58" height="12" uuid="55b77ef9-3450-47e0-8ffe-3ec43412e186"/>
+				<reportElement key="textField-72" x="633" y="0" width="58" height="12" uuid="bb5515fb-3949-49ad-86af-cb8be72a0f32"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -794,7 +799,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{priceactual_last}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-73" x="608" y="0" width="4" height="12" uuid="5537d073-0800-4e71-be1e-2444467dec13"/>
+				<reportElement key="textField-73" x="608" y="0" width="4" height="12" uuid="c3dcc561-faad-4ca9-b532-02d3cc2b714e"/>
 				<box leftPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -807,7 +812,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-74" x="712" y="0" width="58" height="12" uuid="43efa4ff-fbc3-4d09-a69d-bf42b4f82e77"/>
+				<reportElement key="textField-74" x="712" y="0" width="58" height="12" uuid="ce6e2119-a613-4d96-849a-cbb5a29224ec"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -820,7 +825,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{priceactual_before_last}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-75" x="770" y="0" width="6" height="12" uuid="af4aaef9-b948-4f0d-95b6-fd0d00dbec86"/>
+				<reportElement key="textField-75" x="770" y="0" width="6" height="12" uuid="e1e2d2a2-ce0e-446b-9b29-6e366aa319ba"/>
 				<box leftPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -833,7 +838,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-76" x="692" y="0" width="4" height="12" uuid="0097e345-518b-4ffc-8c5f-42a402e79e42"/>
+				<reportElement key="textField-76" x="692" y="0" width="4" height="12" uuid="8dc0981a-e47b-4e9b-b632-e6f69c3d019a"/>
 				<box leftPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -853,7 +858,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 	<pageFooter>
 		<band height="13" splitType="Stretch">
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-47" x="633" y="1" width="58" height="12" uuid="79000417-bbec-4744-b01b-aff6afc128ec"/>
+				<reportElement key="textField-47" x="633" y="1" width="58" height="12" uuid="39345d93-9ab3-4792-9d90-80b9ea2a0707"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -866,7 +871,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$V{gesamt_summe2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-48" x="548" y="1" width="60" height="12" uuid="22ce51aa-fb84-4402-997f-deba84f76771"/>
+				<reportElement key="textField-48" x="548" y="1" width="60" height="12" uuid="1d1ea687-6e6c-4c7c-a7be-a7f0e2d0e8d2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -879,7 +884,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$V{gesamt_summe1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-49" x="711" y="1" width="59" height="12" uuid="9b5085de-2f5f-44bc-a2b6-0146dc71330c"/>
+				<reportElement key="textField-49" x="711" y="1" width="59" height="12" uuid="859c077f-6af1-4799-a20e-9a773a8d5644"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -892,7 +897,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$V{gesamt_summe3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-52" x="447" y="1" width="101" height="12" uuid="9ee6b651-c0f4-4756-a169-35e8d340b216"/>
+				<reportElement key="textField-52" x="447" y="1" width="101" height="12" uuid="71a6e498-b6d1-48ab-a99d-0543784efa8a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -905,7 +910,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-83" x="692" y="1" width="4" height="12" uuid="3b572e76-f855-4960-b414-80f9841a8280"/>
+				<reportElement key="textField-83" x="692" y="1" width="4" height="12" uuid="258e459a-b800-4f1d-843e-9a0bea57feae"/>
 				<box leftPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -918,7 +923,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-84" x="770" y="1" width="6" height="12" uuid="760a9637-166d-49dc-96b9-8fd180896401"/>
+				<reportElement key="textField-84" x="770" y="1" width="6" height="12" uuid="3f7f2c5c-857c-4dfc-88bf-f0bbfab2c35c"/>
 				<box leftPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -931,7 +936,7 @@ $V{gesamt_summe3}.intValue() != 0 ?
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-85" x="608" y="1" width="4" height="12" uuid="fcff61d9-f51f-4f4a-b4fd-98bd1f760a2b"/>
+				<reportElement key="textField-85" x="608" y="1" width="4" height="12" uuid="b69893ef-afed-4db7-af38-ee43c4f35f0d"/>
 				<box leftPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

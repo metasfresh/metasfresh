@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-14T13:51:13 -->
+<!-- 2016-11-17T12:08:16 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems_fibu/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -14,6 +14,7 @@
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="IsSOTrx" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Reference_Date" class="java.util.Date"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	c.iso_code,
@@ -32,7 +33,8 @@
 	oi.PassForPayment,
 	oi.faname,
 	oi.fa_amount,
-	oi.fa_source_amount
+	oi.fa_source_amount,
+	oi.ad_org_id
 FROM
 	(
 	SELECT
@@ -90,6 +92,7 @@ FROM
 
 WHERE
 	 oi.IsSOTrx = (CASE WHEN $P{IsSOTrx} IS NULL THEN oi.IsSOTrx ELSE $P{IsSOTrx} END)
+	 AND oi.ad_org_id = $P{AD_Org_ID}
 
 ORDER BY
 	c.iso_code,
@@ -116,6 +119,7 @@ ORDER BY
 	<field name="faname" class="java.lang.String"/>
 	<field name="fa_amount" class="java.math.BigDecimal"/>
 	<field name="fa_source_amount" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="total_currency" class="java.math.BigDecimal" resetType="Group" resetGroup="Currency" calculation="Sum">
 		<variableExpression><![CDATA[$F{fa_source_amount}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>

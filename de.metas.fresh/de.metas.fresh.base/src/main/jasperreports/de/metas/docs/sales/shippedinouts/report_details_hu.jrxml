@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T19:29:26 -->
+<!-- 2016-11-17T17:46:44 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippedinouts/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -18,11 +18,13 @@
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
 	<parameter name="Date" class="java.sql.Timestamp"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	p.Name,
 	SUM( iol.QtyEntered ) AS Qty,
-	uom.UOMSymbol
+	uom.UOMSymbol,
+	io.ad_org_id
 FROM
 	M_InOut io
 	LEFT OUTER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
@@ -43,9 +45,11 @@ WHERE
 	AND io.isActive = 'Y'
 	AND io.DocStatus = 'CO'
 	AND p.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+	AND io.ad_org_id = $P{AD_Org_ID}
 GROUP BY
 	p.Name,
-	uom.UOMSymbol
+	uom.UOMSymbol,
+	io.ad_org_id
 ORDER BY
 	p.Name
 ;]]>
@@ -53,6 +57,7 @@ ORDER BY
 	<field name="name" class="java.lang.String"/>
 	<field name="qty" class="java.math.BigDecimal"/>
 	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>

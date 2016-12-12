@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-19T17:38:01 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-11-17T14:37:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/request_report/report" uuid="d6ca4e72-06bf-4f5c-bec4-5ba066220b99">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -256,107 +256,116 @@
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="91" width="56" height="12" uuid="a1fc9b39-b1f2-4d33-8ac1-0d1e46036ecb">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="91" width="45" height="12" isPrintWhenDetailOverflows="true" uuid="a1fc9b39-b1f2-4d33-8ac1-0d1e46036ecb"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="56" y="91" width="36" height="12" uuid="2130671e-8811-4d5a-a63c-4492801f4f79">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="45" y="91" width="36" height="12" isPrintWhenDetailOverflows="true" uuid="2130671e-8811-4d5a-a63c-4492801f4f79">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bp_nr}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="92" y="91" width="100" height="12" uuid="1188286d-f727-47ac-b60f-65f977887bbf">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="81" y="91" width="100" height="12" isPrintWhenDetailOverflows="true" uuid="1188286d-f727-47ac-b60f-65f977887bbf">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="192" y="91" width="120" height="12" uuid="774d20df-0adb-4404-bb53-92644e73a1c5">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="181" y="91" width="68" height="12" isPrintWhenDetailOverflows="true" uuid="774d20df-0adb-4404-bb53-92644e73a1c5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{inout_docno}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="312" y="91" width="61" height="12" uuid="70f842b9-9722-4767-ba82-c56e44e82d48">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="249" y="91" width="61" height="12" isPrintWhenDetailOverflows="true" uuid="70f842b9-9722-4767-ba82-c56e44e82d48">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product_nr}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="373" y="91" width="100" height="12" uuid="4638078b-dfb8-405f-a09f-d84e74a3403f">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="310" y="91" width="125" height="12" isPrintWhenDetailOverflows="true" uuid="4638078b-dfb8-405f-a09f-d84e74a3403f">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="473" y="91" width="87" height="12" uuid="ef23a97e-6ea0-4692-b4cf-c37bfd0110b9">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="435" y="91" width="125" height="12" isPrintWhenDetailOverflows="true" uuid="ef23a97e-6ea0-4692-b4cf-c37bfd0110b9">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{complaint}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="560" y="91" width="68" height="12" uuid="38edf27b-eb6c-4054-96b7-eac6ceae0985">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="560" y="91" width="20" height="12" isPrintWhenDetailOverflows="true" uuid="38edf27b-eb6c-4054-96b7-eac6ceae0985">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{performance}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="628" y="91" width="74" height="12" uuid="bf5d1ffa-22f4-4265-80fb-db46c777f53d">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="580" y="91" width="20" height="12" isPrintWhenDetailOverflows="true" uuid="bf5d1ffa-22f4-4265-80fb-db46c777f53d">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
+				<box padding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shipment}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="702" y="91" width="65" height="12" uuid="cad87dd3-380a-4fea-a3f5-09242a10bcbf">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="600" y="91" width="149" height="12" isPrintWhenDetailOverflows="true" uuid="cad87dd3-380a-4fea-a3f5-09242a10bcbf">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{result}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="767" y="91" width="34" height="12" uuid="b2b0cc82-0ba1-47a0-9578-f37d9fcdd3a6">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="753" y="91" width="47" height="12" isPrintWhenDetailOverflows="true" uuid="b2b0cc82-0ba1-47a0-9578-f37d9fcdd3a6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{status}]]></textFieldExpression>
 			</textField>
@@ -383,94 +392,98 @@
 	<detail>
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField pattern="dd.MM.yyyy">
-				<reportElement x="0" y="0" width="56" height="12" uuid="716583e7-9458-42bf-a9a1-93f033e758c6">
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy">
+				<reportElement x="0" y="0" width="45" height="12" isPrintWhenDetailOverflows="true" uuid="716583e7-9458-42bf-a9a1-93f033e758c6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{date}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="56" y="0" width="36" height="12" uuid="8ef26862-9e17-41ba-a6be-fd2d94b9e6c9"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="45" y="0" width="36" height="12" isPrintWhenDetailOverflows="true" uuid="8ef26862-9e17-41ba-a6be-fd2d94b9e6c9"/>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="92" y="0" width="100" height="12" uuid="52d1f7ee-881f-4a4d-9001-7455747aba5d">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="81" y="0" width="100" height="12" isPrintWhenDetailOverflows="true" uuid="52d1f7ee-881f-4a4d-9001-7455747aba5d">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="192" y="0" width="120" height="12" uuid="fb4ce3e6-c62c-4c86-947e-5004f96a9992"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="181" y="0" width="68" height="12" isPrintWhenDetailOverflows="true" uuid="fb4ce3e6-c62c-4c86-947e-5004f96a9992"/>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{io_docno}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="312" y="0" width="61" height="12" uuid="433f5da5-a369-41a1-8ef5-3452a01a3258">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="249" y="0" width="61" height="12" isPrintWhenDetailOverflows="true" uuid="433f5da5-a369-41a1-8ef5-3452a01a3258">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="373" y="0" width="100" height="12" uuid="007c0409-7639-478e-a39d-53c58790bbde"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="310" y="0" width="125" height="12" isPrintWhenDetailOverflows="true" uuid="007c0409-7639-478e-a39d-53c58790bbde"/>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="473" y="0" width="87" height="12" uuid="5e30f14e-0b83-4fa2-b009-7251b5fca177"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="435" y="0" width="125" height="12" isPrintWhenDetailOverflows="true" uuid="5e30f14e-0b83-4fa2-b009-7251b5fca177">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qualitynote}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="560" y="0" width="68" height="12" uuid="ae4a488f-9ddc-492b-82f1-0fc2510f8d4b"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="560" y="0" width="20" height="12" isPrintWhenDetailOverflows="true" uuid="ae4a488f-9ddc-492b-82f1-0fc2510f8d4b">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{performance}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="628" y="0" width="74" height="12" uuid="c9034db3-9d6b-4e8e-9470-65ac81994611">
+			<textField isStretchWithOverflow="true">
+				<reportElement mode="Transparent" x="580" y="0" width="20" height="12" isPrintWhenDetailOverflows="true" backcolor="#FFFFFF" uuid="c9034db3-9d6b-4e8e-9470-65ac81994611">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ismaterialreturned}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="702" y="0" width="65" height="12" uuid="63de6929-3e24-42b1-81ff-c9b598e0f9ab">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="600" y="0" width="149" height="12" isPrintWhenDetailOverflows="true" uuid="63de6929-3e24-42b1-81ff-c9b598e0f9ab">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lastresult}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="767" y="0" width="34" height="12" uuid="ceee60c1-7614-467c-9d3e-3d68f302a09e">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="753" y="0" width="47" height="12" isPrintWhenDetailOverflows="true" uuid="ceee60c1-7614-467c-9d3e-3d68f302a09e">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
 			</textField>
