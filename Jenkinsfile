@@ -210,7 +210,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_VERSION', 
 			name: 'MF_UPSTREAM_JOBNAME'),
 		string(defaultValue: '',
-			description: 'Version of the upstream job's artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.', 
+			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.', 
 			name: 'MF_UPSTREAM_VERSION'),
 		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
 			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
@@ -497,11 +497,11 @@ ${currentBuild.description}"""
 } // node
 
 // we need this one for both "Test-SQL" and "Deployment
-def downloadForDeployment = { String groupId, String artifactId, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
+def downloadForDeployment = { String groupId, String artifactId, String packaging, String version, String classifier, String sshTargetHost, String sshTargetUser ->
 
 	final packagingPart=packaging ? ":${packaging}" : ""
 	final classifierPart=classifier ? ":${classifier}" : ""
-	final artifact = "${groupId}:${artifactId}:${BUILD_VERSION}${packagingPart}${classifierPart}"
+	final artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
 
 	// we need configFileProvider because in mvn get -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
 	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
@@ -515,7 +515,7 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
 		}
 	}
-	sh "scp ${WORKSPACE}/deploy/${artifactId}-${BUILD_VERSION}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${BUILD_VERSION}-${classifier}.${packaging}"
+	sh "scp ${WORKSPACE}/deploy/${artifactId}-${version}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}-${classifier}.${packaging}"
 }
 
 // we need this one for both "Test-SQL" and "Deployment
@@ -544,7 +544,7 @@ stage('Test SQL-Migration')
 			final sshTargetHost='mf15cloudit';
 			final sshTargetUser='metasfresh'
 
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
 
 			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
 			final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
@@ -607,7 +607,7 @@ stage('Deployment')
 
 				// main part: provide and rollout the "main" distributable
 				// get the deployable dist file to the target host
-				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
 
 				// extract the tar.gz
 				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
@@ -627,8 +627,11 @@ stage('Deployment')
 				// clean up what we just rolled out
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
 				
+				final webuiApiServerArtifactURL='';
 				// also provide the webui-api and procurement-webui; TODO actually deploy them
-				//downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', webuiVersion, 'jar', null, sshTargetHost, sshTargetUser);
+				invokeRemoteInHomeDir("redeploy_metasfresh_webui_api_server.sh ")
+				
 				//downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
 
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
