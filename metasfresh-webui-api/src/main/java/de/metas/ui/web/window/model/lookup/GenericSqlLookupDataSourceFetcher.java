@@ -1,9 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -134,12 +132,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
 		{
-			final List<LookupValue> values = data.fetchAll()
-					.stream()
-					.filter(evalCtx::acceptItem)
-					.map(namePair -> LookupValue.fromNamePair(namePair))
-					.collect(Collectors.toList());
-
 			Map<String, String> debugProperties = null;
 			if (WindowConstants.isProtocolDebugging())
 			{
@@ -147,9 +139,15 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 				debugProperties.put("debug-sql", sqlForFetching);
 				debugProperties.put("debug-params", evalCtx.toString());
 			}
+			
+			LookupValuesList values = data.fetchAll()
+					.stream()
+					.filter(evalCtx::acceptItem)
+					.map(namePair -> LookupValue.fromNamePair(namePair))
+					.collect(LookupValuesList.collect(debugProperties));
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);
-			return LookupValuesList.of(values, debugProperties);
+			return values;
 		}
 	}
 

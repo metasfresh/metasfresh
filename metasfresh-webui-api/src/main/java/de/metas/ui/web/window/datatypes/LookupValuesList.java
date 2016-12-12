@@ -1,20 +1,16 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -39,78 +35,92 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  */
 
 /**
- * A list of {@link JSONLookupValue} with some more debug properties attached.
+ * A list of {@link LookupValue}s with some more debug properties attached.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class LookupValuesList
 {
-	public static final LookupValuesList of(final List<LookupValue> values)
+	/**
+	 * Collects {@link LookupValue}s and builds a {@link LookupValuesList} with those values.
+	 *
+	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
+	 */
+	public static final Collector<LookupValue, ?, LookupValuesList> collect()
 	{
 		final Map<String, String> debugProperties = null;
-		return of(values, debugProperties);
+		return collect(debugProperties);
 	}
 
-	public static final LookupValuesList of(final List<LookupValue> values, final Map<String, String> debugProperties)
+	/**
+	 * Collects {@link LookupValue}s and builds a {@link LookupValuesList} with those values, having given <code>debugProperties</code>
+	 *
+	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
+	 */
+	public static final Collector<LookupValue, ?, LookupValuesList> collect(final Map<String, String> debugProperties)
 	{
-		if ((values == null || values.isEmpty())
-				&& (debugProperties == null || debugProperties.isEmpty()))
+		final Supplier<ImmutableMap.Builder<Object, LookupValue>> supplier = ImmutableMap.Builder::new;
+		final BiConsumer<ImmutableMap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> builder.put(item.getId(), item);
+		final BinaryOperator<ImmutableMap.Builder<Object, LookupValue>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
+		final Function<ImmutableMap.Builder<Object, LookupValue>, LookupValuesList> finisher = (builder) -> build(builder, debugProperties);
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	private static final LookupValuesList build(final ImmutableMap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
+	{
+		final ImmutableMap<Object, LookupValue> valuesById = valuesByIdBuilder.build();
+		if (valuesById.isEmpty() && (debugProperties == null || debugProperties.isEmpty()))
 		{
 			return EMPTY;
 		}
 
-		return new LookupValuesList(values, debugProperties);
-	}
-	
-	public static final Collector<LookupValue, ?, LookupValuesList> collect()
-	{
-		final Supplier<ImmutableMap.Builder<Object, LookupValue>> supplier = ImmutableMap.Builder::new;
-		final BiConsumer<ImmutableMap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> {
-			final Object key = item.getId();
-			builder.put(key, item);
-		};
-		final BinaryOperator<ImmutableMap.Builder<Object, LookupValue>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
-		final Function<ImmutableMap.Builder<Object, LookupValue>, LookupValuesList> finisher = (builder) -> new LookupValuesList(builder.build());
-		return Collector.of(supplier, accumulator, combiner, finisher);
+		final LookupValuesList result = new LookupValuesList(valuesById, debugProperties);
+		return result;
 	}
 
-	public static final LookupValuesList EMPTY = new LookupValuesList(ImmutableList.of(), ImmutableMap.of());
+	public static final LookupValuesList EMPTY = new LookupValuesList();
 
-	private final Map<Object, LookupValue> values;
+	private final Map<Object, LookupValue> valuesById;
 	private final transient ImmutableMap<String, String> debugProperties;
 
-	private LookupValuesList(final List<LookupValue> values, final Map<String, String> debugProperties)
+	private LookupValuesList(final ImmutableMap<Object, LookupValue> valuesById, final Map<String, String> debugProperties)
 	{
 		super();
-		this.values = values == null || values.isEmpty() ? ImmutableMap.of() : Maps.uniqueIndex(values, value -> value.getId());
+		this.valuesById = valuesById;
 		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
 	}
-	
-	private LookupValuesList(final Map<Object, LookupValue> valuesById)
+
+	/** Empty constructor */
+	private LookupValuesList()
 	{
 		super();
-		this.values = ImmutableMap.copyOf(valuesById);
-		this.debugProperties = ImmutableMap.of();
+		valuesById = ImmutableMap.of();
+		debugProperties = ImmutableMap.of();
 	}
-
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("values", values)
+				.add("values", valuesById.values())
 				.add("debug", debugProperties.isEmpty() ? null : debugProperties)
 				.toString();
 	}
 
+	/**
+	 * NOTE: {@link #getDebugProperties()} is ignored
+	 */
 	@Override
 	public int hashCode()
 	{
-		return values.hashCode();
+		return valuesById.hashCode();
 	}
 
+	/**
+	 * NOTE: {@link #getDebugProperties()} is ignored when comparing
+	 */
 	@Override
 	public boolean equals(final Object obj)
 	{
@@ -129,36 +139,112 @@ public final class LookupValuesList
 		}
 
 		final LookupValuesList other = (LookupValuesList)obj;
-		return values.equals(other.values);
+		return valuesById.equals(other.valuesById);
 	}
 
+	/**
+	 * @return true if this list is empty (considering it's values and also it's debug properties)
+	 */
 	public boolean isEmpty()
 	{
-		return values.isEmpty() && debugProperties.isEmpty();
+		return valuesById.isEmpty() && debugProperties.isEmpty();
 	}
 
+	/**
+	 * @return lookup values, respecting the order in which they were initially created.
+	 */
 	public Collection<LookupValue> getValues()
 	{
-		return values.values();
+		return valuesById.values();
 	}
 
+	/**
+	 * @return debug properties or empty map; never returns null
+	 */
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
 	}
 
+	/**
+	 * @param id
+	 * @return true if this list contains an {@link LookupValue} with given <code>id</code>
+	 * @see LookupValue#getId()
+	 */
 	public boolean containsId(final Object id)
 	{
-		return values.containsKey(id);
+		return valuesById.containsKey(id);
 	}
 
+	/**
+	 * @param id
+	 * @return lookup value or null
+	 */
 	public LookupValue getById(final Object id)
 	{
-		return values.get(id);
+		return valuesById.get(id);
 	}
 
 	public final <T> T transform(final Function<LookupValuesList, T> transformation)
 	{
 		return transformation.apply(this);
+	}
+
+	/**
+	 * @param maxSize
+	 * @return a {@link LookupValuesList} which has the given maximum size
+	 */
+	public LookupValuesList limit(final int maxSize)
+	{
+		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
+		if (valuesById.size() <= maxSizeEffective)
+		{
+			return this;
+		}
+
+		return valuesById.values()
+				.stream()
+				.limit(maxSize)
+				.collect(collect(debugProperties));
+	}
+
+	public LookupValuesList offsetAndLimit(final int offset, final int maxSize)
+	{
+		final int offsetEffective = offset <= 0 ? 0 : offset;
+		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
+
+		if (offsetEffective <= 0 && valuesById.size() <= maxSizeEffective)
+		{
+			return this;
+		}
+
+		return valuesById.values()
+				.stream()
+				.skip(offsetEffective)
+				.limit(maxSizeEffective)
+				.collect(collect(debugProperties));
+	}
+
+	/**
+	 * Filters, skips <code>offset</code> items and limits the result to <code>maxSize</code>.
+	 *
+	 * NOTE: please mind the operations order, i.e. first we filter and then we skip and limit.
+	 *
+	 * @param filter
+	 * @param offset
+	 * @param maxSize
+	 * @return
+	 */
+	public LookupValuesList filter(final Predicate<LookupValue> filter, final int offset, final int maxSize)
+	{
+		final int offsetEffective = offset <= 0 ? 0 : offset;
+		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
+
+		return valuesById.values()
+				.stream()
+				.filter(filter)
+				.skip(offsetEffective)
+				.limit(maxSizeEffective)
+				.collect(collect(debugProperties));
 	}
 }
