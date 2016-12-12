@@ -7,7 +7,7 @@
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
+def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String version boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -52,6 +52,8 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId),
+			string(name: 'MF_UPSTREAM_VERSION', value: version),
+			string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
 			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 		], wait: wait
@@ -76,7 +78,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_BUILDNO'),
 		string(defaultValue: '', 
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.', 
-			name: 'MF_METASFRESH_VERSION'),
+			name: 'MF_UPSTREAM_VERSION'),
 		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere', 
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]), 
@@ -169,10 +171,10 @@ node('agent && linux') // shall only run on a jenkins agent with linux
             {
 				final String mavenUpdateParentParam=''; // empty string for now. Uncomment the two assignements in the if and else *if* and when metasfresh-webui switcheds its parent pom to de.metas.parent
 				final String mavenUpdatePropertyParam;
-				if(params.MF_METASFRESH_VERSION)
+				if(params.MF_UPSTREAM_VERSION)
 				{
-					// mavenUpdateParentParam="-DparentVersion=${params.MF_METASFRESH_VERSION}"
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${params.MF_METASFRESH_VERSION}"; // update the property, use the metasfresh version that we were given by the upstream job
+					// mavenUpdateParentParam="-DparentVersion=${params.MF_UPSTREAM_VERSION}"
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${params.MF_UPSTREAM_VERSION}"; // update the property, use the metasfresh version that we were given by the upstream job
 				}
 				else
 				{
@@ -183,7 +185,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// update the parent pom version
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
 
-				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
+				// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
 		
 				// set the artifact version of everything below the webui's pom.xml
@@ -193,6 +195,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
+				// IMPORTANT: we might parse this build description's href value in downstream builds!
 currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
 <li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
@@ -208,7 +211,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job') 
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, false); // wait=false 
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, BUILD_VERSION, false); // wait=false 
 	}
 }
 else
