@@ -11,6 +11,15 @@ class DatetimeRange extends Component {
         };
     }
 
+    componentDidMount() {
+        const {value, valueTo} = this.props;
+
+        this.setState(Object.assign({}, this.state, {
+            startDate: value,
+            endDate: valueTo
+        }));
+    }
+
     handleEvent = (event, picker) => {
         const {onChange} = this.props;
 
@@ -35,8 +44,8 @@ class DatetimeRange extends Component {
         const {isShown, isHidden, mandatory} = this.props;
         return (
             <DateRangePicker
-                startDate={Moment(new Date())}
-                endDate={Moment(new Date())}
+                startDate={Moment(startDate ? startDate : new Date())}
+                endDate={Moment(endDate ? endDate : new Date())}
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}

@@ -24,7 +24,7 @@ class Breadcrumb extends Component {
                     <span key={index}>
                         {!!index && <span className="divider">/</span>}
                         <span title={(index === 0 ? "" : item.children.captionBreadcrumb)}
-                            className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) + (index === 0 ? "ico-home" : "")}
+                            className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) }
                             onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
                         >
                             {item && item.children && item.children.captionBreadcrumb}

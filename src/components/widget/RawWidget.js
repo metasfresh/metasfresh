@@ -36,7 +36,7 @@ class RawWidget extends Component {
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, id, range, entity,
+            filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
             isShown, isHidden, handleBackdropLock
         } = this.props;
 
@@ -44,6 +44,7 @@ class RawWidget extends Component {
 
         let widgetField = "";
         let selectedField = "";
+        let selectedFieldTo = "";
         let widgetData = "";
         let widgetFields = "";
         let fieldsArray = "";
@@ -52,6 +53,7 @@ class RawWidget extends Component {
         if (filterWidget) {
             widgetField = fields.parameterName;
             selectedField = selectedItem;
+            selectedFieldTo = selectedItemTo;
             widgetData = data;
             widgetFields = fields;
             fieldsArray = [fields];
@@ -76,6 +78,8 @@ class RawWidget extends Component {
                             mandatory={widgetData.mandatory}
                             isShown={isShown}
                             isHidden={isHidden}
+                            value={selectedField}
+                            valueTo={selectedFieldTo}
                          />
                     )
                 }else{

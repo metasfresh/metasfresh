@@ -10,7 +10,7 @@ class FiltersItem extends Component {
 
     renderFilterWidget = (item, index) => {
         const {
-            filterDataItem, windowType, updateDocList, closeFilterMenu,
+            filterDataItem, windowType, closeFilterMenu,
             setSelectedItem, selectedItem, isShown, isHidden
         } = this.props;
 
@@ -22,7 +22,6 @@ class FiltersItem extends Component {
                 widgetData={item}
                 item={item}
                 widgetType={item.widgetType}
-                updateDocList={updateDocList}
                 closeFilterMenu={closeFilterMenu}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}

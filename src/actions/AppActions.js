@@ -137,6 +137,7 @@ export function browseViewRequest(viewId, page, pageLength, orderBy){
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
+    // TODO: waiting for unification of that enpoint, end than we should remove ending slash
 	return () => axios.post(config.API_URL + '/documentView/', {
         "documentType": windowType,
         "viewType": viewType,

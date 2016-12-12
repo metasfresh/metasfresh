@@ -13,7 +13,7 @@ class FilterWidget extends Component {
     }
 
     handlePatch = (property, value, valueTo) => {
-        const {dispatch, updateDocList, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
+        const {dispatch, windowType, closeFilterMenu, setSelectedItem, filterId, filter} = this.props;
         dispatch(updateFiltersParameters(filterId, property, value, valueTo));
     }
 
@@ -37,7 +37,8 @@ class FilterWidget extends Component {
                     filterId={filterId}
                     parameterName={widgetData.parameterName}
                     setSelectedItem={setSelectedItem}
-                    selectedItem={filter.parameters.length? ( filter.parameters[id].value  ? filter.parameters[id].value : '' ) : ''}
+                    selectedItem={filter.parameters.length ? ( filter.parameters[id].value  ? filter.parameters[id].value : '' ) : ''}
+                    selectedItemTo={filter.parameters.length ? ( filter.parameters[id].valueTo  ? filter.parameters[id].valueTo : '' ) : ''}
                     handleFocus={this.handleFocus}
                     id={id}
                     handleChange={this.handleChange}
@@ -45,7 +46,7 @@ class FilterWidget extends Component {
                     isShown={isShown}
                     isHidden={isHidden}
                     caption={item.caption}
-                    noLable={false}
+                    noLabel={false}
                 />
             )
         }else{
