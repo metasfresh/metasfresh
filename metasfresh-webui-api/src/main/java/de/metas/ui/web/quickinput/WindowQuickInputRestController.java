@@ -1,7 +1,6 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.quickinput;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.adempiere.util.Check;
@@ -16,13 +15,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.exceptions.NotImplementedException;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTabQuickInput;
@@ -71,7 +67,8 @@ public class WindowQuickInputRestController
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	private final AtomicInteger nextDocumentId = new AtomicInteger(1);
+	@Autowired
+	private QuickInputProcessorFactory quickInputProcessorFactory;
 
 	private final CCache<Integer, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
@@ -112,7 +109,7 @@ public class WindowQuickInputRestController
 		if (quickInputId <= 0)
 		{
 			quickInput = createQuickInput(adWindowId, documentIdStr, tabIdStr);
-			putQuickInputDocument(quickInput);
+			putQuickInput(quickInput);
 		}
 		else
 		{
@@ -167,10 +164,14 @@ public class WindowQuickInputRestController
 
 		final QuickInput quickInput = getQuickInputReadonly(quickInputId);
 
-		return Execution.callInNewExecution("quickInput.complete", () -> {
-			final Document document = quickInput.complete();
-			return JSONDocument.ofDocument(document, newJSONOptions());
+		final JSONDocument jsonDocument = Execution.callInNewExecution("quickInput.complete", () -> {
+			 final Document document = quickInput.complete();
+			 return JSONDocument.ofDocument(document, newJSONOptions());
 		});
+
+		removeQuickInput(quickInput);
+
+		return jsonDocument;
 	}
 
 	private <RT> RT processQuickInput(final int quickInputId, final Function<QuickInput, RT> processor)
@@ -179,7 +180,7 @@ public class WindowQuickInputRestController
 			final QuickInput quickInput = getQuickInputForWriting(quickInputId);
 			final RT retValue = processor.apply(quickInput);
 
-			putQuickInputDocument(quickInput);
+			putQuickInput(quickInput);
 
 			return retValue;
 		});
@@ -188,21 +189,16 @@ public class WindowQuickInputRestController
 
 	private QuickInput createQuickInput(final int adWindowId, final String documentIdStr, final String tabIdStr)
 	{
-		final DetailId detailId = DetailId.fromJson(tabIdStr);
-
 		final DocumentEntityDescriptor quickInputDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
-				.getIncludedEntityByDetailId(detailId)
+				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr))
 				.getQuickInputDescriptor();
 
 		return Execution.callInNewExecution("quickInput.create", () -> {
-			final Document quickInputDocument = Document.builder()
-					.setEntityDescriptor(quickInputDescriptor)
-					// .setShadowParentDocumentEvaluatee(parentDocument) // TODO: we would need it for context variables evaluation in lookups and other logics
-					.setDocumentIdSupplier(() -> nextDocumentId.getAndIncrement())
-					.initializeAsNewDocument()
-					.build();
-
-			return QuickInput.of(adWindowId, documentIdStr, detailId, quickInputDocument)
+			return QuickInput.builder()
+					.setQuickInputDescriptor(quickInputDescriptor)
+					.setRootDocumentPath(adWindowId, documentIdStr)
+					.setQuickInputProcessorFactory(quickInputProcessorFactory)
+					.build()
 					.bindRootDocument(documentsCollection);
 		});
 	}
@@ -225,115 +221,15 @@ public class WindowQuickInputRestController
 				.bindRootDocument(documentsCollection);
 	}
 
-	private void putQuickInputDocument(final QuickInput quickInput)
+	private void putQuickInput(final QuickInput quickInput)
 	{
 		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");
 		_quickInputDocuments.put(quickInput.getId(), quickInput.copy(CopyMode.CheckInReadonly));
 	}
-
-	private static final class QuickInput
+	
+	private void removeQuickInput(final QuickInput quickInput)
 	{
-		public static final QuickInput of(final int adWindowId, final String documentId, final DetailId detailId, final Document quickInputDocument)
-		{
-			return new QuickInput(adWindowId, documentId, detailId, quickInputDocument);
-		}
-
-		private final DocumentPath rootDocumentPath;
-		private final DetailId detailId;
-		private final Document quickInputDocument;
-
-		private transient Document rootDocument;
-
-		private QuickInput(final int adWindowId, final String documentId, final DetailId detailId, final Document quickInputDocument)
-		{
-			super();
-			rootDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-			this.detailId = detailId;
-
-			Check.assumeNotNull(quickInputDocument, "Parameter quickInputDocument is not null");
-			this.quickInputDocument = quickInputDocument;
-		}
-
-		/** Copy constructor */
-		private QuickInput(final QuickInput from, final CopyMode copyMode)
-		{
-			super();
-			rootDocumentPath = from.rootDocumentPath;
-			detailId = from.detailId;
-			quickInputDocument = from.quickInputDocument.copy(copyMode);
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.omitNullValues()
-					.add("rootDocumentPath", rootDocumentPath)
-					.add("detailId", detailId)
-					.add("quickInputDocument", quickInputDocument)
-					.toString();
-		}
-
-		public int getId()
-		{
-			return quickInputDocument.getDocumentIdAsInt();
-		}
-
-		public Document getQuickInputDocument()
-		{
-			return quickInputDocument;
-		}
-
-		public QuickInput copy(final CopyMode copyMode)
-		{
-			return new QuickInput(this, copyMode);
-		}
-
-		public QuickInput bindRootDocument(final DocumentCollection documentsCollection)
-		{
-			rootDocument = documentsCollection.getDocument(rootDocumentPath);
-			quickInputDocument.setShadowParentDocumentEvaluatee(rootDocument.asEvaluatee());
-
-			return this;
-		}
-
-		public Document getRootDocument()
-		{
-			if (rootDocument == null)
-			{
-				throw new IllegalStateException("root document not set for " + this);
-			}
-			return rootDocument;
-		}
-
-		public void processValueChanges(final List<JSONDocumentChangedEvent> events)
-		{
-			quickInputDocument.processValueChanges(events, () -> "direct update from rest API");
-		}
-
-		/**
-		 * @return newly created document
-		 */
-		public Document complete()
-		{
-			
-			// TODO call the API to create the new Document and return it!
-			throw new NotImplementedException();
-		}
-
-		public JSONLookupValuesList getFieldDropdownValues(final String fieldName)
-		{
-			return getQuickInputDocument()
-					.getFieldLookupValues(fieldName)
-					.transform(JSONLookupValuesList::ofLookupValuesList);
-		}
-
-		public JSONLookupValuesList getFieldTypeaheadValues(final String fieldName, final String query)
-		{
-			return getQuickInputDocument()
-					.getFieldLookupValuesForQuery(fieldName, query)
-					.transform(JSONLookupValuesList::ofLookupValuesList);
-		}
-
+		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");
+		_quickInputDocuments.remove(quickInput.getId());
 	}
 }
