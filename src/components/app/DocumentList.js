@@ -73,6 +73,7 @@ class DocumentList extends Component {
 
     createNewView = (windowType, type, filters, refType, refId) => {
         const {dispatch} = this.props;
+
         dispatch(createViewRequest(windowType, type, 20, filters, refType, refId)).then((response) => {
             this.setListData(response.data);
         })
@@ -93,7 +94,7 @@ class DocumentList extends Component {
                             .then((response) => {
                                 this.setListData(response.data);
                             }).catch((err) => {
-                                if(err.status === 404) {
+                                if(err.response.status === 404) {
                                     dispatch(addNotification(err.error, err.message, 5000, 'error'));
                                     this.createNewView(windowType, type, filters);
                                 }
