@@ -11,11 +11,8 @@ class Login extends Component {
     }
 
     componentWillMount(){
-        console.log('component will mount');
-        console.log(this.props.logged);
         const {logged, dispatch} = this.props;
         if(logged){
-            console.log('you are logged');
             dispatch(push("/"));
         }
     }

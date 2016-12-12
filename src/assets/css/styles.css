@@ -1835,3 +1835,8 @@ td.pulse-off input {
     color: $brand-font-color-weak;
     padding-top:.3rem;
 }
+
+.cell-text-wrapper {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

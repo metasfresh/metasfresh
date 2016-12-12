@@ -100,7 +100,7 @@ class TableCell extends Component {
                             handleBackdropLock={this.handleBackdropLock}
                         />
                     :
-                        this.fieldToString(widgetData[0].value, item.widgetType)
+                       <div className="cell-text-wrapper"> {this.fieldToString(widgetData[0].value, item.widgetType)}</div>
                 }
             </td>
         )
