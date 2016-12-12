@@ -45,24 +45,31 @@ class Breadcrumb extends Component {
                 </span>
 
                 {breadcrumb && breadcrumb.map((item, index) =>
-                    <span key={index}>
+                    <span>
                         {!!index && <span className="divider">/</span>}
-                        <span title={(index === 0 ? "" : item.children.captionBreadcrumb)}
-                            className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) }
-                            onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
-                        >
-                            {item && item.children && item.children.captionBreadcrumb}
+
+                        <span key={index}>
+                            <div
+                                title={item.children.captionBreadcrumb}
+                                className={"notification-container pointer " +
+                                    (menuOverlay === item.nodeId ? "notification-open " : "")}
+                                onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
+                            >
+                                <span className={"notification"}>
+                                    {item && item.children && item.children.captionBreadcrumb}
+                                </span>
+                            </div>
+                            {menuOverlay === item.nodeId &&
+                                <MenuOverlay
+                                    nodeId={item.nodeId}
+                                    node={item}
+                                    onClickOutside={e => handleMenuOverlay(e, "")}
+                                    disableOnClickOutside={menuOverlay !== item.nodeId}
+                                    siteName={siteName}
+                                    index={index}
+                                />
+                            }
                         </span>
-                        {menuOverlay === item.nodeId &&
-                            <MenuOverlay
-                                nodeId={item.nodeId}
-                                node={item}
-                                onClickOutside={e => handleMenuOverlay(e, "")}
-                                disableOnClickOutside={menuOverlay !== item.nodeId}
-                                siteName={siteName}
-                                index={index}
-                            />
-                        }
                     </span>
                 )}
 

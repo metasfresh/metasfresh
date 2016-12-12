@@ -197,7 +197,7 @@ class Header extends Component {
                                     (isInboxOpen ? "notification-open " : "")}
                                     onClick={() => this.handleInboxOpen(true)}
                                 >
-                                    <span className={"notification"}>
+                                    <span className={"notification icon-lg"}>
                                         <i className="meta-icon-notifications" />
                                         {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>

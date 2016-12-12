@@ -1100,10 +1100,13 @@ th {
 }
 
 .notification {
-    font-size: 18px;
     color: $brand-link-color;
     display: inline-block;
     position: relative;
+    text-overflow: ellipsis;
+    overflow:hidden;
+    width: 100%;
+    text-align: center;
 }
 
 .notification-container {
@@ -1114,6 +1117,8 @@ th {
     align-items: center;
     justify-content: center;
     border-bottom: 1px solid transparent;
+    padding-left: .2rem;
+    padding-right: .2rem;
 }
 
 .notification-container:hover{
@@ -1835,4 +1840,9 @@ td.pulse-off input {
 
 .icon-sm {
     font-size: 15px;
+    padding-top: 3px;
+}
+
+.icon-lg {
+    font-size: 18px;
 }
