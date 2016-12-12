@@ -29,7 +29,7 @@ class Breadcrumb extends Component {
                             (menuOverlay === homemenu.nodeId ? "notification-open " : "")}
                         onClick={ e => handleMenuOverlay(e, homemenu.nodeId) }
                     >
-                        <span className={"notification"}>
+                        <span className={"notification icon-sm"}>
                             <i className="meta-icon-menu" />
                         </span>
                     </div>

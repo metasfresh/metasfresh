@@ -1113,6 +1113,7 @@ th {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    border-bottom: 1px solid transparent;
 }
 
 .notification-container:hover{
@@ -1830,4 +1831,8 @@ td.pulse-off input {
     font-size: .7rem;
     color: $brand-font-color-weak;
     padding-top:.3rem;
+}
+
+.icon-sm {
+    font-size: 15px;
 }
