@@ -23,7 +23,7 @@ class Filters extends Component {
 		this.state = {
 			openDateMenu: false,
 			notFrequentListOpen: true,
-			filterDataItem: '',
+            filterDataItem: '',
 			selectedItem: '',
             frequentFilterOpen: false,
 			notFrequentFilterOpen: false,
@@ -37,13 +37,7 @@ class Filters extends Component {
         const {dispatch, filtersActive, windowType} = this.props;
 
         if(filtersActive) {
-            const {filterId, parameters} = filtersActive[0];
-            dispatch(updateFiltersParameters(
-                filterId,
-                parameters[0].parameterName,
-                parameters[0].value,
-                parameters[0].valueTo
-            ));
+            this.setFilter(filtersActive[0], windowType);
         }
     }
 
@@ -60,15 +54,9 @@ class Filters extends Component {
 		});
 	}
 
-    handleShow = () => {
+    handleShow = (show) => {
         this.setState(Object.assign({}, this.state, {
-            widgetShown: true
-        }));
-    }
-
-    handleHide = () => {
-        this.setState(Object.assign({}, this.state, {
-            widgetShown: false
+            widgetShown: !!show
         }));
     }
 
@@ -85,8 +73,19 @@ class Filters extends Component {
 		}))
 	}
 
-	toggleFilterMenu = () => {
-		const {notFrequentFilterOpen} = this.state;
+	toggleFilterMenu = (filterData) => {
+        const {dispatch} = this.props;
+		const {notFrequentFilterOpen, active} = this.state;
+        const activeItem = getItemsByProperty(filterData, "filterId", active)[0];
+
+        if(activeItem){
+            dispatch(initFiltersParameters(activeItem.filterId, this.getFiltersStructure(activeItem)));
+            this.initActiveFilters();
+            this.setState(Object.assign({}, this.state, {
+                filterDataItem: activeItem
+    		}));
+        }
+
 		this.setState(Object.assign({}, this.state, {
             notFrequentFilterOpen: !notFrequentFilterOpen,
 			frequentFilterOpen: false,
@@ -101,10 +100,22 @@ class Filters extends Component {
         });
     }
 
+    initActiveFilters = () => {
+        const {dispatch, filtersActive} = this.props;
+        if(filtersActive){
+            filtersActive[0].parameters.map(item => {
+                dispatch(updateFiltersParameters(
+                    filtersActive[0].filterId, item.parameterName, item.value, item.valueTo
+                ))
+            })
+        }
+    }
+
 	toggleFrequentFilter = (index, filterData) => {
-        const {dispatch, filter} = this.props;
+        const {dispatch, filter, filtersActive} = this.props;
         if(filter.parameters.length === 0 || filter.filterId !== filterData.filterId){
             dispatch(initFiltersParameters(filterData.filterId, this.getFiltersStructure(filterData)));
+            this.initActiveFilters();
         }
 		this.setState(Object.assign({}, this.state, {
 			frequentFilterOpen: index,
@@ -141,7 +152,6 @@ class Filters extends Component {
                 notValidFields: notValid
             }));
         } else {
-            console.log(filter)
             this.setFilter(filter, windowType)
     		this.closeFilterMenu();
         }
@@ -149,8 +159,6 @@ class Filters extends Component {
 
     setFilter = (filter, windowType) => {
         const {dispatch} = this.props;
-
-        console.log(filter)
 
         this.setState(Object.assign({}, this.state, {
             active: filter.filterId
@@ -190,25 +198,28 @@ class Filters extends Component {
 	renderFiltersItem = (item, key, isActive) => {
 		const {windowType} = this.props;
 		const {filterDataItem, selectedItem, notValidFields} = this.state;
-		return (
-			<FiltersItem
-				key={key}
-				filterData={item}
-				windowType={windowType}
-				widgetData={item}
-				item={item}
-				filterDataItem={filterDataItem}
-				closeFilterMenu={this.closeFilterMenu}
-				setSelectedItem={this.setSelectedItem}
-				selectedItem={selectedItem}
-				clearFilterData={this.clearFilterData}
-				applyFilters={this.applyFilters}
-                notValidFields={notValidFields}
-                isActive={isActive}
-                isShown={this.handleShow}
-                isHidden={this.handleHide}
-			/>
-		)
+
+		if(item){
+            return (
+    			<FiltersItem
+    				key={key}
+    				filterData={item}
+    				windowType={windowType}
+    				widgetData={item}
+    				item={item}
+    				filterDataItem={filterDataItem}
+    				closeFilterMenu={this.closeFilterMenu}
+    				setSelectedItem={this.setSelectedItem}
+    				selectedItem={selectedItem}
+    				clearFilterData={this.clearFilterData}
+    				applyFilters={this.applyFilters}
+                    notValidFields={notValidFields}
+                    isActive={isActive}
+                    isShown={() => this.handleShow(true)}
+                    isHidden={() => this.handleShow(false)}
+    			/>
+            )
+        }
 	}
 
 	renderStandardFilter = (filterData) => {
@@ -220,10 +231,11 @@ class Filters extends Component {
         const active = filters[0] ? getItemsByProperty(filterData, "filterId", filters[0].filterId)[0] : null;
         const isActive = active ? !!active : false;
 
+
 		return (
 			<div className="filter-wrapper">
 				<button
-                    onClick={() => this.toggleFilterMenu()}
+                    onClick={() => this.toggleFilterMenu(filterData)}
                     className={
                         "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" +
                         (notFrequentFilterOpen ? " btn-select": "") +
@@ -246,7 +258,7 @@ class Filters extends Component {
 							</ul>
                             :
 							<div>
-								{this.renderFiltersItem(filterDataItem, 0, isActive)}
+								{this.renderFiltersItem(active, 0, isActive)}
 							</div>
 						}
 					</div>

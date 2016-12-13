@@ -16,31 +16,63 @@ class Breadcrumb extends Component {
     }
 
 	render() {
-        const {breadcrumb, windowType, docNo, docNoData, docSummaryData, dataId, siteName, menuOverlay, handleMenuOverlay} = this.props;
+        const {
+            breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData, dataId,
+            siteName, menuOverlay, handleMenuOverlay
+        } = this.props;
 
         return (
             <span className="header-breadcrumb">
-                {breadcrumb && breadcrumb.map((item, index) =>
-                    <span key={index}>
-                        {!!index && <span className="divider">/</span>}
-                        <span title={(index === 0 ? "" : item.children.captionBreadcrumb)}
-                            className={ (!item.children.elementId ? "menu-overlay-expand " : (docNo ? 'menu-overlay-link' : '')) }
-                            onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
-                        >
-                            {item && item.children && item.children.captionBreadcrumb}
+                <span>
+                    <div
+                        className={"notification-container pointer " +
+                            (menuOverlay === homemenu.nodeId ? "notification-open " : "")}
+                        onClick={ e => handleMenuOverlay(e, homemenu.nodeId) }
+                    >
+                        <span className={"notification icon-sm"}>
+                            <i className="meta-icon-menu" />
                         </span>
-                        {menuOverlay === item.nodeId &&
-                            <MenuOverlay
-                                nodeId={item.nodeId}
-                                node={item}
-                                onClickOutside={e => handleMenuOverlay(e, "")}
-                                disableOnClickOutside={menuOverlay !== item.nodeId}
-                                siteName={siteName}
-                                index={index}
-                            />
-                        }
+                    </div>
+                    {menuOverlay === homemenu.nodeId &&
+                        <MenuOverlay
+                            nodeId={homemenu.nodeId}
+                            node={homemenu}
+                            onClickOutside={e => handleMenuOverlay(e, "")}
+                            disableOnClickOutside={menuOverlay !== homemenu.nodeId}
+                            siteName={siteName}
+                        />
+                    }
+                </span>
+
+                {breadcrumb && breadcrumb.map((item, index) =>
+                    <span>
+                        {!!index && <span className="divider">/</span>}
+
+                        <span key={index}>
+                            <div
+                                title={item.children.captionBreadcrumb}
+                                className={"notification-container pointer " +
+                                    (menuOverlay === item.nodeId ? "notification-open " : "")}
+                                onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
+                            >
+                                <span className={"notification"}>
+                                    {item && item.children && item.children.captionBreadcrumb}
+                                </span>
+                            </div>
+                            {menuOverlay === item.nodeId &&
+                                <MenuOverlay
+                                    nodeId={item.nodeId}
+                                    node={item}
+                                    onClickOutside={e => handleMenuOverlay(e, "")}
+                                    disableOnClickOutside={menuOverlay !== item.nodeId}
+                                    siteName={siteName}
+                                    index={index}
+                                />
+                            }
+                        </span>
                     </span>
                 )}
+
                 {docNo && <span className="divider">/</span>}
 
                 {docNo && <span className="header-input-id header-input-sm">
