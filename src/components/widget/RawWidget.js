@@ -195,6 +195,7 @@ class RawWidget extends Component {
                         filterId={filterId}
                         parameterName={parameterName}
                         setSelectedItem={setSelectedItem}
+                        emptyText={widgetFields.emptyText}
                     />
                 )
             case "Text":

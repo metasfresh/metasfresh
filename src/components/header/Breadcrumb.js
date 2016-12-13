@@ -15,6 +15,35 @@ class Breadcrumb extends Component {
         dispatch(push("/window/"+page));
     }
 
+    renderBtn = (menu, index) => {
+        const {handleMenuOverlay, menuOverlay, windowType, siteName} = this.props;
+        return (<span key={index}>
+            {!!index && <span className="divider">/</span>}
+            <div
+                title={!!index && menu.children.captionBreadcrumb}
+                className={"notification-container pointer " +
+                    (menuOverlay === menu.nodeId ? "notification-open " : "")
+                }
+                onClick={ !(menu && menu.children && menu.children.elementId) ?
+                    e => handleMenuOverlay(e, menu.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )
+                }
+            >
+                <span className={"notification icon-sm"}>
+                    {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
+                </span>
+            </div>
+            {menuOverlay === menu.nodeId &&
+                <MenuOverlay
+                    nodeId={menu.nodeId}
+                    node={menu}
+                    onClickOutside={e => handleMenuOverlay(e, "")}
+                    disableOnClickOutside={menuOverlay !== menu.nodeId}
+                    siteName={siteName}
+                />
+            }
+        </span>)
+    }
+
 	render() {
         const {
             breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData, dataId,
@@ -23,54 +52,10 @@ class Breadcrumb extends Component {
 
         return (
             <span className="header-breadcrumb">
-                <span>
-                    <div
-                        className={"notification-container pointer " +
-                            (menuOverlay === homemenu.nodeId ? "notification-open " : "")}
-                        onClick={ e => handleMenuOverlay(e, homemenu.nodeId) }
-                    >
-                        <span className={"notification icon-sm"}>
-                            <i className="meta-icon-menu" />
-                        </span>
-                    </div>
-                    {menuOverlay === homemenu.nodeId &&
-                        <MenuOverlay
-                            nodeId={homemenu.nodeId}
-                            node={homemenu}
-                            onClickOutside={e => handleMenuOverlay(e, "")}
-                            disableOnClickOutside={menuOverlay !== homemenu.nodeId}
-                            siteName={siteName}
-                        />
-                    }
-                </span>
+                {this.renderBtn(homemenu, 0)}
 
                 {breadcrumb && breadcrumb.map((item, index) =>
-                    <span>
-                        {!!index && <span className="divider">/</span>}
-
-                        <span key={index}>
-                            <div
-                                title={item.children.captionBreadcrumb}
-                                className={"notification-container pointer " +
-                                    (menuOverlay === item.nodeId ? "notification-open " : "")}
-                                onClick={ !item.children.elementId ?  e => handleMenuOverlay(e, item.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )}
-                            >
-                                <span className={"notification"}>
-                                    {item && item.children && item.children.captionBreadcrumb}
-                                </span>
-                            </div>
-                            {menuOverlay === item.nodeId &&
-                                <MenuOverlay
-                                    nodeId={item.nodeId}
-                                    node={item}
-                                    onClickOutside={e => handleMenuOverlay(e, "")}
-                                    disableOnClickOutside={menuOverlay !== item.nodeId}
-                                    siteName={siteName}
-                                    index={index}
-                                />
-                            }
-                        </span>
-                    </span>
+                    this.renderBtn(item,index+1)
                 )}
 
                 {docNo && <span className="divider">/</span>}
