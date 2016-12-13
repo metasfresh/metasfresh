@@ -47,6 +47,7 @@ public interface IProcessDefaultParametersProvider
 	 *         <li>not null value
 	 *         <li>{@link Null#NULL} to specify that we provide a null value
 	 *         <li>{@link #DEFAULT_VALUE_NOTAVAILABLE} to advice the caller that we don't have a default value for given parameter and the caller can search forward in other places.
+	 *         <li>Important: if the field is a lookup field (table, search etc), then the calles expects an integer <b>ID</b>, not the actual model.
 	 *         </ul>
 	 */
 	Object getParameterDefaultValue(final GridField parameter);

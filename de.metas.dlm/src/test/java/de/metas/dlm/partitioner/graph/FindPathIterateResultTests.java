@@ -1,4 +1,4 @@
-package de.metas.dlm.partitioner.impl;
+package de.metas.dlm.partitioner.graph;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -50,6 +50,11 @@ public class FindPathIterateResultTests
 		LogManager.setLevel(Level.DEBUG);
 	}
 
+	/**
+	 * Creates order, invoice and payment, and invokes {@link FindPathIterateResult} to find a poath from payment to order.<br>
+	 * Note that this is kindow easy because the path followed the actual refernces (p -> i -> o).
+	 *
+	 */
 	@Test
 	public void testFindPath()
 	{
@@ -68,7 +73,8 @@ public class FindPathIterateResultTests
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 		final TableRecordReference paymentRef = TableRecordReference.of(payment);
 
-		final FindPathIterateResult result = new FindPathIterateResult(paymentRef, orderRef);
+		// note that we don't add the *same* instances. Just equal ones
+		final FindPathIterateResult result = new FindPathIterateResult(TableRecordReference.of(payment), TableRecordReference.of(order));
 
 		result.addReferencedRecord(invoiceRef, orderRef, -1);
 		result.addReferencedRecord(paymentRef, invoiceRef, -1);
@@ -81,5 +87,42 @@ public class FindPathIterateResultTests
 		assertThat(path.get(0), is(paymentRef));
 		assertThat(path.get(1), is(invoiceRef));
 		assertThat(path.get(2), is(orderRef));
+	}
+
+	/**
+	 * Created order, invoice and payment, and invokes {@link FindPathIterateResult} to find a poath from payment to order.<br>
+	 * Note that here, the path also needs to go against the direction of out references (p -> o <- i).
+	 *
+	 */
+	@Test
+	public void testFindPathUndirected()
+	{
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		InterfaceWrapperHelper.save(order);
+
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		InterfaceWrapperHelper.save(invoice);
+
+		final I_C_Payment payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
+		InterfaceWrapperHelper.save(payment);
+
+		final TableRecordReference orderRef = TableRecordReference.of(order);
+		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
+		final TableRecordReference paymentRef = TableRecordReference.of(payment);
+
+		// note that we don't add the *same* instances. Just equal ones
+		final FindPathIterateResult result = new FindPathIterateResult(TableRecordReference.of(payment), TableRecordReference.of(invoice));
+
+		result.addReferencedRecord(invoiceRef, orderRef, -1);
+		result.addReferencedRecord(paymentRef, orderRef, -1);
+
+		// so we can now go on with 'initialResult' and spare ourselves one cast ;-)
+		final List<ITableRecordReference> path = result.getPath();
+
+		assertThat(path, notNullValue());
+		assertThat(path.size(), is(3));
+		assertThat(path.get(0), is(paymentRef));
+		assertThat(path.get(1), is(orderRef));
+		assertThat(path.get(2), is(invoiceRef));
 	}
 }

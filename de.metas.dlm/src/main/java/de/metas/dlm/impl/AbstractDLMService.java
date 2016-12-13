@@ -105,6 +105,8 @@ public abstract class AbstractDLMService implements IDLMService
 
 		table.setIsDLM(true);
 		InterfaceWrapperHelper.save(table);
+
+		Loggables.get().addLog("Table {} is now added to DLM", table.getTableName());
 	}
 
 	private void createOrUpdateDlmColumn(final I_AD_Table table, final String columnName)

@@ -287,7 +287,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 	{
 		if (!(result instanceof IStorableIterateResult))
 		{
-
+			return; // nothing to store
 		}
 		Services.get(ITrxManager.class).run(new TrxRunnable()
 		{

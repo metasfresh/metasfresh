@@ -1,4 +1,4 @@
-package de.metas.dlm.partitioner.impl;
+package de.metas.dlm.partitioner.graph;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -6,11 +6,15 @@ import java.util.List;
 
 import org.adempiere.util.lang.ITableRecordReference;
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graph;
 import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.AsUndirectedGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.dlm.partitioner.impl.IIterateResult;
 
 /*
  * #%L
@@ -36,10 +40,10 @@ import com.google.common.collect.ImmutableList;
 
 public class FindPathIterateResult implements IIterateResult
 {
-	final ITableRecordReference start;
-	final ITableRecordReference goal;
+	private final ITableRecordReference start;
+	private final ITableRecordReference goal;
 
-	final DirectedGraph<ITableRecordReference, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+	private final DirectedGraph<ITableRecordReference, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 	private int size = 0;
 
@@ -130,6 +134,11 @@ public class FindPathIterateResult implements IIterateResult
 		return queueItemsToProcess.removeFirst();
 	}
 
+	public boolean isFoundGoalRecord()
+	{
+		return foundGoal;
+	}
+
 	@Override
 	public boolean contains(final ITableRecordReference forwardReference)
 	{
@@ -140,19 +149,40 @@ public class FindPathIterateResult implements IIterateResult
 	{
 		final List<ITableRecordReference> result = new ArrayList<>();
 
-		final List<DefaultEdge> path = DijkstraShortestPath.<ITableRecordReference, DefaultEdge> findPathBetween(g, start, goal);
-		if(path==null || path.isEmpty())
+		final AsUndirectedGraph<ITableRecordReference, DefaultEdge> undirectedGraph = new AsUndirectedGraph<>(g);
+
+		final List<DefaultEdge> path = DijkstraShortestPath.<ITableRecordReference, DefaultEdge> findPathBetween(
+				undirectedGraph, start, goal);
+		if (path == null || path.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-
-		result.add(g.getEdgeSource(path.get(0)));
+		result.add(start);
 		for (final DefaultEdge e : path)
 		{
-			result.add(g.getEdgeTarget(e));
+			final ITableRecordReference edgeSource = undirectedGraph.getEdgeSource(e);
+			if (!result.contains(edgeSource))
+			{
+				result.add(edgeSource);
+			}
+			else
+			{
+				result.add(undirectedGraph.getEdgeTarget(e));
+			}
 		}
 
 		return ImmutableList.copyOf(result);
+	}
+
+	/* package */ Graph<ITableRecordReference, DefaultEdge> getGraph()
+	{
+		return g;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "FindPathIterateResult [start=" + start + ", goal=" + goal + ", size=" + size + ", foundGoal=" + foundGoal + ", queueItemsToProcess.size()=" + queueItemsToProcess.size() + "]";
 	}
 
 }
