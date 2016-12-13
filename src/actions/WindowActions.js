@@ -1,7 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import config from '../config';
-import {push, replace} from 'react-router-redux';
+import { push, replace } from 'react-router-redux';
 
 import {
     getWindowBreadcrumb
@@ -40,7 +40,7 @@ export function updateDataSuccess(item, scope) {
         scope: scope
     }
 }
-export function updateRowSuccess(item,tabid,rowid,scope) {
+export function updateRowSuccess(item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_SUCCESS,
         item: item,
@@ -49,7 +49,7 @@ export function updateRowSuccess(item,tabid,rowid,scope) {
         scope: scope
     }
 }
-export function addNewRow(item,tabid,rowid,scope) {
+export function addNewRow(item, tabid, rowid, scope) {
     return {
         type: types.ADD_NEW_ROW,
         item: item,
@@ -59,7 +59,7 @@ export function addNewRow(item,tabid,rowid,scope) {
     }
 }
 
-export function deleteRow(tabid,rowid,scope) {
+export function deleteRow(tabid, rowid, scope) {
     return {
         type: types.DELETE_ROW,
         tabid: tabid,
@@ -68,7 +68,7 @@ export function deleteRow(tabid,rowid,scope) {
     }
 }
 
-export function updateDataProperty(property, value, scope){
+export function updateDataProperty(property, value, scope) {
     return {
         type: types.UPDATE_DATA_PROPERTY,
         property: property,
@@ -77,7 +77,7 @@ export function updateDataProperty(property, value, scope){
     }
 }
 
-export function updateRowProperty(property, value, tabid, rowid, scope){
+export function updateRowProperty(property, value, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_PROPERTY,
         property: property,
@@ -88,14 +88,14 @@ export function updateRowProperty(property, value, tabid, rowid, scope){
     }
 }
 
-export function noConnection(status){
+export function noConnection(status) {
     return {
         type: types.NO_CONNECTION,
         status: status
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId){
+export function openModal(title, windowType, type, tabId, rowId) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
@@ -106,13 +106,13 @@ export function openModal(title, windowType, type, tabId, rowId){
     }
 }
 
-export function closeModal(){
+export function closeModal() {
     return {
         type: types.CLOSE_MODAL
     }
 }
 
-export function updateModal (rowId) {
+export function updateModal(rowId) {
     return {
         type: types.UPDATE_MODAL,
         rowId: rowId
@@ -121,7 +121,7 @@ export function updateModal (rowId) {
 
 // INDICATOR ACTIONS
 
-export function indicatorState(state){
+export function indicatorState(state) {
     return {
         type: types.CHANGE_INDICATOR_STATE,
         state: state
@@ -134,9 +134,9 @@ export function indicatorState(state){
 /*
  * Main method to generate window
  */
-export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false){
+export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false) {
     return (dispatch) => {
-        if(docId == "new"){
+        if (docId == "new") {
             docId = "NEW";
         }
 
@@ -145,22 +145,30 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
         return dispatch(initWindow(windowType, docId, tabId, rowId))
             .then(response => {
 
-                if(docId == "NEW" && !isModal){
+                let elem = 0;
+
+                response.data.forEach(function (value, index) {
+                    if (value.rowId === rowId) { 
+                        elem = index;
+                    }
+                });
+
+                if (docId == "NEW" && !isModal) {
                     dispatch(clearListProps());
-                    dispatch(replace("/window/"+ windowType + "/" + response.data[0].id));
+                    dispatch(replace("/window/" + windowType + "/" + response.data[0].id));
                 }
 
-                docId = response.data[0].id;
-                const preparedData = parseToDisplay(response.data[0].fields);
+                docId = response.data[elem].id;
+                const preparedData = parseToDisplay(response.data[elem].fields);
 
                 dispatch(initDataSuccess(preparedData, getScope(isModal)));
 
-                if(isModal && rowId === "NEW"){
+                if (isModal && rowId === "NEW") {
                     dispatch(mapDataToState([response.data[0]], false, "NEW"))
                     dispatch(updateModal(response.data[0].rowId));
                 }
 
-                if(!isModal){
+                if (!isModal) {
                     dispatch(getWindowBreadcrumb(windowType));
                 }
             }).then(() =>
@@ -173,8 +181,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 response.layout.tabs && response.layout.tabs.map(tab => {
                     tabTmp[tab.tabid] = {};
                     dispatch(getData(windowType, docId, tab.tabid))
-                        .then((res)=> {
-
+                        .then((res) => {
                             res.data && res.data.map(row => {
                                 row.fields = parseToDisplay(row.fields);
                                 tabTmp[tab.tabid][row.rowId] = row;
@@ -188,14 +195,14 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
 export function initWindow(windowType, docId, tabId, rowId = null) {
     return (dispatch) => {
-        if(docId === "NEW"){
+        if (docId === "NEW") {
             return dispatch(patchRequest(windowType, docId))
-        }else{
-            if(rowId === "NEW"){
+        } else {
+            if (rowId === "NEW") {
                 return dispatch(patchRequest(windowType, docId, tabId, "NEW"))
-            }else if(rowId){
+            } else if (rowId) {
                 return dispatch(getData(windowType, docId, tabId, rowId))
-            }else{
+            } else {
                 return dispatch(getData(windowType, docId))
             }
         }
@@ -205,40 +212,37 @@ export function initWindow(windowType, docId, tabId, rowId = null) {
 export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value, entity) {
     let payload = {};
 
-    if(id === "NEW"){
+    if (id === "NEW") {
         payload = [];
-    }else{
-        if(property && value !== undefined){
+    } else {
+        if (property && value !== undefined) {
             payload = [{
                 'op': 'replace',
                 'path': property,
                 'value': value
             }];
-        }else {
+        } else {
             payload = [];
         }
     }
 
     // Temporary solution, TODO after API endpoints unification
-    if (entity === 'process'){
+    if (entity === 'process') {
         return () => axios.patch(
             config.API_URL +
-            '/'+ entity + '/instance/' + id +'/parameters'
-            , payload);
+            '/' + entity + '/instance/' + id + '/parameters', payload);
     } else if (entity === 'asi') {
         return () => axios.patch(
             config.API_URL +
-            '/pattribute/' + id
-            , payload);
-    }else{
+            '/pattribute/' + id, payload);
+    } else {
         return () => axios.patch(
             config.API_URL +
             '/window/commit?type=' +
             windowType +
             '&id=' + id +
             (tabId ? "&tabid=" + tabId : "") +
-            (rowId ? "&rowId=" + rowId : "")
-            , payload);
+            (rowId ? "&rowId=" + rowId : ""), payload);
     }
 
 }
@@ -254,9 +258,9 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
         dispatch(indicatorState('pending'));
         let time = 0
         let timeoutLoop = () => {
-            setTimeout(function(){
+            setTimeout(function() {
                 time = 999;
-                if(responsed){
+                if (responsed) {
                     dispatch(indicatorState('saved'));
                 } else {
                     timeoutLoop();
@@ -273,18 +277,18 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
     }
 }
 
-function mapDataToState(data, isModal, rowId){
+function mapDataToState(data, isModal, rowId) {
     return (dispatch) => {
         data.map(item1 => {
             item1.fields = parseToDisplay(item1.fields);
-            if(rowId === "NEW"){
+            if (rowId === "NEW") {
                 dispatch(addNewRow(item1, item1.tabid, item1.rowId, "master"))
-            }else{
+            } else {
                 item1.fields.map(item2 => {
-                    if(rowId && !isModal){
+                    if (rowId && !isModal) {
                         dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(isModal)));
-                    }else{
-                        if(rowId){
+                    } else {
+                        if (rowId) {
                             dispatch(updateRowSuccess(item2, item1.tabid, item1.rowId, getScope(false)));
                         }
                         dispatch(updateDataSuccess(item2, getScope(isModal)));
@@ -295,16 +299,16 @@ function mapDataToState(data, isModal, rowId){
     }
 }
 
-export function updateProperty(property, value, tabid, rowid, isModal){
+export function updateProperty(property, value, tabid, rowid, isModal) {
     return dispatch => {
-        if( tabid && rowid ){
+        if (tabid && rowid) {
             dispatch(updateRowProperty(property, value, tabid, rowid, "master"))
-            if(isModal){
+            if (isModal) {
                 dispatch(updateDataProperty(property, value, "modal"))
             }
-        }else{
+        } else {
             dispatch(updateDataProperty(property, value, getScope(isModal)))
-            if(isModal){
+            if (isModal) {
                 //update the master field too if exist
                 dispatch(updateDataProperty(property, value, "master"))
             }
@@ -315,28 +319,28 @@ export function updateProperty(property, value, tabid, rowid, isModal){
 
 // PROCESS ACTIONS
 
-export function createProcess(processType, viewId, type, ids){
+export function createProcess(processType, viewId, type, ids) {
     let pid = null;
     return (dispatch) =>
         dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
-                const preparedData = parseToDisplay(response.data.parameters);
-                pid = response.data.pinstanceId;
-                if(preparedData.length === 0){
-                    throw new Error('wrong_response');
-                }
-                return dispatch(initDataSuccess(preparedData, "modal"));
-            }).then(response =>
-                dispatch(getProcessLayout(processType))
-            ).then(response => {
-                const preparedLayout = Object.assign({}, response.data, {
-                    pinstanceId: pid
-                })
-                return dispatch(initLayoutSuccess(preparedLayout, "modal"))
-            });
+            const preparedData = parseToDisplay(response.data.parameters);
+            pid = response.data.pinstanceId;
+            if (preparedData.length === 0) {
+                throw new Error('wrong_response');
+            }
+            return dispatch(initDataSuccess(preparedData, "modal"));
+        }).then(response =>
+            dispatch(getProcessLayout(processType))
+        ).then(response => {
+            const preparedLayout = Object.assign({}, response.data, {
+                pinstanceId: pid
+            })
+            return dispatch(initLayoutSuccess(preparedLayout, "modal"))
+        });
 }
 
 function getProcessData(processId, viewId, type, ids) {
-    if(viewId){
+    if (viewId) {
         return () => axios.post(config.API_URL + '/process/instance', {
             processId: processId,
             viewId: viewId,
@@ -361,7 +365,7 @@ export function startProcess(processType) {
 
 // END PROCESS ACTIONS
 
-export function initLayout(windowType, tabId){
+export function initLayout(windowType, tabId) {
     return () => axios.get(
         config.API_URL +
         '/window/layout?type=' + windowType +
@@ -398,7 +402,7 @@ function parseDateToReadable(arr) {
     )
 }
 
-function nullToEmptyStrings(arr){
+function nullToEmptyStrings(arr) {
     return arr.map(item =>
         (item.value === null) ?
         Object.assign({}, item, { value: "" }) :
@@ -409,12 +413,12 @@ function nullToEmptyStrings(arr){
 export function findRowByPropName(arr, name) {
     let ret = -1;
 
-    if(!arr){
+    if (!arr) {
         return ret;
     }
 
-    for(let i = 0; i < arr.length; i++){
-        if(arr[i].field === name){
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i].field === name) {
             ret = arr[i];
             break;
         }
@@ -427,7 +431,7 @@ export function getItemsByProperty(arr, prop, value) {
     let ret = [];
 
     arr.map((item) => {
-        if(item[prop] === value){
+        if (item[prop] === value) {
             ret.push(item);
         }
     });
@@ -446,10 +450,10 @@ export function deleteData(windowType, id, tabId, rowId) {
     );
 }
 
-export function deleteLocal(tabid,rowsid,scope) {
+export function deleteLocal(tabid, rowsid, scope) {
     return (dispatch) => {
         for (let rowid of rowsid) {
-            dispatch(deleteRow(tabid,rowid,scope))
+            dispatch(deleteRow(tabid, rowid, scope))
         }
     }
 }

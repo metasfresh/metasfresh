@@ -653,6 +653,14 @@ body {
     display: block;
 }
 
+.tab-pane .panel {
+    padding-bottom: 100px;
+}
+
+.tab-pane .input-dropdown-list {
+        max-height: 100px;
+}
+
 .screen-freeze {
     position: fixed;
     top: 0;
@@ -903,7 +911,7 @@ table .rdtPicker table td, .rdtPicker table th {
 
 .table td {
     width: 75px;
-    overflow: hidden;
+    position: relative;
 }
 
 .th-lg {
@@ -931,7 +939,7 @@ table .rdtPicker table td, .rdtPicker table th {
     max-width: 144px;
 }
 .td-lg .input-dropdown-list {
-    width: 144px;
+    width: auto;
 }
 
 .Lookup .input-icon {
@@ -1836,6 +1844,11 @@ td.pulse-off input {
     font-size: .7rem;
     color: $brand-font-color-weak;
     padding-top:.3rem;
+}
+
+.cell-text-wrapper {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .icon-sm {
