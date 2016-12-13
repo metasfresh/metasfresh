@@ -1,6 +1,5 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
-import config from '../config';
 import { push, replace } from 'react-router-redux';
 
 import {
@@ -148,7 +147,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 let elem = 0;
 
                 response.data.forEach(function (value, index) {
-                    if (value.rowId === rowId) { 
+                    if (value.rowId === rowId) {
                         elem = index;
                     }
                 });

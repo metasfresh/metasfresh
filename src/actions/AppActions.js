@@ -1,6 +1,5 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
-import config from '../config';
 import {replace} from 'react-router-redux';
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';

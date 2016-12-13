@@ -1,6 +1,5 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
-import config from '../config';
 
 export function setFilter(filter, windowType){
     return {

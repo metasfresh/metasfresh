@@ -3,7 +3,6 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
-import config from '../../config';
 
 import {
     printDoc,

@@ -9,10 +9,10 @@ module.exports = {
         './src/index.jsx'
     ],
     output: {
-         path: '/',
-         filename: 'bundle.js',
-         publicPath: '/'
-     },
+        path: '/',
+        filename: 'bundle.js',
+        publicPath: '/'
+    },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin()
