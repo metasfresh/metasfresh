@@ -568,6 +568,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 		//
 		// Fallback: when no elements were found: creating the view using the single row layout
+		if (!layoutSideListBuilder.hasElements())
 		{
 			logger.warn("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
 			streamAD_UI_Elements()
