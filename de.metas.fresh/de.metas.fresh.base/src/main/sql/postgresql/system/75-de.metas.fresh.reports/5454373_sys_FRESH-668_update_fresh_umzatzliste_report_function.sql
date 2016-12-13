@@ -206,4 +206,3 @@ ORDER BY
 	UnionOrder, SameYearSum DESC
 $BODY$
 LANGUAGE sql STABLE;
-ALTER FUNCTION report.fresh_umsatzreport_report (IN numeric, IN character varying, IN numeric) OWNER TO adempiere;
