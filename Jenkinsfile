@@ -406,7 +406,7 @@ stage('Invoke downstream jobs')
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
-			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${metasfresh-webui}"
+			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
 		}
 		// TODO: also handle procurement-webui
 	}
@@ -648,20 +648,20 @@ stage('Deployment')
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
 				
 				final paramWebuiApiServerArtifactURL;
-				if(EXTERNAL_ARTIFACT_URLS.metasfresh-webui)
+				if( EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] )
 				{
-					echo "Deploying metasfresh-webui from URL ${EXTERNAL_ARTIFACT_URLS.metasfresh-webui}"
-					paramWebuiApiServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS.metasfresh-webui}"
+					echo "Deploying metasfresh-webui from URL ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+					paramWebuiApiServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
 				}
 				else
 				{
 					echo "Deploying latest metasfresh-webui (see console to check what is really deployed)"
 					paramWebuiApiServerArtifactURL=''; // get the latest metasfresh-webui-api
 				}
-				invokeRemote(sshTargetHost, sshTargetUser, "/home/opt/metasfresh-webui-api/scripts", "update_metasfresh_webui_api_server.sh ${paramWebuiApiServerArtifactURL}");
+				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
 				
 				echo "Building and installing the latest metasfresh-webui-frontend"
-				invokeRemote(sshTargetHost, sshTargetUser, "/home/opt/metasfresh-webui-frontend/scripts", "update_metasfresh_webui_frontend.sh");
+				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh");
 				
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
 				step([$class: 'WsCleanup', cleanWhenFailure: false])
