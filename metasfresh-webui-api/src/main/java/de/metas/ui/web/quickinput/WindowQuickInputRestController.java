@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -95,26 +96,27 @@ public class WindowQuickInputRestController
 		return JSONDocumentLayoutTabQuickInput.fromNullable(layout, newJSONOptions());
 	}
 
-	@GetMapping("/{quickInputId}")
-	public JSONDocument getOrCreate(
+	@PostMapping
+	public JSONDocument create(
 			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
-			, @PathVariable("quickInputId") final int quickInputId //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final QuickInput quickInput;
-		if (quickInputId <= 0)
-		{
-			quickInput = createQuickInput(adWindowId, documentIdStr, tabIdStr);
-			putQuickInput(quickInput);
-		}
-		else
-		{
-			quickInput = getQuickInputReadonly(quickInputId);
-		}
+		final QuickInput quickInput = createQuickInput(adWindowId, documentIdStr, tabIdStr);
+		putQuickInput(quickInput);
+
+		return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
+	}
+
+	@GetMapping("/{quickInputId}")
+	public JSONDocument get(@PathVariable("quickInputId") final int quickInputId)
+	{
+		userSession.assertLoggedIn();
+
+		final QuickInput quickInput = getQuickInputReadonly(quickInputId);
 
 		return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
 	}
