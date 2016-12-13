@@ -4,7 +4,6 @@ import axios from 'axios';
 
 import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
-import config from '../config.js';
 
 import { syncHistoryWithStore, push } from 'react-router-redux';
 import { Router, Route, browserHistory } from 'react-router';

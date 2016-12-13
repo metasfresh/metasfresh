@@ -1,6 +1,5 @@
 import * as types from '../constants/MenuTypes'
 import axios from 'axios';
-import config from '../config';
 
 
 export function setBreadcrumb(breadcrumb){

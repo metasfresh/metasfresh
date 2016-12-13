@@ -37,7 +37,7 @@ class RawList extends Component {
 
     getRow = (index, option) => {
         return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
-            <p className="input-dropdown-item-title">{option}</p>
+            <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
         </div>)
     }
 
@@ -47,11 +47,11 @@ class RawList extends Component {
         let ret = [];
 
         if(!mandatory){
-            ret.push(this.getRow(0, emptyText));
+            emptyText && ret.push(this.getRow(0, {0: emptyText}));
         }
 
         list.map((option, index) => {
-            ret.push(this.getRow(index + 1, option[Object.keys(option)[0]]))
+            ret.push(this.getRow(index + 1, option))
         })
 
         return ret;

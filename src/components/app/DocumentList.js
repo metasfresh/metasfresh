@@ -95,7 +95,6 @@ class DocumentList extends Component {
                                 this.setListData(response.data);
                             }).catch((err) => {
                                 if(err.response.status === 404) {
-                                    dispatch(addNotification(err.error, err.message, 5000, 'error'));
                                     this.createNewView(windowType, type, filters);
                                 }
                             })
