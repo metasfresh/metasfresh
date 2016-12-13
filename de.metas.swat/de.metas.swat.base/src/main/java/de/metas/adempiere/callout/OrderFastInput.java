@@ -273,6 +273,7 @@ public class OrderFastInput extends CalloutEngine
 		}
 
 		// start: cg: 01717
+		// TODO: i think we shall remove this because createOrderLine also does exactly this thing (seems like it's copy-pasted)
 		if (order.isSOTrx() && order.isDropShip())
 		{
 			final int C_BPartner_ID = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
