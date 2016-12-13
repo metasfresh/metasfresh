@@ -38,7 +38,7 @@ import de.metas.ui.web.menu.MenuNode;
 @SuppressWarnings("serial")
 public final class JSONMenuNode implements Serializable
 {
-	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean includeLastNode)
+	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode)
 	{
 		if (path == null || path.isEmpty())
 		{
@@ -55,8 +55,18 @@ public final class JSONMenuNode implements Serializable
 		for (int i = lastIndex; i >= 0; i--)
 		{
 			final MenuNode node = path.get(i);
+			if(node.isRoot())
+			{
+				continue;
+			}
 			jsonChildNode = new JSONMenuNode(node, jsonChildNode);
 		}
+		
+		if(jsonChildNode == null)
+		{
+			throw new IllegalArgumentException("Invalid path");
+		}
+		
 		return jsonChildNode;
 	}
 

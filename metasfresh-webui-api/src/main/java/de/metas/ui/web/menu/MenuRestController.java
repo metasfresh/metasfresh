@@ -103,7 +103,8 @@ public class MenuRestController
 		final List<MenuNode> path = getMenuTree()
 				.getPath(nodeId);
 
-		return JSONMenuNode.ofPath(path, includeLastNode);
+		final boolean skipRootNode = true;
+		return JSONMenuNode.ofPath(path, skipRootNode, includeLastNode);
 	}
 
 	@RequestMapping(value = "/elementPath", method = RequestMethod.GET)
@@ -118,7 +119,8 @@ public class MenuRestController
 		final List<MenuNode> path = getMenuTree()
 				.getPath(jsonType.toMenuNodeType(), elementId);
 
-		return JSONMenuNode.ofPath(path, includeLastNode);
+		final boolean skipRootNode = true;
+		return JSONMenuNode.ofPath(path, skipRootNode, includeLastNode);
 	}
 
 	@RequestMapping(value = "/queryPaths", method = RequestMethod.GET)
