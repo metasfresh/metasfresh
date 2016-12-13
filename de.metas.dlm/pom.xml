@@ -47,7 +47,21 @@
 			<artifactId>jgrapht-core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
- 
+		<!--
+		Those two are needed to visualize a partition-graph.
+		I played with a very rudimentory JFrame to show a graph, but it would need much more work in order to be any usefull for graphs of a non-trivial size.
+		Also see http://jgrapht.org/visualizations.html
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-ext</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jgraph</groupId>
+			<artifactId>jgraph</artifactId>
+			<version>5.13.0.0</version>
+		</dependency>
+		-->
 	</dependencies>
 
 </project>
