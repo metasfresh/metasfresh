@@ -55,6 +55,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
+	private static final LogicExpressionResult LOGICRESULT_FALSE_ParentDocumentProcessed = LogicExpressionResult.namedConstant("ParentDocumentProcessed", false);
+
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final Document parentDocument;
 
@@ -263,46 +265,46 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	public void assertNewDocumentAllowed()
 	{
+		final LogicExpressionResult allowCreateNewDocument = getAllowCreateNewDocument();
+		if (allowCreateNewDocument.isFalse())
+		{
+			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
+					+ "\n AllowCreateNewDocument: " + allowCreateNewDocument
+					+ "\n EntityDescriptor: " + entityDescriptor);
+		}
+	}
+	
+	public LogicExpressionResult getAllowCreateNewDocument()
+	{
 		if (parentDocument.isProcessed())
 		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because parent is processed");
+			return LOGICRESULT_FALSE_ParentDocumentProcessed;
 		}
 
 		final ILogicExpression allowCreateNewLogic = entityDescriptor.getAllowCreateNewLogic();
-		if (allowCreateNewLogic.isConstantFalse())
-		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
-					+ "\n AllowCreateNewLogic: " + allowCreateNewLogic
-					+ "\n EntityDescriptor: " + entityDescriptor);
-		}
-
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
-		if (!allowCreateNew.booleanValue())
-		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot create included document because it's not allowed."
-					+ "\n AllowCreateNewLogic: " + allowCreateNewLogic + " => " + allowCreateNew
-					+ "\n EntityDescriptor: " + entityDescriptor);
-		}
+		return allowCreateNew;
 	}
 
 	private void assertDeleteDocumentAllowed(final Document document)
 	{
-		if (parentDocument.isProcessed())
-		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because parent is processed");
-		}
-
-		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
-		if (allowDeleteLogic.isConstantFalse())
-		{
-			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's never allowed");
-		}
-
-		final LogicExpressionResult allowDelete = allowDeleteLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
-		if (!allowDelete.booleanValue())
+		final LogicExpressionResult allowDelete = getAllowDeleteDocument();
+		if(allowDelete.isFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed: " + allowDelete);
 		}
+	}
+	
+	private LogicExpressionResult getAllowDeleteDocument()
+	{
+		if (parentDocument.isProcessed())
+		{
+			return LOGICRESULT_FALSE_ParentDocumentProcessed;
+		}
+
+		final ILogicExpression allowDeleteLogic = entityDescriptor.getAllowDeleteLogic();
+		final LogicExpressionResult allowDelete = allowDeleteLogic.evaluateToResult(parentDocument.asEvaluatee(), OnVariableNotFound.ReturnNoResult);
+		return allowDelete;
 	}
 
 	private final void loadAll()
