@@ -1,6 +1,6 @@
--- 12.12.2016 07:08
+Ôªø-- 12.12.2016 07:08
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540746,'Y','de.metas.dlm.partitioner.process.DLM_FindPathBetweenRecords','N',TO_TIMESTAMP('2016-12-12 07:08:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Pfadsuche zwischen zwei Datens‰tzen','N','Y','Java',TO_TIMESTAMP('2016-12-12 07:08:35','YYYY-MM-DD HH24:MI:SS'),100,'DLM_FindPathBetweenRecords')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540746,'Y','de.metas.dlm.partitioner.process.DLM_FindPathBetweenRecords','N',TO_TIMESTAMP('2016-12-12 07:08:35','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Pfadsuche zwischen zwei Datens√§tzen','N','Y','Java',TO_TIMESTAMP('2016-12-12 07:08:35','YYYY-MM-DD HH24:MI:SS'),100,'DLM_FindPathBetweenRecords')
 ;
 
 -- 12.12.2016 07:08
@@ -80,7 +80,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 12.12.2016 07:13
 -- URL zum Konzept
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('P',0,540747,0,540746,TO_TIMESTAMP('2016-12-12 07:13:42','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','DLM_FindPathBetweenRecords','Y','N','N','N','N','Pfadsuche zwischen zwei Datens‰tzen',TO_TIMESTAMP('2016-12-12 07:13:42','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('P',0,540747,0,540746,TO_TIMESTAMP('2016-12-12 07:13:42','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','DLM_FindPathBetweenRecords','Y','N','N','N','N','Pfadsuche zwischen zwei Datens√§tzen',TO_TIMESTAMP('2016-12-12 07:13:42','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 12.12.2016 07:13
