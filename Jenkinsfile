@@ -7,7 +7,7 @@
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String version boolean wait)
+def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String version, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
