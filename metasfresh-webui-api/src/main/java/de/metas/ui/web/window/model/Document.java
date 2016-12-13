@@ -1201,7 +1201,7 @@ public final class Document
 
 	/* package */ boolean isProcessed()
 	{
-		final IDocumentFieldView processedField = getFieldOrNull("Processed");
+		final IDocumentFieldView processedField = getFieldOrNull(WindowConstants.FIELDNAME_Processed);
 		if (processedField != null)
 		{
 			return processedField.getValueAsBoolean();
