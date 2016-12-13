@@ -35,22 +35,34 @@ class RawList extends Component {
         this.handleBlur();
     }
 
+    getRow = (index, option) => {
+        return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
+            <p className="input-dropdown-item-title">{option}</p>
+        </div>)
+    }
+
     renderOptions = () => {
-        const {list} = this.props;
-        return list.map((option, index) => (
-                <div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
-                    <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
-                </div>
-            )
-        )
+        const {list, mandatory, emptyText} = this.props;
+
+        let ret = [];
+
+        if(!mandatory){
+            ret.push(this.getRow(0, emptyText));
+        }
+
+        list.map((option, index) => {
+            ret.push(this.getRow(index + 1, option[Object.keys(option)[0]]))
+        })
+
+        return ret;
     }
 
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal
+            rowId, isModal, mandatory, value
         } = this.props;
-        
+
         return (
             <div
                 tabIndex="0"
@@ -63,7 +75,11 @@ class RawList extends Component {
                     ((rowId && !isModal) ? "input-table " : "")
                 }
             >
-                <div className={"input-dropdown input-block input-readonly input-" + (rank ? rank : "secondary") + (updated ? " pulse" : "")}>
+                <div className={
+                    "input-dropdown input-block input-readonly input-" +
+                    (rank ? rank : "secondary") +
+                    (updated ? " pulse " : " ")
+                }>
                     <div className={
                         "input-editable input-dropdown-focused " +
                         (align ? "text-xs-" + align + " " : "")

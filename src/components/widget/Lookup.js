@@ -12,7 +12,8 @@ import {
 } from '../../actions/AppActions';
 
 import {
-    getItemsByProperty
+    getItemsByProperty,
+    openModal
 } from '../../actions/WindowActions';
 
 class Lookup extends Component {
@@ -177,6 +178,14 @@ class Lookup extends Component {
         }
     }
 
+    handleAddNew = () => {
+        const {query} = this.state;
+        const {dispatch, windowType} = this.props;
+
+        //TODO: Waiting for windowType from API for the new instance of entity
+        dispatch(openModal("Add new", windowType, "window"));
+    }
+
     handleBlur = () => {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
@@ -327,7 +336,20 @@ class Lookup extends Component {
     }
 
     renderLookup = () => {
-        return this.state.list.map((item, index) => this.getDropdownComponent(index, item) );
+        const {list} = this.state;
+        return list.map((item, index) => this.getDropdownComponent(index, item) );
+    }
+
+    renderEmpty = () => {
+        const {query} = this.state;
+        return (
+            <div
+                className="input-dropdown-list-option input-dropdown-list-option-alt"
+                onClick={() => this.handleAddNew(query)}
+            >
+                <p className="input-dropdown-item-title">New {query ? '"' + query + '"' : ""}</p>
+            </div>
+        )
     }
 
     render() {
@@ -336,7 +358,7 @@ class Lookup extends Component {
             updated, selected, oldValue, filterWidget, mandatory, rowId
         } = this.props;
 
-        const {propertiesCopy,isInputEmpty} = this.state;
+        const {propertiesCopy,isInputEmpty, list, query, loading} = this.state;
 
         return (
             <div
@@ -388,11 +410,11 @@ class Lookup extends Component {
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
                     <div className="input-dropdown-list-header">
-                        {(this.state.list.length > 0 ) ?
-                                (this.state.query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
-                                "There's no matching items."
+                        {(list.length > 0 ) ?
+                            (query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
+                            "There's no matching items."
                         }
-                        {(this.state.loading && this.state.list.length === 0) && (
+                        {(loading && list.length === 0) && (
                             <div className="input-dropdown-list-header">
                                 <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
                                     <div className="rotate icon-rotate">
@@ -404,6 +426,7 @@ class Lookup extends Component {
                     </div>
                     <div ref={(c) => this.items = c}>
                         {this.renderLookup()}
+                        {list.length === 0 && this.renderEmpty()}
                     </div>
                 </div>
             </div>
