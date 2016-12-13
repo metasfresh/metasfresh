@@ -50,7 +50,9 @@ class TablePagination extends Component {
         this.setState(Object.assign({}, this.state, {
             firstDotsState: !firstDotsState
         }), () => {
-            this.goToPage.focus();
+            if(!firstDotsState){
+                this.goToPage.focus();
+            }
         });
     }
 
@@ -59,7 +61,9 @@ class TablePagination extends Component {
         this.setState(Object.assign({}, this.state, {
             secondDotsState: !secondDotsState
         }), () => {
-            this.goToPage.focus();
+            if(!secondDotsState) {
+                this.goToPage.focus();
+            }
         });
     }
 

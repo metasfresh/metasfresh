@@ -167,15 +167,19 @@ class DocumentList extends Component {
         const {sorting, page, dispatch, windowType, updateUri} = this.props;
         const {data} = this.state;
 
+        let setPage = currPage;
+
         asc && field && !!updateUri && updateUri("sort", (asc?"+":"-")+field);
 
         dispatch(setSorting(field, asc, windowType));
 
         if(startPage){
             dispatch(setPagination(1, windowType));
+            !!updateUri && updateUri("page", 1);
+            setPage = 1;
         }
 
-        this.getData(data.viewId, currPage, 20, this.getSortingQuery(asc, field));
+        this.getData(data.viewId, setPage, 20, this.getSortingQuery(asc, field));
     }
 
     handleChangePage = (index) => {
