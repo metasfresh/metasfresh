@@ -139,7 +139,6 @@ FROM
 ORDER BY
 	SameYearSum DESC$BODY$
 LANGUAGE sql STABLE;
-ALTER FUNCTION report.fresh_Umsatzreport_Report_Sub(IN numeric, IN character varying, IN numeric) OWNER TO adempiere;
 
 
 DROP FUNCTION IF EXISTS report.fresh_umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
