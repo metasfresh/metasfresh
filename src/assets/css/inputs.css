@@ -572,6 +572,10 @@ input:checked + .input-slider:before {
     cursor:pointer;
     position: relative;
 }
+.input-dropdown-list-option-alt {
+    background-color: $brand-super-light-color;
+    font-size: .8rem;
+}
 .input-dropdown-list-option:hover,
 .input-dropdown-list-option-key-on {
     background-color: $brand-color-primary;
