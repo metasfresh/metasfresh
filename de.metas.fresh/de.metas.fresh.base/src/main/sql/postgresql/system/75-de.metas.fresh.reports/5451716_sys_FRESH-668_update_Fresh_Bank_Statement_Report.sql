@@ -35,5 +35,3 @@ WHERE bst.StatementDate >=$1 AND bst.StatementDate <=$2 AND bstl.isActive = 'Y'
 ORDER BY BankstatementNo, LineNo
 $$ 
 LANGUAGE sql STABLE;
-
-ALTER FUNCTION report.Fresh_Bank_Statement_Report ( IN DateFrom date, IN DateTo date) OWNER TO adempiere;

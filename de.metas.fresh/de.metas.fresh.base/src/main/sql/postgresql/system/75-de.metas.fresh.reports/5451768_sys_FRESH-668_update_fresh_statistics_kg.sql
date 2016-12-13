@@ -209,14 +209,4 @@ ORDER BY
 	
 $BODY$
 LANGUAGE sql VOLATILE;
-ALTER FUNCTION report.fresh_statistics_kg
-	(
-		IN C_Period_ID numeric, 
-		IN issotrx character varying,
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric,
-		IN convert_to_kg character varying
-	)
-  OWNER TO adempiere;
+
