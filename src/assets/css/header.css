@@ -41,6 +41,10 @@
     display: inline-block;
 }
 
+.header-btn {
+    width:100%;
+}
+
 .header-breadcrumb {
     color: $brand-font-color-secondary;
     font-size: 0.875rem;
@@ -90,7 +94,6 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 80px;
     display: flex;
     flex-direction: row;
     align-items: center;

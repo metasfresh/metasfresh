@@ -193,11 +193,11 @@ class Header extends Component {
                                 }
 
                                 <div className={
-                                    "notification-container pointer "+
-                                    (isInboxOpen ? "notification-open " : "")}
+                                    "header-item-container header-item-container-static pointer "+
+                                    (isInboxOpen ? "header-item-open " : "")}
                                     onClick={() => this.handleInboxOpen(true)}
                                 >
-                                    <span className={"notification icon-lg"}>
+                                    <span className={"header-item header-item-badge icon-lg"}>
                                         <i className="meta-icon-notifications" />
                                         {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>
