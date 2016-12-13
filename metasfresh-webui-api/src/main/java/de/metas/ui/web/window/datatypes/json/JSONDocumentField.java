@@ -16,6 +16,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.DocumentFieldChange;
+import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
@@ -50,6 +51,7 @@ import io.swagger.annotations.ApiModel;
 		, "mandatory", "mandatory-reason" //
 		, "displayed", "displayed-reason" //
 		, "lookupValuesStale", "lookupValuesStale-reason" //
+		, "valid", "validReason" //
 })
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
@@ -65,7 +67,8 @@ public final class JSONDocumentField implements Serializable
 				.setValue(valueJSON, reason)
 				.setReadonly(field.isReadonly(), reason)
 				.setMandatory(field.isMandatory(), reason)
-				.setDisplayed(field.isDisplayed(), reason);
+				.setDisplayed(field.isDisplayed(), reason)
+				.setValidStatus(field.getValidStatus());
 		if (field.isLookupValuesStale())
 		{
 			jsonField.setLookupValuesStale(true, reason);
@@ -127,6 +130,12 @@ public final class JSONDocumentField implements Serializable
 		{
 			jsonField.setLookupValuesStale(lookupValuesStale, ReasonSupplier.toDebugString(event.getLookupValuesStaleReason()));
 		}
+		
+		final DocumentValidStatus validStatus = event.getValidStatus();
+		if(validStatus != null)
+		{
+			jsonField.setValidStatus(validStatus);
+		}
 
 		jsonField.putDebugProperties(event.getDebugProperties());
 
@@ -181,6 +190,14 @@ public final class JSONDocumentField implements Serializable
 	@JsonProperty("lookupValuesStale-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String lookupValuesStaleReason;
+	
+	@JsonProperty("valid")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean valid;
+	
+	@JsonProperty("validReason")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String validReason;
 
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
@@ -209,6 +226,8 @@ public final class JSONDocumentField implements Serializable
 				.add("displayed-reason", displayedReason)
 				.add("lookupValuesStale", lookupValuesStale)
 				.add("lookupValuesStale-reason", lookupValuesStaleReason)
+				.add("valid", valid)
+				.add("validReason", validReason)
 				.add("otherProperties", otherProperties)
 				.toString();
 	}
@@ -247,6 +266,23 @@ public final class JSONDocumentField implements Serializable
 		lookupValuesStaleReason = reason;
 		return this;
 	}
+	
+	/*package*/ JSONDocumentField setValidStatus(final DocumentValidStatus validStatus)
+	{
+		if(validStatus == null)
+		{
+			valid = null;
+			validReason = null;
+		}
+		else
+		{
+			valid = validStatus.isValid();
+			validReason = validStatus.getReason();
+		}
+		
+		return this;
+	}
+
 
 	public String getField()
 	{
@@ -302,7 +338,7 @@ public final class JSONDocumentField implements Serializable
 	{
 		return lookupValuesStaleReason;
 	}
-
+	
 	@JsonAnyGetter
 	public Map<String, Object> getOtherProperties()
 	{

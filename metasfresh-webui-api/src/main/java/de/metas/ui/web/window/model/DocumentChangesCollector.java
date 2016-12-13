@@ -194,6 +194,13 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		documentChanges(documentPath)
 				.collectDocumentValidStatusChanged(documentValidStatus);
 	}
+	
+	@Override
+	public void collectValidStatus(IDocumentFieldView documentField)
+	{
+		documentChanges(documentField)
+			.collectValidStatusChanged(documentField);
+	}
 
 	@Override
 	public void collectDocumentSaveStatusChanged(final DocumentPath documentPath, final DocumentSaveStatus documentSaveStatus)

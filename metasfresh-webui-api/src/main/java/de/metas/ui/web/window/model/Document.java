@@ -1302,7 +1302,7 @@ public final class Document
 		// Check document fields
 		for (final IDocumentField documentField : getFields())
 		{
-			final DocumentValidStatus validState = documentField.getValid();
+			final DocumentValidStatus validState = documentField.getValidStatus();
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", documentField, validState);

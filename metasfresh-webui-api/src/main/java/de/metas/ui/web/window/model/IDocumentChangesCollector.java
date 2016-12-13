@@ -61,6 +61,8 @@ public interface IDocumentChangesCollector
 
 	void collectDocumentValidStatusChanged(DocumentPath documentPath, DocumentValidStatus documentValidStatus);
 
+	void collectValidStatus(IDocumentFieldView documentField);
+
 	void collectDocumentSaveStatusChanged(DocumentPath documentPath, DocumentSaveStatus documentSaveStatus);
 
 	void collectStaleDetailId(DocumentPath documentPath, DetailId detailId);

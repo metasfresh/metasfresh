@@ -239,10 +239,15 @@ public final class DocumentChanges
 	{
 		this.documentValidStatus = documentValidStatus;
 	}
-
+	
 	public DocumentValidStatus getDocumentValidStatus()
 	{
 		return documentValidStatus;
+	}
+	
+	/* package */ void collectValidStatusChanged(final IDocumentFieldView documentField)
+	{
+		fieldChangesOf(documentField).setValidStatus(documentField.getValidStatus());
 	}
 
 	/* package */void collectDocumentSaveStatusChanged(final DocumentSaveStatus documentSaveStatus)

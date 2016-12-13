@@ -12,6 +12,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
@@ -67,7 +68,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
+	private DocumentValidStatus _validStatus = DocumentValidStatus.inititalInvalid();
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -77,7 +78,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 		_lookupDataSource = descriptor.createLookupDataSource(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		_valid = DocumentValidStatus.inititalInvalid();
+		_validStatus = DocumentValidStatus.inititalInvalid();
 	}
 
 	/** copy constructor */
@@ -94,7 +95,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		_mandatory = from._mandatory;
 		_readonly = from._readonly;
 		_displayed = from._displayed;
-		_valid = from._valid;
+		_validStatus = from._validStatus;
 
 		switch (copyMode)
 		{
@@ -183,9 +184,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 		//
 		// Set valid state to Staled
-		final DocumentValidStatus validOld = _valid;
+		final DocumentValidStatus validOld = _validStatus;
 		final DocumentValidStatus validNew = DocumentValidStatus.staled();
-		_valid = validNew;
+		_validStatus = validNew;
 		if (logger.isDebugEnabled() && !Objects.equals(validOld, validNew))
 		{
 			logger.debug("setInitialValue: {}: {} <- {}", getFieldName(), validNew, validOld);
@@ -419,20 +420,22 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public void updateValid()
 	{
-		final DocumentValidStatus validOld = _valid;
-		final DocumentValidStatus validNew = checkValid();
-		_valid = validNew;
+		final DocumentValidStatus validStatusOld = _validStatus;
+		final DocumentValidStatus validStatusNew = checkValid();
+		_validStatus = validStatusNew;
 
-		if (logger.isDebugEnabled() && !Objects.equals(validOld, validNew))
+		// Collect validStatus changed event
+		if (!Objects.equals(validStatusOld, validStatusNew))
 		{
-			logger.debug("updateValid: {}: {} <- {}", getFieldName(), validNew, validOld);
+			//logger.debug("updateValid: {}: {} <- {}", getFieldName(), validNew, validOld);
+			Execution.getCurrentDocumentChangesCollectorOrNull().collectValidStatus(this);
 		}
 	}
 
 	@Override
 	public void updateValidIfStaled()
 	{
-		if (!_valid.isStaled())
+		if (!_validStatus.isStaled())
 		{
 			return;
 		}
@@ -454,9 +457,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	 * @return field's valid state; never return null
 	 */
 	@Override
-	public DocumentValidStatus getValid()
+	public DocumentValidStatus getValidStatus()
 	{
-		return _valid;
+		return _validStatus;
 	}
 
 	@Override
