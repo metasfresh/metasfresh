@@ -1111,7 +1111,7 @@ th {
     min-width: 26px;
 }
 
-.notification {
+.header-item {
     color: $brand-link-color;
     display: inline-block;
     position: relative;
@@ -1121,34 +1121,40 @@ th {
     text-align: center;
 }
 
-.notification-container {
-    width: 55px;
+.header-item-container {
+    min-width: 55px;
     height: 55px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid transparent;
+    border: 1px solid transparent;
     padding-left: .2rem;
     padding-right: .2rem;
 }
 
-.notification-container:hover{
+.header-item-container-static {
+    width: 55px;
+}
+
+.header-item-container:hover{
     background-color: $brand-bright-color;
     border-bottom: 1px solid $brand-border-color;
 }
 
-.notification-open {
+.header-item-open {
     background-color: #F8FAFB;
     border: 1px solid #e1e8ee;
     pointer-events: none;
     z-index:2;
     border-bottom: 0 !important;
 }
-.notification-open .notification {
+.header-item-open .header-item {
     margin-top: -1px;
 }
-
+.header-item-badge.header-item {
+    overflow: visible;
+}
 .notification-number {
     width: 15px;
     height: 15px;
@@ -1162,7 +1168,7 @@ th {
     border-radius: 50%;
     position: absolute;
     top: -5px;
-    right: -5px;
+    right: 10px;
 }
 
 .queried-result {

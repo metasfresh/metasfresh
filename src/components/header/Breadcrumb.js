@@ -17,31 +17,34 @@ class Breadcrumb extends Component {
 
     renderBtn = (menu, index) => {
         const {handleMenuOverlay, menuOverlay, windowType, siteName} = this.props;
-        return (<span key={index}>
+        return (<div key={index}>
             {!!index && <span className="divider">/</span>}
-            <div
-                title={!!index && menu.children.captionBreadcrumb}
-                className={"notification-container pointer " +
-                    (menuOverlay === menu.nodeId ? "notification-open " : "")
+            <div className={"header-btn"}>
+                <div
+                    title={!!index && menu.children.captionBreadcrumb}
+                    className={"header-item-container pointer " +
+                        (menuOverlay === menu.nodeId ? "header-item-open " : "") +
+                        (!index ? "header-item-container-static ": "")
+                    }
+                    onClick={ !(menu && menu.children && menu.children.elementId) ?
+                        e => handleMenuOverlay(e, menu.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )
+                    }
+                >
+                    <span className={"header-item icon-sm"}>
+                        {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
+                    </span>
+                </div>
+                {menuOverlay === menu.nodeId &&
+                    <MenuOverlay
+                        nodeId={menu.nodeId}
+                        node={menu}
+                        onClickOutside={e => handleMenuOverlay(e, "")}
+                        disableOnClickOutside={menuOverlay !== menu.nodeId}
+                        siteName={siteName}
+                    />
                 }
-                onClick={ !(menu && menu.children && menu.children.elementId) ?
-                    e => handleMenuOverlay(e, menu.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )
-                }
-            >
-                <span className={"notification icon-sm"}>
-                    {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
-                </span>
             </div>
-            {menuOverlay === menu.nodeId &&
-                <MenuOverlay
-                    nodeId={menu.nodeId}
-                    node={menu}
-                    onClickOutside={e => handleMenuOverlay(e, "")}
-                    disableOnClickOutside={menuOverlay !== menu.nodeId}
-                    siteName={siteName}
-                />
-            }
-        </span>)
+        </div>)
     }
 
 	render() {
