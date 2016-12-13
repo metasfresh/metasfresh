@@ -30,7 +30,6 @@ class Modal extends Component {
             isNew: rowId === "NEW",
             init: false
         }
-
         switch(modalType){
             case "window":
                 dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {

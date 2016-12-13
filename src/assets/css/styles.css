@@ -653,8 +653,12 @@ body {
     display: block;
 }
 
-.panel {
+.tab-pane .panel {
     padding-bottom: 100px;
+}
+
+.tab-pane .input-dropdown-list {
+        max-height: 100px;
 }
 
 .screen-freeze {
