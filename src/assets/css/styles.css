@@ -661,6 +661,10 @@ body {
         max-height: 100px;
 }
 
+.tab-pane tbody tr:last-child {
+    border-bottom:1px solid $brand-border-color;
+}
+
 .screen-freeze {
     position: fixed;
     top: 0;

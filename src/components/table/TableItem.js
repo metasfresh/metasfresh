@@ -17,7 +17,7 @@ class TableItem extends Component {
     }
     handleEditProperty = (e,property, callback) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
-
+        
         if(!document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
             this.setState({
                 edited: property
@@ -34,6 +34,7 @@ class TableItem extends Component {
                     if(disabled || readonly) {
                         changeListenOnTrue();
                         this.handleEditProperty(e);
+                        
                     } else {
                         changeListenOnFalse();
                     }
@@ -65,7 +66,7 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId,readonly, mainTable, newRow} = this.props;
+        const { type, docId, rowId, tabId,readonly, mainTable, newRow, changeListenOnTrue} = this.props;
         const { edited, updatedRow } = this.state;
 
         //iterate over layout settings
@@ -85,7 +86,7 @@ class TableItem extends Component {
                     widgetData={widgetData}
                     isEdited={edited === property}
                     onDoubleClick={(e) => this.handleEditProperty(e,property, true)}
-                    onClickOutside={(e) => this.handleEditProperty(e)}
+                    onClickOutside={(e) => {this.handleEditProperty(e); changeListenOnTrue()}}
                     disableOnClickOutside={edited !== property}
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
                     updatedRow={updatedRow || newRow}
