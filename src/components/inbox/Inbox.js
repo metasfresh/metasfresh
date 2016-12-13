@@ -55,10 +55,9 @@ class Inbox extends Component {
         const {open, inbox, all} = this.props;
         return (
             <div>
-                {(all || open) &&
-                    <div className={
-                        (all ? "inbox-all ": "inbox")
-                    }>
+                {(all || open) && <div className={
+                    (all ? "inbox-all ": "inbox")
+                }>
                     <div className={
                         "inbox-body " +
                         (!all ? "breadcrumbs-shadow" : "")

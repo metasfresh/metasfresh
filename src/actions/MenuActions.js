@@ -1,4 +1,4 @@
-import * as types from '../constants/ActionTypes'
+import * as types from '../constants/MenuTypes'
 import axios from 'axios';
 import config from '../config';
 
@@ -7,6 +7,13 @@ export function setBreadcrumb(breadcrumb){
     return {
         type: types.SET_BREADCRUMB,
         breadcrumb: breadcrumb
+    }
+}
+
+export function setHomeMenu(homemenu){
+    return {
+        type: types.SET_HOMEMENU,
+        homemenu: homemenu
     }
 }
 
@@ -48,7 +55,7 @@ export function rootRequest(limit) {
 export function getRootBreadcrumb() {
     return (dispatch) => {
         dispatch(rootRequest(6)).then(root => {
-            dispatch(setBreadcrumb([{nodeId: "0", children: root.data}]));
+            dispatch(setHomeMenu({nodeId: "0", children: root.data}));
         });
     }
 }
@@ -58,7 +65,6 @@ export function getWindowBreadcrumb(id){
         dispatch(elementPathRequest("window", id)).then(response => {
             let req = 0;
             let pathData = flatten(response.data);
-
 
             // promise to get all of the breadcrumb menu options
             let breadcrumbProcess = new Promise((resolve) => {

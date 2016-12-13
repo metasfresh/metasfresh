@@ -91,6 +91,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 80px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .header-breadcrumb > .menu-overlay-expand,
@@ -238,9 +241,9 @@
 
 .menu-overlay {
     position: fixed;
-    z-index:100;
+    z-index:-1;
     pointer-events: none;
-    top:0;
+    top:55px;
 }
 
 .menu-overlay-body {
