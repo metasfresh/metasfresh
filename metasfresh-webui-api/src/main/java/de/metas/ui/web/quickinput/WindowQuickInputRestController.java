@@ -165,8 +165,8 @@ public class WindowQuickInputRestController
 		final QuickInput quickInput = getQuickInputReadonly(quickInputId);
 
 		final JSONDocument jsonDocument = Execution.callInNewExecution("quickInput.complete", () -> {
-			 final Document document = quickInput.complete();
-			 return JSONDocument.ofDocument(document, newJSONOptions());
+			final Document document = quickInput.complete();
+			return JSONDocument.ofDocument(document, newJSONOptions());
 		});
 
 		removeQuickInput(quickInput);
@@ -199,7 +199,8 @@ public class WindowQuickInputRestController
 					.setRootDocumentPath(adWindowId, documentIdStr)
 					.setQuickInputProcessorFactory(quickInputProcessorFactory)
 					.build()
-					.bindRootDocument(documentsCollection);
+					.bindRootDocument(documentsCollection)
+					.assertTargetWritable();
 		});
 	}
 
@@ -218,7 +219,8 @@ public class WindowQuickInputRestController
 		return _quickInputDocuments
 				.getOrElseThrow(quickInputId, () -> new EntityNotFoundException("No quick input document found for ID=" + quickInputId))
 				.copy(copyMode)
-				.bindRootDocument(documentsCollection);
+				.bindRootDocument(documentsCollection)
+				.assertTargetWritable();
 	}
 
 	private void putQuickInput(final QuickInput quickInput)
@@ -226,7 +228,7 @@ public class WindowQuickInputRestController
 		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");
 		_quickInputDocuments.put(quickInput.getId(), quickInput.copy(CopyMode.CheckInReadonly));
 	}
-	
+
 	private void removeQuickInput(final QuickInput quickInput)
 	{
 		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");

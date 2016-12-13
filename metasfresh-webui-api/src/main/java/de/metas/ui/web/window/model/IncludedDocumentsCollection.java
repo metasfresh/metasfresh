@@ -261,7 +261,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return document;
 	}
 
-	private void assertNewDocumentAllowed()
+	public void assertNewDocumentAllowed()
 	{
 		if (parentDocument.isProcessed())
 		{

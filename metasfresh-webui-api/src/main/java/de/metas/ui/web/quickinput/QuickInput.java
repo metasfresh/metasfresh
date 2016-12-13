@@ -131,6 +131,15 @@ public final class QuickInput
 
 		return this;
 	}
+	
+	/**
+	 * Asserts we are allowed to create a new included document.
+	 */
+	public QuickInput assertTargetWritable()
+	{
+		getRootDocument().assertNewDocumentAllowed(targetDetailId);
+		return this;
+	}
 
 	public Document getRootDocument()
 	{

@@ -1165,6 +1165,11 @@ public final class Document
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments();
 	}
+	
+	public void assertNewDocumentAllowed(final DetailId detailId)
+	{
+		getIncludedDocumentsCollection(detailId).assertNewDocumentAllowed();
+	}
 
 	/* package */IncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
 	{
