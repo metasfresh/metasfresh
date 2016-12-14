@@ -1,5 +1,6 @@
 
 
+DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, IN ad_org_id numeric);
 
 DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying);
 
@@ -81,7 +82,7 @@ FROM
 		LEFT OUTER JOIN M_Locator l ON wh.M_Warehouse_ID = l.M_Warehouse_ID AND l.isActive = 'Y'
 		LEFT OUTER JOIN M_Transaction t ON l.M_Locator_ID = t.M_Locator_ID AND t.isActive = 'Y'
 		LEFT OUTER JOIN M_Product p ON t.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-		LEFT OUTER JOIN M_ProductPrice pp ON p.M_Product_ID = pp.M_Product_ID AND pp.M_PriceList_Version_ID = 2001277 AND pp.isActive = 'Y'
+		LEFT OUTER JOIN M_ProductPrice pp ON p.M_Product_ID = pp.M_Product_ID AND pp.M_PriceList_Version_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'de.metas.fresh.report.jasper.hu_costprice.packingmaterialPricelistVersionForInventoryValue' AND isActive = 'Y') AND pp.isActive = 'Y'
 		LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 		LEFT OUTER JOIN M_Product_acct pa ON p.M_Product_ID = pa.M_Product_ID AND pa.isActive = 'Y'
 	WHERE
