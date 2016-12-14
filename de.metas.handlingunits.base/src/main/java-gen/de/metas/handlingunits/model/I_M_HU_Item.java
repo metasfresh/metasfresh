@@ -124,6 +124,29 @@ public interface I_M_HU_Item
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Positionsart.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setItemType (java.lang.String ItemType);
+
+	/**
+	 * Get Positionsart.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getItemType();
+
+    /** Column definition for ItemType */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Item, Object> COLUMN_ItemType = new org.adempiere.model.ModelColumn<I_M_HU_Item, Object>(I_M_HU_Item.class, "ItemType", null);
+    /** Column name ItemType */
+    public static final String COLUMNNAME_ItemType = "ItemType";
+
+	/**
 	 * Set Handling Units.
 	 *
 	 * <br>Type: Search
@@ -172,6 +195,33 @@ public interface I_M_HU_Item
     public static final org.adempiere.model.ModelColumn<I_M_HU_Item, Object> COLUMN_M_HU_Item_ID = new org.adempiere.model.ModelColumn<I_M_HU_Item, Object>(I_M_HU_Item.class, "M_HU_Item_ID", null);
     /** Column name M_HU_Item_ID */
     public static final String COLUMNNAME_M_HU_Item_ID = "M_HU_Item_ID";
+
+	/**
+	 * Set Packmittel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackingMaterial_ID (int M_HU_PackingMaterial_ID);
+
+	/**
+	 * Get Packmittel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackingMaterial_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PackingMaterial getM_HU_PackingMaterial();
+
+	public void setM_HU_PackingMaterial(de.metas.handlingunits.model.I_M_HU_PackingMaterial M_HU_PackingMaterial);
+
+    /** Column definition for M_HU_PackingMaterial_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Item, de.metas.handlingunits.model.I_M_HU_PackingMaterial> COLUMN_M_HU_PackingMaterial_ID = new org.adempiere.model.ModelColumn<I_M_HU_Item, de.metas.handlingunits.model.I_M_HU_PackingMaterial>(I_M_HU_Item.class, "M_HU_PackingMaterial_ID", de.metas.handlingunits.model.I_M_HU_PackingMaterial.class);
+    /** Column name M_HU_PackingMaterial_ID */
+    public static final String COLUMNNAME_M_HU_PackingMaterial_ID = "M_HU_PackingMaterial_ID";
 
 	/**
 	 * Set Packvorschrift Position.
