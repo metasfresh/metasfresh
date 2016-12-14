@@ -105,7 +105,6 @@ public class AddressDescriptorFactory
 		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_City)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setLookupDescriptorProvider(new AddressCityLookupDescriptor())
 				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_City, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_City)));
 		//
 //		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_City_ID)
