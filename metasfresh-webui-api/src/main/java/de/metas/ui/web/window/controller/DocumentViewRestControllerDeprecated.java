@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
 @Deprecated
-public class DocumentViewControllerDeprecated
+public class DocumentViewRestControllerDeprecated
 {
 	private static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
 	private static final String PARAM_ViewId = "viewId";
@@ -60,7 +60,7 @@ public class DocumentViewControllerDeprecated
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentViewRestController documentViewController;
+	private DocumentViewRestControllerDeprecated2 documentViewController;
 
 	@RequestMapping(value = "/viewLayout", method = RequestMethod.GET)
 	@Deprecated
