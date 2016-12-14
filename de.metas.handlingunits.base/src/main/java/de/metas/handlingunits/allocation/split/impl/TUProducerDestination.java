@@ -48,7 +48,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
  * @author tsa
  *
  */
-/* package */class TUProducerDestination extends AbstractProducerDestination
+/* package */final class TUProducerDestination extends AbstractProducerDestination
 {
 	private final I_M_HU_PI tuPI;
 

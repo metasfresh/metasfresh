@@ -1114,17 +1114,21 @@ public class HUTestHelper
 		return itemDefinition;
 	}
 
-	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial pmProduct)
+	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial huPackingMaterial)
 	{
+		Check.assumeNotNull(huDefinition, "Parameter huDefinition is not null");
+		Check.assumeNotNull(huPackingMaterial, "Parameter pmProduct is not null");
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
-		final I_M_HU_PI_Item itemDefinition = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
-		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
-		itemDefinition.setM_HU_PackingMaterial(pmProduct);
-		itemDefinition.setM_HU_PI_Version(version);
+		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
+		piItem.setM_HU_PI_Version(version);
+		
+		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
+		piItem.setM_HU_PackingMaterial(huPackingMaterial);
+		piItem.setQty(BigDecimal.ONE);
 
-		InterfaceWrapperHelper.save(itemDefinition);
-		return itemDefinition;
+		InterfaceWrapperHelper.save(piItem);
+		return piItem;
 	}
 
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)

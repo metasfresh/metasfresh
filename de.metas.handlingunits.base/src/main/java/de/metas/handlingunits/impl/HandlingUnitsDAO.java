@@ -48,6 +48,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.FilterUtils;
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.Predicate;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
@@ -277,19 +279,28 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PackingMaterial> retrievePackingMaterials(final I_M_HU hu)
+	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
-		final List<I_M_HU_PackingMaterial> packingMaterials = new ArrayList<I_M_HU_PackingMaterial>();
+		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
 		for (final I_M_HU_Item huItem : huItems)
 		{
-			final I_M_HU_PI_Item huPIItem = huItem.getM_HU_PI_Item();
-			final String itemType = huPIItem.getItemType();
-			if (X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
+			final String itemType = huItem.getItemType();
+			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
 			{
-				final I_M_HU_PackingMaterial packingMaterial = huPIItem.getM_HU_PackingMaterial();
-				packingMaterials.add(packingMaterial);
+				continue;
 			}
+			
+			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
+			
+			final int count = huItem.getQty().intValueExact();
+			if(count <= 0)
+			{
+				logger.warn("Invalid packing materials count for {}. Skip considering it.", huItem);
+				continue;
+			}
+			
+			packingMaterials.add(ImmutablePair.of(packingMaterial, count));
 		}
 		return packingMaterials;
 	}

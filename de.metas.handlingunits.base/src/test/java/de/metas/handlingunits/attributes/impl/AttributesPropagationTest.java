@@ -229,7 +229,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		for (final I_M_HU_Item huPaletItem : huPalet2_Items)
 		{
 			// we only have one item with handling unit item type
-			if (huPaletItem.getM_HU_PI_Item().getItemType().equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
+			if (huPaletItem.getItemType().equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
 			{
 				final List<I_M_HU> huIFCOs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huPaletItem);
 				Assert.assertEquals("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem, 1, huIFCOs.size());

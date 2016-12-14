@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -22,7 +24,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -31,10 +32,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.IHUAndItemsDAO;
+import de.metas.handlingunits.exceptions.HUPIInvalidConfigurationException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
 
 public final class HUAndItemsDAO implements IHUAndItemsDAO
 {
@@ -167,8 +172,8 @@ public final class HUAndItemsDAO implements IHUAndItemsDAO
 		return null;
 	}
 
-	@Override
-	public I_M_HU_Item createHUItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	@VisibleForTesting
+	public static I_M_HU_Item createHUItemNoSave(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		Check.assumeNotNull(piItem, "piItem not null");
@@ -180,12 +185,38 @@ public final class HUAndItemsDAO implements IHUAndItemsDAO
 		item.setM_HU(hu);
 		item.setM_HU_PI_Item(piItem);
 
+		final String itemType = piItem.getItemType();
+		item.setItemType(itemType);
+
+		if (X_M_HU_Item.ITEMTYPE_PackingMaterial.equals(itemType))
+		{
+			final int huPackingMaterialId = piItem.getM_HU_PackingMaterial_ID();
+			if (huPackingMaterialId <= 0)
+			{
+				throw new HUPIInvalidConfigurationException("No packing material defined", piItem);
+			}
+			final BigDecimal qty = piItem.getQty();
+			if (qty.signum() <= 0)
+			{
+				throw new HUPIInvalidConfigurationException("Invalid packing material quantity defined", piItem);
+			}
+			item.setM_HU_PackingMaterial_ID(huPackingMaterialId);
+			item.setQty(qty);
+		}
+
+		return item;
+	}
+
+	@Override
+	public I_M_HU_Item createHUItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		final I_M_HU_Item item = createHUItemNoSave(hu, piItem);
+		InterfaceWrapperHelper.save(item);
+
 		// FIXME: this is making de.metas.customer.picking.service.impl.PackingServiceTest to fail
 		// IncludedHUsLocalCache
 		// .getCreate(item)
 		// .setEmptyNotStaled();
-
-		InterfaceWrapperHelper.save(item);
 
 		//
 		// Update HU Items cache

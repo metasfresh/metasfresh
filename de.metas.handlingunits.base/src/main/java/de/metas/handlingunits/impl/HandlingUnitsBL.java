@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,6 +46,7 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUContext;
@@ -77,6 +76,7 @@ import de.metas.handlingunits.movement.api.impl.EmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.logging.LogManager;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -566,6 +566,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public String getItemType(final I_M_HU_Item huItem)
 	{
 		Check.assumeNotNull(huItem, "huItem not null");
+		final String itemType = huItem.getItemType();
+		if(itemType != null)
+		{
+			return itemType;
+		}
+		
+		// FIXME: remove it after we migrate all HUs
 		return huItem.getM_HU_PI_Item().getItemType();
 	}
 

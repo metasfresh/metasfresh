@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -199,6 +200,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param hu
 	 * @return
 	 */
+	// TODO: i think we shall drop this method because is no longer valid!!!
 	I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu);
 
 	I_M_HU retrieveVirtualHU(I_M_HU_Item itemMaterial);
@@ -219,14 +221,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * NOTE
 	 * <ul>
 	 * <li>this method will return packing material(s) of this HU only and not for it's included HUs.</li>
-	 * <li>teoretically you can assign to an HU as many packing materials as you want, but in practice, in most of the cases we will have only one (e.g. an IFCO will have only the plastic IFCO packing
-	 * material, a Palette will have only the wonden palette etc)</li>
 	 * </ul>
 	 *
 	 * @param hu
-	 * @return packing materials
+	 * @return packing material and quantity pairs
 	 */
-	List<I_M_HU_PackingMaterial> retrievePackingMaterials(I_M_HU hu);
+	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
 
 	/**
 	 * The special network distribution that is defined for empties (gebinde) It contains lines that link the non-empties warehouses with the empties ones that the packing materials shall be moved to

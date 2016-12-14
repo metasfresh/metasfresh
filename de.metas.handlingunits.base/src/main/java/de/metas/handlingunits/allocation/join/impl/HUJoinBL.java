@@ -61,7 +61,7 @@ public class HUJoinBL implements IHUJoinBL
 				availableLUPIFound = true;
 				break;
 			}
-			if (!X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(luItem.getM_HU_PI_Item().getItemType()))
+			if (!X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(luItem.getItemType()))
 			{
 				//
 				// Item type needs to be handling unit

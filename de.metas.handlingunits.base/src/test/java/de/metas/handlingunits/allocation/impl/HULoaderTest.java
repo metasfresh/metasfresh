@@ -63,7 +63,7 @@ import de.metas.handlingunits.util.TraceUtils;
  * @author tsa
  *
  */
-@SuppressWarnings("PMD.SingularField")
+// @SuppressWarnings("PMD.SingularField")
 public class HULoaderTest extends AbstractHUTest
 {
 	private I_M_HU_PI huDefPalet;
@@ -113,7 +113,7 @@ public class HULoaderTest extends AbstractHUTest
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefBlister);
 			helper.assignProduct(itemMA, pTomato, new BigDecimal("6"), uomEach);
 
-			helper.createHU_PI_Item_PackingMaterial(huDefBlister, null); // in this case there is no blister M_Product
+			//helper.createHU_PI_Item_PackingMaterial(huDefBlister, null); // in this case there is no blister M_Product
 
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
 					.setM_HU_PI(huDefBlister));
@@ -130,7 +130,7 @@ public class HULoaderTest extends AbstractHUTest
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefTruck);
 			helper.assignProductInfiniteCapacity(itemMA, pTomato, new BigDecimal("6"), uomEach);
 
-			helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
+			//helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
 
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
 					.setM_HU_PI(huDefTruck));

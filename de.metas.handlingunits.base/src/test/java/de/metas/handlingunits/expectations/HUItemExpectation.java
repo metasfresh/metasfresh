@@ -31,6 +31,7 @@ import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
+import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -64,8 +65,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (_itemType != null)
 		{
-			final I_M_HU_PI_Item piItem = huItem.getM_HU_PI_Item();
-			final String actual_ItemType = piItem == null ? null : piItem.getItemType();
+			final String actual_ItemType = huItem.getItemType();
 			Assert.assertEquals(prefix + "ItemType", _itemType, actual_ItemType);
 		}
 
@@ -123,14 +123,9 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 	public I_M_HU_Item createHUItem(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-
-		final I_M_HU_Item huItem = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, hu);
-		huItem.setM_HU(hu);
-
+		
 		final I_M_HU_PI_Item piItem = getM_HU_PI_Item();
-		Check.assumeNotNull(piItem, "piItem not null");
-		huItem.setM_HU_PI_Item(piItem);
-
+		final I_M_HU_Item huItem = HUAndItemsDAO.createHUItemNoSave(hu, piItem);
 		InterfaceWrapperHelper.save(huItem);
 
 		if (includedHUExpectations != null)
