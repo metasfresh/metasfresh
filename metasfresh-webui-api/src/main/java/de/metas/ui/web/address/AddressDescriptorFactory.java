@@ -73,7 +73,7 @@ public class AddressDescriptorFactory
 				.setDocumentType(DocumentType.Address, 1) // we have only one descriptor for all addresses
 				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText("C_Location_ID"))
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
-				.disableCallouts()
+				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(null)
 				.setAD_Tab_ID(0)
@@ -82,49 +82,62 @@ public class AddressDescriptorFactory
 				//
 				;
 
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_Address1)
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address1)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_Address1, false, I_C_Location::getAddress1, AddressFieldBinding::writeValue_Address1)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address1, false, I_C_Location::getAddress1, AddressFieldBinding::writeValue_Address1)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_Address2)
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address2)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_Address3)
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_Address4)
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_City)
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_City)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_City, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_City)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_City)));
 		//
-//		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_City_ID)
-//				.setValueClass(IntegerLookupValue.class)
-//				.setWidgetType(DocumentFieldWidgetType.Lookup)
-//				.setLookupDescriptorProvider(new AddressCityLookupDescriptor())
-//				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_C_City_ID, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_C_City_ID)));
+		// addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_City_ID)
+		// .setValueClass(IntegerLookupValue.class)
+		// .setWidgetType(DocumentFieldWidgetType.Lookup)
+		// .setLookupDescriptorProvider(new AddressCityLookupDescriptor())
+		// .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_City_ID, false, AddressFieldBinding::readValue_City, AddressFieldBinding::writeValue_C_City_ID)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_Region_ID)
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Region_ID)
 				.setValueClass(IntegerLookupValue.class)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setDisplayLogic("@" + IAddressModel.COLUMNNAME_HasRegion + "/N@=Y")
 				.setLookupDescriptorProvider(new AddressRegionLookupDescriptor())
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_C_Region_ID, false, AddressFieldBinding::readValue_Region, AddressFieldBinding::writeValue_C_Region_ID)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Region_ID, false, AddressFieldBinding::readValue_Region, AddressFieldBinding::writeValue_C_Region_ID)));
 		//
-		addressDescriptor.addField(buildFieldDescriptor(I_C_Location.COLUMNNAME_C_Country_ID)
+
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_HasRegion)
+				.setWidgetType(DocumentFieldWidgetType.YesNo)
+				.removeCharacteristic(Characteristic.PublicField)
+				.setDataBinding(AddressFieldBinding.internalField(IAddressModel.COLUMNNAME_HasRegion)));
+
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Country_ID)
 				.setValueClass(IntegerLookupValue.class)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setMandatoryLogic(true)
 				.setLookupDescriptorProvider(new AddressCountryLookupDescriptor())
-				.setDataBinding(new AddressFieldBinding(I_C_Location.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_Country, AddressFieldBinding::writeValue_C_Country_ID)));
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_Country, AddressFieldBinding::writeValue_C_Country_ID))
+				.addCallout(calloutField -> {
+					final IAddressModel location = calloutField.getModel(IAddressModel.class);
+					final I_C_Country country = location.getC_Country();
+					final boolean hasRegions = country != null && country.isHasRegion();
+					location.setHasRegion(hasRegions);
+				}));
 
 		return addressDescriptor.build();
 	}
@@ -156,6 +169,7 @@ public class AddressDescriptorFactory
 
 		addressDescriptor.getFields()
 				.stream()
+				.filter(fieldDescriptor -> fieldDescriptor.hasCharacteristic(Characteristic.PublicField))
 				.map(fieldDescriptor -> createLayoutElement(fieldDescriptor))
 				.forEach(layoutElement -> layout.addElement(layoutElement));
 
@@ -197,6 +211,15 @@ public class AddressDescriptorFactory
 
 	public static final class AddressFieldBinding implements DocumentFieldDataBindingDescriptor
 	{
+		public static final AddressFieldBinding internalField(final String columnName)
+		{
+			final boolean mandatory = false;
+			final Function<I_C_Location, Object> readMethod = (location) -> null;
+			final BiConsumer<I_C_Location, IDocumentFieldView> writeMethod = (toLocationRecord, fromField) -> {
+			};
+			return new AddressFieldBinding(columnName, mandatory, readMethod, writeMethod);
+		}
+
 		private final String columnName;
 		private final boolean mandatory;
 		private final Function<I_C_Location, Object> readMethod;
