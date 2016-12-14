@@ -10,11 +10,10 @@ import Inbox from '../components/inbox/Inbox';
 
 class InboxAll extends Component {
     render() {
-        const {inbox, breadcrumb} = this.props;
+        const {inbox} = this.props;
 
         return (
             <Container
-                breadcrumb={breadcrumb.slice(0,1)}
                 siteName = {"Inbox"}
             >
                 <Inbox
@@ -27,29 +26,21 @@ class InboxAll extends Component {
 }
 
 function mapStateToProps(state) {
-    const { menuHandler, appHandler } = state;
+    const { appHandler } = state;
     const {
         inbox
     } = appHandler || {
         inbox: {}
     }
 
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: []
-    }
-
     return {
-        inbox,
-        breadcrumb
+        inbox
     }
 }
 
 InboxAll.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    inbox: PropTypes.object.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    inbox: PropTypes.object.isRequired
 };
 
 InboxAll = connect(mapStateToProps)(InboxAll);
