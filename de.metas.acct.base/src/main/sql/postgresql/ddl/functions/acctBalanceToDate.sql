@@ -54,7 +54,7 @@ FROM (
 				else ROW(fas.AmtAcctDr - fas.AmtAcctCr, fas.AmtAcctDr, fas.AmtAcctCr)::de_metas_acct.BalanceAmt
 			end) as Balance
 		FROM Fact_Acct_Summary fas
-		INNER JOIN C_ElementValue ev on (ev.C_ElementValue_ID=fas.Account_ID)
+		INNER JOIN C_ElementValue ev on (ev.C_ElementValue_ID=fas.Account_ID) AND ev.isActive = 'Y'
 		WHERE true
 			and fas.Account_ID=$1 -- p_Account_ID
 			and fas.C_AcctSchema_ID=$2 -- p_C_AcctSchema_ID
@@ -62,6 +62,7 @@ FROM (
 			and fas.PA_ReportCube_ID is null
 			and fas.DateAcct <= $3 -- p_DateAcct
 			and fas.ad_org_id = $4 -- p_AD_Org_ID
+			and fas.isActive = 'Y'
 			and $6 = 'N'
 		ORDER BY fas.DateAcct DESC
 		LIMIT 1
