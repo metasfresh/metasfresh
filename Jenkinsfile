@@ -353,10 +353,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
-				
-				// collect the test results
-				junit '**/target/surefire-reports/*.xml'
-				
+							
 				} // if(params.MF_SKIP_TO_DIST)
             }
 
@@ -378,13 +375,16 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-				
-				// collect the test results
-				junit '**/target/surefire-reports/*.xml'
-				
+								
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 
+			if(!params.MF_SKIP_TO_DIST) 
+			{
+				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
+				junit '**/target/surefire-reports/*.xml'
+			}
+			
 		} // withMaven
 	} // configFileProvider
 } // node			
