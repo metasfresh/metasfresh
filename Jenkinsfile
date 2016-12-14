@@ -656,7 +656,7 @@ stage('Deployment')
 				else
 				{
 					echo "Deploying latest metasfresh-webui-api from the ${MF_MAVEN_REPO_NAME} repository (see console to check what is really deployed)"
-					paramWebuiApiServerArtifactURL='-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=LATEST''; // get the latest metasfresh-webui-api
+					paramWebuiApiServerArtifactURL="-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=LATEST";
 				}
 				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
 				
