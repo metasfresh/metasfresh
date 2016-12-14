@@ -44,9 +44,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelationType;
 import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -59,6 +57,7 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrder;
@@ -102,6 +101,7 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;
 import de.metas.pricing.attributebased.ProductPriceAttributeAware;
 import de.metas.product.IProductPA;
+import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 
@@ -1011,7 +1011,7 @@ public class OLCandBL implements IOLCandBL
 
 		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
 
-		final I_AD_RelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), ITrx.TRXNAME_None);
+		final I_AD_RelationType retrievedRelType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, model.getRelationTypeInternalName());
 
 		final I_AD_RelationType relType;
 
@@ -1025,7 +1025,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (retrievedRelType == null)
 		{
-			relType = new MRelationType(ctx, 0, trxName);
+			relType = InterfaceWrapperHelper.create(ctx, I_AD_RelationType.class, trxName);
 			relType.setInternalName(model.getRelationTypeInternalName());
 
 			refSource = new MReference(ctx, 0, trxName);
@@ -1064,7 +1064,6 @@ public class OLCandBL implements IOLCandBL
 			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.getAD_Reference_ID(), trxName);
 
 		}
-		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
 		InterfaceWrapperHelper.save(relType);

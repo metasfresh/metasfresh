@@ -1,10 +1,19 @@
-package de.metas.purchasing.process;
+package de.metas.relation.impl;
+
+import java.util.Properties;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_RelationType;
+
+import de.metas.relation.IRelationTypeDAO;
 
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +31,16 @@ package de.metas.purchasing.process;
  * #L%
  */
 
-
-import org.adempiere.util.Services;
-
-import de.metas.process.JavaProcess;
-import de.metas.purchasing.service.IPurchaseScheduleBL;
-public final class POCreateFromPurchaseSchedule extends JavaProcess
+public class RelationTypeDAO implements IRelationTypeDAO
 {
-
 	@Override
-	protected final String doIt() throws Exception
+	public I_AD_RelationType retrieveForInternalName(final Properties ctx, final String internalName)
 	{
-		final IPurchaseScheduleBL blService = Services.get(IPurchaseScheduleBL.class);
-		blService.createPOs(getCtx(), this, get_TrxName());
-		
-		return "@Success@";
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_RelationType.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_RelationType.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnly(I_AD_RelationType.class);
 	}
 
-	@Override
-	protected final void prepare()
-	{
-		// nothing to do
-	}
 }

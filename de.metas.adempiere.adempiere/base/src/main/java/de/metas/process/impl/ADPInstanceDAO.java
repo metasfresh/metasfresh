@@ -333,6 +333,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			valueString = value == null ? null : value.toString();
 			valueStringTo = valueTo == null ? null : valueTo.toString();
 		}
+		else if (value instanceof Boolean)
+		{
+			hasChanges = true;
+			valueString = DisplayType.toBooleanString((Boolean)value);
+			valueStringTo = DisplayType.toBooleanString((Boolean)valueTo); // assumes valueTo is also boolean
+		}
 
 		if (hasChanges)
 		{

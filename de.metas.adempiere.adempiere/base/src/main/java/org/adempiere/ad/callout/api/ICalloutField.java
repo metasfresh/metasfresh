@@ -121,6 +121,11 @@ public interface ICalloutField
 	/**
 	 * Put to window context.
 	 */
+	default void putWindowContext(final String name, final String value)
+	{
+		Env.setContext(getCtx(), getWindowNo(), name, value);
+	}
+
 	default void putContext(final String name, final boolean value)
 	{
 		Env.setContext(getCtx(), getWindowNo(), name, value);
@@ -129,6 +134,11 @@ public interface ICalloutField
 	/**
 	 * Put to window context.
 	 */
+	default void putWindowContext(final String name, final boolean value)
+	{
+		Env.setContext(getCtx(), getWindowNo(), name, value);
+	}
+
 	default void putContext(final String name, final java.util.Date value)
 	{
 		Env.setContext(getCtx(), getWindowNo(), name, value);

@@ -33,9 +33,12 @@ import org.compiere.model.POInfo;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /**
  * Generic provider of zoom targets. Contains pieces of {@link org.compiere.apps.AZoomAcross}
@@ -47,6 +50,8 @@ import com.google.common.collect.ImmutableList;
 public class GenericZoomProvider implements IZoomProvider
 {
 	public static final GenericZoomProvider instance = new GenericZoomProvider();
+	
+	private static final Logger logger = LogManager.getLogger(GenericZoomProvider.class);
 
 	private final CCache<String, List<GenericZoomInfoDescriptor>> keyColumnName2descriptors = CCache.newLRUCache(I_AD_Window.Table_Name + "#GenericZoomInfoDescriptors", 100, 0);
 
@@ -56,7 +61,7 @@ public class GenericZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnName());
 		if (zoomInfoDescriptors.isEmpty())
@@ -67,28 +72,26 @@ public class GenericZoomProvider implements IZoomProvider
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
 		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
 		{
+			final int AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
+			if(targetAD_Window_ID > 0 && targetAD_Window_ID != AD_Window_ID)
+			{
+				continue;
+			}
+			
 			final String name = zoomInfoDescriptor.getName();
-			final String targetTableName = zoomInfoDescriptor.getTargetTableName();
-			final int AD_Window_ID = zoomInfoDescriptor.getAD_Window_ID();
-			final int PO_Window_ID = zoomInfoDescriptor.getPO_Window_ID();
-			if (PO_Window_ID <= 0)
+			final MQuery query = buildMQuery(zoomInfoDescriptor, source);
+			if(query == null)
 			{
-				final Boolean isSOTrx = null;
-				final MQuery query = evaluateQuery(targetTableName, AD_Window_ID, isSOTrx, source);
-				final String zoomInfoId = "generic-" + AD_Window_ID;
-				result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, query, name));
+				continue;
 			}
-			else
+			
+			if (checkRecordsCount)
 			{
-				final MQuery soQuery = evaluateQuery(targetTableName, AD_Window_ID, Boolean.TRUE, source);
-				final String zoomInfoId = "generic-" + AD_Window_ID;
-				result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, soQuery, name));
-
-				final String poName = zoomInfoDescriptor.getPOName();
-				final MQuery poQuery = evaluateQuery(targetTableName, PO_Window_ID, Boolean.FALSE, source);
-				final String poZoomInfoId = "generic-" + PO_Window_ID;
-				result.add(ZoomInfoFactory.ZoomInfo.of(poZoomInfoId, PO_Window_ID, poQuery, poName));
+				updateRecordCount(query, zoomInfoDescriptor, source.getTableName());
 			}
+			
+			final String zoomInfoId = "generic-" + AD_Window_ID;
+			result.add(ZoomInfoFactory.ZoomInfo.of(zoomInfoId, AD_Window_ID, query, name));
 		}
 
 		return result.build();
@@ -173,10 +176,68 @@ public class GenericZoomProvider implements IZoomProvider
 				final int PO_Window_ID = rs.getInt(3);
 				final String poName = rs.getString(4);
 				final String targetTableName = rs.getString(5);
+				
+				final POInfo targetTableInfo = POInfo.getPOInfo(targetTableName);
+				if(targetTableInfo == null)
+				{
+					logger.warn("No POInfo found for {}. Skip it.", targetTableName);
+					continue;
+				}
 
-				final GenericZoomInfoDescriptor zoomInfoDescriptor = new GenericZoomInfoDescriptor(name, poName, targetTableName, AD_Window_ID, PO_Window_ID);
-				result.add(zoomInfoDescriptor);
+				final GenericZoomProvider.GenericZoomInfoDescriptor.Builder zoomInfoDescriptorBuilder = GenericZoomInfoDescriptor.builder()
+						.setTargetTableName(targetTableName)
+						.setTargetHasIsSOTrxColumn(targetTableInfo.hasColumnName("IsSOTrx"));
+
+				final String targetColumnName = sourceKeyColumnName;
+				final boolean hasTargetColumnName = targetTableInfo.hasColumnName(targetColumnName);
+				
+				// Dynamic references AD_Table_ID/Record_ID (task #03921)
+				if (!hasTargetColumnName
+						&& targetTableInfo.hasColumnName("AD_Table_ID")
+						&& targetTableInfo.hasColumnName("Record_ID"))
+				{
+					zoomInfoDescriptorBuilder.setDynamicTargetColumnName(true);
+				}
+				// No target column
+				else if (!hasTargetColumnName)
+				{
+					logger.warn("Target column name {} not found in table {}", targetColumnName, targetTableName);
+					continue;
+				}
+				// Regular target column
+				else
+				{
+					zoomInfoDescriptorBuilder.setDynamicTargetColumnName(false);
+					zoomInfoDescriptorBuilder.setTargetColumnName(targetColumnName);
+					if(targetTableInfo.isVirtualColumn(targetColumnName))
+					{
+						zoomInfoDescriptorBuilder.setVirtualTargetColumnSql(targetTableInfo.getColumnSql(targetColumnName));
+					}
+				}
+
+				if(PO_Window_ID <= 0)
+				{
+					result.add(zoomInfoDescriptorBuilder
+							.setName(name)
+							.setTargetAD_Window_ID(AD_Window_ID)
+							.setIsSOTrx(null)  // applies for SO and PO
+							.build());
+				}
+				else
+				{
+					result.add(zoomInfoDescriptorBuilder
+							.setName(name)
+							.setTargetAD_Window_ID(AD_Window_ID)
+							.setIsSOTrx(Boolean.TRUE)
+							.build());
+					result.add(zoomInfoDescriptorBuilder
+							.setName(poName)
+							.setTargetAD_Window_ID(PO_Window_ID)
+							.setIsSOTrx(Boolean.FALSE)
+							.build());
+				}
 			}
+			
 			return result.build();
 		}
 		catch (SQLException e)
@@ -189,22 +250,15 @@ public class GenericZoomProvider implements IZoomProvider
 		}
 	}
 
-	private static MQuery evaluateQuery(final String targetTableName, final int AD_Window_ID, Boolean isSO, final IZoomSource source)
+	private static MQuery buildMQuery(final GenericZoomInfoDescriptor zoomInfoDescriptor, final IZoomSource source)
 	{
-		final POInfo targetTableInfo = POInfo.getPOInfo(targetTableName);
-		if (targetTableInfo == null)
-		{
-			final boolean newRecord = false;
-			return MQuery.getNoRecordQuery(targetTableName, newRecord);
-		}
+		final String targetTableName = zoomInfoDescriptor.getTargetTableName();
+		final String targetColumnName = zoomInfoDescriptor.getTargetColumnName();
 
-		final String targetColumnName = source.getKeyColumnName();
-		final boolean hasTargetColumnName = targetTableInfo.hasColumnName(targetColumnName);
-
-		// metas: begin: support for "Zoomable Record_IDs" (03921)
-		if (!hasTargetColumnName
-				&& targetTableInfo.hasColumnName("AD_Table_ID")
-				&& targetTableInfo.hasColumnName("Record_ID"))
+		//
+		// Zoom by dynamic references AD_Table_ID/Record_ID 
+		// task "Zoomable Record_IDs" (03921)
+		if (zoomInfoDescriptor.isDynamicTargetColumnName())
 		{
 			final MQuery query = new MQuery(targetTableName);
 			query.addRestriction("AD_Table_ID", Operator.EQUAL, source.getAD_Table_ID());
@@ -213,24 +267,16 @@ public class GenericZoomProvider implements IZoomProvider
 			// query.setZoomColumnName(po.get_KeyColumns()[0]);
 			query.setZoomValue(source.getRecord_ID());
 
-			final int count = DB.getSQLValue(ITrx.TRXNAME_None, "SELECT COUNT(*) FROM " + targetTableName + " WHERE " + query.getWhereClause(false));
-			query.setRecordCount(count > 0 ? count : 0);
-
 			return query;
 		}
-		// metas: end
 
-		if (!hasTargetColumnName)
-		{
-			final boolean newRecord = false;
-			return MQuery.getNoRecordQuery(targetTableName, newRecord);
-		}
-
-		final MQuery query = new MQuery();
-		if (targetTableInfo.isVirtualColumn(targetColumnName))
+		//
+		//
+		final MQuery query = new MQuery(targetTableName);
+		if (zoomInfoDescriptor.isVirtualTargetColumnName())
 		{
 			// TODO: find a way to specify restriction's ColumnName and ColumnSql
-			final String columnSql = targetTableInfo.getColumnSql(targetColumnName);
+			final String columnSql = zoomInfoDescriptor.getVirtualTargetColumnSql();
 			query.addRestriction("(" + columnSql + ") = " + source.getRecord_ID());
 		}
 		else
@@ -241,62 +287,92 @@ public class GenericZoomProvider implements IZoomProvider
 		query.setZoomColumnName(source.getKeyColumnName());
 		query.setZoomValue(source.getRecord_ID());
 
-		String sql = "SELECT COUNT(*) FROM " + targetTableName + " WHERE " + query.getWhereClause(false);
-		String sqlAdd = "";
-		if (isSO != null && targetTableInfo.hasColumnName("IsSOTrx"))
+		return query;
+	}
+	
+	private void updateRecordCount(final MQuery query, final GenericZoomInfoDescriptor zoomInfoDescriptor, final String sourceTableName)
+	{
+		final String sqlCount = "SELECT COUNT(*) FROM " + query.getTableName() + " WHERE " + query.getWhereClause(false);
+		
+		Boolean isSO = zoomInfoDescriptor.getIsSOTrx();
+		String sqlCountAdd = "";
+		if (isSO != null && zoomInfoDescriptor.isTargetHasIsSOTrxColumn())
 		{
-			/*
-			 * For RMA, Material Receipt window should be loaded for
-			 * IsSOTrx=true and Shipment for IsSOTrx=false
-			 */
-			if (I_M_RMA.Table_Name.equals(source.getTableName()) && (AD_Window_ID == 169 || AD_Window_ID == 184))
+			//
+			// For RMA, Material Receipt window should be loaded for
+			// IsSOTrx=true and Shipment for IsSOTrx=false
+			// TODO: fetch the additional SQL from window's first tab where clause
+			final int AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
+			if (I_M_RMA.Table_Name.equals(sourceTableName) && (AD_Window_ID == 169 || AD_Window_ID == 184))
 			{
 				isSO = !isSO;
 			}
 
 			// TODO: handle the case when IsSOTrx is a virtual column
 
-			sqlAdd = " AND IsSOTrx=" + DB.TO_BOOLEAN(isSO);
+			sqlCountAdd = " AND IsSOTrx=" + DB.TO_BOOLEAN(isSO);
 		}
 
-		int count = DB.getSQLValue(ITrx.TRXNAME_None, sql + sqlAdd);
+		int count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount + sqlCountAdd);
 		if (count < 0 && isSO != null)     // error try again w/o SO
 		{
-			count = DB.getSQLValue(ITrx.TRXNAME_None, sql);
+			count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount);
 		}
 		query.setRecordCount(count);
-
-		return query;
 	}
 
 	private static final class GenericZoomInfoDescriptor
 	{
+		public static final Builder builder()
+		{
+			return new Builder();
+		}
+		
 		private final String name;
-		private final String POName;
+		private final int targetAD_Window_ID;
+				
 		private final String targetTableName;
-		private final int AD_Window_ID;
-		private final int PO_Window_ID;
+		private final String targetColumnName;
+		private final boolean dynamicTargetColumnName;
+		private final String virtualTargetColumnSql;
+		
+		private final Boolean isSOTrx;
+		private final boolean targetHasIsSOTrxColumn;
+
+		private GenericZoomInfoDescriptor(final Builder builder)
+		{
+			super();
+			this.name = builder.name;
+			Check.assumeNotEmpty(name, "name is not empty");
+			
+			this.targetTableName = builder.targetTableName;
+			Check.assumeNotEmpty(targetTableName, "targetTableName is not empty");
+			
+			this.targetColumnName = builder.targetColumnName;
+			this.virtualTargetColumnSql = builder.virtualTargetColumnSql;
+			this.dynamicTargetColumnName  = builder.dynamicTargetColumnName;
+			if(!dynamicTargetColumnName && Check.isEmpty(targetColumnName, true))
+			{
+				throw new IllegalArgumentException("targetColumnName must be set when it's not dynamic");
+			}
+			
+			this.targetAD_Window_ID = builder.targetAD_Window_ID;
+			Check.assume(targetAD_Window_ID > 0, "AD_Window_ID > 0");
+			
+			this.isSOTrx = builder.isSOTrx; // null is also accepted
+			this.targetHasIsSOTrxColumn = builder.targetHasIsSOTrxColumn;
+		}
 
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
 					.add("name", name)
-					.add("poName", POName)
 					.add("targetTableName", targetTableName)
-					.add("AD_Window_ID", AD_Window_ID)
-					.add("PO_Window_ID", PO_Window_ID)
+					.add("targetAD_Window_ID", targetAD_Window_ID)
+					.add("IsSOTrx", isSOTrx)
 					.toString();
-		}
-
-		private GenericZoomInfoDescriptor(String name, String poName, String targetTableName, int AD_Window_ID, int PO_Window_ID)
-		{
-			super();
-			this.name = name;
-			this.POName = poName;
-			this.targetTableName = targetTableName;
-			this.AD_Window_ID = AD_Window_ID;
-			this.PO_Window_ID = PO_Window_ID;
 		}
 
 		public String getName()
@@ -304,24 +380,117 @@ public class GenericZoomProvider implements IZoomProvider
 			return name;
 		}
 
-		public String getPOName()
+		public int getTargetAD_Window_ID()
 		{
-			return POName;
+			return targetAD_Window_ID;
 		}
-
+		
+		public Boolean getIsSOTrx()
+		{
+			return isSOTrx;
+		}
+		
+		public boolean isTargetHasIsSOTrxColumn()
+		{
+			return targetHasIsSOTrxColumn;
+		}
+		
 		public String getTargetTableName()
 		{
 			return targetTableName;
 		}
-
-		public int getAD_Window_ID()
+		
+		public String getTargetColumnName()
 		{
-			return AD_Window_ID;
+			return targetColumnName;
+		}
+		
+		public boolean isDynamicTargetColumnName()
+		{
+			return dynamicTargetColumnName;
+		}
+		
+		public boolean isVirtualTargetColumnName()
+		{
+			return virtualTargetColumnSql != null;
+		}
+		
+		public String getVirtualTargetColumnSql()
+		{
+			return virtualTargetColumnSql;
+		}
+		
+		public static final class Builder
+		{
+			private String name;
+			
+			private String targetTableName;
+			private String targetColumnName;
+			private boolean dynamicTargetColumnName;
+			private String virtualTargetColumnSql;
+			private int targetAD_Window_ID;
+			private Boolean isSOTrx;
+			private Boolean targetHasIsSOTrxColumn;
+			
+			private Builder()
+			{
+				super();
+			}
+			
+			public GenericZoomProvider.GenericZoomInfoDescriptor build()
+			{
+				return new GenericZoomInfoDescriptor(this);
+			}
+
+			public Builder setName(String name)
+			{
+				this.name = name;
+				return this;
+			}
+
+			public Builder setTargetTableName(String targetTableName)
+			{
+				this.targetTableName = targetTableName;
+				return this;
+			}
+			
+			public Builder setTargetColumnName(String targetColumnName)
+			{
+				this.targetColumnName = targetColumnName;
+				return this;
+			}
+			
+			public Builder setDynamicTargetColumnName(boolean dynamicTargetColumnName)
+			{
+				this.dynamicTargetColumnName = dynamicTargetColumnName;
+				this.targetColumnName = null;
+				return this;
+			}
+			
+			public Builder setVirtualTargetColumnSql(final String virtualTargetColumnSql)
+			{
+				this.virtualTargetColumnSql = virtualTargetColumnSql;
+				return this;
+			}
+
+			public Builder setTargetAD_Window_ID(int aD_Window_ID)
+			{
+				targetAD_Window_ID = aD_Window_ID;
+				return this;
+			}
+
+			public Builder setIsSOTrx(Boolean isSOTrx)
+			{
+				this.isSOTrx = isSOTrx;
+				return this;
+			}
+			
+			public Builder setTargetHasIsSOTrxColumn(boolean targetHasIsSOTrxColumn)
+			{
+				this.targetHasIsSOTrxColumn = targetHasIsSOTrxColumn;
+				return this;
+			}
 		}
 
-		public int getPO_Window_ID()
-		{
-			return PO_Window_ID;
-		}
 	}
 }

@@ -458,17 +458,17 @@ public class GridField
 
 		//
 		// Tab or field is R/O (staticly configured in application dictionary)
-		if (m_vo.tabReadOnly || m_vo.IsReadOnly)
+		if (m_vo.tabReadOnly || m_vo.isReadOnly())
 		{
-			log.trace(m_vo.getColumnName() + " NO - TabRO=" + m_vo.tabReadOnly + ", FieldRO=" + m_vo.IsReadOnly);
+			log.trace(m_vo.getColumnName() + " NO - TabRO=" + m_vo.tabReadOnly + ", FieldRO=" + m_vo.isReadOnly());
 			return false;
 		}
 
 		//
 		// Not Updateable - only editable if new updateable row
-		if (!m_vo.IsUpdateable && !m_inserting)
+		if (!m_vo.isUpdateable() && !m_inserting)
 		{
-			log.trace(m_vo.getColumnName() + " NO - FieldUpdateable=" + m_vo.IsUpdateable);
+			log.trace(m_vo.getColumnName() + " NO - FieldUpdateable=" + m_vo.isUpdateable());
 			return false;
 		}
 
@@ -534,7 +534,7 @@ public class GridField
 		// If parent tab (if any) is processed or Not Active
 		// => consider this field as readonly
 		if (checkContext
-				&& !m_vo.IsAlwaysUpdateable // allow editing AlwaysUpdateable fields, even if parent is processed or not active
+				&& !m_vo.isAlwaysUpdateable() // allow editing AlwaysUpdateable fields, even if parent is processed or not active
 				&& isParentTabProcessedOrNotActive(rowCtx))
 		{
 			return false; // not editable
@@ -543,7 +543,7 @@ public class GridField
 		//
 		// Check if THIS tab is Processed or Not Active
 		if (checkContext
-				&& !m_vo.IsAlwaysUpdateable // 03375 don't return false here, if IsAlwaysUpdateable
+				&& !m_vo.isAlwaysUpdateable() // 03375 don't return false here, if IsAlwaysUpdateable
 				&& isProcessed(rowCtx))
 		{
 			return false;
@@ -1107,7 +1107,7 @@ public class GridField
 	{
 		if (isVirtualColumn())
 			return true;
-		return m_vo.IsReadOnly;
+		return m_vo.isReadOnly();
 	}
 
 	/**
@@ -1119,7 +1119,7 @@ public class GridField
 	{
 		if (isVirtualColumn())
 			return false;
-		return m_vo.IsUpdateable;
+		return m_vo.isUpdateable();
 	}
 
 	/**
@@ -1149,9 +1149,9 @@ public class GridField
 	 */
 	public boolean isAlwaysUpdateable()
 	{
-		if (isVirtualColumn() || !m_vo.IsUpdateable)
+		if (isVirtualColumn() || !m_vo.isUpdateable())
 			return false;
-		return m_vo.IsAlwaysUpdateable;
+		return m_vo.isAlwaysUpdateable();
 	}
 
 	/**

@@ -25,7 +25,6 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IZoomProvider;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
@@ -121,7 +120,7 @@ public class AZoomAcross
 		}
 
 		final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<>();
-		final IZoomProvider zoomProvider = ZoomInfoFactory.get();
+		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
 		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 		{
 			zoomInfos.add(zoomInfo);

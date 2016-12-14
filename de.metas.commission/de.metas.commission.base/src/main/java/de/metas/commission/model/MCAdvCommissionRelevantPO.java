@@ -172,13 +172,6 @@ public class MCAdvCommissionRelevantPO extends X_C_AdvCommissionRelevantPO
 		return null;
 	}
 
-	/**
-	 * Very similar to {@link org.adempiere.model.MRelationType#whereClauseMatches}, but doesn't parse the where clause.
-	 * 
-	 * @param po
-	 * @param where
-	 * @return
-	 */
 	boolean whereClauseMatches(final Object model)
 	{
 		final String where = getSQLWhere();

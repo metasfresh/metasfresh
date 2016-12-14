@@ -486,6 +486,24 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	}
 
 	/**
+     * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
+     * 
+	 * @param key
+	 * @param exceptionSupplier
+	 * @return value; not null
+	 * @throws E
+	 */
+	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<? extends E> exceptionSupplier) throws E
+	{
+		final V value = get(key);
+		if(value == null)
+		{
+			throw exceptionSupplier.get();
+		}
+		return value;
+	}
+
+	/**
 	 * Put value
 	 *
 	 * @param key key

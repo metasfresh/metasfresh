@@ -1,10 +1,15 @@
-package de.metas.purchasing.service;
+package de.metas.relation;
+
+import java.util.Properties;
+
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_RelationType;
 
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +27,9 @@ package de.metas.purchasing.service;
  * #L%
  */
 
+public interface IRelationTypeDAO extends ISingletonService
+{
 
-import java.util.List;
+	I_AD_RelationType retrieveForInternalName(Properties ctx, String internalName);
 
-import org.adempiere.util.ISingletonService;
-
-import de.metas.purchasing.model.I_M_PurchaseSchedule;
-
-public interface IPurchaseSchedulePA extends ISingletonService {
-
-	/**
-	 * 
-	 * @return all entries that have
-	 *         {@link I_M_PurchaseSchedule#COLUMNNAME_IncludeInPurchase} set to
-	 *         <code>'Y'</code>.
-	 */
-	List<I_M_PurchaseSchedule> retrieveToIncludeInPO(String trxName);
 }

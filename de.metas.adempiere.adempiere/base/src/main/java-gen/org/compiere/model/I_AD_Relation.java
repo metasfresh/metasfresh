@@ -14,76 +14,63 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.adempiere.model;
+package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for AD_RelationType
+/** Generated Interface for AD_Relation
  *  @author Adempiere (generated) 
  *  @version Release 3.5.4a
  */
-public interface I_AD_RelationType 
+public interface I_AD_Relation 
 {
 
-    /** TableName=AD_RelationType */
-    public static final String Table_Name = "AD_RelationType";
+    /** TableName=AD_Relation */
+    public static final String Table_Name = "AD_Relation";
 
-    /** AD_Table_ID=53246 */
+    /** AD_Table_ID=540269 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org 
+    /** AccessLevel = 3 - Client - Org 
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(7);
+    BigDecimal accessLevel = BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
+	/** Get Mandant.
+	  * Mandant für diese Installation.
 	  */
 	public int getAD_Client_ID();
 
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
+	/** Set Organisation.
+	  * Organisatorische Einheit des Mandanten
 	  */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
+	/** Get Organisation.
+	  * Organisatorische Einheit des Mandanten
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name AD_Reference_Source_ID */
-    public static final String COLUMNNAME_AD_Reference_Source_ID = "AD_Reference_Source_ID";
+    /** Column name AD_Relation_ID */
+    public static final String COLUMNNAME_AD_Relation_ID = "AD_Relation_ID";
 
-	/** Set Source Reference	  */
-	public void setAD_Reference_Source_ID (int AD_Reference_Source_ID);
+	/** Set Relation	  */
+	public void setAD_Relation_ID (int AD_Relation_ID);
 
-	/** Get Source Reference	  */
-	public int getAD_Reference_Source_ID();
-
-	public org.compiere.model.I_AD_Reference getAD_Reference_Source() throws RuntimeException;
-
-    /** Column name AD_Reference_Target_ID */
-    public static final String COLUMNNAME_AD_Reference_Target_ID = "AD_Reference_Target_ID";
-
-	/** Set Target Reference	  */
-	public void setAD_Reference_Target_ID (int AD_Reference_Target_ID);
-
-	/** Get Target Reference	  */
-	public int getAD_Reference_Target_ID();
-
-	public org.compiere.model.I_AD_Reference getAD_Reference_Target() throws RuntimeException;
+	/** Get Relation	  */
+	public int getAD_Relation_ID();
 
     /** Column name AD_RelationType_ID */
     public static final String COLUMNNAME_AD_RelationType_ID = "AD_RelationType_ID";
@@ -94,19 +81,21 @@ public interface I_AD_RelationType
 	/** Get Relation Type	  */
 	public int getAD_RelationType_ID();
 
+	public org.compiere.model.I_AD_RelationType getAD_RelationType() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
+	/** Get Erstellt.
+	  * Datum, an dem dieser Eintrag erstellt wurde
 	  */
 	public Timestamp getCreated();
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
+	/** Get Erstellt durch.
+	  * Nutzer, der diesen Eintrag erstellt hat
 	  */
 	public int getCreatedBy();
 
@@ -123,94 +112,65 @@ public interface I_AD_RelationType
 	  */
 	public String getDescription();
 
-    /** Column name InternalName */
-    public static final String COLUMNNAME_InternalName = "InternalName";
-
-	/** Set Interner Name	  */
-	public void setInternalName (String InternalName);
-
-	/** Get Interner Name	  */
-	public String getInternalName();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
+	/** Set Aktiv.
+	  * Der Eintrag ist im System aktiv
 	  */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Active.
-	  * The record is active in the system
+	/** Get Aktiv.
+	  * Der Eintrag ist im System aktiv
 	  */
 	public boolean isActive();
 
-    /** Column name IsDirected */
-    public static final String COLUMNNAME_IsDirected = "IsDirected";
+    /** Column name Record_Source_ID */
+    public static final String COLUMNNAME_Record_Source_ID = "Record_Source_ID";
 
-	/** Set Directed.
-	  * Tells whether one "sees" the other end of the relation from each end or just from the source
+	/** Set Quell-Datensatz-ID	  */
+	public void setRecord_Source_ID (int Record_Source_ID);
+
+	/** Get Quell-Datensatz-ID	  */
+	public int getRecord_Source_ID();
+
+    /** Column name Record_Target_ID */
+    public static final String COLUMNNAME_Record_Target_ID = "Record_Target_ID";
+
+	/** Set Ziel-Datensatz-ID	  */
+	public void setRecord_Target_ID (int Record_Target_ID);
+
+	/** Get Ziel-Datensatz-ID	  */
+	public int getRecord_Target_ID();
+
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/** Set Reihenfolge.
+	  * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	  */
-	public void setIsDirected (boolean IsDirected);
+	public void setSeqNo (int SeqNo);
 
-	/** Get Directed.
-	  * Tells whether one "sees" the other end of the relation from each end or just from the source
+	/** Get Reihenfolge.
+	  * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
 	  */
-	public boolean isDirected();
-
-    /** Column name IsExplicit */
-    public static final String COLUMNNAME_IsExplicit = "IsExplicit";
-
-	/** Set Explizit	  */
-	public void setIsExplicit (boolean IsExplicit);
-
-	/** Get Explizit	  */
-	public boolean isExplicit();
-
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
-
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
-
-    /** Column name Role_Source */
-    public static final String COLUMNNAME_Role_Source = "Role_Source";
-
-	/** Set Source Role	  */
-	public void setRole_Source (String Role_Source);
-
-	/** Get Source Role	  */
-	public String getRole_Source();
-
-    /** Column name Role_Target */
-    public static final String COLUMNNAME_Role_Target = "Role_Target";
-
-	/** Set Target Role	  */
-	public void setRole_Target (String Role_Target);
-
-	/** Get Target Role	  */
-	public String getRole_Target();
+	public int getSeqNo();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
+	/** Get Aktualisiert.
+	  * Datum, an dem dieser Eintrag aktualisiert wurde
 	  */
 	public Timestamp getUpdated();
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	/** Get Updated By.
-	  * User who updated this records
+	/** Get Aktualisiert durch.
+	  * Nutzer, der diesen Eintrag aktualisiert hat
 	  */
 	public int getUpdatedBy();
 }
