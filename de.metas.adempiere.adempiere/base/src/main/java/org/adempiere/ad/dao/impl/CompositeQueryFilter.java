@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,6 +42,8 @@ import org.compiere.model.IQuery;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
+ * <p>
+ * <b>Hint:</b> use {@link org.adempiere.ad.dao.IQueryBL#createCompositeQueryFilter(Class)} to obtain an instance.
  *
  * @author tsa
  *
@@ -111,12 +113,12 @@ import org.compiere.model.IQuery;
 			return CompositeQueryFilter.this.accept(model, nonSqlFilters, defaultAccept);
 		}
 	};
-	
+
 	public CompositeQueryFilter(final Class<T> modelClass)
 	{
 		this(InterfaceWrapperHelper.getTableName(modelClass));
 	}
-	
+
 	CompositeQueryFilter(final String tableName)
 	{
 		super();
@@ -354,7 +356,7 @@ import org.compiere.model.IQuery;
 
 		// recompile needed
 		this._compiled = false;
-		
+
 		return this;
 	}
 
@@ -671,7 +673,7 @@ import org.compiere.model.IQuery;
 		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, column.getColumnName(), subQueryColumn.getColumnName(), subQuery);
 		return addFilter(filter);
 	}
-	
+
 	@Override
 	public ICompositeQueryFilter<T> addEndsWithQueryFilter(final String columnName, final String endsWithString)
 	{

@@ -19,23 +19,21 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
 
 /**
- * Process Instance Model
+ *  Process Instance Model
  *
- * @author Jorg Janke
- * @version $Id: MPInstance.java,v 1.3 2006/07/30 00:58:36 jjanke Exp $
+ *  @author Jorg Janke
+ *  @version $Id: MPInstance.java,v 1.3 2006/07/30 00:58:36 jjanke Exp $
  *
  * @author Teo Sarca, www.arhipac.ro
- *         <li>FR [ 2818478 ] Introduce MPInstance.createParameter helper method
- *         https://sourceforge.net/tracker/?func=detail&aid=2818478&group_id=176962&atid=879335
+ * 		<li>FR [ 2818478 ] Introduce MPInstance.createParameter helper method
+ * 			https://sourceforge.net/tracker/?func=detail&aid=2818478&group_id=176962&atid=879335
  */
 @Deprecated
 public class MPInstance extends X_AD_PInstance
@@ -49,42 +47,44 @@ public class MPInstance extends X_AD_PInstance
 
 	public MPInstance(final Properties ctx, final int AD_PInstance_ID, final String trxName_IGNORED)
 	{
-		super(ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
+		super (ctx, AD_PInstance_ID, ITrx.TRXNAME_None);
 
 		// metas: WARN developer if he/she is loading the AD_PInstance using transactions (because that is not allowed)
-		if (!Check.equals(ITrx.TRXNAME_None, trxName_IGNORED) && Services.get(IDeveloperModeBL.class).isEnabled())
-		{
-			final AdempiereException ex = new AdempiereException("AD_PInstance was loaded using trxName '" + trxName_IGNORED + "' while only '" + ITrx.TRXNAME_None + "' is allowed.");
-			log.warn(ex.getLocalizedMessage(), ex);
-		}
+		// gh #489: I agree with warning the developer, but in DLM, we frequently use this constructor and I neither want this warning to fill the log,
+		// nor want an if in there to explicitly deal with this case.
+//		if (!Check.equals(ITrx.TRXNAME_None, trxName_IGNORED) && Services.get(IDeveloperModeBL.class).isEnabled())
+//		{
+//			final AdempiereException ex = new AdempiereException("Warning: AD_PInstance was loaded using trxName '" + trxName_IGNORED + "' while only '" + ITrx.TRXNAME_None + "' is allowed.");
+//			log.warn(ex.getLocalizedMessage(), ex);
+//		}
 
-		// New Process
+		//	New Process
 		if (AD_PInstance_ID == 0)
 		{
-			// setAD_Process_ID (0); // parent
-			// setRecord_ID (0);
-			setIsProcessing(false);
+		//	setAD_Process_ID (0);	//	parent
+		//	setRecord_ID (0);
+			setIsProcessing (false);
 		}
-	}	// MPInstance
+	}	//	MPInstance
 
 	public MPInstance(final Properties ctx, final ResultSet rs, final String ignored)
 	{
 		super(ctx, rs, ITrx.TRXNAME_None);
-	}	// MPInstance
+	}	//	MPInstance
 
 	@Override
-	public String toString()
+	public String toString ()
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("AD_PInstance_ID", getAD_PInstance_ID())
 				.add("Result", getResult())
 				.add("ErrorMsg", getErrorMsg())
 				.toString();
-	}	// toString
+	}	//	toString
 
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
 		return super.beforeSave(newRecord);
-	}
-}
+		}
+		}

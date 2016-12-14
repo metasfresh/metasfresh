@@ -33,30 +33,26 @@ public final class ProcessInfoLog implements Serializable
 	/**
 	 * Create Process Info Log.
 	 *
-	 * @param P_ID Process ID
 	 * @param P_Date Process Date
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Messagre
 	 */
-	ProcessInfoLog(final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	ProcessInfoLog(final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		this(nextLogId.getAndIncrement(), P_ID, P_Date, P_Number, P_Msg);
+		this(nextLogId.getAndIncrement(), P_Date, P_Number, P_Msg);
 	}	// ProcessInfoLog
 
 	/**
 	 * Create Process Info Log.
 	 *
 	 * @param Log_ID Log ID
-	 * @param P_ID Process ID
 	 * @param P_Date Process Date
 	 * @param P_Number Process Number
 	 * @param P_Msg Process message
 	 */
-	public ProcessInfoLog(final int Log_ID, final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public ProcessInfoLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		super();
 		m_Log_ID = Log_ID;
-		m_P_ID = P_ID;
 		m_P_Date = P_Date;
 		m_P_Number = P_Number;
 		m_P_Msg = P_Msg;
@@ -65,7 +61,6 @@ public final class ProcessInfoLog implements Serializable
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
 
 	private final int m_Log_ID;
-	private final int m_P_ID;
 	private final Timestamp m_P_Date;
 	private final BigDecimal m_P_Number;
 	private final String m_P_Msg;
@@ -74,11 +69,6 @@ public final class ProcessInfoLog implements Serializable
 	public int getLog_ID()
 	{
 		return m_Log_ID;
-	}
-
-	public int getP_ID()
-	{
-		return m_P_ID;
 	}
 
 	public Timestamp getP_Date()
@@ -95,12 +85,12 @@ public final class ProcessInfoLog implements Serializable
 	{
 		return m_P_Msg;
 	}
-	
+
 	public void markAsSavedInDB()
 	{
 		this.savedInDB = true;
 	}
-	
+
 	public boolean isSavedInDB()
 	{
 		return savedInDB;

@@ -37,7 +37,7 @@ public class PMMWeekDAO implements IPMMWeekDAO
 	@Override
 	public I_PMM_Week retrieveFor(final PMMBalanceSegment segment, final Date weekDate)
 	{
-		final PlainContextAware context = PlainContextAware.createUsingThreadInheritedTransaction();
+		final PlainContextAware context = PlainContextAware.newWithThreadInheritedTrx();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_Week.class, context)
 				.addOnlyContextClient()

@@ -332,7 +332,6 @@ public class HUTestHelper
 		{
 			return trxName;
 		}
-
 	};
 	private IMutableHUContext huContext;
 

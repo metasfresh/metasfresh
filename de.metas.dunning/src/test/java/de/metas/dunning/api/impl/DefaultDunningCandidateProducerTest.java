@@ -10,20 +10,20 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
 import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -57,9 +57,9 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
  * <ul>
  * <li>all tests are running using sequential dunning
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class DefaultDunningCandidateProducerTest extends DunningTestBase
 {
@@ -290,21 +290,21 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		final PlainDunningContext context1 = createPlainDunningContext("2012-02-01", dunningLevel1_10);
 		final I_C_Dunning_Candidate candidate1 = producer.createDunningCandidate(context1, sourceDoc);
 		Assert.assertNotNull("Candidate for level 1 shall be generated", candidate1);
-		
+
 		candidate1.setIsDunningDocProcessed(true);
 		InterfaceWrapperHelper.save(candidate1);
 
 		final PlainDunningContext context2 = createPlainDunningContext("2012-02-20", dunningLevel2_20);
 		final I_C_Dunning_Candidate candidate2 = producer.createDunningCandidate(context2, sourceDoc);
 		Assert.assertNotNull("Candidate for level 2 shall be generated", candidate2);
-		
+
 		candidate2.setIsDunningDocProcessed(true);
 		InterfaceWrapperHelper.save(candidate2);
 
 		final PlainDunningContext context3 = createPlainDunningContext("2012-03-01", dunningLevel3_30);
 		final I_C_Dunning_Candidate candidate3 = producer.createDunningCandidate(context3, sourceDoc);
 		Assert.assertNotNull("Candidate for level 3 shall be generated", candidate3);
-		
+
 		candidate3.setIsDunningDocProcessed(true);
 		InterfaceWrapperHelper.save(candidate3);
 	}
@@ -324,7 +324,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		final PlainDunningContext context1 = createPlainDunningContext("2012-02-01", dunningLevel1_10);
 		final I_C_Dunning_Candidate candidate1 = producer.createDunningCandidate(context1, sourceDoc);
 		Assert.assertNotNull("Candidate for level 1 shall be generated", candidate1);
-		
+
 		candidate1.setIsDunningDocProcessed(true);
 		candidate1.setDunningDateEffective(candidate1.getDunningDate());
 		InterfaceWrapperHelper.save(candidate1);
@@ -668,7 +668,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 		Assert.assertEquals("Invalid candidate - AD_Client_ID: " + candidate, fromDoc.getAD_Client_ID(), candidate.getAD_Client_ID());
 		Assert.assertEquals("Invalid candidate - AD_Org_ID: " + candidate, fromDoc.getAD_Org_ID(), candidate.getAD_Org_ID());
-		Assert.assertEquals("Invalid candidate - AD_Table_ID: " + candidate, fromDoc.getTableName(), MTable.getTableName(getCtx(), candidate.getAD_Table_ID()));
+
+		assertThat("Invalid candidate - AD_Table_ID: " + candidate,fromDoc.getTableName(), equalToIgnoringCase(MTable.getTableName(getCtx(), candidate.getAD_Table_ID())));
 		Assert.assertEquals("Invalid candidate - Record_ID: " + candidate, fromDoc.getRecordId(), candidate.getRecord_ID());
 		Assert.assertEquals("Invalid candidate - C_DunningLevel: " + candidate, context.getC_DunningLevel(), candidate.getC_DunningLevel());
 		Assert.assertEquals("Invalid candidate - Processed: " + candidate, false, candidate.isProcessed());

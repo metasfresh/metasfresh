@@ -9,7 +9,7 @@ where a.Value='IsQualityInspection';
 
 --
 -- Backup
-create table backup.M_AttributeUse_bkp20161028 as select * from M_AttributeUse;
+create table IF NOT EXISTS backup.M_AttributeUse_bkp20161028 as select * from M_AttributeUse;
 
 --
 -- Delete "IsQualityInspection" attribute usage
