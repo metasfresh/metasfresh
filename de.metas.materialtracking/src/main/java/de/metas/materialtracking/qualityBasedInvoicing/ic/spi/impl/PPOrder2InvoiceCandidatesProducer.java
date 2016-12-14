@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_PriceList_Version;
@@ -128,7 +129,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
 		Check.assume(Env.getAD_Client_ID(context.getCtx()) == clientOrgAware.getAD_Client_ID(), "AD_Client_ID of PP_Order {} and of its Ctx are the same", ppOrder);
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		final ILoggable loggable = Loggables.get();
 
 		//
 		// Check if given manufacturing order is eligible. It might be not eligible anymore, because it was already processed earlier this run

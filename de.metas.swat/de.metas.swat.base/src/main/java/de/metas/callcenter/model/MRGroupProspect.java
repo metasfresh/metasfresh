@@ -111,17 +111,18 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		gp.saveEx();
 	}
 	
-	public MRGroupProspect(Properties ctx, int ignored, String trxName)
+	public MRGroupProspect(Properties ctx, int id, String trxName)
 	{
-		super(ctx, 0, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-key");
+		super(ctx, id, trxName);
 	}
 	public MRGroupProspect(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 	
+	/**
+	 * Creates a new record.
+	 */
 	public MRGroupProspect(Properties ctx, int R_Group_ID, int C_BPartner_ID, int AD_User_ID, String trxName)
 	{
 		super(ctx, 0, trxName);

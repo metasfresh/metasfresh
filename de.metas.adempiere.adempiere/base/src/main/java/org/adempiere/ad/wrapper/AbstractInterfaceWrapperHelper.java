@@ -47,7 +47,7 @@ public abstract class AbstractInterfaceWrapperHelper implements IInterfaceWrappe
 		// Try ColumnName_Override
 		// e.g. for "C_Tax_ID", the C_Tax_ID_Override" will be checked
 		{
-			final String overrideColumnName = columnName + COLUMNNAME_SUFFIX_Override;
+			final String overrideColumnName = (columnName + COLUMNNAME_SUFFIX_Override);
 			if (modelAccessor.hasColumnName(overrideColumnName))
 			{
 				@SuppressWarnings("unchecked")
@@ -64,7 +64,7 @@ public abstract class AbstractInterfaceWrapperHelper implements IInterfaceWrappe
 		// e.g. for "C_Tax_ID", the C_Tax_Override_ID" will be checked
 		if (columnName.endsWith("_ID"))
 		{
-			final String overrideColumnName = columnName.substring(0, columnName.length() - 3) + COLUMNNAME_SUFFIX_Override + "_ID";
+			final String overrideColumnName = (columnName.substring(0, columnName.length() - 3) + COLUMNNAME_SUFFIX_Override + "_ID");
 			if (modelAccessor.hasColumnName(overrideColumnName))
 			{
 				@SuppressWarnings("unchecked")

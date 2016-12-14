@@ -144,7 +144,7 @@ public class M_Movement_CreateForHUs_Mass extends JavaProcess
 
 		try
 		{
-			final IContextAware context = PlainContextAware.createUsingOutOfTransaction(getCtx());
+			final IContextAware context = PlainContextAware.newOutOfTrx(getCtx());
 			final HUMovementBuilder movementBuilder = new HUMovementBuilder()
 					.setContextInitial(context)
 					.setWarehouseFrom(hu.getM_Locator().getM_Warehouse())

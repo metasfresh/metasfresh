@@ -16,7 +16,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_AD_InfoColumn;
@@ -76,7 +76,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 		final I_AD_InfoColumn qtyOnHandColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOnHand);
 
 		// we need a fixed ordering to make sure that the items are always updated in the same order, in case we go multi-threaded.
-		final SortedSet<IMRPProductInfoSelector> orderedSelectors = new TreeSet<IMRPProductInfoSelector>();
+		final SortedSet<IMRPProductInfoSelector> orderedSelectors = new TreeSet<>();
 
 		for (final Object item : items)
 		{
@@ -122,7 +122,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 			finally
 			{
 				// note: just make sure we log what we got. Assume that any error/exception logging is done by the framework
-				ILoggable.THREADLOCAL.getLoggable().addLog(logMsg.toString());
+				Loggables.get().addLog(logMsg.toString());
 			}
 		}
 	}

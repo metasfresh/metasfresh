@@ -320,7 +320,7 @@ public class PMMContractBuilder
 	public PMMContractBuilder setCtx(final Properties ctx)
 	{
 		assertNotProcessed();
-		_context = PlainContextAware.createUsingThreadInheritedTransaction(ctx);
+		_context = PlainContextAware.newWithThreadInheritedTrx(ctx);
 		return this;
 	}
 

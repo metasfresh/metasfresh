@@ -43,10 +43,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
-import org.adempiere.model.MRelationType;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.compiere.grid.CreateFrom;
@@ -319,7 +316,7 @@ public class CreateCorrections extends CreateFrom
 
 		final int countryID = payrollLocPO.getC_Location().getC_Country_ID();
 
-		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
+//		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
 
 		for (int i = 0; i < miniTable.getRowCount(); i++)
 		{
@@ -386,8 +383,10 @@ public class CreateCorrections extends CreateFrom
 			plusLine.setDescription(plusDescription);
 			plusLine.saveEx();
 
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
+			// FIXME: adding explicit relations is not supported anymore
+			throw new UnsupportedOperationException("adding explicit relations is not supported anymore");
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
 
 		} // for all rows
 

@@ -333,6 +333,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			valueString = value == null ? null : value.toString();
 			valueStringTo = valueTo == null ? null : valueTo.toString();
 		}
+		else if (value instanceof Boolean)
+		{
+			hasChanges = true;
+			valueString = DisplayType.toBooleanString((Boolean)value);
+			valueStringTo = DisplayType.toBooleanString((Boolean)valueTo); // assumes valueTo is also boolean
+		}
 
 		if (hasChanges)
 		{
@@ -358,7 +364,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return ImmutableList.of();
 		}
 
-		final String sql = "SELECT Log_ID, P_ID, P_Date, P_Number, P_Msg "
+		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
 				+ "ORDER BY Log_ID";
@@ -376,7 +382,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			while (rs.next())
 			{
 				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getInt(2), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
 				log.markAsSavedInDB();
 				logs.add(log);
 			}
@@ -419,8 +425,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_ID, P_Number, P_Msg)"
-				+ " VALUES (?, ?, ?, ?, ?, ?)";
+				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
+				+ " VALUES (?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -431,7 +437,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 						AD_PInstance_ID,
 						log.getLog_ID(),
 						log.getP_Date(),
-						log.getP_ID() == 0 ? null : log.getP_ID(),
 						log.getP_Number(),
 						log.getP_Msg()
 				};
@@ -586,18 +591,18 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setRecord_ID(pi.getRecord_ID());
 		adPInstance.setWhereClause(pi.getWhereClause());
 		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
-		
+
 		final Language reportingLanguage = pi.getReportLanguage();
 		final String adLanguage = reportingLanguage == null ? null : reportingLanguage.getAD_Language();
 		adPInstance.setAD_Language(adLanguage);
-		
+
 		InterfaceWrapperHelper.save(adPInstance);
 
 		//
 		// Update ProcessInfo's AD_PInstance_ID
 		pi.setAD_PInstance_ID(adPInstance.getAD_PInstance_ID());
 	}
-	
+
 	@Override
 	public int createAD_PInstance_ID(final Properties ctx)
 	{

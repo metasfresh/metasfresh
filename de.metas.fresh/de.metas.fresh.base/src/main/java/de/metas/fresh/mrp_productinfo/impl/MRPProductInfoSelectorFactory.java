@@ -8,7 +8,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -165,7 +165,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		final int productID = params.getParameterAsInt(productParamKey);
 		if (productID <= 0)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", productParamKey, model, params);
+			Loggables.get().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", productParamKey, model, params);
 			return createOrNull(model);
 		}
 
@@ -173,7 +173,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		final int asiID = params.getParameterAsInt(attributeSetInstanceParamKey);
 		if (asiID < 0) // might be 0
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", attributeSetInstanceParamKey, model, params);
+			Loggables.get().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", attributeSetInstanceParamKey, model, params);
 			return createOrNull(model);
 		}
 
@@ -181,7 +181,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		final Timestamp date = params.getParameterAsTimestamp(dateParamKey);
 		if (date == null)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", dateParamKey, model, params);
+			Loggables.get().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", dateParamKey, model, params);
 			return createOrNull(model);
 		}
 

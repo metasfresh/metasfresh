@@ -295,6 +295,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>de.metas.dlm</groupId>
+				<artifactId>metasfresh-dlm</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<artifactId>de.metas.document.archive.base</artifactId>
 				<groupId>de.metas.document.archive</groupId>
 				<version>${project.version}</version>
