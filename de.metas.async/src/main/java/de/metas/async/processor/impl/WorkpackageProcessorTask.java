@@ -38,6 +38,7 @@ import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
@@ -132,7 +133,7 @@ import de.metas.notification.INotificationBL;
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
-				final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(loggable))
+				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 

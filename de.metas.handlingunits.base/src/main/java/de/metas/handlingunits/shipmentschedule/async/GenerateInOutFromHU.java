@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.async;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,6 +38,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -123,14 +124,14 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
 		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial, ITrx.TRXNAME_ThreadInherited);
-		getLoggable().addLog("Generated " + inoutGenerateResult.toString());
+		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
 
 		return Result.SUCCESS;
 	}
 
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
 	 */
 	@Override
@@ -219,12 +220,12 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final List<IShipmentScheduleWithHU> result = new ArrayList<IShipmentScheduleWithHU>();
+		final List<IShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final List<I_M_HU> hus = retriveWorkpackageHUs(workpackage, trxName);
 		if (hus.isEmpty())
 		{
-			getLoggable().addLog("No HUs found");
+			Loggables.get().addLog("No HUs found");
 			return result.iterator();
 		}
 
@@ -266,7 +267,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			// Log if there were no candidates created for current HU.
 			if (candidatesForHU.isEmpty())
 			{
-				getLoggable().addLog("No eligible " + I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
+				Loggables.get().addLog("No eligible " + I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
 			}
 		}
 

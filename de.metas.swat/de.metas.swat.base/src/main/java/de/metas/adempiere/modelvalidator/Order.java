@@ -28,7 +28,7 @@ import de.metas.interfaces.I_C_OrderLine;
  * 
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
- * @deprecated the code form this class shall be moved to {@link de.metas.order.model.validator.C_Order} and a new MV de.metas.modelvalidator.C_OrderLine.
+ * @deprecated the code form this class shall be moved to {@link de.metas.order.model.interceptor.C_Order} and a new MV de.metas.modelvalidator.C_OrderLine.
  */
 @Deprecated
 public class Order implements ModelValidator

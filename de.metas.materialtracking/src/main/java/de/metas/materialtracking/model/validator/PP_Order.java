@@ -30,7 +30,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.ModelValidator;
@@ -147,7 +147,7 @@ public class PP_Order
 		}
 
 		final String msg = msgBL.translate(InterfaceWrapperHelper.getCtx(ppOrder), sb.toString());
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg);
+		Loggables.get().addLog(msg);
 		throw new AdempiereException(msg);
 	}
 

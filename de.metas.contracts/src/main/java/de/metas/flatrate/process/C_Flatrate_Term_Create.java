@@ -120,7 +120,7 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 
 	private I_C_Flatrate_Term createTerm(final I_C_BPartner partner)
 	{
-		final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(getCtx());
+		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final boolean completeIt = true;
 		final I_C_Flatrate_Term term = flatrateBL.createTerm(context, partner, conditions, startDate, userInCharge, product, completeIt);
 		if (term == null)

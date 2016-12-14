@@ -31,7 +31,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -188,7 +187,7 @@ import de.metas.lock.api.ILockCommand;
 
 		//
 		// Add the model to elements to enqueue
-		final ITableRecordReference record = TableRecordReference.of(model);
+		final ITableRecordReference record = ITableRecordReference.FromModelConverter.convert(model);
 		elements.add(record);
 
 		//

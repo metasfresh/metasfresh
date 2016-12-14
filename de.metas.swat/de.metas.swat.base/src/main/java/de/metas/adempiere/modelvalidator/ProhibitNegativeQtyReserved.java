@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.modelvalidator.SwatValidator;
-import de.metas.order.model.validator.C_OrderLine;
+import de.metas.order.model.interceptor.C_OrderLine;
 
 /**
  * Makes sure that there are no negative QtyReserved values.

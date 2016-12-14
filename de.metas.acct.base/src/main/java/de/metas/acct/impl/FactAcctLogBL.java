@@ -11,6 +11,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.collections.MapReduceAggregator;
@@ -71,7 +72,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 	public void process(final IFactAcctLogIterable logs)
 	{
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		final ILoggable loggable = Loggables.get();
 
 		//
 		// Update Fact_Acct_Summary

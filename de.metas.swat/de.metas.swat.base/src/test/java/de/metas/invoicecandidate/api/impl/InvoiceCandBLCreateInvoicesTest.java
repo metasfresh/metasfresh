@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,7 +63,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 	 * <li>makes sure that only NOT processed candidates reach this point
 	 * <li>generates a dummy invoice
 	 * </ul>
-	 * 
+	 *
 	 */
 	public static class MockedDummyInvoiceGenerator implements IInvoiceGeneratorRunnable
 	{
@@ -156,9 +156,9 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 	/**
 	 * Test: processed invoice candidates shall be skipped when generating invoices
-	 * 
+	 *
 	 * User Story: there can be cases where invoice candidates had Processed=N when fetched, but in meantime, some of them were already processed and so we need to skip those
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04533_Erstellung_einer_Rechnung_%282013070810000082%29
 	 */
 	@Test
@@ -215,7 +215,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 	/**
 	 * Test: Invoice candidadates with discount
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
 	 */
 	@Test
@@ -282,7 +282,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 	/**
 	 * Test: priceEntered in Invoice candidadates
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
@@ -293,7 +293,6 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
-		;
 
 		final I_C_BPartner bpartner = bpartner("test-bp");
 

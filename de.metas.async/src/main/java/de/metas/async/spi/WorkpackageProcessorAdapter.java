@@ -28,8 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 
 
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 
@@ -38,7 +36,6 @@ import com.google.common.base.Optional;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Log;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -95,20 +92,6 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		return true;
 	}
 
-	/**
-	 * Gets the {@link ILoggable} to be used to record important informations about how current workpackage is processed.
-	 *
-	 * Mainly it will write to {@link I_C_Queue_WorkPackage_Log}.
-	 *
-	 * @return {@link ILoggable}; never returns <code>null</code>
-	 */
-	protected final ILoggable getLoggable()
-	{
-		// NOTE: Usually the thread local ILoggable is not null because the workpackage task executor is registering a thread local ILoggable instance.
-		// There is one one exception: the JUnit tests which are calling the workpackage processor directly.
-		return ILoggable.THREADLOCAL.getLoggableOr(NullLoggable.instance);
-	}
-
 	@Override
 	public final Optional<ILock> getElementsLock()
 	{
@@ -131,14 +114,14 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	{
 		return NullLatchStrategy.INSTANCE;
 	}
-	
+
 	public final <T> List<T> retrieveItems(final Class<T> modelType)
 	{
 		return Services.get(IQueueDAO.class).retrieveItems(getC_Queue_WorkPackage(), modelType, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	public final List<I_C_Queue_Element> retrieveQueueElements(final boolean skipAlreadyScheduledItems)
 	{
-		return Services.get(IQueueDAO.class).retrieveQueueElements(getC_Queue_WorkPackage(), skipAlreadyScheduledItems);		
+		return Services.get(IQueueDAO.class).retrieveQueueElements(getC_Queue_WorkPackage(), skipAlreadyScheduledItems);
 	}
 }
