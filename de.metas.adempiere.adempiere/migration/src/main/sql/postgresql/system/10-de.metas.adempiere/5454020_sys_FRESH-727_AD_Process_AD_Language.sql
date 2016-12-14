@@ -15,7 +15,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Nov 28, 2016 1:38 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE AD_PInstance ADD AD_Language VARCHAR(6) DEFAULT NULL 
+ALTER TABLE public.AD_PInstance ADD AD_Language VARCHAR(6) DEFAULT NULL 
 ;
 
 -- Nov 28, 2016 1:39 PM

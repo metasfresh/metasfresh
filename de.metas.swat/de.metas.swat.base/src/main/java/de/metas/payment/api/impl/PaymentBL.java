@@ -475,7 +475,7 @@ public class PaymentBL implements IPaymentBL
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
-				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder(PlainContextAware.createUsingThreadInheritedTransaction(ctx))
+				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder(PlainContextAware.newWithThreadInheritedTrx(ctx))
 						.setAD_Org_ID(payment.getAD_Org_ID())
 						.setC_Currency_ID(payment.getC_Currency_ID())
 						.setDateAcct(dateTS)

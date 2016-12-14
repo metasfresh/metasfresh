@@ -18,11 +18,11 @@ package org.eevolution.form;
 /**
  *	Create Movement from Distribution Order
  *
- *  @author victor.perez@www.e-evolution.com 
- *  @version $Id: VOrderDistribution,v 1.0 
+ *  @author victor.perez@www.e-evolution.com
+ *  @version $Id: VOrderDistribution,v 1.0
  */
 @Deprecated
 public class VOrderDistribution 
 {
 	// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
-}
+		}

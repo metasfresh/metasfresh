@@ -38,7 +38,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
@@ -176,7 +176,7 @@ import de.metas.logging.LogManager;
 		{
 			return true;
 		}
-		
+
 		// Check: HU context
 		if(!Objects.equals(huContext, candidate.getHUContext()))
 		{
@@ -188,7 +188,7 @@ import de.metas.logging.LogManager;
 		{
 			return false;
 		}
-		
+
 		// Check: ASI
 		if(attributeSetInstanceId != candidate.getM_AttributeSetInstance_ID())
 		{
@@ -248,13 +248,13 @@ import de.metas.logging.LogManager;
 	private void append(final IShipmentScheduleWithHU candidate)
 	{
 		Check.assume(canAdd(candidate), "candidate {} can be added to shipment line builder", candidate);
-		
+
 		logger.trace("Adding candidate to {}: {}", this, candidate);
 
 		final BigDecimal qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("IShipmentScheduleWithHU {0} has QtyPicked={1}", candidate, qtyToAdd);
+			Loggables.get().addLog("IShipmentScheduleWithHU {0} has QtyPicked={1}", candidate, qtyToAdd);
 		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
 
@@ -445,7 +445,7 @@ import de.metas.logging.LogManager;
 					+ "\n @M_HU_ID@: " + husToAssign);
 		}
 	}
-	
+
 	private final void transferAttributesToShipmentLine(final I_M_InOutLine shipmentLine, final I_M_HU hu)
 	{
 		//

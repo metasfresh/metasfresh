@@ -155,10 +155,6 @@ UPDATE AD_Column SET FieldLength=30,Updated=TO_TIMESTAMP('2016-10-27 13:20:58','
 UPDATE AD_Column SET AD_Element_ID=543213, AD_Reference_ID=19, ColumnName='M_QualityNote_ID', Description=NULL, EntityType='de.metas.swat', FieldLength=10, Help=NULL, Name='Qualität-Notiz',Updated=TO_TIMESTAMP('2016-10-27 13:22:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555041
 ;
 
--- 27.10.2016 13:32
--- URL zum Konzept
-ALTER TABLE R_Request ADD M_QualityNote_ID NUMERIC(10) DEFAULT NULL 
-;
 
 -- 27.10.2016 13:44
 -- URL zum Konzept
@@ -171,13 +167,16 @@ UPDATE AD_Column SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2016-10-27 13:45:1
 ;
 
 
+COMMIT;
 
+-- 27.10.2016 13:32
+-- URL zum Konzept
+ALTER TABLE R_Request ADD M_QualityNote_ID NUMERIC(10) DEFAULT NULL 
+;
 
 ALTER TABLE R_Request DROP COLUMN if exists qualitynote;
 
 ALTER TABLE R_Request DROP COLUMN if exists M_qualitynote_ID;
-
-
 
 
 

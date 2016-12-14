@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.process.ui;
 
@@ -13,12 +13,12 @@ package de.metas.process.ui;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,13 +46,15 @@ import org.compiere.model.MTreeNode;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class AProcessModel
 {
@@ -111,7 +113,7 @@ public class AProcessModel
 
 	/**
 	 * Gets display name to be used in Gear
-	 * 
+	 *
 	 * @param process
 	 * @return process display name
 	 */
@@ -127,7 +129,7 @@ public class AProcessModel
 
 		return name;
 	}
-	
+
 	public Icon getIcon(final I_AD_Process process)
 	{
 		final String iconName;
@@ -147,13 +149,13 @@ public class AProcessModel
 		{
 			iconName = MTreeNode.getIconName(MTreeNode.TYPE_PROCESS);
 		}
-		
+
 		return Images.getImageIcon2(iconName);
 	}
 
 	/**
 	 * Gets description/tooltip to be used in Gear
-	 * 
+	 *
 	 * @param process
 	 * @return description/tooltip
 	 */
@@ -178,6 +180,7 @@ public class AProcessModel
 		return description;
 	}
 
+	@VisibleForTesting
 	boolean isPreconditionApplicable(final I_AD_Process process, final GridTab gridTab)
 	{
 		final String classname = getClassnameOrNull(process);
@@ -206,7 +209,7 @@ public class AProcessModel
 				// so, for now, we consider the preconditions are applicable.
 				return true;
 			}
-			
+
 			logger.error("Cannot load class: " + classname, e);
 			return false;
 		}

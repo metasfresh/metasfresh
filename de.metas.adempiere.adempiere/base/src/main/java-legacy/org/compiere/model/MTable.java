@@ -1,19 +1,19 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- * Contributor(s): Carlos Ruiz - globalqss                                    *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
+ * Contributor(s): Carlos Ruiz - globalqss *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -45,7 +47,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 /**
- *	Persistent Table Model
+ * Persistent Table Model
  * <p>
  * Change log:
  * <ul>
@@ -54,10 +56,11 @@ import de.metas.logging.LogManager;
  * <ul>
  * <li>2007-08-30 - vpj-cd - [ 1784588 ] Use ModelPackage of EntityType to Find Model Class
  * </ul>
- *  @author Jorg Janke
- *  		<li>BF [ 3133032 ] Adempiere is not loading classes from org.compiere.report
- *  			https://sourceforge.net/tracker/?func=detail&aid=3133032&group_id=176962&atid=879332
- *  @version $Id: MTable.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
+ *
+ * @author Jorg Janke
+ *         <li>BF [ 3133032 ] Adempiere is not loading classes from org.compiere.report
+ *         https://sourceforge.net/tracker/?func=detail&aid=3133032&group_id=176962&atid=879332
+ * @version $Id: MTable.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
  */
 public class MTable extends X_AD_Table
 {
@@ -67,28 +70,29 @@ public class MTable extends X_AD_Table
 	private static final long serialVersionUID = -2367316254623142732L;
 
 	/**
-	 * 	Get Table from Cache
-	 *	@param ctx context
-	 *	@param AD_Table_ID id
-	 *	@return MTable
+	 * Get Table from Cache
+	 *
+	 * @param ctx context
+	 * @param AD_Table_ID id
+	 * @return MTable
 	 */
-	public static MTable get (final Properties ctx, final int AD_Table_ID)
+	public static MTable get(final Properties ctx, final int AD_Table_ID)
 	{
 		try
 		{
 			s_cacheLock.lock();
 
-			MTable retValue = s_cache.get (AD_Table_ID);
+			MTable retValue = s_cache.get(AD_Table_ID);
 			if (retValue != null && Env.isSame(retValue.getCtx(), ctx))
 			{
 				return retValue;
 			}
-			retValue = new MTable (ctx, AD_Table_ID, ITrx.TRXNAME_None);
-			if (retValue.get_ID () > 0)
+			retValue = new MTable(ctx, AD_Table_ID, ITrx.TRXNAME_None);
+			if (retValue.get_ID() > 0)
 			{
 				final String tableName = retValue.getTableName();
 
-				s_cache.put (AD_Table_ID, retValue);
+				s_cache.put(AD_Table_ID, retValue);
 				s_cacheTableNameUC2Table.put(tableName.toUpperCase(), retValue);
 
 				// metas
@@ -103,13 +107,14 @@ public class MTable extends X_AD_Table
 		{
 			s_cacheLock.unlock();
 		}
-	}	//	get
+	}	// get
 
 	/**
-	 * 	Get Table from Cache
-	 *	@param ctx context
-	 *	@param tableName case insensitive table name
-	 *	@return Table
+	 * Get Table from Cache
+	 *
+	 * @param ctx context
+	 * @param tableName case insensitive table name
+	 * @return Table
 	 */
 	public static MTable get(final Properties ctx, final String tableName)
 	{
@@ -179,14 +184,15 @@ public class MTable extends X_AD_Table
 	}	// get
 
 	/**
-	 * 	Get Table Name
-	 *	@param ctx context
-	 *	@param AD_Table_ID table
-	 *	@return table name
+	 * Get Table Name
+	 *
+	 * @param ctx context
+	 * @param AD_Table_ID table
+	 * @return table name
 	 * @deprecated Please use {@link IADTableDAO#retrieveTableName(int)}
 	 */
 	@Deprecated
-	public static String getTableName (Properties ctx, int AD_Table_ID)
+	public static String getTableName(Properties ctx, int AD_Table_ID)
 	{
 		if (org.compiere.Adempiere.isUnitTestMode())
 		{
@@ -197,74 +203,73 @@ public class MTable extends X_AD_Table
 					return e.getKey();
 				}
 			}
-			throw new AdempiereException("No TableName found for AD_Table_ID="+AD_Table_ID);
+			throw new AdempiereException("No TableName found for AD_Table_ID=" + AD_Table_ID);
 		}
 
 		return MTable.get(ctx, AD_Table_ID).getTableName();
-	}	//	getTableName
+	}	// getTableName
 
-
-	/**	Cache						*/
-	private static final CCache<Integer,MTable> s_cache = new CCache<>("AD_Table", 500, 0);
-	private static final CCache<String,MTable> s_cacheTableNameUC2Table = new CCache<>("AD_Table", 500, 0);
+	/** Cache */
+	private static final CCache<Integer, MTable> s_cache = new CCache<>("AD_Table", 500, 0);
+	private static final CCache<String, MTable> s_cacheTableNameUC2Table = new CCache<>("AD_Table", 500, 0);
 	private static final ReentrantLock s_cacheLock = new ReentrantLock();
 
-	/**	Static Logger	*/
-	private static Logger	s_log	= LogManager.getLogger(MTable.class);
-
+	/** Static Logger */
+	private static Logger s_log = LogManager.getLogger(MTable.class);
 
 	/** EntityTypes */
 	// metas: tsa: load entity types only when they are needed, else database decoupled testing is not possible. See EntityTypeNames class.
-	//private static MEntityType[] entityTypes = null;
-
-
+	// private static MEntityType[] entityTypes = null;
 
 	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param AD_Table_ID id
-	 *	@param trxName transaction
+	 * Standard Constructor
+	 *
+	 * @param ctx context
+	 * @param AD_Table_ID id
+	 * @param trxName transaction
 	 */
-	public MTable (Properties ctx, int AD_Table_ID, String trxName)
+	public MTable(Properties ctx, int AD_Table_ID, String trxName)
 	{
-		super (ctx, AD_Table_ID, trxName);
+		super(ctx, AD_Table_ID, trxName);
 		if (AD_Table_ID == 0)
 		{
-		//	setName (null);
-		//	setTableName (null);
-			setAccessLevel (ACCESSLEVEL_SystemOnly);	// 4
-			setEntityType (ENTITYTYPE_UserMaintained);	// U
-			setIsChangeLog (false);
-			setIsDeleteable (false);
-			setIsHighVolume (false);
-			setIsSecurityEnabled (false);
-			setIsView (false);	// N
-			setReplicationType (REPLICATIONTYPE_Local);
+			// setName (null);
+			// setTableName (null);
+			setAccessLevel(ACCESSLEVEL_SystemOnly);	// 4
+			setEntityType(ENTITYTYPE_UserMaintained);	// U
+			setIsChangeLog(false);
+			setIsDeleteable(false);
+			setIsHighVolume(false);
+			setIsSecurityEnabled(false);
+			setIsView(false);	// N
+			setReplicationType(REPLICATIONTYPE_Local);
 		}
-	}	//	MTable
+	}	// MTable
 
 	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
+	 * Load Constructor
+	 *
+	 * @param ctx context
+	 * @param rs result set
+	 * @param trxName transaction
 	 */
-	public MTable (Properties ctx, ResultSet rs, String trxName)
+	public MTable(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MTable
+	}	// MTable
 
-	/**	Columns				*/
-	private MColumn[]	m_columns = null;
+	/** Columns */
+	private MColumn[] m_columns = null;
 
 	private final transient ReentrantLock columnsLoadLock = new ReentrantLock();
 
 	/**
-	 * 	Get Columns
-	 *	@param requery requery
-	 *	@return array of columns
+	 * Get Columns
+	 *
+	 * @param requery requery
+	 * @return array of columns
 	 */
-	public MColumn[] getColumns (boolean requery)
+	public MColumn[] getColumns(boolean requery)
 	{
 		if (m_columns != null && !requery)
 		{
@@ -276,7 +281,7 @@ public class MTable extends X_AD_Table
 		{
 			final String sql = "SELECT * FROM AD_Column WHERE AD_Table_ID=? ORDER BY ColumnName";
 			final Object[] params = new Object[] { getAD_Table_ID() };
-			List<MColumn> list = new ArrayList<MColumn>();
+			List<MColumn> list = new ArrayList<>();
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
@@ -307,36 +312,38 @@ public class MTable extends X_AD_Table
 			columnsLoadLock.unlock();
 		}
 		return m_columns;
-	}	//	getColumns
+	}	// getColumns
 
 	/**
-	 * 	Get Column
-	 *	@param columnName (case insensitive)
-	 *	@return column if found; null if column was not found
+	 * Get Column
+	 *
+	 * @param columnName (case insensitive)
+	 * @return column if found; null if column was not found
 	 * @deprecated Please use {@link IADTableDAO#retrieveColumnOrNull(String, String)}
 	 */
 	@Deprecated
-	public MColumn getColumn (String columnName)
+	public MColumn getColumn(String columnName)
 	{
 		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 		final I_AD_Column column = tableDAO.retrieveColumnOrNull(getTableName(), columnName);
 		return LegacyAdapters.convertToPO(column);
-	}	//	getColumn
+	}	// getColumn
 
 	/**
-	 * 	Get Key Columns of Table
-	 *	@return key columns
+	 * Get Key Columns of Table
+	 *
+	 * @return key columns
 	 */
 	public String[] getKeyColumns()
 	{
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		//
 		for (final MColumn column : getColumns(false))
 		{
 			if (column.isKey())
 			{
-				return new String[]{column.getColumnName()};
+				return new String[] { column.getColumnName() };
 			}
 			if (column.isParent())
 			{
@@ -345,7 +352,7 @@ public class MTable extends X_AD_Table
 		}
 		final String[] retValue = list.toArray(new String[list.size()]);
 		return retValue;
-	}	//	getKeyColumns
+	}	// getKeyColumns
 
 	/**************************************************************************
 	 * Get PO Class Instance
@@ -356,7 +363,7 @@ public class MTable extends X_AD_Table
 	 * @deprecated Please consider using {@link TableModelLoader#getPO(Properties, String, int, String)} or {@link TableRecordCacheLocal#getReferencedValue(Object, Class)}.
 	 */
 	@Deprecated
-	public PO getPO (final int Record_ID, final String trxName)
+	public PO getPO(final int Record_ID, final String trxName)
 	{
 		final Properties ctx = getCtx();
 		final String tableName = getTableName();
@@ -376,27 +383,29 @@ public class MTable extends X_AD_Table
 	}
 
 	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
+	 * Before Save
+	 *
+	 * @param newRecord new
+	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
 		if (isView() && isDeleteable())
 			setIsDeleteable(false);
 		//
 		return true;
-	}	//	beforeSave
+	}	// beforeSave
 
 	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
+	 * After Save
+	 *
+	 * @param newRecord new
+	 * @param success success
+	 * @return success
 	 */
 	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
+	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		//
 		// Create/Update table sequences
@@ -419,11 +428,12 @@ public class MTable extends X_AD_Table
 		}
 
 		return success;
-	}	//	afterSave
+	}	// afterSave
 
 	/**
-	 * 	Get SQL Create
-	 *	@return create table DDL
+	 * Get SQL Create
+	 *
+	 * @return create table DDL
 	 */
 	public String getSQLCreate()
 	{
@@ -501,27 +511,39 @@ public class MTable extends X_AD_Table
 
 	// globalqss
 	/**
-	 * 	Grant independence to GenerateModel from AD_Table_ID
-	 *	@param String tableName
-	 *	@return int retValue
-	  * @deprecated Please use {@link IADTableDAO#retrieveTableId(String)}
+	 * Grant independence to GenerateModel from AD_Table_ID. This method works <b>case insensitive</b>.
+	 *
+	 * @param String tableName
+	 * @return int retValue
+	 * @deprecated Please use {@link IADTableDAO#retrieveTableId(String)}
 	 */
 	@Deprecated
 	public static int getTable_ID(String tableName)
 	{
+		if (Check.isEmpty(tableName, true))
+		{
+			return -1;
+		}
+
 		// metas-ts: adding a unit testing mode, where a table id is returned without DB access.
 		// Note: this method is called from every model interface generated by the model generator class.
 		if (org.compiere.Adempiere.isUnitTestMode())
 		{
-			if (staticTableIds.containsKey(tableName))
+			// ignoring case, because in DLM we also deal with all-lowercase table names, and it should not matter anyways
+			// also note that we don't store the upper or lowercase tableName because what we put into the map is returned by the getTableName(int) method
+			final Optional<Entry<String, Integer>> entry = staticTableIds.entrySet().stream()
+					.filter(e -> e.getKey().equalsIgnoreCase(tableName))
+					.findFirst();
+			if (entry.isPresent())
 			{
-				return staticTableIds.get(tableName);
+				return entry.get().getValue();
 			}
+
 			final int returnValue = ++nextTableId;
 			setStaticTableId(tableName, returnValue);
 			return returnValue;
 		}
-		//metas end
+		// metas end
 
 		Integer retValue = 0;
 		if (s_cacheTableName2Id != null)
@@ -534,13 +556,13 @@ public class MTable extends X_AD_Table
 			return retValue;
 		}
 
-		final String SQL = "SELECT AD_Table_ID FROM AD_Table WHERE TableName = ?";
+		final String SQL = "SELECT AD_Table_ID FROM AD_Table WHERE lower(TableName) = ?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(SQL, null);
-			pstmt.setString(1, tableName);
+			pstmt.setString(1, tableName.toLowerCase());
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -575,6 +597,7 @@ public class MTable extends X_AD_Table
 
 	/**
 	 * Create query to retrieve one or more PO.
+	 *
 	 * @param whereClause
 	 * @param trxName
 	 * @return Query
@@ -585,27 +608,28 @@ public class MTable extends X_AD_Table
 	}
 
 	/**
-	 * 	String Representation
-	 *	@return info
+	 * String Representation
+	 *
+	 * @return info
 	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MTable[");
-		sb.append (get_ID()).append ("-").append (getTableName()).append ("]");
-		return sb.toString ();
-	}	//	toString
+		StringBuffer sb = new StringBuffer("MTable[");
+		sb.append(get_ID()).append("-").append(getTableName()).append("]");
+		return sb.toString();
+	}	// toString
 
 	//
-	//metas-ts
-	private static final Map<String, Integer> staticTableIds = new HashMap<String, Integer>();
+	// metas-ts
+	private static final Map<String, Integer> staticTableIds = new HashMap<>();
 	private static int nextTableId = 0;
-	private static final CCache<String, Integer> s_cacheTableName2Id = new CCache<String, Integer>(Table_Name + "#TableName2ID", 200, 0); // metas
+	private static final CCache<String, Integer> s_cacheTableName2Id = new CCache<>(Table_Name + "#TableName2ID", 200, 0); // metas
 
 	public static void setStaticTableId(final String name, final int id)
 	{
 		staticTableIds.put(name, id);
 	}
-	//metas end
+	// metas end
 
-}	//	MTable
+}	// MTable
