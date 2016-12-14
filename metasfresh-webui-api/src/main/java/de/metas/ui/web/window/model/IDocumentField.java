@@ -75,10 +75,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	void updateValidIfStaled();
 
-	/**
-	 * @return field's valid state; never return null
-	 */
-	DocumentValidStatus getValid();
+	@Override
+	DocumentValidStatus getValidStatus();
 
 	IDocumentField copy(Document document, CopyMode copyMode);
 }

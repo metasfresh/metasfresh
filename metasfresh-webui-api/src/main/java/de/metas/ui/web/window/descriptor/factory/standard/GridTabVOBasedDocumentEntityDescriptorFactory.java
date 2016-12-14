@@ -12,17 +12,22 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -211,6 +216,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.getFields()
 				.stream()
 				.forEach(gridFieldVO -> createAndAddDocumentField(entityDescriptorBuilder, gridFieldVO));
+		
+		//
+		// Quick input descriptor
+		setupQuickInputEntityDescriptor(entityDescriptorBuilder);
+		
 
 		return entityDescriptorBuilder;
 	}
@@ -286,6 +296,12 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			);
 			if (gridFieldVO.isReadOnly())
 			{
+				readonlyLogic = ConstantLogicExpression.TRUE;
+			}
+			else if (!gridFieldVO.isUpdateable())
+			{
+				// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
+				// But here, on Webui we no longer have this concept, since we are auto-saving it.
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
 			else
@@ -411,7 +427,9 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return fieldBuilder;
 	}
 
-	/** @return a pair of "child link column name" - "parent link column name" */
+	/**
+	 * @return a pair of "child link column name" - "parent link column name"
+	 */
 	private static final IPair<String, String> extractChildParentLinkColumnNames(final GridTabVO childTabVO, final GridTabVO parentTabVO)
 	{
 		// If this is the master tab then there is no parent link
@@ -424,11 +442,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		// Find parent's link column name
 		final int parentLinkColumnId = childTabVO.getParent_Column_ID();
 		String parentLinkColumnName = parentTabVO.getColumnNameByAD_Column_ID(parentLinkColumnId);
-		if(parentLinkColumnName == null)
+		if (parentLinkColumnName == null)
 		{
 			parentLinkColumnName = parentTabVO.getKeyColumnName();
 		}
-		if(parentLinkColumnName == null)
+		if (parentLinkColumnName == null)
 		{
 			return null;
 		}
@@ -500,21 +518,68 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
 	}
 
-	
-	private DocumentEntityDescriptor createQuickInputEntityDescriptor_SalesOrder(DocumentEntityDescriptor.Builder documentDescriptor)
+	private void setupQuickInputEntityDescriptor(final DocumentEntityDescriptor.Builder documentDescriptor)
 	{
+		// FIXME uber HARDCODED
+		
+		if(!I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableName()))
+		{
+			return;
+		}
+		
 		final DocumentEntityDescriptor.Builder quickInputDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentDescriptor.getDocumentTypeId())
 				.disableCallouts()
+				.setDataBinding(DocumentEntityDataBindingDescriptorBuilder.NULL)
 				// Defaults:
-				.setDetailId(null)
-				.setAD_Tab_ID(0)
+				.setDetailId(documentDescriptor.getDetailId())
+				.setAD_Tab_ID(documentDescriptor.getAD_Tab_ID())
 				.setTableName(documentDescriptor.getTableName())
-				.setIsSOTrx(true)
+				.setIsSOTrx(documentDescriptor.isSOTrx())
 				//
 				;
 
-		// TODO: implement
-		throw new UnsupportedOperationException();
+		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("M_Product_ID")
+				.setCaption(Services.get(IMsgBL.class).translatable("M_Product_ID"))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+						.setColumnName("M_Product_ID")
+						.setDisplayType(DisplayType.Search)
+						.setAD_Val_Rule_ID(540051)
+						.buildProvider())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ILogicExpression.TRUE)
+				.setDisplayLogic(ILogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField));
+
+		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("M_HU_PI_Item_Product_ID")
+				.setCaption(Services.get(IMsgBL.class).translatable("M_HU_PI_Item_Product_ID"))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+						.setColumnName("M_HU_PI_Item_Product_ID")
+						.setDisplayType(DisplayType.Search)
+						.setAD_Val_Rule_ID(540199)
+						.buildProvider())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ILogicExpression.TRUE)
+				.setDisplayLogic(ILogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField));
+		
+		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("Qty")
+				.setCaption(Services.get(IMsgBL.class).translatable("Qty"))
+				.setWidgetType(DocumentFieldWidgetType.Quantity)
+				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ILogicExpression.TRUE)
+				.setDisplayLogic(ILogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField));
+		
+		documentDescriptor.setQuickInputDescriptor(quickInputDescriptor);
 	}
 }

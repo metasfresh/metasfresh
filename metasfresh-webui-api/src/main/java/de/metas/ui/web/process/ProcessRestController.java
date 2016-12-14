@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.process.json.JSONProcessInstance;
@@ -69,11 +68,10 @@ public class ProcessRestController
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/process";
 
 	@Autowired
-	private LoginService loginService;
+	private UserSession userSession;
+
 	@Autowired
 	private ProcessInstancesRepository instancesRepository;
-	@Autowired
-	private UserSession userSession;
 
 	@Autowired
 	private DocumentCollection documentsCollection;
@@ -90,39 +88,35 @@ public class ProcessRestController
 				.build();
 	}
 
-	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	public JSONProcessLayout layout(
-			@RequestParam(name = "processId", required = true) final int adProcessId //
+	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
+	public JSONProcessLayout getLayout(
+			@PathVariable final int adProcessId //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final ProcessLayout layout = instancesRepository.getProcessDescriptor(adProcessId).getLayout();
 		return JSONProcessLayout.of(layout, newJsonOpts());
 	}
 
-	@RequestMapping(value = "/instance", method = RequestMethod.PUT)
-	@Deprecated
-	public JSONProcessInstance createInstance(
-			@RequestParam(name = "processId", required = true) final int adProcessId //
-			, @RequestParam(name = WebConfig.PARAM_WindowId, required = false, defaultValue = "0") final int adWindowId //
-			, @RequestParam(name = WebConfig.PARAM_DocumentId, required = false) final String idStr //
+	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
+	public JSONProcessInstance createInstanceFromRequest(
+			@PathVariable("processId") final int adProcessId, @RequestBody final JSONCreateProcessInstanceRequest request //
 	)
 	{
-		final JSONCreateProcessInstanceRequest request = JSONCreateProcessInstanceRequest.of(adProcessId, adWindowId, idStr);
-		return createInstanceFromRequest(request);
-	}
+		userSession.assertLoggedIn();
 
-	@RequestMapping(value = "/instance", method = RequestMethod.POST)
-	public JSONProcessInstance createInstanceFromRequest(@RequestBody final JSONCreateProcessInstanceRequest request)
-	{
-		loginService.assertLoggedIn();
+		// Validate request's AD_Process_ID
+		// (we are not using it, but just for consistency)
+		if (request.getAD_Process_ID() > 0 && request.getAD_Process_ID() != adProcessId)
+		{
+			throw new IllegalArgumentException("Request's AD_Process_ID is not valid. It shall be " + adProcessId + " or none but it was " + request.getAD_Process_ID());
+		}
 
-		final int adProcessId = request.getAD_Process_ID();
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 
 		final TableRecordReference documentRef;
-		if(request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
+		if (request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
 		{
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
 			documentRef = documentsCollection.getTableRecordReference(documentPath);
@@ -131,9 +125,9 @@ public class ProcessRestController
 		{
 			documentRef = null;
 		}
-		
+
 		final String whereClause;
-		if(!Check.isEmpty(request.getViewId()))
+		if (!Check.isEmpty(request.getViewId()))
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(request.getViewId());
 			whereClause = view.getSqlWhereClause(request.getViewDocumentIds());
@@ -142,7 +136,7 @@ public class ProcessRestController
 		{
 			whereClause = null;
 		}
-		
+
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setCreateTemporaryCtx()
@@ -155,25 +149,38 @@ public class ProcessRestController
 			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processInfo);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
-		
+
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}", method = RequestMethod.GET)
-	public JSONProcessInstance getInstance(@PathVariable("pinstanceId") final int pinstanceId)
+	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
+	public JSONProcessInstance getInstance(
+			@PathVariable("processId") final int processId_NOTUSED //
+			, @PathVariable("pinstanceId") final int pinstanceId //
+	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final ProcessInstance processInstance = instancesRepository.getProcessInstanceForReading(pinstanceId);
 		return JSONProcessInstance.of(processInstance, newJsonOpts());
 	}
 
 	@RequestMapping(value = "/instance/{pinstanceId}/parameters", method = RequestMethod.PATCH)
-	public List<JSONDocument> processParametersChangeEvents(
+	public List<JSONDocument> processParametersChangeEvents_DEPRECATED(
 			@PathVariable("pinstanceId") final int pinstanceId //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
-		loginService.assertLoggedIn();
+		return processParametersChangeEvents(-1, pinstanceId, events);
+	}
+
+	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.PATCH)
+	public List<JSONDocument> processParametersChangeEvents(
+			@PathVariable("processId") final int processId_NOTUSED //
+			, @PathVariable("pinstanceId") final int pinstanceId //
+			, @RequestBody final List<JSONDocumentChangedEvent> events //
+	)
+	{
+		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("pinstance.processParametersChangeEvents", () -> {
 			final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
@@ -191,10 +198,13 @@ public class ProcessRestController
 		});
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}/start", method = RequestMethod.GET)
-	public JSONProcessInstanceResult startProcess(@PathVariable("pinstanceId") final int pinstanceId)
+	@RequestMapping(value = "/{processId}/{pinstanceId}/start", method = RequestMethod.GET)
+	public JSONProcessInstanceResult startProcess(
+			@PathVariable("processId") final int processId_NOTUSED //
+			, @PathVariable("pinstanceId") final int pinstanceId //
+	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("pinstance.startProcess", () -> {
 			final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
@@ -202,25 +212,25 @@ public class ProcessRestController
 
 			// Push back the changed document
 			instancesRepository.checkin(processInstance);
-			// TODO: remove it from instancesRepository
 
 			return JSONProcessInstanceResult.of(result);
 		});
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}/print/{filename:.*}", method = RequestMethod.GET)
-	public ResponseEntity<byte[]>  getReport(
-			@PathVariable("pinstanceId") final int pinstanceId //
+	@RequestMapping(value = "/{processId}/{pinstanceId}/print/{filename:.*}", method = RequestMethod.GET)
+	public ResponseEntity<byte[]> getReport(
+			@PathVariable("processId") final int processId_NOTUSED //
+			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @PathVariable("filename") final String filename //
-		)
+	)
 	{
 		final ProcessInstanceResult executionResult = instancesRepository.getProcessInstanceForReading(pinstanceId)
-			.getExecutionResult();
-		
+				.getExecutionResult();
+
 		final String reportFilename = executionResult.getReportFilename();
 		final String reportContentType = executionResult.getReportContentType();
 		final byte[] reportData = executionResult.getReportData();
-		
+
 		final String reportFilenameEffective = Util.coalesce(filename, reportFilename, "");
 
 		final HttpHeaders headers = new HttpHeaders();
@@ -231,27 +241,29 @@ public class ProcessRestController
 		return response;
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}/parameters/{parameterName}/typeahead", method = RequestMethod.GET)
-	public JSONLookupValuesList typeahead(
-			@PathVariable("pinstanceId") final int pinstanceId //
+	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/typeahead", method = RequestMethod.GET)
+	public JSONLookupValuesList getParameterTypeahead(
+			@PathVariable("processId") final int processId_NOTUSED //
+			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		return instancesRepository.getProcessInstanceForReading(pinstanceId)
 				.getParameterLookupValuesForQuery(parameterName, query)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/instance/{pinstanceId}/parameters/{parameterName}/dropdown", method = RequestMethod.GET)
-	public JSONLookupValuesList dropdown(
-			@PathVariable("pinstanceId") final int pinstanceId //
+	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/dropdown", method = RequestMethod.GET)
+	public JSONLookupValuesList getParameterDropdown(
+			@PathVariable("processId") final int processId_NOTUSED //
+			, @PathVariable("pinstanceId") final int pinstanceId //
 			, @PathVariable("parameterName") final String parameterName //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		return instancesRepository.getProcessInstanceForReading(pinstanceId)
 				.getParameterLookupValues(parameterName)

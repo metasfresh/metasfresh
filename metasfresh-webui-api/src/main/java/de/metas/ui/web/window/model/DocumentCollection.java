@@ -88,8 +88,13 @@ public class DocumentCollection
 	{
 		return documentDescriptorFactory;
 	}
+	
+	public final DocumentDescriptor getDocumentDescriptor(final int adWindowId)
+	{
+		return documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+	}
 
-	private final DocumentEntityDescriptor getDocumentEntityDescriptor(final int adWindowId)
+	public final DocumentEntityDescriptor getDocumentEntityDescriptor(final int adWindowId)
 	{
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 		return descriptor.getEntityDescriptor();
@@ -154,7 +159,7 @@ public class DocumentCollection
 
 		return rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
 	}
-
+	
 	/**
 	 * Gets or creates a new document (writable mode)
 	 *
@@ -295,8 +300,7 @@ public class DocumentCollection
 
 	public TableRecordReference getTableRecordReference(final DocumentPath documentPath)
 	{
-		final DocumentEntityDescriptor rootEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(documentPath.getAD_Window_ID())
-				.getEntityDescriptor();
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getAD_Window_ID());
 
 		if (documentPath.isRootDocument())
 		{

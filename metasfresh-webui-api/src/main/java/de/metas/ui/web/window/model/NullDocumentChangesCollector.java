@@ -107,6 +107,12 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	{
 		// do nothing
 	}
+	
+	@Override
+	public void collectValidStatus(final IDocumentFieldView documentField)
+	{
+		// do nothing
+	}
 
 	@Override
 	public void collectDocumentSaveStatusChanged(final DocumentPath documentPath, final DocumentSaveStatus documentSaveStatus)

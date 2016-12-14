@@ -38,6 +38,8 @@ public interface IDocumentViewSelection
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
+	List<DocumentFilter> getStickyFilters();
+
 	/**
 	 * @return active filters
 	 */
@@ -46,4 +48,5 @@ public interface IDocumentViewSelection
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
 
 	String getSqlWhereClause(List<Integer> viewDocumentIds);
+
 }

@@ -255,6 +255,17 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		return result.build();
 	}
+	
+	public String replaceTableNameWithTableAlias(final String sql)
+	{
+		if(sql == null || sql.isEmpty())
+		{
+			return sql;
+		}
+		
+		final String sqlFixed = sql.replace(getTableName() + ".", getTableAlias() + ".");
+		return sqlFixed;
+	}
 
 	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
 	{

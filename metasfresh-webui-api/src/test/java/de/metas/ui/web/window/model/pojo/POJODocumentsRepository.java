@@ -97,7 +97,7 @@ public final class POJODocumentsRepository implements DocumentsRepository
 		for (final Object model : POJOLookupMap.get().getRawRecords(tableName))
 		{
 			final POJOWrapper modelWrapper = POJOWrapper.getWrapper(model);
-			if (query.isRecordIdSet() && modelWrapper.getId() != query.getRecordId())
+			if (query.getRecordId() != null && modelWrapper.getId() != query.getRecordId())
 			{
 				continue;
 			}

@@ -51,10 +51,11 @@ public class DashboardRestController
 				.setUserSession(userSession);
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
 	@Deprecated
-	public JSONDashboard getUserDashboard()
+	public JSONDashboard getUserDashboard_DEPRECATED()
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		return getKPIs();
 	}
 
@@ -67,10 +68,11 @@ public class DashboardRestController
 		return JSONDashboard.of(userDashboard.getKPIItems(), newJSONOpts().build());
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.PATCH)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.PATCH)
 	@Deprecated
-	public void changeUserDashboard(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
+	public void changeUserDashboard_DEPRECATED(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		changeKPIs(jsonDashboardChanges);
 	}
 

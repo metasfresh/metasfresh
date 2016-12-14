@@ -115,7 +115,7 @@ public final class ProcessInstance
 	{
 		return parameters;
 	}
-	
+
 	public Collection<IDocumentFieldView> getParameters()
 	{
 		return parameters.getFieldViews();
@@ -141,7 +141,7 @@ public final class ProcessInstance
 		assertNotExecuted();
 		parameters.processValueChanges(events, reason);
 	}
-	
+
 	/**
 	 * @return execution result or throws exception if the process was not already executed
 	 */
@@ -154,7 +154,7 @@ public final class ProcessInstance
 		}
 		return executionResult;
 	}
-	
+
 	public boolean isExecuted()
 	{
 		return executed;
@@ -162,7 +162,7 @@ public final class ProcessInstance
 
 	private final void assertNotExecuted()
 	{
-		if(isExecuted())
+		if (isExecuted())
 		{
 			throw new AdempiereException("Process already executed");
 		}
@@ -174,8 +174,9 @@ public final class ProcessInstance
 
 		//
 		// Make sure it's saved in database
-		if (!saveIfValidAndHasChanges())
+		if (!saveIfValidAndHasChanges(true))
 		{
+			// TODO: improve error message (be more explicit)
 			throw new ProcessExecutionException("Instance could not be saved because it's not valid");
 		}
 
@@ -215,7 +216,7 @@ public final class ProcessInstance
 
 			final ProcessInstanceResult result = resultBuilder.build();
 			executionResult = result;
-			if(result.isSuccess())
+			if (result.isSuccess())
 			{
 				executed = false;
 			}
@@ -260,12 +261,27 @@ public final class ProcessInstance
 	/**
 	 * Save
 	 *
+	 * @param throwEx <code>true</code> if we shall throw an exception if document it's not valid or it's not saved
 	 * @return true if valid and saved
 	 */
-	public boolean saveIfValidAndHasChanges()
+	public boolean saveIfValidAndHasChanges(final boolean throwEx)
 	{
-		final DocumentSaveStatus parametersSaveStatus = getParametersDocument().saveIfValidAndHasChanges();
-		final boolean saved = !parametersSaveStatus.isError();
+		final Document parametersDocument = getParametersDocument();
+		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges();
+		final boolean saved;
+		if (parametersSaveStatus.hasChangesToBeSaved() || parametersSaveStatus.isError())
+		{
+			saved = false;
+			if (throwEx)
+			{
+				throw new ProcessExecutionException(parametersSaveStatus.getReason());
+			}
+		}
+		else
+		{
+			saved = true;
+		}
+
 		return saved;
 	}
 }

@@ -65,7 +65,7 @@ public class AddressRestController
 				.build();
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
 	public JSONDocument createAddressDocument(@RequestBody final JSONCreateAddressRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -76,8 +76,11 @@ public class AddressRestController
 		});
 	}
 
-	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	public JSONAddressLayout getLayout()
+	/**
+	 * @param docId_NOTUSED not used but we need this parameter to be consistent with all other APIs that we have.
+	 */
+	@RequestMapping(value = "/{docId}/layout", method = RequestMethod.GET)
+	public JSONAddressLayout getLayout(@PathVariable("docId") final int docId_NOTUSED)
 	{
 		userSession.assertLoggedIn();
 
@@ -108,7 +111,7 @@ public class AddressRestController
 	}
 
 	@RequestMapping(value = "/{docId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
-	public JSONLookupValuesList typeahead(
+	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable("docId") final int docId //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -122,7 +125,7 @@ public class AddressRestController
 	}
 
 	@RequestMapping(value = "/{docId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
-	public JSONLookupValuesList dropdown(
+	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable("docId") final int docId //
 			, @PathVariable("attributeName") final String attributeName //
 	)

@@ -37,8 +37,12 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescripto
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDocumentLayoutTabQuickInput implements Serializable
 {
-	static JSONDocumentLayoutTabQuickInput of(final DocumentLayoutDetailQuickInputDescriptor layout, final JSONOptions jsonOpts)
+	public static JSONDocumentLayoutTabQuickInput fromNullable(final DocumentLayoutDetailQuickInputDescriptor layout, final JSONOptions jsonOpts)
 	{
+		if(layout == null)
+		{
+			return null;
+		}
 		return new JSONDocumentLayoutTabQuickInput(layout, jsonOpts);
 	}
 

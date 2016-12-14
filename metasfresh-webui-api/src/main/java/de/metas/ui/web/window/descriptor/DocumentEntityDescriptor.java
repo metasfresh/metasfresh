@@ -33,6 +33,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
@@ -90,11 +91,6 @@ public class DocumentEntityDescriptor
 
 	private final DocumentFieldDependencyMap dependencies;
 
-	// Legacy
-	private final int AD_Tab_ID;
-	private final String tableName;
-	private final boolean isSOTrx;
-
 	private final Map<Characteristic, List<DocumentFieldDescriptor>> fieldsByCharacteristic = new HashMap<>();
 
 	//
@@ -105,6 +101,13 @@ public class DocumentEntityDescriptor
 	private final DocumentFilterDescriptorsProvider filtersProvider;
 
 	private final int printProcessId;
+
+	private final DocumentEntityDescriptor quickInputDescriptor;
+
+	// Legacy
+	private final int AD_Tab_ID;
+	private final String tableName;
+	private final boolean isSOTrx;
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
@@ -125,11 +128,6 @@ public class DocumentEntityDescriptor
 		dataBinding = builder.getOrBuildDataBinding();
 		dependencies = builder.buildDependencies();
 
-		// legacy:
-		AD_Tab_ID = builder.getAD_Tab_ID();
-		tableName = builder.getTableName();
-		isSOTrx = builder.isSOTrx();
-
 		//
 		_id = builder.buildId();
 
@@ -141,6 +139,13 @@ public class DocumentEntityDescriptor
 		filtersProvider = builder.createFiltersProvider();
 
 		printProcessId = builder.getPrintAD_Process_ID();
+
+		quickInputDescriptor = builder.getQuickInputDescriptor() == null ? null : builder.getQuickInputDescriptor().build();
+
+		// legacy:
+		AD_Tab_ID = builder.getAD_Tab_ID();
+		tableName = builder.getTableName();
+		isSOTrx = builder.isSOTrx();
 	}
 
 	@Override
@@ -344,6 +349,15 @@ public class DocumentEntityDescriptor
 		return printProcessId;
 	}
 
+	public DocumentEntityDescriptor getQuickInputDescriptor()
+	{
+		if (quickInputDescriptor == null)
+		{
+			throw new EntityNotFoundException("No quick input descriptor for " + this);
+		}
+		return quickInputDescriptor;
+	}
+
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
@@ -374,18 +388,20 @@ public class DocumentEntityDescriptor
 		// Callouts
 		private boolean _calloutsEnabled = true; // enabled by default
 
+		private int _printProcessId = -1;
+
+		private DocumentEntityDescriptor.Builder quickInputDescriptor;
+
 		// Legacy
 		private Integer _AD_Tab_ID;
 		private String _tableName;
 		private Boolean _isSOTrx;
 
-		private int _printProcessId = -1;
-
 		private Builder()
 		{
 			super();
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -481,6 +497,11 @@ public class DocumentEntityDescriptor
 		public DocumentFieldDescriptor.Builder getFieldBuilder(final String fieldName)
 		{
 			return _fieldBuilders.get(fieldName);
+		}
+
+		public Collection<DocumentFieldDescriptor.Builder> getFieldBuilders()
+		{
+			return _fieldBuilders.values();
 		}
 
 		private final void updateFieldBuilders(final Consumer<DocumentFieldDescriptor.Builder> fieldUpdater)
@@ -592,7 +613,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private int getAD_Tab_ID()
+		public int getAD_Tab_ID()
 		{
 			Check.assumeNotNull(_AD_Tab_ID, "AD_Tab_ID is set for {}", this);
 			return _AD_Tab_ID;
@@ -664,7 +685,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private boolean isSOTrx()
+		public boolean isSOTrx()
 		{
 			Check.assumeNotNull(_isSOTrx, "isSOTrx set for {}", this);
 			return _isSOTrx;
@@ -794,6 +815,17 @@ public class DocumentEntityDescriptor
 		private int getPrintAD_Process_ID()
 		{
 			return _printProcessId;
+		}
+
+		public Builder setQuickInputDescriptor(final DocumentEntityDescriptor.Builder quickInputDescriptor)
+		{
+			this.quickInputDescriptor = quickInputDescriptor;
+			return this;
+		}
+
+		public DocumentEntityDescriptor.Builder getQuickInputDescriptor()
+		{
+			return quickInputDescriptor;
 		}
 	}
 }

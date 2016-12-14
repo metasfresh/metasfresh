@@ -110,8 +110,17 @@ public class DebugRestController
 	{
 		final boolean showColumnNamesForCaption = DisplayType.toBoolean(showColumnNamesForCaptionStr);
 		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
-		logResourceValueChanged("ShowColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
+		logResourceValueChanged("showColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
 	}
+	
+	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.PUT)
+	public void setDisableDeprecatedRestAPI(@RequestBody final String disableDeprecatedRestAPIStr)
+	{
+		final boolean disableDeprecatedRestAPI = DisplayType.toBoolean(disableDeprecatedRestAPIStr);
+		final Object disableDeprecatedRestAPIOldObj = userSession.setProperty(UserSession.PARAM_DisableDeprecatedRestAPI, disableDeprecatedRestAPI);
+		logResourceValueChanged(UserSession.PARAM_DisableDeprecatedRestAPI, disableDeprecatedRestAPI, disableDeprecatedRestAPIOldObj);
+	}
+
 
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
 	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)

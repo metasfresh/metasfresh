@@ -137,8 +137,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		virtualField = builder.virtualField;
 		calculated = builder.calculated;
 
-		widgetType = Preconditions.checkNotNull(builder.widgetType, "widgetType is null");
-		valueClass = Preconditions.checkNotNull(builder.valueClass, "value class not null");
+		widgetType = builder.getWidgetType();
+		valueClass = builder.getValueClass();
 
 		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
 
@@ -154,7 +154,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		dependencies = builder.buildDependencies();
 
-		callouts = ImmutableList.copyOf(builder.callouts);
+		callouts = ImmutableList.copyOf(builder.getCallouts());
 	}
 
 	@Override
@@ -546,8 +546,8 @@ public final class DocumentFieldDescriptor implements Serializable
 		private boolean virtualField;
 		private boolean calculated;
 
-		private DocumentFieldWidgetType widgetType;
-		public Class<?> valueClass;
+		private DocumentFieldWidgetType _widgetType;
+		public Class<?> _valueClass;
 
 		// Lookup
 		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
@@ -581,7 +581,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					.omitNullValues()
 					.add("name", fieldName)
 					.add("detailId", _detailId)
-					.add("widgetType", widgetType)
+					.add("widgetType", _widgetType)
 					.add("characteristics", characteristics.isEmpty() ? null : characteristics)
 					.toString();
 		}
@@ -721,13 +721,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
 			assertNotBuilt();
-			this.widgetType = widgetType;
+			this._widgetType = widgetType;
 			return this;
 		}
 
 		public DocumentFieldWidgetType getWidgetType()
 		{
-			return widgetType;
+			Preconditions.checkNotNull(_widgetType, "widgetType is null");
+			return _widgetType;
 		}
 
 		public Builder setLookupDescriptorProvider(final LookupDescriptorProvider lookupDescriptorProvider)
@@ -763,8 +764,19 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setValueClass(final Class<?> valueClass)
 		{
 			assertNotBuilt();
-			this.valueClass = valueClass;
+			this._valueClass = valueClass;
 			return this;
+		}
+		
+		private Class<?> getValueClass()
+		{
+			if(_valueClass != null)
+			{
+				return _valueClass;
+			}
+			
+			final DocumentFieldWidgetType widgetType = getWidgetType();
+			return widgetType.getValueClass();
 		}
 
 		public Builder setDefaultValueExpression(final Optional<IExpression<?>> defaultValueExpression)
@@ -831,7 +843,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public ILogicExpression getReadonlyLogic()
+		private ILogicExpression getReadonlyLogic()
 		{
 			return _readonlyLogic;
 		}

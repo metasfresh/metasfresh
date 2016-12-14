@@ -31,13 +31,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentViewFieldValueLoader;
-import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentView;
+import de.metas.ui.web.window.model.DocumentViewCreateRequest;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.IDocumentView;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
@@ -85,8 +86,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final String sqlSelectPage;
 	private final List<DocumentViewFieldValueLoader> fieldLoaders;
 
+	/** Sticky filters (i.e. active filters which cannot be changed) */
+	private final List<DocumentFilter> stickyFilters;
 	/** Active filters */
 	private final List<DocumentFilter> filters;
+
 	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	private transient String _toString;
@@ -101,6 +105,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
+
+		stickyFilters = ImmutableList.copyOf(builder.getStickyFilters());
 		filters = ImmutableList.copyOf(builder.getFilters());
 
 		sqlSelectPage = builder.buildSqlSelectPage();
@@ -162,6 +168,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return defaultSelection.getOrderBys();
+	}
+
+	@Override
+	public List<DocumentFilter> getStickyFilters()
+	{
+		return stickyFilters;
 	}
 
 	@Override
@@ -299,7 +311,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	public static final class Builder
 	{
-		private SqlDocumentQueryBuilder queryBuilder;
+		private List<DocumentFieldDescriptor> _viewFields;
+		private List<DocumentFilter> _stickyFilters;
+		private List<DocumentFilter> _filters;
+
+		private SqlDocumentQueryBuilder _queryBuilder;
 
 		private Builder()
 		{
@@ -308,14 +324,14 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		public SqlDocumentViewSelection build()
 		{
-			Preconditions.checkNotNull(queryBuilder, "queryBuilder");
+			Preconditions.checkNotNull(_queryBuilder, "builder was configured");
 
 			return new SqlDocumentViewSelection(this);
 		}
 
 		private ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders()
 		{
-			final List<DocumentFieldDescriptor> fieldDescriptors = queryBuilder.getViewFields();
+			final List<DocumentFieldDescriptor> fieldDescriptors = getViewFields();
 			return createDocumentViewFieldValueLoaders(fieldDescriptors);
 		}
 
@@ -347,31 +363,72 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return ImmutableList.copyOf(documentViewFieldLoaders);
 		}
 
-		public Builder setQuery(final DocumentQuery query)
+		public Builder setRequest(final DocumentViewCreateRequest request)
 		{
-			queryBuilder = SqlDocumentQueryBuilder.of(query);
+			Check.assumeNotNull(request, "Parameter request is not null");
+
+			_stickyFilters = request.getStickyFilters();
+			_filters = request.getFilters();
+
+			_queryBuilder = SqlDocumentQueryBuilder.newInstance(request.getEntityDescriptor())
+					.addDocumentFilters(request.getStickyFilters())
+					.addDocumentFilters(request.getFilters());
+
+			_viewFields = request.getViewFields();
+
 			return this;
+		}
+
+		private SqlDocumentQueryBuilder getQueryBuilder()
+		{
+			return _queryBuilder;
+		}
+
+		private DocumentEntityDescriptor getEntityDescriptor()
+		{
+			return _queryBuilder.getEntityDescriptor();
+		}
+
+		private SqlDocumentEntityDataBindingDescriptor getBinding()
+		{
+			return _queryBuilder.getEntityBinding();
+		}
+
+		private List<DocumentFilter> getStickyFilters()
+		{
+			return _stickyFilters;
+		}
+
+		private List<DocumentFilter> getFilters()
+		{
+			return _filters;
+		}
+
+		private List<DocumentFieldDescriptor> getViewFields()
+		{
+			return _viewFields;
 		}
 
 		private int getAD_Window_ID()
 		{
-			return queryBuilder.getEntityDescriptor().getAD_Window_ID();
+			return getEntityDescriptor().getAD_Window_ID();
 		}
 
 		private String getTableName()
 		{
-			return queryBuilder.getEntityDescriptor().getTableName();
+			return getEntityDescriptor().getTableName();
 		}
 
 		private String getKeyColumnName()
 		{
-			return queryBuilder.getEntityBinding().getKeyColumnName();
+			return getBinding().getKeyColumnName();
 		}
 
 		private String buildSqlSelectPage()
 		{
+			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
+			final SqlDocumentEntityDataBindingDescriptor dataBinding = getBinding();
 			final String sqlPagedSelectFrom = dataBinding
 					.getSqlPagedSelectAllFrom()
 					.evaluate(evalCtx, OnVariableNotFound.Fail);
@@ -384,8 +441,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		private OrderedSelection buildInitialSelection()
 		{
+			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
+			final SqlDocumentEntityDataBindingDescriptor dataBinding = getBinding();
 
 			final String sqlTableName = dataBinding.getTableName();
 			final String sqlTableAlias = dataBinding.getTableAlias();
@@ -456,8 +514,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		private OrderedSelectionFactory buildSqlCreateSelectionFromSelection()
 		{
+			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = queryBuilder.getEntityBinding();
+			final SqlDocumentEntityDataBindingDescriptor dataBinding = getBinding();
 
 			final String sqlTableName = dataBinding.getTableName();
 			final String sqlTableAlias = dataBinding.getTableAlias();
@@ -499,11 +558,6 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final Map<String, String> fieldName2sqlDictionary = dataBinding.getAvailableFieldFullOrderBys(evalCtx);
 
 			return new OrderedSelectionFactory(sql, fieldName2sqlDictionary);
-		}
-
-		private List<DocumentFilter> getFilters()
-		{
-			return queryBuilder.getDocumentFilters();
 		}
 	}
 

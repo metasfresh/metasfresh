@@ -79,6 +79,8 @@ public final class DocumentFieldChange
 	//
 	private Boolean lookupValuesStale;
 	private ReasonSupplier lookupValuesStaleReason;
+	//
+	private DocumentValidStatus validStatus;
 
 	private Map<String, Object> debugProperties;
 
@@ -102,7 +104,8 @@ public final class DocumentFieldChange
 				.add("key", key ? Boolean.TRUE : null)
 				.add("privateField", !publicField ? Boolean.TRUE : null)
 				.add("advancedField", advancedField ? Boolean.TRUE : null)
-				.add("widgetType", widgetType);
+				.add("widgetType", widgetType)
+				.add("validStatus", validStatus);
 		if (valueSet)
 		{
 			toStringBuilder.add("value", value == null ? "<NULL>" : value);
@@ -273,6 +276,17 @@ public final class DocumentFieldChange
 		lookupValuesStaleReason = reason;
 		logger.trace("collect {} lookupValuesStale: {} -- {}", fieldName, lookupValuesStale, lookupValuesStaleReason);
 	}
+	
+	public DocumentValidStatus getValidStatus()
+	{
+		return validStatus;
+	}
+	
+	/*package*/void setValidStatus(final DocumentValidStatus validStatus)
+	{
+		this.validStatus = validStatus;
+		logger.trace("collect {} validStatus: {}", fieldName, validStatus);
+	}
 
 	/* package */ void mergeFrom(final DocumentFieldChange fromEvent)
 	{
@@ -305,6 +319,11 @@ public final class DocumentFieldChange
 		{
 			lookupValuesStale = fromEvent.lookupValuesStale;
 			lookupValuesStaleReason = fromEvent.lookupValuesStaleReason;
+		}
+		
+		if(fromEvent.validStatus != null)
+		{
+			validStatus = fromEvent.validStatus;
 		}
 
 		putDebugProperties(fromEvent.debugProperties);

@@ -2,20 +2,26 @@ package de.metas.ui.web.window.model.sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
@@ -48,26 +54,49 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
 
 class SqlDocumentQueryBuilder
 {
-	public static SqlDocumentQueryBuilder of(final DocumentQuery query)
+	public static SqlDocumentQueryBuilder newInstance(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return new SqlDocumentQueryBuilder(query);
+		return new SqlDocumentQueryBuilder(entityDescriptor);
 	}
 
-	private final DocumentQuery query;
+	public static SqlDocumentQueryBuilder of(final DocumentQuery query)
+	{
+		return new SqlDocumentQueryBuilder(query.getEntityDescriptor())
+				.setDocumentFilters(query.getFilters())
+				.setParentDocument(query.getParentDocument())
+				.setRecordId(query.getRecordId())
+				//
+				.setOrderBys(query.getOrderBys())
+				//
+				.setPage(query.getFirstRow(), query.getPageLength())
+				//
+				;
+	}
 
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final SqlDocumentEntityDataBindingDescriptor entityBinding;
 
+	private transient Evaluatee _evaluationContext = null; // lazy
+	private final List<DocumentFilter> documentFilters = new ArrayList<>();
+	private Document parentDocument;
+	private Integer recordId = null;
+	private List<DocumentQueryOrderBy> orderBys;
+	private int firstRow;
+	private int pageLength;
+
+	//
+	// Built values
 	private IStringExpression _sqlWhereExpr;
 	private List<Object> _sqlWhereParams;
 	private IStringExpression _sqlExpr;
 	private List<Object> _sqlParams;
 
-	private SqlDocumentQueryBuilder(final DocumentQuery query)
+	private SqlDocumentQueryBuilder(final DocumentEntityDescriptor entityDescriptor)
 	{
 		super();
-		this.query = query;
-		entityDescriptor = query.getEntityDescriptor();
+
+		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
+		this.entityDescriptor = entityDescriptor;
 		entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 	}
 
@@ -83,7 +112,50 @@ class SqlDocumentQueryBuilder
 
 	public Evaluatee getEvaluationContext()
 	{
-		return query.getEvaluationContext();
+		if (_evaluationContext == null)
+		{
+			_evaluationContext = createEvaluationContext();
+		}
+		return _evaluationContext;
+	}
+
+	private Evaluatee createEvaluationContext()
+	{
+		final Evaluatee evalCtx = Evaluatees.mapBuilder()
+				.put(Env.CTXNAME_AD_Language, getAD_Language())
+				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), getPermissionsKey())
+				.build();
+
+		final Evaluatee parentEvalCtx;
+		if (parentDocument != null)
+		{
+			parentEvalCtx = parentDocument.asEvaluatee();
+		}
+		else
+		{
+			final Properties ctx = getCtx();
+			final int windowNo = Env.WINDOW_MAIN; // TODO: get the proper windowNo
+			final boolean onlyWindow = false;
+			parentEvalCtx = Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
+		}
+
+		return Evaluatees.compose(evalCtx, parentEvalCtx);
+	}
+
+	private Properties getCtx()
+	{
+		return Env.getCtx();
+	}
+
+	private String getAD_Language()
+	{
+		// TODO: introduce AD_Language as parameter
+		return Env.getAD_Language(getCtx());
+	}
+
+	private String getPermissionsKey()
+	{
+		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 
 	public String getSql(final List<Object> outSqlParams)
@@ -140,13 +212,13 @@ class SqlDocumentQueryBuilder
 
 		//
 		// LIMIT/OFFSET
-		final int firstRow = query.getFirstRow();
+		final int firstRow = getFirstRow();
 		if (firstRow > 0)
 		{
 			sqlBuilder.append("\n OFFSET ?");
 			sqlParams.add(firstRow);
 		}
-		final int pageLength = query.getPageLength();
+		final int pageLength = getPageLength();
 		if (pageLength > 0)
 		{
 			sqlBuilder.append("\n LIMIT ?");
@@ -201,22 +273,22 @@ class SqlDocumentQueryBuilder
 
 		//
 		// Key column
-		if (query.isRecordIdSet())
+		if (isRecordIdSet())
 		{
 			final String sqlKeyColumnName = entityBinding.getKeyColumnName();
 			if (sqlKeyColumnName == null)
 			{
-				throw new AdempiereException("Failed building where clause for " + query + " because there is no Key Column defined in " + entityBinding);
+				throw new AdempiereException("Failed building where clause because there is no Key Column defined in " + entityBinding);
 			}
 
 			sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 			sqlWhereClauseBuilder.append(" /* key */ ").append(sqlKeyColumnName).append("=?");
-			sqlParams.add(query.getRecordId());
+			sqlParams.add(getRecordId());
 		}
 
 		//
 		// Parent link where clause (if any)
-		final Document parentDocument = query.getParentDocument();
+		final Document parentDocument = getParentDocument();
 		if (parentDocument != null)
 		{
 			final String parentLinkColumnName = entityBinding.getParentLinkColumnName();
@@ -237,7 +309,7 @@ class SqlDocumentQueryBuilder
 		//
 		// Document filters
 		{
-			final IStringExpression sqlFilters = buildSqlWhereClause(sqlParams, query.getFilters());
+			final IStringExpression sqlFilters = buildSqlWhereClause(sqlParams, getDocumentFilters());
 			if (!sqlFilters.isNullExpression())
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
@@ -261,7 +333,7 @@ class SqlDocumentQueryBuilder
 
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
-		for (final DocumentFilter filter : query.getFilters())
+		for (final DocumentFilter filter : filters)
 		{
 			final IStringExpression sqlFilter = buildSqlWhereClause(sqlParams, filter);
 			if (sqlFilter.isNullExpression())
@@ -303,7 +375,9 @@ class SqlDocumentQueryBuilder
 		// SQL filter
 		if (filterParam.isSqlFilter())
 		{
-			return IStringExpression.compile(filterParam.getSqlWhereClause());
+			final SqlDocumentEntityDataBindingDescriptor binding = getEntityBinding();
+			final String sqlWhereClause = binding.replaceTableNameWithTableAlias(filterParam.getSqlWhereClause());
+			return IStringExpression.compile(sqlWhereClause);
 		}
 
 		//
@@ -465,7 +539,7 @@ class SqlDocumentQueryBuilder
 
 	public List<DocumentQueryOrderBy> getOrderBysEffective()
 	{
-		final List<DocumentQueryOrderBy> queryOrderBys = query.getOrderBys();
+		final List<DocumentQueryOrderBy> queryOrderBys = getOrderBys();
 		if (queryOrderBys != null && !queryOrderBys.isEmpty())
 		{
 			return queryOrderBys;
@@ -490,13 +564,76 @@ class SqlDocumentQueryBuilder
 		return entityBinding;
 	}
 
-	public List<DocumentFieldDescriptor> getViewFields()
-	{
-		return query.getViewFields();
-	}
-
 	public List<DocumentFilter> getDocumentFilters()
 	{
-		return query.getFilters();
+		return documentFilters == null ? ImmutableList.of() : ImmutableList.copyOf(documentFilters);
+	}
+
+	public SqlDocumentQueryBuilder setDocumentFilters(final List<DocumentFilter> documentFilters)
+	{
+		this.documentFilters.clear();
+		this.documentFilters.addAll(documentFilters);
+		return this;
+	}
+	
+	public SqlDocumentQueryBuilder addDocumentFilters(final List<DocumentFilter> documentFiltersToAdd)
+	{
+		this.documentFilters.addAll(documentFiltersToAdd);
+		return this;
+	}
+
+	private Document getParentDocument()
+	{
+		return parentDocument;
+	}
+
+	public SqlDocumentQueryBuilder setParentDocument(final Document parentDocument)
+	{
+		this.parentDocument = parentDocument;
+		return this;
+	}
+
+	public SqlDocumentQueryBuilder setRecordId(final Integer recordId)
+	{
+		this.recordId = recordId;
+		return this;
+	}
+
+	private int getRecordId()
+	{
+		return recordId;
+	}
+
+	private boolean isRecordIdSet()
+	{
+		return recordId != null;
+	}
+
+	private List<DocumentQueryOrderBy> getOrderBys()
+	{
+		return orderBys;
+	}
+
+	public SqlDocumentQueryBuilder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
+	{
+		this.orderBys = orderBys;
+		return this;
+	}
+
+	public SqlDocumentQueryBuilder setPage(final int firstRow, final int pageLength)
+	{
+		this.firstRow = firstRow;
+		this.pageLength = pageLength;
+		return this;
+	}
+
+	private int getFirstRow()
+	{
+		return firstRow;
+	}
+
+	private int getPageLength()
+	{
+		return pageLength;
 	}
 }

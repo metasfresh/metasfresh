@@ -124,6 +124,6 @@ public class JSONDocumentPath implements Serializable
 
 	public DocumentPath toSingleDocumentPath()
 	{
-		return DocumentPath.singleDocumentPath(getAD_Window_ID(), getDocumentId(), getTabid(), getRowId());
+		return DocumentPath.singleWindowDocumentPath(getAD_Window_ID(), getDocumentId(), getTabid(), getRowId());
 	}
 }

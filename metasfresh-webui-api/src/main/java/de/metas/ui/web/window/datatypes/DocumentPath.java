@@ -75,7 +75,40 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
+	
+	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId, final String rowIdStr)
+	{
+		if(Check.isEmpty(detailId, true))
+		{
+			throw new IllegalArgumentException("No detailId provided");
+		}
+		if(Check.isEmpty(rowIdStr, true))
+		{
+			throw new IllegalArgumentException("No rowId provided");
+		}
+		
+		return builder()
+				.setDocumentType(documentType, documentTypeId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.setRowId(rowIdStr)
+				.build();
+	}
 
+	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId)
+	{
+		if(Check.isEmpty(detailId, true))
+		{
+			throw new IllegalArgumentException("No detailId provided");
+		}
+		
+		return builder()
+				.setDocumentType(documentType, documentTypeId)
+				.setDocumentId(idStr)
+				.setDetailId(detailId)
+				.allowNullRowId()
+				.build();
+	}
 
 	/**
 	 * Creates the path of a single document (root document or included document).
@@ -86,10 +119,10 @@ public final class DocumentPath
 	 * @param rowIdStr
 	 * @return single document path (root document or included document).
 	 */
-	public static final DocumentPath singleDocumentPath(final int adWindowId, final String idStr, final String detailId, final String rowIdStr)
+	public static final DocumentPath singleWindowDocumentPath(final int windowId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		return builder()
-				.setDocumentType(DocumentType.Window, adWindowId)
+				.setDocumentType(DocumentType.Window, windowId)
 				.setDocumentId(idStr)
 				.setDetailId(detailId)
 				.setRowId(rowIdStr)
@@ -101,7 +134,7 @@ public final class DocumentPath
 	private final DocumentId documentId;
 	private final DetailId detailId;
 	private final Set<DocumentId> rowIds;
-	private final DocumentId singleRowId;
+	private final transient DocumentId singleRowId;
 
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy

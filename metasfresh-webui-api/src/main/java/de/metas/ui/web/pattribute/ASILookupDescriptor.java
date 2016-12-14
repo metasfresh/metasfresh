@@ -1,6 +1,5 @@
 package de.metas.ui.web.pattribute;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -184,17 +183,13 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		{
 			super();
 
-			final List<LookupValue> lookupValues = new ArrayList<>();
 			final ImmutableMap.Builder<Object, AttributeValue> attributeValuesByValue = ImmutableMap.builder();
-
-			for (final I_M_AttributeValue attributeValueRecord : attributeValueRecords)
-			{
-				final AttributeValue attributeValue = new AttributeValue(attributeValueRecord);
-				attributeValuesByValue.put(attributeValue.getValue(), attributeValue);
-				lookupValues.add(attributeValue.getLookupValue());
-			}
-
-			this.lookupValues = LookupValuesList.of(lookupValues);
+			
+			this.lookupValues = attributeValueRecords.stream()
+					.map(AttributeValue::new)
+					.peek(attributeValue -> attributeValuesByValue.put(attributeValue.getValue(), attributeValue))
+					.map(attributeValue -> attributeValue.getLookupValue())
+					.collect(LookupValuesList.collect());			
 			this.attributeValuesByValue = attributeValuesByValue.build();
 		}
 

@@ -83,4 +83,6 @@ public interface IDocumentFieldView
 	Object getOldValue();
 	//@formatter:on
 
+	/** @return field's valid state; never return null */
+	DocumentValidStatus getValidStatus();
 }

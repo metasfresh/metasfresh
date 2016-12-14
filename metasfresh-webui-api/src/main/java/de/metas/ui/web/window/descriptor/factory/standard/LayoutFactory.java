@@ -118,7 +118,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -458,11 +458,40 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 	public DocumentLayoutDetailQuickInputDescriptor.Builder layoutDetail_QuickInput()
 	{
-		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInput = DocumentLayoutDetailQuickInputDescriptor.builder();
+		final DocumentEntityDescriptor.Builder documentEntityDescriptor = documentEntity();
+		final DocumentEntityDescriptor.Builder quickInputDescriptor = documentEntityDescriptor.getQuickInputDescriptor();
+		if (quickInputDescriptor == null)
+		{
+			return null;
+		}
 
-		// TODO
+		// FIXME: hardcoded quickInput for Order lines
 
-		return quickInput;
+		if (!org.compiere.model.I_C_OrderLine.Table_Name.equals(documentEntityDescriptor.getTableName()))
+		{
+			return null;
+		}
+
+		final DocumentFieldDescriptor.Builder field_M_Product_ID = quickInputDescriptor.getFieldBuilder("M_Product_ID");
+		final DocumentFieldDescriptor.Builder field_M_HU_PI_Item_Product_ID = quickInputDescriptor.getFieldBuilder("M_HU_PI_Item_Product_ID");
+		final DocumentFieldDescriptor.Builder field_Qty = quickInputDescriptor.getFieldBuilder("Qty");
+
+		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInputLayout = DocumentLayoutDetailQuickInputDescriptor.builder()
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(field_M_Product_ID.getWidgetType())
+						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_Product_ID.getFieldName())
+								.setPublicField(true)
+								.setLookupSource(field_M_Product_ID.getLookupSourceType()))
+						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PI_Item_Product_ID.getFieldName())
+								.setPublicField(true)
+								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())))
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setWidgetType(field_Qty.getWidgetType())
+						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
+								.setPublicField(true)
+								.setLookupSource(field_Qty.getLookupSourceType())));
+
+		return quickInputLayout;
 	}
 
 	/**
@@ -536,9 +565,10 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutSideListBuilder::addElement);
-		
+
 		//
 		// Fallback: when no elements were found: creating the view using the single row layout
+		if (!layoutSideListBuilder.hasElements())
 		{
 			logger.warn("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
 			streamAD_UI_Elements()

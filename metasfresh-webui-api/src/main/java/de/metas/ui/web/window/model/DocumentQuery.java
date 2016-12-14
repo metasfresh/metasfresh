@@ -2,14 +2,8 @@ package de.metas.ui.web.window.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.util.Check;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -17,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
@@ -65,7 +58,7 @@ public final class DocumentQuery
 
 	private final DocumentsRepository documentsRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
-	private final int recordId;
+	private final Integer recordId;
 	private final Document parentDocument;
 
 	private final List<DocumentFilter> filters;
@@ -73,10 +66,6 @@ public final class DocumentQuery
 
 	private final int firstRow;
 	private final int pageLength;
-
-	private final List<DocumentFieldDescriptor> viewFields;
-
-	private transient Evaluatee _evaluationContext = null; // lazy
 
 	private DocumentQuery(final Builder builder)
 	{
@@ -91,8 +80,6 @@ public final class DocumentQuery
 
 		firstRow = builder.firstRow;
 		pageLength = builder.pageLength;
-
-		viewFields = builder.viewFields == null ? ImmutableList.of() : ImmutableList.copyOf(builder.viewFields);
 	}
 
 	@Override
@@ -106,7 +93,6 @@ public final class DocumentQuery
 				.add("filters", filters.isEmpty() ? null : filters)
 				.add("firstRow", firstRow > 0 ? firstRow : null)
 				.add("pageLength", pageLength > 0 ? pageLength : null)
-				.add("viewFields", viewFields.isEmpty() ? null : viewFields)
 				.toString();
 	}
 
@@ -120,24 +106,14 @@ public final class DocumentQuery
 		return documentsRepository.retrieveDocuments(this);
 	}
 	
-	private Properties getCtx()
-	{
-		return Env.getCtx();
-	}
-
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
 		return entityDescriptor;
 	}
 
-	public int getRecordId()
+	public Integer getRecordId()
 	{
 		return recordId;
-	}
-
-	public boolean isRecordIdSet()
-	{
-		return recordId >= 0;
 	}
 
 	public Document getParentDocument()
@@ -153,49 +129,6 @@ public final class DocumentQuery
 	public boolean isParentLinkIdSet()
 	{
 		return parentDocument != null;
-	}
-
-	public Evaluatee getEvaluationContext()
-	{
-		if (_evaluationContext == null)
-		{
-			_evaluationContext = createEvaluationContext();
-		}
-		return _evaluationContext;
-	}
-
-	private Evaluatee createEvaluationContext()
-	{
-		final Evaluatee evalCtx = Evaluatees.mapBuilder()
-				.put(Env.CTXNAME_AD_Language, getAD_Language())
-				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), getPermissionsKey())
-				.build();
-
-		final Evaluatee parentEvalCtx;
-		if (parentDocument != null)
-		{
-			parentEvalCtx = parentDocument.asEvaluatee();
-		}
-		else
-		{
-			final Properties ctx = getCtx();
-			final int windowNo = Env.WINDOW_MAIN; // TODO: get the proper windowNo
-			final boolean onlyWindow = false;
-			parentEvalCtx = Evaluatees.ofCtx(ctx, windowNo, onlyWindow);
-		}
-
-		return Evaluatees.compose(evalCtx, parentEvalCtx);
-	}
-
-	public String getAD_Language()
-	{
-		// TODO: introduce AD_Language as parameter
-		return Env.getAD_Language(getCtx());
-	}
-
-	public String getPermissionsKey()
-	{
-		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 
 	public List<DocumentFilter> getFilters()
@@ -218,21 +151,15 @@ public final class DocumentQuery
 		return pageLength;
 	}
 
-	public List<DocumentFieldDescriptor> getViewFields()
-	{
-		return viewFields;
-	}
-
 	public static final class Builder
 	{
 		private final DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
-		private int recordId = -1;
+		private Integer recordId;
 		public List<DocumentFilter> filters = null;
 		public List<DocumentQueryOrderBy> orderBys = null;
 		private int firstRow = -1;
 		private int pageLength = -1;
-		public List<DocumentFieldDescriptor> viewFields;
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
@@ -261,7 +188,7 @@ public final class DocumentQuery
 			return entityDescriptor.getDataBinding().getDocumentsRepository();
 		}
 
-		public Builder setRecordId(final int recordId)
+		public Builder setRecordId(final Integer recordId)
 		{
 			this.recordId = recordId;
 			return this;
@@ -269,7 +196,7 @@ public final class DocumentQuery
 
 		public Builder setRecordId(final DocumentId documentId)
 		{
-			this.recordId = documentId.toInt();
+			setRecordId(documentId.toInt());
 			return this;
 		}
 
@@ -327,12 +254,6 @@ public final class DocumentQuery
 		public Builder setPageLength(final int pageLength)
 		{
 			this.pageLength = pageLength;
-			return this;
-		}
-
-		public Builder setViewFields(final List<DocumentFieldDescriptor> viewFields)
-		{
-			this.viewFields = viewFields;
 			return this;
 		}
 	}

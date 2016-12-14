@@ -2,7 +2,6 @@ package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
 import org.compiere.util.CCache;
@@ -92,34 +91,18 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		}
 
 		final Predicate<LookupValue> filterPredicate = FilterPredicate.of(filter);
+		if(filterPredicate == FilterPredicate.MATCH_ALL)
+		{
+			return partition.offsetAndLimit(firstRow, pageLength);
+		}
 
-		final List<LookupValue> values = partition
-				.getValues()
-				.stream()
-				.filter(filterPredicate)
-				.skip(firstRow >= 0 ? firstRow : 0)
-				.limit(pageLength > 0 ? pageLength : Long.MAX_VALUE)
-				.collect(Collectors.toList());
-
-		return LookupValuesList.of(values, partition.getDebugProperties());
+		return partition.filter(filterPredicate, firstRow, pageLength);
 	}
 
 	@Override
 	public LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
 	{
-		final LookupValuesList partition = getLookupValuesList(ctx);
-		if (partition.isEmpty())
-		{
-			return partition;
-		}
-
-		final List<LookupValue> values = partition
-				.getValues()
-				.stream()
-				.limit(pageLength > 0 ? pageLength : Long.MAX_VALUE)
-				.collect(Collectors.toList());
-
-		return LookupValuesList.of(values, partition.getDebugProperties());
+		return getLookupValuesList(ctx).limit(pageLength);
 	}
 
 	@Override
@@ -132,11 +115,6 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		}
 
 		final LookupValuesList partition = getLookupValuesList(Evaluatees.empty());
-		if (partition.isEmpty())
-		{
-			return null;
-		}
-
 		return partition.getById(idNormalized);
 	}
 

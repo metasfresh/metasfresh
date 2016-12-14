@@ -11,7 +11,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentViewCreateRequest;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
 
@@ -52,10 +52,10 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final DocumentQuery query)
+	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
 	{
 		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder()
-				.setQuery(query)
+				.setRequest(request)
 				.build();
 		views.put(view.getViewId(), view);
 		return view;

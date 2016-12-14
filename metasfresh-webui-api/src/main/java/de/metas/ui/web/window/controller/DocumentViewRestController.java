@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.login.LoginService;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -34,11 +34,13 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentReference;
+import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.ui.web.window.model.DocumentViewCreateRequest;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
@@ -88,19 +90,19 @@ public class DocumentViewRestController
 	private static final String PARAM_FilterParameterName = "parameterName";
 
 	@Autowired
-	private LoginService loginService;
-
-	@Autowired
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory;
+	private DocumentCollection documentCollection;
 
 	@Autowired
 	private DocumentViewsRepository documentViewsRepo;
 
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
+
+	@Autowired
+	private DocumentReferencesService documentReferencesService;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -115,15 +117,14 @@ public class DocumentViewRestController
 	 * @param viewDataType
 	 */
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
-	public JSONDocumentLayoutTab layout(
+	public JSONDocumentLayoutTab getLayout(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptor(adWindowId);
 
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 		final Collection<DocumentFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
@@ -150,8 +151,9 @@ public class DocumentViewRestController
 	/**
 	 * Create view
 	 */
-	@RequestMapping(value = "/", method = RequestMethod.PUT)
-	public JSONDocumentViewResult createView(
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.PUT)
+	@Deprecated
+	public JSONDocumentViewResult createView_DEPRECATED(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 			, @RequestParam(name = PARAM_FirstRow, required = false, defaultValue = "0") @ApiParam(PARAM_FirstRow_Description) final int firstRow //
@@ -159,12 +161,20 @@ public class DocumentViewRestController
 			, @RequestBody(required = false) final List<JSONDocumentFilter> jsonFilters //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertDeprecatedRestAPIAllowed();
+		final JSONCreateDocumentViewRequest jsonRequest = JSONCreateDocumentViewRequest.of(adWindowId, viewDataType, jsonFilters, firstRow, pageLength);
+		return createView(jsonRequest);
+	}
 
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory
-				.getDocumentDescriptor(adWindowId)
-				.getEntityDescriptor();
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
+	public JSONDocumentViewResult createView(@RequestBody final JSONCreateDocumentViewRequest jsonRequest)
+	{
+		userSession.assertLoggedIn();
 
+		final int adWindowId = jsonRequest.getAD_Window_ID();
+		final DocumentEntityDescriptor entityDescriptor = documentCollection.getDocumentEntityDescriptor(adWindowId);
+
+		final JSONViewDataType viewDataType = jsonRequest.getViewType();
 		final Characteristic requiredFieldCharacteristic = viewDataType.getRequiredFieldCharacteristic();
 		final List<DocumentFieldDescriptor> fields = entityDescriptor.getFieldsWithCharacteristic(requiredFieldCharacteristic);
 		if (fields.isEmpty())
@@ -172,22 +182,27 @@ public class DocumentViewRestController
 			throw new IllegalStateException("No fields were found for " + PARAM_ViewDataType + ": " + viewDataType + "(required field characteristic: " + requiredFieldCharacteristic + ")");
 		}
 
-		final DocumentFilterDescriptorsProvider filterDescriptorProvider = entityDescriptor.getFiltersProvider();
-
-		final DocumentQuery query = DocumentQuery.builder(entityDescriptor)
+		final DocumentViewCreateRequest.Builder request = DocumentViewCreateRequest.builder()
+				.setEntityDescriptor(entityDescriptor)
 				.setViewFields(fields)
-				.addFilters(JSONDocumentFilter.unwrapList(jsonFilters, filterDescriptorProvider))
-				.build();
+				.addFilters(JSONDocumentFilter.unwrapList(jsonRequest.getFilters(), entityDescriptor.getFiltersProvider()));
 
-		final IDocumentViewSelection view = documentViewsRepo.createView(query);
+		if (jsonRequest.getReferencing() != null)
+		{
+			final Document referencingDocument = documentCollection.getDocument(jsonRequest.getReferencing().toDocumentPath());
+			final DocumentReference reference = documentReferencesService.getDocumentReference(referencingDocument, adWindowId);
+			request.addStickyFilter(reference.getFilter());
+		}
+
+		final IDocumentViewSelection view = documentViewsRepo.createView(request.build());
 
 		//
 		// Fetch result if requested
 		final DocumentViewResult result;
-		if (pageLength > 0)
+		if (jsonRequest.getQueryPageLength() > 0)
 		{
 			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
-			result = view.getPage(firstRow, pageLength, orderBys);
+			result = view.getPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength(), orderBys);
 		}
 		else
 		{
@@ -200,7 +215,7 @@ public class DocumentViewRestController
 	@RequestMapping(value = "/{" + PARAM_ViewId + "}", method = RequestMethod.DELETE)
 	public void deleteView(@PathVariable(PARAM_ViewId) final String viewId)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		documentViewsRepo.deleteView(viewId);
 	}
@@ -213,7 +228,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 
@@ -230,11 +245,11 @@ public class DocumentViewRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
 
-		return documentDescriptorFactory
+		return documentCollection
 				.getDocumentDescriptor(adWindowId)
 				.getDocumentFiltersProvider()
 				.getByFilterId(filterId)
@@ -251,11 +266,11 @@ public class DocumentViewRestController
 			, @RequestParam(name = PARAM_FilterParameterName, required = true) final String parameterName //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
 
-		return documentDescriptorFactory
+		return documentCollection
 				.getDocumentDescriptor(adWindowId)
 				.getDocumentFiltersProvider()
 				.getByFilterId(filterId)
@@ -271,7 +286,7 @@ public class DocumentViewRestController
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
 	)
 	{
-		loginService.assertLoggedIn();
+		userSession.assertLoggedIn();
 
 		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 

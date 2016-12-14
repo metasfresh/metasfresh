@@ -65,7 +65,7 @@ public class ASIRestController
 				.build();
 	}
 
-	@RequestMapping(value = "/instance", method = RequestMethod.POST)
+	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
 	public JSONDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -76,7 +76,7 @@ public class ASIRestController
 		});
 	}
 
-	@RequestMapping(value = "/instance/{asiDocId}/layout", method = RequestMethod.GET)
+	@RequestMapping(value = "/{asiDocId}/layout", method = RequestMethod.GET)
 	public JSONASILayout getLayout(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();
@@ -85,8 +85,8 @@ public class ASIRestController
 		return JSONASILayout.of(asiLayout, newJsonOpts());
 	}
 
-	@RequestMapping(value = "/instance/{asiDocId}", method = RequestMethod.GET)
-	public JSONDocument getASI(@PathVariable("asiDocId") final int asiDocId)
+	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.GET)
+	public JSONDocument getASIDocument(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();
 
@@ -94,7 +94,7 @@ public class ASIRestController
 		return JSONDocument.ofDocument(asiDoc, newJsonOpts());
 	}
 
-	@RequestMapping(value = "/instance/{asiDocId}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.PATCH)
 	public List<JSONDocument> processChanges(
 			@PathVariable("asiDocId") final int asiDocId //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
@@ -108,8 +108,8 @@ public class ASIRestController
 		});
 	}
 
-	@RequestMapping(value = "/instance/{asiDocId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
-	public JSONLookupValuesList typeahead(
+	@RequestMapping(value = "/{asiDocId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
+	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable("asiDocId") final int asiDocId //
 			, @PathVariable("attributeName") final String attributeName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -122,8 +122,8 @@ public class ASIRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/instance/{asiDocId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
-	public JSONLookupValuesList dropdown(
+	@RequestMapping(value = "/{asiDocId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
+	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable("asiDocId") final int asiDocId //
 			, @PathVariable("attributeName") final String attributeName //
 	)
@@ -135,7 +135,7 @@ public class ASIRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/instance/{asiDocId}/complete", method = RequestMethod.GET)
+	@RequestMapping(value = "/{asiDocId}/complete", method = RequestMethod.GET)
 	public JSONLookupValue complete(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();

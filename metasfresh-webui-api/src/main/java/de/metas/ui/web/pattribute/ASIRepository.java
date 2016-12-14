@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -101,8 +102,16 @@ public class ASIRepository
 			final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
 			final Document document = documentsCollection.getDocument(documentPath);
 			final int productId = document.getFieldView("M_Product_ID").getValueAsInt(-1);
+			if(productId <= 0)
+			{
+				throw new AdempiereException("Cannot fetch the attribute set when the product field is not filled");
+			}
 
 			attributeSetId = Services.get(IProductBL.class).getM_AttributeSet_ID(Env.getCtx(), productId);
+			if(attributeSetId <= 0)
+			{
+				throw new AdempiereException("Product does not support attributes");
+			}
 		}
 
 		//
