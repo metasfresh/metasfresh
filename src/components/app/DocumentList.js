@@ -32,6 +32,8 @@ class DocumentList extends Component {
         }
 
         this.updateData(type, windowType);
+
+        
     }
 
     componentWillReceiveProps(props) {
@@ -108,9 +110,9 @@ class DocumentList extends Component {
 
     getView = (viewId) => {
         const {data} = this.state;
-        const {dispatch, page, sorting, windowType, query, updateUri} = this.props;
+        const {dispatch, pagination, sorting, windowType, query, updateUri} = this.props;
         let urlQuery = "";
-        let urlPage = page;
+        let urlPage = pagination.page;
 
         !!updateUri && updateUri("viewId", viewId);
 
@@ -121,7 +123,7 @@ class DocumentList extends Component {
             }
             if(query.page){
                 urlPage = query.page;
-                dispatch(setPagination(parseInt(query.page)));
+                dispatch(setPagination(parseInt(query.page), windowType));
             }
 
         }
@@ -130,9 +132,13 @@ class DocumentList extends Component {
         //  Condition, that ensure wheter windowType
         //  is the same as for saved query params
         //
-        else if(windowType === sorting.windowType) {
+        if(windowType === sorting.windowType) {
             urlQuery = this.getSortingQuery(sorting.dir, sorting.prop);
         }else{
+            dispatch(clearListProps());
+        }
+
+        if(windowType !== pagination.windowType) {
             dispatch(clearListProps());
         }
 
@@ -183,9 +189,9 @@ class DocumentList extends Component {
 
     handleChangePage = (index) => {
         const {data} = this.state;
-        const {sorting, page, dispatch, updateUri} = this.props;
+        const {sorting, pagination, dispatch, updateUri, windowType} = this.props;
 
-        let currentPage = page;
+        let currentPage = pagination.page;
 
         switch(index){
             case "up":
@@ -198,8 +204,8 @@ class DocumentList extends Component {
                 currentPage = index;
         }
 
-        if(currentPage !== page){
-            dispatch(setPagination(currentPage));
+        if(currentPage !== pagination.page){
+            dispatch(setPagination(currentPage, windowType));
             !!updateUri && updateUri("page", currentPage);
 
             this.sortData(sorting.dir, sorting.prop, false, currentPage);
@@ -208,7 +214,8 @@ class DocumentList extends Component {
 
     render() {
         const {layout, data} = this.state;
-        const {dispatch, windowType, type, filters, page} = this.props;
+        const {dispatch, windowType, type, filters, pagination} = this.props;
+
         if(layout && data) {
 
             return (
@@ -244,7 +251,7 @@ class DocumentList extends Component {
                             size={data.size}
                             pageLength={20}
                             handleChangePage={this.handleChangePage}
-                            page={page}
+                            page={pagination.page}
                             mainTable={true}
                             updateDocList={this.updateData}
                             sort={this.sortData}
@@ -262,8 +269,8 @@ class DocumentList extends Component {
 
 DocumentList.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    page: PropTypes.number.isRequired,
     sorting: PropTypes.object.isRequired,
+    pagination: PropTypes.object.isRequired,
     filters: PropTypes.array.isRequired,
     filtersWindowType: PropTypes.string
 }
@@ -274,19 +281,19 @@ function mapStateToProps(state) {
     const {
         filters,
         filtersWindowType,
-        page,
-        sorting
+        sorting,
+        pagination
     } = listHandler || {
         filters: {},
-        page: 1,
         sorting: {},
+        pagination: {},
         filtersWindowType: ""
     }
 
     return {
         filters,
-        page,
         sorting,
+        pagination,
         filtersWindowType
     }
 }
