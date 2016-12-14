@@ -17,6 +17,7 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -968,6 +969,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setDisplayLogic(final boolean display)
 		{
 			setDisplayLogic(ConstantLogicExpression.of(display));
+			return this;
+		}
+		
+		public Builder setDisplayLogic(final String displayLogic)
+		{
+			setDisplayLogic(LogicExpressionCompiler.instance.compile(displayLogic));
 			return this;
 		}
 
