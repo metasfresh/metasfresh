@@ -1,5 +1,23 @@
 -- 08.12.2016 17:20
 -- URL zum Konzept
+--
+
+-- 14.12.2016 11:14
+-- URL zum Konzept
+UPDATE AD_Column SET FieldLength=40,Updated=TO_TIMESTAMP('2016-12-14 11:14:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549455
+;
+
+
+
+
+
+
+
+
+
+
+
+
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543254,0,'LotNumberDate',TO_TIMESTAMP('2016-12-08 17:20:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','Tageslot Datum','Tageslot Datum',TO_TIMESTAMP('2016-12-08 17:20:21','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
@@ -35,7 +53,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 09.12.2016 19:55
 -- URL zum Konzept
-INSERT INTO AD_JavaClass (AD_Client_ID,AD_JavaClass_ID,AD_JavaClass_Type_ID,AD_Org_ID,Classname,Created,CreatedBy,Description,EntityType,IsActive,IsInterface,Name,Updated,UpdatedBy) VALUES (0,540047,540026,0,'org.adempiere.mm.attributes.spi.impl.HULotNumberAttributeHandler',TO_TIMESTAMP('2016-12-09 19:55:54','YYYY-MM-DD HH24:MI:SS'),100,'','de.metas.h','Y','N','LotNumber Attribute Handler',TO_TIMESTAMP('2016-12-09 19:55:54','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_JavaClass (AD_Client_ID,AD_JavaClass_ID,AD_JavaClass_Type_ID,AD_Org_ID,Classname,Created,CreatedBy,Description,EntityType,IsActive,IsInterface,Name,Updated,UpdatedBy) VALUES (0,540047,540026,0,'org.adempiere.mm.attributes.spi.impl.HULotNumberAttributeHandler',TO_TIMESTAMP('2016-12-09 19:55:54','YYYY-MM-DD HH24:MI:SS'),100,'','de.metas.handlingunits','Y','N','LotNumber Attribute Handler',TO_TIMESTAMP('2016-12-09 19:55:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 09.12.2016 19:56
