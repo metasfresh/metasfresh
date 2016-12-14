@@ -616,7 +616,7 @@ input:checked + .input-slider:before {
     align-items: center;
     justify-content: space-between;
 }
-.product-attributes {
+.attributes {
     position: static;
     padding-top: 4px;
     display: block;
@@ -624,20 +624,20 @@ input:checked + .input-slider:before {
     max-width: 10rem;
 }
 
-.product-attributes-in-table {
+.attributes-in-table {
     padding:0;
 }
 
-.product-attributes-in-table .tag {
+.attributes-in-table .tag {
     padding: .095rem .3rem;
 }
 
-.product-attributes::selection {
+.attributes::selection {
     background-color: none;
     color: inherit;
 }
 
-.product-attributes-dropdown {
+.attributes-dropdown {
     position: absolute;
     z-index: 50;
     margin-top:5px;

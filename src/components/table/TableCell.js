@@ -81,6 +81,7 @@ class TableCell extends Component {
                     (widgetData[0].mandatory ? "cell-mandatory " : "") +
                     (item.widgetType==="Lookup" || item.widgetType==="LongText" || item.widgetType==="List" || item.widgetType==="Date" || item.widgetType==="DateTime" || item.widgetType==="Time" ? "td-lg " : "") +
                     (item.widgetType==="ProductAttributes" ? "td-md " : "") +
+                    (item.widgetType==="Address" ? "td-md " : "") +
                     (item.widgetType==="Text" ? "td-md " : "") +
                     (item.widgetType) +
                     ((updatedRow) ? " pulse-on" : " pulse-off")

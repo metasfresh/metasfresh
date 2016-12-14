@@ -57,22 +57,14 @@ export function getAvailableLang() {
 }
 
 export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
-    if (entity === 'process'){
+    if (entity){
         return () => axios.get(
-    		config.API_URL +
-    		'/process/instance/' + id +
-            '/parameters/' + propertyName +
-            '/typeahead' +
-            '?query=' + query
-    	);
-    } else if (entity === 'asi') {
-        return () => axios.get(
-    		config.API_URL +
-    		'/pattribute/instance/' + id +
+            config.API_URL +
+            '/' + entity + '/' + id +
             '/attribute/' + propertyName +
             '/typeahead' +
             '?query=' + query
-    	);
+        );
     } else {
     	return () => {
     		query = encodeURIComponent(query);
@@ -89,20 +81,13 @@ export function autocompleteRequest(windowType, propertyName, query, id = "NEW",
 }
 
 export function dropdownRequest(windowType, propertyName, id, tabId, rowId, entity) {
-    if (entity === 'process'){
+    if (entity){
         return () => axios.get(
-    		config.API_URL +
-    		'/process/instance/' + id +
-            '/parameters/' + propertyName +
-            '/dropdown'
-    	);
-    } else if (entity === 'asi') {
-        return () => axios.get(
-    		config.API_URL +
-    		'/pattribute/instance/' + id +
+            config.API_URL +
+            '/' + entity + '/' + id +
             '/attribute/' + propertyName +
             '/dropdown'
-    	);
+        );
     } else {
     	return () => axios.get(
     		config.API_URL +
@@ -227,16 +212,18 @@ export function markAsRead(id) {
     return () => axios.put(config.API_URL + '/notifications/' + id + '/read');
 }
 
-export function getPattributeLayout(asiDocId) {
-    return () => axios.get(config.API_URL + '/pattribute/instance/' + asiDocId + '/layout');
+// Attribute widget backend
+
+export function getAttributesLayout(attrType, docId) {
+    return () => axios.get(config.API_URL + '/' + attrType + '/' + docId + '/layout');
 }
 
-export function pattributeComplete(asiDocId) {
-    return () => axios.get(config.API_URL + '/pattribute/' + asiDocId + '/complete');
+export function attributesComplete(attrType, docId) {
+    return () => axios.get(config.API_URL + '/' + attrType + '/' + docId + '/complete');
 }
 
-export function getPattributeInstance(tmpId, docType, docId, tabId, rowId, fieldName) {
-    return () => axios.post(config.API_URL + '/pattribute/instance/', {
+export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, rowId, fieldName) {
+    return () => axios.post(config.API_URL + '/' + attrType, {
         "templateId": tmpId,
         "source": {
             "documentType": docType,

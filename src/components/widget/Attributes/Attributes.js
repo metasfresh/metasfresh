@@ -1,9 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-import ProductAttributesDropdown from './ProductAttributesDropdown';
+import AttributesDropdown from './AttributesDropdown';
 
-class ProductAttributes extends Component {
+class Attributes extends Component {
     constructor(props) {
         super(props);
 
@@ -26,7 +26,10 @@ class ProductAttributes extends Component {
     }
 
     render() {
-        const {widgetData,fields, dispatch, docType, dataId, tabId, rowId, patch, fieldName} = this.props;
+        const {
+            widgetData,fields, dispatch, docType, dataId, tabId, rowId, patch,
+            fieldName, attributeType
+        } = this.props;
         const {dropdown} = this.state;
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
@@ -34,17 +37,21 @@ class ProductAttributes extends Component {
 
         return (
             <div className={
-                "product-attributes " +
-                (rowId ? "product-attributes-in-table " : "")
+                "attributes " +
+                (rowId ? "attributes-in-table " : "")
             }>
                 <div
                     onClick={() => this.handleToggle(!dropdown)}
-                    className="tag tag-lg tag-block tag-secondary pointer"
+                    className={
+                        "tag tag-lg tag-block tag-secondary pointer " +
+                        (dropdown ? "tag-disabled " : "")
+                    }
                 >
                     {label ? label : "Edit attributes"}
                 </div>
                 {dropdown &&
-                    <ProductAttributesDropdown
+                    <AttributesDropdown
+                        attributeType={attributeType}
                         tmpId={tmpId}
                         toggle={this.handleToggle}
                         patch={patch}
@@ -60,10 +67,10 @@ class ProductAttributes extends Component {
     }
 }
 
-ProductAttributes.propTypes = {
+Attributes.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-ProductAttributes = connect()(ProductAttributes)
+Attributes = connect()(Attributes)
 
-export default ProductAttributes
+export default Attributes

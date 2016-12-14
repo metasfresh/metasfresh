@@ -5,9 +5,9 @@ import onClickOutside from 'react-onclickoutside';
 import RawWidget from '../RawWidget';
 
 import {
-    getPattributeLayout,
-    getPattributeInstance,
-    pattributeComplete
+    getAttributesLayout,
+    getAttributesInstance,
+    attributesComplete
 } from '../../../actions/AppActions';
 
 import {
@@ -15,7 +15,7 @@ import {
     patchRequest
 } from '../../../actions/WindowActions'
 
-class ProductAttributesDropdown extends Component {
+class AttributesDropdown extends Component {
     constructor(props) {
         super(props);
 
@@ -26,16 +26,22 @@ class ProductAttributesDropdown extends Component {
     }
 
     componentDidMount() {
-        const {dispatch, tmpId, docType, dataId, tabId, rowId, fieldName} = this.props;
+        const {
+            dispatch, tmpId, docType, dataId, tabId, rowId, fieldName, attributeType
+        } = this.props;
 
-        dispatch(getPattributeInstance(tmpId, docType, dataId, tabId, rowId, fieldName)).then(response => {
+        dispatch(
+            getAttributesInstance(
+                attributeType, tmpId, docType, dataId, tabId, rowId, fieldName
+            )
+        ).then(response => {
             const {id, fields} = response.data;
 
             this.setState(Object.assign({}, this.state, {
                 data: fields
             }));
 
-            return dispatch(getPattributeLayout(id));
+            return dispatch(getAttributesLayout(attributeType, id));
         }).then(response => {
             const {elements} = response.data;
 
@@ -46,20 +52,20 @@ class ProductAttributesDropdown extends Component {
     }
 
     handleClickOutside = () => {
-        const {toggle, dispatch, patch} = this.props;
+        const {toggle, dispatch, patch, attributeType} = this.props;
         const {data} = this.state;
         const dataId = findRowByPropName(data, "ID").value;
 
-        dispatch(pattributeComplete(dataId)).then(response => {
+        dispatch(attributesComplete(attributeType,dataId)).then(response => {
             patch(response.data);
         });
         toggle(false);
     }
 
     handlePatch = (prop, value, id) => {
-        const {dispatch} = this.props;
+        const {dispatch, attributeType} = this.props;
 
-        dispatch(patchRequest(null, id, null, null, prop, value, "asi")).then(response => {
+        dispatch(patchRequest(null, id, null, null, prop, value, attributeType)).then(response => {
             response.data[0].fields.map(item => {
                 this.setState(Object.assign({}, this.state, {
                     data: this.state.data.map(field => {
@@ -74,13 +80,13 @@ class ProductAttributesDropdown extends Component {
         })
     }
 
-    renderFields = (layout, data, dataId) => {
+    renderFields = (layout, data, dataId, attributeType) => {
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
 
                 return (<RawWidget
-                    entity={'asi'}
+                    entity={attributeType}
                     widgetType={item.widgetType}
                     fields={item.fields}
                     dataId={dataId}
@@ -96,21 +102,22 @@ class ProductAttributesDropdown extends Component {
     }
 
     render() {
+        const {attributeType} = this.props;
         const {data,layout} = this.state;
         const dataId = findRowByPropName(data, "ID").value;
 
         return (
-            <div className="product-attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
-                {this.renderFields(layout, data, dataId)}
+            <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
+                {this.renderFields(layout, data, dataId, attributeType)}
             </div>
         )
     }
 }
 
-ProductAttributesDropdown.propTypes = {
+AttributesDropdown.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-ProductAttributesDropdown = connect()(onClickOutside(ProductAttributesDropdown))
+AttributesDropdown = connect()(onClickOutside(AttributesDropdown))
 
-export default ProductAttributesDropdown
+export default AttributesDropdown

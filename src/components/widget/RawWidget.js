@@ -9,7 +9,7 @@ import {
 } from '../../actions/WindowActions';
 
 import DatePicker from './DatePicker';
-import ProductAttributes from './ProductAttributes/ProductAttributes';
+import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List';
@@ -404,7 +404,6 @@ class RawWidget extends Component {
             case "Button":
                 return (
                     <button
-
                         className={
                             "btn btn-sm btn-meta-primary " +
                             (align ? "text-xs-" + align + " " : "")
@@ -426,7 +425,23 @@ class RawWidget extends Component {
                 )
             case "ProductAttributes":
                 return (
-                    <ProductAttributes
+                    <Attributes
+                        attributeType='pattribute'
+                        fields={fields}
+                        dataId={dataId}
+                        widgetData={widgetData}
+                        docType={windowType}
+                        tabId={tabId}
+                        rowId={rowId}
+                        fieldName={widgetField}
+                        handleBackdropLock={handleBackdropLock}
+                        patch={(option) => handlePatch(widgetField, option)}
+                    />
+                )
+            case "Address":
+                return (
+                    <Attributes
+                        attributeType='address'
                         fields={fields}
                         dataId={dataId}
                         widgetData={widgetData}

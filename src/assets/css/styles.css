@@ -93,6 +93,10 @@ body {
     font-weight: 500;
 }
 
+.tag-disabled {
+    pointer-events: none;
+}
+
 .tag-block {
     display: block;
     text-overflow: ellipsis;
