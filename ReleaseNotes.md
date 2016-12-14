@@ -19,7 +19,7 @@ Here come the actual release notes:
   * #489 Implement DLM within single logical tables
 
 * webui
-  * FRESH-1013 #698 Pipeline - add webui deployment
+  * #698 Pipeline - add webui deployment
 
 # metasfresh 4.48.47 (2016-50)
  
