@@ -10,12 +10,12 @@ package org.adempiere.ad.persistence;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,9 @@ import org.junit.Ignore;
 
 /**
  * Helper class used to test {@link TableModelClassLoader}.
- * 
+ *
  * Use it to make sure the right model classes are loaded by table name.
- * 
+ *
  * @author tsa
  *
  */
@@ -83,7 +83,7 @@ public class TableModelClassLoaderTester
 
 	/**
 	 * Sets the entity type to be considered for given table name.
-	 * 
+	 *
 	 * @param tableName
 	 * @param entityType
 	 */
@@ -103,7 +103,7 @@ public class TableModelClassLoaderTester
 
 	/**
 	 * Asserts the expected class is loaded for given tableName.
-	 * 
+	 *
 	 * @param tableName
 	 * @param expectedClass
 	 */

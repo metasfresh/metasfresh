@@ -65,6 +65,12 @@ public interface IQueryBuilder<T>
 
 	Class<T> getModelClass();
 
+	/**
+	 * @return the table name or <code>null</code>, if it shall be taken from the model class (see {@link #getModelClass()}).
+	 * @TODO delete
+	 */
+	// String getTableName();
+
 	Properties getCtx();
 
 	String getTrxName();
@@ -110,7 +116,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addNotEqualsFilter(String columnName, Object value);
 
 	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
-	
+
 	IQueryBuilder<T> addNotNull(ModelColumn<T, ?> column);
 
 	IQueryBuilder<T> addNotNull(String columnName);
@@ -267,9 +273,9 @@ public interface IQueryBuilder<T>
 	/**
 	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
 	 * .
-	 * 
+	 *
 	 * This is a convenient version of {@link #andCollectChildren(ModelColumn, Class)} for the case when you don't have to retrieve an extended interface of the child type.
-	 * 
+	 *
 	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
 	 * @return query build for <code>ChildType</code>
 	 */
@@ -304,7 +310,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> setOnlySelection(int AD_PInstance_ID);
 
 	/**
-	 * Start an aggregation of different columns, everything groupped by given <code>column</code>
+	 * Start an aggregation of different columns, everything grouped by given <code>column</code>
 	 *
 	 * @param column
 	 * @return aggregation builder
@@ -329,4 +335,6 @@ public interface IQueryBuilder<T>
 	ICompositeQueryFilter<T> addCompositeQueryFilter();
 
 	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
+
+	String getModelTableName();
 }

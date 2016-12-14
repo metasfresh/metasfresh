@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,16 +25,18 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkPackageQueue;
@@ -43,6 +45,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
+import de.metas.logging.LogManager;
 
 public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -136,9 +139,7 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends 
 			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsScheulde is deleted due to an order reactivation
 			// don't rethrow the exception;
 			final String msg = "Detected a FK constraint vialoation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
-			final ILoggable loggable = getLoggable();
-			loggable.addLog(msg);
-			logger.warn(msg, e);
+			Loggables.get().withLogger(logger, Level.WARN).addLog(msg);
 		}
 	}
 

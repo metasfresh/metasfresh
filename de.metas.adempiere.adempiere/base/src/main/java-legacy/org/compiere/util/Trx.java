@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -28,28 +28,32 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.impl.AbstractTrx;
 import org.adempiere.ad.trx.api.impl.JdbcTrxSavepoint;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 
-//import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
+// import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 
 /**
  * Transaction Management. - Create new Transaction by Trx.get(name); - ..transactions.. - commit(); ---- start(); ---- commit(); - close();
- * 
+ *
  * @author Jorg Janke
  * @author Low Heng Sin - added rollback(boolean) and commit(boolean) [20070105] - remove unnecessary use of savepoint - use UUID for safer transaction name generation
- * @author Teo Sarca, http://www.arhipac.ro <li>FR [ 2080217 ] Implement TrxRunnable <li>BF [ 2876927 ] Oracle JDBC driver problem
+ * @author Teo Sarca, http://www.arhipac.ro
+ *         <li>FR [ 2080217 ] Implement TrxRunnable
+ *         <li>BF [ 2876927 ] Oracle JDBC driver problem
  *         https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2876927&group_id=176962
- * @author Teo Sarca, teo.sarca@gmail.com <li>BF [ 2849122 ] PO.AfterSave is not rollback on error - add releaseSavepoint method
+ * @author Teo Sarca, teo.sarca@gmail.com
+ *         <li>BF [ 2849122 ] PO.AfterSave is not rollback on error - add releaseSavepoint method
  *         https://sourceforge.net/tracker/index.php?func=detail&aid=2849122&group_id=176962&atid=879332#
  */
 public class Trx extends AbstractTrx implements VetoableChangeListener
 {
 	/**
 	 * trxName=null marker
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrx#TRXNAME_None} instead
 	 */
 	// metas
@@ -58,7 +62,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Get Transaction
-	 * 
+	 *
 	 * @param trxName trx name
 	 * @param createNew if false, null is returned if not found
 	 * @return Transaction or null
@@ -71,7 +75,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Create unique Transaction Name <b>and instantly create the new trx</b>.
-	 * 
+	 *
 	 * @param prefix optional prefix
 	 * @return unique name
 	 */
@@ -82,9 +86,9 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Create unique Transaction Name
-	 * 
+	 *
 	 * @param prefix optional prefix
-	 * 
+	 *
 	 * @return unique name
 	 */
 	public static String createTrxName(String prefix, final boolean createNew)
@@ -94,7 +98,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Create unique Transaction Name
-	 * 
+	 *
 	 * @return unique name
 	 */
 	public static String createTrxName()
@@ -105,25 +109,25 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**************************************************************************
 	 * Transaction Constructor
-	 * 
+	 *
 	 * @param trxName unique name
 	 */
-	public Trx(final ITrxManager trxManager, final String trxName)
+	public Trx(final ITrxManager trxManager, final String trxName, final boolean autocommit)
 	{
-		this(trxManager, trxName, null);
+		this(trxManager, trxName, null, autocommit);
 
 		// String threadName = Thread.currentThread().getName(); // for debugging
 	}	// Trx
 
 	/**
 	 * Transaction Constructor
-	 * 
+	 *
 	 * @param trxName unique name
 	 * @param con optional connection ( ignore for remote transaction )
-	 * */
-	private Trx(final ITrxManager trxManager, final String trxName, final Connection con)
+	 */
+	private Trx(final ITrxManager trxManager, final String trxName, final Connection con, final boolean autocommit)
 	{
-		super(trxManager, trxName);
+		super(trxManager, trxName, autocommit);
 
 		setConnection(con);
 	}	// Trx
@@ -137,7 +141,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Get Connection
-	 * 
+	 *
 	 * @return connection
 	 */
 	public Connection getConnection()
@@ -166,20 +170,30 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			}
 		}
 		// metas: tsa: end:
-		if (m_connection == null)	// get new Connection
+		if (m_connection == null) 	// get new Connection
 		{
-			setConnection(DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED));
+			setConnection(DB.createConnection(isAutoCommit(), Connection.TRANSACTION_READ_COMMITTED));
 		}
 		if (!isActive())
 		{
 			start();
 		}
+
+		try
+		{
+			m_connection.setAutoCommit(isAutoCommit());
+		}
+		catch (SQLException e)
+		{
+			throw DBException.wrapIfNeeded(e);
+		}
+
 		return m_connection;
 	}	// getConnection
 
 	/**
 	 * Set Connection
-	 * 
+	 *
 	 * @param conn connection
 	 */
 	private void setConnection(Connection conn)
@@ -236,28 +250,32 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		// Get current connection
 		// NOTE: we are not calling getConnection() because we don't want to acquire a new connection in case it was not used already.
 		final Connection connection = m_connection;
-		
-		//
+
+		if(connection == null || connection.getAutoCommit())
+		{
+			log.debug("rollbackNative: doing nothing because we have a null or autocommit connection; this={}, connection={}", this, m_connection);
+			// => consider this a success because if there was no open transaction then there is nothing to rollback 
+			return true;
+		}
+
 		// Case: we really have something to rollback (because connection was acquired and used)
 		if (connection != null)
 		{
-			try
-			{
+		try
+		{
 				connection.rollback();
 				log.debug("rollbackNative: OK - {}", trxName);
-				// m_active = false;
 				return true;
 			}
-			catch (SQLException e)
-			{
+		catch (SQLException e)
+		{
 				log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
-				if (throwException)
-				{
-					// m_active = false;
-					throw e;
-				}
-				return false;
+			if (throwException)
+			{
+				throw e;
 			}
+				return false;
+		}
 		}
 		//
 		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
@@ -272,6 +290,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	protected boolean rollbackNative(ITrxSavepoint savepoint) throws SQLException
 	// metas: end: 02367
 	{
+		if(m_connection == null || m_connection.getAutoCommit())
+		{
+			log.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
+			return false;
+		}
+
 		final String trxName = getTrxName();
 		final Savepoint jdbcSavepoint = (Savepoint)savepoint.getNativeSavepoint();
 
@@ -288,7 +312,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		catch (SQLException e)
 		{
 			// Do nothing. The Savepoint might have been discarded because of an intermediate commit or rollback
-			// FIXME: track in AbstractTrx which savepoints where implicitly discarded in this way and don't call rollbackNative in such a case. 
+			// FIXME: track in AbstractTrx which savepoints where implicitly discarded in this way and don't call rollbackNative in such a case.
 			// log.error(trxName, e);
 			// throw e;
 		}
@@ -298,6 +322,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	@Override
 	protected boolean commitNative(boolean throwException) throws SQLException
 	{
+		if(m_connection == null || m_connection.getAutoCommit())
+		{
+			log.debug("commitNative: doing nothing because we have an autocomit connection; this={}, connection={}", this, m_connection);
+			return true;
+		}
+
 		final String trxName = getTrxName();
 
 		//
@@ -309,23 +339,23 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		// Case: we really have something to commit (because connection was acquired and used)
 		if (connection != null)
 		{
-			try
-			{
+		try
+		{
 				connection.commit();
 				log.debug("commitNative: OK - {}", trxName);
 				// m_active = false;
 				return true;
 			}
-			catch (SQLException e)
-			{
+		catch (SQLException e)
+		{
 				log.error("commitNative: FAILED - {} (throwException={})", trxName, throwException, e);
-				if (throwException)
-				{
-					// m_active = false;
-					throw e;
-				}
-				return false;
+			if (throwException)
+			{
+				// m_active = false;
+				throw e;
 			}
+				return false;
+		}
 		}
 		//
 		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
@@ -351,7 +381,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			// NOTE: let the org.compiere.db.DB_PostgreSQL_ConnectionCustomizer to update the ApplicationName because
 			// it will be performed in a separate thread so here we don't have to wait.
 			// m_connection.setClientInfo("ApplicationName", "adempiere/CLOSED"); // task 08353
-			
+
 			m_connection.close();
 		}
 		catch (SQLException e)
@@ -364,7 +394,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	}	// close
 
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @return Savepoint
 	 * @throws SQLException
@@ -384,6 +414,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		if (m_connection == null)
 		{
 			getConnection();
+		}
+
+		if(m_connection.getAutoCommit())
+		{
+			log.debug("createTrxSavepointNative: returning null because we have an autocomit connection; this={}, connection={}", this, m_connection);
+			return null;
 		}
 
 		if (m_connection != null)
@@ -425,7 +461,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Vetoable Change. Called from CCache to close connections
-	 * 
+	 *
 	 * @param evt event
 	 * @throws PropertyVetoException
 	 */
@@ -448,7 +484,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Delegates to {@link ITrxManager#run(TrxRunnable)}.
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrxManager#run(TrxRunnable)}
 	 */
 	// metas: backward compatibility
@@ -460,7 +496,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Delegates to {@link ITrxManager#run(String, TrxRunnable)}.
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrxManager#run(String, TrxRunnable)}
 	 */
 	// metas: backward compatibility
@@ -472,7 +508,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	/**
 	 * Delegates to {@link ITrxManager#run(String, boolean, TrxRunnable)}.
-	 * 
+	 *
 	 * @deprecated Please use {@link ITrxManager#run(String, boolean, TrxRunnable)}
 	 */
 	// metas: added manageTrx parameter

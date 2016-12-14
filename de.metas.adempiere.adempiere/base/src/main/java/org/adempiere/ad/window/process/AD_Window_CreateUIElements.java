@@ -12,7 +12,7 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -160,7 +160,7 @@ public class AD_Window_CreateUIElements extends JavaProcess
 
 		private final void log(final String msg, final Object... msgParameters)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+			Loggables.get().addLog(msg, msgParameters);
 		}
 
 		public void generate(final I_AD_Window adWindow)

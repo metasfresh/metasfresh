@@ -16,6 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
@@ -115,7 +116,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		m_trx = ITrx.TRX_None;
 
 		boolean success = false;
-		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this);
+		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(this);
 				final IAutoCloseable contextRestorer = Env.switchContext(m_ctx) // FRESH-314: make sure our derived context will always be used
 		)
 		{
@@ -229,7 +230,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 			final boolean isLocalTrx = trxManager.isNull(trxExisting);
 			if (isLocalTrx)
 			{
-				final String trxNameLocal = trxManager.createTrxName(TRXNAME_Prefix);
+				final String trxNameLocal = trxManager.createTrxName(TRXNAME_Prefix + "_" + getClass().getSimpleName());
 				m_trx = trxManager.get(trxNameLocal, true);
 				Check.assumeNotNull(m_trx, "Local transaction shall be created for {}", trxNameLocal); // shall not happen
 			}
@@ -366,7 +367,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		// Update ProcessInfo's result
 		final ProcessExecutionResult result = getResult();
 		final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
-		
+
 		if(!error)
 		{
 			result.markAsSuccess(msgTrl);
@@ -418,7 +419,8 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 *
 	 * This method is called after {@link #prepare()}.
 	 *
-	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
+	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}.
+	 * By default, this method is executed in transaction.
 	 *
 	 * @return Message (variables are parsed)
 	 * @throws ProcessCanceledException in case there is a cancel request on doIt
@@ -484,7 +486,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		return m_pi;
 	}
-	
+
 	protected final ProcessExecutionResult getResult()
 	{
 		return m_pi.getResult();
@@ -579,7 +581,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Gets parameters.
-	 * 
+	 *
 	 * @return parameters
 	 */
 	protected final List<ProcessInfoParameter> getParameters()
@@ -589,7 +591,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Gets parameters as array.
-	 * 
+	 *
 	 * Please consider using {@link #getParameters()}.
 	 *
 	 * @return parameters array
@@ -737,5 +739,5 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 			super("@" + MSG_Canceled + "@");
 		}
 	}
-	
+
 }

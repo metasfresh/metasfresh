@@ -26,6 +26,7 @@ GROUP BY
 	ic.c_invoice_candidate_id, 
 	ic.created, 
 	ic.updated, 
+	ic.QtyOrdered,
 	dt.name, 
 	COALESCE(ic.datetoinvoice_override, ic.datetoinvoice), 
 	ic.qtydelivered

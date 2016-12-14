@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -97,7 +97,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 			}
 			result.add(inoutLine);
 		}
-		return new ArrayList<I_M_InOutLine>(result);
+		return new ArrayList<>(result);
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(costCollector);
 
-			final Map<Integer, I_M_InOutLine> id2iol = new HashMap<Integer, I_M_InOutLine>();
+			final Map<Integer, I_M_InOutLine> id2iol = new HashMap<>();
 
 			for (final I_M_HU_Assignment assignment : huAssignmentsForModel)
 			{
@@ -146,7 +146,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 			if (qtyToAllocate.signum() > 0)
 			{
-				ILoggable.THREADLOCAL.getLoggable().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrder, qtyToAllocate);
+				Loggables.get().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrder, qtyToAllocate);
 			}
 		}
 

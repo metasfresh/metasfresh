@@ -10,9 +10,20 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.49.47 (2016-51)
+
+ upcoming
+ 
+## Features
+* metasfresh
+  * #489 Implement DLM within single logical tables
+
+* webui
+  * #698 Pipeline - add webui deployment
+
 # metasfresh 4.48.47 (2016-50)
  
- upcoming
+this week's RC
 
 ## Features
 * metasfresh
