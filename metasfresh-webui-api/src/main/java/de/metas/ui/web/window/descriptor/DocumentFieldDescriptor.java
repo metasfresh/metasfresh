@@ -1110,6 +1110,14 @@ public final class DocumentFieldDescriptor implements Serializable
 			callouts.add(callout);
 			return this;
 		}
+		
+		public Builder addCallout(final ILambdaDocumentFieldCallout lambdaCallout)
+		{
+			final LambdaDocumentFieldCallout callout = new LambdaDocumentFieldCallout(getFieldName(), lambdaCallout);
+			addCallout(callout);
+			return this;
+		}
+
 
 		/* package */List<IDocumentFieldCallout> getCallouts()
 		{
