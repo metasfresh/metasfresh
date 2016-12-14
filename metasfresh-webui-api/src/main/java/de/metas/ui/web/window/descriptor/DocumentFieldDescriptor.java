@@ -111,9 +111,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocAction //
 		, SpecialField_DocumentSummary //
 		;
-
-		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary);
 	};
+
+	private static final List<Characteristic> SPECIALFIELDS_ToExcludeFromLayout = ImmutableList.of(
+			Characteristic.SpecialField_DocumentNo //
+			, Characteristic.SpecialField_DocStatus //
+			, Characteristic.SpecialField_DocAction //
+			// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
+			);
 
 	private final Set<Characteristic> characteristics;
 
@@ -825,7 +830,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		public boolean isSpecialField()
 		{
-			return !Collections.disjoint(characteristics, Characteristic.SPECIALFIELDS);
+			return !Collections.disjoint(characteristics, SPECIALFIELDS_ToExcludeFromLayout);
 		}
 
 		/* package */ void setEntityReadonlyLogic(final ILogicExpression entityReadonlyLogic)
