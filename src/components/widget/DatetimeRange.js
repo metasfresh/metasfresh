@@ -13,21 +13,39 @@ class DatetimeRange extends Component {
 
     componentDidMount() {
         const {value, valueTo} = this.props;
+        //
+        // console.log(value, valueTo)
+        //
+        // if(value && valueTo){
+        //     console.log('init values')
+        //     this.setState(Object.assign({}, this.state, {
+        //         startDate: value,
+        //         endDate: valueTo
+        //     }));
+        // }else{
+        //     console.log('init defaults')
+        //
+        //     this.setState(Object.assign({}, this.state, {
+        //         startDate: new Date(),
+        //         endDate: new Date()
+        //     }));
+        // }
 
         this.setState(Object.assign({}, this.state, {
-            startDate: value,
-            endDate: valueTo
+            startDate: new Date(),
+            endDate: new Date()
         }));
     }
 
     handleEvent = (event, picker) => {
         const {onChange} = this.props;
-
+        console.log(picker.startDate)
         this.setState(Object.assign({}, this.state, {
             startDate: picker.startDate,
             endDate: picker.endDate
         }), () => {
-            onChange(picker.startDate, picker.endDate);
+            console.log(this.state.startDate)
+            onChange(picker.startDate.toISOString(), picker.endDate.toISOString());
         });
     }
 
@@ -42,10 +60,11 @@ class DatetimeRange extends Component {
 		}
         const {startDate, endDate} = this.state;
         const {isShown, isHidden, mandatory} = this.props;
+        console.log(startDate, endDate);
         return (
             <DateRangePicker
-                startDate={Moment(startDate ? startDate : new Date())}
-                endDate={Moment(endDate ? endDate : new Date())}
+                startDate={Moment(startDate)}
+                endDate={Moment(endDate)}
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
