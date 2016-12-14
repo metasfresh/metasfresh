@@ -22,17 +22,18 @@ package org.adempiere.bpartner.callout;
  * #L%
  */
 
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 
 @Callout(I_C_BPartner_Location.class)
 public class C_BPartner_Location
 {
-	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_IsBillToDefault})
+	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_IsBillToDefault })
 	public void updateBillToColumn(final I_C_BPartner_Location location, final ICalloutField field)
 	{
 		if (location == null)
@@ -52,8 +53,8 @@ public class C_BPartner_Location
 
 		location.setIsBillTo(true);
 	}
-	
-	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_IsShipToDefault})
+
+	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_IsShipToDefault })
 	public void updateShipToColumn(final I_C_BPartner_Location location, final ICalloutField field)
 	{
 		if (location == null)
@@ -73,4 +74,26 @@ public class C_BPartner_Location
 
 		location.setIsShipTo(true);
 	}
+
+	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_C_Location_ID, I_C_BPartner_Location.COLUMNNAME_Name })
+	public void updateAddressString(final ICalloutField calloutField)
+	{
+		final I_C_BPartner_Location bpLocation = calloutField.getModel(I_C_BPartner_Location.class);
+
+		final int locationId = bpLocation.getC_Location_ID();
+		if (locationId <= 0)
+		{
+			return;
+		}
+
+		final int bPartnerId = bpLocation.getC_BPartner_ID();
+		if (bPartnerId <= 0)
+		{
+			return;
+		}
+
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		bpartnerBL.setAddress(bpLocation);
+	}
+
 }
