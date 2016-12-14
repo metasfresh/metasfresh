@@ -27,7 +27,7 @@
 	<modules>
 		<!-- note: we can't use e.g.
 		<module>${project.groupId}.base</module>
-		in here, because the versions-maven-plugin doesn't resolve them when we run its set goal
+		In here, because the versions-maven-plugin doesn't resolve them when we run its set goal.
 		There are probably ways to replace the property with its hardcoded string, but I'm not exploring them now
 		-->
 		<module>de.metas.endcustomer.mf15.base</module>
@@ -88,6 +88,24 @@
 						</banDuplicateClasses>
 					</rules>
 					<fail>true</fail>
+				</configuration>
+			</plugin>
+			<!--
+			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					 <properties>
+						<property>
+						  <name>metasfresh.version</name>
+						  <searchReactor>false</searchReactor>
+						  <autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					  </properties>
 				</configuration>
 			</plugin>
 		</plugins>
