@@ -107,6 +107,7 @@ class TableContextMenu extends Component {
         return (
             !!isDisplayed &&
                 <div
+                    id="context-menu"
                     className="context-menu context-menu-open panel-bordered panel-primary"
                     ref={(c) => c && c.focus()}
                     tabIndex="0" style={style}

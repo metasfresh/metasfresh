@@ -278,16 +278,42 @@ class Table extends Component {
 
     }
 
+    computePositionOfContextMenu = (x, y) => {
+        let elem = document.getElementById("context-menu");
+        let elemWidth = elem.offsetWidth;
+        let elemHeight = elem.offsetHeight;
+
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        let position = {};
+
+        if (windowWidth - x > elemWidth) {
+            position.x = x;
+        } else {
+            position.x = windowWidth - elemWidth;
+        }
+
+        if (windowHeight - y > elemHeight) {
+            position.y = y
+        } else {
+            position.y = windowHeight - elemHeight;
+        }
+
+        return position;
+    }
+
     handleRightClick = (e, id) => {
         const {selected} = this.state;
             const {clientX, clientY} = e;
             e.preventDefault();
 
+            let position = this.computePositionOfContextMenu(clientX, clientY);
+
             this.selectOneProduct(id, null, null, () => {
                 this.setState(Object.assign({}, this.state, {
                     contextMenu: Object.assign({}, this.state.contextMenu, {
-                        x: clientX,
-                        y: clientY,
+                        x: position.x,
+                        y: position.y,
                         open: true
                     })
                 }));
