@@ -20,17 +20,17 @@ import {
 class Filters extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             openDateMenu: false,
             notFrequentListOpen: true,
-            filterDataItem: '',
             selectedItem: '',
             frequentFilterOpen: false,
             notFrequentFilterOpen: false,
             notValidFields: null,
             active: null,
             widgetShown: false
-        };
+        }
     }
 
     componentDidMount() {
@@ -79,18 +79,21 @@ class Filters extends Component {
         const activeItem = getItemsByProperty(filterData, "filterId", active)[0];
 
         if(activeItem){
-            dispatch(initFiltersParameters(activeItem.filterId, this.getFiltersStructure(activeItem)));
+            dispatch(initFiltersParameters(activeItem.filterId, activeItem.parameters));
             this.initActiveFilters();
             this.setState(Object.assign({}, this.state, {
-                filterDataItem: activeItem
-            }));
+                filterDataItem: activeItem,
+                notFrequentFilterOpen: !notFrequentFilterOpen,
+                frequentFilterOpen: false,
+                notValidFields: null
+            }))
+        }else{
+            this.setState(Object.assign({}, this.state, {
+                notFrequentFilterOpen: !notFrequentFilterOpen,
+                frequentFilterOpen: false,
+                notValidFields: null
+            }))
         }
-
-        this.setState(Object.assign({}, this.state, {
-            notFrequentFilterOpen: !notFrequentFilterOpen,
-            frequentFilterOpen: false,
-            notValidFields: null
-        }))
     }
 
     getFiltersStructure = (filterData) => {
@@ -228,9 +231,6 @@ class Filters extends Component {
         //once it is rendered
         const active = filters[0] ? getItemsByProperty(filterData, "filterId", filters[0].filterId)[0] : null;
         const isActive = active ? !!active : false;
-
-        console.log(filterDataItem)
-
         return (
             <div className="filter-wrapper">
                 <button
@@ -275,17 +275,17 @@ class Filters extends Component {
                 const isActive = !!getItemsByProperty(filters, "filterId", item.filterId).length;
                 return (
                     <div className="filter-wrapper" key={index}>
-                    <button
-                    onClick={() => this.toggleFrequentFilter(index, item)}
-                    className={
-                        "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" +
-                        (isActive ? " btn-active": "")
-                    }
-                    >
-                    <i className="meta-icon-preview" />
-                    { isActive ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
-                    </button>
-                    {frequentFilterOpen === index && this.renderFiltersItem(item, index, isActive) }
+                        <button
+                            onClick={() => this.toggleFrequentFilter(index, item)}
+                            className={
+                                "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm" +
+                                (isActive ? " btn-active": "")
+                            }
+                        >
+                        <i className="meta-icon-preview" />
+                        { isActive ? 'Filter: ' + item.caption : 'Filter by ' + item.caption}
+                        </button>
+                        {frequentFilterOpen === index && this.renderFiltersItem(item, index, isActive) }
                     </div>
                 )
             })}

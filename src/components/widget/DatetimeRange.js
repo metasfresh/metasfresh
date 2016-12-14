@@ -13,58 +13,47 @@ class DatetimeRange extends Component {
 
     componentDidMount() {
         const {value, valueTo} = this.props;
-        //
-        // console.log(value, valueTo)
-        //
-        // if(value && valueTo){
-        //     console.log('init values')
-        //     this.setState(Object.assign({}, this.state, {
-        //         startDate: value,
-        //         endDate: valueTo
-        //     }));
-        // }else{
-        //     console.log('init defaults')
-        //
-        //     this.setState(Object.assign({}, this.state, {
-        //         startDate: new Date(),
-        //         endDate: new Date()
-        //     }));
-        // }
 
-        this.setState(Object.assign({}, this.state, {
-            startDate: new Date(),
-            endDate: new Date()
-        }));
+
+        if(value && valueTo){
+            this.setState(Object.assign({}, this.state, {
+                startDate: Moment(value),
+                endDate: Moment(valueTo)
+            }));
+        }else{
+            this.setState(Object.assign({}, this.state, {
+                startDate: new Date(),
+                endDate: new Date()
+            }));
+        }
     }
 
     handleEvent = (event, picker) => {
         const {onChange} = this.props;
-        console.log(picker.startDate)
         this.setState(Object.assign({}, this.state, {
             startDate: picker.startDate,
             endDate: picker.endDate
         }), () => {
-            console.log(this.state.startDate)
-            onChange(picker.startDate.toISOString(), picker.endDate.toISOString());
+            onChange(picker.startDate, picker.endDate);
         });
     }
 
     render() {
         const ranges = {
-			'Today': [Moment(), Moment()],
-			'Yesterday': [Moment().subtract(1, 'days'), Moment().subtract(1, 'days')],
-			'Last 7 Days': [Moment().subtract(6, 'days'), Moment()],
-			'Last 30 Days': [Moment().subtract(29, 'days'), Moment()],
-			'This Month': [Moment().startOf('month'), Moment().endOf('month')],
-			'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
-		}
+            'Today': [Moment(), Moment()],
+            'Yesterday': [Moment().subtract(1, 'days'), Moment().subtract(1, 'days')],
+            'Last 7 Days': [Moment().subtract(6, 'days'), Moment()],
+            'Last 30 Days': [Moment().subtract(29, 'days'), Moment()],
+            'This Month': [Moment().startOf('month'), Moment().endOf('month')],
+            'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
+        }
         const {startDate, endDate} = this.state;
         const {isShown, isHidden, mandatory} = this.props;
-        console.log(startDate, endDate);
+
         return (
             <DateRangePicker
-                startDate={Moment(startDate)}
-                endDate={Moment(endDate)}
+                startDate={startDate}
+                endDate={endDate}
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
