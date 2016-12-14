@@ -2,6 +2,7 @@
 -- if you change here, make sure saldobilanz_Report is also up to date !
 --
 DROP FUNCTION IF EXISTS report.saldobilanz_summary_Report_sub (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1));
+DROP FUNCTION IF EXISTS report.saldobilanz_summary_Report_sub (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1), IN p_ExcludePostingTypeYearEnd char(1));
 
 DROP TABLE IF EXISTS report.saldobilanz_summary_Report_Sub;
 
@@ -21,7 +22,7 @@ WITH (
 	OIDS=FALSE
 );
 
-CREATE FUNCTION report.saldobilanz_summary_Report_sub(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N') RETURNS SETOF report.saldobilanz_summary_Report_sub AS
+CREATE FUNCTION report.saldobilanz_summary_Report_sub(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N',  p_ExcludePostingTypeYearEnd char(1) = 'N') RETURNS SETOF report.saldobilanz_summary_Report_sub AS
 $BODY$
 SELECT
 	parentname1,
@@ -39,8 +40,8 @@ FROM
 			, lvl.Lvl1_value as ParentValue1
 			, ev.AccountType
 			
-			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, $1::date, $4, $5)).Balance * ev.Multiplicator as SameYearSum
-			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, $4, $5)).Balance * ev.Multiplicator as LastYearSum
+			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, $1::date, $4, $5, $6)).Balance * ev.Multiplicator as SameYearSum
+			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, $4, $5, $6)).Balance * ev.Multiplicator as LastYearSum
 				
 		FROM
 			C_Period p 

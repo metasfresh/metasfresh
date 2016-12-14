@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric );
 DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
+DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
 
 CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 	(
@@ -16,7 +16,8 @@ CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 		IN M_Product_ID numeric, --$11
 		IN M_Product_Category_ID numeric, --$12
 		IN M_AttributeSetInstance_ID numeric, --$13
-		IN C_Currency_ID numeric --$14
+		IN C_Currency_ID numeric, --$14
+		IN AD_Org_ID numeric --$15
 	) 
 	RETURNS TABLE
 	(
@@ -25,8 +26,12 @@ CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 		p_name character varying(255),
 		sameperiodsum numeric,
 		compperiodsum numeric,
+		sameperiodqtysum numeric,
+		compperiodqtysum numeric,
 		perioddifference numeric,
+		periodqtydifference numeric,
 		perioddiffpercentage numeric,
+		periodqtydiffpercentage numeric,
 		Base_Week_Start character varying(10),
 		Base_Week_End character varying(10),
 		Comp_Week_Start character varying(10),
@@ -36,7 +41,8 @@ CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 		param_product character varying(255),
 		param_Product_Category character varying(60),
 		Param_Attributes character varying(255),
-		param_currency character(3)
+		param_currency character(3),
+		ad_org_id numeric
 	)
 AS
 $$
@@ -46,21 +52,33 @@ SELECT
 	p.Name AS P_name,
 	SamePeriodSum,
 	CompPeriodSum,
+	SamePeriodQtySum,
+	CompPeriodQtySum,
 	SamePeriodSum - CompPeriodSum AS PeriodDifference,
+	SamePeriodQtySum - CompPeriodQtySum AS PeriodQtyDifference,
 	CASE WHEN SamePeriodSum - CompPeriodSum != 0 AND CompPeriodSum != 0
 		THEN (SamePeriodSum - CompPeriodSum) / CompPeriodSum * 100 ELSE NULL
 	END AS PeriodDiffPercentage,
+	CASE WHEN SamePeriodQtySum - CompPeriodQtySum != 0 AND CompPeriodQtySum != 0
+		THEN (SamePeriodQtySum - CompPeriodQtySum) / CompPeriodQtySum * 100 ELSE NULL
+	END AS PeriodQtyDiffPercentage,
 	
 	$3 || ' ' || (select fiscalyear from c_year where c_year_id =$1 AND isActive = 'Y') AS Base_Week_Start,
 	$4 || ' ' || (select fiscalyear from c_year where c_year_id =$2 AND isActive = 'Y') AS Base_Week_End,
 	COALESCE( ($7 || ' ' || (select fiscalyear from c_year where c_year_id =$5 AND isActive = 'Y')),'') AS Comp_Week_Start,
 	COALESCE( ($8 || ' ' || (select fiscalyear from c_year where c_year_id =$6 AND isActive = 'Y')),'') AS Comp_Week_End,
+
+	
+
 	 $9 AS param_IsSOTrx,
 	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $10 AND isActive = 'Y') AS param_bp,
 	(SELECT name FROM M_Product WHERE M_Product_ID = $11 AND isActive = 'Y') AS param_product,
 	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $12 AND isActive = 'Y') AS param_Product_Category,
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $13) AS Param_Attributes,
-	(SELECT iso_code FROM C_Currency WHERE C_Currency_ID = $14  AND isActive = 'Y')
+
+	(SELECT iso_code FROM C_Currency WHERE C_Currency_ID = $14  AND isActive = 'Y'),
+	a.ad_org_id
+
 FROM
 	(
 		SELECT
@@ -75,8 +93,21 @@ FROM
 						AND io.MovementDate::date <= (select (to_timestamp($8 || ' ' ||(select fiscalyear from c_year where c_year_id =$6 AND isActive = 'Y'),'IW IYYY')+ interval '6' day))::date ) -- comp_week_end 
 			  THEN ROUND((COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE (uconv.multiplyrate, 1)),2)
 			  ELSE 0 
-			END) AS CompPeriodSum	
-			
+			END) AS CompPeriodSum,
+
+			SUM( CASE WHEN( io.MovementDate::date >= (select (to_timestamp($3 || ' ' ||(select fiscalyear from c_year where c_year_id =$1 AND isActive = 'Y'),'IW IYYY')))::date   -- base_week_start
+						AND io.MovementDate::date <= (select (to_timestamp($4 || ' ' ||(select fiscalyear from c_year where c_year_id =$2 AND isActive = 'Y'),'IW IYYY')+ interval '6' day))::date ) -- base_week_end
+			  THEN iol.MovementQty
+			  ELSE 0 
+			END) AS SamePeriodQtySum,
+
+			SUM( CASE WHEN( io.MovementDate::date >= (select (to_timestamp($7 || ' ' ||(select fiscalyear from c_year where c_year_id =$5 AND isActive = 'Y'),'IW IYYY')))::date  -- comp_week_start 
+						AND io.MovementDate::date <= (select (to_timestamp($8 || ' ' ||(select fiscalyear from c_year where c_year_id =$6 AND isActive = 'Y'),'IW IYYY')+ interval '6' day))::date ) -- comp_week_end 
+			  THEN iol.MovementQty
+			  ELSE 0 
+			END) AS CompPeriodQtySum,
+			iciol.ad_org_id			
+						
 			FROM  C_InvoiceCandidate_InOutLine iciol	 
 			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 			INNER JOIN M_InOutLine iol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iol.isActive = 'Y'
@@ -126,9 +157,11 @@ FROM
 			)
 			AND io.docstatus in ('CO','CL')
 			AND ic.C_Currency_ID = $14
+			AND iciol.ad_org_id = $15
 		GROUP BY
 			io.C_BPartner_ID,
-			iol.M_Product_ID
+			iol.M_Product_ID,
+			iciol.ad_org_id
 	) a
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'

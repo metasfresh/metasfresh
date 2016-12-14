@@ -1,18 +1,19 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying, numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(refdate date, C_BPartner_ID numeric, C_BP_Group_ID numeric, M_Product_ID numeric, m_material_balance_config_id numeric, isGebindeFlatrate character varying) RETURNS TABLE
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(refdate date, C_BPartner_ID numeric, C_BP_Group_ID numeric, M_Product_ID numeric, m_material_balance_config_id numeric, isGebindeFlatrate character varying, IN ad_org_id numeric) RETURNS TABLE
 	(
-  bpartnerno character varying, 	
-  bpartner character varying,
-  bpartner_group character varying,
-  art_contract character varying,
+  bpartnerno character varying, 
+  bpartner character varying, 	
+  bpartner_group character varying,	
+  art_contract character varying, 
   art_name character varying,
   outgoing numeric,
-  incoming numeric,
-  bpartner_param character varying,
-  bpartner_group_param character varying,
-  product_param character varying
+  incoming numeric,	
+  bpartner_param character varying, 	
+  bpartner_group_param character varying, 
+  product_param character varying,	
+  ad_org_id numeric 
 	)
 AS 
 $$
@@ -27,8 +28,9 @@ SELECT
 
 	(select name from C_BPartner where C_BPartner_ID = $2 AND isActive = 'Y') as bpartner_param,
 	(select name from C_BP_Group where C_BP_Group_ID = $3 AND isActive = 'Y') as bpartner_group_param,
-	(select name from M_Product where M_Product_ID = $4 AND isActive = 'Y') as product_param
+	(select name from M_Product where M_Product_ID = $4 AND isActive = 'Y') as product_param,
 
+	mbd.ad_org_id	
 FROM
 	M_Material_Balance_Config mbc
 	INNER JOIN M_Material_Balance_Detail mbd ON mbc.M_Material_Balance_Config_ID = mbd.M_Material_Balance_Config_ID
@@ -74,14 +76,15 @@ WHERE
 		1=1
 		end
 		)
-
+	AND mbd.ad_org_id = $7
 GROUP BY
 	bp.value,
 	bp.name, 
 	bpg.Name,
 	fc.name,
 	p.Name,
-	fm.C_Flatrate_Matching_ID
+	fm.C_Flatrate_Matching_ID,
+	mbd.ad_org_id
 
 ORDER BY
     bp.name,
