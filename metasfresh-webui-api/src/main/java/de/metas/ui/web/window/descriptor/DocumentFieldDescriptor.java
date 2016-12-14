@@ -815,6 +815,13 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder removeCharacteristic(final Characteristic c)
+		{
+			assertNotBuilt();
+			characteristics.remove(c);
+			return this;
+		}
+
 		public boolean isSpecialField()
 		{
 			return !Collections.disjoint(characteristics, Characteristic.SPECIALFIELDS);
