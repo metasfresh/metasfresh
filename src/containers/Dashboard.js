@@ -13,7 +13,6 @@ export class Dashboard extends Component {
         const {breadcrumb} = this.props;
         return (
             <Container
-                breadcrumb={breadcrumb}
                 siteName = {"Dashboard"}
                 noMargin = {true}
             >
@@ -25,24 +24,10 @@ export class Dashboard extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    const {menuHandler } = state;
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: []
-    }
-
-    return {
-        breadcrumb
-    }
-}
-
 Dashboard.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    dispatch: PropTypes.func.isRequired
 };
 
-Dashboard = connect(mapStateToProps)(Dashboard);
+Dashboard = connect()(Dashboard);
 
 export default Dashboard
