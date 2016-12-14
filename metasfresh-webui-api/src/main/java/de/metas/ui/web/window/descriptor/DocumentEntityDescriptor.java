@@ -17,6 +17,7 @@ import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.callout.spi.impl.NullCalloutProvider;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
@@ -387,6 +388,7 @@ public class DocumentEntityDescriptor
 		//
 		// Callouts
 		private boolean _calloutsEnabled = true; // enabled by default
+		private boolean _defaultTableCalloutsEnabled = true; // enabled by default
 
 		private int _printProcessId = -1;
 
@@ -747,10 +749,21 @@ public class DocumentEntityDescriptor
 			_calloutsEnabled = false;
 			return this;
 		}
-
+		
 		private boolean isCalloutsEnabled()
 		{
 			return _calloutsEnabled;
+		}
+		
+		public Builder disableDefaultTableCallouts()
+		{
+			_defaultTableCalloutsEnabled = false;
+			return this;
+		}
+		
+		private boolean isDefaultTableCalloutsEnabled()
+		{
+			return _defaultTableCalloutsEnabled;
 		}
 
 		private ICalloutExecutor buildCalloutExecutorFactory(final Collection<DocumentFieldDescriptor> fields)
@@ -791,7 +804,7 @@ public class DocumentEntityDescriptor
 					.setTableName(tableName);
 
 			final ICalloutProvider entityCalloutProvider = entityCalloutProviderBuilder.build();
-			final ICalloutProvider defaultCalloutProvider = calloutExecutorBuilder.getDefaultCalloutProvider();
+			final ICalloutProvider defaultCalloutProvider = isDefaultTableCalloutsEnabled() ? calloutExecutorBuilder.getDefaultCalloutProvider() : NullCalloutProvider.instance;
 			final ICalloutProvider calloutProvider = CompositeCalloutProvider.compose(defaultCalloutProvider, entityCalloutProvider);
 			calloutExecutorBuilder.setCalloutProvider(calloutProvider);
 
