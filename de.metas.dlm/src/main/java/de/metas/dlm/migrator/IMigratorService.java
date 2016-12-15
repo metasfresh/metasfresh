@@ -35,10 +35,19 @@ public interface IMigratorService extends ISingletonService
 	 */
 	public static final int DLM_Level_NOT_SET = 0;
 
+	/**
+	 * 1: operational data.
+	 */
 	public static final int DLM_Level_LIVE = 1;
 
+	/**
+	 * 2: operational data; this level is used by the partitioner. The partitioner temporarily updates records DLM_Level to 2 to find out if it already has found a complete partition.
+	 */
 	public static final int DLM_Level_TEST = 2;
 
+	/**
+	 * 3: archived data
+	 */
 	public static final int DLM_Level_ARCHIVE = 3;
 
 	/**

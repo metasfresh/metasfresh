@@ -23,15 +23,11 @@ package de.metas.connection;
  */
 
 /**
- * A temporary customizer that can clean up when it's closed. See {@link IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}.
+ * A temporary customizer. See {@link IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ITemporaryConnectionCustomizer extends IConnectionCustomizer
 {
-	/**
-	 * Clean up. This method is called when the customizer is closed, see {@link IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}.
-	 */
-	void undoCustomization();
 }
