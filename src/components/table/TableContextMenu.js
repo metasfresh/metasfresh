@@ -14,6 +14,10 @@ class TableContextMenu extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            contextMenu:{
+                x:0,
+                y:0
+            },
             prompt: {
                 open: false,
                 title: "Delete",
@@ -24,6 +28,11 @@ class TableContextMenu extends Component {
                 }
             }
         }
+    }
+
+    componentDidMount() {
+        const {x,y} = this.props;
+        this.setPosition(x,y,this.contextMenu);
     }
 
     handleAdvancedEdit = () => {
@@ -93,75 +102,43 @@ class TableContextMenu extends Component {
 
     }
 
-    computePositionOfContextMenu = (x, y, width, height) => {
-        let windowWidth = window.innerWidth;
-        let windowHeight = window.innerHeight;
-        let position = {};
+    getPosition = (dir, pos, element) => {
+        if(element){
+            const windowSize = (dir === 'x' ? window.innerWidth : window.innerHeight);
+            const elementSize = (dir === 'x' ? element.offsetWidth : element.offsetHeight);
 
-        if (windowWidth - x > width) {
-            position.x = x;
-        } else {
-            position.x = windowWidth - width;
+            if (windowSize - pos > elementSize) {
+                return pos;
+            } else {
+                return windowWidth - elementSize;
+            }
         }
-
-        if (windowHeight - y > height) {
-            position.y = y
-        } else {
-            position.y = windowHeight - height;
-        }
-
-        return position;
     }
 
-    getXposition = (x,width) => {
-        let windowWidth = window.innerWidth;
-        let position = null;
-
-        if (windowWidth - x > width) {
-            position = x;
-        } else {
-            position = windowWidth - width;
-        }
-
-        return position;
+    setPosition = (x,y,elem) => {
+        this.setState(Object.assign({}, this.state, {
+            contextMenu: {
+                x: this.getPosition('x', x, elem),
+                y: this.getPosition('y', y, elem)
+            }
+        }));
     }
-
-    getYposition = (y,height) => {
-        let windowHeight = window.innerHeight;
-        let position = null;
-
-        if (windowHeight - y > height) {
-            position = y
-        } else {
-            position = windowHeight - height;
-        }
-
-        return position;
-    }
-
 
     render() {
-        const {isDisplayed, x, y, blur, selected, dispatch, mainTable} = this.props;
-
-        let width = 150;
-        let height = 104;
-
-        let position = this.computePositionOfContextMenu(x, y, width, height);
-
-        const style = {
-            left: position.x,
-            top: position.y,
-            display: (isDisplayed ? "block" : "none")
-        }
-        const {prompt} = this.state;
+        const {
+            isDisplayed, x, y, blur, selected, dispatch, mainTable
+        } = this.props;
+        const {prompt, contextMenu} = this.state;
 
         const isSelectedOne = selected.length === 1;
         return (
-           !!isDisplayed &&
                 <div
                     className="context-menu context-menu-open panel-bordered panel-primary"
                     ref={(c) => {this.contextMenu = c; c && c.focus()}}
-                    style={{left: this.getXposition(x, this.contextMenu.offsetWidth), top: this.getYposition(y, this.contextMenu.offsetHeight)} }
+                    style={{
+                        left: contextMenu.x,
+                        top: contextMenu.y
+                    }}
                     tabIndex="0"
                     onBlur={blur}
                 >
@@ -187,7 +164,6 @@ class TableContextMenu extends Component {
                 />
             </div>
         )
-
     }
 }
 
