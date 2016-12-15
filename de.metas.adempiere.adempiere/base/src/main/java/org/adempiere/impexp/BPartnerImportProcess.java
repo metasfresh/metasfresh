@@ -373,6 +373,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			location.setPostal_Add(importRecord.getPostal_Add());
 			InterfaceWrapperHelper.save(location);
 			bpartnerLocation.setC_Location(location);
+			
+			// also set isBillTo and IsShipTo flags
+			
+			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
+			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
 
 			if (importRecord.getPhone() != null)
 				bpartnerLocation.setPhone(importRecord.getPhone());
@@ -381,6 +386,9 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			if (importRecord.getFax() != null)
 				bpartnerLocation.setFax(importRecord.getFax());
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
+			
+			
+			
 			InterfaceWrapperHelper.save(bpartnerLocation);
 		}
 		else 	// New Location
