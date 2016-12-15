@@ -93,19 +93,45 @@ class TableContextMenu extends Component {
 
     }
 
+    computePositionOfContextMenu = (x, y, width, height) => {
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        let position = {};
+
+        if (windowWidth - x > width) {
+            position.x = x;
+        } else {
+            position.x = windowWidth - width;
+        }
+
+        if (windowHeight - y > height) {
+            position.y = y
+        } else {
+            position.y = windowHeight - height;
+        }
+
+        return position;
+    }
+
 
     render() {
         const {isDisplayed, x, y, blur, selected, dispatch, mainTable} = this.props;
+
+        let width = 150;
+        let height = 104;
+
+        let position = this.computePositionOfContextMenu(x, y, width, height);
+
         const style = {
-            left: this.props.x,
-            top: this.props.y,
+            left: position.x,
+            top: position.y,
             display: (isDisplayed ? "block" : "none")
         }
         const {prompt} = this.state;
 
         const isSelectedOne = selected.length === 1;
         return (
-            !!isDisplayed &&
+           !!isDisplayed &&
                 <div
                     id="context-menu"
                     className="context-menu context-menu-open panel-bordered panel-primary"

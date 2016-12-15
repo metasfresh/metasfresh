@@ -364,7 +364,7 @@ body {
     font-weight: normal;
     color: $brand-font-color;
     box-shadow: 0 0 6px rgba(0,0,0,.1);
-    z-index: 2;
+    z-index: 3;
 }
 .context-menu-open {
     display: block;
