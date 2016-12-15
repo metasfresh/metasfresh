@@ -110,7 +110,7 @@ class TableContextMenu extends Component {
             if (windowSize - pos > elementSize) {
                 return pos;
             } else {
-                return windowWidth - elementSize;
+                return windowSize - elementSize;
             }
         }
     }
