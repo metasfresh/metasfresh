@@ -36,6 +36,7 @@ this week's RC
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
+  * #721 Wrong error message displayed when user enters wrong password on login
 
 # metasfresh 4.47.46 (2016-49)
 
