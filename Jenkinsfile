@@ -248,7 +248,7 @@ Task branch builds are usually not deployed, so the pipeline can finish without 
 			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
 	]),
-	disableConcurrentBuilds(), // concurrend builds proved a bit too complicated. Let's see if this here works with the input parameter.
+	// disableConcurrentBuilds(), // concurrend builds proved a bit too complicated. However, if we just disable them like this, then build waiting for input will block further builds
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
