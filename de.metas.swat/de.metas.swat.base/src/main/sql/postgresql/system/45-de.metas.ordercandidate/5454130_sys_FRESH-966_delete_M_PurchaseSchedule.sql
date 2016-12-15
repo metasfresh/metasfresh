@@ -171,7 +171,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=545151
 ;
 
 
-select altertable('C_OrDErLine' /*case insensitive*/,'alter table C_OrderLine drop column if exists IsIndividualPOSchedule;');
+select db_alter_table('C_OrDErLine', 'alter table C_OrderLine drop column if exists IsIndividualPOSchedule;');
 
 
 
