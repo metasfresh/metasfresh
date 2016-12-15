@@ -411,6 +411,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			bpartnerLocation.setPhone(importRecord.getPhone());
 			bpartnerLocation.setPhone2(importRecord.getPhone2());
 			bpartnerLocation.setFax(importRecord.getFax());
+			
+			// set isShipTo and isBillTo
+			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
+			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
+			
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpartnerLocation);
 			log.trace("Insert BP Location - " + bpartnerLocation.getC_BPartner_Location_ID());
