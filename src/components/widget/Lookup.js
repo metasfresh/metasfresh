@@ -392,12 +392,12 @@ class Lookup extends Component {
                             disabled={readonly}
                         />
                     </div>
-                    <div className="input-rest">
+                    {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
                             const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
-                    </div>
+                    </div>}
                     {(isInputEmpty) ?
                         <div className="input-icon input-icon-lg">
                             <i className="meta-icon-preview" />

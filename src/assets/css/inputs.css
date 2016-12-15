@@ -641,4 +641,6 @@ input:checked + .input-slider:before {
     position: absolute;
     z-index: 50;
     margin-top:5px;
+    width: 100%;
+    max-width: 450px;
 }
