@@ -13,6 +13,9 @@ import SideList from './SideList';
 import Indicator from './Indicator';
 import Inbox from '../inbox/Inbox';
 
+import keymap from '../../keymap.js';
+import { ShortcutManager } from 'react-shortcuts'
+
 import {
     indicatorState
 } from '../../actions/WindowActions';
