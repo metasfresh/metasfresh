@@ -1,6 +1,11 @@
 -- 26.10.2016 11:53
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540733,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Create_Async','N',TO_TIMESTAMP('2016-10-26 11:53:42','YYYY-MM-DD HH24:MI:SS'),100,'Erzeugt ein Arbeitspaket zur asynchronen Verarbeitung. Wenn das Arbeitspaket verarbeitet ist, wird es abhängi von den Prozessparametern ein weiteres Arbeitspaket erstellen usw.','de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Erstelle Partionen asynchron','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-26 11:53:42','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Create_Async')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540733,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Create_Async','N',TO_TIMESTAMP('2016-10-26 11:53:42','YYYY-MM-DD HH24:MI:SS'),100,'Erzeugt ein Arbeitspaket zur asynchronen Verarbeitung. Wenn das Arbeitspaket verarbeitet ist, wird es abhängi von den Prozessparametern ein weiteres Arbeitspaket erstellen usw.','de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Erstelle Partionen asynchron','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-26 11:53:42','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Create_Async')
 ;
 
 -- 26.10.2016 11:53
