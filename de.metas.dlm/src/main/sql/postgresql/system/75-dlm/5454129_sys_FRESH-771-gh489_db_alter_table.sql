@@ -60,7 +60,8 @@ end;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-COMMENT ON FUCNTION public.db_alter_table(text, text) IS
+
+COMMENT ON FUNCTION public.db_alter_table(text, text) IS
 'Drops all views that directly or indirectly depend on the given table (1st param), then executes the given DDL (2nd param) and finnal restores the views
 This function is similar to the old public.altercolumn() function, but is more generic.
 ';
