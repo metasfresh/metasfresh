@@ -395,10 +395,9 @@ class Table extends Component {
         return (
             <div>
                 <div >
-                    <TableContextMenu
+                    {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
-                        isDisplayed={contextMenu.open}
                         blur={() => this.closeContextMenu()}
                         docId={docId}
                         type={type}
@@ -407,7 +406,7 @@ class Table extends Component {
                         deselect={() => this.deselectAllProducts()}
                         mainTable={mainTable}
                         updateDocList={updateDocList}
-                    />
+                    />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
                             <div className="pull-xs-right">
