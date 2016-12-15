@@ -332,7 +332,6 @@ class Table extends Component {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, "window", tabId, rowId));
     }
-
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
@@ -387,9 +386,11 @@ class Table extends Component {
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
-            pageLength, page, mainTable, updateDocList, sort, orderBy
+            pageLength, page, mainTable, updateDocList, sort, orderBy, toggleTableFullScreen
         } = this.props;
-        const {contextMenu, selected, listenOnKeys} = this.state;
+        const {
+            contextMenu, selected, listenOnKeys, fullScreen
+        } = this.state;
 
         return (
             <div>
@@ -409,15 +410,11 @@ class Table extends Component {
                     />
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
-                            <button
-                                className="btn btn-meta-outline-secondary btn-distance btn-sm pull-xs-left"
-                                onClick={() => this.openModal(type, tabid, "NEW")}
-                            >
-                                Add new
-                            </button>
-
                             <div className="pull-xs-right">
-                                {/*<TableFilter />*/}
+                                <TableFilter
+                                    openModal={() => this.openModal(type, tabid, "NEW")}
+                                    fullScreen={toggleTableFullScreen}
+                                />
                             </div>
                         </div>
                     </div>}

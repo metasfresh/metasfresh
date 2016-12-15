@@ -5,11 +5,24 @@ class TableFilter extends Component {
         super(props);
     }
     render() {
+        const {
+            openModal, fullScreen
+        } = this.props;
+
         return (
-            <div className="form-flex-align h-oneline-push-right">
-                <input type="text" className="input-primary pull-xs-left" placeholder="Enter filter phrase" />
-                <button className="btn-icon btn-meta-outline-secondary pull-xs-right"><i className="meta-icon-fullscreen"/></button>
-                <button className="btn-icon btn-meta-outline-secondary pull-xs-right"><i className="meta-icon-add"/></button>
+            <div className="form-flex-align">
+                <button
+                    className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                    onClick={openModal}
+                >
+                    Add new
+                </button>
+                <button
+                    className="btn-icon btn-meta-outline-secondary pointer"
+                    onClick={fullScreen}
+                >
+                    <i className="meta-icon-fullscreen"/>
+                </button>
             </div>
         )
     }

@@ -6,8 +6,7 @@ import {
 } from '../actions/WindowActions';
 
 import MasterWidget from '../components/widget/MasterWidget';
-import Tabs from '../components/widget/Tabs';
-import TabPane from '../components/widget/TabPane';
+import Tabs from '../components/tabs/Tabs';
 import Table from '../components/table/Table';
 
 import logo from '../assets/images/metasfresh_logo_green_thumb.png';
@@ -23,30 +22,25 @@ class Window extends Component {
 
         return(
             <Tabs>
-                {
-                    tabs.map((elem)=> {
-                        const {
-                            tabid, caption, elements, emptyResultText, emptyResultHint
-                        } = elem;
-                        return (
-                            <TabPane
-                                caption={caption}
-                                key={tabid}
-                            >
-                                <Table
-                                    rowData={rowData}
-                                    cols={elements}
-                                    tabid={tabid}
-                                    type={type}
-                                    docId={dataId}
-                                    emptyText={emptyResultText}
-                                    emptyHint={emptyResultHint}
-                                    newRow={newRow}
-                                />
-                            </TabPane>
-                        )
-                    })
-                }
+                {tabs.map((elem)=> {
+                    const {
+                        tabid, caption, elements, emptyResultText, emptyResultHint
+                    } = elem;
+                    return (
+                        <Table
+                            caption={caption}
+                            key={tabid}
+                            rowData={rowData}
+                            cols={elements}
+                            tabid={tabid}
+                            type={type}
+                            docId={dataId}
+                            emptyText={emptyResultText}
+                            emptyHint={emptyResultHint}
+                            newRow={newRow}
+                        />
+                    )
+                })}
             </Tabs>
         )
     }
