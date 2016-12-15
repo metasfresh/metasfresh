@@ -12,7 +12,8 @@ import {
 
 import {
     findRowByPropName,
-    patchRequest
+    patchRequest,
+    parseToDisplay
 } from '../../../actions/WindowActions'
 
 class AttributesDropdown extends Component {
@@ -38,7 +39,7 @@ class AttributesDropdown extends Component {
             const {id, fields} = response.data;
 
             this.setState(Object.assign({}, this.state, {
-                data: fields
+                data: parseToDisplay(fields)
             }));
 
             return dispatch(getAttributesLayout(attributeType, id));
@@ -80,11 +81,26 @@ class AttributesDropdown extends Component {
         })
     }
 
+    handleChange = (field, value) => {
+        const {data} = this.state;
+
+        this.setState(Object.assign({}, this.state, {
+            data: data.map(item => {
+                if(item.field === field){
+                    return Object.assign({}, item, {
+                        value: value
+                    })
+                }else{
+                    return item;
+                }
+            })
+        }))
+    }
+
     renderFields = (layout, data, dataId, attributeType) => {
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
-
                 return (<RawWidget
                     entity={attributeType}
                     widgetType={item.widgetType}
@@ -96,6 +112,8 @@ class AttributesDropdown extends Component {
                     type={item.type}
                     caption={item.caption}
                     handlePatch={(prop, value) => this.handlePatch(prop, value, dataId)}
+                    handleFocus={() => {}}
+                    handleChange={this.handleChange}
                 />)
             })
         }

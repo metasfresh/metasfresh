@@ -384,7 +384,7 @@ function getScope(isModal) {
     return isModal ? "modal" : "master";
 }
 
-function parseToDisplay(arr) {
+export function parseToDisplay(arr) {
     return parseDateToReadable(nullToEmptyStrings(arr));
 }
 

@@ -465,31 +465,35 @@ class RawWidget extends Component {
             widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal
         } = this.props;
 
-        return (
-            <div className={
-                "form-group row " +
-                ((rowId && !isModal) ? "form-group-table " : " ")
-            }>
-                {!noLabel &&
-                    <div
-                        key="title"
-                        className={
-                            "form-control-label " +
-                            ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")
-                        }
-                        title={caption}
-                    >
-                        {caption}
+        if(widgetData[0].displayed && widgetData[0].displayed === true){
+            return (
+                <div className={
+                    "form-group row " +
+                    ((rowId && !isModal) ? "form-group-table " : " ")
+                }>
+                    {!noLabel &&
+                        <div
+                            key="title"
+                            className={
+                                "form-control-label " +
+                                ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")
+                            }
+                            title={caption}
+                        >
+                            {caption}
+                        </div>
+                    }
+                    <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
+                        {this.renderWidget(
+                            widgetType, fields, windowType, dataId, type, widgetData,
+                            rowId, tabId, icon, gridAlign
+                        )}
                     </div>
-                }
-                <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
-                    {this.renderWidget(
-                        widgetType, fields, windowType, dataId, type, widgetData,
-                        rowId, tabId, icon, gridAlign
-                    )}
                 </div>
-            </div>
-        )
+            )
+        }else{
+            return false;
+        }
     }
 }
 
