@@ -22,9 +22,9 @@ DELETE FROM AD_ModelValidator WHERE AD_ModelValidator_ID=540090
 ;
 
 
-
-
-
+DELETE FROM AD_Relation WHERE AD_RelationType_ID=540011;
+DELETE FROM AD_Relation WHERE AD_RelationType_ID=540013;
+DELETE FROM AD_Relation WHERE AD_RelationType_ID=540010;
 
 
 -- Dec 5, 2016 5:31 PM
@@ -171,16 +171,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=545151
 ;
 
 
-
-
-
-
-
-
-alter table C_OrderLine drop column IsIndividualPOSchedule;
-
-
-
+select altertable('C_OrDErLine' /*case insensitive*/,'alter table C_OrderLine drop column if exists IsIndividualPOSchedule;');
 
 
 
@@ -203,28 +194,6 @@ DELETE FROM  AD_Reference_Trl WHERE AD_Reference_ID=540224
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Reference WHERE AD_Reference_ID=540224
 ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 -- Dec 5, 2016 5:59 PM
