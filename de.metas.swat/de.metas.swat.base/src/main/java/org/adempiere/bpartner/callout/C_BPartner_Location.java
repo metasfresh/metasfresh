@@ -76,10 +76,8 @@ public class C_BPartner_Location
 	}
 
 	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_C_Location_ID, I_C_BPartner_Location.COLUMNNAME_Name })
-	public void updateAddressString(final ICalloutField calloutField)
+	public void updateAddressString(final I_C_BPartner_Location bpLocation)
 	{
-		final I_C_BPartner_Location bpLocation = calloutField.getModel(I_C_BPartner_Location.class);
-
 		final int locationId = bpLocation.getC_Location_ID();
 		if (locationId <= 0)
 		{
