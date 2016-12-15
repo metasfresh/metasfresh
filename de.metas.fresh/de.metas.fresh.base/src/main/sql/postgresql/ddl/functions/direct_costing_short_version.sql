@@ -102,13 +102,14 @@ FROM
 			Sum ( Balance ) OVER ( PARTITION BY Margin, L1_Value) AS L1_All,
 			L1_Multiplicator,
 			-- Level 2
+			-- the reason we use partition by seq is to make different sums if there are accounts with same l2_value, in same margin but different places
 			L2_Value, L2_Name,
-			Sum ( Balance_1000 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_1000,
-			Sum ( Balance_2000 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_2000,
-			Sum ( Balance_100 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_100,
-			Sum ( Balance_150 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_150,
-			Sum ( Balance_other ) OVER ( PARTITION BY Margin, L2_Value) AS L2_other,
-			Sum ( Balance ) OVER ( PARTITION BY Margin, L2_Value) AS L2_All,
+			Sum ( Balance_1000 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_1000,
+			Sum ( Balance_2000 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_2000,
+			Sum ( Balance_100 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_100,
+			Sum ( Balance_150 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_150,
+			Sum ( Balance_other ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_other,
+			Sum ( Balance ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_All,
 			L2_Multiplicator,
 			-- Level 3
 			L3_Value, L3_Name,
@@ -130,11 +131,12 @@ FROM
 			Sum ( Budget_150 ) OVER ( PARTITION BY Margin, L1_Value) AS L1_Budget_150,
 			Sum ( Budget ) OVER ( PARTITION BY Margin, L1_Value) AS L1_Budget_All,
 			-- Level 2
-			Sum ( Budget_1000 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_Budget_1000,
-			Sum ( Budget_2000 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_Budget_2000,
-			Sum ( Budget_100 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_Budget_100,
-			Sum ( Budget_150 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_Budget_150,
-			Sum ( Budget ) OVER ( PARTITION BY Margin, L2_Value) AS L2_Budget_All,
+			-- the reason we use partition by seq is to make different sums if there are accounts with same l2_value, in same margin but different places
+			Sum ( Budget_1000 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_1000,
+			Sum ( Budget_2000 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_2000,
+			Sum ( Budget_100 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_100,
+			Sum ( Budget_150 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_150,
+			Sum ( Budget ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_All,
 			-- Level 3
 			Budget_1000, Budget_2000, Budget_100, Budget_150, Budget,
 
@@ -153,11 +155,12 @@ FROM
 			Sum ( BalanceLY_150 ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_BalanceLY_150,
 			Sum ( BalanceLY ) OVER ( PARTITION BY Margin, L1_Value) AS L1_BalanceLY_All,
 			-- Level 2
-			Sum ( BalanceLY_1000 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_BalanceLY_1000,
-			Sum ( BalanceLY_2000 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_BalanceLY_2000,
-			Sum ( BalanceLY_100 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_BalanceLY_100,
-			Sum ( BalanceLY_150 ) OVER ( PARTITION BY Margin, L2_Value) AS L2_BalanceLY_150,
-			Sum ( BalanceLY ) OVER ( PARTITION BY Margin, L2_Value) AS L2_BalanceLY_All,
+			-- the reason we use partition by seq is to make different sums if there are accounts with same l2_value, in same margin but different places
+			Sum ( BalanceLY_1000 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_BalanceLY_1000,
+			Sum ( BalanceLY_2000 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_BalanceLY_2000,
+			Sum ( BalanceLY_100 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_BalanceLY_100,
+			Sum ( BalanceLY_150 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_BalanceLY_150,
+			Sum ( BalanceLY ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_BalanceLY_All,
 			-- Level 3
 			BalanceLY_1000, BalanceLY_2000, BalanceLY_100, BalanceLY_150, BalanceLY,
 			
