@@ -37,11 +37,6 @@ class Header extends Component {
         }
     }
 
-    componentDidMount = () => {
-        const {dispatch} = this.props;
-        dispatch(getRootBreadcrumb());
-    }
-
     handleSubheaderOpen = () => {
         this.setState(
             Object.assign({}, this.state, {
@@ -100,6 +95,8 @@ class Header extends Component {
     }
 
     componentDidMount() {
+        const {dispatch} = this.props;
+        dispatch(getRootBreadcrumb());
         document.addEventListener('scroll', this.handleScroll);
     }
 
