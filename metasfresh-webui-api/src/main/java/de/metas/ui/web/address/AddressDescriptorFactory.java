@@ -3,6 +3,7 @@ package de.metas.ui.web.address;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_Country;
@@ -260,7 +261,8 @@ public class AddressDescriptorFactory
 			final I_C_Region region = locationRecord.getC_Region();
 			if (region != null && region.getC_Region_ID() > 0)
 			{
-				return IntegerLookupValue.of(region.getC_Region_ID(), region.getName());
+				final I_C_Region regionTrl = InterfaceWrapperHelper.translate(region, I_C_Region.class);
+				return IntegerLookupValue.of(regionTrl.getC_Region_ID(), regionTrl.getName());
 			}
 
 			final String regionName = locationRecord.getRegionName();
@@ -277,7 +279,8 @@ public class AddressDescriptorFactory
 			final I_C_Country country = locationRecord.getC_Country();
 			if (country != null && country.getC_Country_ID() > 0)
 			{
-				return IntegerLookupValue.of(country.getC_Country_ID(), country.getName());
+				final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
+				return IntegerLookupValue.of(countryTrl.getC_Country_ID(), countryTrl.getName());
 			}
 
 			return null;
