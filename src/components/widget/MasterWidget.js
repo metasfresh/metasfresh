@@ -164,34 +164,30 @@ class Widget extends Component {
 
         const {updated, edited} = this.state;
 
-        if(widgetData[0].displayed && widgetData[0].displayed === true){
-            return (
-                <RawWidget
-                    entity={entity}
-                    widgetType={widgetType}
-                    fields={fields}
-                    windowType={windowType}
-                    dataId={dataId}
-                    widgetData={widgetData}
-                    rowId={rowId}
-                    tabId={tabId}
-                    icon={icon}
-                    gridAlign={gridAlign}
-                    handlePatch={this.handlePatch}
-                    handleChange={this.handleChange}
-                    handleFocus={this.handleFocus}
-                    updated={updated}
-                    isModal={isModal}
-                    setEditedFlag={this.setEditedFlag}
-                    noLabel={noLabel}
-                    type={type}
-                    caption={caption}
-                    handleBackdropLock={handleBackdropLock}
-                />
-            )
-        }else{
-            return false;
-        }
+        return (
+            <RawWidget
+                entity={entity}
+                widgetType={widgetType}
+                fields={fields}
+                windowType={windowType}
+                dataId={dataId}
+                widgetData={widgetData}
+                rowId={rowId}
+                tabId={tabId}
+                icon={icon}
+                gridAlign={gridAlign}
+                handlePatch={this.handlePatch}
+                handleChange={this.handleChange}
+                handleFocus={this.handleFocus}
+                updated={updated}
+                isModal={isModal}
+                setEditedFlag={this.setEditedFlag}
+                noLabel={noLabel}
+                type={type}
+                caption={caption}
+                handleBackdropLock={handleBackdropLock}
+            />
+        )
     }
 }
 
