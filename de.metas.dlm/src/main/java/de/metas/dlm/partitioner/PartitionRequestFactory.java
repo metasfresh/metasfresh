@@ -6,6 +6,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.TimeUtil;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition;
@@ -165,7 +166,7 @@ public class PartitionRequestFactory
 	{
 		private int count;
 
-		private Date dontReEnqueueAfter;
+		private Date dontReEnqueueAfter = TimeUtil.getDay(9999, 12, 31);
 
 		private AsyncPartitionerRequestBuilder(final CreatePartitionRequest template)
 		{
@@ -192,7 +193,7 @@ public class PartitionRequestFactory
 		}
 
 		/**
-		 * See {@link CreatePartitionAsyncRequest#getDontReEnqueueAfter()}.
+		 * See {@link CreatePartitionAsyncRequest#getDontReEnqueueAfter()}. If not set, then the default is in the far future.
 		 *
 		 * @param dontReEnqueueAfter
 		 * @return
@@ -351,7 +352,7 @@ public class PartitionRequestFactory
 		/**
 		 * Don't enqueue another workpackage after the given time has passed. One intended usage scenario is to start partitioning in the evening and stop in the morning.
 		 *
-		 * @return
+		 * @return never returns <code>null</code>, but might return <code>9999-12-31</code>.
 		 */
 		public Date getDontReEnqueueAfter()
 		{
