@@ -9,7 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -127,7 +127,7 @@ class TablePrimaryKeyGenerator
 
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg, msgParameters);
+		Loggables.get().addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)

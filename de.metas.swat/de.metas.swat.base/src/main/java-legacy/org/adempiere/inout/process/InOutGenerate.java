@@ -26,12 +26,12 @@ package org.adempiere.inout.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -65,7 +65,7 @@ import de.metas.process.JavaProcess;
 
 /**
  * Generate Shipments. Manual or Automatic
- * 
+ *
  * New features by metas
  * <ul>
  * <li>Option to create shipments in order of ordering, even if a bpartner has
@@ -73,9 +73,9 @@ import de.metas.process.JavaProcess;
  * <li>Option to evaluate a bPartner's postage-free amount. If used, shipments
  * are created only for orders above a certain value</li>
  * </ul>
- * 
+ *
  * NOTE: this is metas's modified version of ADempiere's org.compiere.process.InOutGenerate
- * 
+ *
  * @author Jorg Janke
  * @author t.schoeneberg@metas.de
  */
@@ -191,7 +191,7 @@ public final class InOutGenerate extends JavaProcess
 
 	/**
 	 * Generate Shipments
-	 * 
+	 *
 	 * @return info
 	 * @throws Exception
 	 */
@@ -219,7 +219,7 @@ public final class InOutGenerate extends JavaProcess
 
 		params.setAdPInstanceId(getAD_PInstance_ID());
 		params.setAdUserId(getAD_User_ID());
-		
+
 		params.setBPartnerId(p_C_BPartner_ID);
 		params.setConsolidateDocument(p_ConsolidateDocument);
 		params.setDatePromised(p_DatePromised);
@@ -229,7 +229,7 @@ public final class InOutGenerate extends JavaProcess
 		params.setWarehouseId(p_M_Warehouse_ID);
 		params.setIgnorePostageFreeamount(p_ignorePostageFreeAmount);
 
-		
+
 		final IShipmentBL shipmentBL = Services.get(IShipmentBL.class);
 		final Iterator<I_M_InOut> shipments = shipmentBL.generateShipments(getCtx(), params, p_docAction, get_TrxName());
 		while(shipments.hasNext())
@@ -241,14 +241,14 @@ public final class InOutGenerate extends JavaProcess
 					currentShipment.getDocumentNo());
 			m_created++;
 		}
-	
+
 		return "@Created@ = " + m_created;
 
 	} // doIt
 
 	private Set<Integer> retrieveSelectedOrderIds()
 	{
-		final Set<Integer> orderLineIds = new HashSet<Integer>();
+		final Set<Integer> orderLineIds = new HashSet<>();
 
 		final String trxName = get_TrxName();
 		final String sql = SQL_SELECT_SELECTED_ORDERLINE_IDS;

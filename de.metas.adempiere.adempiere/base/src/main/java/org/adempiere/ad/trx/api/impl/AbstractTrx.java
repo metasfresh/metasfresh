@@ -13,15 +13,14 @@ package org.adempiere.ad.trx.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -60,8 +59,13 @@ public abstract class AbstractTrx implements ITrx
 	private final ITrxManager trxManager;
 	private final String m_trxName;
 
+	/**
+	 * set to <code>true</code> by {@link #start()}.
+	 */
 	private boolean m_active = false;
 	private long m_startTime;
+
+	private final boolean autoCommit;
 
 	private Map<String, Object> properties = null;
 	private ReentrantLock propertiesLock = new ReentrantLock();
@@ -77,13 +81,14 @@ public abstract class AbstractTrx implements ITrx
 	 *
 	 * @param trxName unique name
 	 */
-	public AbstractTrx(final ITrxManager trxManager, final String trxName)
+	public AbstractTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super();
 		// log.info(trxName);
 
 		Check.assumeNotNull(trxManager, "trxManager not null");
 		this.trxManager = trxManager;
+
+		this.autoCommit = autoCommit;
 
 		if (!trxManager.isValidTrxName(trxName))
 		{
@@ -141,6 +146,12 @@ public abstract class AbstractTrx implements ITrx
 	{
 		return m_active;
 	}	// isActive
+
+	@Override
+	public boolean isAutoCommit()
+	{
+		return autoCommit;
+	}
 
 	/**
 	 * Returns true if the transaction was just started but no actual actions were performed on this transaction.
@@ -286,6 +297,11 @@ public abstract class AbstractTrx implements ITrx
 		return savepoint;
 	}
 
+	/**
+	 * @param name
+	 * @return savepoint or return <code>null</code> if no connection could be obtained of if we have an autoCommit connection.
+	 * @throws Exception
+	 */
 	protected abstract ITrxSavepoint createTrxSavepointNative(String name) throws Exception;
 
 	@Override
@@ -478,7 +494,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			if (properties == null)
 			{
-				properties = new HashMap<String, Object>();
+				properties = new HashMap<>();
 			}
 
 			@SuppressWarnings("unchecked")
@@ -520,7 +536,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			if (properties == null)
 			{
-				properties = new HashMap<String, Object>();
+				properties = new HashMap<>();
 			}
 
 			@SuppressWarnings("unchecked")

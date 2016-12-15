@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.ISysConfigBL;
@@ -291,22 +290,6 @@ public class CommissionValidator implements ModelValidator
 		if (po instanceof MHRProcess)
 		{
 			return payrollValidate((MHRProcess)po, timing);
-		}
-		else if (po instanceof MInvoice)
-		{
-			return invoiceValidate((MInvoice)po, timing);
-		}
-		return null;
-	}
-
-	private String invoiceValidate(final MInvoice invoice, final int timing)
-	{
-		if (timing == ModelValidator.TIMING_AFTER_VOID || timing == ModelValidator.TIMING_AFTER_REVERSECORRECT)
-		{
-			for (final MInvoiceLine il : invoice.getLines())
-			{
-				MRelation.deleteForPO(il);
-			}
 		}
 		return null;
 	}

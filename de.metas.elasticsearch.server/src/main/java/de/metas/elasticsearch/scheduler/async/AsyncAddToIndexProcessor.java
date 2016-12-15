@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -57,7 +58,7 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 					.getModelIndexerById(modelIndexerId)
 					.addToIndex(modelsToIndex.iterator());
 
-			getLoggable().addLog(result.getSummary());
+			Loggables.get().addLog(result.getSummary());
 
 			result.throwExceceptionIfAnyFailure();
 

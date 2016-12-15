@@ -48,9 +48,9 @@ public class MockedTrx extends PlainTrx
 
 	private final List<ITrxSavepoint> releasedSavepoints = new ArrayList<ITrxSavepoint>();
 
-	public MockedTrx(final ITrxManager trxManager, final String trxName)
+	public MockedTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super(trxManager, trxName);
+		super(trxManager, trxName, autoCommit);
 	}
 
 	@Override

@@ -35,7 +35,8 @@ import de.metas.logging.MetasfreshLastError;
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-public class AdempiereException extends RuntimeException implements IIssueReportableAware
+public class AdempiereException extends RuntimeException
+		implements IIssueReportableAware
 {
 	/**
 	 *
@@ -79,22 +80,22 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Extracts throwable message.
-	 * 
+	 *
 	 * @param throwable
 	 * @return message; never return null
 	 */
 	public static final String extractMessage(final Throwable throwable)
 	{
 		// guard against NPE, shall not happen
-		if(throwable == null)
+		if (throwable == null)
 		{
 			return "null";
 		}
-		
+
 		String message = throwable.getLocalizedMessage();
-		
+
 		// If throwable message is null or it's very short then it's better to use throwable.toString()
-		if(message == null || message.length() < 4)
+		if (message == null || message.length() < 4)
 		{
 			message = throwable.toString();
 		}
@@ -376,9 +377,9 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * If developer mode is active, it logs a warning with given exception.
-	 * 
+	 *
 	 * If the developer mode is not active, this method does nothing
-	 * 
+	 *
 	 * @param logger
 	 * @param exceptionSupplier {@link AdempiereException} supplier
 	 */
@@ -392,7 +393,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		final boolean throwIt = false;
 		final AdempiereException exception = exceptionSupplier.get();
 		exception.throwOrLog(throwIt, Level.WARN, logger);
-	}	
+	}
 
 	/**
 	 * Sets if {@link #getLocalizedMessage()} shall parse the translations.

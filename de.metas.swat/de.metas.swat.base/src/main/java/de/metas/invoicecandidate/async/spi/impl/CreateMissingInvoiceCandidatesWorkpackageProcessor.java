@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -118,15 +118,13 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final ILoggable loggable = getLoggable();
-
 		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 			for (final Object model : models)
 			{
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
-				loggable.addLog("Created " + invoiceCandidates.size() + " invoice candidate for " + model);
+				Loggables.get().addLog("Created " + invoiceCandidates.size() + " invoice candidate for " + model);
 			}
 		}
 		catch (final LockFailedException e)

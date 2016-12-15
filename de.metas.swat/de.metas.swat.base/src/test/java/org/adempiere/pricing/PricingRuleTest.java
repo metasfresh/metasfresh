@@ -84,7 +84,7 @@ public class PricingRuleTest extends AbstractTestSupport
 	}
 
 	@Test
-	public void AttributePricingTest()
+	public void attributePricingTest()
 	{
 		createPricingRule(AttributePricing.class, 10);
 

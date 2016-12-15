@@ -86,7 +86,7 @@ public class MColumn extends X_AD_Column
 	}	// getColumnName
 
 	/** Cache */
-	private static CCache<Integer, MColumn> s_cache = new CCache<Integer, MColumn>("AD_Column", 20);
+	private static CCache<Integer, MColumn> s_cache = new CCache<>("AD_Column", 20);
 
 	/** Static Logger */
 	private static Logger s_log = LogManager.getLogger(MColumn.class);;
@@ -258,7 +258,7 @@ public class MColumn extends X_AD_Column
 			{
 				throw new AdempiereException("Context variables are not allowed in ColumnSQL: " + columnSql);
 			}
-			
+
 			if (isMandatory())
 				setIsMandatory(false);
 			if (isUpdateable())
@@ -339,6 +339,7 @@ public class MColumn extends X_AD_Column
 		final String tableName = table.getTableName();
 
 		final StringBuilder sql = new StringBuilder("ALTER TABLE ")
+				.append("public.") // if the table is already DLM'ed then there is a view with the sale name in the dlm schema.
 				.append(tableName)
 				.append(" ADD ").append(getSQLDDL());
 

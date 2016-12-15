@@ -2,5 +2,23 @@
 edit postgresql.conf:
 
 #search_path = '"$user",public'         # schema names
-# FRESH-180: adding the "dlm" schema to the search path, so by default our views like dlm.C_Invoice will be found.
-search_path = '"$user",dlm,public'
+# gh #489: adding the "dlm" schema to the search path, so by default our views like dlm.C_Invoice will be found and used rather than the underlying table public.C_Invoice.
+search_path = '"$user", dlm, public'
+
+
+# note: one needs to restart postgresl-9.5 after having added the following those parameters
+
+# gh #489:
+# the archive level on which the application shall operate.
+# For DLM'ed tables, a select * from <table> will only return records with an archive-level that is less or equal this value.
+# the archive levels currently in use are
+# 0: operational data
+# 1: operational data; this level is used by the partitioner. The partitioner temporarily updates records DLM_Level to 1 to find out if it already found a complete partition
+# 2: archived data
+metasfresh.DLM_Level = 1
+
+# gh #489:
+# archive level to assume for records that were not yet explicitly assigned to a particular level
+# set it to 0 if you initially want to see everything as operational and then want the DLM system to decrease that number by moving older records to level 2
+# set it to 2 if you initially want to see everything as archived and want the DLM system explicitly "pull" new records back into the operational realm.
+metasfresh.DLM_Coalesce_Level = 0
