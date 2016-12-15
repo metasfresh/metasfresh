@@ -3,8 +3,7 @@
 /*
  *  MAIN PROPERTIES
  */
-table td:focus,
-button:focus {
+table td:focus {
     outline-color: $brand-font-color;
     outline-width:1px;
     outline-offset:0px;
@@ -596,7 +595,7 @@ input:checked + .input-slider:before {
 .form-flex-align {
     display: flex;
     flex-wrap: nowrap;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-bottom: .5rem;
 }
 .form-flex-align > *:not(:last-child){

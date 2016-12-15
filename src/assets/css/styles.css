@@ -649,6 +649,14 @@ body {
     padding: 1rem 1.2rem;
 }
 
+.tab-content-fullscreen {
+    position: fixed;
+    top:55px;
+    left:0;
+    width: 100%;
+    height: calc(100% - 55px);
+}
+
 .tab-pane {
     display: none;
 }
