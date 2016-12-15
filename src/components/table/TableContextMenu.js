@@ -113,6 +113,32 @@ class TableContextMenu extends Component {
         return position;
     }
 
+    getXposition = (x,width) => {
+        let windowWidth = window.innerWidth;
+        let position = null;
+
+        if (windowWidth - x > width) {
+            position = x;
+        } else {
+            position = windowWidth - width;
+        }
+
+        return position;
+    }
+
+    getYposition = (y,height) => {
+        let windowHeight = window.innerHeight;
+        let position = null;
+
+        if (windowHeight - y > height) {
+            position = y
+        } else {
+            position = windowHeight - height;
+        }
+
+        return position;
+    }
+
 
     render() {
         const {isDisplayed, x, y, blur, selected, dispatch, mainTable} = this.props;
@@ -133,10 +159,10 @@ class TableContextMenu extends Component {
         return (
            !!isDisplayed &&
                 <div
-                    id="context-menu"
                     className="context-menu context-menu-open panel-bordered panel-primary"
-                    ref={(c) => c && c.focus()}
-                    tabIndex="0" style={style}
+                    ref={(c) => {this.contextMenu = c; c && c.focus()}}
+                    style={{left: this.getXposition(x, this.contextMenu.offsetWidth), top: this.getYposition(y, this.contextMenu.offsetHeight)} }
+                    tabIndex="0"
                     onBlur={blur}
                 >
                 {isSelectedOne && !mainTable &&
