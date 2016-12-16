@@ -49,17 +49,6 @@ public class DLMConnectionCustomizer
 		this.dlmCoalesceLevel = dlmCoalesceLevel;
 	};
 
-	/**
-	 * Does nothing.
-	 * As of now, the customizers make sure that their connection is the way it needs to be when the connection is checked out.
-	 * There is not need to spend extra effort cleaning up when the connection is returned.
-	 */
-	@Override
-	public void undoCustomization()
-	{
-		// nothing
-	}
-
 	@Override
 	public int getDlmLevel(final Connection IGNORED)
 	{
