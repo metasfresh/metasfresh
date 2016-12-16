@@ -62,7 +62,6 @@ public class ConnectionCustomizerService implements IConnectionCustomizerService
 			public void close() throws Exception
 			{
 				removeTemporaryCustomizer(connectionCustomizer);
-				connectionCustomizer.undoCustomization();
 			}
 		};
 	}

@@ -10,11 +10,6 @@ UPDATE AD_Column SET AD_Element_ID=543198, AD_Reference_ID=11, AD_Table_ID=762, 
 UPDATE AD_Column SET AD_Element_ID=543190, AD_Reference_ID=11, AD_Table_ID=762, ColumnName='DLM_Partition_ID', DDL_NoForeignKey='Y', Description=NULL, Help=NULL, IsActive='Y', Name='Partition',Updated=TO_TIMESTAMP('2016-10-21 18:36:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=555197
 ;
 
--- 21.10.2016 18:36
--- URL zum Konzept
-UPDATE AD_Table SET IsDLM='Y',Updated=TO_TIMESTAMP('2016-10-21 18:36:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=762
-;
-
 -- 22.10.2016 18:42
 -- URL zum Konzept
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,ReplicationType,TableName,Updated,UpdatedBy) VALUES ('7',0,0,0,540793,'N',TO_TIMESTAMP('2016-10-22 18:42:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','N','Y','N','N','N','N','N','N','Y',0,'DLM_Partition_Records','L','DLM_Partition_Records',TO_TIMESTAMP('2016-10-22 18:42:06','YYYY-MM-DD HH24:MI:SS'),100)
