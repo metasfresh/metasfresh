@@ -200,7 +200,12 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Nächte Prüfung des DLM-Levels', Na
 
 -- 31.10.2016 13:51
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540734,'Y','de.metas.dlm.coordinator.process.DLM_Partition_Inspect','N',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Ziel-DLM-Level der Partition überprüfen','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Inspect')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540734,'Y','de.metas.dlm.coordinator.process.DLM_Partition_Inspect','N',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Ziel-DLM-Level der Partition überprüfen','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-31 13:51:46','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Inspect')
 ;
 
 -- 31.10.2016 13:51
@@ -235,7 +240,12 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,C
 
 -- 31.10.2016 13:54
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540735,'Y','de.metas.dlm.migrator.process.DLM_Partition_Migrate','N',TO_TIMESTAMP('2016-10-31 13:54:55','YYYY-MM-DD HH24:MI:SS'),100,'','de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Partition migrieren','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-31 13:54:55','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Migrate')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540735,'Y','de.metas.dlm.migrator.process.DLM_Partition_Migrate','N',TO_TIMESTAMP('2016-10-31 13:54:55','YYYY-MM-DD HH24:MI:SS'),100,'','de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Partition migrieren','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-31 13:54:55','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Migrate')
 ;
 
 -- 31.10.2016 13:54

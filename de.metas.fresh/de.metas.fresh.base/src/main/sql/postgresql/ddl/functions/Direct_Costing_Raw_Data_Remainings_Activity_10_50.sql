@@ -82,6 +82,7 @@ FROM
 				AND fa.isActive = 'Y'
 			) fa
 			LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID AND a.isActive = 'Y'
+
 		GROUP BY Account_ID, fa.ad_org_id
 	) fa ON fa.Account_ID = s.L_ElementValue_ID
 WHERE fa.ad_org_id = $2

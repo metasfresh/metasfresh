@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-09-28T11:26:31 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="dffd0ce7-f5c2-4d5c-8553-9b258e5080c6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -27,13 +29,14 @@ FROM
 			THEN '<br><br><br>'
 			ELSE ''
 		END || dt.documentnote	as textcenter,
-		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y') as language,
+		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y' AND isActive = 'Y') as language,
 		o.c_order_id		as c_order_id,
 		'docnote' 			as tag,
 		4			as position
 	FROM
 		c_order o
-		LEFT JOIN c_doctype dt 	ON o.c_doctypeTarget_id 	= dt.c_doctype_id
+		LEFT JOIN c_doctype dt 	ON o.c_doctypeTarget_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE o.isActive = 'Y'	
 
 	UNION
 ---------------------------------------------------------------------------------------------
@@ -50,7 +53,8 @@ FROM
 		4			as position
 	FROM
 		c_order o
-		LEFT JOIN c_doctype_trl dt 	ON o.c_doctypetarget_id 	= dt.c_doctype_id
+		LEFT JOIN c_doctype_trl dt 	ON o.c_doctypetarget_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE o.isActive = 'Y'
 
 	UNION
 ---------------------------------------------------------------------------------------------
@@ -64,7 +68,8 @@ FROM
 		3			as position
 	FROM
 		c_order o
-		LEFT JOIN c_doctype dt 	ON o.c_doctypeTarget_id 	= dt.c_doctype_id
+		LEFT JOIN c_doctype dt 	ON o.c_doctypeTarget_id 	= dt.c_doctype_id AND dt.isActive = 'Y'
+	WHERE o.isActive = 'Y'
 
 	UNION
 ---------------------------------------------------------------------------------------------
@@ -82,9 +87,10 @@ FROM
 		'tax' 			as tag,
 		1			as position
 	FROM
-		c_order o
-		JOIN C_DocType dt		ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
-		JOIN M_PriceList pl 		ON o.M_PriceList_ID = pl.M_PriceList_ID
+		c_order o 
+		JOIN C_DocType dt		ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+		JOIN M_PriceList pl 		ON o.M_PriceList_ID = pl.M_PriceList_ID AND pl.isActive = 'Y'
+	WHERE o.isActive = 'Y'
 
 	UNION
 ---------------------------------------------------------------------------------------------
@@ -92,13 +98,14 @@ FROM
 	SELECT
 		replace(replace(replace(p.name,'$datum_netto', to_char(o.dateordered + p.netdays, 'DD.MM.YYYY')), '$datum_skonto_1', to_char(o.dateordered::date + p.discountdays, 'DD.MM.YYYY')), '$datum_skonto_2', to_char(o.dateordered::date + p.discountdays2, 'DD.MM.YYYY')) as textleft,
 		null			as textcenter,
-		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y') as language,
+		(SELECT AD_Language FROM AD_Language WHERE IsBaseLanguage = 'Y' AND isActive = 'Y') as language,
 		o.c_order_id		as c_order_id,
 		'cond' 			as tag,
 		2			as position
 	FROM
 		c_order o
-		join c_paymentterm p on o.c_paymentterm_id = p.c_paymentterm_id
+		join c_paymentterm p on o.c_paymentterm_id = p.c_paymentterm_id AND p.isActive = 'Y'
+	WHERE o.isActive = 'Y'
 
 	UNION
 ---------------------------------------------------------------------------------------------
@@ -112,8 +119,9 @@ FROM
 		2			as position
 	FROM
 		c_order o
-		join c_paymentterm p on o.c_paymentterm_id = p.c_paymentterm_id
-		join c_paymentterm_trl pt on o.c_paymentterm_id = pt.c_paymentterm_id
+		join c_paymentterm p on o.c_paymentterm_id = p.c_paymentterm_id AND p.isActive = 'Y'
+		join c_paymentterm_trl pt on o.c_paymentterm_id = pt.c_paymentterm_id AND pt.isActive = 'Y'
+	WHERE o.isActive = 'Y'
 )footer
 WHERE
 	footer.c_order_id = $P{c_order_id}
@@ -145,7 +153,7 @@ ORDER BY
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="b53cb513-89fe-4646-9a2f-4e940c593ba2" key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="b53cb513-89fe-4646-9a2f-4e940c593ba2">
 					<printWhenExpression><![CDATA[new Boolean($F{textleft} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -162,7 +170,7 @@ ORDER BY
 $F{textleft}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="af89e589-625d-4610-9d91-3dc5542cc1d5" key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="af89e589-625d-4610-9d91-3dc5542cc1d5">
 					<printWhenExpression><![CDATA[new Boolean($F{textcenter} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>

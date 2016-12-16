@@ -108,6 +108,7 @@ FROM
 						WHERE C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000, $1 ) AND isActive = 'Y') AND isActive = 'Y'
 					)
 				AND fa.isActive = 'Y'	
+
 			) fa
 			LEFT OUTER JOIN C_Activity a ON fa.C_Activity_ID = a.C_Activity_ID AND a.isActive = 'Y'
 		GROUP BY Account_ID, fa.ad_org_id

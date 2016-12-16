@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.49.47 (2016-51)
+# metasfresh 4.49.48 (2016-51)
 
  upcoming
  
@@ -20,6 +20,13 @@ Here come the actual release notes:
 
 * webui
   * #698 Pipeline - add webui deployment
+
+## Fixes
+* metasfresh
+  * #713 Marginal Return Report (short version) doubled sums for accounting group
+  * #380 duplicate lines in inout
+    * Worked over each jasper report in order not to display matsterdata records that were deactivated
+  * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
 
 # metasfresh 4.48.47 (2016-50)
  

@@ -166,7 +166,8 @@ FROM
 		FROM
 			C_Period
 		WHERE
-			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $1::Date ) and isActive = 'Y')  and isActive = 'Y'
+			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $1::Date ) AND isActive = 'Y') AND isActive = 'Y'
+
 	) date ON true
 WHERE ad_org_id = $3
 $BODY$
