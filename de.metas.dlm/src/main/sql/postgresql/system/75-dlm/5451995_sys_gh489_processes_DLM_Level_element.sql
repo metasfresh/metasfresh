@@ -1,6 +1,11 @@
 -- 19.10.2016 11:26
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540728,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Create','N',TO_TIMESTAMP('2016-10-19 11:26:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Erstelle Partionen','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-19 11:26:10','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Create')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540728,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Create','N',TO_TIMESTAMP('2016-10-19 11:26:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Erstelle Partionen','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-19 11:26:10','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Create')
 ;
 
 -- 19.10.2016 11:26
@@ -66,7 +71,12 @@ UPDATE AD_Process_Para SET AD_Reference_ID=19,Updated=TO_TIMESTAMP('2016-10-19 1
 
 -- 19.10.2016 12:02
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540729,'Y','de.metas.dlm.partitioner.process.Add_Table_to_DLM','N',TO_TIMESTAMP('2016-10-19 12:02:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Tabelle für DLM einrichten','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-19 12:02:58','YYYY-MM-DD HH24:MI:SS'),100,'Add_Table_to_DLM')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540729,'Y','de.metas.dlm.partitioner.process.Add_Table_to_DLM','N',TO_TIMESTAMP('2016-10-19 12:02:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Tabelle für DLM einrichten','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-19 12:02:58','YYYY-MM-DD HH24:MI:SS'),100,'Add_Table_to_DLM')
 ;
 
 -- 19.10.2016 12:02

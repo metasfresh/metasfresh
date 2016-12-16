@@ -604,7 +604,12 @@ UPDATE AD_Process_Para_Trl SET IsTranslated='N' WHERE AD_Process_Para_ID=541044
 
 -- 10.11.2016 12:29
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540737,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Destroy','N',TO_TIMESTAMP('2016-11-10 12:29:51','YYYY-MM-DD HH24:MI:SS'),100,'Entfernt alle dieser Partition zugeordneten Datensätze.','de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Partitions-Zuordnung aufheben','N','Y',0,0,'Java',TO_TIMESTAMP('2016-11-10 12:29:51','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Destroy')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540737,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Destroy','N',TO_TIMESTAMP('2016-11-10 12:29:51','YYYY-MM-DD HH24:MI:SS'),100,'Entfernt alle dieser Partition zugeordneten Datensätze.','de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Partitions-Zuordnung aufheben','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-11-10 12:29:51','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Destroy')
 ;
 
 -- 10.11.2016 12:29
