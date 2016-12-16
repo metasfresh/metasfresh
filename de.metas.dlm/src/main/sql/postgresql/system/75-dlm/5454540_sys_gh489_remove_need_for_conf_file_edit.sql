@@ -26,7 +26,7 @@ $BODY$
 	select dlm.get_dlm_setting('metasfresh.DLM_Level', 1::smallint);
 $BODY$
   LANGUAGE sql STABLE;
-COMMENT ON FUNCTION dlm.get_dlm_coalesce_level() IS 'gh #489: Invokes SELECT current_setting(''metasfresh.DLM_Level'') and returns the result.
+COMMENT ON FUNCTION dlm.get_dlm_level() IS 'gh #489: Invokes SELECT current_setting(''metasfresh.DLM_Level'') and returns the result.
 If no setting for metasfresh.DLM_Level is defined, then it sets it to 1 for future invocations and also returns 1.
 
 Note 1: This function is called from both java and also heavily used by the views that are created by the function dlm.reset_dlm_view(p_table_name text).
