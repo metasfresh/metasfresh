@@ -211,7 +211,13 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
-		final I_M_AttributeSetInstance rsASI = receiptSchedule.getM_AttributeSetInstance();
+		I_M_AttributeSetInstance rsASI = receiptSchedule.getM_AttributeSetInstance();
+
+		// #653 In case the ASI doesn't exist, create it
+		if (rsASI == null)
+		{
+			rsASI = Services.get(IAttributeSetInstanceBL.class).createASI(receiptSchedule.getM_Product());
+		}
 
 		final I_M_Attribute lotNumberDateAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberDateAttribute(ctx);
 
@@ -235,7 +241,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			final de.metas.order.model.I_C_Order orderModel = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 			final Timestamp lotNumberDate = orderModel.getLotNumberDate();
 
-			// provide the lotNumberDate in the ASI 
+			// provide the lotNumberDate in the ASI
 			if (lotNumberDate != null)
 			{
 				lotNumberDateAI.setValueDate(lotNumberDate);
