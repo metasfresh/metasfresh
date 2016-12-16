@@ -4,6 +4,7 @@ class TableFilter extends Component {
     constructor(props) {
         super(props);
     }
+
     render() {
         const {
             openModal, fullScreen

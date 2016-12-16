@@ -22,9 +22,16 @@ import {
     getViewActions
 } from '../../actions/MenuActions';
 
+import keymap from '../../keymap.js';
+import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+const shortcutManager = new ShortcutManager(keymap);
+
 class Subheader extends Component {
     constructor(props){
         super(props);
+
+        console.log("Subheader");
 
         this.state = {
             pdfSrc: null,
@@ -38,6 +45,10 @@ class Subheader extends Component {
                 }
             }
         }
+    }
+
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
     }
 
     componentDidMount() {
@@ -189,6 +200,10 @@ class Subheader extends Component {
                         </div>
                     </div>
                 </div>
+                <GlobalShortcuts 
+                    openModal={this.openModal}
+                    windowType={windowType}
+                />
             </div>
         )
     }
@@ -198,6 +213,10 @@ class Subheader extends Component {
 Subheader.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
+
+Subheader.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+}
 
 Subheader = connect()(Subheader);
 

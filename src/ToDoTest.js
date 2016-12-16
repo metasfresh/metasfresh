@@ -1,9 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import { Shortcuts } from 'react-shortcuts';
  
-class TodoItem extends React.Component {
+class TodoItem extends Component {
   _handleShortcuts = (action, event) => {
     switch (action) {
+      case 'MOVE_DOWN':
+        console.log('moving bottom')
+        break
       case 'MOVE_LEFT':
         console.log('moving left')
         break
@@ -12,6 +15,9 @@ class TodoItem extends React.Component {
         break
       case 'MOVE_UP':
         console.log('moving up')
+        break
+      case 'OPEN_ACTIONS_MENU':
+        console.log('OPEN_ACTIONS_MENU')
         break
       case 'COPY':
         console.log('copying stuff')
@@ -22,11 +28,14 @@ class TodoItem extends React.Component {
   render() {
     return (
       <Shortcuts
-        // name: 'TODO_ITEM',
-        // handler: {this._handleShortcuts},
+        name={"TODO_ITEM"}
+        handler= {this._handleShortcuts}
+        targetNodeSelector={"body"}
       >
         <div>Make something amazing today</div>
       </Shortcuts>
     )
   }
 }
+
+export default TodoItem
