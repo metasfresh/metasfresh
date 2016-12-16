@@ -561,7 +561,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
 						.setColumnName("M_HU_PI_Item_Product_ID")
-						.setDisplayType(DisplayType.Search)
+						.setDisplayType(DisplayType.TableDir)
 						.setAD_Val_Rule_ID(540199)
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
