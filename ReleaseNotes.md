@@ -39,11 +39,15 @@ Here come the actual release notes:
 
 * webui
   * #625 Shipment Schedule Window WebUI
+    * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
   * #687 webUI bundle
+    * Add different Layout changes in a fair amount of windows for Web User Interface.
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
+    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build. 
   * #721 Wrong error message displayed when user enters wrong password on login
+    * Fix for Bug when entering wrong passwor in Login. Said "locked" but was just wrong credentials/ password.
 
 # metasfresh 4.47.46 (2016-49)
 
