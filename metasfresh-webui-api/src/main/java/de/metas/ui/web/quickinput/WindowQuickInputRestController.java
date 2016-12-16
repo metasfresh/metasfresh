@@ -87,6 +87,8 @@ public class WindowQuickInputRestController
 			, @PathVariable("tabId") final String tabIdStr //
 	)
 	{
+		userSession.assertLoggedIn();
+		
 		final DocumentLayoutDetailQuickInputDescriptor layout = documentsCollection.getDocumentDescriptor(adWindowId)
 				.getLayout()
 				.getDetail(DetailId.fromJson(tabIdStr))
