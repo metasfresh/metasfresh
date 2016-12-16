@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
@@ -47,10 +46,10 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 
 	public abstract int getDlmCoalesceLevel(Connection c);
 
-	private int dlmLevelBkp = -1;
-	private int dlmCoalesceLevelBkp = -1;
 
-	// private AtomicBoolean inMethod = new AtomicBoolean(false);
+	/**
+	 * Used to secure ourselves against a {@link StackOverflowError}.
+	 */
 	private final ThreadLocal<Boolean> inMethod = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
 	@Override
@@ -62,19 +61,20 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 			return;
 		}
 
+		final boolean wasAlreadyInMethod = inMethod.get();
+		if (wasAlreadyInMethod)
+		{
+			return;
+		}
+
 		try
 		{
-			// final boolean wasAlreadyInMethod = inMethod.getAndSet(true);
-			final boolean wasAlreadyInMethod = inMethod.get();
-			if (wasAlreadyInMethod)
-			{
-				return;
-			}
 			inMethod.set(true);
 
-			// https://www.postgresql.org/docs/9.5/static/functions-admin.html
-			storeParamBkpValues(c);
-			setDBParams(c, getDlmLevel(c), getDlmCoalesceLevel(c));
+			DLMConnectionUtils.setSearchPathForDLM(c);
+
+			DLMConnectionUtils.changeDLMLevel(c, getDlmLevel(c));
+			DLMConnectionUtils.changeDLMCoalesceLevel(c, getDlmCoalesceLevel(c));
 		}
 		catch (final SQLException e)
 		{
@@ -82,40 +82,7 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 		}
 		finally
 		{
-			// inMethod.getAndSet(false);
 			inMethod.set(false);
-		}
-	}
-
-	private void storeParamBkpValues(final Connection c) throws SQLException
-	{
-		dlmLevelBkp = DLMConnectionUtils.retrieveCurrentDLMLevel(c);
-		dlmCoalesceLevelBkp = DLMConnectionUtils.retrieveCurrentDLMCoalesceLevel(c);
-	}
-
-	private void setDBParams(final Connection c, final int dlmTargetLevel, final int dlmTargetCoalesceLevel) throws SQLException
-	{
-		if (!Check.equals(dlmTargetLevel, dlmLevelBkp))
-		{
-			DLMConnectionUtils.changeDLMLevel(c, dlmTargetLevel);
-		}
-
-		if (!Check.equals(dlmTargetCoalesceLevel, dlmCoalesceLevelBkp))
-		{
-			DLMConnectionUtils.changeDLMCoalesceLevel(c, dlmTargetCoalesceLevel);
-		}
-	}
-
-	protected void restoreParamBkpValues(final Connection connection)
-	{
-		Check.assumeNotNull(connection, "Param 'connection' is not null");
-		try
-		{
-			setDBParams(connection, dlmLevelBkp, dlmCoalesceLevelBkp);
-		}
-		catch (final SQLException e)
-		{
-			throw DBException.wrapIfNeeded(e);
 		}
 	}
 }
