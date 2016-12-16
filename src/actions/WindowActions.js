@@ -330,7 +330,7 @@ export function startProcess(processType) {
 export function initLayout(entity, docType, tabId, subentity = null, docId = null) {
     return () => axios.get(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' +
+        '/' + entity + '/' + docType +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (subentity ? "/" + subentity : "") +
@@ -385,7 +385,7 @@ export function patchRequest(entity, docType, docId = "NEW", tabId, rowId, prope
 }
 
 export function completeRequest(entity, docType, docId, tabId, rowId, subentity, subentityId) {
-    return () => axios.patch(
+    return () => axios.post(
         config.API_URL +
         '/' + entity + '/' + docType + '/' + docId +
         (tabId ? "/" + tabId : "") +

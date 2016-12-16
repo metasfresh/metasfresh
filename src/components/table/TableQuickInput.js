@@ -10,7 +10,8 @@ import {
     initLayout,
     parseToDisplay,
     patchRequest,
-    completeRequest
+    completeRequest,
+    addNewRow
 } from '../../actions/WindowActions';
 
 class TableQuickInput extends Component {
@@ -121,8 +122,10 @@ class TableQuickInput extends Component {
 
         document.activeElement.blur();
 
-        dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id)).then(() => {
+        dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id)).then(response => {
             this.initQuickInput();
+            console.log(response.data)
+            dispatch(addNewRow(response.data, tabId, response.data.rowId, "master"))
         });
     }
 
