@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.49.47 (2016-51)
+# metasfresh 4.49.48 (2016-51)
 
  upcoming
  
