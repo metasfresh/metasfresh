@@ -54,7 +54,7 @@ class RawWidget extends Component {
             widgetField = fields.parameterName;
             selectedField = selectedItem;
             selectedFieldTo = selectedItemTo;
-            widgetData = data;
+            widgetData = data[0];
             widgetFields = fields;
             fieldsArray = [fields];
         } else {

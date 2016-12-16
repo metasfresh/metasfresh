@@ -32,7 +32,7 @@ class FilterWidget extends Component {
                     fields={widgetData}
                     windowType={windowType}
                     type={type}
-                    widgetData={widgetData}
+                    widgetData={[widgetData]}
                     filterWidget={true}
                     filterId={filterId}
                     parameterName={widgetData.parameterName}
