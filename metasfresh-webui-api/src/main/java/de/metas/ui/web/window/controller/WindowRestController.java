@@ -215,8 +215,8 @@ public class WindowRestController
 	public List<JSONDocument> patchIncludedDocument(
 			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentIdStr //
-			, @RequestParam(name = "tabId", required = false) final String detailIdStr //
-			, @RequestParam(name = "rowId", required = false) final String rowIdStr //
+			, @PathVariable("tabId") final String detailIdStr //
+			, @PathVariable("rowId") final String rowIdStr //
 			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
 			, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
