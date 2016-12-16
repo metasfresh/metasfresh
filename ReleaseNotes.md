@@ -29,13 +29,13 @@ Here come the actual release notes:
   * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
 
 # metasfresh 4.48.47 (2016-50)
- 
-this week's RC
 
 ## Features
 * metasfresh
   * #677 make customs report faster
+    * Significant impprovement of the customs report performance.
   * #541 Remove PiPo from metasfresh removing code and data
+    * Remove the legacy code from Pack-In and Pack-out from metasfresh. The underlying concept is flawed and does not scale.
 
 * webui
   * #625 Shipment Schedule Window WebUI
