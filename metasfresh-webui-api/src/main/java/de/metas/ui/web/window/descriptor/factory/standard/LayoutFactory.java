@@ -478,6 +478,8 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInputLayout = DocumentLayoutDetailQuickInputDescriptor.builder()
 				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaption(field_M_Product_ID.getCaption())
+						.setDescription(field_M_Product_ID.getDescription())
 						.setWidgetType(field_M_Product_ID.getWidgetType())
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_Product_ID.getFieldName())
 								.setPublicField(true)
@@ -486,6 +488,8 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 								.setPublicField(true)
 								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())))
 				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaption(field_Qty.getCaption())
+						.setDescription(field_Qty.getDescription())
 						.setWidgetType(field_Qty.getWidgetType())
 						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
 								.setPublicField(true)
