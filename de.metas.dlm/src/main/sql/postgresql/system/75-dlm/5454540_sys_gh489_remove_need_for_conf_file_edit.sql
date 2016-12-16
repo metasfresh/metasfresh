@@ -102,4 +102,11 @@ $BODY$
 COMMENT ON FUNCTION dlm.reset_dlm_view(text) IS 'gh #235, #489: Creates or drops and recreates for the given table a DLM view in the in the "dlm" schema. A lot of code is borrowed from public.addcolumn()';
 
 
+--DO $$ 
+--BEGIN
 select dlm.reset_dlm_view(tableName) from AD_Table where IsDLM='Y';
+--EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'DDL failed which is OK if there';
+--END $$;
+--DO $$ 
+
+
