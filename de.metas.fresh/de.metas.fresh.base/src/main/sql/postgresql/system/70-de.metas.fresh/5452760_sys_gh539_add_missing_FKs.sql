@@ -46,7 +46,7 @@ UPDATE c_async_batch_type t SET AD_BoilerPlate_ID=null WHERE AD_BoilerPlate_ID I
 
 DELETE FROM c_bp_docline_sort s WHERE NOT EXISTS (select 1 from C_BPartner p where p.C_BPartner_ID=s.C_BPartner_ID);
 
-DELETE FROM fact_acct_activitychangerequest r WHERE NOT EXISTS (select 1 from Fact_Acct f where f.Fact_Acct_ID=r.Fact_Acct_ID);
+DELETE FROM Fact_Acct_ActivityChangeRequest s WHERE NOT EXISTS (select 1 from fact_Acct a where a.fact_Acct_id=s.fact_Acct_id);
 
 
 --
@@ -108,6 +108,10 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2016-10-28 10:19
 -- 28.10.2016 10:19
 -- URL zum Konzept
 UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2016-10-28 10:19:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=56064
+;
+
+-- X_MRP_ProductInfo_Detail_MV.M_AttributeSetInstance_ID
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2016-10-28 10:19:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_column_ID=555102
 ;
 
 COMMIT;

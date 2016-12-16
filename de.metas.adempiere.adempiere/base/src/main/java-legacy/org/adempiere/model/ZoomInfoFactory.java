@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
@@ -36,21 +37,22 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 
 /**
- * 
+ *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
 public class ZoomInfoFactory implements IZoomProvider
 {
 	public static final ZoomInfoFactory get()
 	{
-		return instance; 
+		return instance;
 	}
-	
+
 	private static final transient ZoomInfoFactory instance = new ZoomInfoFactory();
-	
+
 	public static interface IZoomSource
 	{
 		Properties getCtx();
+
 		Evaluatee createEvaluationContext();
 
 		String getTrxName();
@@ -66,7 +68,7 @@ public class ZoomInfoFactory implements IZoomProvider
 		List<String> getKeyColumnNames();
 
 		int getRecord_ID();
-		
+
 		default boolean isSOTrx()
 		{
 			return Env.isSOTrx(getCtx());
@@ -100,11 +102,11 @@ public class ZoomInfoFactory implements IZoomProvider
 			final String[] keyColumnNamesArr = po.get_KeyColumns();
 			if (keyColumnNamesArr == null)
 			{
-				this.keyColumnNames = ImmutableList.of();
+				keyColumnNames = ImmutableList.of();
 			}
 			else
 			{
-				this.keyColumnNames = ImmutableList.copyOf(keyColumnNamesArr);
+				keyColumnNames = ImmutableList.copyOf(keyColumnNamesArr);
 			}
 		}
 
@@ -173,12 +175,12 @@ public class ZoomInfoFactory implements IZoomProvider
 		{
 			return po.get_TrxName();
 		}
-		
+
 		@Override
 		public Evaluatee createEvaluationContext()
 		{
 			final Properties privateCtx = Env.deriveCtx(getCtx());
-			
+
 			final PO po = getPO();
 			final POInfo poInfo = po.getPOInfo();
 			for (int i = 0; i < poInfo.getColumnCount(); i++)
@@ -217,9 +219,9 @@ public class ZoomInfoFactory implements IZoomProvider
 	/**
 	 * Simple class that contains zoom information. Currently used by
 	 * {@link org.compiere.apps.AZoomAcross}.
-	 * 
+	 *
 	 * @author ts
-	 * 
+	 *
 	 */
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
@@ -237,10 +239,18 @@ public class ZoomInfoFactory implements IZoomProvider
 		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final String destinationDisplay)
 		{
 			super();
-			this._zoomInfoId = zoomInfoId;
-			this._windowId = windowId;
-			this._query = query;
-			this._destinationDisplay = destinationDisplay;
+
+			Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
+			_zoomInfoId = zoomInfoId;
+
+			Check.assume(windowId > 0, "windowId > 0");
+			_windowId = windowId;
+
+			Check.assumeNotNull(query, "Parameter query is not null");
+			_query = query;
+
+			Check.assumeNotEmpty(destinationDisplay, "destinationDisplay is not empty");
+			_destinationDisplay = destinationDisplay;
 		}
 
 		@Override
@@ -250,7 +260,7 @@ public class ZoomInfoFactory implements IZoomProvider
 					.add("zoomInfoId", _zoomInfoId)
 					.add("display", _destinationDisplay)
 					.add("AD_Window_ID", _windowId)
-					.add("RecordCount", _query == null ? "<no query>" : _query.getRecordCount())
+					.add("RecordCount", _query.getRecordCount())
 					.toString();
 		}
 
@@ -266,7 +276,7 @@ public class ZoomInfoFactory implements IZoomProvider
 
 		public int getRecordCount()
 		{
-			return _query == null ? 0 : _query.getRecordCount();
+			return _query.getRecordCount();
 		}
 
 		public int getAD_Window_ID()
@@ -281,22 +291,33 @@ public class ZoomInfoFactory implements IZoomProvider
 	}
 
 	private static final Logger logger = LogManager.getLogger(ZoomInfoFactory.class);
-	
+
 	private ZoomInfoFactory()
 	{
 		super();
 	}
 
 	/**
+	 * @param source the source we need zoom targets for
+	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
+	 */
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	{
+		final int targetAD_Window_ID = -1;
+		final boolean checkRecordsCount = true;
+		return retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount);
+	}
+
+	/**
 	 * Retrieves all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		logger.info("source={}", source);
 
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
-		final Set<String> alreadySeenIds = new HashSet<String>();
+		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
 		for (final IZoomProvider zoomProvider : zoomProviders)
@@ -305,28 +326,30 @@ public class ZoomInfoFactory implements IZoomProvider
 
 			try
 			{
-				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
+				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount))
 				{
-					if (zoomInfo.getRecordCount() <= 0)
+					//
+					// Skip if we already added a zoom info for the same window
+					final int adWindowId = zoomInfo.getAD_Window_ID();
+					if (!alreadySeenWindowIds.add(adWindowId))
+					{
+						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
+						continue;
+					}
+
+					//
+					// Filter out those ZoomInfos which have ZERO records (if requested)
+					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)
 					{
 						logger.debug("No target records for destination {}", zoomInfo);
 						continue;
 					}
 
-					final String zoomInfoId = zoomInfo.getId();
-					if (alreadySeenIds.add(zoomInfoId))
-					{
-						logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
-						result.add(zoomInfo);
-	
-					}
-					else
-					{
-						logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, zoomInfoId);
-					}
+					logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
+					result.add(zoomInfo);
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, e);
 			}
@@ -335,10 +358,42 @@ public class ZoomInfoFactory implements IZoomProvider
 		return result.build();
 	}
 
+	/**
+	 * Retrieves that {@link ZoomInfo} which is referencing our given <code>source</code> and has given target window.
+	 *
+	 * NOTE: Records count is not checked
+	 *
+	 * @param source
+	 * @param targetWindowId target AD_Window_ID (must be provided)
+	 * @return ZoomInfo; never returns <code>null</code>
+	 */
+	public ZoomInfo retrieveZoomInfo(final IZoomSource source, final int targetWindowId)
+	{
+		Check.assume(targetWindowId > 0, "targetWindowId > 0");
+
+		final boolean checkRecordsCount = false;
+		final List<ZoomInfo> zoomInfos = retrieveZoomInfos(source, targetWindowId, checkRecordsCount);
+		if (zoomInfos.isEmpty())
+		{
+			throw new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId);
+		}
+		else if (zoomInfos.size() == 1)
+		{
+			return zoomInfos.get(0);
+		}
+		else
+		{
+			// shall not happen because we assume that retriveZoomInfos will return one zoom info per AD_Window_ID
+			throw new IllegalStateException("More than one zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId + ": " + zoomInfos);
+		}
+	}
+
 	private static List<IZoomProvider> retrieveZoomProviders(final String tableName)
 	{
 		final List<IZoomProvider> zoomProviders = new ArrayList<>();
 
+		// NOTE: Zoom providers order matter because in case it finds some duplicates (i.e. same window),
+		// it will pick only the first one (i.e. the one from the first provider).
 		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
 

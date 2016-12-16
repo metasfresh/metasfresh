@@ -149,6 +149,7 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 			}
 		}
 		//
+
 		if (!wrapper.hasColumnName(columnName))
 		{
 			if (throwExIfColumnNotFound)

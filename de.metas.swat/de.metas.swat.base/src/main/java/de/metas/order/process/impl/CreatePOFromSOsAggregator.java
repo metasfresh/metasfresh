@@ -9,7 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.MapReduceAggregator;
@@ -34,12 +34,12 @@ import de.metas.interfaces.I_C_OrderLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -96,12 +96,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		final I_C_Order purchaseOrder = createPurchaseOrder(vendor, salesOrder);
 
-		final ILoggable loggable = getLoggable();
-
 		final String msg = msgBL.getMsg(context.getCtx(),
 				MSG_PURCHASE_ORDER_CREATED,
 				new Object[] { purchaseOrder.getDocumentNo() });
-		loggable.addLog(msg);
+		Loggables.get().addLog(msg);
 
 		return purchaseOrder;
 	}
@@ -122,13 +120,13 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			{
 				// task 09802: Make docAction COmplete
 				purchaseOrder.setDocAction(DocAction.ACTION_Complete);
-				
+
 				InterfaceWrapperHelper.save(purchaseOrder);
 			}
 		}
 		catch (Throwable t)
 		{
-			getLoggable().addLog("@Error@: " + t);
+			Loggables.get().addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 	}
@@ -204,7 +202,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		orderBL.setBPartner(purchaseOrder, vendor);
 		orderBL.setBill_User_ID(purchaseOrder);
-		
+
 		//
 		// SalesRep:
 		// * let it to be set from BPartner (this was done above, by orderBL.setBPartner method)
@@ -246,8 +244,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			}
 			else
 			{
-				final ILoggable loggable = getLoggable();
-				loggable.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+				Loggables.get().addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
 			}
 		}
 		// References
@@ -262,11 +259,6 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		InterfaceWrapperHelper.save(purchaseOrder);
 		return purchaseOrder;
 	}	// createPOForVendor
-
-	private ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
-	}
 
 	@Override
 	public String toString()

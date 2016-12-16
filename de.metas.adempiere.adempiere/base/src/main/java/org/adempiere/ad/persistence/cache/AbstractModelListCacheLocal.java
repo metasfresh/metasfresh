@@ -10,12 +10,12 @@ package org.adempiere.ad.persistence.cache;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import org.adempiere.util.Check;
 
 /**
  * Abstract list of models which expires when parent model's context or transaction was changed.
- * 
+ *
  * @author tsa
  *
  * @param <PT>
@@ -60,10 +60,10 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Debug flag. If enabled, intermediare checkings will be performed.
-	 * 
+	 *
 	 * i.e. make sure that the cached items are the same with the ones that it would be retrieved from database. So, each time when cache is accessed, records are also fetched from database and them
 	 * compared with cached ones.
-	 * 
+	 *
 	 * NOTE: this will ensure data integrity but will decrease the performances as hell. To be used in automated tests only.
 	 */
 	public static boolean DEBUG = false;
@@ -88,14 +88,14 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Creates comparator used to sort items when added to iternal list.
-	 * 
+	 *
 	 * @return comparator or null
 	 */
 	protected abstract Comparator<T> createItemsComparator();
 
 	/**
 	 * Retrieves items from database.
-	 * 
+	 *
 	 * @param ctx context and transaction of parent model
 	 * @param parentModel parent model
 	 * @return retrieved items
@@ -147,7 +147,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if this list is staled and it needs to be reloaded
 	 */
 	private final boolean isStaled()
@@ -157,7 +157,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Validate this list and mark it as staled if needed.
-	 * 
+	 *
 	 * @return true if staled
 	 */
 	private final boolean checkStaled()
@@ -219,7 +219,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Validate this list and mark it as staled if needed or if the given item is not suitable for this list.
-	 * 
+	 *
 	 * @param item
 	 * @return true if staled or item is not valid
 	 */
@@ -243,7 +243,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Checks if given item is valid and can be added/removed from this lisr
-	 * 
+	 *
 	 * @param item
 	 * @return true if valid
 	 */
@@ -260,7 +260,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Try to add given item to this list.
-	 * 
+	 *
 	 * @param itemToAdd
 	 */
 	public final void addItem(final T itemToAdd)
@@ -270,7 +270,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 			// staled, return right away
 			return;
 		}
-		
+
 		System.out.println("Adding item:");
 		System.out.println("Item to add: "+itemToAdd);
 		System.out.println("Cached items: "+items);
@@ -304,12 +304,12 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 		debugCheckItemsValid();
 	}
-	
+
 	protected abstract Object mkKey(final T item);
 
 	/**
 	 * Try to remove item from this list.
-	 * 
+	 *
 	 * @param itemToRemove
 	 */
 	public final void removeItem(final T itemToRemove)
@@ -320,7 +320,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 			return;
 		}
 
-		
+
 		System.out.println("Removing item:");
 		System.out.println("Item to remove: "+itemToRemove);
 		System.out.println("Cached items: "+items);
@@ -342,7 +342,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 				break;
 			}
 		}
-		
+
 		if (!removed)
 		{
 			markStaled();
@@ -360,7 +360,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Gets parent model.
-	 * 
+	 *
 	 * @return parent model
 	 * @throws IllegalStateException if parent's weak reference expired
 	 */
@@ -376,14 +376,14 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Creates a {@link PlainContextAware} from given <code>model</code>.
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
 	private static final PlainContextAware createPlainContextAware(final Object model)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(model);
-		final PlainContextAware contextAwarePlainCopy = new PlainContextAware(contextAware);
+		final PlainContextAware contextAwarePlainCopy = PlainContextAware.newCopy(contextAware);
 		return contextAwarePlainCopy;
 	}
 
@@ -409,7 +409,7 @@ public abstract class AbstractModelListCacheLocal<PT, T>
 
 	/**
 	 * Sets an empty inner list and flag this list as not staled anymore.
-	 * 
+	 *
 	 * To be used after parent model is created, to start maintaining this list from the very beginning.
 	 */
 	public final void setEmptyNotStaled()

@@ -39,7 +39,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
@@ -222,8 +222,7 @@ import de.metas.lock.api.ILock;
 
 		//
 		// Log the result
-		final ILoggable loggable = getLoggable();
-		loggable.addLog("Update invalid result: {}", result.getSummary());
+		Loggables.get().addLog("Update invalid result: {}", result.getSummary());
 	}
 
 	private final void updateInvalid(final I_C_Invoice_Candidate ic)
@@ -418,11 +417,6 @@ import de.metas.lock.api.ILock;
 			return ITrx.TRXNAME_ThreadInherited;
 		}
 		return _trxName;
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
 	}
 
 	@Override

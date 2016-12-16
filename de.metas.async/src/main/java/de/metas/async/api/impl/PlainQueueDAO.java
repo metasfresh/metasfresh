@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +38,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
@@ -47,11 +46,12 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.logging.LogManager;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {
 	private static final transient Logger slogger = LogManager.getLogger(PlainQueueDAO.class);
-	
+
 	private POJOLookupMap db = POJOLookupMap.get();
 
 	public PlainQueueDAO()
@@ -192,7 +192,10 @@ public class PlainQueueDAO extends AbstractQueueDAO
 	@Override
 	public IQuery<I_C_Queue_WorkPackage> createQuery(Properties ctx, IWorkPackageQuery packageQuery)
 	{
-		return new POJOQuery<>(ctx, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None)
+		return new POJOQuery<>(ctx,
+				I_C_Queue_WorkPackage.class,
+				null,  // tableName=null => get it from the given model class
+				ITrx.TRXNAME_None)
 				.addFilter(new QueueFilter(packageQuery))
 				.setOrderBy(queueOrderByComparator);
 	}

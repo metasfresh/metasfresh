@@ -10,12 +10,12 @@ package org.adempiere.ad.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,17 +41,16 @@ public class ErrorManager implements IErrorManager
 	public I_AD_Issue createIssue(final String name, final Throwable t)
 	{
 		final I_AD_Issue[] issue = new I_AD_Issue[1];
-		
+
 		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
 		{
-			
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
 				issue[0] = createIssue0(name, t, localTrxName);
 			}
 		});
-		
+
 		return issue[0];
 	}
 	private I_AD_Issue createIssue0(final String name, final Throwable t, final String trxName)

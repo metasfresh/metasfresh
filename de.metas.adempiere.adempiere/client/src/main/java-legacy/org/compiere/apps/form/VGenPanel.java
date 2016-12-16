@@ -15,10 +15,10 @@ package org.compiere.apps.form;
 
 /**
  * Generate custom form panel
- * 
+ *
  */
 @Deprecated
 public class VGenPanel
 {
 	// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
-}
+		}

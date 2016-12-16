@@ -164,7 +164,7 @@ public class ProcessExecutionResult
 		}
 
 	}
-	
+
 	public void markAsSuccess(final String summary)
 	{
 		this.summary = summary;
@@ -479,9 +479,9 @@ public class ProcessExecutionResult
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
-	public void addLog(final int Log_ID, final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_ID, P_Date, P_Number, P_Msg));
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
 	}	// addLog
 
 	/**
@@ -492,11 +492,11 @@ public class ProcessExecutionResult
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
-	public void addLog(final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public void addLog(final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
 
-		addLog(new ProcessInfoLog(P_ID, timestampToUse, P_Number, P_Msg));
+		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg));
 	}	// addLog
 
 	/**
