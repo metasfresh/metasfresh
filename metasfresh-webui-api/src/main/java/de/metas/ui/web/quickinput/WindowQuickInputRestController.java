@@ -159,7 +159,7 @@ public class WindowQuickInputRestController
 		});
 	}
 
-	@PatchMapping("{quickInputId}/complete")
+	@PostMapping("{quickInputId}/complete")
 	public JSONDocument complete(@PathVariable("quickInputId") final int quickInputId)
 	{
 		userSession.assertLoggedIn();
@@ -175,6 +175,15 @@ public class WindowQuickInputRestController
 
 		return jsonDocument;
 	}
+	
+	@PatchMapping("{quickInputId}/complete")
+	@Deprecated
+	public JSONDocument complete_DEPRECATED(@PathVariable("quickInputId") final int quickInputId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return complete(quickInputId);
+	}
+
 
 	private <RT> RT processQuickInput(final int quickInputId, final Function<QuickInput, RT> processor)
 	{

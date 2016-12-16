@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -137,7 +138,7 @@ public class AddressRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{docId}/complete", method = RequestMethod.GET)
+	@PostMapping(value = "/{docId}/complete")
 	public JSONLookupValue complete(@PathVariable("docId") final int docId)
 	{
 		userSession.assertLoggedIn();
@@ -145,5 +146,14 @@ public class AddressRestController
 		return Execution.callInNewExecution("complete", () -> addressRepo
 				.complete(docId)
 				.transform(JSONLookupValue::ofLookupValue));
+		
+	}
+	
+	@RequestMapping(value = "/{docId}/complete", method = RequestMethod.GET)
+	@Deprecated
+	public JSONLookupValue complete_DEPRECATED(@PathVariable("docId") final int docId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return complete(docId);
 	}
 }
