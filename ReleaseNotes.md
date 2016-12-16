@@ -42,6 +42,7 @@ Here come the actual release notes:
     * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
   * #687 webUI bundle
     * Add different Layout changes in a fair amount of windows for Web User Interface.
+    
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
