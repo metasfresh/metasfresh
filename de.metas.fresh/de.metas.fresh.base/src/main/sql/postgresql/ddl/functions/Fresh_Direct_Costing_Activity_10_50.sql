@@ -14,6 +14,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		margin_incr_30 numeric,
 		margin_incr_40 numeric,
 		margin_incr_50 numeric,
+		margin_incr_90 numeric,
 		margin_incr_other numeric,
 		margin_incr_all numeric,
 		
@@ -25,6 +26,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l1_30 numeric,
 		l1_40 numeric,
 		l1_50 numeric,
+		l1_90 numeric,
 		l1_other numeric,
 		l1_all numeric,
 		l1_multiplicator numeric,
@@ -36,6 +38,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l2_30 numeric,
 		l2_40 numeric,
 		l2_50 numeric,
+		l2_90 numeric,
 		l2_other numeric,
 		l2_all numeric,
 		l2_multiplicator numeric,
@@ -48,6 +51,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		balance_30 numeric,
 		balance_40 numeric,
 		balance_50 numeric,
+		balance_90 numeric,
 		balance_other numeric,
 		balance numeric,
 		
@@ -58,6 +62,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		margin_budget_incr_30 numeric,
 		margin_budget_incr_40 numeric,
 		margin_budget_incr_50 numeric,
+		margin_budget_incr_90 numeric,
 		margin_budget_incr_all numeric,
 		
 		l1_budget_10 numeric,
@@ -65,6 +70,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l1_budget_30 numeric,
 		l1_budget_40 numeric,
 		l1_budget_50 numeric,
+		l1_budget_90 numeric,
 		l1_budget_all numeric,
 		
 		l2_budget_10 numeric,
@@ -72,6 +78,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l2_budget_30 numeric,
 		l2_budget_40 numeric,
 		l2_budget_50 numeric,
+		l2_budget_90 numeric,
 		l2_budget_all numeric,
 		
 		budget_10 numeric,
@@ -79,6 +86,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		budget_30 numeric,
 		budget_40 numeric,
 		budget_50 numeric,
+		budget_90 numeric,
 		budget numeric,
 		
 		ad_org_id numeric,
@@ -88,6 +96,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		gross_30 numeric,
 		gross_40 numeric,
 		gross_50 numeric,
+		gross_90 numeric,
 		gross_all numeric,
 		
 		startdate date,
@@ -98,13 +107,15 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		margin_percentage_30 numeric,
 		margin_percentage_40 numeric,
 		margin_percentage_50 numeric,
+		margin_percentage_90 numeric,
 		margin_percentage_all numeric,
 		
-		margin_budget_percentage_100 numeric,
-		margin_budget_percentage_200 numeric,
+		margin_budget_percentage_10 numeric,
+		margin_budget_percentage_20 numeric,
 		margin_budget_percentage_30 numeric,
 		margin_budget_percentage_40 numeric,
 		margin_budget_percentage_50 numeric,
+		margin_budget_percentage_90 numeric,
 		margin_budget_percentage_all numeric,
 		
 		l1_percentage_10 numeric,
@@ -112,6 +123,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l1_percentage_30 numeric,
 		l1_percentage_40 numeric,
 		l1_percentage_50 numeric,
+		l1_percentage_90 numeric,
 		l1_percentage_all numeric,
 		
 		l1_budget_percentage_10 numeric,
@@ -119,13 +131,15 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l1_budget_percentage_30 numeric,
 		l1_budget_percentage_40 numeric,
 		l1_budget_percentage_50 numeric,
+		l1_budget_percentage_90 numeric,
 		l1_budget_percentage_all numeric,
 		
-		l2_percentage_100 numeric,
-		l2_percentage_200 numeric,
+		l2_percentage_10 numeric,
+		l2_percentage_20 numeric,
 		l2_percentage_30 numeric,
 		l2_percentage_40 numeric,
 		l2_percentage_50 numeric,
+		l2_percentage_90 numeric,
 		l2_percentage_all numeric,
 		
 		l2_budget_percentage_10 numeric,
@@ -133,6 +147,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l2_budget_percentage_30 numeric,
 		l2_budget_percentage_40 numeric,
 		l2_budget_percentage_50 numeric,
+		l2_budget_percentage_90 numeric,
 		l2_budget_percentage_all numeric,
 		
 		l3_percentage_10 numeric,
@@ -140,6 +155,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l3_percentage_30 numeric,
 		l3_percentage_40 numeric,
 		l3_percentage_50 numeric,
+		l3_percentage_90 numeric,
 		l3_percentage_all numeric,
 		
 		l3_budget_percentage_10 numeric,
@@ -147,6 +163,7 @@ IN ad_org_id numeric(10,0)) -- only used in report
 		l3_budget_percentage_30 numeric,
 		l3_budget_percentage_40 numeric,
 		l3_budget_percentage_50 numeric,
+		l3_budget_percentage_90 numeric,
 		l3_budget_percentage_all numeric,
 		
 		isdisplaymarginsum boolean,
@@ -167,12 +184,14 @@ SELECT
 	ROUND( Margin_Incr_30 / Gross_30 * 100, 2 ) AS Margin_Percentage_30,
 	ROUND( Margin_Incr_40 / Gross_40 * 100, 2 ) AS Margin_Percentage_40,
 	ROUND( Margin_Incr_50 / Gross_50 * 100, 2 ) AS Margin_Percentage_50,
+	ROUND( Margin_Incr_90 / Gross_90 * 100, 2 ) AS Margin_Percentage_90,
 	ROUND( Margin_Incr_all / Gross_all * 100, 2 ) AS Margin_Percentage_all,
 	ROUND( Margin_Incr_10 / NULLIF( Margin_Budget_Incr_10, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_10,
 	ROUND( Margin_Incr_20 / NULLIF( Margin_Budget_Incr_20, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_20,
 	ROUND( Margin_Incr_30 / NULLIF( Margin_Budget_Incr_30, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_30,
 	ROUND( Margin_Incr_40 / NULLIF( Margin_Budget_Incr_40, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_40,
 	ROUND( Margin_Incr_50 / NULLIF( Margin_Budget_Incr_50, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_50,
+	ROUND( Margin_Incr_90 / NULLIF( Margin_Budget_Incr_90, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_90,
 	ROUND( Margin_Incr_all / NULLIF( Margin_Budget_Incr_All, 0 ) * 100, 2 ) AS Margin_Budget_Percentage_all,
 
 	ABS( ROUND( L1_10 / Gross_10 * 100, 2 ) ) AS L1_Percentage_10,
@@ -180,12 +199,14 @@ SELECT
 	ABS( ROUND( L1_30 / Gross_30 * 100, 2 ) ) AS L1_Percentage_30,
 	ABS( ROUND( L1_40 / Gross_40 * 100, 2 ) ) AS L1_Percentage_40,
 	ABS( ROUND( L1_50 / Gross_50 * 100, 2 ) ) AS L1_Percentage_50,
+	ABS( ROUND( L1_90 / Gross_90 * 100, 2 ) ) AS L1_Percentage_90,
 	ABS( ROUND( L1_All / Gross_All * 100, 2 ) ) AS L1_Percentage_All,
 	ABS( ROUND( L1_10 / NULLIF( L1_Budget_10, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_10,
 	ABS( ROUND( L1_20 / NULLIF( L1_Budget_20, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_20,
 	ABS( ROUND( L1_30 / NULLIF( L1_Budget_30, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_30,
 	ABS( ROUND( L1_40 / NULLIF( L1_Budget_40, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_40,
 	ABS( ROUND( L1_50 / NULLIF( L1_Budget_50, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_50,
+	ABS( ROUND( L1_90 / NULLIF( L1_Budget_90, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_90,
 	ABS( ROUND( L1_All / NULLIF( L1_Budget_All, 0 ) * 100, 2 ) ) AS L1_Budget_Percentage_All,
 
 	ABS( ROUND( L2_10 / Gross_10 * 100, 2 ) ) AS L2_Percentage_10,
@@ -193,12 +214,14 @@ SELECT
 	ABS( ROUND( L2_30 / Gross_30 * 100, 2 ) ) AS L2_Percentage_30,
 	ABS( ROUND( L2_40 / Gross_40 * 100, 2 ) ) AS L2_Percentage_40,
 	ABS( ROUND( L2_50 / Gross_50 * 100, 2 ) ) AS L2_Percentage_50,
+	ABS( ROUND( L2_90 / Gross_90 * 100, 2 ) ) AS L2_Percentage_90,
 	ABS( ROUND( L2_All / Gross_All * 100, 2 ) ) AS L2_Percentage_All,
 	ABS( ROUND( L2_10 / NULLIF( L2_Budget_10, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_10,
 	ABS( ROUND( L2_20 / NULLIF( L2_Budget_20, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_20,
 	ABS( ROUND( L2_30 / NULLIF( L2_Budget_30, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_30,
 	ABS( ROUND( L2_40 / NULLIF( L2_Budget_40, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_40,
 	ABS( ROUND( L2_50 / NULLIF( L2_Budget_50, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_50,
+	ABS( ROUND( L2_90 / NULLIF( L2_Budget_90, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_90,
 	ABS( ROUND( L2_All / NULLIF( L2_Budget_All, 0 ) * 100, 2 ) ) AS L2_Budget_Percentage_All,
 
 	ABS( ROUND( Balance_10 / Gross_10 * 100, 2 ) ) AS L3_Percentage_10,
@@ -206,12 +229,14 @@ SELECT
 	ABS( ROUND( Balance_30 / Gross_30 * 100, 2 ) ) AS L3_Percentage_30,
 	ABS( ROUND( Balance_40 / Gross_40 * 100, 2 ) ) AS L3_Percentage_40,
 	ABS( ROUND( Balance_50 / Gross_50 * 100, 2 ) ) AS L3_Percentage_50,
+	ABS( ROUND( Balance_90 / Gross_90 * 100, 2 ) ) AS L3_Percentage_90,
 	ABS( ROUND( Balance / Gross_all * 100, 2 ) ) AS L3_percentage_All,
 	ABS( ROUND( Balance_10 / NULLIF( Budget_10, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_10,
 	ABS( ROUND( Balance_20 / NULLIF( Budget_20, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_20,
 	ABS( ROUND( Balance_30 / NULLIF( Budget_30, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_30,
 	ABS( ROUND( Balance_40 / NULLIF( Budget_40, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_40,
 	ABS( ROUND( Balance_50 / NULLIF( Budget_50, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_50,
+	ABS( ROUND( Balance_90 / NULLIF( Budget_90, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_90,
 	ABS( ROUND( Balance / NULLIF( Budget, 0 ) * 100, 2 ) ) AS L3_Budget_Percentage_All,
 
 	-- If current Margin is the Last Margin, display the final sum group footer
@@ -229,6 +254,7 @@ FROM
 		NULLIF( First_agg ( L2_30 ) OVER (ORDER BY Seq ), 0 ) AS Gross_30,
 		NULLIF( First_agg ( L2_40 ) OVER (ORDER BY Seq ), 0 ) AS Gross_40,
 		NULLIF( First_agg ( L2_50 ) OVER (ORDER BY Seq ), 0 ) AS Gross_50,
+		NULLIF( First_agg ( L2_90 ) OVER (ORDER BY Seq ), 0 ) AS Gross_90,
 		NULLIF( First_agg ( L2_all ) OVER (ORDER BY Seq ), 0 ) AS Gross_All
 	FROM
 		(
@@ -247,6 +273,7 @@ FROM
 			First_Agg( Incr_30 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Incr_30,
 			First_Agg( Incr_40 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Incr_40,
 			First_Agg( Incr_50 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Incr_50,
+			First_Agg( Incr_90 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Incr_90,
 			First_Agg( Incr_other ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Incr_other,
 			First_Agg( Incr ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Incr_All,
 			-- Level 1
@@ -256,6 +283,7 @@ FROM
 			Sum ( Balance_30 ) OVER ( PARTITION BY Margin, L1_Value) AS L1_30,
 			Sum ( Balance_40 ) OVER ( PARTITION BY Margin, L1_Value) AS L1_40,
 			Sum ( Balance_50 ) OVER ( PARTITION BY Margin, L1_Value) AS L1_50,
+			Sum ( Balance_90 ) OVER ( PARTITION BY Margin, L1_Value) AS L1_90,
 			Sum ( Balance_other ) OVER ( PARTITION BY Margin, L1_Value) AS L1_other,
 			Sum ( Balance ) OVER ( PARTITION BY Margin, L1_Value) AS L1_All,
 			L1_Multiplicator,
@@ -267,12 +295,13 @@ FROM
 			Sum ( Balance_30 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_30,			
 			Sum ( Balance_40 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_40,
 			Sum ( Balance_50 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_50,
+			Sum ( Balance_90 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_90,
 			Sum ( Balance_other ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_other,
 			Sum ( Balance ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_All,
 			L2_Multiplicator,
 			-- Level 3
 			L3_Value, L3_Name,
-			Balance_10, Balance_20, Balance_30, Balance_40, Balance_50, Balance_other, Balance,
+			Balance_10, Balance_20, Balance_30, Balance_40, Balance_50, Balance_90, Balance_other, Balance,
 			L3_Multiplicator,
 			--
 			-- Budgets
@@ -283,6 +312,7 @@ FROM
 			First_Agg( Budget_Incr_30 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Budget_Incr_30,
 			First_Agg( Budget_Incr_40 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Budget_Incr_40,
 			First_Agg( Budget_Incr_50 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Budget_Incr_50,
+			First_Agg( Budget_Incr_90 ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Budget_Incr_90,
 			First_Agg( Budget_Incr ) OVER ( PARTITION BY Margin ORDER BY Seq DESC ) AS Margin_Budget_Incr_All,
 			-- Level 1
 			Sum ( Budget_10 ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_Budget_10,
@@ -290,6 +320,7 @@ FROM
 			Sum ( Budget_30 ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_Budget_30,
 			Sum ( Budget_40 ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_Budget_40,
 			Sum ( Budget_50 ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_Budget_50,
+			Sum ( Budget_90 ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_Budget_90,
 			Sum ( Budget ) OVER ( PARTITION BY Margin, L1_Value ) AS L1_Budget_All,
 			-- Level 2
 			-- the reason we use partition by seq is to make different sums if there are accounts with same l2_value, in same margin but different places
@@ -298,9 +329,10 @@ FROM
 			Sum ( Budget_30 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_30,
 			Sum ( Budget_40 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_40,
 			Sum ( Budget_50 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_50,
+			Sum ( Budget_90 ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_90,
 			Sum ( Budget ) OVER ( PARTITION BY Margin, L2_Value, substring(seq from 1 for 15)) AS L2_Budget_All,
 			-- Level 3
-			Budget_10, Budget_20, Budget_30, Budget_40, Budget_50, Budget,
+			Budget_10, Budget_20, Budget_30, Budget_40, Budget_50, Budget_90, Budget,
 			ad_org_id
 		FROM
 			(
@@ -314,6 +346,7 @@ FROM
 				Balance_30, SUM( Balance_30 ) OVER (ORDER BY Seq ) AS Incr_30,
 				Balance_40, SUM( Balance_40 ) OVER (ORDER BY Seq ) AS Incr_40,
 				Balance_50, SUM( Balance_50 ) OVER (ORDER BY Seq ) AS Incr_50,
+				Balance_90, SUM( Balance_90 ) OVER (ORDER BY Seq ) AS Incr_90,
 				Balance_other, SUM( Balance_other ) OVER (ORDER BY Seq ) AS Incr_other,
 				Balance, SUM( Balance ) OVER (ORDER BY Seq ) AS Incr,
 				Budget_10, SUM( Budget_10 ) OVER (ORDER BY Seq ) AS Budget_Incr_10,
@@ -321,6 +354,7 @@ FROM
 				Budget_30, SUM( Budget_30 ) OVER (ORDER BY Seq ) AS Budget_Incr_30,
 				Budget_40, SUM( Budget_40 ) OVER (ORDER BY Seq ) AS Budget_Incr_40,
 				Budget_50, SUM( Budget_50 ) OVER (ORDER BY Seq ) AS Budget_Incr_50,
+				Budget_90, SUM( Budget_90 ) OVER (ORDER BY Seq ) AS Budget_Incr_90,
 				Budget, SUM( Budget ) OVER (ORDER BY Seq ) AS Budget_Incr,
 				L3_Multiplicator, L2_Multiplicator, L1_Multiplicator,
 				ad_org_id
@@ -336,7 +370,7 @@ FROM
 		FROM
 			C_Period
 		WHERE
-			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $1::Date ))
+			C_Year_ID = (SELECT C_Year_ID FROM C_Period WHERE C_Period_ID = report.Get_Period( 1000000,  $1::Date ) and isActive = 'Y') and isActive = 'Y'
 	) date ON true
 	
 WHERE ad_org_id = $4 :: numeric(10,0)
