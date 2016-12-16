@@ -97,7 +97,7 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 		final List<Object> items = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
-		mrpProductInfoBL.updateItems(new PlainContextAware(ctx, localTrxName), items, params);
+		mrpProductInfoBL.updateItems(PlainContextAware.newWithTrxName(ctx, localTrxName), items, params);
 
 		return Result.SUCCESS;
 	}

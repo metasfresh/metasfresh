@@ -30,28 +30,28 @@ case when d.name like 'Zahlungsausgang%' then p.payamt else 0 end as ausgabe
 from
 	c_cashline cash
 
-left join c_payment p on cash.c_payment_id = cash.c_payment_id
+left join c_payment p on cash.c_payment_id = cash.c_payment_id AND p.isActive = 'Y'
 
-left join c_doctype d on p.c_doctype_id = d.c_doctype_id
+left join c_doctype d on p.c_doctype_id = d.c_doctype_id AND d.isActive = 'Y'
 
-left join c_invoice i on p.c_invoice_id = i.c_invoice_id
+left join c_invoice i on p.c_invoice_id = i.c_invoice_id AND i.isActive = 'Y'
 
-left join c_currency c on c.c_currency_id = p.c_currency_id
+left join c_currency c on c.c_currency_id = p.c_currency_id AND c.isActive = 'Y'
 
-left join gl_category gl on d.gl_category_id = gl.gl_category_id
+left join gl_category gl on d.gl_category_id = gl.gl_category_id AND gl.isActive = 'Y'
 
-left join c_bankaccount b on p.c_bankaccount_id = b.c_bankaccount_id
+left join c_bankaccount b on p.c_bankaccount_id = b.c_bankaccount_id AND b.isActive = 'Y'
 
-left join c_bank bank on b.c_bank_id = bank.c_bank_id
+left join c_bank bank on b.c_bank_id = bank.c_bank_id AND bank.isActive = 'Y'
 
-left join c_cashbook cb on p.c_cashbook_id = cb.c_cashbook_id
+left join c_cashbook cb on p.c_cashbook_id = cb.c_cashbook_id AND cb.isActive = 'Y'
 
-left join fact_acct acct on acct.datetrx = p.datetrx
+left join fact_acct acct on acct.datetrx = p.datetrx AND acct.isActive = 'Y'
 
-left join c_period pd on pd.c_period_id = acct.c_period_id
+left join c_period pd on pd.c_period_id = acct.c_period_id AND pd.isActive = 'Y'
 
 where pd.c_period_id < $P{C_Period_ID} and bank.c_bank_id = 9920529 and p.docstatus NOT IN ('RE','VO')
-	AND p.ad_org_id = $P{AD_Org_ID}
+	AND p.ad_org_id = $P{AD_Org_ID} AND cash.isActive = 'Y'
 
 group by p.datetrx,p.documentno,p.c_payment_id,p.payamt,d.name,gl.name,c.cursymbol,bank.name,cb.name, pd.name;]]>
 	</queryString>

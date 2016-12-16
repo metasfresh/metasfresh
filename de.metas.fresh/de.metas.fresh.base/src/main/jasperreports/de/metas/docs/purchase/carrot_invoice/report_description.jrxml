@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-17T13:09:12 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-05T18:30:01 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -33,17 +33,17 @@
 	COALESCE(dtt.printname,dt.printname) AS printname
 FROM
 	C_Invoice i
-	INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-	INNER JOIN C_DocType dt ON i.C_DocTypeTarget_ID = dt.C_DocType_ID
-	LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language}
+	INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	INNER JOIN C_DocType dt ON i.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language} AND dtt.isActive = 'Y'
 
 	-- Get Material Tracking for manufacturing order
-	LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice')
+	LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice') AND mtr_i.isActive = 'Y'
 		AND mtr_i.Record_ID = i.C_Invoice_ID
-	LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID
+	LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID AND mt.isActive = 'Y'
 
 	-- Allotment - Parzelle
-	LEFT OUTER JOIN C_Allotment a ON mt.C_Allotment_ID = a.C_Allotment_ID
+	LEFT OUTER JOIN C_Allotment a ON mt.C_Allotment_ID = a.C_Allotment_ID AND a.isActive = 'Y'
 
 	-- Get reciept for material tracking
 	LEFT OUTER JOIN (
@@ -52,25 +52,25 @@ FROM
 		FROM	(
 				SELECT 	mtr_r.M_Material_Tracking_ID, io.MovementDate, io.DocumentNo
 				FROM	M_Material_Tracking_Ref mtr_r
-					INNER JOIN M_InOutLine iol ON mtr_r.Record_ID = iol.M_InOutLine_ID
-					INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.IsSOTrx = 'N'
-				WHERE 	mtr_r.AD_Table_ID = Get_Table_ID('M_InOutLine')
+					INNER JOIN M_InOutLine iol ON mtr_r.Record_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
+					INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.IsSOTrx = 'N' AND io.isActive = 'Y'
+				WHERE 	mtr_r.AD_Table_ID = Get_Table_ID('M_InOutLine') AND mtr_r.isActive = 'Y'
 				GROUP BY	mtr_r.M_Material_Tracking_ID, io.MovementDate, io.DocumentNo
 			) io
 		GROUP BY	io.M_Material_Tracking_ID
 	) io ON mt.M_Material_Tracking_ID = io.M_Material_Tracking_ID
 
 	-- Get SalesRep of material tracking
-	LEFT OUTER JOIN AD_User srep ON mt.SalesRep_ID = srep.AD_User_ID
-	LEFT OUTER JOIN C_BPartner srbp ON srep.C_BPartner_ID = srbp.C_BPartner_ID
-	LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
-	LEFT OUTER JOIN C_Greeting_Trl srgrt ON srep.C_Greeting_ID = srgrt.C_Greeting_ID AND srgrt.AD_Language = COALESCE(srbp.AD_Language, $P{ad_language})
+	LEFT OUTER JOIN AD_User srep ON mt.SalesRep_ID = srep.AD_User_ID AND srep.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner srbp ON srep.C_BPartner_ID = srbp.C_BPartner_ID AND srbp.isActive = 'Y'
+	LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID AND srgr.isActive = 'Y'
+	LEFT OUTER JOIN C_Greeting_Trl srgrt ON srep.C_Greeting_ID = srgrt.C_Greeting_ID AND srgrt.AD_Language = COALESCE(srbp.AD_Language, $P{ad_language}) AND srgrt.isActive = 'Y'
 
 	-- Get purchase order
-	LEFT OUTER JOIN M_Material_Tracking_Ref mtr_po ON mtr_po.AD_Table_ID = Get_Table_ID('C_OrderLine')
+	LEFT OUTER JOIN M_Material_Tracking_Ref mtr_po ON mtr_po.AD_Table_ID = Get_Table_ID('C_OrderLine') AND mtr_po.isActive = 'Y'
 		AND mt.M_Material_Tracking_ID = mtr_po.M_Material_Tracking_ID
-	LEFT OUTER JOIN C_OrderLine pol ON mtr_po.Record_ID = pol.C_OrderLine_ID AND (SELECT isSOTrx FROM C_Order WHERE C_Order_ID = pol.C_Order_ID) = 'N'
-	LEFT OUTER JOIN C_Order po ON pol.C_Order_ID = po.C_Order_ID AND po.IsSOTrx = 'N'
+	LEFT OUTER JOIN C_OrderLine pol ON mtr_po.Record_ID = pol.C_OrderLine_ID AND (SELECT isSOTrx FROM C_Order WHERE C_Order_ID = pol.C_Order_ID AND isActive = 'Y') = 'N' AND pol.isActive = 'Y'
+	LEFT OUTER JOIN C_Order po ON pol.C_Order_ID = po.C_Order_ID AND po.IsSOTrx = 'N' AND po.isActive = 'Y'
 
 	-- Get quality inspections
 	LEFT OUTER JOIN (
@@ -85,16 +85,16 @@ FROM
 			C_Invoice i
 
 			-- Get Material Tracking
-			LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice')
+			LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice') AND mtr_i.isActive = 'Y'
 				AND mtr_i.Record_ID = i.C_Invoice_ID
-			LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID
+			LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID AND mt.isActive = 'Y'
 
 			-- If exists get older invoice for same material tracking
-			LEFT OUTER JOIN M_Material_Tracking_Ref mtr_pi ON mtr_pi.AD_Table_ID = Get_Table_ID('C_Invoice')
+			LEFT OUTER JOIN M_Material_Tracking_Ref mtr_pi ON mtr_pi.AD_Table_ID = Get_Table_ID('C_Invoice') AND mtr_pi.isActive = 'Y'
 				AND mt.M_Material_Tracking_ID = mtr_pi.M_Material_Tracking_ID
 				AND mtr_pi.created < mtr_i.created
 
-			LEFT OUTER JOIN C_DocType i_dt ON i.C_DocType_ID = i_dt.C_DocType_ID
+			LEFT OUTER JOIN C_DocType i_dt ON i.C_DocType_ID = i_dt.C_DocType_ID AND i_dt.isActive = 'Y'
 				AND ((i_dt.docbasetype='API' AND i_dt.docsubtype='DP') OR (i_dt.docbasetype='API' AND i_dt.docsubtype='QI'))
 
 			--get pp_orders
@@ -103,8 +103,8 @@ FROM
 					SELECT DISTINCT
 						mtr_qi.M_Material_Tracking_ID, qi.PP_Order_ID, COALESCE(DateDelivered, DateFinishSchedule) AS ProductionDate
 					FROM 	M_Material_Tracking_Ref mtr_qi
-						LEFT OUTER JOIN PP_Order qi ON mtr_qi.Record_ID = qi.PP_Order_ID
-					WHERE 	mtr_qi.AD_Table_ID = Get_Table_ID('PP_Order')
+						LEFT OUTER JOIN PP_Order qi ON mtr_qi.Record_ID = qi.PP_Order_ID AND qi.isActive = 'Y'
+					WHERE 	mtr_qi.AD_Table_ID = Get_Table_ID('PP_Order') AND mtr_qi.isActive = 'Y'
 						AND mtr_qi.IsQualityInspectionDoc='Y'
 				) mtr_qi ON mt.M_Material_Tracking_ID = mtr_qi.M_Material_Tracking_ID
 					-- left for traceability
@@ -112,12 +112,13 @@ FROM
 					--AND (ProductionDate > mtr_pi.Created OR mtr_pi.Created IS NULL)
 
 
-			LEFT OUTER JOIN PP_Order qi ON mtr_qi.PP_Order_ID = qi.PP_Order_ID
+			LEFT OUTER JOIN PP_Order qi ON mtr_qi.PP_Order_ID = qi.PP_Order_ID AND qi.isActive = 'Y'
+			WHERE i.isActive = 'Y'
 		GROUP BY
 			i.C_Invoice_ID, i_dt.docbasetype,i_dt.docsubtype
 	) qi ON i.C_Invoice_ID = qi.C_Invoice_ID
 WHERE
-	i.C_Invoice_ID = $P{RECORD_ID}
+	i.C_Invoice_ID = $P{RECORD_ID} AND i.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="documentno" class="java.lang.String"/>
