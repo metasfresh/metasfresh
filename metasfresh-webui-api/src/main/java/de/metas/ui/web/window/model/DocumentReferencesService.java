@@ -12,12 +12,14 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Evaluatee;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -45,6 +47,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 @Service
 public class DocumentReferencesService
 {
+	@Autowired
+	private DocumentCollection documentCollection;
+
 	public Map<String, DocumentReference> getDocumentReferences(final Document document)
 	{
 		if (document == null || document.isNew())
@@ -60,15 +65,16 @@ public class DocumentReferencesService
 				.map(zoomInfo -> DocumentReference.of(zoomInfo))
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentReference::getId));
 	}
-	
-	public DocumentReference getDocumentReference(final Document document, final int targetWindowId)
+
+	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final int targetWindowId)
 	{
-		if (document == null || document.isNew())
+		final Document sourceDocument = documentCollection.getDocument(sourceDocumentPath);
+		if (sourceDocument.isNew())
 		{
-			throw new IllegalArgumentException("Invalid document: "+document);
+			throw new IllegalArgumentException("New documents cannot be referenced: "+sourceDocument);
 		}
 
-		final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
+		final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
 
 		final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId);
 		return DocumentReference.of(zoomInfo);

@@ -37,7 +37,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
-import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
@@ -191,8 +190,7 @@ public class DocumentViewRestController
 
 		if (jsonRequest.getReferencing() != null)
 		{
-			final Document referencingDocument = documentCollection.getDocument(jsonRequest.getReferencing().toDocumentPath());
-			final DocumentReference reference = documentReferencesService.getDocumentReference(referencingDocument, adWindowIdEffective);
+			final DocumentReference reference = documentReferencesService.getDocumentReference(jsonRequest.getReferencing().toDocumentPath(), adWindowIdEffective);
 			request.addStickyFilter(reference.getFilter());
 		}
 
