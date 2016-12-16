@@ -324,7 +324,7 @@ public class Login
 				InterfaceWrapperHelper.save(user);
 
 				destroySessionOnLoginIncorrect(session);
-				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
+				throw new AdempiereException("@UserOrPasswordInvalid@");
 			}
 			else
 			{

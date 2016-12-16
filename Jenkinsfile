@@ -205,6 +205,22 @@ def deleteRepo(String repoId)
 final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
 echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
 
+
+final MF_UPSTREAM_BRANCH;
+if(params.MF_UPSTREAM_BRANCH)
+{
+	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
+	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
+}
+else
+{
+	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
+	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
+}
+
+// keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
+final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable' || MF_UPSTREAM_BRANCH == 'FRESH-112') ? '20' : '5'
+
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
@@ -231,23 +247,13 @@ Task branch builds are usually not deployed, so the pipeline can finish without 
 		string(defaultValue: '', 
 			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
-	]), 
+	]),
+	// disableConcurrentBuilds(), // concurrend builds proved a bit too complicated. However, if we just disable them like this, then build waiting for input will block further builds
 	pipelineTriggers([]),
-	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
+	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
-final MF_UPSTREAM_BRANCH;
-if(params.MF_UPSTREAM_BRANCH)
-{
-	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
-}
 if(params.MF_BUILD_ID)
 {
 	echo "Setting MF_BUILD_ID from params.MF_BUILD_ID=${params.MF_BUILD_ID}"
