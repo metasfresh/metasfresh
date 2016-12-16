@@ -31,8 +31,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentViewFieldValueLoader;
@@ -86,6 +88,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final String sqlSelectPage;
 	private final List<DocumentViewFieldValueLoader> fieldLoaders;
 
+	//
+	// Filters
+	private final transient DocumentFilterDescriptorsProvider filterDescriptors;
 	/** Sticky filters (i.e. active filters which cannot be changed) */
 	private final List<DocumentFilter> stickyFilters;
 	/** Active filters */
@@ -106,6 +111,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 
+		//
+		// Filters
+		filterDescriptors = builder.getFilterDescriptors();
 		stickyFilters = ImmutableList.copyOf(builder.getStickyFilters());
 		filters = ImmutableList.copyOf(builder.getFilters());
 
@@ -309,6 +317,32 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		return sqlWhereClause.toString();
 	}
 
+	@Override
+	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	{
+		return filterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx);
+	}
+
+	@Override
+	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	{
+		return filterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx, query);
+	}
+
+
+	
+	//
+	//
+	// Builder
+	//
+	//
+	
 	public static final class Builder
 	{
 		private List<DocumentFieldDescriptor> _viewFields;
@@ -392,6 +426,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private SqlDocumentEntityDataBindingDescriptor getBinding()
 		{
 			return _queryBuilder.getEntityBinding();
+		}
+		
+		private DocumentFilterDescriptorsProvider getFilterDescriptors()
+		{
+			return getEntityDescriptor().getFiltersProvider();
 		}
 
 		private List<DocumentFilter> getStickyFilters()

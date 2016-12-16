@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +34,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
-import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
@@ -91,7 +89,7 @@ public class DocumentViewRestController
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentCollection documentCollection;
+	private DocumentDescriptorFactory documentDescriptorFactory;
 
 	@Autowired
 	private DocumentViewsRepository documentViewsRepo;
@@ -108,21 +106,6 @@ public class DocumentViewRestController
 				.setUserSession(userSession);
 	}
 
-	private static final void assertWindowIdMatches(final int expectedWindowId, final IDocumentViewSelection view)
-	{
-		if (expectedWindowId <= 0)
-		{
-			return;
-		}
-
-		if (expectedWindowId != view.getAD_Window_ID())
-		{
-			throw new IllegalArgumentException("View's windowId is not matching the expected one."
-					+ "\n Expected windowId: " + expectedWindowId
-					+ "\n View: " + view);
-		}
-	}
-
 	@GetMapping(value = "/layout")
 	public JSONDocumentLayoutTab getViewLayout(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
@@ -131,7 +114,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptor(adWindowId);
+		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 		final Collection<DocumentFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
@@ -173,7 +156,7 @@ public class DocumentViewRestController
 			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
 		}
 		//
-		final DocumentEntityDescriptor entityDescriptor = documentCollection.getDocumentEntityDescriptor(adWindowIdEffective);
+		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(adWindowIdEffective);
 
 		final JSONViewDataType viewDataType = jsonRequest.getViewType();
 		final Characteristic requiredFieldCharacteristic = viewDataType.getRequiredFieldCharacteristic();
@@ -231,12 +214,9 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
-
-		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
-		assertWindowIdMatches(adWindowId, view);
-
-		final DocumentViewResult result = view.getPage(firstRow, pageLength, orderBys);
+		final DocumentViewResult result = documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.getPage(firstRow, pageLength, orderBysListStr);
 		return JSONDocumentViewResult.of(result);
 	}
 
@@ -251,15 +231,9 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
-
-		return documentCollection
-				.getDocumentDescriptor(adWindowId)
-				.getDocumentFiltersProvider()
-				.getByFilterId(filterId)
-				.getParameterByName(parameterName)
-				.getLookupDataSource()
-				.findEntities(ctx, query)
+		return documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -269,20 +243,13 @@ public class DocumentViewRestController
 			, @PathVariable("viewId") final String viewId//
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
-			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final Evaluatee ctx = Evaluatees.ofCtx(userSession.getCtx());
-
-		return documentCollection
-				.getDocumentDescriptor(adWindowId)
-				.getDocumentFiltersProvider()
-				.getByFilterId(filterId)
-				.getParameterByName(parameterName)
-				.getLookupDataSource()
-				.findEntities(ctx)
+		return documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -295,8 +262,8 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
-		assertWindowIdMatches(adWindowId, view);
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId);
 
 		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
 

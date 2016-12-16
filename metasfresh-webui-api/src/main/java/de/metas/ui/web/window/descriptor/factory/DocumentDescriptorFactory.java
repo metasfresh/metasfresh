@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor.factory;
 
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*
@@ -28,4 +29,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 public interface DocumentDescriptorFactory
 {
 	DocumentDescriptor getDocumentDescriptor(int AD_Window_ID) throws DocumentLayoutBuildException;
+	
+	default DocumentEntityDescriptor getDocumentEntityDescriptor(final int AD_Window_ID)
+	{
+		return getDocumentDescriptor(AD_Window_ID).getEntityDescriptor();
+	}
 }

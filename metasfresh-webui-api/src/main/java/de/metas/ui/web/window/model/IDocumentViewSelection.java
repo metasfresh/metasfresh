@@ -2,6 +2,9 @@ package de.metas.ui.web.window.model;
 
 import java.util.List;
 
+import org.compiere.util.Evaluatee;
+
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*
@@ -38,6 +41,16 @@ public interface IDocumentViewSelection
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
+	default DocumentViewResult getPage(final int firstRow, final int pageLength, final String orderBysListStr)
+	{
+		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+		return getPage(firstRow, pageLength, orderBys);
+	}
+
+	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+
+	LookupValuesList getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
+
 	List<DocumentFilter> getStickyFilters();
 
 	/**
@@ -48,5 +61,23 @@ public interface IDocumentViewSelection
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
 
 	String getSqlWhereClause(List<Integer> viewDocumentIds);
+
+	default IDocumentViewSelection assertWindowIdMatches(final int expectedWindowId)
+	{
+		// NOTE: for now, if the windowId is not provided, let's not validate it because deprecate API cannot provide the windowId
+		if (expectedWindowId <= 0)
+		{
+			return this;
+		}
+
+		if (expectedWindowId != getAD_Window_ID())
+		{
+			throw new IllegalArgumentException("View's windowId is not matching the expected one."
+					+ "\n Expected windowId: " + expectedWindowId
+					+ "\n View: " + this);
+		}
+
+		return this;
+	}
 
 }
