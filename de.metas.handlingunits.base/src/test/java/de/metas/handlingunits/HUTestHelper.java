@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -287,7 +288,7 @@ public class HUTestHelper
 	public I_M_Attribute attr_CostPrice;
 
 	public I_M_Attribute attr_LotNumberDate;
-	
+
 	// #653
 	public I_M_Attribute attr_LotNumber;
 
@@ -560,7 +561,7 @@ public class HUTestHelper
 		attr_M_Material_Tracking_ID = createM_Attribute(HUTestHelper.NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = createM_Attribute(Constants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-		
+
 		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = createM_Attribute(Constants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -796,7 +797,6 @@ public class HUTestHelper
 			piAttrSeqNo += 10;
 		}
 
-		
 		{
 			final I_M_HU_PI_Attribute piAttr_PurchaseOrderLine = createM_HU_PI_Attribute(
 					new HUPIAttributeBuilder(attr_PurchaseOrderLine)
@@ -1074,7 +1074,7 @@ public class HUTestHelper
 		{
 			version.setHU_UnitType(huUnitType);
 		}
-		if(huPIVersionId != null)
+		if (huPIVersionId != null)
 		{
 			version.setM_HU_PI_Version_ID(huPIVersionId);
 		}
@@ -1271,6 +1271,10 @@ public class HUTestHelper
 			final I_C_UOM uom,
 			final boolean isInstanceAttribute)
 	{
+
+		// make sure the attribute was not already defined
+		final I_M_Attribute existingAttribute = retrieveAttributeBuValue(name);
+
 		final I_AD_JavaClass javaClassDef;
 		if (javaClass != null)
 		{
@@ -1284,7 +1288,17 @@ public class HUTestHelper
 			javaClassDef = null;
 		}
 
-		final I_M_Attribute attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
+		final I_M_Attribute attr;
+
+		if (existingAttribute != null)
+		{
+			attr = existingAttribute;
+		}
+
+		else
+		{
+			attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
+		}
 		attr.setValue(name);
 		attr.setName(name);
 		attr.setAttributeValueType(valueType);
@@ -1308,6 +1322,22 @@ public class HUTestHelper
 
 		InterfaceWrapperHelper.save(attr);
 		return attr;
+	}
+
+	/**
+	 * Method needed to make sure the attribute was not already created
+	 * Normally, this will never happen anywhere else except testing
+	 * 
+	 * @param name
+	 * @return
+	 */
+	private I_M_Attribute retrieveAttributeBuValue(String name)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Attribute.class, ctx, ITrx.TRXNAME_None).addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, name)
+				.create()
+				.firstOnly(I_M_Attribute.class);
 	}
 
 	/**
