@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-12-05T18:10:18 -->
+<!-- 2016-12-16T15:06:17 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_activity_v2" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryNewPage="true" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -34,6 +34,7 @@ $P{ad_org_id} )
 	<field name="margin_incr_30" class="java.math.BigDecimal"/>
 	<field name="margin_incr_40" class="java.math.BigDecimal"/>
 	<field name="margin_incr_50" class="java.math.BigDecimal"/>
+	<field name="margin_incr_90" class="java.math.BigDecimal"/>
 	<field name="margin_incr_other" class="java.math.BigDecimal"/>
 	<field name="margin_incr_all" class="java.math.BigDecimal"/>
 	<field name="l1_value" class="java.lang.String"/>
@@ -44,6 +45,7 @@ $P{ad_org_id} )
 	<field name="l1_30" class="java.math.BigDecimal"/>
 	<field name="l1_40" class="java.math.BigDecimal"/>
 	<field name="l1_50" class="java.math.BigDecimal"/>
+	<field name="l1_90" class="java.math.BigDecimal"/>
 	<field name="l1_other" class="java.math.BigDecimal"/>
 	<field name="l1_all" class="java.math.BigDecimal"/>
 	<field name="l1_multiplicator" class="java.math.BigDecimal"/>
@@ -54,6 +56,7 @@ $P{ad_org_id} )
 	<field name="l2_30" class="java.math.BigDecimal"/>
 	<field name="l2_40" class="java.math.BigDecimal"/>
 	<field name="l2_50" class="java.math.BigDecimal"/>
+	<field name="l2_90" class="java.math.BigDecimal"/>
 	<field name="l2_other" class="java.math.BigDecimal"/>
 	<field name="l2_all" class="java.math.BigDecimal"/>
 	<field name="l2_multiplicator" class="java.math.BigDecimal"/>
@@ -64,6 +67,7 @@ $P{ad_org_id} )
 	<field name="balance_30" class="java.math.BigDecimal"/>
 	<field name="balance_40" class="java.math.BigDecimal"/>
 	<field name="balance_50" class="java.math.BigDecimal"/>
+	<field name="balance_90" class="java.math.BigDecimal"/>
 	<field name="balance_other" class="java.math.BigDecimal"/>
 	<field name="balance" class="java.math.BigDecimal"/>
 	<field name="l3_multiplicator" class="java.math.BigDecimal"/>
@@ -72,24 +76,28 @@ $P{ad_org_id} )
 	<field name="margin_budget_incr_30" class="java.math.BigDecimal"/>
 	<field name="margin_budget_incr_40" class="java.math.BigDecimal"/>
 	<field name="margin_budget_incr_50" class="java.math.BigDecimal"/>
+	<field name="margin_budget_incr_90" class="java.math.BigDecimal"/>
 	<field name="margin_budget_incr_all" class="java.math.BigDecimal"/>
 	<field name="l1_budget_10" class="java.math.BigDecimal"/>
 	<field name="l1_budget_20" class="java.math.BigDecimal"/>
 	<field name="l1_budget_30" class="java.math.BigDecimal"/>
 	<field name="l1_budget_40" class="java.math.BigDecimal"/>
 	<field name="l1_budget_50" class="java.math.BigDecimal"/>
+	<field name="l1_budget_90" class="java.math.BigDecimal"/>
 	<field name="l1_budget_all" class="java.math.BigDecimal"/>
 	<field name="l2_budget_10" class="java.math.BigDecimal"/>
 	<field name="l2_budget_20" class="java.math.BigDecimal"/>
 	<field name="l2_budget_30" class="java.math.BigDecimal"/>
 	<field name="l2_budget_40" class="java.math.BigDecimal"/>
 	<field name="l2_budget_50" class="java.math.BigDecimal"/>
+	<field name="l2_budget_90" class="java.math.BigDecimal"/>
 	<field name="l2_budget_all" class="java.math.BigDecimal"/>
 	<field name="budget_10" class="java.math.BigDecimal"/>
 	<field name="budget_20" class="java.math.BigDecimal"/>
 	<field name="budget_30" class="java.math.BigDecimal"/>
 	<field name="budget_40" class="java.math.BigDecimal"/>
 	<field name="budget_50" class="java.math.BigDecimal"/>
+	<field name="budget_90" class="java.math.BigDecimal"/>
 	<field name="budget" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="gross_10" class="java.math.BigDecimal"/>
@@ -97,6 +105,7 @@ $P{ad_org_id} )
 	<field name="gross_30" class="java.math.BigDecimal"/>
 	<field name="gross_40" class="java.math.BigDecimal"/>
 	<field name="gross_50" class="java.math.BigDecimal"/>
+	<field name="gross_90" class="java.math.BigDecimal"/>
 	<field name="gross_all" class="java.math.BigDecimal"/>
 	<field name="startdate" class="java.sql.Date"/>
 	<field name="enddate" class="java.sql.Date"/>
@@ -105,48 +114,56 @@ $P{ad_org_id} )
 	<field name="margin_percentage_30" class="java.math.BigDecimal"/>
 	<field name="margin_percentage_40" class="java.math.BigDecimal"/>
 	<field name="margin_percentage_50" class="java.math.BigDecimal"/>
+	<field name="margin_percentage_90" class="java.math.BigDecimal"/>
 	<field name="margin_percentage_all" class="java.math.BigDecimal"/>
 	<field name="margin_budget_percentage_10" class="java.math.BigDecimal"/>
 	<field name="margin_budget_percentage_20" class="java.math.BigDecimal"/>
 	<field name="margin_budget_percentage_30" class="java.math.BigDecimal"/>
 	<field name="margin_budget_percentage_40" class="java.math.BigDecimal"/>
 	<field name="margin_budget_percentage_50" class="java.math.BigDecimal"/>
+	<field name="margin_budget_percentage_90" class="java.math.BigDecimal"/>
 	<field name="margin_budget_percentage_all" class="java.math.BigDecimal"/>
 	<field name="l1_percentage_10" class="java.math.BigDecimal"/>
 	<field name="l1_percentage_20" class="java.math.BigDecimal"/>
 	<field name="l1_percentage_30" class="java.math.BigDecimal"/>
 	<field name="l1_percentage_40" class="java.math.BigDecimal"/>
 	<field name="l1_percentage_50" class="java.math.BigDecimal"/>
+	<field name="l1_percentage_90" class="java.math.BigDecimal"/>
 	<field name="l1_percentage_all" class="java.math.BigDecimal"/>
 	<field name="l1_budget_percentage_10" class="java.math.BigDecimal"/>
 	<field name="l1_budget_percentage_20" class="java.math.BigDecimal"/>
 	<field name="l1_budget_percentage_30" class="java.math.BigDecimal"/>
 	<field name="l1_budget_percentage_40" class="java.math.BigDecimal"/>
 	<field name="l1_budget_percentage_50" class="java.math.BigDecimal"/>
+	<field name="l1_budget_percentage_90" class="java.math.BigDecimal"/>
 	<field name="l1_budget_percentage_all" class="java.math.BigDecimal"/>
 	<field name="l2_percentage_10" class="java.math.BigDecimal"/>
 	<field name="l2_percentage_20" class="java.math.BigDecimal"/>
 	<field name="l2_percentage_30" class="java.math.BigDecimal"/>
 	<field name="l2_percentage_40" class="java.math.BigDecimal"/>
 	<field name="l2_percentage_50" class="java.math.BigDecimal"/>
+	<field name="l2_percentage_90" class="java.math.BigDecimal"/>
 	<field name="l2_percentage_all" class="java.math.BigDecimal"/>
 	<field name="l2_budget_percentage_10" class="java.math.BigDecimal"/>
 	<field name="l2_budget_percentage_20" class="java.math.BigDecimal"/>
 	<field name="l2_budget_percentage_30" class="java.math.BigDecimal"/>
 	<field name="l2_budget_percentage_40" class="java.math.BigDecimal"/>
 	<field name="l2_budget_percentage_50" class="java.math.BigDecimal"/>
+	<field name="l2_budget_percentage_90" class="java.math.BigDecimal"/>
 	<field name="l2_budget_percentage_all" class="java.math.BigDecimal"/>
 	<field name="l3_percentage_10" class="java.math.BigDecimal"/>
 	<field name="l3_percentage_20" class="java.math.BigDecimal"/>
 	<field name="l3_percentage_30" class="java.math.BigDecimal"/>
 	<field name="l3_percentage_40" class="java.math.BigDecimal"/>
 	<field name="l3_percentage_50" class="java.math.BigDecimal"/>
+	<field name="l3_percentage_90" class="java.math.BigDecimal"/>
 	<field name="l3_percentage_all" class="java.math.BigDecimal"/>
 	<field name="l3_budget_percentage_10" class="java.math.BigDecimal"/>
 	<field name="l3_budget_percentage_20" class="java.math.BigDecimal"/>
 	<field name="l3_budget_percentage_30" class="java.math.BigDecimal"/>
 	<field name="l3_budget_percentage_40" class="java.math.BigDecimal"/>
 	<field name="l3_budget_percentage_50" class="java.math.BigDecimal"/>
+	<field name="l3_budget_percentage_90" class="java.math.BigDecimal"/>
 	<field name="l3_budget_percentage_all" class="java.math.BigDecimal"/>
 	<field name="isdisplaymarginsum" class="java.lang.Boolean"/>
 	<field name="isdisplayother" class="java.lang.Boolean"/>
@@ -156,14 +173,14 @@ $P{ad_org_id} )
 			<band height="18">
 				<printWhenExpression><![CDATA[$F{isdisplaymarginsum}]]></printWhenExpression>
 				<textField>
-					<reportElement x="16" y="9" width="189" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="26" y="9" width="200" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="205" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="251" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_10}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -173,7 +190,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_10}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="296" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="301" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_20}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -183,7 +200,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_20}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="479" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="401" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_40}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -193,7 +210,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_40}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="734" y="9" width="48" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="651" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -203,7 +220,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_all}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="570" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="451" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_50}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -212,98 +229,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_50}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="250" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_10}.floatValue() != 0 ||
-    $F{margin_incr_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="341" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_20}.floatValue() != 0 ||
-    $F{margin_incr_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="524" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_40}.floatValue() != 0 ||
-    $F{margin_incr_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_40}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="615" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_50}.floatValue() != 0 ||
-    $F{margin_incr_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="782" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_all}.floatValue() != 0 ||
-    $F{margin_incr_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_all}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="638" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_50}.floatValue() != 0 ||
-    $F{margin_incr_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="364" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_20}.floatValue() != 0 ||
-    $F{margin_incr_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="273" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_10}.floatValue() != 0 ||
-    $F{margin_incr_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="547" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_40}.floatValue() != 0 ||
-    $F{margin_incr_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_40}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="661" y="9" width="36" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="551" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_other}.floatValue() != 0 )&& $F{isdisplayother}]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -312,18 +239,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_other}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="805" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_all}.floatValue() != 0 ||
-    $F{margin_incr_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_all}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="697" y="9" width="37" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="601" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_budget_incr_all}.floatValue() != 0 && $P{showBudget}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -332,28 +249,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_all}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="433" y="9" width="23" height="9" uuid="e1a3c4b9-c3b6-4d14-b44e-e087ef94e280">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_30}.floatValue() != 0 ||
-    $F{margin_incr_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_30}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="456" y="9" width="23" height="9" uuid="5a43e2dd-30f6-4623-a085-aa9c4e40971e">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_30}.floatValue() != 0 ||
-    $F{margin_incr_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_30}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="387" y="9" width="46" height="9" uuid="ef8ea95c-7ca1-429b-a740-4c24e786b470">
+					<reportElement x="351" y="9" width="50" height="9" uuid="ef8ea95c-7ca1-429b-a740-4c24e786b470">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_30}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -366,7 +263,7 @@ $P{ad_org_id} )
 			<band height="45">
 				<printWhenExpression><![CDATA[!$F{isdisplaymarginsum}]]></printWhenExpression>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="296" y="14" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="301" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<box rightPadding="1"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true"/>
@@ -374,7 +271,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_20}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="205" y="14" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="251" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<box rightPadding="1"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true"/>
@@ -382,7 +279,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_10}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="570" y="14" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="451" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<box rightPadding="1"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true"/>
@@ -390,21 +287,21 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_50}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="16" y="14" width="164" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="26" y="14" width="200" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="180" y="14" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="226" y="14" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement textAlignment="Center">
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA["9"]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="734" y="14" width="48" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="651" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<box topPadding="1" rightPadding="1"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true"/>
@@ -412,105 +309,15 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{margin_incr_all}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="479" y="14" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="401" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<box rightPadding="1"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_40}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="615" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_50}.floatValue() != 0 ||
-    $F{margin_incr_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="782" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_all}.floatValue() != 0 ||
-    $F{margin_incr_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_all}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="341" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_20}.floatValue() != 0 ||
-    $F{margin_incr_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="524" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_40}.floatValue() != 0 ||
-    $F{margin_incr_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_40}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="250" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_10}.floatValue() != 0 ||
-    $F{margin_incr_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="364" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_20}.floatValue() != 0 ||
-    $F{margin_incr_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="638" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_50}.floatValue() != 0 ||
-    $F{margin_incr_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="273" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_10}.floatValue() != 0 ||
-    $F{margin_incr_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="547" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_40}.floatValue() != 0 ||
-    $F{margin_incr_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_40}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="661" y="14" width="36" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="551" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[$F{isdisplayother}]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -519,18 +326,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_other}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="805" y="14" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_all}.floatValue() != 0 ||
-    $F{margin_incr_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_all}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="697" y="14" width="37" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="601" y="14" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean($P{showBudget}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<box topPadding="1" rightPadding="1"/>
@@ -539,33 +336,31 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_all}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="433" y="14" width="23" height="9" uuid="9af99647-561f-4fbb-b3f3-bac217216de5">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_30}.floatValue() != 0 ||
-    $F{margin_incr_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_percentage_30}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="456" y="14" width="23" height="9" uuid="a0c1d43a-c927-4794-b7d4-c96f75eaf12b">
-						<printWhenExpression><![CDATA[new Boolean($F{margin_percentage_30}.floatValue() != 0 ||
-    $F{margin_incr_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{margin_budget_percentage_30}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="387" y="14" width="46" height="9" uuid="ac5456bb-3538-4214-a087-9a4f16f6a8e8"/>
+					<reportElement x="351" y="14" width="50" height="9" uuid="ac5456bb-3538-4214-a087-9a4f16f6a8e8"/>
 					<box rightPadding="1"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_30}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="501" y="-9" width="50" height="9" uuid="67af6eaa-3ccd-46cc-bfef-8540fd983d4d">
+						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_90}.floatValue() != 0 )]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{margin_incr_90}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="501" y="14" width="50" height="9" uuid="1a900ac7-b38b-45b9-9e6b-387366944e4a"/>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{margin_incr_90}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -576,21 +371,21 @@ $P{ad_org_id} )
 			<band height="18">
 				<printWhenExpression><![CDATA[$F{isdisplayl1sum}]]></printWhenExpression>
 				<textField>
-					<reportElement x="16" y="9" width="164" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="26" y="9" width="200" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_name}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="180" y="9" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="226" y="9" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement textAlignment="Center">
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_value}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="570" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="451" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_50}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -600,7 +395,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l1_50}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="479" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="401" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_40}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -610,7 +405,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l1_40}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="205" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="251" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_10}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -620,7 +415,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l1_10}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="734" y="9" width="48" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="651" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_all}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -630,7 +425,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l1_all}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="296" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="301" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_20}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -639,98 +434,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_20}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="782" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_all}.floatValue() != 0 ||
-    $F{l1_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_percentage_all}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="524" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_40}.floatValue() != 0 ||
-    $F{l1_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_percentage_40}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="615" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_50}.floatValue() != 0 ||
-    $F{l1_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="341" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_20}.floatValue() != 0 ||
-    $F{l1_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="250" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_10}.floatValue() != 0 ||
-    $F{l1_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="364" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_20}.floatValue() != 0 ||
-    $F{l1_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_budget_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="273" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_10}.floatValue() != 0 ||
-    $F{l1_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_budget_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="638" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_50}.floatValue() != 0 ||
-    $F{l1_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_budget_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="547" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_40}.floatValue() != 0 ||
-    $F{l1_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_budget_percentage_40}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="661" y="9" width="36" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="551" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_other}.multiply( $F{l1_multiplicator} ).floatValue() != 0) && $F{isdisplayother}]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -739,18 +444,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_other}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="805" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_all}.floatValue() != 0 ||
-    $F{l1_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_budget_percentage_all}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="697" y="9" width="37" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="601" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_budget_all}.multiply( $F{l1_multiplicator} ).floatValue() != 0 && $P{showBudget}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -759,28 +454,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_budget_all}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="433" y="9" width="23" height="9" uuid="223a03d8-bd0c-4181-a6eb-9749e848d2a6">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_30}.floatValue() != 0 ||
-    $F{l1_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_percentage_30}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="456" y="9" width="23" height="9" uuid="773d8f31-ad9c-42ec-9d79-be990b98bf6f">
-						<printWhenExpression><![CDATA[new Boolean($F{l1_percentage_30}.floatValue() != 0 ||
-    $F{l1_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l1_budget_percentage_30}]]></textFieldExpression>
-				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="387" y="9" width="46" height="9" uuid="583d77bb-ec9b-4e7c-9d89-a98c2be6aeda">
+					<reportElement x="351" y="9" width="50" height="9" uuid="583d77bb-ec9b-4e7c-9d89-a98c2be6aeda">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_30}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -788,6 +463,16 @@ $P{ad_org_id} )
 						<font size="6" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_30}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="501" y="9" width="50" height="9" uuid="fcdcc251-7775-4dc2-9156-7f211ee316ea">
+						<printWhenExpression><![CDATA[new Boolean ($F{l1_90}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l1_90}.multiply( $F{l1_multiplicator} )]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -797,7 +482,7 @@ $P{ad_org_id} )
 		<groupHeader>
 			<band height="18">
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="205" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="251" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_10}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -807,7 +492,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l2_10}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="296" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="301" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_20}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -817,7 +502,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l2_20}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="479" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="401" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_40}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -827,7 +512,7 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l2_40}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="734" y="9" width="48" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="651" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_all}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -837,14 +522,14 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l2_all}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="180" y="9" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="226" y="9" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement textAlignment="Center">
 						<font size="6" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_value}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="570" y="9" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="451" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_50}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -854,104 +539,16 @@ $P{ad_org_id} )
 					<textFieldExpression><![CDATA[$F{l2_50}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="16" y="9" width="164" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="26" y="9" width="200" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
 					<textElement>
 						<font size="6" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_name}]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="615" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_50}.floatValue() != 0 ||
-    $F{l2_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="341" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_20}.floatValue() != 0 ||
-    $F{l2_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="524" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_40}.floatValue() != 0 ||
-    $F{l2_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_percentage_40}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="250" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_10}.floatValue() != 0 ||
-    $F{l2_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_percentage_10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="782" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_all}.floatValue() != 0 ||
-    $F{l2_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_percentage_all}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="638" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_50}.floatValue() != 0 ||
-    $F{l2_50}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_budget_percentage_50}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="364" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_20}.floatValue() != 0 ||
-    $F{l2_20}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_budget_percentage_20}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="547" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_40}.floatValue() != 0 ||
-    $F{l2_40}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_budget_percentage_40}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="273" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_10}.floatValue() != 0 ||
-    $F{l2_10}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_budget_percentage_10}]]></textFieldExpression>
-				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="661" y="9" width="36" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="551" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_other}.multiply( $F{l2_multiplicator} ).floatValue() != 0) && $F{isdisplayother}]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -960,18 +557,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_other}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="805" y="9" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_all}.floatValue() != 0 ||
-    $F{l2_all}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_budget_percentage_all}]]></textFieldExpression>
-				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="697" y="9" width="37" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<reportElement x="601" y="9" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_budget_all}.multiply( $F{l2_multiplicator} ).floatValue() != 0 && $P{showBudget}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -980,28 +567,8 @@ $P{ad_org_id} )
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_budget_all}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="456" y="9" width="23" height="9" uuid="8c7b4ee3-5fab-45d1-a980-400df63cb59c">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_30}.floatValue() != 0 ||
-    $F{l2_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_budget_percentage_30}]]></textFieldExpression>
-				</textField>
-				<textField pattern="0.00" isBlankWhenNull="true">
-					<reportElement x="433" y="9" width="23" height="9" uuid="ce11feb2-97f5-4823-93f9-b9ea8ecdc114">
-						<printWhenExpression><![CDATA[new Boolean($F{l2_percentage_30}.floatValue() != 0 ||
-    $F{l2_30}.floatValue() != 0 )]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font size="6" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{l2_percentage_30}]]></textFieldExpression>
-				</textField>
 				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="387" y="9" width="46" height="9" uuid="ac8da3ea-2ee5-4619-85a5-28ae90355e18">
+					<reportElement x="351" y="9" width="50" height="9" uuid="ac8da3ea-2ee5-4619-85a5-28ae90355e18">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_30}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<box rightPadding="1"/>
@@ -1009,6 +576,16 @@ $P{ad_org_id} )
 						<font size="6" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_30}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="Level2" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="501" y="9" width="50" height="9" uuid="f58916ed-8793-47e4-bdf6-a6180174357b">
+						<printWhenExpression><![CDATA[new Boolean ($F{l2_90}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
+					</reportElement>
+					<box rightPadding="1"/>
+					<textElement textAlignment="Right">
+						<font size="6" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l2_90}.multiply( $F{l2_multiplicator} )]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -1022,7 +599,9 @@ $P{ad_org_id} )
 	<pageHeader>
 		<band height="56" splitType="Stretch">
 			<textField pattern="">
-				<reportElement x="205" y="37" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="251" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
@@ -1030,7 +609,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["10"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="296" y="37" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="301" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
@@ -1038,7 +617,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["20"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="734" y="37" width="48" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="651" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1048,21 +627,23 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="180" y="37" width="25" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="226" y="37" width="25" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Center">
 					<font size="6" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="16" y="20" width="189" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="26" y="20" width="200" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Deckungsbeitragsrechnung"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="479" y="37" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="401" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
@@ -1070,21 +651,23 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["40"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="61" y="45" width="35" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="71" y="45" width="35" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["bis"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="16" y="37" width="51" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="26" y="37" width="51" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="570" y="37" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="451" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
@@ -1092,71 +675,28 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["50"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="61" y="37" width="35" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="71" y="37" width="35" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["von"]]></textFieldExpression>
 			</textField>
-			<textField pattern="">
-				<reportElement x="250" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="341" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="524" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="615" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="782" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="91" y="37" width="88" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="101" y="37" width="125" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="91" y="45" width="88" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="101" y="45" width="125" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="661" y="37" width="36" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="551" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$F{isdisplayother}]]></printWhenExpression>
 				</reportElement>
@@ -1167,44 +707,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["Andere"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="805" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="547" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="364" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="273" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="638" y="37" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="697" y="37" width="37" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="601" y="37" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean($P{showBudget}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1214,28 +717,22 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA["Budget"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement x="433" y="37" width="23" height="9" uuid="959fba2d-f606-4390-95b3-1d2e130b8521">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="456" y="37" width="23" height="9" uuid="e15212ee-8016-472d-9087-6fb93b66658c"/>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="387" y="37" width="46" height="9" uuid="540928fb-7837-4644-8b08-8347dc5c9af5"/>
+				<reportElement x="351" y="37" width="50" height="9" uuid="540928fb-7837-4644-8b08-8347dc5c9af5"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["30"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="501" y="37" width="50" height="9" uuid="7306d48a-f465-450c-93b5-4a3e78adf066">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["90"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -1246,21 +743,21 @@ $P{ad_org_id} )
 		<band height="9" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<textField>
-				<reportElement x="46" y="0" width="134" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="56" y="0" width="170" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{l3_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="180" y="0" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="226" y="0" width="25" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement textAlignment="Center">
 					<font size="6" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{l3_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="205" y="0" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="251" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance_10}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1270,7 +767,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA[$F{balance_10}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="296" y="0" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="301" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance_20}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1280,7 +777,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA[$F{balance_20}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="479" y="0" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="401" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance_40}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1290,7 +787,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA[$F{balance_40}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="570" y="0" width="45" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="451" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance_50}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1300,7 +797,7 @@ $P{ad_org_id} )
 				<textFieldExpression><![CDATA[$F{balance_50}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="734" y="0" width="48" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="651" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1309,98 +806,8 @@ $P{ad_org_id} )
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balance}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="782" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_all}.floatValue() != 0 ||
-    $F{balance}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_percentage_all}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="524" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_40}.floatValue() != 0 ||
-    $F{balance_40}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_percentage_40}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="615" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_50}.floatValue() != 0 ||
-    $F{balance_50}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_percentage_50}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="341" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_20}.floatValue() != 0 ||
-    $F{balance_20}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_percentage_20}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="250" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_10}.floatValue() != 0 ||
-    $F{balance_10}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_percentage_10}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="364" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_20}.floatValue() != 0 ||
-    $F{balance_20}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_budget_percentage_20}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="638" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_50}.floatValue() != 0 ||
-    $F{balance_50}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_budget_percentage_50}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="273" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_10}.floatValue() != 0 ||
-    $F{balance_10}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_budget_percentage_10}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="547" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_40}.floatValue() != 0 ||
-    $F{balance_40}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_budget_percentage_40}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="661" y="0" width="36" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="551" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance_other}.floatValue() != 0 ) && $F{isdisplayother}]]></printWhenExpression>
 				</reportElement>
@@ -1410,18 +817,8 @@ $P{ad_org_id} )
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balance_other}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="805" y="0" width="23" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_all}.floatValue() != 0 ||
-    $F{balance}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_budget_percentage_all}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="697" y="0" width="37" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
+				<reportElement x="601" y="0" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[new Boolean ( $F{budget}.floatValue() != 0 && $P{showBudget}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1430,28 +827,8 @@ $P{ad_org_id} )
 				</textElement>
 				<textFieldExpression><![CDATA[$F{budget}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="433" y="0" width="23" height="9" uuid="69ef0d35-047f-4af4-a955-a936d68ab7c3">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_30}.floatValue() != 0 ||
-    $F{balance_30}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_percentage_30}]]></textFieldExpression>
-			</textField>
-			<textField pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="456" y="0" width="23" height="9" uuid="7bf6ead3-fa91-48da-bcc1-b1bee2b14b58">
-					<printWhenExpression><![CDATA[new Boolean($F{l3_percentage_30}.floatValue() != 0 ||
-    $F{balance_30}.floatValue() != 0 )]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="6" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{l3_budget_percentage_30}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="387" y="0" width="46" height="9" uuid="e86a42cb-064e-4ccf-911f-4d940ede8b5e">
+				<reportElement x="351" y="0" width="50" height="9" uuid="e86a42cb-064e-4ccf-911f-4d940ede8b5e">
 					<printWhenExpression><![CDATA[new Boolean ( $F{balance_30}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
@@ -1459,6 +836,16 @@ $P{ad_org_id} )
 					<font size="6" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balance_30}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="501" y="0" width="50" height="9" uuid="7afcea7c-b19b-4603-9427-d04803ab0959">
+					<printWhenExpression><![CDATA[new Boolean ( $F{balance_90}.floatValue() != 0 )]]></printWhenExpression>
+				</reportElement>
+				<box rightPadding="1"/>
+				<textElement textAlignment="Right">
+					<font size="6" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{balance_90}.multiply( $F{l3_multiplicator} )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
