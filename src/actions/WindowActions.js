@@ -171,7 +171,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     dispatch(getWindowBreadcrumb(windowType));
                 }
             }).then(() =>
-                dispatch(initLayout(windowType, tabId))
+                dispatch(initLayout('window', windowType, tabId))
             ).then(response =>
                 dispatch(initLayoutSuccess(response.data, getScope(isModal)))
             ).then(response => {
@@ -179,7 +179,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
                 response.layout.tabs && response.layout.tabs.map(tab => {
                     tabTmp[tab.tabid] = {};
-                    dispatch(getData(windowType, docId, tab.tabid))
+                    dispatch(getData('window', windowType, docId, tab.tabid))
                         .then((res) => {
                             res.data && res.data.map(row => {
                                 row.fields = parseToDisplay(row.fields);
@@ -195,58 +195,24 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 export function initWindow(windowType, docId, tabId, rowId = null) {
     return (dispatch) => {
         if (docId === "NEW") {
-            return dispatch(patchRequest(windowType, docId))
+            return dispatch(patchRequest('window', windowType, docId))
         } else {
             if (rowId === "NEW") {
-                return dispatch(patchRequest(windowType, docId, tabId, "NEW"))
+                return dispatch(patchRequest('window', windowType, docId, tabId, "NEW"))
             } else if (rowId) {
-                return dispatch(getData(windowType, docId, tabId, rowId))
+                return dispatch(getData('window', windowType, docId, tabId, rowId))
             } else {
-                return dispatch(getData(windowType, docId))
+                return dispatch(getData('window', windowType, docId))
             }
         }
     }
-}
-
-export function patchRequest(windowType, id = "NEW", tabId, rowId, property, value, entity) {
-    let payload = {};
-
-    if (id === "NEW") {
-        payload = [];
-    } else {
-        if (property && value !== undefined) {
-            payload = [{
-                'op': 'replace',
-                'path': property,
-                'value': value
-            }];
-        } else {
-            payload = [];
-        }
-    }
-
-    // Temporary solution, TODO after API endpoints unification
-    if (entity) {
-        return () => axios.patch(
-            config.API_URL + '/' + entity + '/' + id, payload
-        );
-    } else {
-        return () => axios.patch(
-            config.API_URL +
-            '/window/commit?type=' +
-            windowType +
-            '&id=' + id +
-            (tabId ? "&tabid=" + tabId : "") +
-            (rowId ? "&rowId=" + rowId : ""), payload);
-    }
-
 }
 
 /*
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
  */
-export function patch(windowType, id = "NEW", tabId, rowId, property, value, isModal, entity) {
+export function patch(entity, windowType, id = "NEW", tabId, rowId, property, value, isModal) {
     return dispatch => {
         let responsed = false;
 
@@ -264,7 +230,7 @@ export function patch(windowType, id = "NEW", tabId, rowId, property, value, isM
         }
         timeoutLoop();
 
-        return dispatch(patchRequest(windowType, id, tabId, rowId, property, value, entity)).then(response => {
+        return dispatch(patchRequest('window', windowType, id, tabId, rowId, property, value)).then(response => {
             responsed = true;
 
             dispatch(mapDataToState(response.data, isModal, rowId));
@@ -310,7 +276,6 @@ export function updateProperty(property, value, tabid, rowid, isModal) {
         }
     }
 }
-
 
 // PROCESS ACTIONS
 
@@ -360,21 +325,74 @@ export function startProcess(processType) {
 
 // END PROCESS ACTIONS
 
-export function initLayout(windowType, tabId) {
+// IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
+
+export function initLayout(entity, docType, tabId, subentity = null, docId = null) {
     return () => axios.get(
         config.API_URL +
-        '/window/layout?type=' + windowType +
-        (tabId ? "&tabid=" + tabId : "")
+        '/' + entity + '/' + docType + '/' +
+        (docId ? "/" + docId : "") +
+        (tabId ? "/" + tabId : "") +
+        (subentity ? "/" + subentity : "") +
+        '/layout'
     );
 }
 
-export function getData(windowType, id, tabId, rowId) {
+export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId) {
     return () => axios.get(
         config.API_URL +
-        '/window/data?type=' + windowType +
-        '&id=' + id +
-        (tabId ? "&tabid=" + tabId : "") +
-        (rowId ? "&rowid=" + rowId : "")
+        '/' + entity + '/' + docType + '/' + docId +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "")
+    );
+}
+
+export function createInstance(entity, docType, docId, tabId, subentity) {
+    return () => axios.post(
+        config.API_URL +
+        '/' + entity + '/' + docType + '/' + docId +
+        (tabId ? "/" + tabId : "") +
+        (subentity ? "/" + subentity : "")
+    );
+}
+
+export function patchRequest(entity, docType, docId = "NEW", tabId, rowId, property, value, subentity, subentityId) {
+    let payload = {};
+
+    if (docId === "NEW") {
+        payload = [];
+    } else {
+        if (property && value !== undefined) {
+            payload = [{
+                'op': 'replace',
+                'path': property,
+                'value': value
+            }];
+        } else {
+            payload = [];
+        }
+    }
+
+    return () => axios.patch(
+        config.API_URL +
+        '/' + entity + '/' + docType + '/' + docId +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : ""), payload);
+}
+
+export function completeRequest(entity, docType, docId, tabId, rowId, subentity, subentityId) {
+    return () => axios.patch(
+        config.API_URL +
+        '/' + entity + '/' + docType + '/' + docId +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "") +
+        '/complete'
     );
 }
 

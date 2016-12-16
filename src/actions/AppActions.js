@@ -56,48 +56,30 @@ export function getAvailableLang() {
     return () => axios.get(config.API_URL + '/login/availableLanguages');
 }
 
-export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
-    if (entity){
-        return () => axios.get(
-            config.API_URL +
-            '/' + entity + '/' + id +
-            '/attribute/' + propertyName +
-            '/typeahead' +
-            '?query=' + query
-        );
-    } else {
-    	return () => {
-    		query = encodeURIComponent(query);
-    		return axios.get(
-                config.API_URL +
-                '/window/typeahead?type=' + windowType +
-                '&id='+id+'&field='+ propertyName +
-                '&query=' + query +
-        		(tabId ? "&tabid=" + tabId : "") +
-        		(rowId ? "&rowId=" + rowId : "")
-            );
-    	}
-    }
+export function autocompleteRequest(docType, propertyName, query, docId, tabId, rowId, entity, subentity, subentityId) {
+    return () => axios.get(
+        config.API_URL +
+        '/' + entity + '/' + docType + '/' + docId +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "") +
+        '/attribute/' + propertyName +
+        '/typeahead' + '?query=' + encodeURIComponent(query)
+    );
 }
 
-export function dropdownRequest(windowType, propertyName, id, tabId, rowId, entity) {
-    if (entity){
-        return () => axios.get(
-            config.API_URL +
-            '/' + entity + '/' + id +
-            '/attribute/' + propertyName +
-            '/dropdown'
-        );
-    } else {
-    	return () => axios.get(
-    		config.API_URL +
-    		'/window/dropdown?type=' + windowType +
-    		'&id=' + id +
-    		'&field=' + propertyName+
-    		(tabId ? "&tabid=" + tabId : "") +
-    		(rowId ? "&rowId=" + rowId : "")
-    	);
-    }
+export function dropdownRequest(docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId) {
+    return () => axios.get(
+        config.API_URL +
+        '/' + entity + '/' + docType + '/' + docId +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "") +
+        '/attribute/' + propertyName +
+        '/dropdown'
+    );
 }
 
 export function getUserDashboardWidgets() {

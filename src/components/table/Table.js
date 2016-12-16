@@ -122,7 +122,6 @@ class Table extends Component {
     }
 
     handleKeyDown = (e) => {
-
         const {rowData, tabid, listenOnKeys} = this.props;
         const item = rowData[tabid];
         const {selected} = this.state;
@@ -135,7 +134,6 @@ class Table extends Component {
         if(idActive > -1) {
             idFocused = idActive;
         }
-
 
         switch(e.key) {
             case "ArrowDown":
@@ -274,8 +272,6 @@ class Table extends Component {
                 this.selectOneProduct(id);
             }
         }
-
-
     }
 
     handleRightClick = (e, id) => {
@@ -333,6 +329,7 @@ class Table extends Component {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, "window", tabId, rowId));
     }
+
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
@@ -387,10 +384,11 @@ class Table extends Component {
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
-            pageLength, page, mainTable, updateDocList, sort, orderBy, toggleTableFullScreen
+            pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
+            fullScreen
         } = this.props;
         const {
-            contextMenu, selected, listenOnKeys, fullScreen
+            contextMenu, selected, listenOnKeys
         } = this.state;
 
         return (
@@ -414,7 +412,11 @@ class Table extends Component {
                             <div className="pull-xs-right">
                                 <TableFilter
                                     openModal={() => this.openModal(type, tabid, "NEW")}
-                                    fullScreen={toggleTableFullScreen}
+                                    toggleFullScreen={toggleFullScreen}
+                                    fullScreen={fullScreen}
+                                    docType={type}
+                                    docId={docId}
+                                    tabId={tabid}
                                 />
                             </div>
                         </div>

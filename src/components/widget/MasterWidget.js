@@ -79,7 +79,7 @@ class Widget extends Component {
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
 
-            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal, entity));
+            ret = dispatch(patch(entity, customWindowType, dataId, tabId, currRowId, property, value, isModal));
         }
 
         this.setState(Object.assign({}, this.state, {

@@ -40,8 +40,10 @@ class Lookup extends Component {
         this.handleValueChanged();
         const {selected, filterWidget} = this.props;
 
-        if(filterWidget && selected) {
+        if(filterWidget || selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
+        }else{
+            this.handleClear();
         }
     }
 
@@ -111,7 +113,8 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, item, dataId, newProps, select, tabId, rowId
+            dispatch, windowType, item, dataId, newProps, select, tabId, rowId,
+            entity, subentity, subentityId
         } = this.props;
 
         const {
@@ -123,7 +126,10 @@ class Lookup extends Component {
         if(propertiesCopy.length > 0){
 
             const batchArray = propertiesCopy.map((item) =>
-                dispatch(dropdownRequest(windowType, item.field, dataId, tabId, rowId))
+                dispatch(dropdownRequest(
+                    windowType, item.field, dataId, tabId, rowId, entity,
+                    subentity, subentityId
+                ))
             );
 
             Promise.all(batchArray).then(props => {
@@ -197,7 +203,7 @@ class Lookup extends Component {
     handleChange = () => {
         const {
             dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId, entity
+            filterId, parameterName, tabId, rowId, entity,subentity, subentityId
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -212,7 +218,6 @@ class Lookup extends Component {
                 query: this.inputSearch.value
             }));
 
-
             if(filterWidget){
                 dispatch(filterAutocompleteRequest(windowType, filterId, parameterName,  this.inputSearch.value ))
                 .then((response)=>{
@@ -222,8 +227,10 @@ class Lookup extends Component {
                     }));
                 })
             }else {
-                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId, entity))
-                .then((response)=>{
+                dispatch(autocompleteRequest(
+                    windowType, mainProperty[0].field, this.inputSearch.value,
+                    dataId, tabId, rowId, entity, subentity, subentityId
+                )).then((response)=>{
                     this.setState(Object.assign({}, this.state, {
                         list: response.data.values,
                         loading: false
@@ -241,7 +248,7 @@ class Lookup extends Component {
 
     handleClear = (e) => {
         const {onChange, properties} = this.props;
-        e.preventDefault();
+        e && e.preventDefault();
         this.inputSearch.value = "";
 
         properties.map(item => {

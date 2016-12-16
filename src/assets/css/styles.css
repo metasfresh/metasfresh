@@ -649,12 +649,14 @@ body {
     padding: 1rem 1.2rem;
 }
 
-.tab-content-fullscreen {
+.tab-pane-fullscreen {
     position: fixed;
     top:55px;
     left:0;
     width: 100%;
     height: calc(100% - 55px);
+
+    background-color: #fff;
 }
 
 .tab-pane {
@@ -1880,4 +1882,16 @@ td.pulse-off input {
 
 .icon-lg {
     font-size: 18px;
+}
+
+.quick-input-container {
+    display: flex;
+    align-items: center;
+}
+.quick-input-container > * {
+    margin:0;
+}
+.hint {
+    font-size: .7rem;
+    color: $brand-color-secondary;
 }

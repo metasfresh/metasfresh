@@ -37,7 +37,7 @@ class RawWidget extends Component {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock
+            isShown, isHidden, handleBackdropLock, subentity, subentityId
         } = this.props;
 
         const {textValue} = this.state;
@@ -153,6 +153,8 @@ class RawWidget extends Component {
                 return (
                     <Lookup
                         entity={entity}
+                        subentity={subentity}
+                        subentityId={subentityId}
                         recent={[]}
                         dataId={dataId}
                         properties={fieldsArray}
@@ -180,6 +182,8 @@ class RawWidget extends Component {
                     <List
                         dataId={dataId}
                         entity={entity}
+                        subentity={subentity}
+                        subentityId={subentityId}
                         defaultValue={widgetFields.emptyText}
                         selected={selectedField}
                         properties={fields}
@@ -471,7 +475,7 @@ class RawWidget extends Component {
                     "form-group row " +
                     ((rowId && !isModal) ? "form-group-table " : " ")
                 }>
-                    {!noLabel &&
+                    {(!noLabel && caption) &&
                         <div
                             key="title"
                             className={

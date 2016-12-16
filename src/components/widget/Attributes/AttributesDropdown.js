@@ -66,7 +66,7 @@ class AttributesDropdown extends Component {
     handlePatch = (prop, value, id) => {
         const {dispatch, attributeType} = this.props;
 
-        dispatch(patchRequest(null, id, null, null, prop, value, attributeType)).then(response => {
+        dispatch(patchRequest(attributeType, null, id, null, null, prop, value)).then(response => {
             response.data[0].fields.map(item => {
                 this.setState(Object.assign({}, this.state, {
                     data: this.state.data.map(field => {
