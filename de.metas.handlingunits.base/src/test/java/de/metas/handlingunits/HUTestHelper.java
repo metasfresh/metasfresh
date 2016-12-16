@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.inout.service.IMTransactionBL;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
@@ -286,6 +287,9 @@ public class HUTestHelper
 	public I_M_Attribute attr_CostPrice;
 
 	public I_M_Attribute attr_LotNumberDate;
+	
+	// #653
+	public I_M_Attribute attr_LotNumber;
 
 	/**
 	 * Mandatory in receipts
@@ -556,6 +560,8 @@ public class HUTestHelper
 		attr_M_Material_Tracking_ID = createM_Attribute(HUTestHelper.NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		attr_LotNumberDate = createM_Attribute(Constants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		
+		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = createM_Attribute(Constants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = createM_Attribute(Constants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -775,6 +781,22 @@ public class HUTestHelper
 			piAttrSeqNo += 10;
 		}
 
+		// #653
+		{
+			final I_M_HU_PI_Attribute piAttr_LotNumber = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_LotNumber)
+					.setM_HU_PI(huDefNone)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
+					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
+					.setAggregationStrategyClass(NullAggregationStrategy.class)
+					.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class));
+			piAttr_LotNumber.setIsReadOnly(false);
+			piAttr_LotNumber.setSeqNo(piAttrSeqNo);
+			piAttr_LotNumber.setUseInASI(true);
+			InterfaceWrapperHelper.save(piAttr_LotNumber);
+			piAttrSeqNo += 10;
+		}
+
+		
 		{
 			final I_M_HU_PI_Attribute piAttr_PurchaseOrderLine = createM_HU_PI_Attribute(
 					new HUPIAttributeBuilder(attr_PurchaseOrderLine)
