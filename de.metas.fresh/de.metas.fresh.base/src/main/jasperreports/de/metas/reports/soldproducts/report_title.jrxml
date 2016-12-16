@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-17T09:02:22 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="4a0717b2-ce08-47d4-9c6e-c451ec788da4">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -30,72 +33,61 @@
 
 FROM
 	ad_org o 		   
-	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id
-	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id
-	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id	
+	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id AND oi.isActive = 'Y'
+	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id AND l.isActive = 'Y'
+	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id AND t.isActive = 'Y'
 WHERE
-	o.ad_org_id = 1000000
+	o.ad_org_id = 1000000 AND o.isActive = 'Y'
 group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 	</queryString>
-	<field name="orgname" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="address1" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="city" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="postal" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="max" class="java.sql.Timestamp">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="orgname" class="java.lang.String"/>
+	<field name="address1" class="java.lang.String"/>
+	<field name="city" class="java.lang.String"/>
+	<field name="postal" class="java.lang.String"/>
+	<field name="max" class="java.sql.Timestamp"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="59" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="4" width="240" height="19"/>
+				<reportElement x="0" y="4" width="240" height="19" uuid="1ae80e34-096f-4ffe-9d85-2f16a507ce38"/>
 				<textElement>
 					<font size="14" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Verkaufte Artikel]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="1" y="23" width="87" height="12"/>
+				<reportElement x="1" y="23" width="87" height="12" uuid="e95871e0-00ad-4b55-bc49-8dbee0f88ce7"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Organisation:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="90" y="23" width="240" height="12"/>
+				<reportElement x="90" y="23" width="240" height="12" uuid="b4cb4532-cbfc-4a2b-a04d-6e68995651f8"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{orgname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="1" y="35" width="89" height="12"/>
-				<textElement/>
+				<reportElement x="1" y="35" width="89" height="12" uuid="4793f5b1-0ecf-4d81-abff-f91969aad59c"/>
 				<text><![CDATA[Static text]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="47" width="90" height="12"/>
+				<reportElement x="0" y="47" width="90" height="12" uuid="900ff329-57e6-40fc-90df-08f749a62079"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Datum:]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement x="90" y="47" width="100" height="12"/>
+				<reportElement x="90" y="47" width="100" height="12" uuid="46d5b844-87db-4bed-8291-617e0460300c"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[new Date ()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new Date ()]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

@@ -1,6 +1,11 @@
 -- 19.10.2016 13:12
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540730,'Y','de.metas.dlm.partitioner.process.Remove_Table_from_DLM','N',TO_TIMESTAMP('2016-10-19 13:12:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Tabelle aus DLM entfernen','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-19 13:12:00','YYYY-MM-DD HH24:MI:SS'),100,'Remove_Table_From_DLM')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540730,'Y','de.metas.dlm.partitioner.process.Remove_Table_from_DLM','N',TO_TIMESTAMP('2016-10-19 13:12:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dlm','Y','N','N','N','N','N','N','Y',0,'Tabelle aus DLM entfernen','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-19 13:12:00','YYYY-MM-DD HH24:MI:SS'),100,'Remove_Table_From_DLM')
 ;
 
 -- 19.10.2016 13:12

@@ -120,7 +120,7 @@ import de.metas.logging.LogManager;
 		//
 		// Create and setup context
 		final IDocumentCollector documentsCollector = new DocumentCollector();
-		final IContextAware context = new PlainContextAware(getCtx(), getTrxName());
+		final IContextAware context = PlainContextAware.newWithTrxName(getCtx(), getTrxName());
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 		huContext.setDocumentCollector(documentsCollector);
 		huContext.setDate(getMovementDate());
