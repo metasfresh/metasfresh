@@ -21,6 +21,10 @@ Here come the actual release notes:
 * webui
   * #698 Pipeline - add webui deployment
 
+## Fixes
+* metasfresh
+  * #713 Marginal Return Report (short version) doubled sums for accounting group
+
 # metasfresh 4.48.47 (2016-50)
  
 this week's RC
