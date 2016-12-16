@@ -65,11 +65,11 @@ FROM
 			att.Attributes
 		FROM
 			C_Period p
-			INNER JOIN C_Year y ON p.C_Year_ID = y.C_Year_ID
+			INNER JOIN C_Year y ON p.C_Year_ID = y.C_Year_ID AND y.isActive = 'Y'
 			-- Get same Period from previous year
 			LEFT OUTER JOIN C_Period pp ON pp.C_Period_ID = report.Get_Predecessor_Period_Recursive ( p.C_Period_ID,
-				( SELECT count(0) FROM C_Period sp WHERE sp.C_Year_ID = p.C_Year_ID and isActive = 'Y' )::int )
-			LEFT OUTER JOIN C_Year py ON pp.C_Year_ID = py.C_Year_ID
+				( SELECT count(0) FROM C_Period sp WHERE sp.C_Year_ID = p.C_Year_ID and isActive = 'Y' )::int ) AND pp.isActive = 'Y'
+			LEFT OUTER JOIN C_Year py ON pp.C_Year_ID = py.C_Year_ID AND py.isActive = 'Y'
 			
 			-- Get data from fact account
 			INNER JOIN (	
@@ -80,11 +80,11 @@ FROM
 					 
 				FROM 	
 					Fact_Acct fa 
-					JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID
-					JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID
+					JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+					JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID AND il.isActive = 'Y'
 				WHERE	
 					AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
-					AND IsSOtrx = $2
+					AND IsSOtrx = $2 AND fa.isActive = 'Y'
 					AND ( 
 				-- If the given attribute set instance has values set... 
 				CASE WHEN EXISTS ( SELECT ai_value FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $3 )
@@ -113,20 +113,20 @@ FROM
 				ELSE TRUE END
 			)
 			) fa ON true
-			INNER JOIN C_Period fap ON fa.C_Period_ID = fap.C_Period_ID
+			INNER JOIN C_Period fap ON fa.C_Period_ID = fap.C_Period_ID AND fap.isActive = 'Y'
 			/* Please note: This is an important implicit filter. Inner Joining the Product
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
-			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID  
-				AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-			INNER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID
+			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID AND pr.isActive = 'Y'
+				AND pr.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+			INNER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 
 			LEFT OUTER JOIN	(
 					SELECT 	String_agg ( ai_value, ', ' ORDER BY Length(ai_value), ai_value ) AS Attributes, M_AttributeSetInstance_ID FROM Report.fresh_Attributes
 					GROUP BY M_AttributeSetInstance_ID
 					) att ON $3 = att.M_AttributeSetInstance_ID
 		WHERE
-			p.C_Period_ID = $1
+			p.C_Period_ID = $1 AND p.isActive = 'Y'
 			
 		GROUP BY
 			bp.name,

@@ -6,12 +6,13 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT ad_org_id FROM C_Flatrate_Term WHERE C_Flatrate_Term_ID = $P{RECORD_ID};]]>
+		<![CDATA[SELECT ad_org_id FROM C_Flatrate_Term WHERE C_Flatrate_Term_ID = $P{RECORD_ID} AND isActive = 'Y';]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<background>

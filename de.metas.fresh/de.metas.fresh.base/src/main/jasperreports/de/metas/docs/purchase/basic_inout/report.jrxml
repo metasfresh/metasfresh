@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-23T08:59:29 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-05T16:51:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,6 +8,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="119"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -28,10 +29,10 @@
 		EXISTS(
 			SELECT 0
 			FROM M_InOutLine iol1
-			INNER JOIN M_Product p ON iol1.M_Product_ID = p.M_Product_ID
-			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
-			WHERE pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
-				AND iol.M_InOut_ID = iol1.M_InOut_ID
+			INNER JOIN M_Product p ON iol1.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+			WHERE pc.M_Product_Category_ID = (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+				AND iol.M_InOut_ID = iol1.M_InOut_ID AND iol1.isActive = 'Y'
 		)
 		THEN 'Y'
 		ELSE 'N'
@@ -39,9 +40,9 @@
 	CASE WHEN io.DocStatus IN ('DR', 'IP') THEN 'de_CH' ELSE $P{ad_language} END AS AD_Language
 FROM
 	M_InOutLine iol
-	JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
+	JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
 WHERE
-	iol.M_InOut_ID = $P{RECORD_ID}
+	iol.M_InOut_ID = $P{RECORD_ID} AND iol.isActive = 'Y'
 LIMIT 1
 ;]]>
 	</queryString>

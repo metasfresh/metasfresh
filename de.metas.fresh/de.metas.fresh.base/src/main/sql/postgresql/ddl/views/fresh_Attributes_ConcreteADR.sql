@@ -22,8 +22,8 @@ SELECT * FROM
 		a.Name as at_Name,
 		a.IsAttrDocumentRelevant as at_IsAttrDocumentRelevant -- task
 	FROM M_AttributeInstance ai
-		LEFT OUTER JOIN M_Attributevalue av ON ai.M_Attributevalue_ID = av.M_Attributevalue_ID
-		LEFT OUTER JOIN M_Attribute a ON ai.M_Attribute_ID = a.M_Attribute_ID
+		LEFT OUTER JOIN M_Attributevalue av ON ai.M_Attributevalue_ID = av.M_Attributevalue_ID AND av.isActive = 'Y'
+		LEFT OUTER JOIN M_Attribute a ON ai.M_Attribute_ID = a.M_Attribute_ID AND a.isActive = 'Y'
 	WHERE
 		/**
 		 * 08014 - There are/were orderlines, that had M_AttributeSetInstance_ID = 0 when they were intended to not have
@@ -32,6 +32,7 @@ SELECT * FROM
 		 * Is invalid and therefore not returned by this view. That way, the Report will display nothing for ASI ID = 0
 		 */ 
 		ai.M_AttributeSetInstance_ID != 0
+		AND ai.isActive = 'Y'
 ) att
 WHERE COALESCE( ai_value, '') != ''
 ;

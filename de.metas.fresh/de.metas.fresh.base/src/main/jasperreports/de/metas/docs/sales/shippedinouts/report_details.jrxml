@@ -31,14 +31,15 @@
 	io.ad_org_id
 FROM
 	M_InOut io
-	LEFT OUTER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
+	LEFT OUTER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 	LEFT OUTER JOIN (
 		SELECT 	M_InOutLine_ID, String_Agg( DISTINCT o.Documentno, ',' ORDER BY o.Documentno ) AS Documentno
 		FROM 	C_InvoiceCandidate_InOutLine iciol
-			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID
+			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 			LEFT OUTER JOIN C_Orderline ol ON ic.AD_Table_ID = Get_Table_ID('C_OrderLine')
-				AND ic.Record_ID = ol.C_OrderLine_ID
-			LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+				AND ic.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
+			LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
+		WHERE iciol.isActive = 'Y'
 		GROUP BY	iciol.M_InOutLine_ID
 	) o ON iol.M_InOutLine_ID = o.M_InOutLine_ID
 	-- Get Packing instruction
@@ -49,10 +50,10 @@ FROM
 		GROUP BY M_InOutLine_ID
 	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 	-- Product and its translation
-	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
-	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
+	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 WHERE
 	io.C_BPartner_ID = $P{C_BPartner_ID}
 	AND io.C_BPartner_Location_ID =
@@ -64,7 +65,7 @@ WHERE
 	AND io.isSOTrx = 'Y'
 	AND io.isActive = 'Y'
 	AND io.DocStatus = 'CO'
-	AND p.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	AND p.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
     AND io.ad_org_id = $P{AD_Org_ID}
 GROUP BY
 	p.Name, pi.name,

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-13T17:47:04 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_header" pageWidth="802" pageHeight="535" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="e2b953a3-606b-429f-aa5e-225be9488674">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.7715610000000017"/>
 	<property name="ireport.x" value="12"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -15,30 +19,31 @@ select
 p.pa_reportcolumnset_id,
 p.name,
 p.description,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 10) as col_0,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 20) as col_1,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 30) as col_2,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 40) as col_3,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 50) as col_4,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 60) as col_5,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 70) as col_6,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 80) as col_7,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 90) as col_8,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 100) as col_9,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 110) as col_10,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 120) as col_11,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 130) as col_12,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 140) as col_13,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 150) as col_14,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 160) as col_15,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 170) as col_16,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 180) as col_17,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 190) as col_18,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 200) as col_19,
-(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 210) as col_20
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 10 AND isActive = 'Y') as col_0,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 20 AND isActive = 'Y') as col_1,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 30 AND isActive = 'Y') as col_2,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 40 AND isActive = 'Y') as col_3,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 50 AND isActive = 'Y') as col_4,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 60 AND isActive = 'Y') as col_5,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 70 AND isActive = 'Y') as col_6,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 80 AND isActive = 'Y') as col_7,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 90 AND isActive = 'Y') as col_8,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 100 AND isActive = 'Y') as col_9,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 110 AND isActive = 'Y') as col_10,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 120 AND isActive = 'Y') as col_11,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 130 AND isActive = 'Y') as col_12,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 140 AND isActive = 'Y') as col_13,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 150 AND isActive = 'Y') as col_14,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 160 AND isActive = 'Y') as col_15,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 170 AND isActive = 'Y') as col_16,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 180 AND isActive = 'Y') as col_17,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 190 AND isActive = 'Y') as col_18,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 200 AND isActive = 'Y') as col_19,
+(select name from pa_reportcolumn where pa_reportcolumnset_id = $P{pa_reportcolumnset_id} and seqno = 210 AND isActive = 'Y') as col_20
 from pa_reportcolumn p
-left join pa_reportcolumn p0 on p.pa_reportcolumnset_id = p0.pa_reportcolumnset_id and p.seqno = 10
+left join pa_reportcolumn p0 on p.pa_reportcolumnset_id = p0.pa_reportcolumnset_id and p.seqno = 10 AND p0.isActive = 'Y'
 --left join pa_reportcolumn p1 on p.pa_reportcolumnset_id = p1.pa_reportcolumnset_id and p.seqno = 20
+WHERE p.isActive = 'Y'
 ) as foo
 where foo.pa_reportcolumnset_id = $P{pa_reportcolumnset_id}
 limit 1
@@ -80,13 +85,13 @@ limit 1
 	<columnHeader>
 		<band height="14" splitType="Stretch">
 			<rectangle>
-				<reportElement uuid="10c30d15-d082-4437-b966-b38b807fe205" key="rectangle-1" mode="Opaque" x="0" y="2" width="782" height="11" forecolor="#000000" backcolor="#808080"/>
+				<reportElement key="rectangle-1" mode="Opaque" x="0" y="2" width="782" height="11" forecolor="#000000" backcolor="#808080" uuid="10c30d15-d082-4437-b966-b38b807fe205"/>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement uuid="be8bf827-dab4-42d0-ab50-131ef5f64ff2" key="staticText-1" x="1" y="1" width="40" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="staticText-1" x="1" y="1" width="40" height="11" forecolor="#FFFFFF" uuid="be8bf827-dab4-42d0-ab50-131ef5f64ff2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -99,7 +104,7 @@ limit 1
 				<text><![CDATA[Name]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="85414c89-cf8a-4f96-b06a-c93447666156" key="staticText-2" x="41" y="1" width="220" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="staticText-2" x="41" y="1" width="220" height="11" forecolor="#FFFFFF" uuid="85414c89-cf8a-4f96-b06a-c93447666156"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -112,7 +117,7 @@ limit 1
 				<text><![CDATA[Beschreibung]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="f66c6b8f-e39a-4aab-ab45-f0d9eef39314" key="textField" x="260" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField" x="260" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="f66c6b8f-e39a-4aab-ab45-f0d9eef39314"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -125,7 +130,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_0}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c4e37378-8dbf-47fb-9bb0-b5d303995735" key="textField-1" x="325" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-1" x="325" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="c4e37378-8dbf-47fb-9bb0-b5d303995735"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -138,7 +143,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_1}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="fc161f19-0256-4b4d-8e37-054813ff0f22" key="textField-2" x="390" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-2" x="390" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="fc161f19-0256-4b4d-8e37-054813ff0f22"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -151,7 +156,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_2}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="46257291-678e-407d-8446-295a8ea11560" key="textField-3" x="455" y="1" width="65" height="11" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF"/>
+				<reportElement key="textField-3" x="455" y="1" width="65" height="11" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="46257291-678e-407d-8446-295a8ea11560"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -164,7 +169,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c437a0fc-f8ae-4aef-b1ea-71e3932a46a5" key="textField-5" x="585" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-5" x="585" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="c437a0fc-f8ae-4aef-b1ea-71e3932a46a5"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -177,7 +182,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_5}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="517a821b-2456-41c3-8045-f711b699440b" key="textField-6" x="520" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-6" x="520" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="517a821b-2456-41c3-8045-f711b699440b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -190,7 +195,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_4}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="6ed70139-fd5c-41db-9bc3-5b66350e5723" key="textField-7" x="650" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-7" x="650" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="6ed70139-fd5c-41db-9bc3-5b66350e5723"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -203,7 +208,7 @@ limit 1
 				<textFieldExpression><![CDATA[$F{col_6}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="2b4d3ce7-e478-4e22-9e86-a1301d7892e0" key="textField-8" x="715" y="1" width="65" height="11" forecolor="#FFFFFF"/>
+				<reportElement key="textField-8" x="715" y="1" width="65" height="11" forecolor="#FFFFFF" uuid="2b4d3ce7-e478-4e22-9e86-a1301d7892e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
