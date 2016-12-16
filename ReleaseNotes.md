@@ -24,6 +24,8 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * #713 Marginal Return Report (short version) doubled sums for accounting group
+  * #380 duplicate lines in inout
+    * Worked over each jasper report in order not to display matsterdata records that were deactivated
 
 # metasfresh 4.48.47 (2016-50)
  
