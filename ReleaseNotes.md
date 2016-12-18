@@ -29,21 +29,26 @@ Here come the actual release notes:
   * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
 
 # metasfresh 4.48.47 (2016-50)
- 
-this week's RC
 
 ## Features
 * metasfresh
   * #677 make customs report faster
+    * Significant improvement of the customs report performance.
   * #541 Remove PiPo from metasfresh removing code and data
+    * Remove the legacy code from Pack-In and Pack-out from metasfresh. The underlying concept is flawed and does not scale.
 
 * webui
   * #625 Shipment Schedule Window WebUI
+    * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
   * #687 webUI bundle
+    * Add different Layout changes in a fair amount of windows for Web User Interface.
+    
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
+    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build. 
   * #721 Wrong error message displayed when user enters wrong password on login
+    * Fix for Bug when entering wrong password in Login. Said "locked" but was just wrong credentials/ password.
 
 # metasfresh 4.47.46 (2016-49)
 
