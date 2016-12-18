@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.sql;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.cache.Cache;
@@ -11,7 +12,11 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.window.model.DocumentViewCreateRequest;
+import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.window.datatypes.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
 
@@ -40,6 +45,13 @@ import de.metas.ui.web.window.model.IDocumentViewSelection;
 @Repository
 public class SqlDocumentViewsRepository implements DocumentViewsRepository
 {
+	@Autowired
+	private DocumentDescriptorFactory documentDescriptorFactory;
+	@Autowired
+	private DocumentReferencesService documentReferencesService;
+	@Autowired
+	private ProcessDescriptorsFactory processDescriptorsFactory;
+
 	private final Cache<String, SqlDocumentViewSelection> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
@@ -52,11 +64,19 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
+	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
 	{
-		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder()
-				.setRequest(request)
+		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(jsonRequest.getAD_Window_ID());
+		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder(entityDescriptor)
+				.setServices(processDescriptorsFactory, documentReferencesService)
+				//
+				.setViewFieldsByCharacteristic(jsonRequest.getViewTypeRequiredFieldCharacteristic())
+				//
+				.setStickyFilterByReferencedDocument(jsonRequest.getReferencingDocumentPathOrNull())
+				.setFiltersFromJSON(jsonRequest.getFilters())
+				//
 				.build();
+
 		views.put(view.getViewId(), view);
 		return view;
 	}

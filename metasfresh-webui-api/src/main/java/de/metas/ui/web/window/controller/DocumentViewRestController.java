@@ -3,7 +3,6 @@ package de.metas.ui.web.window.controller;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,29 +16,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
-import de.metas.ui.web.window.model.DocumentViewCreateRequest;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
@@ -75,7 +66,7 @@ public class DocumentViewRestController
 {
 	private static final String PARAM_WindowId = "windowId";
 
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
+	/*package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
 
 	private static final String PARAM_ViewDataType = "viewType";
 	private static final String PARAM_OrderBy = "orderBy";
@@ -89,25 +80,20 @@ public class DocumentViewRestController
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory;
+	private DocumentDescriptorFactory documentDescriptorFactory; // TODO: get rid of it and move the logic to DocumentViewsRepository
 
 	@Autowired
 	private DocumentViewsRepository documentViewsRepo;
 
-	@Autowired
-	private ProcessDescriptorsFactory processDescriptorFactory;
-
-	@Autowired
-	private DocumentReferencesService documentReferencesService;
-
-	private JSONOptions.Builder newJSONOptions()
+	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.builder()
-				.setUserSession(userSession);
+				.setUserSession(userSession)
+				.build();
 	}
 
 	@GetMapping(value = "/layout")
-	public JSONDocumentLayoutTab getViewLayout(
+	public JSONDocumentViewLayout getViewLayout(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 	)
@@ -117,24 +103,26 @@ public class DocumentViewRestController
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-		final Collection<DocumentFilterDescriptor> filters = descriptor.getDocumentFiltersProvider().getAll();
+		final Collection<DocumentFilterDescriptor> filters = descriptor.getEntityDescriptor().getFiltersProvider().getAll();
 
-		final JSONOptions jsonOpts = newJSONOptions().build();
+		final JSONOptions jsonOpts = newJSONOptions();
 
 		switch (viewDataType)
 		{
 			case grid:
 			{
 				final DocumentLayoutDetailDescriptor gridLayout = layout.getGridView();
-				return JSONDocumentLayoutTab.of(gridLayout, filters, jsonOpts);
+				return JSONDocumentViewLayout.ofGridLayout(gridLayout, filters, jsonOpts);
 			}
 			case list:
 			{
 				final DocumentLayoutSideListDescriptor sideListLayout = layout.getSideList();
-				return JSONDocumentLayoutTab.ofSideListLayout(sideListLayout, filters, jsonOpts);
+				return JSONDocumentViewLayout.ofSideListLayout(sideListLayout, filters, jsonOpts);
 			}
 			default:
+			{
 				throw new IllegalArgumentException("Invalid " + PARAM_ViewDataType + "=" + viewDataType);
+			}
 		}
 	}
 
@@ -155,29 +143,8 @@ public class DocumentViewRestController
 		{
 			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
 		}
-		//
-		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(adWindowIdEffective);
-
-		final JSONViewDataType viewDataType = jsonRequest.getViewType();
-		final Characteristic requiredFieldCharacteristic = viewDataType.getRequiredFieldCharacteristic();
-		final List<DocumentFieldDescriptor> fields = entityDescriptor.getFieldsWithCharacteristic(requiredFieldCharacteristic);
-		if (fields.isEmpty())
-		{
-			throw new IllegalStateException("No fields were found for " + PARAM_ViewDataType + ": " + viewDataType + "(required field characteristic: " + requiredFieldCharacteristic + ")");
-		}
-
-		final DocumentViewCreateRequest.Builder request = DocumentViewCreateRequest.builder()
-				.setEntityDescriptor(entityDescriptor)
-				.setViewFields(fields)
-				.addFilters(JSONDocumentFilter.unwrapList(jsonRequest.getFilters(), entityDescriptor.getFiltersProvider()));
-
-		if (jsonRequest.getReferencing() != null)
-		{
-			final DocumentReference reference = documentReferencesService.getDocumentReference(jsonRequest.getReferencing().toDocumentPath(), adWindowIdEffective);
-			request.addStickyFilter(reference.getFilter());
-		}
-
-		final IDocumentViewSelection view = documentViewsRepo.createView(request.build());
+		
+		final IDocumentViewSelection view = documentViewsRepo.createView(jsonRequest);
 
 		//
 		// Fetch result if requested
@@ -262,16 +229,11 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentViewSelection view = documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId);
-
-		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
-
-		return processDescriptorFactory.getDocumentRelatedProcesses(view.getTableName())
-				.stream()
-				.filter(processDescriptor -> processDescriptor.isExecutionGranted(permissions))
+		return documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.streamActions()
 				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
-				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
+				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
 }

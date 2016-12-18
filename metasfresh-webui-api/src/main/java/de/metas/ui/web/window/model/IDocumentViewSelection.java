@@ -1,9 +1,11 @@
 package de.metas.ui.web.window.model;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.compiere.util.Evaluatee;
 
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
@@ -62,6 +64,9 @@ public interface IDocumentViewSelection
 
 	String getSqlWhereClause(List<Integer> viewDocumentIds);
 
+	/** @return stream of actions which can be executed on this view */
+	Stream<ProcessDescriptor> streamActions();
+
 	default IDocumentViewSelection assertWindowIdMatches(final int expectedWindowId)
 	{
 		// NOTE: for now, if the windowId is not provided, let's not validate it because deprecate API cannot provide the windowId
@@ -79,5 +84,4 @@ public interface IDocumentViewSelection
 
 		return this;
 	}
-
 }

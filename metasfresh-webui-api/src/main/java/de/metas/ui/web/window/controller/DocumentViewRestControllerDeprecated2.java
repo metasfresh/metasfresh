@@ -16,7 +16,7 @@ import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
@@ -85,7 +85,7 @@ public class DocumentViewRestControllerDeprecated2
 	 */
 	@RequestMapping(value = "/layout", method = RequestMethod.GET)
 	@Deprecated
-	public JSONDocumentLayoutTab getLayout(
+	public JSONDocumentViewLayout getLayout(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 	)
@@ -158,7 +158,7 @@ public class DocumentViewRestControllerDeprecated2
 
 		return documentCollection
 				.getDocumentDescriptor(adWindowId)
-				.getDocumentFiltersProvider()
+				.getEntityDescriptor().getFiltersProvider()
 				.getByFilterId(filterId)
 				.getParameterByName(parameterName)
 				.getLookupDataSource()
@@ -181,7 +181,7 @@ public class DocumentViewRestControllerDeprecated2
 
 		return documentCollection
 				.getDocumentDescriptor(adWindowId)
-				.getDocumentFiltersProvider()
+				.getEntityDescriptor().getFiltersProvider()
 				.getByFilterId(filterId)
 				.getParameterByName(parameterName)
 				.getLookupDataSource()

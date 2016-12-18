@@ -3,6 +3,8 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.List;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 
 /*
  * #%L
@@ -122,9 +125,20 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 		return viewType;
 	}
 	
+	public Characteristic getViewTypeRequiredFieldCharacteristic()
+	{
+		Check.assumeNotNull(viewType, "Parameter viewType is not null for {}", this);
+		return viewType.getRequiredFieldCharacteristic();
+	}
+	
 	public JSONReferencing getReferencing()
 	{
 		return referencing;
+	}
+	
+	public DocumentPath getReferencingDocumentPathOrNull()
+	{
+		return referencing == null ? null : referencing.toDocumentPath();
 	}
 
 	public List<JSONDocumentFilter> getFilters()

@@ -1,7 +1,7 @@
 package de.metas.ui.web.process.descriptor;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
@@ -12,7 +12,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
@@ -79,15 +78,14 @@ public class ProcessDescriptorsFactory
 	@Autowired
 	private UserSession userSession;
 
-	public List<ProcessDescriptor> getDocumentRelatedProcesses(final String tableName)
+	public Stream<ProcessDescriptor> streamDocumentRelatedProcesses(final String tableName)
 	{
 		final int adTableId = adTableDAO.retrieveTableId(tableName);
 		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
 		return adProcessDAO.retrieveProcessesIdsForTable(Env.getCtx(), adTableId)
 				.stream()
 				.map(adProcessId -> getProcessDescriptor(adProcessId))
-				.filter(processDescriptor -> processDescriptor.isExecutionGranted(userRolePermissions))
-				.collect(GuavaCollectors.toImmutableList());
+				.filter(processDescriptor -> processDescriptor.isExecutionGranted(userRolePermissions));
 	}
 
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)

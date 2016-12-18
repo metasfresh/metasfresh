@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -425,12 +424,9 @@ public class WindowRestController
 		final Document document = documentCollection.getDocument(documentPath);
 		final String tableName = document.getEntityDescriptor().getTableName();
 
-		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
 		final DocumentPreconditionsContext preconditionsContext = DocumentPreconditionsContext.of(document);
 
-		return processDescriptorFactory.getDocumentRelatedProcesses(tableName)
-				.stream()
-				.filter(processDescriptor -> processDescriptor.isExecutionGranted(permissions))
+		return processDescriptorFactory.streamDocumentRelatedProcesses(tableName)
 				.filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
 				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 

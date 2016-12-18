@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,7 +36,8 @@ import com.google.common.collect.ImmutableList;
  */
 
 @Immutable
-public final class DocumentQueryOrderBy
+@SuppressWarnings("serial")
+public final class DocumentQueryOrderBy implements Serializable
 {
 	public static final DocumentQueryOrderBy byFieldName(final String fieldName, final boolean ascending)
 	{

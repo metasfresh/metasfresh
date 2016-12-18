@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 /*
  * #%L
@@ -57,12 +58,13 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private Optional<Integer> precision;
 
 	private final LayoutType layoutType;
-	private final boolean gridElement;
+	private final LayoutAlign gridAlign;
 	private final boolean advancedField;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
 	private String _captionAsFieldNames; // lazy
+
 
 	private static final Joiner JOINER_FieldNames = Joiner.on(" | ").skipNulls();
 
@@ -70,16 +72,15 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		super();
 
-		internalName = builder.internalName;
-		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
-		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
+		internalName = builder.getInternalName();
+		caption = builder.getCaption();
+		description = builder.getDescription();
 
-		Check.assumeNotNull(builder.widgetType, "Parameter builder.widgetType is not null for {}", builder);
-		widgetType = builder.widgetType;
+		widgetType = builder.getWidgetType();
 		precision = Optional.ofNullable(builder.getPrecision());
 
-		layoutType = builder.layoutType;
-		gridElement = builder.gridElement;
+		layoutType = builder.getLayoutType();
+		gridAlign = builder.getGridAlign();
 
 		advancedField = builder.isAdvancedField();
 
@@ -140,10 +141,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	public LayoutAlign getGridAlign()
 	{
-		if (gridElement)
-			return widgetType == null ? null : widgetType.getGridAlign();
-		else
-			return null;
+		return gridAlign;
 	}
 
 	public boolean isAdvancedField()
@@ -165,14 +163,14 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementDescriptor.Builder.class);
 
-		private String internalName;
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
-		private ITranslatableString description = ImmutableTranslatableString.empty();
-		private DocumentFieldWidgetType widgetType;
-		private LayoutType layoutType;
-		private boolean gridElement = false;
-		private boolean advancedField = false;
-		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> fieldsBuilders = new LinkedHashMap<>();
+		private String _internalName;
+		private ITranslatableString _caption = ImmutableTranslatableString.empty();
+		private ITranslatableString _description = ImmutableTranslatableString.empty();
+		private DocumentFieldWidgetType _widgetType;
+		private LayoutType _layoutType;
+		private boolean _gridElement = false;
+		private boolean _advancedField = false;
+		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
 		private boolean consumed = false;
 
@@ -186,12 +184,12 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
-					.add("internalName", internalName)
-					.add("caption", caption)
-					.add("description", description)
-					.add("widgetType", widgetType)
+					.add("internalName", _internalName)
+					.add("caption", _caption)
+					.add("description", _description)
+					.add("widgetType", _widgetType)
 					.add("consumed", consumed ? Boolean.TRUE : null)
-					.add("fields-count", fieldsBuilders.size())
+					.add("fields-count", _fieldsBuilders.size())
 					.toString();
 		}
 
@@ -207,7 +205,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		private Set<DocumentLayoutElementFieldDescriptor> buildFields()
 		{
-			return fieldsBuilders
+			return _fieldsBuilders
 					.values()
 					.stream()
 					.filter(fieldBuilder -> checkValid(fieldBuilder))
@@ -240,78 +238,94 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Builder setInternalName(final String internalName)
 		{
-			this.internalName = internalName;
+			this._internalName = internalName;
 			return this;
+		}
+		
+		private String getInternalName()
+		{
+			return _internalName;
 		}
 
 		public Builder setCaption(final ITranslatableString caption)
 		{
-			this.caption = caption;
+			this._caption = caption == null ? ImmutableTranslatableString.empty() : caption;
 			return this;
+		}
+		
+		private ITranslatableString getCaption()
+		{
+			return _caption;
 		}
 
 		public Builder setDescription(final ITranslatableString description)
 		{
-			this.description = description;
+			this._description = description == null ? ImmutableTranslatableString.empty() : description;
 			return this;
+		}
+		
+		private ITranslatableString getDescription()
+		{
+			return _description;
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
-			this.widgetType = widgetType;
+			this._widgetType = widgetType;
 			return this;
 		}
 
-		public DocumentFieldWidgetType getWidgetType()
+		public boolean isWidgetTypeSet()
 		{
-			return widgetType;
+			return _widgetType != null;
+		}
+		
+		private DocumentFieldWidgetType getWidgetType()
+		{
+			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
+			return _widgetType;
 		}
 
 		private Integer getPrecision()
 		{
-			final DocumentFieldWidgetType widgetType = this.getWidgetType();
-			if (widgetType == null)
-			{
-				return null;
-			}
-			return widgetType.getStandardNumberPrecision();
+			return getWidgetType().getStandardNumberPrecision();
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)
 		{
-			this.layoutType = layoutType;
+			this._layoutType = layoutType;
 			return this;
 		}
 
 		public Builder setLayoutTypeNone()
 		{
-			layoutType = null;
+			_layoutType = null;
 			return this;
 		}
 
-		public LayoutType getLayoutType()
+		private LayoutType getLayoutType()
 		{
-			return layoutType;
+			return _layoutType;
 		}
 
 		public Builder setAdvancedField(final boolean advancedField)
 		{
-			this.advancedField = advancedField;
+			this._advancedField = advancedField;
 			return this;
 		}
 
 		public boolean isAdvancedField()
 		{
-			return advancedField;
+			return _advancedField;
 		}
 
 		public Builder addField(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
 		{
 			Check.assumeNotNull(fieldBuilder, "Parameter fieldBuilder is not null");
-			final DocumentLayoutElementFieldDescriptor.Builder previousFieldBuilder = fieldsBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
+			final DocumentLayoutElementFieldDescriptor.Builder previousFieldBuilder = _fieldsBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
 			if (previousFieldBuilder != null)
 			{
-				new AdempiereException("Field " + fieldBuilder.getFieldName() + " already exists in element: " + caption)
+				new AdempiereException("Field " + fieldBuilder.getFieldName() + " already exists in element: " + _caption)
 						.throwIfDeveloperModeOrLogWarningElse(logger);
 			}
 			return this;
@@ -319,27 +333,27 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		public Set<String> getFieldNames()
 		{
-			return fieldsBuilders.keySet();
+			return _fieldsBuilders.keySet();
 		}
 
 		public DocumentLayoutElementFieldDescriptor.Builder getField(final String fieldName)
 		{
-			return fieldsBuilders.get(fieldName);
+			return _fieldsBuilders.get(fieldName);
 		}
 
 		public DocumentLayoutElementFieldDescriptor.Builder getFirstField()
 		{
-			return fieldsBuilders.values().iterator().next();
+			return _fieldsBuilders.values().iterator().next();
 		}
 
 		public int getFieldsCount()
 		{
-			return fieldsBuilders.size();
+			return _fieldsBuilders.size();
 		}
 
 		public boolean hasFieldName(final String fieldName)
 		{
-			return fieldsBuilders.containsKey(fieldName);
+			return _fieldsBuilders.containsKey(fieldName);
 		}
 
 		public Builder setExcludeSpecialFields()
@@ -364,7 +378,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		 */
 		public Builder setGridElement()
 		{
-			this.gridElement = true;
+			this._gridElement = true;
 			return this;
 		}
 
@@ -377,8 +391,13 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		 */
 		public Builder setNotGridElement()
 		{
-			this.gridElement = false;
+			this._gridElement = false;
 			return this;
+		}
+		
+		private LayoutAlign getGridAlign()
+		{
+			return _gridElement ? getWidgetType().getGridAlign() : null;
 		}
 
 	}

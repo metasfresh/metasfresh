@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -293,6 +295,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		return layoutElementLineBuilder;
 	}
 
+	@Nullable
 	private DocumentLayoutElementDescriptor.Builder layoutElement(final I_AD_UI_Element uiElement)
 	{
 		logger.trace("Building layout element for {}", uiElement);
@@ -326,7 +329,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 			//
 			// Element Widget type
-			if (layoutElementBuilder.getWidgetType() == null)
+			if (!layoutElementBuilder.isWidgetTypeSet())
 			{
 				layoutElementBuilder.setWidgetType(field.getWidgetType());
 			}
@@ -395,7 +398,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
 	{
-		final DocumentEntityDescriptor.Builder entityDescriptor = descriptorsFactory.documentEntity();
+		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
 		logger.trace("Generating layout detail for {}", entityDescriptor);
 
 		// If the detail is never displayed then don't add it to layout
@@ -506,7 +509,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 	public DocumentLayoutDetailDescriptor.Builder layoutAdvancedView()
 	{
 		// NOTE, according to (FRESH-686 #26), we are putting all elements in one list, one after another, no sections, no columns etc
-		final DocumentEntityDescriptor.Builder entityDescriptor = descriptorsFactory.documentEntity();
+		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
 		logger.trace("Generating advanced view layout for {}", entityDescriptor);
 
 		// If the detail is never displayed then don't add it to layout

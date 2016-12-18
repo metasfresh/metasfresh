@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
@@ -64,7 +64,7 @@ public class DocumentViewRestControllerDeprecated
 
 	@RequestMapping(value = "/viewLayout", method = RequestMethod.GET)
 	@Deprecated
-	public JSONDocumentLayoutTab getViewLayout_DEPRECATED(
+	public JSONDocumentViewLayout getViewLayout_DEPRECATED(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 

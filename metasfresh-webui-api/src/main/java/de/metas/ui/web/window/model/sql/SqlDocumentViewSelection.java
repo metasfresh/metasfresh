@@ -11,6 +11,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -27,20 +30,25 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentViewFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentReference;
+import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.DocumentView;
-import de.metas.ui.web.window.model.DocumentViewCreateRequest;
 import de.metas.ui.web.window.model.DocumentViewResult;
 import de.metas.ui.web.window.model.IDocumentView;
 import de.metas.ui.web.window.model.IDocumentViewSelection;
@@ -70,9 +78,9 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 class SqlDocumentViewSelection implements IDocumentViewSelection
 {
-	public static final Builder builder()
+	public static final Builder builder(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return new Builder();
+		return new Builder(entityDescriptor);
 	}
 
 	private static final Logger logger = LogManager.getLogger(SqlDocumentViewSelection.class);
@@ -82,11 +90,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final int adWindowId;
 	private final String tableName;
 	private final String keyColumnName;
-	private final OrderedSelection defaultSelection;
 
-	private final OrderedSelectionFactory orderedSelectionFactory;
 	private final String sqlSelectPage;
 	private final List<DocumentViewFieldValueLoader> fieldLoaders;
+
+	private final OrderedSelectionFactory orderedSelectionFactory;
+	private final OrderedSelection defaultSelection;
+	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	//
 	// Filters
@@ -96,8 +106,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	/** Active filters */
 	private final List<DocumentFilter> filters;
 
-	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	//
+	// Related actions
+	private final transient ProcessDescriptorsFactory processDescriptorFactory;
 
+	//
+	// Misc
 	private transient String _toString;
 
 	private SqlDocumentViewSelection(final Builder builder)
@@ -108,6 +122,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		tableName = builder.getTableName();
 		keyColumnName = builder.getKeyColumnName();
 
+		sqlSelectPage = builder.buildSqlSelectPage();
+		fieldLoaders = builder.createDocumentViewFieldValueLoaders();
+
+		orderedSelectionFactory = builder.buildSqlCreateSelectionFromSelection();
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 
@@ -117,10 +135,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		stickyFilters = ImmutableList.copyOf(builder.getStickyFilters());
 		filters = ImmutableList.copyOf(builder.getFilters());
 
-		sqlSelectPage = builder.buildSqlSelectPage();
-		fieldLoaders = builder.createDocumentViewFieldValueLoaders();
-
-		orderedSelectionFactory = builder.buildSqlCreateSelectionFromSelection();
+		//
+		processDescriptorFactory = builder.getProcessDescriptorFactory();
 
 		logger.debug("View created: {}", this);
 	}
@@ -197,7 +213,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return; // already closed
 		}
 
-		// nothing now. in future me might notify somebody to remove the temporary selections from database
+		// nothing now.
+		// TODO in future me might notify somebody to remove the temporary selections from database
 
 		logger.debug("View closed: {}", this);
 	}
@@ -335,31 +352,40 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				.findEntities(ctx, query);
 	}
 
+	@Override
+	public Stream<ProcessDescriptor> streamActions()
+	{
+		return processDescriptorFactory.streamDocumentRelatedProcesses(getTableName());
+	}
 
-	
 	//
 	//
 	// Builder
 	//
 	//
-	
+
 	public static final class Builder
 	{
+		// services
+		private ProcessDescriptorsFactory processDescriptorsFactory;
+		private DocumentReferencesService documentReferencesService;
+
+		private final DocumentEntityDescriptor _entityDescriptor;
 		private List<DocumentFieldDescriptor> _viewFields;
 		private List<DocumentFilter> _stickyFilters;
 		private List<DocumentFilter> _filters;
 
 		private SqlDocumentQueryBuilder _queryBuilder;
 
-		private Builder()
+		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
 			super();
+			Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
+			_entityDescriptor = entityDescriptor;
 		}
 
 		public SqlDocumentViewSelection build()
 		{
-			Preconditions.checkNotNull(_queryBuilder, "builder was configured");
-
 			return new SqlDocumentViewSelection(this);
 		}
 
@@ -397,40 +423,51 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return ImmutableList.copyOf(documentViewFieldLoaders);
 		}
 
-		public Builder setRequest(final DocumentViewCreateRequest request)
-		{
-			Check.assumeNotNull(request, "Parameter request is not null");
-
-			_stickyFilters = request.getStickyFilters();
-			_filters = request.getFilters();
-
-			_queryBuilder = SqlDocumentQueryBuilder.newInstance(request.getEntityDescriptor())
-					.addDocumentFilters(request.getStickyFilters())
-					.addDocumentFilters(request.getFilters());
-
-			_viewFields = request.getViewFields();
-
-			return this;
-		}
-
 		private SqlDocumentQueryBuilder getQueryBuilder()
 		{
+			if (_queryBuilder == null)
+			{
+				_queryBuilder = SqlDocumentQueryBuilder.newInstance(getEntityDescriptor())
+						.addDocumentFilters(getStickyFilters())
+						.addDocumentFilters(getFilters());
+			}
 			return _queryBuilder;
 		}
 
 		private DocumentEntityDescriptor getEntityDescriptor()
 		{
-			return _queryBuilder.getEntityDescriptor();
+			return _entityDescriptor;
 		}
 
 		private SqlDocumentEntityDataBindingDescriptor getBinding()
 		{
-			return _queryBuilder.getEntityBinding();
+			return getQueryBuilder().getEntityBinding();
 		}
-		
+
 		private DocumentFilterDescriptorsProvider getFilterDescriptors()
 		{
 			return getEntityDescriptor().getFiltersProvider();
+		}
+
+		private Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
+		{
+			_stickyFilters = stickyFilter == null ? ImmutableList.of() : ImmutableList.of(stickyFilter);
+			return this;
+		}
+
+		public Builder setStickyFilterByReferencedDocument(@Nullable final DocumentPath referencedDocumentPath)
+		{
+			if (referencedDocumentPath == null)
+			{
+				setStickyFilter(null);
+			}
+			else
+			{
+				final int targetWindowId = getEntityDescriptor().getAD_Window_ID();
+				final DocumentReference reference = getDocumentReferencesService().getDocumentReference(referencedDocumentPath, targetWindowId);
+				setStickyFilter(reference.getFilter());
+			}
+			return this;
 		}
 
 		private List<DocumentFilter> getStickyFilters()
@@ -438,13 +475,45 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return _stickyFilters;
 		}
 
+		public Builder setFilters(final List<DocumentFilter> filters)
+		{
+			_filters = filters;
+			return this;
+		}
+
+		public Builder setFiltersFromJSON(final List<JSONDocumentFilter> jsonFilters)
+		{
+			setFilters(JSONDocumentFilter.unwrapList(jsonFilters, getFilterDescriptors()));
+			return this;
+		}
+
 		private List<DocumentFilter> getFilters()
 		{
 			return _filters;
 		}
 
+		private Builder setViewFields(final List<DocumentFieldDescriptor> viewFields)
+		{
+			_viewFields = viewFields;
+			return this;
+		}
+
+		public Builder setViewFieldsByCharacteristic(final Characteristic characteristic)
+		{
+			final List<DocumentFieldDescriptor> viewFields = getEntityDescriptor().getFieldsWithCharacteristic(characteristic);
+			if (viewFields.isEmpty())
+			{
+				throw new IllegalStateException("No fields were found for characteristic: " + characteristic);
+			}
+
+			setViewFields(viewFields);
+
+			return this;
+		}
+
 		private List<DocumentFieldDescriptor> getViewFields()
 		{
+			Check.assumeNotEmpty(_viewFields, "viewFields is not empty");
 			return _viewFields;
 		}
 
@@ -598,7 +667,33 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 			return new OrderedSelectionFactory(sql, fieldName2sqlDictionary);
 		}
+
+		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory, final DocumentReferencesService documentReferencesService)
+		{
+			this.processDescriptorsFactory = processDescriptorsFactory;
+			this.documentReferencesService = documentReferencesService;
+			return this;
+		}
+
+		private ProcessDescriptorsFactory getProcessDescriptorFactory()
+		{
+			Check.assumeNotNull(processDescriptorsFactory, "Parameter processDescriptorsFactory is not null");
+			return processDescriptorsFactory;
+		}
+
+		private DocumentReferencesService getDocumentReferencesService()
+		{
+			Check.assumeNotNull(documentReferencesService, "Parameter documentReferencesService is not null");
+			return documentReferencesService;
+		}
+
 	}
+
+	//
+	//
+	// OrderSelection Factory
+	//
+	//
 
 	private static final class OrderedSelectionFactory
 	{

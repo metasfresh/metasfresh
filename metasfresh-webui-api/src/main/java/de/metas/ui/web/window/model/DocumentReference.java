@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import javax.validation.constraints.NotNull;
+
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 
 import com.google.common.base.MoreObjects;
@@ -88,6 +90,7 @@ public final class DocumentReference
 		return documentsCount;
 	}
 
+	@NotNull
 	public DocumentFilter getFilter()
 	{
 		return filter;
