@@ -76,6 +76,7 @@ public class DocumentEntityDescriptor
 	private final String _id;
 
 	private final ITranslatableString caption;
+	private final ITranslatableString description;
 
 	private final DetailId detailId;
 
@@ -117,6 +118,7 @@ public class DocumentEntityDescriptor
 		documentType = builder.getDocumentType();
 		documentTypeId = builder.getDocumentTypeId();
 		caption = builder.getCaption();
+		description = builder.getDescription();
 		detailId = builder.getDetailId();
 
 		allowCreateNewLogic = builder.getAllowCreateNewLogic();
@@ -208,6 +210,11 @@ public class DocumentEntityDescriptor
 	public ITranslatableString getCaption()
 	{
 		return caption;
+	}
+	
+	public ITranslatableString getDescription()
+	{
+		return description;
 	}
 
 	public DetailId getDetailId()
