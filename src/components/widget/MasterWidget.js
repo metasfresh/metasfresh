@@ -159,7 +159,7 @@ class Widget extends Component {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock
+            handleBackdropLock, tabIndex
         } = this.props;
 
         const {updated, edited} = this.state;
@@ -186,6 +186,7 @@ class Widget extends Component {
                 type={type}
                 caption={caption}
                 handleBackdropLock={handleBackdropLock}
+                tabIndex={tabIndex}
             />
         )
     }

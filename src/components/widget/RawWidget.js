@@ -37,7 +37,7 @@ class RawWidget extends Component {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock, subentity, subentityId
+            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex
         } = this.props;
 
         const {textValue} = this.state;
@@ -76,6 +76,7 @@ class RawWidget extends Component {
                             isHidden={isHidden}
                             value={selectedField}
                             valueTo={selectedFieldTo}
+                            tabIndex={tabIndex}
                          />
                     )
                 }else{
@@ -98,6 +99,7 @@ class RawWidget extends Component {
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                                tabIndex={tabIndex}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -120,6 +122,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                            tabIndex={tabIndex}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -141,6 +144,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            tabIndex={tabIndex}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -171,6 +175,7 @@ class RawWidget extends Component {
                         selected={selectedField}
                         tabId={tabId}
                         rowId={rowId}
+                        tabIndex={tabIndex}
                     />
                 )
             case "List":
@@ -196,6 +201,7 @@ class RawWidget extends Component {
                         parameterName={parameterName}
                         setSelectedItem={setSelectedItem}
                         emptyText={widgetFields.emptyText}
+                        tabIndex={tabIndex}
                     />
                 )
             case "Text":
@@ -218,6 +224,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
@@ -241,6 +248,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                     </div>
                 )
@@ -265,6 +273,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                     </div>
                 )
@@ -287,6 +296,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                     </div>
                 )
@@ -311,6 +321,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                     </div>
                 )
@@ -335,6 +346,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                     </div>
                 )
@@ -357,6 +369,7 @@ class RawWidget extends Component {
                             onFocus={(e) => handleFocus(e, e.target.value)}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            tabIndex={tabIndex}
                         />
                     </div>
                 )
@@ -371,6 +384,7 @@ class RawWidget extends Component {
                             checked={selectedField}
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
+                            tabIndex={tabIndex}
                         />
                         <div className={"input-checkbox-tick"}/>
                     </label>
@@ -388,6 +402,7 @@ class RawWidget extends Component {
                             checked={selectedField}
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
+                            tabIndex={tabIndex}
                         />
                         <div className={"input-slider"} />
                     </label>
@@ -399,7 +414,10 @@ class RawWidget extends Component {
                             "tag tag-warning " +
                             (align ? "text-xs-" + align + " " : "")
                         }
-                    >{widgetData.value}</div>
+                        tabIndex={tabIndex}
+                    >
+                        {widgetData.value}
+                    </div>
                 )
             case "Button":
                 return (
@@ -409,6 +427,7 @@ class RawWidget extends Component {
                             (align ? "text-xs-" + align + " " : "")
                         }
                         onClick={(e) => handlePatch(widgetField)}
+                        tabIndex={tabIndex}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
                     </button>
@@ -421,6 +440,7 @@ class RawWidget extends Component {
                         fields={fields}
                         dataId={dataId}
                         onChange={(option) => handlePatch(fields[1].field, option)}
+                        tabIndex={tabIndex}
                     />
                 )
             case "ProductAttributes":
@@ -436,6 +456,7 @@ class RawWidget extends Component {
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => handlePatch(widgetField, option)}
+                        tabIndex={tabIndex}
                     />
                 )
             case "Address":
@@ -451,6 +472,7 @@ class RawWidget extends Component {
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => handlePatch(widgetField, option)}
+                        tabIndex={tabIndex}
                     />
                 )
             default:
@@ -462,7 +484,8 @@ class RawWidget extends Component {
     render() {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal
+            widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal,
+            tabIndex
         } = this.props;
 
         if(widgetData[0].displayed && widgetData[0].displayed === true){
