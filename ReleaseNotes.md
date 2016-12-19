@@ -10,26 +10,39 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.49.49 (2016-52)
+
+upcoming
+
+## Features
+* metasfresh
+  * #653 Calculated DailyLotNo in Material Receipt Candidates
+  * #714 Marginal Return report calculation add additional Costcenter
+
+## Fixes
+* metasfresh
+  * #681 Automatic filling of BPartner and Location only shows value
+  * #718 Wrong location in empties vendor return
+
 # metasfresh 4.49.48 (2016-51)
 
- this week
+ this week's RC
  
 ## Features
 * metasfresh
   * #489 Implement DLM within single logical tables
-  * #714 Marginal Return report calculation add additional Costcenter
 
 * webui
   * #698 Pipeline - add webui deployment
 
 ## Fixes
 * metasfresh
-  * #713 Marginal Return Report (short version) doubled sums for accounting group
   * #380 duplicate lines in inout
     * Worked over each jasper report in order not to display matsterdata records that were deactivated
   * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
   * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
-
+  * #713 Marginal Return Report (short version) doubled sums for accounting group
+  
 # metasfresh 4.48.47 (2016-50)
 
 ## Features
