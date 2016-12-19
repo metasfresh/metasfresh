@@ -51,7 +51,7 @@ class RawWidget extends Component {
 
 
         if (filterWidget) {
-            widgetField = fields.parameterName;
+            widgetField = parameterName;
             selectedField = selectedItem;
             selectedFieldTo = selectedItemTo;
             widgetFields = fields;
