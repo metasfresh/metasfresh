@@ -24,6 +24,9 @@ upcoming
   * #681 Automatic filling of BPartner and Location only shows value
   * #718 Wrong location in empties vendor return
 
+* webui
+  * #89 Adjust DocAction Names
+
 # metasfresh 4.49.48 (2016-51)
 
  this week's RC
