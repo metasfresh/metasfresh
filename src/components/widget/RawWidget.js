@@ -63,8 +63,6 @@ class RawWidget extends Component {
             fieldsArray = fields;
         }
 
-
-
         switch(widgetType){
             case "Date":
                 if(range){

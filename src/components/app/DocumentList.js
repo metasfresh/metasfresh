@@ -50,7 +50,7 @@ class DocumentList extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {windowType, filters} = this.props;
+        const {windowType, type, filters} = this.props;
 
         let oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
         let newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
@@ -89,6 +89,7 @@ class DocumentList extends Component {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
                 }), () => {
+                    console.log(isNewFilter)
                     if(query && query.viewId && !isNewFilter){
                         dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters))
                             .then((response) => {
@@ -99,6 +100,7 @@ class DocumentList extends Component {
                                 }
                             })
                     }else{
+                        console.log("CREATE NEW VIEW")
                         this.createNewView(windowType, type, filters, query && query.refType, query && query.refId);
                     }
                 })
