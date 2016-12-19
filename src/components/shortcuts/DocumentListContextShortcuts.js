@@ -7,16 +7,13 @@ class DocumentListContextShortcuts extends Component {
         
     }
   _handleShortcuts = (action, event) => {
-    const {newDocument} = this.props;
+    const {handleOpenNewTab, handleDelete} = this.props;
     switch (action) {
-      case 'NEW_DOCUMENT':
-        newDocument();
-        break
       case 'OPEN_SELECTED':
-        console.log('OPEN_SELECTED');
+        handleOpenNewTab();
         break
       case 'REMOVE_SELECTED':
-        console.log('REMOVE_SELECTED')
+        handleDelete();
         break
     }
   }

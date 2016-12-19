@@ -10,13 +10,9 @@ export default {
         OPEN_INBOX_MENU: mod + '+' + '3',
         OPEN_SIDEBAR_MENU: mod + '+' + '4',
 
-        //======== Document Context =================
 
-        DELETE_DOCUMENT: mod + '+' + 'd',
-        OPEN_ADVANCED_EDIT: mod + '+' + 'e',
     },
     DOCUMENT_LIST_CONTEXT: {
-        NEW_DOCUMENT: mod + '+' + 'n',
         OPEN_SELECTED: mod + '+' + 'm', //open document in new tab
         REMOVE_SELECTED: {
             osx: 'command+backspace',
@@ -25,33 +21,21 @@ export default {
         },
     },
     DOCUMENT_CONTEXT: {
-        
+
+        //======== Global =================
+
+        NEW_DOCUMENT: mod + '+' + 'n',
+        DELETE_DOCUMENT: mod + '+' + 'd',
+        OPEN_ADVANCED_EDIT: mod + '+' + 'e',
         OPEN_PRINT_RAPORT: mod + '+' + 'p',
         FOCUS_FAST_LINE_ENTRY: mod + '+' + 'q',
+
+        //===========================================
+
         REMOVE_SELECTED: {
             osx: 'command+backspace',
             windows: 'delete',
             linux: 'delete',
         }
-    },
-    TODO_ITEM: {
-        MOVE_LEFT: 'alt+w',
-        MOVE_RIGHT: 'right',
-        MOVE_UP: ['up', 'w'],
-        DELETE: {
-            osx: ['command+backspace', 'k'],
-            windows: 'delete',
-            linux: 'delete',
-        },
-    },
-    AAA: {
-        MOVE_DOWN: 'down',
-        MOVE_RIGHT: 'right',
-        MOVE_UP: ['up', 'w'],
-        DELETE: {
-            osx: ['command+backspace', 'k'],
-            windows: 'delete',
-            linux: 'delete',
-        },
     },
 }

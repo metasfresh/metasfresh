@@ -10,6 +10,11 @@ import {
 
 import Prompt from '../app/Prompt';
 
+import keymap from '../../keymap.js';
+import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+const shortcutManager = new ShortcutManager(keymap);
+
 class TableContextMenu extends Component {
     constructor(props) {
         super(props);
@@ -28,6 +33,10 @@ class TableContextMenu extends Component {
                 }
             }
         }
+    }
+
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
     }
 
     componentDidMount() {
@@ -162,9 +171,17 @@ class TableContextMenu extends Component {
                     onCancelClick={this.handlePromptCancelClick}
                     onSubmitClick={this.handlePromptSubmitClick}
                 />
+                <DocumentListContextShortcuts 
+                    handleOpenNewTab={this.handleOpenNewTab}
+                    handleDelete={this.handleDelete}
+                />
             </div>
         )
     }
+}
+
+TableContextMenu.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 

@@ -23,15 +23,13 @@ import {
 } from '../../actions/MenuActions';
 
 import keymap from '../../keymap.js';
-import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
+import DocumentContextGlobalShortcuts from '../shortcuts/DocumentContextGlobalShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class Subheader extends Component {
     constructor(props){
         super(props);
-
-        console.log("Subheader");
 
         this.state = {
             pdfSrc: null,
@@ -200,9 +198,14 @@ class Subheader extends Component {
                         </div>
                     </div>
                 </div>
-                <GlobalShortcuts 
+                <DocumentContextGlobalShortcuts 
                     openModal={this.openModal}
                     windowType={windowType}
+                    handlePrint={this.handlePrint}
+                    handleDelete={this.handleDelete}
+                    redirect={this.redirect}
+                    dataId={dataId}
+                    docNo={docNo}
                 />
             </div>
         )

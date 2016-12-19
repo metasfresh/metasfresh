@@ -395,10 +395,12 @@ body {
     background-color: #fff;
     border-left: 1px solid $brand-border-color;
     z-index: 200;
-    right:0;
+    right: 0;
+    bottom: 0;
     overflow-y: scroll;
     overflow-x: hidden;
 }
+
 @media (max-width: $breakpoint){
     .order-list-panel{
         width: 100%;

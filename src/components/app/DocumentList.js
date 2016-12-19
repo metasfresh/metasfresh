@@ -21,18 +21,10 @@ import {
     setFilter
 } from '../../actions/ListActions';
 
-import keymap from '../../keymap.js';
-import { ShortcutManager } from 'react-shortcuts';
-import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
-
-const shortcutManager = new ShortcutManager(keymap);
-
 class DocumentList extends Component {
     constructor(props){
         super(props);
         const {type, windowType} = props;
-
-        console.log('document list');
 
         this.state = {
             data: null,
@@ -40,10 +32,6 @@ class DocumentList extends Component {
         }
 
         this.updateData(type, windowType);
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
     }
 
     componentWillReceiveProps(props) {
@@ -274,9 +262,6 @@ class DocumentList extends Component {
                             orderBy={data.orderBy}
                         />
                     </div>
-                    <DocumentListContextShortcuts
-                        newDocument={this.newDocument}
-                     />
                 </div>
             );
         }else{
@@ -315,10 +300,6 @@ function mapStateToProps(state) {
         pagination,
         filtersWindowType
     }
-}
-
-DocumentList.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
 }
 
 DocumentList = connect(mapStateToProps)(DocumentList)

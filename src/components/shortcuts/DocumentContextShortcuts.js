@@ -10,10 +10,8 @@ class DocumentContextShortcuts extends Component {
     const {} = this.props;
     switch (action) {
       case 'OPEN_PRINT_RAPORT':
-        console.log('OPEN_SELECTED');
         break
       case 'OPEN_ADVANCED_EDIT':
-        console.log('REMOVE_SELECTED')
         break
     }
   }

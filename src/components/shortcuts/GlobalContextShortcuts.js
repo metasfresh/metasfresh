@@ -7,29 +7,32 @@ class GlobalContextShortcuts extends Component {
         
     }
   _handleShortcuts = (action, event) => {
-    const {handleSubheaderOpen, toggleMenuOverlay, homemenu, isMenuOverlayShow, openModal, windowType} = this.props;
+    const {handleSubheaderOpen, toggleMenuOverlay, homemenu, isMenuOverlayShow, openModal, windowType, handleSideListToggle, handleInboxOpen} = this.props;
     switch (action) {
       case 'OPEN_ACTIONS_MENU':
+        handleInboxOpen(false);
         if(isMenuOverlayShow) {
           toggleMenuOverlay("", "");
         }
         handleSubheaderOpen();
         break
       case 'OPEN_NAVIGATION_MENU':
+        handleInboxOpen(false);
         toggleMenuOverlay("", homemenu.nodeId);
         break
       case 'OPEN_INBOX_MENU':
-        console.log('OPEN_INBOX_MENU')
+        toggleMenuOverlay("", "");
+        handleInboxOpen(true);
         break
       case 'OPEN_SIDEBAR_MENU':
-        console.log('OPEN_SIDEBAR_MENU')
+        toggleMenuOverlay("", "");
+        handleInboxOpen(false);
+        handleSideListToggle();
         break
       case 'DELETE_DOCUMENT':
-        console.log('DELETE_DOCUMENT')
         break
       case 'OPEN_ADVANCED_EDIT':
         openModal(windowType + '&advanced=true', "window", "Advanced edit");
-        console.log('OPEN_ADVANCED_EDIT')
         break       
     }
   }
@@ -40,6 +43,8 @@ class GlobalContextShortcuts extends Component {
         name={"GLOBAL_CONTEXT"}
         handler= {this._handleShortcuts}
         targetNodeSelector={"body"}
+        isolate={true}
+        preventDefault={true}
       >
       </Shortcuts>
     )

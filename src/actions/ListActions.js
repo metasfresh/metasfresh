@@ -32,7 +32,6 @@ export function clearListProps(){
     }
 }
 
-
 export function updateFiltersParameters(filterId, property, value, valueTo){
 	return {
 		type: types.UPDATE_FILTERS_PARAMETERS,

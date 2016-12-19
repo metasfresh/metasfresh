@@ -23,7 +23,6 @@ import {
 
 
 import keymap from '../../keymap.js';
-import TodoItem from '../../ToDoTest.js';
 import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
@@ -167,7 +166,6 @@ class Header extends Component {
 
         return (
             <div>
-                <TodoItem/>
                 {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
                 {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
                 <nav className={"header header-super-faded js-not-unselect " + (scrolled ? "header-shadow": "")}>
@@ -273,6 +271,8 @@ class Header extends Component {
                     toggleMenuOverlay={this.toggleMenuOverlay}
                     homemenu={homemenu}
                     isMenuOverlayShow = {isMenuOverlayShow}
+                    handleSideListToggle = {this.handleSideListToggle}
+                    handleInboxOpen = {this.handleInboxOpen}
                 />
             </div>
         )
