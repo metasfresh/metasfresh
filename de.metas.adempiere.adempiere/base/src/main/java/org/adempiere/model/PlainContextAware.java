@@ -61,6 +61,18 @@ public final class PlainContextAware implements IContextAware
 		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
 
+	/**
+	 * This method implementation is deprecated and shall not be merged back into master! 
+	 * It's just here so that other recent stuff which we ported here does compile. 
+	 * 
+	 * @return a {@link IContextAware} for given <code>ctx</code> and <code>trxName</code>.<br>
+	 *         Its {@link #isAllowThreadInherited()} will return <code>false</code>.
+	 */
+	public static final PlainContextAware newWithTrxName(final Properties ctx, final String trxName)
+	{
+		return new PlainContextAware(ctx, trxName);
+	}
+	
 	private final Properties ctx;
 	private final String trxName;
 
