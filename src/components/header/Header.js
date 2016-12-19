@@ -21,6 +21,12 @@ import {
     getRootBreadcrumb
 } from '../../actions/MenuActions';
 
+
+import keymap from '../../keymap.js';
+import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+const shortcutManager = new ShortcutManager(keymap);
+
 class Header extends Component {
     constructor(props){
         super(props);
@@ -28,15 +34,15 @@ class Header extends Component {
         this.state = {
             isSubheaderShow: false,
             isSideListShow: false,
+            isMenuOverlayShow: false,
             menuOverlay: null,
             scrolled: false,
             isInboxOpen: false
         }
     }
 
-    componentDidMount = () => {
-        const {dispatch} = this.props;
-        dispatch(getRootBreadcrumb());
+     getChildContext = () => {
+        return { shortcuts: shortcutManager }
     }
 
     handleSubheaderOpen = () => {
@@ -85,7 +91,13 @@ class Header extends Component {
         let toggleBreadcrumb = () => {
             this.setState(Object.assign({}, this.state, {
                 menuOverlay: nodeId
-            }));
+            }), () => {
+                this.setState(
+                    Object.assign({}, this.state, {
+                        isMenuOverlayShow: !this.state.isMenuOverlayShow
+                    })
+                );
+            });
         }
         if(isSubheaderShow){
             this.handleBackdropClick(toggleBreadcrumb);
@@ -96,7 +108,17 @@ class Header extends Component {
         }
     }
 
+    toggleMenuOverlay = (e, nodeId) => {
+        if(!this.state.isMenuOverlayShow) {
+            this.handleMenuOverlay(e, nodeId);
+        } else {
+            this.handleMenuOverlay(e, "");
+        }
+    }
+
     componentDidMount() {
+        const {dispatch} = this.props;
+        dispatch(getRootBreadcrumb());
         document.addEventListener('scroll', this.handleScroll);
     }
 
@@ -139,7 +161,7 @@ class Header extends Component {
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow
         } = this.state;
 
         return (
@@ -243,6 +265,15 @@ class Header extends Component {
                     windowType={windowType}
                     open={isSideListShow}
                 />}
+
+                <GlobalShortcuts 
+                    handleSubheaderOpen={this.handleSubheaderOpen}
+                    toggleMenuOverlay={this.toggleMenuOverlay}
+                    homemenu={homemenu}
+                    isMenuOverlayShow = {isMenuOverlayShow}
+                    handleSideListToggle = {this.handleSideListToggle}
+                    handleInboxOpen = {this.handleInboxOpen}
+                />
             </div>
         )
     }
@@ -290,6 +321,10 @@ function mapStateToProps(state) {
         inbox,
         homemenu
     }
+}
+
+Header.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 Header = connect(mapStateToProps)(Header)

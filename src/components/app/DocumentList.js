@@ -32,8 +32,6 @@ class DocumentList extends Component {
         }
 
         this.updateData(type, windowType);
-
-        
     }
 
     componentWillReceiveProps(props) {
@@ -212,6 +210,12 @@ class DocumentList extends Component {
         }
     }
 
+    newDocument = () => {
+        const {dispatch, windowType} = this.props;
+
+        dispatch(push('/window/' + windowType + '/new'));
+    }
+
     render() {
         const {layout, data} = this.state;
         const {dispatch, windowType, type, filters, pagination} = this.props;
@@ -224,7 +228,7 @@ class DocumentList extends Component {
                         {type === "grid" &&
                             <button
                                 className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
-                                onClick={() => dispatch(push('/window/' + windowType + '/new'))}
+                                onClick={() => this.newDocument()}
                             >
                                 <i className="meta-icon-add" /> New {layout.caption}
                             </button>

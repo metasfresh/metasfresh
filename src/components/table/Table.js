@@ -276,18 +276,17 @@ class Table extends Component {
 
     handleRightClick = (e, id) => {
         const {selected} = this.state;
-            const {clientX, clientY} = e;
-            e.preventDefault();
-
-            this.selectOneProduct(id, null, null, () => {
-                this.setState(Object.assign({}, this.state, {
-                    contextMenu: Object.assign({}, this.state.contextMenu, {
-                        x: clientX,
-                        y: clientY,
-                        open: true
-                    })
-                }));
-            });
+        const {clientX, clientY} = e;
+        e.preventDefault();
+        this.selectOneProduct(id, null, null, () => {
+            this.setState(Object.assign({}, this.state, {
+                contextMenu: Object.assign({}, this.state.contextMenu, {
+                    x: clientX,
+                    y: clientY,
+                    open: true
+                })
+            }));
+        });
     }
 
     sumProperty = (items, prop) => {
@@ -394,10 +393,9 @@ class Table extends Component {
         return (
             <div>
                 <div >
-                    <TableContextMenu
+                    {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
-                        isDisplayed={contextMenu.open}
                         blur={() => this.closeContextMenu()}
                         docId={docId}
                         type={type}
@@ -406,7 +404,7 @@ class Table extends Component {
                         deselect={() => this.deselectAllProducts()}
                         mainTable={mainTable}
                         updateDocList={updateDocList}
-                    />
+                    />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
                             <div className="pull-xs-right">

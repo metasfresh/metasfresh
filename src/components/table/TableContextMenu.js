@@ -10,10 +10,19 @@ import {
 
 import Prompt from '../app/Prompt';
 
+import keymap from '../../keymap.js';
+import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+const shortcutManager = new ShortcutManager(keymap);
+
 class TableContextMenu extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            contextMenu:{
+                x:0,
+                y:0
+            },
             prompt: {
                 open: false,
                 title: "Delete",
@@ -24,6 +33,15 @@ class TableContextMenu extends Component {
                 }
             }
         }
+    }
+
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
+    }
+
+    componentDidMount() {
+        const {x,y} = this.props;
+        this.setPosition(x,y,this.contextMenu);
     }
 
     handleAdvancedEdit = () => {
@@ -93,23 +111,44 @@ class TableContextMenu extends Component {
 
     }
 
+    getPosition = (dir, pos, element) => {
+        if(element){
+            const windowSize = (dir === 'x' ? window.innerWidth : window.innerHeight);
+            const elementSize = (dir === 'x' ? element.offsetWidth : element.offsetHeight);
+
+            if (windowSize - pos > elementSize) {
+                return pos;
+            } else {
+                return windowSize - elementSize;
+            }
+        }
+    }
+
+    setPosition = (x,y,elem) => {
+        this.setState(Object.assign({}, this.state, {
+            contextMenu: {
+                x: this.getPosition('x', x, elem),
+                y: this.getPosition('y', y, elem)
+            }
+        }));
+    }
 
     render() {
-        const {isDisplayed, x, y, blur, selected, dispatch, mainTable} = this.props;
-        const style = {
-            left: this.props.x,
-            top: this.props.y,
-            display: (isDisplayed ? "block" : "none")
-        }
-        const {prompt} = this.state;
+        const {
+            isDisplayed, x, y, blur, selected, dispatch, mainTable
+        } = this.props;
+        const {prompt, contextMenu} = this.state;
 
         const isSelectedOne = selected.length === 1;
         return (
-            !!isDisplayed &&
                 <div
                     className="context-menu context-menu-open panel-bordered panel-primary"
-                    ref={(c) => c && c.focus()}
-                    tabIndex="0" style={style}
+                    ref={(c) => {this.contextMenu = c; c && c.focus()}}
+                    style={{
+                        left: contextMenu.x,
+                        top: contextMenu.y
+                    }}
+                    tabIndex="0"
                     onBlur={blur}
                 >
                 {isSelectedOne && !mainTable &&
@@ -132,10 +171,17 @@ class TableContextMenu extends Component {
                     onCancelClick={this.handlePromptCancelClick}
                     onSubmitClick={this.handlePromptSubmitClick}
                 />
+                <DocumentListContextShortcuts 
+                    handleOpenNewTab={this.handleOpenNewTab}
+                    handleDelete={this.handleDelete}
+                />
             </div>
         )
-
     }
+}
+
+TableContextMenu.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 

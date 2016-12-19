@@ -364,7 +364,7 @@ body {
     font-weight: normal;
     color: $brand-font-color;
     box-shadow: 0 0 6px rgba(0,0,0,.1);
-    z-index: 2;
+    z-index: 3;
 }
 .context-menu-open {
     display: block;
@@ -395,10 +395,12 @@ body {
     background-color: #fff;
     border-left: 1px solid $brand-border-color;
     z-index: 200;
-    right:0;
+    right: 0;
+    bottom: 0;
     overflow-y: scroll;
     overflow-x: hidden;
 }
+
 @media (max-width: $breakpoint){
     .order-list-panel{
         width: 100%;
