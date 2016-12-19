@@ -29,7 +29,7 @@ class FilterWidget extends Component {
                 <RawWidget
                     handlePatch={this.handlePatch}
                     widgetType={widgetType}
-                    fields={widgetData}
+                    fields={[widgetData]}
                     windowType={windowType}
                     type={type}
                     widgetData={[widgetData]}
