@@ -170,7 +170,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		if (_bpartner != null)
 		{
 
-			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(), _bpartner.getValue());
+			_bpartnerKNP = new KeyNamePair(_bpartner.getC_BPartner_ID(), _bpartner.getName());
 
 			// In case the bpartner was selected or taken from order/ receipt schedule, the suggested return type will be ReturnToVendor
 			_bpartnerReturnType = BPartnerReturnType.ReturnToVendor;
@@ -463,6 +463,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		final KeyNamePair bpartnerOld = _bpartnerKNP;
 		_bpartnerKNP = bpartner;
 		_bpartner = null; // needs to be re-fetched
+		_bpLocation = null;
 		firePropertyChanged(PROPERTY_BPartner, bpartnerOld, _bpartnerKNP);
 
 		//
