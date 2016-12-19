@@ -81,6 +81,7 @@ public class PartitionerServiceTests
 				.augmentPartitionerConfig(configtoAugment, descriptors);
 
 		assertThat(augmentedConfig.getLines().size(), is(2));
+		assertThat(augmentedConfig.getLineNotNull(I_AD_Field.Table_Name).getReferences().size(), is(0));
 		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().size(), is(1));
 		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().get(0).getReferencedTableName(), is(I_AD_Field.Table_Name));
 		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().get(0).getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
@@ -108,5 +109,23 @@ public class PartitionerServiceTests
 
 		// make the same call again. there shall be no double lines or references.
 		testAugmentPartitionSimple(augmentedConfig, descriptors2);
+	}
+
+	/**
+	 * When adding a new reference, then this method verifies that there is also a new line added for the reference's referenced table, if necessary.
+	 */
+	@Test
+	public void testAugmentPartitionAlsoAddLine()
+	{
+		// empty config
+		final PartitionConfig config = PartitionConfig.builder().build();
+
+		final List<TableReferenceDescriptor> descriptors = ImmutableList.of(
+				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name,
+						I_AD_ChangeLog.COLUMNNAME_Record_ID,
+						I_AD_Field.Table_Name,
+						123));
+
+		testAugmentPartitionSimple(config, descriptors);
 	}
 }

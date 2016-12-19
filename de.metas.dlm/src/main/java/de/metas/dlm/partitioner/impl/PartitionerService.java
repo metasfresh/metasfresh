@@ -267,10 +267,7 @@ public class PartitionerService implements IPartitionerService
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
-			final String msg = "Caught {}; going to retry with an augmented config that also includes referencingTable={}";
-			final Object[] msgParameters = { e.toString(), descriptor.getReferencingTableName() };
-			logger.info(msg, msgParameters);
-			Loggables.get().addLog(msg, msgParameters);
+			Loggables.get().withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getReferencingTableName());
 
 			final PartitionConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
@@ -290,7 +287,7 @@ public class PartitionerService implements IPartitionerService
 			// "partition.getRecordsWithTable({}) should return an empty list because we stored & flushed this before we did the testmigration invokation that lead us into this catch-block; partition={}",
 			// referencedTableName, partition);
 
-			// retrieve all the record that might also be referenced from outside the partition via the new partitioner config augment.
+			// retrieve all the records that might also be referenced from outside the partition via the new partitioner config augment.
 			final Iterator<WorkQueue> recordReferencesForTable = loadForTable(partition, referencedTableName);
 			final CreatePartitionIterateResult iterateResult = new CreatePartitionIterateResult(recordReferencesForTable, PlainContextAware.newWithThreadInheritedTrx());
 			iterateResult.clearAfterPartitionStored(partition);
@@ -445,6 +442,16 @@ public class PartitionerService implements IPartitionerService
 			if (!config.isMissing(descriptor))
 			{
 				return; // nothing to do
+			}
+
+			// also make sure that there is a line for the referenced table
+			// otherwise, the view DLM_Partition_Record_V and therefore the method loadForTable() doesn't work.
+			if (!config.getLine(referencedTableName).isPresent())
+			{
+				builder
+						.setChanged(true)
+						.line(referencedTableName)
+						.endLine();
 			}
 
 			builder
