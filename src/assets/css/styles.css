@@ -139,6 +139,9 @@ body {
     display: block;
     width: 100%;
 }
+.panel:focus {
+    outline:none;
+}
 .panel-modal {
     max-width: 90%;
     height: 90vh;

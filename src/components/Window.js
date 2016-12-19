@@ -58,25 +58,30 @@ class Window extends Component {
         const maxRows = 12;
         const colWidth = Math.floor(maxRows / columns.length);
         return columns.map((elem, id)=> {
+            const isFirst = (id === 0);
             const elementGroups = elem.elementGroups;
             return (
                 <div className={"col-sm-" + colWidth} key={'col' + id}>
-                    {elementGroups && this.renderElementGroups(elementGroups)}
+                    {elementGroups && this.renderElementGroups(elementGroups, isFirst)}
                 </div>
             )
         })
     }
-    renderElementGroups = (group) => {
+    renderElementGroups = (group, isFirst) => {
         return group.map((elem, id)=> {
             const {type, elementsLine} = elem;
+            const shouldBeFocused = isFirst && (id === 0);
+
             return (
                 elementsLine && elementsLine.length > 0 &&
                     <div
                         key={'elemGroups' + id}
+                        tabIndex="0"
                         className={
                             "panel panel-spaced panel-distance " +
                             ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
                         }
+                        ref={c => {(shouldBeFocused && c) && c.focus()}}
                     >
                         {this.renderElementsLine(elementsLine)}
                     </div>
