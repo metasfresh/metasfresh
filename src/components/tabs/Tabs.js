@@ -5,7 +5,7 @@ class Tabs extends Component {
         super(props);
         this.state = {
             selected: this.props.children[0].key,
-            fullScreen: false
+            fullScreen: null
         }
     }
 
@@ -16,10 +16,10 @@ class Tabs extends Component {
         }));
     }
 
-    toggleTableFullScreen = () => {
+    toggleTableFullScreen = (tabId) => {
         const {fullScreen} = this.state;
         this.setState(Object.assign({}, this.state, {
-            fullScreen: !fullScreen
+            fullScreen: tabId
         }));
     }
 
@@ -34,12 +34,12 @@ class Tabs extends Component {
     }
 
     renderTabs = (tabs) => {
-        const {selected} = this.state;
+        const {selected, fullScreen} = this.state;
         return tabs.map((item) => {
-
             const itemWithProps = Object.assign({}, item, {
                 props: Object.assign({}, item.props, {
-                    toggleTableFullScreen: this.toggleTableFullScreen
+                    toggleFullScreen: this.toggleTableFullScreen,
+                    fullScreen: fullScreen
                 })
             });
 
@@ -47,8 +47,10 @@ class Tabs extends Component {
                 <div
                     key={"pane" + item.key}
                     className={"tab-pane " +
-                        ((selected == item.key) ? "active" : "")
-                }>
+                        ((selected == item.key) ? "active " : "") +
+                        ((fullScreen === item.key) ? "tab-pane-fullscreen panel-spaced " : "")
+                    }
+                >
                     {itemWithProps}
                 </div>
             );
@@ -63,12 +65,7 @@ class Tabs extends Component {
                 <ul className="nav nav-tabs mt-1">
                     {this.renderPills(children)}
                 </ul>
-                <div
-                    className={
-                        "tab-content " +
-                        (fullScreen ? "tab-content-fullscreen " : "")
-                    }
-                >
+                <div className={"tab-content"}>
                     {this.renderTabs(children)}
                 </div>
             </div>

@@ -102,6 +102,7 @@ class Window extends Component {
             let relativeDocId = findRowByPropName(data, "ID").value;
             return (
                 <MasterWidget
+                    entity="window"
                     key={'element' + id}
                     windowType={type}
                     dataId={dataId}

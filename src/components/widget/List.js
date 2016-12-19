@@ -20,7 +20,7 @@ class List extends Component {
     handleFocus = () => {
         const {
             properties, dispatch, dataId, rowId, tabId, windowType, filterWidget,
-            filterId, parameterName, entity
+            filterId, parameterName, entity, subentity, subentityId
         } = this.props;
 
         this.setState(Object.assign({}, this.state, {
@@ -35,7 +35,10 @@ class List extends Component {
                 }));
             });
         } else {
-            dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId, entity)).then((res) => {
+            dispatch(dropdownRequest(
+                windowType, properties[0].field, dataId, tabId, rowId, entity,
+                subentity, subentityId
+            )).then((res) => {
                 this.setState(Object.assign({}, this.state, {
                     list: res.data.values,
                     loading: false
