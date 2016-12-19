@@ -19,8 +19,11 @@
 				  2. shell scripts are using certain jars in their class-paths
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
-
-		<de.metas.admin.webui.version>${metasfresh-dependency.version}</de.metas.admin.webui.version>
+		
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>1.0.0</metasfresh.version>
 	</properties>
 
 	<dependencies>
@@ -39,7 +42,7 @@ Since we now work with a range, we now declare the dependencies here where range
 		<dependency>
 			<groupId>de.metas.scripts.rollout</groupId>
 			<artifactId>de.metas.scripts.rollout</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<type>tar.gz</type>
 			<classifier>dist</classifier>
 			<exclusions>
@@ -71,23 +74,23 @@ Since we now work with a range, we now declare the dependencies here where range
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.client</artifactId>
 			<classifier>jar-with-dependencies</classifier>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.edi.esb</groupId>
 			<artifactId>de.metas.edi.esb.camel</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.camel</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
 		<!-- removed because we are not using it
@@ -105,7 +108,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -113,7 +116,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -121,7 +124,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.aggregation</groupId>
 			<artifactId>de.metas.aggregation</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 			<exclusions>
@@ -135,7 +138,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -143,7 +146,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -151,7 +154,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.libero</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -159,7 +162,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.banking</groupId>
 			<artifactId>de.metas.banking.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -167,7 +170,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.commission</groupId>
 			<artifactId>de.metas.commission.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -175,7 +178,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -183,7 +186,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.device.adempiere</groupId>
 			<artifactId>de.metas.device.adempiere</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -191,7 +194,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.dimension</groupId>
 			<artifactId>de.metas.dimension</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -199,7 +202,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.dlm</groupId>
 			<artifactId>metasfresh-dlm</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -207,7 +210,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -215,7 +218,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.document</groupId>
 			<artifactId>de.metas.document.refid</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -223,13 +226,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -237,7 +240,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.edi</groupId>
 			<artifactId>de.metas.edi</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -245,7 +248,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>jasper</classifier>
 			<exclusions>
 				<exclusion>
@@ -257,7 +260,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -279,7 +282,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -287,7 +290,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -295,7 +298,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -303,7 +306,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -311,7 +314,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
 			<artifactId>de.metas.payment.sepa</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -319,13 +322,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<artifactId>de.metas.printing.base</artifactId>
 			<groupId>de.metas.printing</groupId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<artifactId>de.metas.printing.base</artifactId>
 			<groupId>de.metas.printing</groupId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -333,13 +336,13 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -347,7 +350,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -355,7 +358,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.rfq</groupId>
 			<artifactId>de.metas.rfq</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -363,7 +366,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -371,7 +374,7 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
@@ -380,14 +383,14 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.elasticsearch</groupId>
 			<artifactId>de.metas.elasticsearch</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.elasticsearch</groupId>
 			<artifactId>de.metas.elasticsearch.server</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
