@@ -41,11 +41,11 @@ class RawWidget extends Component {
         } = this.props;
 
         const {textValue} = this.state;
+        const widgetData = data[0];
 
         let widgetField = "";
         let selectedField = "";
         let selectedFieldTo = "";
-        let widgetData = "";
         let widgetFields = "";
         let fieldsArray = "";
 
@@ -54,13 +54,11 @@ class RawWidget extends Component {
             widgetField = fields.parameterName;
             selectedField = selectedItem;
             selectedFieldTo = selectedItemTo;
-            widgetData = data[0];
             widgetFields = fields;
             fieldsArray = [fields];
         } else {
             widgetField = fields[0].field;
             selectedField = data[0].value;
-            widgetData = data[0];
             widgetFields = fields[0];
             fieldsArray = fields;
         }
@@ -157,7 +155,7 @@ class RawWidget extends Component {
                         subentityId={subentityId}
                         recent={[]}
                         dataId={dataId}
-                        properties={fieldsArray}
+                        properties={fields}
                         windowType={windowType}
                         defaultValue={data}
                         placeholder={widgetFields.emptyText}
