@@ -10,32 +10,64 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.49.47 (2016-51)
+# metasfresh 4.50.49 (2016-52)
 
- upcoming
+upcoming
+
+## Features
+* metasfresh
+  * #653 Calculated DailyLotNo in Material Receipt Candidates
+  * #714 Marginal Return report calculation add additional Costcenter
+
+## Fixes
+* metasfresh
+  * #681 Automatic filling of BPartner and Location only shows value
+  * #718 Wrong location in empties vendor return
+
+* webui
+  * #89 Adjust DocAction Names
+
+# metasfresh 4.49.48 (2016-51)
+
+ this week's RC
  
 ## Features
 * metasfresh
   * #489 Implement DLM within single logical tables
+  * #682 Translation in window Vendor Returns
 
 * webui
   * #698 Pipeline - add webui deployment
 
+## Fixes
+* metasfresh
+  * #380 duplicate lines in inout
+    * Worked over each jasper report in order not to display matsterdata records that were deactivated
+  * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
+  * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
+  * #713 Marginal Return Report (short version) doubled sums for accounting group
+  
 # metasfresh 4.48.47 (2016-50)
- 
-this week's RC
 
 ## Features
 * metasfresh
   * #677 make customs report faster
+    * Significant improvement of the customs report performance.
   * #541 Remove PiPo from metasfresh removing code and data
+    * Remove the legacy code from Pack-In and Pack-out from metasfresh. The underlying concept is flawed and does not scale.
 
 * webui
   * #625 Shipment Schedule Window WebUI
+    * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
   * #687 webUI bundle
+    * Add different Layout changes in a fair amount of windows for Web User Interface.
+    
 ## Fixes
 * metasfresh
   * #679 Bug in ClientUpdateValidator
+    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build. 
+  * #721 Wrong error message displayed when user enters wrong password on login
+    * Fix for Bug when entering wrong password in Login. Said "locked" but was just wrong credentials/ password.
 
 # metasfresh 4.47.46 (2016-49)
 

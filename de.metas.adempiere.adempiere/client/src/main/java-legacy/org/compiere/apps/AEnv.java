@@ -636,7 +636,7 @@ public final class AEnv
 		
 		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
 				.setSO_Window_ID(AD_Window_ID)
-				.setPO_Window_ID(AD_Window_ID));
+				.setPO_Window_ID(PO_Window_ID));
 	}
 	
 	private static final void zoom(final RecordZoomWindowFinder zoomInfo)

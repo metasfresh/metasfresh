@@ -2,7 +2,12 @@
 
 -- 24.10.2016 13:00
 -- URL zum Konzept
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,Help,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540732,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Config_Add_TableRecord_Lines','N',TO_TIMESTAMP('2016-10-24 13:00:34','YYYY-MM-DD HH24:MI:SS'),100,'Erweitert eine Paritionierungskonfiguration um Tabellen, die eine der bereits bestehdenden Tabellen per [*_Table_ID,*Record_ID] referenzieren ','de.metas.dlm','Beispiel: wenn C_OrderLine schon Teil der Konfiguration ist, und es AD_ChangeLog-Datensätze gibt, die eine C_OrderLine referenzieren, dann wird die Konfiguration um eine AD_ChangeLog-Zeile erweitert.','Y','N','N','N','N','N','N','Y',0,'Konfiguration um Tabellen-Datensatzreferenzen erweitern','N','Y',0,0,'Java',TO_TIMESTAMP('2016-10-24 13:00:34','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Config_Add_TableRecord_Lines')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,Help,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp
+	-- ,Statistic_Count,Statistic_Seconds
+	,Type,Updated,UpdatedBy,Value)
+VALUES ('7',0,0,540732,'Y','de.metas.dlm.partitioner.process.DLM_Partition_Config_Add_TableRecord_Lines','N',TO_TIMESTAMP('2016-10-24 13:00:34','YYYY-MM-DD HH24:MI:SS'),100,'Erweitert eine Paritionierungskonfiguration um Tabellen, die eine der bereits bestehdenden Tabellen per [*_Table_ID,*Record_ID] referenzieren ','de.metas.dlm','Beispiel: wenn C_OrderLine schon Teil der Konfiguration ist, und es AD_ChangeLog-Datensätze gibt, die eine C_OrderLine referenzieren, dann wird die Konfiguration um eine AD_ChangeLog-Zeile erweitert.','Y','N','N','N','N','N','N','Y',0,'Konfiguration um Tabellen-Datensatzreferenzen erweitern','N','Y'
+	-- ,0,0
+	,'Java',TO_TIMESTAMP('2016-10-24 13:00:34','YYYY-MM-DD HH24:MI:SS'),100,'DLM_Partition_Config_Add_TableRecord_Lines')
 ;
 
 -- 24.10.2016 13:00

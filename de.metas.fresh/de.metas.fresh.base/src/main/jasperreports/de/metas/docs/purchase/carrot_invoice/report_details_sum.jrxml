@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-17T13:14:19 -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-05T17:53:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="b62f017e-3912-43a3-99f6-cb0c797b3e75">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.6105100000000037"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -38,12 +40,12 @@ FROM
 		1 as orderindex
 	FROM
 		C_InvoiceTax it
-		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID
-		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	WHERE
-		t.name NOT ILIKE '%Gebinde%'
+		t.name NOT ILIKE '%Gebinde%' AND it.isActive = 'Y'
 	GROUP BY
 		it.C_Invoice_ID,
 		isPrintTax,
@@ -69,10 +71,11 @@ UNION
 		2 AS orderindex
 	FROM
 		C_InvoiceTax it
-		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID
-		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
+	WHERE it.isActive = 'Y'
 	GROUP BY
 		it.C_Invoice_ID, CASE WHEN t.name LIKE '%Gebinde%' THEN 'Y' ELSE 'N' END,
 		isPrintTax,
@@ -93,9 +96,10 @@ UNION
 		3 AS orderindex
 	FROM
 		C_Invoice i
-		INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+		INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
+	WHERE i.isActive = 'Y'
 ) a
 WHERE
 	C_Invoice_ID = $P{c_invoice_id}

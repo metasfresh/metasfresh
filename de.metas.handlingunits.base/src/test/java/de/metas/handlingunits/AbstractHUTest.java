@@ -112,6 +112,9 @@ public abstract class AbstractHUTest
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_LotNumberDate}
 	 */
 	protected I_M_Attribute attr_LotNumberDate;
+	
+	//#653
+	protected I_M_Attribute attr_LotNumber;
 
 	@BeforeClass
 	public final static void staticInit()
@@ -170,6 +173,9 @@ public abstract class AbstractHUTest
 		attr_SubProducerBPartner = helper.attr_SubProducerBPartner;
 
 		attr_LotNumberDate = helper.attr_LotNumberDate;
+		
+		//#654
+		attr_LotNumber = helper.attr_LotNumber;
 
 		uomEach = helper.uomEach;
 		uomKg = helper.uomKg;

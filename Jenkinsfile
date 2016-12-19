@@ -119,8 +119,8 @@ def createRepo(String repoId)
     <repositories>
 	  <!-- include mvn-public that contains everything we need to perform the build-->
       <repo-group-member>
-        <name>mvn-public-new</name>
-        <id>mvn-public-new</id>
+        <name>mvn-public</name>
+        <id>mvn-public</id>
         <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
       </repo-group-member>
 	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
@@ -247,7 +247,8 @@ Task branch builds are usually not deployed, so the pipeline can finish without 
 		string(defaultValue: '', 
 			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
 			name: 'MF_BUILD_ID')
-	]), 
+	]),
+	// disableConcurrentBuilds(), // concurrend builds proved a bit too complicated. However, if we just disable them like this, then build waiting for input will block further builds
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version

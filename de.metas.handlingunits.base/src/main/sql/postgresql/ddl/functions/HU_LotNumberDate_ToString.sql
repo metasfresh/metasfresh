@@ -1,3 +1,6 @@
+-- PLEASE KEEP IN SYNC WITH org.adempiere.mm.attributes.api.ILotNumberBL.calculateLotNumber(Date).
+
+
 DROP FUNCTION IF EXISTS "de.metas.handlingunits".HU_LotNumberDate_ToString(p_Date date);
 
 CREATE OR REPLACE FUNCTION "de.metas.handlingunits".HU_LotNumberDate_ToString(p_Date date)
