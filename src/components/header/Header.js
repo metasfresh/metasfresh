@@ -12,6 +12,7 @@ import MasterWidget from '../widget/MasterWidget';
 import SideList from './SideList';
 import Indicator from './Indicator';
 import Inbox from '../inbox/Inbox';
+import Tooltips from '../tooltips/Tooltips';
 
 import {
     indicatorState
@@ -37,7 +38,12 @@ class Header extends Component {
             isMenuOverlayShow: false,
             menuOverlay: null,
             scrolled: false,
-            isInboxOpen: false
+            isInboxOpen: false,
+            tooltip: {
+                x:0,
+                y:0,
+                open: false
+            }
         }
     }
 
@@ -153,6 +159,28 @@ class Header extends Component {
         }
     }
 
+    showTooltip = (e) => {
+        const {clientX, clientY} = e;
+        this.setState(
+            Object.assign({}, this.state, {
+                tooltip: Object.assign({}, this.state, {
+                    open: true,
+                    x: clientX,
+                    y: clientY
+                })
+            })
+        );
+    }
+    closeTooltip = () => {
+        this.setState(
+            Object.assign({}, this.state, {
+                tooltip: Object.assign({}, this.state, {
+                    open: false
+                })
+            })
+        );
+    }
+
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
@@ -161,7 +189,7 @@ class Header extends Component {
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow, tooltip
         } = this.state;
 
         return (
@@ -174,6 +202,8 @@ class Header extends Component {
                             <div className="header-left-side">
                                 <div
                                     onClick={e => this.handleCloseSideList(this.handleSubheaderOpen)}
+                                    onMouseEnter={(e) => this.showTooltip(e)}
+                                    onMouseLeave={this.closeTooltip}
                                     className={"btn-square btn-header " +
                                         (isSubheaderShow ?
                                             "btn-meta-default-dark btn-subheader-open btn-header-open"
@@ -266,6 +296,13 @@ class Header extends Component {
                     open={isSideListShow}
                 />}
 
+                <Tooltips
+                    x={tooltip.x}
+                    y={tooltip.y}
+                    open={tooltip.open}
+                    name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
+                    type={''}
+                />
                 <GlobalShortcuts 
                     handleSubheaderOpen={this.handleSubheaderOpen}
                     toggleMenuOverlay={this.toggleMenuOverlay}

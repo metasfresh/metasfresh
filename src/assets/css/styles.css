@@ -1897,3 +1897,72 @@ td.pulse-off input {
     font-size: .7rem;
     color: $brand-color-secondary;
 }
+
+.tooltip-wrapp {
+    background: white;
+    color: $brand-font-color-secondary;
+    position: fixed;
+    font-size: 10px;
+    border: 1px solid $tooltip-border-color;
+    padding: 10px;
+    text-align: center;
+    z-index: 201;
+    border-radius: 3px;
+}
+
+.tooltip-wrapp:after {
+    position: absolute;
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid white;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -4px;
+}
+.tooltip-wrapp:before {
+    position: absolute;
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 8px solid $tooltip-border-color;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6px;
+}
+
+.tooltip-right:after {
+    border-top: 4px solid transparent;
+    border-right: 6px solid white;
+    border-bottom: 4px solid transparent;
+    bottom: 50%;
+    left: auto;
+    right: 100%;
+    margin-left: auto;
+    margin-bottom: -4px;
+}
+
+.tooltip-right:before {
+    border-top: 6px solid transparent;
+    border-right: 8px solid $tooltip-border-color;
+    border-bottom: 6px solid transparent;
+    bottom: 50%;
+    left: auto;
+    right: 100%;
+    margin-left: auto;
+    margin-bottom: -6px;
+}
+
+
+.tooltip-shortcut {
+    font-weight: bold;
+}
+
+.tooltip-name {
+    opacity: 0.5;
+}
+
