@@ -12,11 +12,12 @@ Here come the actual release notes:
 
 # metasfresh 4.49.48 (2016-51)
 
- upcoming
+ this week
  
 ## Features
 * metasfresh
   * #489 Implement DLM within single logical tables
+  * #714 Marginal Return report calculation add additional Costcenter
 
 * webui
   * #698 Pipeline - add webui deployment
@@ -27,6 +28,7 @@ Here come the actual release notes:
   * #380 duplicate lines in inout
     * Worked over each jasper report in order not to display matsterdata records that were deactivated
   * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
+  * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
 
 # metasfresh 4.48.47 (2016-50)
 
