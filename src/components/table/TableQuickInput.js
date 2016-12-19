@@ -14,6 +14,10 @@ import {
     addNewRow
 } from '../../actions/WindowActions';
 
+import {
+    addNotification
+} from '../../actions/AppActions';
+
 class TableQuickInput extends Component {
     constructor(props) {
         super(props);
@@ -117,16 +121,30 @@ class TableQuickInput extends Component {
 
     onSubmit = (e) => {
         const {dispatch, docType, docId, tabId} = this.props;
-        const {id} = this.state;
+        const {id,data} = this.state;
         e.preventDefault();
 
         document.activeElement.blur();
 
-        dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id)).then(response => {
-            this.initQuickInput();
-            console.log(response.data)
-            dispatch(addNewRow(response.data, tabId, response.data.rowId, "master"))
+        if(this.validateForm(data)){
+            dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id)).then(response => {
+                this.initQuickInput();
+                dispatch(addNewRow(response.data, tabId, response.data.rowId, "master"))
+            });
+        }else{
+            dispatch(addNotification("Error", 'Mandatory fields are not filled!', 5000, "error"))
+        }
+    }
+
+    validateForm = (data) => {
+        const {dispatch} = this.props;
+        let ret = true;
+        data.map(item => {
+            if(!item.value){
+                ret = false;
+            }
         });
+        return ret;
     }
 
     render() {
