@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -448,7 +448,7 @@ public class TimeUtil
 		final int MILLI_TO_HOUR = 1000 * 60 * 60;
 		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
 	}
-	
+
 	/**
 	 * Calculate the number of days between start and end.
 	 * 
@@ -898,7 +898,7 @@ public class TimeUtil
 	{
 		return new Timestamp(truncToMillis(dayTime, trunc));
 	}
-	
+
 	public static long truncToMillis(Date dayTime, final String trunc)
 	{
 		if (dayTime == null)
@@ -962,12 +962,11 @@ public class TimeUtil
 		cal.set(Calendar.DAY_OF_YEAR, 1);
 		return cal.getTimeInMillis();
 	}	// trunc
-	
+
 	public static final Timestamp truncToDay(final Date dayTime)
 	{
 		return dayTime == null ? null : trunc(dayTime, TRUNC_DAY);
 	}
-
 
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the
@@ -1107,4 +1106,46 @@ public class TimeUtil
 	{
 		return timestamp == null ? null : new Timestamp(timestamp.getTime());
 	}
+
+	/**
+	 * Get the week of year number for the given Date
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getWeekNumber(final Date date)
+	{
+		final Calendar cal = asCalendar(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		cal.setFirstDayOfWeek(Calendar.MONDAY);
+
+		// FIXME: This shall be taken from Locale, but Locale it is not reliable (doesn't always work the same way)
+		cal.setMinimalDaysInFirstWeek(4);
+
+		final int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
+		return weekOfYear;
+	}
+
+	/**
+	 * Get the day of the week for the given date.
+	 * First day of the week is considered Monday.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getDayOfWeek(final Date date)
+	{
+		final int dayOfWeek = asCalendar(date).get(Calendar.DAY_OF_WEEK);
+
+		if (dayOfWeek == 1)
+		{
+			return 7;
+		}
+		return dayOfWeek - 1;
+	}
+
 }	// TimeUtil
