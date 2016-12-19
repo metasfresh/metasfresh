@@ -149,6 +149,7 @@ class Filters extends Component {
     applyFilters = () => {
         const {filter, dispatch, windowType} = this.props;
         const notValid = this.isFilterValid(filter);
+        
         if (notValid.length) {
             this.setState(Object.assign({}, this.state, {
                 notValidFields: notValid

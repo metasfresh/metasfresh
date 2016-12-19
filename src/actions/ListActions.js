@@ -32,6 +32,12 @@ export function clearListProps(){
     }
 }
 
+export function clearListPagination(){
+    return {
+        type: types.CLEAR_LIST_PAGINATION
+    }
+}
+
 export function updateFiltersParameters(filterId, property, value, valueTo){
 	return {
 		type: types.UPDATE_FILTERS_PARAMETERS,

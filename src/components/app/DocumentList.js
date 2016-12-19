@@ -17,6 +17,7 @@ import {
     setPagination,
     setSorting,
     clearListProps,
+    clearListPagination,
     initDocumentView,
     setFilter
 } from '../../actions/ListActions';
@@ -50,13 +51,13 @@ class DocumentList extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {windowType, filters} = this.props;
+        const {windowType, type, filters} = this.props;
 
         let oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
         let newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
 
         if(newFilter !== oldFilter){
-            this.updateData('grid', windowType, true);
+            this.updateData(type, windowType, true);
         }
     }
 
@@ -73,7 +74,6 @@ class DocumentList extends Component {
 
     createNewView = (windowType, type, filters, refType, refId) => {
         const {dispatch} = this.props;
-
         dispatch(createViewRequest(windowType, type, 20, filters, refType, refId)).then((response) => {
             this.setListData(response.data);
         })
@@ -130,16 +130,15 @@ class DocumentList extends Component {
         //  Condition, that ensure wheter windowType
         //  is the same as for saved query params
         //
-        if(windowType === sorting.windowType) {
+        else if(windowType === sorting.windowType) {
             urlQuery = this.getSortingQuery(sorting.dir, sorting.prop);
         }else{
             dispatch(clearListProps());
         }
 
         if(windowType !== pagination.windowType) {
-            dispatch(clearListProps());
+            dispatch(clearListPagination());
         }
-
 
         this.getData(data.viewId, urlPage, 20, urlQuery);
     }
