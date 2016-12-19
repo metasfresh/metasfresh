@@ -1,4 +1,5 @@
 
+  
 CREATE OR REPLACE FUNCTION public.db_alter_table(
     p_table_name text,
     p_ddl text)
@@ -8,8 +9,9 @@ declare
 	i int;
 	j int;
 	v record;
-	viewFullName text[];
-	viewtext text[];
+	viewFullName text;
+	viewFullNames text[];
+	viewtexts text[];
 	dropviews text[];
 	command text;
 begin
@@ -18,22 +20,23 @@ begin
 	i := 0;
 	for v in (select view_schema, view_name, depth FROM public.db_dependent_views(p_table_name) order by depth desc)
 	loop
-		if (viewFullName @> array[v.view_name]) then
+		viewFullName := '"'||v.view_schema||'".'||v.view_name;
+		if (viewFullNames @> array[viewFullName]) then
 			-- raise notice ' skip view % because it was already detected as a dependency', v.relname;
 			continue;
 		end if;
 		i := i + 1;
-		viewtext[i] := (select view_definition from information_schema.views where views.table_schema=v.view_schema AND views.table_name=v.view_name);
-		viewFullName[i] := '"'||v.view_schema||'".'||v.view_name;
-		raise notice '    Found dependent view: %', viewFullName[i];
+		viewtexts[i] := (select view_definition from information_schema.views where views.table_schema=v.view_schema AND views.table_name=v.view_name);
+		viewFullNames[i] := viewFullName;
+		raise notice '    Found dependent view: %', viewFullNames[i];
 	end loop;
 	
 	if i > 0 then
 			for j in 1 .. i loop
-				raise notice '    Dropping view %', viewFullName[j];
-				command := 'drop view if exists ' || viewFullName[j];
+				raise notice '    Dropping view %', viewFullNames[j];
+				command := 'drop view if exists ' || viewFullNames[j];
 				execute command;
-				dropviews[j] := viewFullName[j];
+				dropviews[j] := viewFullNames[j];
 			end loop;
 	end if;
 
@@ -44,10 +47,10 @@ begin
 		for j in reverse i .. 1 loop
 			if lower(dropviews[j]) = '"dlm".'||lower(p_table_name) 
 			then
-				/* this special view amounts to "select * from p_tablename.." but in viewtext[j], all columns are explicitly enumerated. So recreating the view with viewtext[j] won't work in case we jsut dropped on of those columns */
+				/* this special view amounts to "select * from p_tablename.." but in viewtexts[j], all columns are explicitly enumerated. So recreating the view with viewtexts[j] won't work in case we jsut dropped on of those columns */
 				command := 'SELECT dlm.reset_dlm_view(''' || p_table_name || ''');';
 			else
-				command := 'create or replace view ' || dropviews[j] || ' as ' || viewtext[j] ||';';
+				command := 'create or replace view ' || dropviews[j] || ' as ' || viewtexts[j] ||';';
 			end if;
 			
 			raise notice 'Creating view %', dropviews[j];
@@ -59,7 +62,8 @@ end;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-COMMENT ON FUCNTION public.db_alter_table(text, text) IS
+
+COMMENT ON FUNCTION public.db_alter_table(text, text) IS
 'Drops all views that directly or indirectly depend on the given table (1st param), then executes the given DDL (2nd param) and finnal restores the views
 This function is similar to the old public.altercolumn() function, but is more generic.
 ';

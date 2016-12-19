@@ -152,7 +152,7 @@ public abstract class AbstractDLMService implements IDLMService
 	}
 
 	@Override
-	public void directUpdateDLMColumn(final IContextAware ctxAware,
+	public int directUpdateDLMColumn(final IContextAware ctxAware,
 			final int dlmPartitionId,
 			final String columnName,
 			final int targetValue)
@@ -160,6 +160,8 @@ public abstract class AbstractDLMService implements IDLMService
 
 		// get all DLMed table names. they all might contain a record that belongs to the given partition
 		final Stream<IQueryBuilder<IDLMAware>> queryBuilders = retrieveDLMTableNames(ctxAware, dlmPartitionId);
+
+		final Mutable<Integer> updatedSum = new Mutable<>(0);
 
 		queryBuilders.forEach(queryBuilder -> {
 
@@ -171,7 +173,10 @@ public abstract class AbstractDLMService implements IDLMService
 					.execute();
 
 			logger.debug("Table {}: updated {} record(s) to {}={} (but not yet committed!)", queryBuilder.getModelTableName(), updated, columnName, targetValue);
+			updatedSum.setValue(updatedSum.getValue() + updated);
 		});
+
+		return updatedSum.getValue();
 	}
 
 	@Override

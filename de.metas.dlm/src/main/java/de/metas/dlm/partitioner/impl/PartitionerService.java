@@ -538,7 +538,7 @@ public class PartitionerService implements IPartitionerService
 
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		final Iterator<I_DLM_Partition_Record_V> map = queryBL.createQueryBuilder(I_DLM_Partition_Record_V.class, PlainContextAware.newWithThreadInheritedTrx())
+		final Iterator<I_DLM_Partition_Record_V> iterator = queryBL.createQueryBuilder(I_DLM_Partition_Record_V.class, PlainContextAware.newWithThreadInheritedTrx())
 				.addEqualsFilter(I_DLM_Partition_Record_V.COLUMN_DLM_Partition_ID, partition.getDLM_Partition_ID())
 				.addEqualsFilter(I_DLM_Partition_Record_V.COLUMN_AD_Table_ID, tableId)
 				.create()
@@ -551,13 +551,19 @@ public class PartitionerService implements IPartitionerService
 			@Override
 			public boolean hasNext()
 			{
-				return map.hasNext();
+				return iterator.hasNext();
 			}
 
 			@Override
 			public WorkQueue next()
 			{
-				return WorkQueue.of(ITableRecordReference.FromReferencedModelConverter.convert(map.next()));
+				return WorkQueue.of(ITableRecordReference.FromReferencedModelConverter.convert(iterator.next()));
+			}
+
+			@Override
+			public String toString()
+			{
+				return "PartitionerService.loadForTable() [partition=" + partition + "; tableName=" + tableName + ", iterator=" + iterator + "]";
 			}
 		};
 	}

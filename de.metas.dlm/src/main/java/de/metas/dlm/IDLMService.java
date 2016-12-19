@@ -78,8 +78,9 @@ public interface IDLMService extends ISingletonService
 	 * @param dlmPartitionId the <code>DLM_Partition_ID</code> whose records shall be updated
 	 * @param columnName name of the to update. Alle referenced records need to have this column, so it generally needs to be one of the columns declared in {@link IDLMAware}.
 	 * @param targetValue
+	 * @return the number of records that were updated.
 	 */
-	void directUpdateDLMColumn(IContextAware ctxAware, int dlmPartitionId, String columnName, int targetValue);
+	int directUpdateDLMColumn(IContextAware ctxAware, int dlmPartitionId, String columnName, int targetValue);
 
 	/**
 	 *

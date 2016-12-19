@@ -1,12 +1,16 @@
 package de.metas.dlm.partitioner.process;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 
 /*
  * #%L
@@ -40,16 +44,31 @@ public class DLM_Partition_Destroy extends JavaProcess
 {
 	private final IDLMService dlmService = Services.get(IDLMService.class);
 
+	@Param(mandatory=true, parameterName="IsClear_DLM_Partition_Workqueue")
+	private boolean isClearWorkQueue;
+
 	@Override
 	protected String doIt() throws Exception
 	{
 		final I_DLM_Partition partitionDB = getProcessInfo().getRecord(I_DLM_Partition.class);
 
-		dlmService.directUpdateDLMColumn(this, partitionDB.getDLM_Partition_ID(), IDLMAware.COLUMNNAME_DLM_Partition_ID, 0);
+		final int updateCount = dlmService.directUpdateDLMColumn(this, partitionDB.getDLM_Partition_ID(), IDLMAware.COLUMNNAME_DLM_Partition_ID, 0);
+		Loggables.get().addLog("Unassigned {} records from {}", updateCount, partitionDB);
 
-		// TODO consider deleting the whole parttion, if there aren't any DLM_Partition_WorkQueue records left.
 		partitionDB.setPartitionSize(0);
 		InterfaceWrapperHelper.save(partitionDB);
+
+		if (isClearWorkQueue)
+		{
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final int deleteCount = queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, this)
+					.addEqualsFilter(I_DLM_Partition_Workqueue.COLUMN_DLM_Partition_ID, partitionDB.getDLM_Partition_ID())
+					.create()
+					.deleteDirectly();
+
+			Loggables.get().addLog("Deleted {} {} records that referenced", deleteCount, I_DLM_Partition_Workqueue.Table_Name, partitionDB);
+		}
+
 		return MSG_OK;
 	}
 

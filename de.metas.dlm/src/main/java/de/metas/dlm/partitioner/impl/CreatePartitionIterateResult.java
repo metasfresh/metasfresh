@@ -87,11 +87,6 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 		queueItemsToDelete = new ArrayList<>();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#add(org.adempiere.util.lang.ITableRecordReference, int)
-	 */
 	@Override
 	public boolean addReferencedRecord(final ITableRecordReference IGNORED, final ITableRecordReference referencedRecord, final int dlmPartitionId)
 	{
@@ -131,11 +126,6 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 		return added;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#clearAfterPartitionStored(de.metas.dlm.Partition)
-	 */
 	@Override
 	public void clearAfterPartitionStored(final Partition partition)
 	{
@@ -180,22 +170,12 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#size()
-	 */
 	@Override
 	public int size()
 	{
 		return size;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#isQueueEmpty()
-	 */
 	@Override
 	public boolean isQueueEmpty()
 	{
@@ -203,11 +183,6 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 		return iteratorEmpty && queueItemsToProcess.isEmpty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#nextFromQueue()
-	 */
 	@Override
 	public ITableRecordReference nextFromQueue()
 	{
@@ -236,22 +211,12 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 		return queueItemsToProcess.removeFirst();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#getQueueRecordsToStore()
-	 */
 	@Override
 	public List<WorkQueue> getQueueRecordsToStore()
 	{
 		return queueItemsToProcess;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.dlm.partitioner.impl.IIterateResult#getQueueRecordsToDelete()
-	 */
 	@Override
 	public List<WorkQueue> getQueueRecordsToDelete()
 	{
@@ -261,6 +226,7 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 	/**
 	 * @return the {@link Partition} from the last invokation of {@link #clearAfterPartitionStored(Partition)}, or an empty partition.
 	 */
+	@Override
 	public Partition getPartition()
 	{
 		return partition;
@@ -269,8 +235,13 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 	@Override
 	public String toString()
 	{
-		return "IterateResult [iterator=" + iterator + ", queueItemsToProcess.size()=" + queueItemsToProcess.size() + ", queueItemsToDelete.size()=" + queueItemsToDelete.size()
-				+ ", size=" + size + ", tableName2Record.size()=" + tableName2Record.size() + ", dlmPartitionId2Record.size()=" + dlmPartitionId2Record.size()
-				+ ", ctxAware=" + ctxAware + ", partition=" + partition + "]";
+		return "IterateResult [queueItemsToProcess.size()=" + queueItemsToProcess.size()
+				+ ", queueItemsToDelete.size()=" + queueItemsToDelete.size()
+				+ ", size=" + size
+				+ ", tableName2Record.size()=" + tableName2Record.size()
+				+ ", dlmPartitionId2Record.size()=" + dlmPartitionId2Record.size()
+				+ ", iterator=" + iterator
+				+ ", ctxAware=" + ctxAware
+				+ ", partition=" + partition + "]";
 	}
 }
