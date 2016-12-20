@@ -50,20 +50,15 @@ CREATE OR REPLACE VIEW v_bpartnercockpit AS
    LEFT JOIN x_bpartner_cockpit_search_mv bpcs ON bp.c_bpartner_id = bpcs.c_bpartner_id
   WHERE bp.iscustomer = 'Y'::bpchar OR bp.isprospect = 'Y'::bpchar;
 
-DROP TRIGGER x_bpartner_stats_mv_c_invoice_it ON c_invoice;
-DROP FUNCTION x_bpartner_stats_mv_c_invoice_i_ft();
 
-DROP TRIGGER x_bpartner_stats_mv_c_invoice_ut ON C_Invoice;
-DROP FUNCTION x_bpartner_stats_mv_c_invoice_u_ft();
+DROP FUNCTION IF EXISTS x_bpartner_stats_mv_c_invoice_i_ft() CASCADE;
+DROP FUNCTION IF EXISTS x_bpartner_stats_mv_c_invoice_u_ft() CASCADE;
 
-DROP FUNCTION x_bpartner_stats_mv_c_payment_i_ft();
-DROP FUNCTION x_bpartner_stats_mv_c_payment_u_ft();
+DROP FUNCTION IF EXISTS x_bpartner_stats_mv_c_payment_i_ft() CASCADE;
+DROP FUNCTION IF EXISTS x_bpartner_stats_mv_c_payment_u_ft() CASCADE;
 
-DROP TRIGGER x_bpartner_stats_mv_c_subscriptioncontrol_it ON c_subscriptioncontrol;
-DROP FUNCTION x_bpartner_stats_mv_c_subscriptioncontrol_i_ft();
-
-DROP TRIGGER x_bpartner_stats_mv_c_subscriptioncontrol_ut ON c_subscriptioncontrol;
-DROP FUNCTION x_bpartner_stats_mv_c_subscriptioncontrol_u_ft();
+DROP FUNCTION IF EXISTS x_bpartner_stats_mv_c_subscriptioncontrol_i_ft() CASCADE;
+DROP FUNCTION IF EXISTS x_bpartner_stats_mv_c_subscriptioncontrol_u_ft() CASCADE;
 
 DROP VIEW IF EXISTS x_bpartner_stats_v;
-DROP TABLE x_bpartner_stats_mv;
+DROP TABLE IF EXISTS x_bpartner_stats_mv;
