@@ -43,7 +43,6 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	private transient AttributeValuesMap _attributeValuesMap; // lazy
 	private final transient Map<String, NamePair> attributeValuesNP_HighVolumeCache = new HashMap<>();
 
-
 	public DefaultAttributeValuesProvider(final I_M_Attribute attribute)
 	{
 		super();
@@ -64,7 +63,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		return CACHE_PREFIX;
 	}
-	
+
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
@@ -244,7 +243,12 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 
 		public int getM_AttributeValue_ID(final String valueKey)
 		{
-			return attributeValueIdByKey.get(valueKey);
+			final Integer attributeValueId = attributeValueIdByKey.get(valueKey);
+			if (attributeValueId == null)
+			{
+				throw new IllegalArgumentException("No M_AttributeValue_ID found for '" + valueKey + "'");
+			}
+			return attributeValueId;
 		}
 
 		public NamePair getNullValue()
