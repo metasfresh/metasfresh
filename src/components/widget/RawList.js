@@ -35,6 +35,33 @@ class RawList extends Component {
         this.handleBlur();
     }
 
+    handleKeyDown = (e) => {
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                this.navigate();
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                this.navigate(true);
+                break;
+            case "ArrowLeft":
+                e.preventDefault();
+                this.handleChange();
+                break;
+            case "Enter":
+                e.preventDefault();
+                if(this.state.selected != null){
+                    this.handleSelect(this.state.list[this.state.selected]);
+                }
+                break;
+            case "Escape":
+                e.preventDefault();
+                this.handleBlur();
+                break;
+        }
+    }
+
     getRow = (index, option) => {
         return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
             <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
@@ -60,13 +87,13 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, mandatory, value
+            rowId, isModal, mandatory, value, tabIndex
         } = this.props;
 
         return (
             <div
-                tabIndex="0"
-                onFocus={()=>this.inputSearch.focus()}
+                tabIndex={tabIndex ? tabIndex : 0}
+                onFocus={() => this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
                 className={
