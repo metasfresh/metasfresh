@@ -56,7 +56,10 @@ class MasterWindow extends Component {
             "displayed": true
         };
 
-        const docSummaryData =  findRowByPropName(master.data, documentSummaryElement && documentSummaryElement.fields[0].field);
+        const docSummaryData =  findRowByPropName(
+            master.data,
+            documentSummaryElement && documentSummaryElement.fields[0].field
+        );
 
         return (
             <Container
@@ -84,8 +87,11 @@ class MasterWindow extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
+                        isAdvanced={modal.isAdvanced}
                         viewId={null}
-                        closeCallback={(isNew) => this.closeModalCallback(modal.modalType, isNew, modal.layout.pinstanceId)}
+                        closeCallback={(isNew) => this.closeModalCallback(
+                            modal.modalType, isNew, modal.layout.pinstanceId
+                        )}
                      />
                  }
                 <Window

@@ -92,11 +92,9 @@ class Header extends Component {
             this.setState(Object.assign({}, this.state, {
                 menuOverlay: nodeId
             }), () => {
-                this.setState(
-                    Object.assign({}, this.state, {
-                        isMenuOverlayShow: !this.state.isMenuOverlayShow
-                    })
-                );
+                this.setState(Object.assign({}, this.state, {
+                    isMenuOverlayShow: !this.state.isMenuOverlayShow
+                }));
             });
         }
         if(isSubheaderShow){
@@ -266,7 +264,7 @@ class Header extends Component {
                     open={isSideListShow}
                 />}
 
-                <GlobalShortcuts 
+                <GlobalShortcuts
                     handleSubheaderOpen={this.handleSubheaderOpen}
                     toggleMenuOverlay={this.toggleMenuOverlay}
                     homemenu={homemenu}

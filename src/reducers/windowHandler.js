@@ -12,7 +12,8 @@ const initialState = {
         data: [],
         rowData: {},
         modalTitle: "",
-        modalType: ""
+        modalType: "",
+        isAdvanced: false
     },
     master: {
         layout: {},
@@ -40,7 +41,8 @@ export default function windowHandler(state = initialState, action) {
                     tabId: action.tabId,
                     rowId: action.rowId,
                     title: action.title,
-                    modalType: action.modalType
+                    modalType: action.modalType,
+                    isAdvanced: action.isAdvanced
                 })
         })
 

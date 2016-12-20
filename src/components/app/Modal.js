@@ -21,18 +21,17 @@ class Modal extends Component {
 
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
-            relativeType
+            relativeType, isAdvanced
         } = this.props;
 
         this.state = {
             scrolled: false,
-            isAdvanced: false,
             isNew: rowId === "NEW",
             init: false
         }
         switch(modalType){
             case "window":
-                dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
+                dispatch(createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)).catch(err => {
                     this.handleClose();
                 });
                 break;
@@ -43,15 +42,6 @@ class Modal extends Component {
                 });
                 break;
         }
-    }
-
-    isAdvancedEdit = () => {
-        const {windowType} = this.props;
-        let isAdvanceMode = (windowType.indexOf("advanced=true") != -1);
-
-        this.setState(Object.assign({}, this.state, {
-            isAdvanced: isAdvanceMode
-        }));
     }
 
     componentDidMount() {
@@ -65,7 +55,6 @@ class Modal extends Component {
         const modalContent = document.querySelector('.js-panel-modal-content')
 
         modalContent && modalContent.addEventListener('scroll', this.handleScroll);
-        this.isAdvancedEdit();
     }
 
     componentWillUnmount() {
@@ -119,11 +108,12 @@ class Modal extends Component {
 
     render() {
         const {
-            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType
+            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType,
+            isAdvanced
         } = this.props;
 
         const {
-            isAdvanced, scrolled
+            scrolled
         } = this.state;
 
         return (
