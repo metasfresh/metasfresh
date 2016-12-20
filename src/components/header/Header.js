@@ -204,7 +204,7 @@ class Header extends Component {
                                         }
                                 >
                                     <i className="meta-icon-more" />
-                                    
+
                                     { tooltip.open === 'tooltip1' &&
                                     <Tooltips
                                         name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
@@ -288,7 +288,7 @@ class Header extends Component {
                                                 type={''}
                                             />
                                         }
-                                        
+
                                     </div>
                                 }
                             </div>
