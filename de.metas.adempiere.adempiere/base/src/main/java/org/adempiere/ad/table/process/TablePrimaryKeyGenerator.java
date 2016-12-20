@@ -216,11 +216,15 @@ class TablePrimaryKeyGenerator
 		final String tableName = columnPK.getAD_Table().getTableName();
 		final String pkColumnName = columnPK.getColumnName();
 		final String pkName = (tableName + "_pkey").toLowerCase();
+		final String pkNameAlt = (tableName + "_key").toLowerCase(); // some tables also have this PK name
 
 		final String sqlDefaultValue = DB.TO_TABLESEQUENCE_NEXTVAL(tableName);
 
 		executeDDL("ALTER TABLE " + tableName + " ADD COLUMN " + pkColumnName + " numeric(10,0) NOT NULL DEFAULT " + sqlDefaultValue);
+
 		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkName);
+		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkNameAlt);
+
 		executeDDL("ALTER TABLE " + tableName + " ADD CONSTRAINT " + pkName + " PRIMARY KEY (" + pkColumnName + ")");
 	}
 

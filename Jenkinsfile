@@ -119,8 +119,8 @@ def createRepo(String repoId)
     <repositories>
 	  <!-- include mvn-public that contains everything we need to perform the build-->
       <repo-group-member>
-        <name>mvn-public-new</name>
-        <id>mvn-public-new</id>
+        <name>mvn-public</name>
+        <id>mvn-public</id>
         <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
       </repo-group-member>
 	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->

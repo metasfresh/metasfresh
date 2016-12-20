@@ -70,7 +70,8 @@ public class Add_Tables_to_DLM
 			final I_AD_Table dlm_Referencing_Table = InterfaceWrapperHelper.create(line.getDLM_Referencing_Table(), I_AD_Table.class);
 			if (dlm_Referencing_Table.isDLM())
 			{
-				Loggables.get().addLog("AD_Table {} is already DLM'ed. Skipping", dlm_Referencing_Table.getTableName());
+				Loggables.get().addLog("Table {} is already DLM'ed. Skipping", dlm_Referencing_Table.getTableName());
+				continue;
 			}
 
 			dlmService.addTableToDLM(dlm_Referencing_Table);
