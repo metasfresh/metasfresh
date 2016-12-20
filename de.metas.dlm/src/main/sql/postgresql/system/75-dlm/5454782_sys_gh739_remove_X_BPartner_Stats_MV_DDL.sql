@@ -1,4 +1,6 @@
---DROP VIEW IF EXISTS v_bpartnercockpit;
+
+--Drop and recreate the view without the X_BPartner_Stats_MV table
+DROP VIEW IF EXISTS v_bpartnercockpit;
 
 CREATE OR REPLACE VIEW v_bpartnercockpit AS 
  SELECT l.c_location_id AS v_bpartnercockpit_id, bp.ad_client_id, bp.ad_org_id, bp.isactive, bp.created, bp.createdby, bp.updated, bp.updatedby, bp.c_bpartner_id, bp.value, bp.name AS suchname, bp.name2, 
@@ -47,3 +49,21 @@ CREATE OR REPLACE VIEW v_bpartnercockpit AS
    LEFT JOIN c_country cc ON a.c_country_id = cc.c_country_id
    LEFT JOIN x_bpartner_cockpit_search_mv bpcs ON bp.c_bpartner_id = bpcs.c_bpartner_id
   WHERE bp.iscustomer = 'Y'::bpchar OR bp.isprospect = 'Y'::bpchar;
+
+DROP TRIGGER x_bpartner_stats_mv_c_invoice_it ON c_invoice;
+DROP FUNCTION x_bpartner_stats_mv_c_invoice_i_ft();
+
+DROP TRIGGER x_bpartner_stats_mv_c_invoice_ut ON C_Invoice;
+DROP FUNCTION x_bpartner_stats_mv_c_invoice_u_ft();
+
+DROP FUNCTION x_bpartner_stats_mv_c_payment_i_ft();
+DROP FUNCTION x_bpartner_stats_mv_c_payment_u_ft();
+
+DROP TRIGGER x_bpartner_stats_mv_c_subscriptioncontrol_it ON c_subscriptioncontrol;
+DROP FUNCTION x_bpartner_stats_mv_c_subscriptioncontrol_i_ft();
+
+DROP TRIGGER x_bpartner_stats_mv_c_subscriptioncontrol_ut ON c_subscriptioncontrol;
+DROP FUNCTION x_bpartner_stats_mv_c_subscriptioncontrol_u_ft();
+
+DROP VIEW IF EXISTS x_bpartner_stats_v;
+DROP TABLE x_bpartner_stats_mv;
