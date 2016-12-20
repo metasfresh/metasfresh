@@ -71,11 +71,11 @@ class Subheader extends Component {
         onClick();
     }
 
-    openModal = (windowType, type, caption, isAdvanced) => {
-        const {dispatch, onClick} = this.props;
-        dispatch(openModal(caption, windowType, type));
-        onClick();
-    }
+    // openModal = (windowType, type, caption, isAdvanced) => {
+    //     const {dispatch, onClick} = this.props;
+    //     dispatch(openModal(caption, windowType, type));
+    //     onClick();
+    // }
 
     handleReferenceClick = (type, filter) => {
         const {dispatch, onClick, windowType, dataId} = this.props;
@@ -84,25 +84,25 @@ class Subheader extends Component {
         onClick();
     }
 
-    handlePrint = (windowType, docId, docNo) => {
-        const {dispatch, onClick} = this.props;
-        const url = config.API_URL +
-            '/window/' + windowType +
-            '/' + docId +
-            '/print/' + windowType + '_' + (docNo ? docNo : docId) + '.pdf';
-        window.open(url, "_blank");
-        onClick();
-    }
+    // handlePrint = (windowType, docId, docNo) => {
+    //     const {dispatch, onClick} = this.props;
+    //     const url = config.API_URL +
+    //         '/window/' + windowType +
+    //         '/' + docId +
+    //         '/print/' + windowType + '_' + (docNo ? docNo : docId) + '.pdf';
+    //     window.open(url, "_blank");
+    //     onClick();
+    // }
 
-    handleDelete = () => {
-        const {dispatch} = this.props;
+    // handleDelete = () => {
+    //     const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
-            prompt: Object.assign({}, this.state.prompt, {
-                open: true
-            })
-        }));
-    }
+    //     this.setState(Object.assign({}, this.state, {
+    //         prompt: Object.assign({}, this.state.prompt, {
+    //             open: true
+    //         })
+    //     }));
+    // }
 
     handlePromptCancelClick = () => {
         const {onClick} = this.props;
@@ -136,7 +136,7 @@ class Subheader extends Component {
 
     render() {
         const {
-            windowType, onClick, references, actions, dataId, viewId, docNo
+            windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete
         } = this.props;
         const {prompt} = this.state;
 
@@ -158,10 +158,10 @@ class Subheader extends Component {
                                 {windowType && <div className="subheader-item" onClick={()=> this.redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit</div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
                                 <div className="subheader-item" onClick={()=> this.redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
                             </div>
                             <div className=" subheader-column">
@@ -170,7 +170,7 @@ class Subheader extends Component {
                                 { actions && !!actions.length ? actions.map((item, key) =>
                                     <div
                                         className="subheader-item"
-                                        onClick={() => this.openModal(item.processId + "", "process", item.caption)}
+                                        onClick={() => openModal(item.processId + "", "process", item.caption)}
                                         key={key}
                                     >
                                         {item.caption}
@@ -199,10 +199,10 @@ class Subheader extends Component {
                     </div>
                 </div>
                 <DocumentContextGlobalShortcuts
-                    openModal={this.openModal}
+                    openModal={openModal}
                     windowType={windowType}
-                    handlePrint={this.handlePrint}
-                    handleDelete={this.handleDelete}
+                    handlePrint={handlePrint}
+                    handleDelete={handleDelete}
                     redirect={this.redirect}
                     dataId={dataId}
                     docNo={docNo}

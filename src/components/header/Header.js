@@ -22,6 +22,12 @@ import {
     getRootBreadcrumb
 } from '../../actions/MenuActions';
 
+import {
+    printDoc,
+    openModal,
+    deleteData
+} from '../../actions/WindowActions';
+
 
 import keymap from '../../keymap.js';
 import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
@@ -174,6 +180,32 @@ class Header extends Component {
         );
     }
 
+    openModal = (windowType, type, caption, isAdvanced) => {
+        const {dispatch} = this.props;
+        dispatch(openModal(caption, windowType, type));
+        this.handleBackdropClick(false);
+    }
+
+    handlePrint = (windowType, docId, docNo) => {
+        const {dispatch} = this.props;
+        const url = config.API_URL +
+            '/window/' + windowType +
+            '/' + docId +
+            '/print/' + windowType + '_' + (docNo ? docNo : docId) + '.pdf';
+        window.open(url, "_blank");
+        this.handleBackdropClick(false);
+    }
+
+    handleDelete = () => {
+        const {dispatch} = this.props;
+
+        this.setState(Object.assign({}, this.state, {
+            prompt: Object.assign({}, this.state.prompt, {
+                open: true
+            })
+        }));
+    }
+
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
@@ -305,6 +337,9 @@ class Header extends Component {
                     viewId={viewId}
                     onClick={e => this.handleBackdropClick(false)}
                     docNo={docNoData && docNoData.value}
+                    openModal={this.openModal}
+                    handlePrint={this.handlePrint}
+                    handleDelete={this.handleDelete}
                 />}
 
                 {showSidelist && <SideList
@@ -319,6 +354,9 @@ class Header extends Component {
                     isMenuOverlayShow = {isMenuOverlayShow}
                     handleSideListToggle = {this.handleSideListToggle}
                     handleInboxOpen = {this.handleInboxOpen}
+                    openModal = {() => this.openModal(windowType, "window", "Advanced edit", true)}
+                    handlePrint={() => this.handlePrint(windowType, dataId, docNo)}
+                    handleDelete={this.handleDelete}
                 />
             </div>
         )

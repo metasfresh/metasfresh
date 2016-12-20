@@ -1,6 +1,6 @@
 /* Define your mod button*/
 
-let mod = 'alt';
+let mod = 'ctrl';
 
 
 export default {
@@ -9,6 +9,12 @@ export default {
         OPEN_NAVIGATION_MENU: mod + '+' + '2',
         OPEN_INBOX_MENU: mod + '+' + '3',
         OPEN_SIDEBAR_MENU: mod + '+' + '4',
+
+        //=========== Document Context =================
+
+        OPEN_ADVANCED_EDIT: mod + '+' + 'e',
+        OPEN_PRINT_RAPORT: mod + '+' + 'p',
+        DELETE_DOCUMENT: mod + '+' + 'd',
 
 
     },

@@ -6,7 +6,7 @@ class DocumentContextShortcuts extends Component {
         super(props);
         
     }
-  _handleShortcuts = (action, event) => {
+  handleShortcuts = (action, event) => {
     const {} = this.props;
     switch (action) {
       case 'OPEN_PRINT_RAPORT':
@@ -20,7 +20,7 @@ class DocumentContextShortcuts extends Component {
     return (
       <Shortcuts
         name={"DOCUMENT_CONTEXT"}
-        handler= {this._handleShortcuts}
+        handler= {this.handleShortcuts}
         targetNodeSelector={"body"}
       >
       </Shortcuts>

@@ -6,7 +6,7 @@ class DocumentContextGlobalShortcuts extends Component {
         super(props);
         
     }
-  _handleShortcuts = (action, event) => {
+  handleShortcuts = (action, event) => {
     const {openModal, windowType, handlePrint, handleDelete, redirect, dataId, docNo} = this.props;
     switch (action) {
       case 'DELETE_DOCUMENT':
@@ -30,7 +30,7 @@ class DocumentContextGlobalShortcuts extends Component {
     return (
       <Shortcuts
         name={"DOCUMENT_CONTEXT"}
-        handler= {this._handleShortcuts}
+        handler= {this.handleShortcuts}
         targetNodeSelector={"body"}
         preventDefault={true}
       >
