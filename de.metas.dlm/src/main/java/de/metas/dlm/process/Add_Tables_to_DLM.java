@@ -3,11 +3,14 @@ package de.metas.dlm.process;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_AD_Table;
@@ -16,6 +19,7 @@ import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -53,19 +57,25 @@ public class Add_Tables_to_DLM
 	@Param(mandatory = true, parameterName = I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID)
 	private I_DLM_Partition_Config configDB;
 
+	/**
+	 * Iterate the {@link I_DLM_Partition_Config_Line}s and handle their talbes one by one.
+	 * Runs out of trx because each table is dealt with in its own trx and the overall process might run for some time until all tables were processed.
+	 */
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IDLMService dlmService = Services.get(IDLMService.class);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final List<I_DLM_Partition_Config_Line> configLinesDB = queryBL.createQueryBuilder(I_DLM_Partition_Config_Line.class, this)
+		final List<I_DLM_Partition_Config_Line> configLinesDB = queryBL.createQueryBuilder(I_DLM_Partition_Config_Line.class, PlainContextAware.newWithThreadInheritedTrx(getCtx()))
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DLM_Partition_Config_Line.COLUMN_DLM_Partition_Config_ID, configDB.getDLM_Partition_Config_ID())
 				.orderBy().addColumn(I_DLM_Partition_Config_Line.COLUMNNAME_DLM_Partition_Config_ID).endOrderBy()
 				.create()
 				.list();
-		for (I_DLM_Partition_Config_Line line : configLinesDB)
+		for (final I_DLM_Partition_Config_Line line : configLinesDB)
 		{
 			final I_AD_Table dlm_Referencing_Table = InterfaceWrapperHelper.create(line.getDLM_Referencing_Table(), I_AD_Table.class);
 			if (dlm_Referencing_Table.isDLM())
@@ -74,7 +84,14 @@ public class Add_Tables_to_DLM
 				continue;
 			}
 
-			dlmService.addTableToDLM(dlm_Referencing_Table);
+			trxManager.run(new TrxRunnable()
+			{
+				@Override
+				public void run(String localTrxName) throws Exception
+				{
+					dlmService.addTableToDLM(dlm_Referencing_Table);
+				}
+			});
 		}
 
 		return MSG_OK;
