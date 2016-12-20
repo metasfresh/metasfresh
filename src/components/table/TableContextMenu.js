@@ -47,7 +47,7 @@ class TableContextMenu extends Component {
     handleAdvancedEdit = () => {
         const {dispatch, tabId, type, selected} = this.props;
 
-        dispatch(openModal("Advanced edit", type + "&advanced=true", "window", tabId, selected[0]));
+        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
     }
 
     handleDelete = () => {
@@ -171,7 +171,7 @@ class TableContextMenu extends Component {
                     onCancelClick={this.handlePromptCancelClick}
                     onSubmitClick={this.handlePromptSubmitClick}
                 />
-                <DocumentListContextShortcuts 
+                <DocumentListContextShortcuts
                     handleOpenNewTab={this.handleOpenNewTab}
                     handleDelete={this.handleDelete}
                 />

@@ -3,7 +3,8 @@
 /*
  *  MAIN PROPERTIES
  */
-table td:focus {
+table td:focus
+ {
     outline-color: $brand-font-color;
     outline-width:1px;
     outline-offset:0px;

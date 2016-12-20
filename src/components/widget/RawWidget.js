@@ -47,7 +47,6 @@ class RawWidget extends Component {
         let selectedField = "";
         let selectedFieldTo = "";
         let widgetFields = "";
-        let fieldsArray = "";
 
 
         if (filterWidget) {
@@ -55,12 +54,10 @@ class RawWidget extends Component {
             selectedField = selectedItem;
             selectedFieldTo = selectedItemTo;
             widgetFields = fields;
-            fieldsArray = [fields];
         } else {
             widgetField = fields[0].field;
             selectedField = data[0].value;
             widgetFields = fields[0];
-            fieldsArray = fields;
         }
 
         switch(widgetType){

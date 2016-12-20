@@ -1893,9 +1893,11 @@ td.pulse-off input {
     display: flex;
     align-items: center;
 }
+
 .quick-input-container > * {
     margin:0;
 }
+
 .hint {
     font-size: .7rem;
     color: $brand-color-secondary;

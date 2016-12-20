@@ -63,23 +63,18 @@ class Widget extends Component {
             currRowId = relativeDocId;
         }
 
-        let customWindowType = windowType;
-
-        if(isAdvanced){
-            customWindowType += "&advanced=true";
-        }
-
 
         //do patch only when value is not equal state
         //or cache is set and it is not equal value
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
             //check if we should update store
             //except button value
             if(widgetType !== "Button"){
                 dispatch(updateProperty(property, value, tabId, currRowId, isModal));
             }
 
-            ret = dispatch(patch(entity, customWindowType, dataId, tabId, currRowId, property, value, isModal));
+            ret = dispatch(patch(entity, windowType, dataId, tabId, currRowId, property, value, isModal, isAdvanced));
         }
 
         this.setState(Object.assign({}, this.state, {
