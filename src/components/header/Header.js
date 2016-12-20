@@ -311,12 +311,8 @@ class Header extends Component {
                     windowType={windowType}
                     open={isSideListShow}
                 />}
-<<<<<<< HEAD
-                <GlobalShortcuts 
-=======
 
                 <GlobalShortcuts
->>>>>>> dev
                     handleSubheaderOpen={this.handleSubheaderOpen}
                     toggleMenuOverlay={this.toggleMenuOverlay}
                     homemenu={homemenu}
