@@ -12,6 +12,7 @@ import MasterWidget from '../widget/MasterWidget';
 import SideList from './SideList';
 import Indicator from './Indicator';
 import Inbox from '../inbox/Inbox';
+import Tooltips from '../tooltips/Tooltips';
 
 import {
     indicatorState
@@ -37,7 +38,10 @@ class Header extends Component {
             isMenuOverlayShow: false,
             menuOverlay: null,
             scrolled: false,
-            isInboxOpen: false
+            isInboxOpen: false,
+            tooltip: {
+                open: ''
+            }
         }
     }
 
@@ -151,6 +155,25 @@ class Header extends Component {
         }
     }
 
+    showTooltip = (tooltip) => {
+        this.setState(
+            Object.assign({}, this.state, {
+                tooltip: Object.assign({}, this.state, {
+                    open: tooltip
+                })
+            })
+        );
+    }
+    closeTooltip = () => {
+        this.setState(
+            Object.assign({}, this.state, {
+                tooltip: Object.assign({}, this.state, {
+                    open: ''
+                })
+            })
+        );
+    }
+
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
@@ -159,7 +182,7 @@ class Header extends Component {
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow, tooltip
         } = this.state;
 
         return (
@@ -172,13 +195,21 @@ class Header extends Component {
                             <div className="header-left-side">
                                 <div
                                     onClick={e => this.handleCloseSideList(this.handleSubheaderOpen)}
-                                    className={"btn-square btn-header " +
+                                    onMouseEnter={(e) => this.showTooltip('tooltip1')}
+                                    onMouseLeave={this.closeTooltip}
+                                    className={"btn-square btn-header tooltip-parent " +
                                         (isSubheaderShow ?
                                             "btn-meta-default-dark btn-subheader-open btn-header-open"
                                             : "btn-meta-primary")
                                         }
                                 >
                                     <i className="meta-icon-more" />
+                                    
+                                    { tooltip.open === 'tooltip1' &&
+                                    <Tooltips
+                                        name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
+                                        type={''}
+                                    /> }
                                 </div>
 
                                 <Breadcrumb
@@ -213,14 +244,22 @@ class Header extends Component {
                                 }
 
                                 <div className={
-                                    "header-item-container header-item-container-static pointer "+
+                                    "header-item-container header-item-container-static pointer tooltip-parent "+
                                     (isInboxOpen ? "header-item-open " : "")}
                                     onClick={() => this.handleInboxOpen(true)}
+                                    onMouseEnter={(e) => this.showTooltip('tooltip2')}
+                                    onMouseLeave={this.closeTooltip}
                                 >
                                     <span className={"header-item header-item-badge icon-lg"}>
                                         <i className="meta-icon-notifications" />
                                         {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>
+                                    { tooltip.open === 'tooltip2' &&
+                                        <Tooltips
+                                            name={keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU}
+                                            type={''}
+                                        />
+                                    }
                                 </div>
 
                                 <Inbox
@@ -233,14 +272,23 @@ class Header extends Component {
                                 {showSidelist &&
                                     <div
                                         className={
-                                            "btn-square btn-header side-panel-toggle " +
+                                            "btn-square btn-header side-panel-toggle tooltip-parent " +
                                             (isSideListShow ?
                                                 "btn-meta-default-bright btn-header-open"
                                                 : "btn-meta-primary")
                                         }
                                         onClick={e => this.handleBackdropClick(this.handleSideListToggle)}
+                                        onMouseEnter={(e) => this.showTooltip('tooltip3')}
+                                        onMouseLeave={this.closeTooltip}
                                     >
                                         <i className="meta-icon-list" />
+                                        { tooltip.open === 'tooltip3' &&
+                                            <Tooltips
+                                                name={keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU}
+                                                type={''}
+                                            />
+                                        }
+                                        
                                     </div>
                                 }
                             </div>
@@ -263,8 +311,12 @@ class Header extends Component {
                     windowType={windowType}
                     open={isSideListShow}
                 />}
+<<<<<<< HEAD
+                <GlobalShortcuts 
+=======
 
                 <GlobalShortcuts
+>>>>>>> dev
                     handleSubheaderOpen={this.handleSubheaderOpen}
                     toggleMenuOverlay={this.toggleMenuOverlay}
                     homemenu={homemenu}
