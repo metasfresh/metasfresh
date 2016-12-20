@@ -73,7 +73,7 @@ class Subheader extends Component {
 
     openModal = (windowType, type, caption, isAdvanced) => {
         const {dispatch, onClick} = this.props;
-        dispatch(openModal(caption, windowType, type));
+        dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
         onClick();
     }
 
@@ -141,7 +141,6 @@ class Subheader extends Component {
         const {prompt} = this.state;
 
         return (
-
             <div className={"subheader-container overlay-shadow subheader-open js-not-unselect"}>
                 <Prompt
                     isOpen={prompt.open}
