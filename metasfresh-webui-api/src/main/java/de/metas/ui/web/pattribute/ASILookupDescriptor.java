@@ -137,7 +137,8 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 			return -1;
 		}
 
-		return attributeValuesProvider.getM_AttributeValue_ID(lookupValue.getIdAsString());
+		final String valueKey = lookupValue.getIdAsString();
+		return attributeValuesProvider.getM_AttributeValue_ID(valueKey);
 	}
 
 	@Override

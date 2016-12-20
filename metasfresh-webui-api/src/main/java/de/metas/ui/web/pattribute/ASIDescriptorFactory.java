@@ -312,7 +312,7 @@ public class ASIDescriptorFactory
 					.cast(ASILookupDescriptor.class)
 					.getM_AttributeValue_ID(lookupValue);
 
-			ai.setValue(lookupValue == null ? null : lookupValue.toString());
+			ai.setValue(lookupValue == null ? null : lookupValue.getIdAsString());
 			ai.setM_AttributeValue_ID(attributeValueId);
 		}
 
