@@ -744,9 +744,10 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setLookupDescriptorProvider(final LookupDescriptor lookupDescriptor)
+		public Builder setLookupDescriptorProvider(@Nullable final LookupDescriptor lookupDescriptor)
 		{
-			setLookupDescriptorProvider(LookupDescriptorProvider.singleton(lookupDescriptor));
+			final LookupDescriptorProvider provider = lookupDescriptor != null ? LookupDescriptorProvider.singleton(lookupDescriptor) : LookupDescriptorProvider.NULL;
+			setLookupDescriptorProvider(provider);
 			return this;
 		}
 

@@ -135,7 +135,7 @@ public class ASIDescriptorFactory
 		final DocumentFieldWidgetType widgetType;
 		final Function<I_M_AttributeInstance, Object> readMethod;
 		final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod;
-		LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
+		LookupDescriptor lookupDescriptor = null;
 
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
@@ -151,8 +151,7 @@ public class ASIDescriptorFactory
 			readMethod = I_M_AttributeInstance::getValue;
 			writeMethod = ASIAttributeFieldBinding::writeValueFromLookup;
 
-			final LookupDescriptor lookupDescriptor = getLookupDescriptor(attribute);
-			lookupDescriptorProvider = LookupDescriptorProvider.singleton(lookupDescriptor);
+			lookupDescriptor = getLookupDescriptor(attribute);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
@@ -185,7 +184,7 @@ public class ASIDescriptorFactory
 				//
 				.setValueClass(valueClass)
 				.setWidgetType(widgetType)
-				.setLookupDescriptorProvider(lookupDescriptorProvider)
+				.setLookupDescriptorProvider(lookupDescriptor)
 				//
 				.setDefaultValueExpression(defaultValueExpr)
 				.setReadonlyLogic(readonlyLogic)
@@ -199,7 +198,7 @@ public class ASIDescriptorFactory
 				;
 	}
 
-	private LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
+	public LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
 	{
 		return asiLookupDescriptorsByAttributeId.getOrLoad(attribute.getM_Attribute_ID(), () -> ASILookupDescriptor.of(attribute));
 	}
