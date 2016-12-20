@@ -50,11 +50,21 @@ export default function listHandler(state = initialState, action) {
                 filters: [],
                 sorting: {},
                 windowType: null,
+                // pagination: Object.assign({}, state.pagination, {
+                //     page: 1,
+                //     windowType: null
+                // })
+            })
+
+        case types.CLEAR_LIST_PAGINATION:
+            return Object.assign({}, state, {
                 pagination: Object.assign({}, state.pagination, {
                     page: 1,
                     windowType: null
                 })
             })
+
+
 
         case types.INIT_FILTERS_PARAMETERS:
             return Object.assign({}, state, {

@@ -71,35 +71,35 @@ class Window extends Component {
         return group.map((elem, id)=> {
             const {type, elementsLine} = elem;
             const shouldBeFocused = isFirst && (id === 0);
-
+            const tabIndex = (type === "primary") ? "0" : "2";
             return (
                 elementsLine && elementsLine.length > 0 &&
                     <div
                         key={'elemGroups' + id}
-                        tabIndex="0"
+                        tabIndex={0}
                         className={
                             "panel panel-spaced panel-distance " +
                             ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
                         }
                         ref={c => {(shouldBeFocused && c) && c.focus()}}
                     >
-                        {this.renderElementsLine(elementsLine)}
+                        {this.renderElementsLine(elementsLine, tabIndex)}
                     </div>
             )
         })
     }
-    renderElementsLine = (elementsLine) => {
+    renderElementsLine = (elementsLine, tabIndex) => {
         return elementsLine.map((elem, id)=> {
             const {elements} = elem;
             return (
                 elements && elements.length > 0 &&
                     <div className="elements-line" key={"line" + id}>
-                        {this.renderElements(elements)}
+                        {this.renderElements(elements, tabIndex)}
                     </div>
             )
         })
     }
-    renderElements = (elements) => {
+    renderElements = (elements, tabIndex) => {
         const {type} = this.props.layout;
         const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
         return elements.map((elem, id)=> {
@@ -117,6 +117,7 @@ class Window extends Component {
                     rowId={rowId}
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
+                    tabIndex={tabIndex}
                     {...elem} />
             )
         })
