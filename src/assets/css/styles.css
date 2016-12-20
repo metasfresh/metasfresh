@@ -1904,13 +1904,18 @@ td.pulse-off input {
 .tooltip-wrapp {
     background: white;
     color: $brand-font-color-secondary;
-    position: fixed;
     font-size: 10px;
     border: 1px solid $tooltip-border-color;
-    padding: 10px;
+    padding: 5px;
     text-align: center;
     z-index: 201;
     border-radius: 3px;
+
+    position: absolute;
+    top: 110%;
+    left: 50%;
+    width: 80px;
+    margin-left: -40px;
 }
 
 .tooltip-wrapp:after {
@@ -1969,3 +1974,6 @@ td.pulse-off input {
     opacity: 0.5;
 }
 
+.tooltip-parent {
+    position: relative;
+}
