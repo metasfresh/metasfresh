@@ -3,17 +3,16 @@ package de.metas.ui.web.pattribute;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.util.CCache;
-import org.compiere.util.Env;
+import org.compiere.util.CCache.CCacheStats;
+import org.compiere.util.NamePair;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -22,8 +21,8 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 
 /*
  * #%L
@@ -56,26 +55,24 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	}
 
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
-	static final String CACHE_PREFIX = I_M_AttributeValue.Table_Name;
 
-	private static final CCache<Integer, AttributeValuesMap> attributeValuesMapByAttributeId = CCache.newLRUCache(CACHE_PREFIX + "#AttributeValuesMap", 100, 60);
-
-	private final String name;
-	private final int attributeId;
+	private final String internalName; // used for logging / toString()
+	private final IAttributeValuesProvider attributeValuesProvider;
 
 	private ASILookupDescriptor(final I_M_Attribute attribute)
 	{
 		super();
-		name = attribute.getValue() + "_" + attribute.getName();
-		attributeId = attribute.getM_Attribute_ID();
+		internalName = attribute.getValue() + "_" + attribute.getName();
+
+		attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(attribute);
+		Check.assumeNotNull(attribute, "Parameter attribute is not null");
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("name", name)
-				.add("attributeId", attributeId)
+				.add("internalName", internalName)
 				.toString();
 	}
 
@@ -88,7 +85,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public boolean isHighVolume()
 	{
-		return false;
+		return attributeValuesProvider.isHighVolume();
 	}
 
 	@Override
@@ -118,33 +115,33 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public String getCachePrefix()
 	{
-		return CACHE_PREFIX;
+		return attributeValuesProvider.getCachePrefix();
+	}
+	
+	@Override
+	public boolean isCached()
+	{
+		return true;
+	}
+	
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return attributeValuesProvider.getCacheStats();
 	}
 
-	public AttributeValue getAttributeValue(final LookupValue lookupValue)
+	public int getM_AttributeValue_ID(final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
 		{
-			return null;
+			return -1;
 		}
 
-		return getAttributeValuesMap().getAttributeValueByValue(lookupValue.getId());
-	}
-
-	private final AttributeValuesMap getAttributeValuesMap()
-	{
-		return attributeValuesMapByAttributeId.getOrLoad(attributeId, () -> retrieveAttributeValuesMap(attributeId));
-	}
-
-	private AttributeValuesMap retrieveAttributeValuesMap(final int attributeId)
-	{
-		final I_M_Attribute attribute = InterfaceWrapperHelper.create(Env.getCtx(), attributeId, I_M_Attribute.class, ITrx.TRXNAME_None); // shall be fetched from cache
-		final List<I_M_AttributeValue> attributeValues = Services.get(IAttributeDAO.class).retrieveAttributeValues(attribute);
-		return new AttributeValuesMap(attributeValues);
+		return attributeValuesProvider.getM_AttributeValue_ID(lookupValue.getIdAsString());
 	}
 
 	@Override
-	public Builder newContextForFetchingById(final Object id)
+	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
 		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).putFilterById(id);
 	}
@@ -153,103 +150,31 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
-		final LookupValue lookupValue = getAttributeValuesMap().getLookupValueById(id);
-		if (lookupValue == null)
-		{
-			return LOOKUPVALUE_NULL;
-		}
-		return lookupValue;
+		final String idStr = id == null ? null : id.toString();
+		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, idStr);
+		return LookupValue.fromNamePair(valueNP, LOOKUPVALUE_NULL);
 	}
 
 	@Override
-	public Builder newContextForFetchingList()
+	public LookupDataSourceContext.Builder newContextForFetchingList()
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
+				.requiresFilterAndLimit();
 	}
 
 	@Override
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
-		return getAttributeValuesMap().toLookupValuesList();
-	}
-
-	private static final class AttributeValuesMap
-	{
-
-		private final LookupValuesList lookupValues;
-		private final ImmutableMap<Object, AttributeValue> attributeValuesByValue;
-
-		public AttributeValuesMap(final List<I_M_AttributeValue> attributeValueRecords)
-		{
-			super();
-
-			final ImmutableMap.Builder<Object, AttributeValue> attributeValuesByValue = ImmutableMap.builder();
-			
-			this.lookupValues = attributeValueRecords.stream()
-					.map(AttributeValue::new)
-					.peek(attributeValue -> attributeValuesByValue.put(attributeValue.getValue(), attributeValue))
-					.map(attributeValue -> attributeValue.getLookupValue())
-					.collect(LookupValuesList.collect());			
-			this.attributeValuesByValue = attributeValuesByValue.build();
-		}
-
-		public LookupValue getLookupValueById(final Object id)
-		{
-			return lookupValues.getById(id);
-		}
-
-		public AttributeValue getAttributeValueByValue(final Object value)
-		{
-			return attributeValuesByValue.get(value);
-		}
-
-		public LookupValuesList toLookupValuesList()
-		{
-			return lookupValues;
-		}
-
-	}
-
-	public static final class AttributeValue
-	{
-		private final int M_AttributeValue_ID;
-		private final LookupValue lookupValue;
-
-		private AttributeValue(final I_M_AttributeValue attributeValue)
-		{
-			super();
-
-			M_AttributeValue_ID = attributeValue.getM_AttributeValue_ID();
-			lookupValue = StringLookupValue.of(attributeValue.getValue(), attributeValue.getName());
-		}
-
-		public Object getValue()
-		{
-			return lookupValue.getId();
-		}
-
-		public String getValueAsString()
-		{
-			return lookupValue.getIdAsString();
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("M_AttributeValue_ID", M_AttributeValue_ID)
-					.add("lookupValue", lookupValue)
-					.toString();
-		}
-
-		public int getM_AttributeValue_ID()
-		{
-			return M_AttributeValue_ID;
-		}
-
-		public LookupValue getLookupValue()
-		{
-			return lookupValue;
-		}
+		final LookupValueFilterPredicate filter = evalCtx.getFilterPredicate();
+		final int limit = evalCtx.getLimit(Integer.MAX_VALUE);
+		final int offset = evalCtx.getOffset(0);
+		
+		return attributeValuesProvider.getAvailableValues(evalCtx)
+				.stream()
+				.map(namePair -> StringLookupValue.of(namePair.getID(), namePair.getName()))
+				.filter(filter)
+				.skip(offset)
+				.limit(limit)
+				.collect(LookupValuesList.collect());
 	}
 }

@@ -35,14 +35,14 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	int FIRST_ROW = 0;
 	int DEFAULT_PageLength = 10;
 
+	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
+
 	LookupValuesList findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength);
 
 	default LookupValuesList findEntities(final Evaluatee ctx, final String filter)
 	{
 		return findEntities(ctx, filter, FIRST_ROW, DEFAULT_PageLength);
 	}
-
-	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
 
 	/**
 	 * @return all lookup values

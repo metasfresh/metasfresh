@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import com.hazelcast.util.function.BiConsumer;
 
 import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.pattribute.ASILookupDescriptor.AttributeValue;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -65,8 +64,8 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 @Component
 public class ASIDescriptorFactory
 {
-	private final CCache<Integer, ASIDescriptor> cacheByAttributeSetId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
-	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(ASILookupDescriptor.CACHE_PREFIX + "#LookupDescriptors", 200, 0);
+	private final CCache<Integer, ASIDescriptor> asiDescriptorByAttributeSetId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
+	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
 
 	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
 
@@ -82,7 +81,7 @@ public class ASIDescriptorFactory
 
 	public ASIDescriptor getASIDescriptor(final int attributeSetId)
 	{
-		return cacheByAttributeSetId.getOrLoad(attributeSetId, () -> retrieveASIDescriptor(attributeSetId));
+		return asiDescriptorByAttributeSetId.getOrLoad(attributeSetId, () -> retrieveASIDescriptor(attributeSetId));
 	}
 
 	private ASIDescriptor retrieveASIDescriptor(final int attributeSetId)
@@ -309,20 +308,12 @@ public class ASIDescriptorFactory
 		private static final void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
 		{
 			final StringLookupValue lookupValue = field.getValueAs(StringLookupValue.class);
-			final AttributeValue attributeValue = field.getDescriptor().getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentField)
+			final int attributeValueId = field.getDescriptor().getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentField)
 					.cast(ASILookupDescriptor.class)
-					.getAttributeValue(lookupValue);
+					.getM_AttributeValue_ID(lookupValue);
 
-			if (attributeValue == null)
-			{
-				ai.setValue(lookupValue == null ? null : lookupValue.toString());
-				ai.setM_AttributeValue(null);
-			}
-			else
-			{
-				ai.setValue(attributeValue.getValueAsString());
-				ai.setM_AttributeValue_ID(attributeValue.getM_AttributeValue_ID());
-			}
+			ai.setValue(lookupValue == null ? null : lookupValue.toString());
+			ai.setM_AttributeValue_ID(attributeValueId);
 		}
 
 		public void createAndSaveM_AttributeInstance(final I_M_AttributeSetInstance asiRecord, final IDocumentFieldView asiField)

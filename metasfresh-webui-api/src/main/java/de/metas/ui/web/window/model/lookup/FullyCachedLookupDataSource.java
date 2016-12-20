@@ -90,8 +90,8 @@ class FullyCachedLookupDataSource implements LookupDataSource
 			return partition;
 		}
 
-		final Predicate<LookupValue> filterPredicate = FilterPredicate.of(filter);
-		if(filterPredicate == FilterPredicate.MATCH_ALL)
+		final Predicate<LookupValue> filterPredicate = LookupValueFilterPredicates.of(filter);
+		if(filterPredicate == LookupValueFilterPredicates.MATCH_ALL)
 		{
 			return partition.offsetAndLimit(firstRow, pageLength);
 		}
@@ -122,74 +122,5 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	public List<CCacheStats> getCacheStats()
 	{
 		return ImmutableList.of(cacheByPartition.stats());
-	}
-
-	private static final class FilterPredicate implements Predicate<LookupValue>
-	{
-		public static final Predicate<LookupValue> of(final String filter)
-		{
-			if (filter == null)
-			{
-				return MATCH_ALL;
-			}
-
-			final String filterNorm = filter.trim();
-			if (filterNorm.isEmpty())
-			{
-				return MATCH_ALL;
-			}
-
-			return new FilterPredicate(filterNorm);
-		}
-
-		private static final Predicate<LookupValue> MATCH_ALL = new Predicate<LookupValue>()
-		{
-			@Override
-			public String toString()
-			{
-				return "MatchAll";
-			};
-
-			@Override
-			public boolean test(final LookupValue lookupValue)
-			{
-				return true;
-			}
-		};
-
-		private final String filterLC;
-
-		private FilterPredicate(final String filter)
-		{
-			super();
-			filterLC = filter.toLowerCase();
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.addValue(filterLC)
-					.toString();
-		}
-
-		@Override
-		public boolean test(final LookupValue lookupValue)
-		{
-			if (lookupValue == null)
-			{
-				return false;
-			}
-
-			final String displayName = lookupValue.getDisplayName();
-			if (displayName == null)
-			{
-				return false;
-			}
-
-			final String displayNameLC = displayName.toLowerCase();
-
-			return displayNameLC.indexOf(filterLC) >= 0;
-		}
 	}
 }
