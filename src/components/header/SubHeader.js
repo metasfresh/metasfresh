@@ -4,12 +4,6 @@ import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
 
-// import {
-//     printDoc,
-//     openModal,
-//     deleteData
-// } from '../../actions/WindowActions';
-
 import {
     setFilter
 } from '../../actions/ListActions';
@@ -28,15 +22,6 @@ class Subheader extends Component {
 
         this.state = {
             pdfSrc: null
-            // prompt: {
-            //     open: false,
-            //     title: "Delete",
-            //     text: "Are you sure?",
-            //     buttons: {
-            //         submit: "Delete",
-            //         cancel: "Cancel"
-            //     }
-            // }
         }
     }
 
@@ -55,19 +40,6 @@ class Subheader extends Component {
         });
     }
 
-
-    // redirect = (where) => {
-    //     const {dispatch, onClick} = this.props;
-    //     dispatch(push(where));
-    //     onClick();
-    // }
-
-    // openModal = (windowType, type, caption, isAdvanced) => {
-    //     const {dispatch, onClick} = this.props;
-    //     dispatch(openModal(caption, windowType, type));
-    //     onClick();
-    // }
-
     handleReferenceClick = (type, filter) => {
         const {dispatch, onClick, windowType, dataId} = this.props;
         dispatch(setFilter(filter, type));
@@ -75,59 +47,9 @@ class Subheader extends Component {
         onClick();
     }
 
-    // handlePrint = (windowType, docId, docNo) => {
-    //     const {dispatch, onClick} = this.props;
-    //     const url = config.API_URL +
-    //         '/window/' + windowType +
-    //         '/' + docId +
-    //         '/print/' + windowType + '_' + (docNo ? docNo : docId) + '.pdf';
-    //     window.open(url, "_blank");
-    //     onClick();
-    // }
-
-    // handleDelete = () => {
-    //     const {dispatch} = this.props;
-
-    //     this.setState(Object.assign({}, this.state, {
-    //         prompt: Object.assign({}, this.state.prompt, {
-    //             open: true
-    //         })
-    //     }));
-    // }
-
-    // handlePromptCancelClick = () => {
-    //     const {onClick} = this.props;
-    //     onClick();
-    //     this.setState(Object.assign({}, this.state, {
-    //         prompt: Object.assign({}, this.state.prompt, {
-    //             open: false
-    //         })
-    //     }));
-    // }
-
-    // handlePromptSubmitClick = (windowType, docId) => {
-    //     const {dispatch, onClick} = this.props;
-
-    //     this.setState(Object.assign({}, this.state, {
-    //         prompt: Object.assign({}, this.state.prompt, {
-    //             open: false
-    //         })
-    //     }), () => {
-    //         dispatch(deleteData(windowType, docId))
-    //             .then(response => {
-    //                 dispatch(push('/window/' + windowType));
-    //             });
-    //         }
-    //     );
-    // }
-
-    handleClone = (windowType, docId) => {
-        //TODO when API ready
-    }
-
     render() {
         const {
-            windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete, redirect
+            windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete, redirect, handleClone
         } = this.props;
         const {prompt} = this.state;
 
@@ -143,7 +65,7 @@ class Subheader extends Component {
                                 </div>}
                                 {dataId && <div className="subheader-item" onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print</div>}
-                                {dataId && <div className="subheader-item" onClick={()=> this.handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
+                                {dataId && <div className="subheader-item" onClick={()=> handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
                                 <div className="subheader-item" onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
                             </div>

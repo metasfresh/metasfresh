@@ -215,6 +215,10 @@ class Header extends Component {
         }));
     }
 
+    handleClone = (windowType, docId) => {
+        //TODO when API ready
+    }
+
     handlePromptCancelClick = () => {
         this.handleBackdropClick(false);
         this.setState(Object.assign({}, this.state, {
@@ -388,6 +392,7 @@ class Header extends Component {
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
+                    handleClone={this.handleClone}
                     redirect={this.redirect}
                 />}
 

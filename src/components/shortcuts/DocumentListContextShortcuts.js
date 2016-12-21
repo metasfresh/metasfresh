@@ -24,8 +24,7 @@ class DocumentListContextShortcuts extends Component {
         name={"DOCUMENT_LIST_CONTEXT"}
         handler= {this.handleShortcuts}
         targetNodeSelector={"body"}
-      >
-      </Shortcuts>
+      />
     )
   }
 }

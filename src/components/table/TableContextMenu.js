@@ -181,7 +181,7 @@ class TableContextMenu extends Component {
 }
 
 TableContextMenu.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
+    shortcuts: PropTypes.object.isRequired
 }
 
 
