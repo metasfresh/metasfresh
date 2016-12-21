@@ -390,7 +390,9 @@ export function patchRequest(
 
     return () => axios.patch(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
+        '/' + entity + '/' +
+        (docType ? "/" + docType : "") +
+        (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
         (subentity ? "/" + subentity : "") +

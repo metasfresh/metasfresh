@@ -64,7 +64,12 @@ class AttributesDropdown extends Component {
     }
 
     handlePatch = (prop, value, id) => {
-        const {dispatch, attributeType} = this.props;
+        const {dispatch, attributeType, docType, tabId, rowId} = this.props;
+
+        // (
+        //     entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
+        //     subentityId, isAdvanced
+        // )
 
         dispatch(patchRequest(attributeType, null, id, null, null, prop, value)).then(response => {
             response.data[0].fields.map(item => {

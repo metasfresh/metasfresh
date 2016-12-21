@@ -191,7 +191,7 @@ class Header extends Component {
 
     openModal = (windowType, type, caption, isAdvanced) => {
         const {dispatch} = this.props;
-        dispatch(openModal(caption, windowType, type));
+        dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
         this.handleBackdropClick(false);
     }
 

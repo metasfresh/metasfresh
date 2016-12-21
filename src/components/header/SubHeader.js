@@ -54,7 +54,6 @@ class Subheader extends Component {
         const {prompt} = this.state;
 
         return (
-
             <div className={"subheader-container overlay-shadow subheader-open js-not-unselect"}>
                 <div className="container-fluid">
                     <div className="row">
