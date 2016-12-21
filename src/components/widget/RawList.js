@@ -74,7 +74,7 @@ class RawList extends Component {
         let ret = [];
 
         if(!mandatory){
-            emptyText && ret.push(this.getRow(0, {0: null}, emptyText));
+            emptyText && ret.push(this.getRow(0, null, emptyText));
         }
 
         list.map((option, index) => {
