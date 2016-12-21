@@ -15,7 +15,7 @@ export default {
         OPEN_ADVANCED_EDIT: mod + '+' + 'e',
         OPEN_PRINT_RAPORT: mod + '+' + 'p',
         DELETE_DOCUMENT: mod + '+' + 'd',
-
+        NEW_DOCUMENT: mod + '+' + 'm',
 
     },
     DOCUMENT_LIST_CONTEXT: {

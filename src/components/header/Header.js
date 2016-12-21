@@ -13,6 +13,7 @@ import SideList from './SideList';
 import Indicator from './Indicator';
 import Inbox from '../inbox/Inbox';
 import Tooltips from '../tooltips/Tooltips';
+import Prompt from '../app/Prompt';
 
 import {
     indicatorState
@@ -47,6 +48,15 @@ class Header extends Component {
             isInboxOpen: false,
             tooltip: {
                 open: ''
+            },
+            prompt: {
+                open: false,
+                title: "Delete",
+                text: "Are you sure?",
+                buttons: {
+                    submit: "Delete",
+                    cancel: "Cancel"
+                }
             }
         }
     }
@@ -206,6 +216,37 @@ class Header extends Component {
         }));
     }
 
+    handlePromptCancelClick = () => {
+        this.handleBackdropClick(false);
+        this.setState(Object.assign({}, this.state, {
+            prompt: Object.assign({}, this.state.prompt, {
+                open: false
+            })
+        }));
+    }
+
+    handlePromptSubmitClick = (windowType, docId) => {
+        const {dispatch} = this.props;
+
+        this.setState(Object.assign({}, this.state, {
+            prompt: Object.assign({}, this.state.prompt, {
+                open: false
+            })
+        }), () => {
+            dispatch(deleteData(windowType, docId))
+                .then(response => {
+                    dispatch(push('/window/' + windowType));
+                });
+            }
+        );
+    }
+
+    redirect = (where) => {
+        const {dispatch} = this.props;
+        dispatch(push(where));
+        this.handleBackdropClick(false);
+    }
+
     render() {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
@@ -214,11 +255,19 @@ class Header extends Component {
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow, tooltip
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow, tooltip, prompt
         } = this.state;
 
         return (
             <div>
+                <Prompt
+                    isOpen={prompt.open}
+                    title={prompt.title}
+                    text={prompt.text}
+                    buttons={prompt.buttons}
+                    onCancelClick={this.handlePromptCancelClick}
+                    onSubmitClick={() => this.handlePromptSubmitClick(windowType, dataId)}
+                />
                 {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
                 {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
                 <nav className={"header header-super-faded js-not-unselect " + (scrolled ? "header-shadow": "")}>
@@ -340,6 +389,7 @@ class Header extends Component {
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
+                    redirect={this.redirect}
                 />}
 
                 {showSidelist && <SideList
@@ -354,9 +404,10 @@ class Header extends Component {
                     isMenuOverlayShow = {isMenuOverlayShow}
                     handleSideListToggle = {this.handleSideListToggle}
                     handleInboxOpen = {this.handleInboxOpen}
-                    openModal = {() => this.openModal(windowType, "window", "Advanced edit", true)}
-                    handlePrint={() => this.handlePrint(windowType, dataId, docNo)}
-                    handleDelete={this.handleDelete}
+                    openModal = {dataId? () => this.openModal(windowType, "window", "Advanced edit", true) : ''}
+                    handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNo) : ''}
+                    handleDelete={dataId ? this.handleDelete: ''}
+                    redirect={windowType ? () => this.redirect('/window/'+ windowType +'/new') : ''}
                 />
             </div>
         )
@@ -408,7 +459,7 @@ function mapStateToProps(state) {
 }
 
 Header.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
+    shortcuts: PropTypes.object.isRequired
 }
 
 Header = connect(mapStateToProps)(Header)

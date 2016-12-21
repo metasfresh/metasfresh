@@ -4,11 +4,11 @@ import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
 
-import {
-    printDoc,
-    openModal,
-    deleteData
-} from '../../actions/WindowActions';
+// import {
+//     printDoc,
+//     openModal,
+//     deleteData
+// } from '../../actions/WindowActions';
 
 import {
     setFilter
@@ -22,31 +22,22 @@ import {
     getViewActions
 } from '../../actions/MenuActions';
 
-import keymap from '../../keymap.js';
-import DocumentContextGlobalShortcuts from '../shortcuts/DocumentContextGlobalShortcuts';
-import { ShortcutManager } from 'react-shortcuts';
-const shortcutManager = new ShortcutManager(keymap);
-
 class Subheader extends Component {
     constructor(props){
         super(props);
 
         this.state = {
-            pdfSrc: null,
-            prompt: {
-                open: false,
-                title: "Delete",
-                text: "Are you sure?",
-                buttons: {
-                    submit: "Delete",
-                    cancel: "Cancel"
-                }
-            }
+            pdfSrc: null
+            // prompt: {
+            //     open: false,
+            //     title: "Delete",
+            //     text: "Are you sure?",
+            //     buttons: {
+            //         submit: "Delete",
+            //         cancel: "Cancel"
+            //     }
+            // }
         }
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
     }
 
     componentDidMount() {
@@ -65,11 +56,11 @@ class Subheader extends Component {
     }
 
 
-    redirect = (where) => {
-        const {dispatch, onClick} = this.props;
-        dispatch(push(where));
-        onClick();
-    }
+    // redirect = (where) => {
+    //     const {dispatch, onClick} = this.props;
+    //     dispatch(push(where));
+    //     onClick();
+    // }
 
     // openModal = (windowType, type, caption, isAdvanced) => {
     //     const {dispatch, onClick} = this.props;
@@ -104,31 +95,31 @@ class Subheader extends Component {
     //     }));
     // }
 
-    handlePromptCancelClick = () => {
-        const {onClick} = this.props;
-        onClick();
-        this.setState(Object.assign({}, this.state, {
-            prompt: Object.assign({}, this.state.prompt, {
-                open: false
-            })
-        }));
-    }
+    // handlePromptCancelClick = () => {
+    //     const {onClick} = this.props;
+    //     onClick();
+    //     this.setState(Object.assign({}, this.state, {
+    //         prompt: Object.assign({}, this.state.prompt, {
+    //             open: false
+    //         })
+    //     }));
+    // }
 
-    handlePromptSubmitClick = (windowType, docId) => {
-        const {dispatch, onClick} = this.props;
+    // handlePromptSubmitClick = (windowType, docId) => {
+    //     const {dispatch, onClick} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
-            prompt: Object.assign({}, this.state.prompt, {
-                open: false
-            })
-        }), () => {
-            dispatch(deleteData(windowType, docId))
-                .then(response => {
-                    dispatch(push('/window/' + windowType));
-                });
-            }
-        );
-    }
+    //     this.setState(Object.assign({}, this.state, {
+    //         prompt: Object.assign({}, this.state.prompt, {
+    //             open: false
+    //         })
+    //     }), () => {
+    //         dispatch(deleteData(windowType, docId))
+    //             .then(response => {
+    //                 dispatch(push('/window/' + windowType));
+    //             });
+    //         }
+    //     );
+    // }
 
     handleClone = (windowType, docId) => {
         //TODO when API ready
@@ -136,33 +127,25 @@ class Subheader extends Component {
 
     render() {
         const {
-            windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete
+            windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete, redirect
         } = this.props;
         const {prompt} = this.state;
 
         return (
 
             <div className={"subheader-container overlay-shadow subheader-open js-not-unselect"}>
-                <Prompt
-                    isOpen={prompt.open}
-                    title={prompt.title}
-                    text={prompt.text}
-                    buttons={prompt.buttons}
-                    onCancelClick={this.handlePromptCancelClick}
-                    onSubmitClick={() => this.handlePromptSubmitClick(windowType, dataId)}
-                />
                 <div className="container-fluid">
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column" >
-                                {windowType && <div className="subheader-item" onClick={()=> this.redirect('/window/'+ windowType +'/new')}>
+                                {windowType && <div className="subheader-item" onClick={()=> redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New
                                 </div>}
                                 {dataId && <div className="subheader-item" onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> this.handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item" onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete</div>}
-                                <div className="subheader-item" onClick={()=> this.redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
+                                <div className="subheader-item" onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
                             </div>
                             <div className=" subheader-column">
                                 <div className="subheader-header">Actions</div>
@@ -198,15 +181,6 @@ class Subheader extends Component {
                         </div>
                     </div>
                 </div>
-                <DocumentContextGlobalShortcuts
-                    openModal={openModal}
-                    windowType={windowType}
-                    handlePrint={handlePrint}
-                    handleDelete={handleDelete}
-                    redirect={this.redirect}
-                    dataId={dataId}
-                    docNo={docNo}
-                />
             </div>
         )
     }
@@ -216,10 +190,6 @@ class Subheader extends Component {
 Subheader.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
-
-Subheader.childContextTypes = {
-    shortcuts: React.PropTypes.object.isRequired
-}
 
 Subheader = connect()(Subheader);
 
