@@ -112,9 +112,16 @@ class Header extends Component {
             this.setState(Object.assign({}, this.state, {
                 menuOverlay: nodeId
             }), () => {
-                this.setState(Object.assign({}, this.state, {
-                    isMenuOverlayShow: !this.state.isMenuOverlayShow
-                }));
+                if(nodeId !== "") {
+                    this.setState(Object.assign({}, this.state, {
+                        isMenuOverlayShow: true
+                    }));
+                } else {
+                    this.setState(Object.assign({}, this.state, {
+                        isMenuOverlayShow: false
+                    }));
+                }
+                
             });
         }
         if(isSubheaderShow){
@@ -123,14 +130,6 @@ class Header extends Component {
             this.handleCloseSideList(toggleBreadcrumb);
         }else{
             toggleBreadcrumb();
-        }
-    }
-
-    toggleMenuOverlay = (e, nodeId) => {
-        if(!this.state.isMenuOverlayShow) {
-            this.handleMenuOverlay(e, nodeId);
-        } else {
-            this.handleMenuOverlay(e, "");
         }
     }
 
@@ -398,12 +397,12 @@ class Header extends Component {
                 />}
 
                 <GlobalShortcuts
-                    handleSubheaderOpen={this.handleSubheaderOpen}
-                    toggleMenuOverlay={this.toggleMenuOverlay}
-                    homemenu={homemenu}
-                    isMenuOverlayShow = {isMenuOverlayShow}
-                    handleSideListToggle = {this.handleSideListToggle}
-                    handleInboxOpen = {this.handleInboxOpen}
+                    handleSubheaderOpen={isSubheaderShow ? () => this.handleBackdropClick() : () => this.handleSubheaderOpen()}
+                    handleMenuOverlay={isMenuOverlayShow ? () => this.handleMenuOverlay("", "") : () => this.handleMenuOverlay("", homemenu.nodeId)}
+                    closeMenuOverlay={() => this.handleMenuOverlay("", "")}
+                    handleSideListToggle = {showSidelist ? isSideListShow ? this.handleCloseSideList : e => this.handleBackdropClick(this.handleSideListToggle) : ''}
+                    handleInboxOpen = {isInboxOpen ? () => this.handleInboxOpen(false) : () => this.handleInboxOpen(true)}
+                    closeInbox = {() => this.handleInboxOpen(false)}
                     openModal = {dataId? () => this.openModal(windowType, "window", "Advanced edit", true) : ''}
                     handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNo) : ''}
                     handleDelete={dataId ? this.handleDelete: ''}
