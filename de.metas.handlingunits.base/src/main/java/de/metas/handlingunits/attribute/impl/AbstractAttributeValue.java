@@ -127,7 +127,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		return getAttributeStorage().getHUAttributeStorageFactory().getHUAttributesDAO();
 	}
 
-	protected final IAttributeValuesProvider getAttributeValuesProvider()
+	@Override
+	public final IAttributeValuesProvider getAttributeValuesProvider()
 	{
 		if (_attributeValuesProvider == null)
 		{

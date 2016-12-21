@@ -30,6 +30,7 @@ import java.util.List;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -218,6 +219,12 @@ public final class NullAttributeValue implements IAttributeValue
 
 	@Override
 	public List<ValueNamePair> getAvailableValues()
+	{
+		throw new InvalidAttributeValueException("method not supported for " + this);
+	}
+	
+	@Override
+	public IAttributeValuesProvider getAttributeValuesProvider()
 	{
 		throw new InvalidAttributeValueException("method not supported for " + this);
 	}

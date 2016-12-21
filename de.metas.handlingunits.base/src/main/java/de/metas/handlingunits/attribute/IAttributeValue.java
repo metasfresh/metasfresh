@@ -29,6 +29,7 @@ import java.util.List;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
@@ -185,6 +186,8 @@ public interface IAttributeValue
 	 * @throws InvalidAttributeValueException if this is not a list attribute
 	 */
 	List<? extends NamePair> getAvailableValues();
+
+	IAttributeValuesProvider getAttributeValuesProvider();
 
 	I_C_UOM getC_UOM();
 
