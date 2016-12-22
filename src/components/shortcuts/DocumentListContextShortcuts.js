@@ -4,16 +4,23 @@ import { Shortcuts } from 'react-shortcuts';
 class DocumentListContextShortcuts extends Component {
   constructor(props){
         super(props);
-        
     }
   handleShortcuts = (action, event) => {
-    const {handleOpenNewTab, handleDelete} = this.props;
+    const {handleAdvancedEdit, handleOpenNewTab} = this.props;
+    
     switch (action) {
       case 'OPEN_SELECTED':
-        handleOpenNewTab();
+        if(handleOpenNewTab) {
+          handleOpenNewTab();
+        }
         break
       case 'REMOVE_SELECTED':
-        handleDelete();
+        break
+      case 'ADVANCED_EDIT':
+        event.preventDefault();
+        if(handleAdvancedEdit){
+          handleAdvancedEdit();
+        }
         break
     }
   }
@@ -22,8 +29,11 @@ class DocumentListContextShortcuts extends Component {
     return (
       <Shortcuts
         name={"DOCUMENT_LIST_CONTEXT"}
-        handler= {this.handleShortcuts}
-        targetNodeSelector={"body"}
+        handler = { this.handleShortcuts }
+        targetNodeSelector = { "body" }
+        isolate = { true }
+        preventDefault = { true }
+        stopPropagation = { true } 
       />
     )
   }

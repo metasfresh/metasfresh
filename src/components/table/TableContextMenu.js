@@ -38,23 +38,12 @@ class TableContextMenu extends Component {
         this.setPosition(x,y,this.contextMenu);
     }
 
-    handleAdvancedEdit = () => {
-        const {dispatch, tabId, type, selected} = this.props;
-
-        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
-    }
-
     handleDelete = () => {
         this.setState(update(this.state, {
             prompt: {
                 open: {$set: true}
             }
         }));
-    }
-
-    handleOpenNewTab = () => {
-        const {type, selected} = this.props;
-        window.open("/window/" + type + "/" + selected[0], "_blank");
     }
 
     handlePromptCancelClick = () => {
@@ -129,7 +118,7 @@ class TableContextMenu extends Component {
 
     render() {
         const {
-            isDisplayed, x, y, blur, selected, dispatch, mainTable
+            isDisplayed, x, y, blur, selected, dispatch, mainTable, handleAdvancedEdit, handleOpenNewTab
         } = this.props;
         const {prompt, contextMenu} = this.state;
 
@@ -146,14 +135,17 @@ class TableContextMenu extends Component {
                     onBlur={blur}
                 >
                 {isSelectedOne && !mainTable &&
-                    <div className="context-menu-item" onClick={this.handleAdvancedEdit}>
+                    <div className="context-menu-item" onClick={handleAdvancedEdit}>
                         <i className="meta-icon-edit" /> Advanced edit
                     </div>
                 }
 
-                <div className="context-menu-item" onClick={this.handleOpenNewTab}>
-                    <i className="meta-icon-file" /> Open in new tab
-                </div>
+                {mainTable &&
+                    <div className="context-menu-item" onClick={handleOpenNewTab}>
+                        <i className="meta-icon-file" /> Open in new tab
+                    </div>
+                }
+
                 <div className="context-menu-item" onClick={this.handleDelete}>
                     <i className="meta-icon-edit" /> Delete
                 </div>

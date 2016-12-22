@@ -15,6 +15,11 @@ import TableContextMenu from './TableContextMenu';
 import TableItem from './TableItem';
 import MasterWidget from '../widget/MasterWidget';
 
+import keymap from '../../keymap.js';
+import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+const shortcutManager = new ShortcutManager(keymap);
+
 
 class Table extends Component {
     constructor(props) {
@@ -28,6 +33,10 @@ class Table extends Component {
                 y: 0
             }
         }
+    }
+
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -380,6 +389,17 @@ class Table extends Component {
         )
     }
 
+    handleAdvancedEdit = (type, tabId, selected) => {
+        const {dispatch} = this.props;
+
+        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
+    }
+
+    handleOpenNewTab = (selected) => {
+        const {type} = this.props;
+        window.open("/window/" + type + "/" + selected[0], "_blank");
+    }
+
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
@@ -404,6 +424,8 @@ class Table extends Component {
                         deselect={() => this.deselectAllProducts()}
                         mainTable={mainTable}
                         updateDocList={updateDocList}
+                        handleAdvancedEdit={() => this.handleAdvancedEdit(type, tabid, selected)}
+                        handleOpenNewTab={() => this.handleOpenNewTab(selected)}
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
@@ -462,9 +484,17 @@ class Table extends Component {
                         />
                     </div>
                 </div>}
+                <DocumentListContextShortcuts
+                    handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
+                    handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
+                />
             </div>
         )
     }
+}
+
+Table.childContextTypes = {
+    shortcuts: PropTypes.object.isRequired
 }
 
 Table.propTypes = {
