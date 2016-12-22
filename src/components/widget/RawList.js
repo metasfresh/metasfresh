@@ -39,25 +39,16 @@ class RawList extends Component {
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
-                this.navigate();
+                console.log('asd')
                 break;
             case "ArrowUp":
                 e.preventDefault();
-                this.navigate(true);
-                break;
-            case "ArrowLeft":
-                e.preventDefault();
-                this.handleChange();
                 break;
             case "Enter":
                 e.preventDefault();
-                if(this.state.selected != null){
-                    this.handleSelect(this.state.list[this.state.selected]);
-                }
                 break;
             case "Escape":
                 e.preventDefault();
-                this.handleBlur();
                 break;
         }
     }
@@ -96,6 +87,7 @@ class RawList extends Component {
                 onFocus={() => this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
+                onKeyDown={this.handleKeyDown}
                 className={
                     "input-dropdown-container " +
                     (rowId ? "input-dropdown-container-static " : "") +
