@@ -24,11 +24,11 @@ import de.metas.procurement.base.model.I_PMM_Product;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,4 +42,16 @@ public interface IPMMProductDAO extends ISingletonService
 	List<I_PMM_Product> retrieveByProduct(I_M_Product product);
 
 	List<I_PMM_Product> retrieveByBPartner(I_C_BPartner bpartner);
+
+	/**
+	 * Retrieve the PMM Product for the given product, date and M_HU_PI_Item_Product.
+	 * The PMM product must be for the given partner or not have a partner set at all.
+	 * 
+	 * @param date
+	 * @param productId
+	 * @param partnerId
+	 * @param huPIPId
+	 * @return
+	 */
+	I_PMM_Product retrieveForDateAndProduct(Date date, int productId, int partnerId, int huPIPId);
 }

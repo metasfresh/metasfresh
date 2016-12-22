@@ -24,11 +24,11 @@ import de.metas.procurement.base.model.I_PMM_Product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,5 +45,16 @@ public interface IPMMContractsDAO extends ISingletonService
 	I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, Timestamp date);
 
 	boolean hasRunningContracts(I_PMM_Product pmmProduct);
+
+	/**
+	 * Retrieve the running procurement contract for the given Date, Partner and Product.
+	 * In case there are many, choose the one with the latest start date
+	 * 
+	 * @param date
+	 * @param bPartnerID
+	 * @param pmmProductId
+	 * @return
+	 */
+	I_C_Flatrate_Term retrieveTermForPartnerAndProduct(Date date, int bPartnerID, int pmmProductId);
 
 }

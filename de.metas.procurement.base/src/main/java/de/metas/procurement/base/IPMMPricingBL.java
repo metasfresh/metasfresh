@@ -33,4 +33,6 @@ import org.adempiere.util.ISingletonService;
 public interface IPMMPricingBL extends ISingletonService
 {
 	void updatePricing(IPMMPricingAware pricingAware);
+
+	boolean updatePriceFromContract(IPMMPricingAware pricingAware);
 }
