@@ -25,6 +25,7 @@ upcoming
 * metasfresh
   * #681 Automatic filling of BPartner and Location only shows value
   * #718 Wrong location in empties vendor return
+  * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
 
 * webui
   * #89 Adjust DocAction Names
