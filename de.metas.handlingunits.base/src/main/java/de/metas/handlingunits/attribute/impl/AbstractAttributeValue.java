@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
@@ -563,6 +565,20 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			}
 			valueStr = String.valueOf(valueInt);
 		}
+		else if (value instanceof Map)
+		{
+			// Usually this happens when a JSON deserialized value is passed.
+			// In this case we consider the Map has one entry: key=value.
+			@SuppressWarnings("unchecked")
+			final Map<String, String> map = (Map<String, String>)value;
+			final Set<Map.Entry<String, String>> entrySet = map.entrySet();
+			if (entrySet.size() != 1)
+			{
+				throw new InvalidAttributeValueException("Invalid list value '" + value + "' (" + value.getClass() + ") for " + attribute + ".");
+			}
+			final Map.Entry<String, String> e = entrySet.iterator().next();
+			valueStr = e.getKey();
+		}
 		else
 		{
 			valueStr = value.toString();
@@ -576,8 +592,9 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			return attributeValue;
 		}
 
-		throw new InvalidAttributeValueException("Invalid list value '" + value + "' for " + attribute + "."
-				+ " Available values are: " + getAvailableValues());
+		throw new InvalidAttributeValueException("Invalid list value '" + value + "' (" + value.getClass() + ") for " + attribute + "."
+				+ " Available values are: " + getAvailableValues()
+				+ "\n Converted value: " + valueStr);
 	}
 	
 	@Override
