@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.adempiere.util.GuavaCollectors;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,6 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -204,24 +207,42 @@ public final class JSONDocument implements Serializable
 	{
 		final JSONDocument jsonDocument = new JSONDocument(documentView.getDocumentPath());
 
-		final List<JSONDocumentField> jsonFields = new ArrayList<>();
-
-		// Add pseudo "ID" field first
-		final String idFieldName = documentView.getIdFieldNameOrNull();
-		if (idFieldName != null)
+		//
+		// Fields
 		{
-			final int id = documentView.getDocumentId();
-			jsonFields.add(0, JSONDocumentField.idField(id));
+			final List<JSONDocumentField> jsonFields = new ArrayList<>();
+	
+			// Add pseudo "ID" field first
+			final String idFieldName = documentView.getIdFieldNameOrNull();
+			if (idFieldName != null)
+			{
+				final int id = documentView.getDocumentId();
+				jsonFields.add(0, JSONDocumentField.idField(id));
+			}
+	
+			// Append the other fields
+			documentView.getFieldNameAndJsonValues()
+					.entrySet()
+					.stream()
+					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
+					.forEach(jsonFields::add);
+	
+			jsonDocument.setFields(jsonFields);
 		}
-
-		// Append the other fields
-		documentView.getFieldNameAndJsonValues()
-				.entrySet()
-				.stream()
-				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
-				.forEach(jsonFields::add);
-
-		jsonDocument.setFields(jsonFields);
+		
+		//
+		// Included documents if any
+		{
+			final List<DocumentView> includedDocuments = documentView.getIncludedDocuments();
+			if (!includedDocuments.isEmpty())
+			{
+				final List<JSONDocument> jsonIncludedDocuments = includedDocuments
+						.stream()
+						.map(JSONDocument::ofDocumentView)
+						.collect(GuavaCollectors.toImmutableList());
+				jsonDocument.setIncludedDocuments(jsonIncludedDocuments);
+			}
+		}
 
 		return jsonDocument;
 	}
@@ -271,6 +292,11 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
 	private Map<String, JSONDocumentField> fieldsByName;
+	
+	@JsonProperty("includedDocuments")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private List<JSONDocument> includedDocuments;
+
 
 	public JSONDocument(final DocumentPath documentPath)
 	{
@@ -391,5 +417,10 @@ public final class JSONDocument implements Serializable
 	public int getFieldsCount()
 	{
 		return fieldsByName == null ? 0 : fieldsByName.size();
+	}
+
+	private void setIncludedDocuments(final List<JSONDocument> includedDocuments)
+	{
+		this.includedDocuments = includedDocuments;
 	}
 }

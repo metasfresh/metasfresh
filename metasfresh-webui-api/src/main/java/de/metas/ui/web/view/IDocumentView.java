@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,4 +43,6 @@ public interface IDocumentView
 	Map<String, Object> getFieldNameAndJsonValues();
 	
 	IDocumentViewAttributes getAttributes();
+
+	List<DocumentView> getIncludedDocuments();
 }

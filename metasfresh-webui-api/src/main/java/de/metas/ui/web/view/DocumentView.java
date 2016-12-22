@@ -1,15 +1,18 @@
 package de.metas.ui.web.view;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -37,7 +40,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
  * #L%
  */
 
-public class DocumentView implements IDocumentView
+public final class DocumentView implements IDocumentView
 {
 	public static final Builder builder(final int adWindowId)
 	{
@@ -51,6 +54,8 @@ public class DocumentView implements IDocumentView
 
 	private final IDocumentViewAttributesProvider attributesProvider;
 
+	private final List<DocumentView> includedDocuments;
+
 	private DocumentView(final Builder builder)
 	{
 		super();
@@ -61,6 +66,8 @@ public class DocumentView implements IDocumentView
 		values = ImmutableMap.copyOf(builder.values);
 
 		attributesProvider = builder.getAttributesProviderOrNull();
+
+		includedDocuments = builder.buildIncludedDocuments();
 	}
 
 	@Override
@@ -71,6 +78,7 @@ public class DocumentView implements IDocumentView
 				.add("id", documentId)
 				.add("values", values)
 				.add("attributesProvider", attributesProvider)
+				.add("includedDocuments.count", includedDocuments.size())
 				.toString();
 	}
 
@@ -109,16 +117,22 @@ public class DocumentView implements IDocumentView
 	{
 		return values;
 	}
-	
+
 	@Override
 	public IDocumentViewAttributes getAttributes()
 	{
-		IDocumentViewAttributes attributes = attributesProvider == null ? null : attributesProvider.getAttributes(documentId);
-		if(attributes == null)
+		final IDocumentViewAttributes attributes = attributesProvider == null ? null : attributesProvider.getAttributes(documentId);
+		if (attributes == null)
 		{
 			throw new IllegalStateException("Document does not support attributes");
 		}
 		return attributes;
+	}
+
+	@Override
+	public List<DocumentView> getIncludedDocuments()
+	{
+		return includedDocuments;
 	}
 
 	public static final class Builder
@@ -128,6 +142,7 @@ public class DocumentView implements IDocumentView
 		private int documentId;
 		private final Map<String, Object> values = new LinkedHashMap<>();
 		private IDocumentViewAttributesProvider attributesProvider;
+		private final List<DocumentView.Builder> includedDocuments = null;
 
 		private Builder(final int adWindowId)
 		{
@@ -191,10 +206,24 @@ public class DocumentView implements IDocumentView
 			return attributesProvider;
 		}
 
-		public Builder setAttributesProvider(@Nullable IDocumentViewAttributesProvider attributesProvider)
+		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider)
 		{
 			this.attributesProvider = attributesProvider;
 			return this;
 		}
+
+		private List<DocumentView> buildIncludedDocuments()
+		{
+			if (includedDocuments == null || includedDocuments.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			return includedDocuments
+					.stream()
+					.map(builder -> builder.build())
+					.collect(GuavaCollectors.toImmutableList());
+		}
+
 	}
 }
