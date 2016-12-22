@@ -29,7 +29,7 @@ FROM
 		iol.QtyEnteredTU			AS HUQty,
 		iol.MovementQty,
 		COALESCE(uomt.UOMSymbol, uom.UOMSymbol) 	AS UOMSymbol,
-		iol.Description
+		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description
 	FROM
 		-- All In Outs linked to the order
 		(

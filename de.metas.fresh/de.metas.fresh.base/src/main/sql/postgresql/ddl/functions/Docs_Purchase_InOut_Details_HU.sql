@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details_HU ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details_HU ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details_HU ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
 RETURNS TABLE 
 (
@@ -29,7 +29,7 @@ FROM
 		iol.QtyEnteredTU			AS HUQty,
 		iol.MovementQty,
 		COALESCE(uomt.UOMSymbol, uom.UOMSymbol) 	AS UOMSymbol,
-		iol.Description
+		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description
 	FROM
 		-- All In Outs linked to the order
 		(
