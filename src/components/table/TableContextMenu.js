@@ -24,13 +24,7 @@ class TableContextMenu extends Component {
                 y:0
             },
             prompt: {
-                open: false,
-                title: "Delete",
-                text: "Are you sure?",
-                buttons: {
-                    submit: "Delete",
-                    cancel: "Cancel"
-                }
+                open: false
             }
         }
     }
@@ -163,14 +157,17 @@ class TableContextMenu extends Component {
                 <div className="context-menu-item" onClick={this.handleDelete}>
                     <i className="meta-icon-edit" /> Delete
                 </div>
-                <Prompt
-                    isOpen={prompt.open}
-                    title={prompt.title}
-                    text={prompt.text}
-                    buttons={prompt.buttons}
-                    onCancelClick={this.handlePromptCancelClick}
-                    onSubmitClick={this.handlePromptSubmitClick}
-                />
+                {
+                    prompt.open &&
+                    <Prompt
+                        title={"Delete"}
+                        text={"Are you sure?"}
+                        buttons={{submit: "Delete", cancel: "Cancel"}}
+                        onCancelClick={this.handlePromptCancelClick}
+                        onSubmitClick={this.handlePromptSubmitClick}
+                    />
+                }
+                
                 <DocumentListContextShortcuts
                     handleOpenNewTab={this.handleOpenNewTab}
                     handleDelete={this.handleDelete}

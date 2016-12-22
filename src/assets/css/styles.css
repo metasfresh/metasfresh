@@ -672,7 +672,7 @@ body {
     display: block;
 }
 
-.tab-pane .panel {
+.tab-pane .panel:not(.panel-prompt) {
     padding-bottom: 100px;
 }
 

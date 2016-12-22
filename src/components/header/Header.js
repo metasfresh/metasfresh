@@ -50,13 +50,7 @@ class Header extends Component {
                 open: ''
             },
             prompt: {
-                open: false,
-                title: "Delete",
-                text: "Are you sure?",
-                buttons: {
-                    submit: "Delete",
-                    cancel: "Cancel"
-                }
+                open: false
             }
         }
     }
@@ -254,14 +248,18 @@ class Header extends Component {
 
         return (
             <div>
+            {
+                prompt.open &&
+
                 <Prompt
-                    isOpen={prompt.open}
-                    title={prompt.title}
-                    text={prompt.text}
-                    buttons={prompt.buttons}
+                    title={"Delete"}
+                    text={"Are you sure?"}
+                    buttons={{submit: "Delete", cancel: "Cancel"}}
                     onCancelClick={this.handlePromptCancelClick}
                     onSubmitClick={() => this.handlePromptSubmitClick(windowType, dataId)}
                 />
+            }
+                
                 {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
                 {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
                 <nav className={"header header-super-faded js-not-unselect " + (scrolled ? "header-shadow": "")}>
