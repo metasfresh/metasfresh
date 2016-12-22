@@ -115,9 +115,6 @@ public class ProcessDescriptorsFactory
 				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
-				.setAD_Tab_ID(0)
-				.setTableName(I_AD_Process_Para.Table_Name)
-				.setIsSOTrx(true)
 				//
 				;
 

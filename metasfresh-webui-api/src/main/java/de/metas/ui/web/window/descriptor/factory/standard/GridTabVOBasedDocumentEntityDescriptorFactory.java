@@ -116,11 +116,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 	}
 
-	public String getTableName()
-	{
-		return documentEntity().getTableName();
-	}
-
 	public ILogicExpression getTabDisplayLogic()
 	{
 		return documentEntity().getDisplayLogic();
@@ -399,7 +394,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				// Default value: use our expression
 				.setDefaultValueExpression(valueProvider)
 				//
-				// Characteristics: none, it's an internal field
 				.addCharacteristicIfTrue(publicField, Characteristic.PublicField)
 				//
 				// Logics:
@@ -522,7 +516,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 	{
 		// FIXME uber HARDCODED
 		
-		if(!I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableName()))
+		if(!I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableNameOrNull()))
 		{
 			return;
 		}
@@ -535,7 +529,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setDetailId(documentDescriptor.getDetailId())
 				.setAD_Tab_ID(documentDescriptor.getAD_Tab_ID())
 				.setTableName(documentDescriptor.getTableName())
-				.setIsSOTrx(documentDescriptor.isSOTrx())
+				.setIsSOTrx(documentDescriptor.getIsSOTrx())
 				//
 				;
 

@@ -46,8 +46,8 @@ public final class DocumentDescriptor
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("layout", layout)
 				.add("entity", entityDescriptor)
+				.add("layout", layout)
 				.toString();
 	}
 

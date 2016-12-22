@@ -120,7 +120,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 				.setLayout(layoutBuilder.build())
 				.setEntityDescriptor(rootLayoutFactory.documentEntity().build())
 				.build();
-		logger.trace("Descriptor loaded: {}", descriptor);
+		logger.info("Descriptor loaded in {}: {}", stopwatch, descriptor);
 		return descriptor;
 	}
 }

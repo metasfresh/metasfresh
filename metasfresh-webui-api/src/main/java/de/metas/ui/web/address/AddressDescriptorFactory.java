@@ -74,11 +74,6 @@ public class AddressDescriptorFactory
 				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText("C_Location_ID"))
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
 				.disableDefaultTableCallouts()
-				// Defaults:
-				.setDetailId(null)
-				.setAD_Tab_ID(0)
-				.setTableName(org.compiere.model.I_C_Location.Table_Name)
-				.setIsSOTrx(true)
 				//
 				;
 
