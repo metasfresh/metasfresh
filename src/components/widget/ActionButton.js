@@ -19,7 +19,9 @@ class ActionButton extends Component {
     }
     handleDropdownFocus = () => {
         const { dispatch, windowType, fields, dataId} = this.props;
-        dispatch(dropdownRequest(windowType, fields[1].field, dataId)).then((res) => {
+        // windowType, properties[0].field, dataId, tabId, rowId, entity,
+        // subentity, subentityId
+        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, "window")).then((res) => {
             this.setState({list: res.data});
         });
         this.statusDropdown.classList.add('dropdown-status-open');
