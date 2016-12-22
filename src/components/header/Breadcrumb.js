@@ -23,20 +23,11 @@ class Breadcrumb extends Component {
         dispatch(push("/window/"+page));
     }
 
-    showTooltip = (tooltip) => {
+    toggleTooltip = (tooltip) => {
         this.setState(
             Object.assign({}, this.state, {
                 tooltip: Object.assign({}, this.state, {
                     open: tooltip
-                })
-            })
-        );
-    }
-    closeTooltip = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                tooltip: Object.assign({}, this.state, {
-                    open: false
                 })
             })
         );
@@ -57,8 +48,8 @@ class Breadcrumb extends Component {
                     onClick={ !(menu && menu.children && menu.children.elementId) ?
                         e => handleMenuOverlay(e, menu.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )
                     }
-                    onMouseEnter={!!index ? '' : (e) => this.showTooltip(true)}
-                    onMouseLeave={this.closeTooltip}
+                    onMouseEnter={!!index ? '' : (e) => this.toggleTooltip(true)}
+                    onMouseLeave={(e) => this.toggleTooltip(false)}
                 >
                     <span className={"header-item icon-sm"}>
                         {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}

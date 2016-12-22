@@ -170,20 +170,11 @@ class Header extends Component {
         }
     }
 
-    showTooltip = (tooltip) => {
+    toggleTooltip = (tooltip) => {
         this.setState(
             Object.assign({}, this.state, {
                 tooltip: Object.assign({}, this.state, {
                     open: tooltip
-                })
-            })
-        );
-    }
-    closeTooltip = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                tooltip: Object.assign({}, this.state, {
-                    open: ''
                 })
             })
         );
@@ -279,8 +270,8 @@ class Header extends Component {
                             <div className="header-left-side">
                                 <div
                                     onClick={e => this.handleCloseSideList(this.handleSubheaderOpen)}
-                                    onMouseEnter={(e) => this.showTooltip('tooltip1')}
-                                    onMouseLeave={this.closeTooltip}
+                                    onMouseEnter={(e) => this.toggleTooltip('tooltip1')}
+                                    onMouseLeave={(e) => this.toggleTooltip('')}
                                     className={"btn-square btn-header tooltip-parent " +
                                         (isSubheaderShow ?
                                             "btn-meta-default-dark btn-subheader-open btn-header-open"
@@ -331,8 +322,8 @@ class Header extends Component {
                                     "header-item-container header-item-container-static pointer tooltip-parent "+
                                     (isInboxOpen ? "header-item-open " : "")}
                                     onClick={() => this.handleInboxOpen(true)}
-                                    onMouseEnter={(e) => this.showTooltip('tooltip2')}
-                                    onMouseLeave={this.closeTooltip}
+                                    onMouseEnter={(e) => this.toggleTooltip('tooltip2')}
+                                    onMouseLeave={(e) => this.toggleTooltip('')}
                                 >
                                     <span className={"header-item header-item-badge icon-lg"}>
                                         <i className="meta-icon-notifications" />
@@ -362,8 +353,8 @@ class Header extends Component {
                                                 : "btn-meta-primary")
                                         }
                                         onClick={e => this.handleBackdropClick(this.handleSideListToggle)}
-                                        onMouseEnter={(e) => this.showTooltip('tooltip3')}
-                                        onMouseLeave={this.closeTooltip}
+                                        onMouseEnter={(e) => this.toggleTooltip('tooltip3')}
+                                        onMouseLeave={(e) => this.toggleTooltip('')}
                                     >
                                         <i className="meta-icon-list" />
                                         { tooltip.open === 'tooltip3' &&
