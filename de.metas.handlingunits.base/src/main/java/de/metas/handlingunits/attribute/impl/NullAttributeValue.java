@@ -162,6 +162,12 @@ public final class NullAttributeValue implements IAttributeValue
 	{
 		return false;
 	}
+	
+	@Override
+	public boolean isDateValue()
+	{
+		return false;
+	}
 
 	@Override
 	public boolean isEmpty()

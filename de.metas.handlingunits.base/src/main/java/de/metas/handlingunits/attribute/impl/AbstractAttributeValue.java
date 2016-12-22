@@ -657,6 +657,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(valueType);
 	}
 	
+	@Override
 	public final boolean isDateValue()
 	{
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(valueType);

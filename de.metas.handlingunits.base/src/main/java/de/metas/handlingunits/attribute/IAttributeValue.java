@@ -130,6 +130,11 @@ public interface IAttributeValue
 	boolean isStringValue();
 
 	/**
+	 * @return true if it's a date attribute
+	 */
+	boolean isDateValue();
+
+	/**
 	 * @return true if the value Check.isEmpty(value) is true, false otherwise
 	 */
 	boolean isEmpty();
