@@ -36,6 +36,9 @@ public interface ILotNumberBL extends ISingletonService
 	 * 
 	 * PLEASE KEEP IN SYNC WITH the sql function : "de.metas.handlingunits".hu_lotnumberdate_tostring(p_Date date)
 	 * 
+	 * Both the logic called by this method and the sql function are according to international standard ISO 8601.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for extra details
+	 * 
 	 * @param date
 	 * @return
 	 */
