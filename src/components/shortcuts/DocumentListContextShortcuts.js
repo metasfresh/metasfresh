@@ -6,7 +6,7 @@ class DocumentListContextShortcuts extends Component {
         super(props);
         
     }
-  _handleShortcuts = (action, event) => {
+  handleShortcuts = (action, event) => {
     const {handleOpenNewTab, handleDelete} = this.props;
     switch (action) {
       case 'OPEN_SELECTED':
@@ -22,10 +22,9 @@ class DocumentListContextShortcuts extends Component {
     return (
       <Shortcuts
         name={"DOCUMENT_LIST_CONTEXT"}
-        handler= {this._handleShortcuts}
+        handler= {this.handleShortcuts}
         targetNodeSelector={"body"}
-      >
-      </Shortcuts>
+      />
     )
   }
 }
