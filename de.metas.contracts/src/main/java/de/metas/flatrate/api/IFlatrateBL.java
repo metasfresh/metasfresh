@@ -96,11 +96,11 @@ public interface IFlatrateBL extends ISingletonService
 	 *
 	 * @param term
 	 * @param forceExtend will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
-	 * @param forceComplete optional, may be <code>null</code>. If not <code>null</code>, then this value will decide if the new term is completed.
-	 *            If <code>null</code>, then {@link I_C_Flatrate_Transition#isAutoCompleteNewTerm()} of the given <code>term</code> transition will decide.
+	 * @param forceComplete: If the flag is on true, complete the term, otherwise don't.
+	 * 
 	 * @param ol if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
-	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, Boolean forceComplete, final Timestamp nextTermStartDate, I_C_OrderLine ol);
+	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, boolean forceComplete, final Timestamp nextTermStartDate, I_C_OrderLine ol);
 
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}
