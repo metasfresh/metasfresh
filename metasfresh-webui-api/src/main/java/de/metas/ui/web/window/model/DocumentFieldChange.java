@@ -328,6 +328,17 @@ public final class DocumentFieldChange
 
 		putDebugProperties(fromEvent.debugProperties);
 	}
+	
+	/* package */ void mergeFrom(final IDocumentFieldChangedEvent fromEvent)
+	{
+		if (fromEvent.isValueSet())
+		{
+			valueSet = true;
+			value = fromEvent.getValue();
+			valueReason = null; // N/A
+		}
+		
+	}
 
 	public void putDebugProperty(final String name, final Object value)
 	{

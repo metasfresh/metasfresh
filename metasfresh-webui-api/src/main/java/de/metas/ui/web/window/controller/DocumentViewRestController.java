@@ -25,6 +25,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
@@ -92,7 +93,7 @@ public class DocumentViewRestController
 				.build();
 	}
 
-	@GetMapping(value = "/layout")
+	@GetMapping("/layout")
 	public JSONDocumentViewLayout getViewLayout(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
@@ -103,7 +104,8 @@ public class DocumentViewRestController
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
 
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-		final Collection<DocumentFilterDescriptor> filters = descriptor.getEntityDescriptor().getFiltersProvider().getAll();
+		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
+		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
 
 		final JSONOptions jsonOpts = newJSONOptions();
 
@@ -112,7 +114,8 @@ public class DocumentViewRestController
 			case grid:
 			{
 				final DocumentLayoutDetailDescriptor gridLayout = layout.getGridView();
-				return JSONDocumentViewLayout.ofGridLayout(gridLayout, filters, jsonOpts);
+				final String idFieldName = entityDescriptor.getIdFieldName();
+				return JSONDocumentViewLayout.ofGridLayout(gridLayout, idFieldName, filters, jsonOpts);
 			}
 			case list:
 			{
@@ -162,7 +165,7 @@ public class DocumentViewRestController
 		return JSONDocumentViewResult.of(result);
 	}
 
-	@DeleteMapping(value = "/{viewId}")
+	@DeleteMapping("/{viewId}")
 	public void deleteView(@PathVariable("viewId") final String viewId)
 	{
 		userSession.assertLoggedIn();
@@ -170,7 +173,7 @@ public class DocumentViewRestController
 		documentViewsRepo.deleteView(viewId);
 	}
 
-	@GetMapping(value = "/{viewId}")
+	@GetMapping("/{viewId}")
 	public JSONDocumentViewResult getViewData(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
@@ -187,7 +190,7 @@ public class DocumentViewRestController
 		return JSONDocumentViewResult.of(result);
 	}
 
-	@GetMapping(value = "/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
+	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
@@ -204,7 +207,7 @@ public class DocumentViewRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping(value = "/{viewId}/filter/{filterId}/attribute/{parameterName}/dropdown")
+	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
@@ -220,7 +223,7 @@ public class DocumentViewRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping(value = "/{viewId}/actions")
+	@GetMapping("/{viewId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
@@ -235,5 +238,4 @@ public class DocumentViewRestController
 				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
-
 }

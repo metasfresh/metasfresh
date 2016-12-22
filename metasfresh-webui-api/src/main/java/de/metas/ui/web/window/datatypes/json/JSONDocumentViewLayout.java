@@ -13,6 +13,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
@@ -45,11 +46,12 @@ public final class JSONDocumentViewLayout implements Serializable
 {
 	public static JSONDocumentViewLayout ofGridLayout(
 			final DocumentLayoutDetailDescriptor detail //
+			, final String idFieldName // for debug
 			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONOptions jsonOpts //
 	)
 	{
-		return new JSONDocumentViewLayout(detail, filters, jsonOpts);
+		return new JSONDocumentViewLayout(detail, idFieldName, filters, jsonOpts);
 	}
 
 	public static final JSONDocumentViewLayout ofSideListLayout(
@@ -60,7 +62,7 @@ public final class JSONDocumentViewLayout implements Serializable
 	{
 		return new JSONDocumentViewLayout(sideListLayout, filters, jsonOpts);
 	}
-
+	
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -91,22 +93,33 @@ public final class JSONDocumentViewLayout implements Serializable
 	private final List<JSONDocumentFilterDescriptor> filters;
 
 	private JSONDocumentViewLayout(
-			final DocumentLayoutDetailDescriptor detail //
+			final DocumentLayoutDetailDescriptor gridLayout //
+			, final String idFieldName //
 			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONOptions jsonOpts //
 	)
 	{
 		super();
 
-		type = String.valueOf(detail.getAD_Window_ID());
+		type = String.valueOf(gridLayout.getAD_Window_ID());
 
 		final String adLanguage = jsonOpts.getAD_Language();
-		caption = detail.getCaption(adLanguage);
-		description = detail.getDescription(adLanguage);
-		emptyResultText = detail.getEmptyResultText(adLanguage);
-		emptyResultHint = detail.getEmptyResultHint(adLanguage);
+		caption = gridLayout.getCaption(adLanguage);
+		description = gridLayout.getDescription(adLanguage);
+		emptyResultText = gridLayout.getEmptyResultText(adLanguage);
+		emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
 
-		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonOpts);
+		//
+		// Elements
+		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
+		if(jsonOpts.isDebugShowColumnNamesForCaption() && idFieldName != null)
+		{
+			elements = ImmutableList.<JSONDocumentLayoutElement>builder()
+					.add(JSONDocumentLayoutElement.debuggingField(idFieldName, DocumentFieldWidgetType.Text))
+					.addAll(elements)
+					.build();
+		}
+		this.elements = elements;
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 	}

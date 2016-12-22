@@ -2,6 +2,8 @@ package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
 
+import org.compiere.util.NamePair;
+
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -50,6 +52,11 @@ public final class Values
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			return JSONLookupValue.ofLookupValue(lookupValue);
+		}
+		else if (value instanceof NamePair)
+		{
+			final NamePair lookupValue = (NamePair)value;
+			return JSONLookupValue.ofNamePair(lookupValue);
 		}
 		else if (value instanceof BigDecimal)
 		{

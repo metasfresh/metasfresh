@@ -1,4 +1,6 @@
-package de.metas.ui.web.window.datatypes;
+package de.metas.ui.web.window.model;
+
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -22,25 +24,11 @@ package de.metas.ui.web.window.datatypes;
  * #L%
  */
 
-public enum DocumentType
+public interface IDocumentFieldChangedEvent
 {
-	Window("W") //
-	, Process("P") //
-	, ProductAttributes("ASI") //
-	, HUAttributes("HUA") //
-	, Address("ADDR") //
-	, QuickInput("QI")
-	;
-
-	private final String symbol;
-
-	DocumentType(final String symbol)
-	{
-		this.symbol = symbol;
-	}
-
-	public String getSymbol()
-	{
-		return symbol;
-	}
+	DocumentPath getDocumentPath();
+	String getFieldName();
+	
+	boolean isValueSet();
+	Object getValue();
 }

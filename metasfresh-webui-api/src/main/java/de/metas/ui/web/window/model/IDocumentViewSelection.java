@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import org.compiere.util.Evaluatee;
 
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -48,6 +49,9 @@ public interface IDocumentViewSelection
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 		return getPage(firstRow, pageLength, orderBys);
 	}
+	
+	IDocumentView getById(int documentId) throws EntityNotFoundException;
+
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
 
@@ -66,6 +70,8 @@ public interface IDocumentViewSelection
 
 	/** @return stream of actions which can be executed on this view */
 	Stream<ProcessDescriptor> streamActions();
+
+	boolean hasAttributesSupport();
 
 	default IDocumentViewSelection assertWindowIdMatches(final int expectedWindowId)
 	{

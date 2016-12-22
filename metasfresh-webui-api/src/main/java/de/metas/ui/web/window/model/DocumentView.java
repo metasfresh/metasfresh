@@ -4,12 +4,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.window.controller.IDocumentViewAttributes;
+import de.metas.ui.web.window.controller.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 
@@ -47,6 +51,8 @@ public class DocumentView implements IDocumentView
 	private final int documentId;
 	private final Map<String, Object> values;
 
+	private final IDocumentViewAttributesProvider attributesProvider;
+
 	private DocumentView(final Builder builder)
 	{
 		super();
@@ -55,14 +61,18 @@ public class DocumentView implements IDocumentView
 		idFieldName = builder.idFieldName;
 		documentId = builder.documentId;
 		values = ImmutableMap.copyOf(builder.values);
+
+		attributesProvider = builder.getAttributesProviderOrNull();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", documentId)
 				.add("values", values)
+				.add("attributesProvider", attributesProvider)
 				.toString();
 	}
 
@@ -101,6 +111,17 @@ public class DocumentView implements IDocumentView
 	{
 		return values;
 	}
+	
+	@Override
+	public IDocumentViewAttributes getAttributes()
+	{
+		IDocumentViewAttributes attributes = attributesProvider == null ? null : attributesProvider.getAttributes(documentId);
+		if(attributes == null)
+		{
+			throw new IllegalStateException("Document does not support attributes");
+		}
+		return attributes;
+	}
 
 	public static final class Builder
 	{
@@ -108,6 +129,7 @@ public class DocumentView implements IDocumentView
 		private String idFieldName;
 		private int documentId;
 		private final Map<String, Object> values = new LinkedHashMap<>();
+		private IDocumentViewAttributesProvider attributesProvider;
 
 		private Builder(final int adWindowId)
 		{
@@ -164,6 +186,17 @@ public class DocumentView implements IDocumentView
 			{
 				values.put(fieldName, jsonValue);
 			}
+		}
+
+		private IDocumentViewAttributesProvider getAttributesProviderOrNull()
+		{
+			return attributesProvider;
+		}
+
+		public Builder setAttributesProvider(@Nullable IDocumentViewAttributesProvider attributesProvider)
+		{
+			this.attributesProvider = attributesProvider;
+			return this;
 		}
 	}
 }

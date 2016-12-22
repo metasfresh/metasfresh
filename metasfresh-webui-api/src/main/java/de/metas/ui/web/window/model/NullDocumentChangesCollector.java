@@ -107,7 +107,7 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	{
 		// do nothing
 	}
-	
+
 	@Override
 	public void collectValidStatus(final IDocumentFieldView documentField)
 	{
@@ -121,7 +121,13 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
-	public void collectStaleDetailId(DocumentPath documentPath, DetailId detailId)
+	public void collectStaleDetailId(final DocumentPath documentPath, final DetailId detailId)
+	{
+		// do nothing
+	}
+
+	@Override
+	public void collectEvent(final IDocumentFieldChangedEvent event)
 	{
 		// do nothing
 	}

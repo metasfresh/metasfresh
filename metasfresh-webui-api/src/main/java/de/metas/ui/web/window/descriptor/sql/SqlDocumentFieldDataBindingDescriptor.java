@@ -303,6 +303,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs);
 				if (fieldValue == null)
 				{
+					// Debugging info
 					if (logger.isDebugEnabled())
 					{
 						Integer recordId = null;
@@ -318,6 +319,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 						logger.debug("Skip missing record: Record_ID={}, SeqNo={}", recordId, seqNo);
 					}
+					
 					return false; // not loaded
 				}
 

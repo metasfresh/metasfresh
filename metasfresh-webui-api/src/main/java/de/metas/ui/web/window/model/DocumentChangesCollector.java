@@ -215,4 +215,11 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		documentChanges(documentPath)
 				.collectStaleDetailId(detailId);
 	}
+	
+	@Override
+	public void collectEvent(final IDocumentFieldChangedEvent event)
+	{
+		documentChanges(event.getDocumentPath())
+			.collectEvent(event);
+	}
 }

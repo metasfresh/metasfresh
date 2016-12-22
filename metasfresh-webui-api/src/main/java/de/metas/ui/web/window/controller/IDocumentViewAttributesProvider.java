@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes;
+package de.metas.ui.web.window.controller;
 
 /*
  * #%L
@@ -22,25 +22,7 @@ package de.metas.ui.web.window.datatypes;
  * #L%
  */
 
-public enum DocumentType
+public interface IDocumentViewAttributesProvider
 {
-	Window("W") //
-	, Process("P") //
-	, ProductAttributes("ASI") //
-	, HUAttributes("HUA") //
-	, Address("ADDR") //
-	, QuickInput("QI")
-	;
-
-	private final String symbol;
-
-	DocumentType(final String symbol)
-	{
-		this.symbol = symbol;
-	}
-
-	public String getSymbol()
-	{
-		return symbol;
-	}
+	IDocumentViewAttributes getAttributes(final int documentId);
 }

@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.ui.web.window.controller.IDocumentViewAttributes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
@@ -40,4 +41,6 @@ public interface IDocumentView
 	Object getFieldValueAsJson(final String fieldName);
 	
 	Map<String, Object> getFieldNameAndJsonValues();
+	
+	IDocumentViewAttributes getAttributes();
 }

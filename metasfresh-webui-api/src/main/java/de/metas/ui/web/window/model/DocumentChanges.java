@@ -146,7 +146,8 @@ public final class DocumentChanges
 	{
 		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
-			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField(), fromFieldChange.getWidgetType());
+			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField(),
+					fromFieldChange.getWidgetType());
 			toFieldChange.mergeFrom(fromFieldChange);
 		}
 
@@ -239,12 +240,12 @@ public final class DocumentChanges
 	{
 		this.documentValidStatus = documentValidStatus;
 	}
-	
+
 	public DocumentValidStatus getDocumentValidStatus()
 	{
 		return documentValidStatus;
 	}
-	
+
 	/* package */ void collectValidStatusChanged(final IDocumentFieldView documentField)
 	{
 		fieldChangesOf(documentField).setValidStatus(documentField.getValidStatus());
@@ -259,16 +260,26 @@ public final class DocumentChanges
 	{
 		return documentSaveStatus;
 	}
-	
+
 	/* package */void collectStaleDetailId(final DetailId detailId)
 	{
 		Check.assumeNotNull(detailId, "Parameter detailId is not null");
 		staleDetailIds.add(detailId);
 	}
-	
+
 	public Set<DetailId> getStaleDetailIds()
 	{
 		return ImmutableSet.copyOf(staleDetailIds);
+	}
+
+	/* package */void collectEvent(final IDocumentFieldChangedEvent event)
+	{
+		final boolean init_isKey = false;
+		final boolean init_publicField = true;
+		final boolean init_advancedField = false;
+		final DocumentFieldWidgetType init_widgetType = null;
+		fieldChangesOf(event.getFieldName(), init_isKey, init_publicField, init_advancedField, init_widgetType)
+				.mergeFrom(event);
 	}
 
 }

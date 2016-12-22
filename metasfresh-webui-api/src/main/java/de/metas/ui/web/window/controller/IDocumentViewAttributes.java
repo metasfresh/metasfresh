@@ -1,4 +1,12 @@
-package de.metas.ui.web.window.datatypes;
+package de.metas.ui.web.window.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 
 /*
  * #%L
@@ -10,37 +18,30 @@ package de.metas.ui.web.window.datatypes;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum DocumentType
+public interface IDocumentViewAttributes
 {
-	Window("W") //
-	, Process("P") //
-	, ProductAttributes("ASI") //
-	, HUAttributes("HUA") //
-	, Address("ADDR") //
-	, QuickInput("QI")
-	;
+	DocumentPath getDocumentPath();
 
-	private final String symbol;
+	DocumentViewAttributesLayout getLayout();
 
-	DocumentType(final String symbol)
-	{
-		this.symbol = symbol;
-	}
+	Map<String, Object> getData();
 
-	public String getSymbol()
-	{
-		return symbol;
-	}
+	void processChanges(List<JSONDocumentChangedEvent> events);
+
+	LookupValuesList getAttributeTypeahead(String attributeName, final String query);
+
+	LookupValuesList getAttributeDropdown(String attributeName);
+
 }

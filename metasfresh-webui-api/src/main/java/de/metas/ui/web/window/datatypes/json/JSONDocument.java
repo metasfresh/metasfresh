@@ -226,7 +226,23 @@ public final class JSONDocument implements Serializable
 		return jsonDocument;
 	}
 
+	public static JSONDocument ofMap(final DocumentPath documentPath, final Map<String, Object> map)
+	{
+		final JSONDocument jsonDocument = new JSONDocument(documentPath);
+
+		final List<JSONDocumentField> jsonFields = map.entrySet()
+				.stream()
+				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
+				.collect(Collectors.toList());
+
+		jsonDocument.setFields(jsonFields);
+
+		return jsonDocument;
+		
+	}
+
 	@JsonProperty("id")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String id;
 
 	@JsonProperty("tabid")
@@ -260,14 +276,21 @@ public final class JSONDocument implements Serializable
 	{
 		super();
 
-		id = documentPath.getDocumentId().toJson();
-		if (documentPath.isRootDocument())
+		if(documentPath == null)
 		{
+			id = null;
+			tabid = null;
+			rowId = null;
+		}
+		else if (documentPath.isRootDocument())
+		{
+			id = documentPath.getDocumentId().toJson();
 			tabid = null;
 			rowId = null;
 		}
 		else if (documentPath.isSingleIncludedDocument())
 		{
+			id = documentPath.getDocumentId().toJson();
 			final DetailId detailId = documentPath.getDetailId();
 			tabid = DetailId.toJson(detailId);
 			rowId = documentPath.getSingleRowId().toJson();
