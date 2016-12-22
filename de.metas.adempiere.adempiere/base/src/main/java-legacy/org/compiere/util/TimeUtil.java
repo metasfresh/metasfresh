@@ -1118,7 +1118,7 @@ public class TimeUtil
 	 */
 	public static int getWeekNumber(final Date date)
 	{
-		// make sure the timing is not taken into account. The Timestimp will be set on the first millisecond of the given date.
+		// make sure the timing is not taken into account. The Timestamp will be set on the first millisecond of the given date.
 		final Calendar cal = asCalendar(date);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
