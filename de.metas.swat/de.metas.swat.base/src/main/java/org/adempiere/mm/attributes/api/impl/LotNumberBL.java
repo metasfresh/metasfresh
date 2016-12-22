@@ -1,8 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.compiere.util.TimeUtil;
