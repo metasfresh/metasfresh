@@ -28,10 +28,10 @@ class Prompt extends Component {
       )
     }
     render() {
-        const {isOpen, onCancelClick, onSubmitClick} = this.props;
+        const {onCancelClick, onSubmitClick} = this.props;
         const {cancel, submit} = this.props.buttons;
         return (
-          !!isOpen && <div className="screen-freeze screen-prompt-freeze">
+          <div className="screen-freeze screen-prompt-freeze">
               <div className="panel panel-modal-primary panel-prompt prompt-shadow">
                   <div className="panel-modal-header panel-prompt-header">
                       <span className="panel-modal-header-title">{this.props.title}</span>

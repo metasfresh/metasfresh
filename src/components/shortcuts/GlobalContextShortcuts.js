@@ -1,54 +1,80 @@
 import React, { Component, PropTypes } from 'react';
 import { Shortcuts } from 'react-shortcuts';
- 
+
 class GlobalContextShortcuts extends Component {
-  constructor(props){
+    constructor(props) {
         super(props);
-        
+
     }
-  _handleShortcuts = (action, event) => {
-    const {handleSubheaderOpen, toggleMenuOverlay, homemenu, isMenuOverlayShow, openModal, windowType, handleSideListToggle, handleInboxOpen} = this.props;
-    switch (action) {
-      case 'OPEN_ACTIONS_MENU':
-        handleInboxOpen(false);
-        if(isMenuOverlayShow) {
-          toggleMenuOverlay("", "");
+    handleShortcuts = (action, event) => {
+        const { 
+          handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal, 
+          handlePrint, handleDelete, handleSideListToggle, handleInboxOpen, 
+          closeInbox, redirect 
+        } = this.props;
+        switch (action) {
+            case 'OPEN_ACTIONS_MENU':
+                event.preventDefault();
+                closeMenuOverlay();
+                closeInbox();
+                handleSubheaderOpen();
+                break
+            case 'OPEN_NAVIGATION_MENU':
+                event.preventDefault();
+                closeInbox();
+                handleMenuOverlay();
+                break
+            case 'OPEN_INBOX_MENU':
+                event.preventDefault();
+                closeMenuOverlay();
+                handleInboxOpen(true);
+                break
+            case 'OPEN_SIDEBAR_MENU':
+                event.preventDefault();
+                closeMenuOverlay();
+                closeInbox();
+                if (handleSideListToggle) {
+                    handleSideListToggle();
+                }
+                break
+            case 'DELETE_DOCUMENT':
+                event.preventDefault();
+                if (handleDelete) {
+                    handleDelete();
+                }
+                break
+            case 'OPEN_ADVANCED_EDIT':
+                event.preventDefault();
+                if (openModal) {
+                    openModal();
+                }
+                break
+            case 'OPEN_PRINT_RAPORT':
+                event.preventDefault();
+                if (handlePrint) {
+                    handlePrint();
+                }
+                break
+            case 'NEW_DOCUMENT':
+                event.preventDefault();
+                if (redirect) {
+                    redirect();
+                }
+                break
         }
-        handleSubheaderOpen();
-        break
-      case 'OPEN_NAVIGATION_MENU':
-        handleInboxOpen(false);
-        toggleMenuOverlay("", homemenu.nodeId);
-        break
-      case 'OPEN_INBOX_MENU':
-        toggleMenuOverlay("", "");
-        handleInboxOpen(true);
-        break
-      case 'OPEN_SIDEBAR_MENU':
-        toggleMenuOverlay("", "");
-        handleInboxOpen(false);
-        handleSideListToggle();
-        break
-      case 'DELETE_DOCUMENT':
-        break
-      case 'OPEN_ADVANCED_EDIT':
-        openModal(windowType + '&advanced=true', "window", "Advanced edit");
-        break       
     }
-  }
- 
-  render() {
-    return (
-      <Shortcuts
-        name={"GLOBAL_CONTEXT"}
-        handler= {this._handleShortcuts}
-        targetNodeSelector={"body"}
-        isolate={true}
-        preventDefault={true}
-      >
-      </Shortcuts>
-    )
-  }
+
+    render() {
+        return ( 
+          <Shortcuts name = { "GLOBAL_CONTEXT" }
+            handler = { this.handleShortcuts }
+            targetNodeSelector = { "body" }
+            isolate = { true }
+            preventDefault = { true }
+            stopPropagation = { true } 
+          />
+        )
+    }
 }
 
 export default GlobalContextShortcuts
