@@ -22,6 +22,7 @@ import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 
@@ -111,8 +112,9 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 			final DocumentPath documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(storage);
 			final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
 			final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributeValue);
+			final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
 
-			documentChangesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName)
+			documentChangesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
 					.setValue(jsonValue));
 		}
 

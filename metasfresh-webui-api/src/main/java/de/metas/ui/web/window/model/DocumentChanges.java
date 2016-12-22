@@ -277,7 +277,7 @@ public final class DocumentChanges
 		final boolean init_isKey = false;
 		final boolean init_publicField = true;
 		final boolean init_advancedField = false;
-		final DocumentFieldWidgetType init_widgetType = null;
+		final DocumentFieldWidgetType init_widgetType = event.getWidgetType();
 		fieldChangesOf(event.getFieldName(), init_isKey, init_publicField, init_advancedField, init_widgetType)
 				.mergeFrom(event);
 	}
