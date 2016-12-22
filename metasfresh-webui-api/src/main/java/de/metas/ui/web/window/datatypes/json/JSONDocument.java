@@ -211,7 +211,7 @@ public final class JSONDocument implements Serializable
 		// Fields
 		{
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
-	
+
 			// Add pseudo "ID" field first
 			final String idFieldName = documentView.getIdFieldNameOrNull();
 			if (idFieldName != null)
@@ -219,17 +219,17 @@ public final class JSONDocument implements Serializable
 				final int id = documentView.getDocumentId();
 				jsonFields.add(0, JSONDocumentField.idField(id));
 			}
-	
+
 			// Append the other fields
 			documentView.getFieldNameAndJsonValues()
 					.entrySet()
 					.stream()
 					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
 					.forEach(jsonFields::add);
-	
+
 			jsonDocument.setFields(jsonFields);
 		}
-		
+
 		//
 		// Included documents if any
 		{
@@ -253,13 +253,16 @@ public final class JSONDocument implements Serializable
 
 		final List<JSONDocumentField> jsonFields = map.entrySet()
 				.stream()
-				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
+				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue())
+						.setDisplayed(true, null)
+						.setReadonly(false, null)
+						.setMandatory(false, null))
 				.collect(Collectors.toList());
 
 		jsonDocument.setFields(jsonFields);
 
 		return jsonDocument;
-		
+
 	}
 
 	@JsonProperty("id")
@@ -292,17 +295,16 @@ public final class JSONDocument implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
 	private Map<String, JSONDocumentField> fieldsByName;
-	
+
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<JSONDocument> includedDocuments;
-
 
 	public JSONDocument(final DocumentPath documentPath)
 	{
 		super();
 
-		if(documentPath == null)
+		if (documentPath == null)
 		{
 			id = null;
 			tabid = null;
