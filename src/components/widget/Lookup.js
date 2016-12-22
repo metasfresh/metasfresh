@@ -405,7 +405,7 @@ class Lookup extends Component {
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
                     </div>}
-                    {(isInputEmpty) ?
+                    {isInputEmpty ?
                         <div className="input-icon input-icon-lg">
                             <i className="meta-icon-preview" />
                         </div> :

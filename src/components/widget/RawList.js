@@ -6,11 +6,16 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 class RawList extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            selected: 0
+        }
     }
 
     handleBlur = (e) => {
         this.dropdown.classList.remove("input-dropdown-focused");
     }
+
 
     handleFocus = (e) => {
         e.preventDefault();
@@ -35,10 +40,53 @@ class RawList extends Component {
         this.handleBlur();
     }
 
-    getRow = (index, option) => {
-        return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
-            <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
-        </div>)
+    navigate = (up) => {
+        const {selected} = this.state;
+        const {list} = this.props;
+
+        const next = up ? selected + 1 : selected - 1;
+
+        this.setState(Object.assign({}, this.state, {
+            selected: (next >= 0 && next <= list.length) ? next : selected
+        }));
+    }
+
+    handleKeyDown = (e) => {
+        const {list} = this.props;
+        const {selected} = this.state;
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                this.navigate(true);
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                this.navigate(false);
+                break;
+            case "Enter":
+                e.preventDefault();
+                this.handleSelect(list[Object.keys(list)[selected-1]])
+                break;
+            case "Escape":
+                e.preventDefault();
+                this.handleBlur();
+                break;
+        }
+    }
+
+    getRow = (index, option, label) => {
+        const {selected} = this.state;
+        return (
+            <div
+                key={index}
+                className={"input-dropdown-list-option "  +
+                    (selected === index ? "input-dropdown-list-option-key-on" : "")
+                }
+                onClick={() => this.handleSelect(option)}
+            >
+                <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
+            </div>
+        )
     }
 
     renderOptions = () => {
