@@ -109,9 +109,6 @@ public class ASIDescriptorFactory
 				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
-				.setAD_Tab_ID(0)
-				.setTableName(I_M_AttributeSetInstance.Table_Name)
-				.setIsSOTrx(true)
 				//
 				;
 

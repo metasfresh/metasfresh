@@ -48,31 +48,34 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupVal
 
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-
 	public static final ASILookupDescriptor of(final I_M_Attribute attribute)
 	{
-		return new ASILookupDescriptor(attribute);
+		final IAttributeValuesProvider attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(attribute);
+		return new ASILookupDescriptor(attributeValuesProvider);
+	}
+
+	public static final ASILookupDescriptor of(final IAttributeValuesProvider attributeValuesProvider)
+	{
+		return new ASILookupDescriptor(attributeValuesProvider);
 	}
 
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
 
-	private final String internalName; // used for logging / toString()
 	private final IAttributeValuesProvider attributeValuesProvider;
 
-	private ASILookupDescriptor(final I_M_Attribute attribute)
+	private ASILookupDescriptor(final IAttributeValuesProvider attributeValuesProvider)
 	{
 		super();
-		internalName = attribute.getValue() + "_" + attribute.getName();
 
-		attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(attribute);
-		Check.assumeNotNull(attribute, "Parameter attribute is not null");
+		Check.assumeNotNull(attributeValuesProvider, "Parameter attributeValuesProvider is not null");
+		this.attributeValuesProvider = attributeValuesProvider;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("internalName", internalName)
+				.addValue(attributeValuesProvider)
 				.toString();
 	}
 
