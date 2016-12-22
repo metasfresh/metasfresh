@@ -235,4 +235,16 @@ public class DocumentViewRestController
 				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
+	
+	@GetMapping("/{viewId}/quickActions")
+	public JSONDocumentActionsList getDocumentQuickActions(
+			@PathVariable(PARAM_WindowId) final int adWindowId //
+			, @PathVariable("viewId") final String viewId//
+	)
+	{
+		// TODO: implement
+		final String selectedIdsListStr = null;
+		return getDocumentActions(adWindowId, viewId, selectedIdsListStr);
+	}
+
 }
