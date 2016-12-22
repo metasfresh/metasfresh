@@ -47,13 +47,13 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 public final class JSONDocumentViewLayout implements Serializable
 {
 	public static JSONDocumentViewLayout ofGridLayout(
-			final DocumentLayoutDetailDescriptor detail //
+			final DocumentLayoutDetailDescriptor gridLayout //
 			, final String idFieldName // for debug
 			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONOptions jsonOpts //
 	)
 	{
-		return new JSONDocumentViewLayout(detail, idFieldName, filters, jsonOpts);
+		return new JSONDocumentViewLayout(gridLayout, idFieldName, filters, jsonOpts);
 	}
 
 	public static final JSONDocumentViewLayout ofSideListLayout(
