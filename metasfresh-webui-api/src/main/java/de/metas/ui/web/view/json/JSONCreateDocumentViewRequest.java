@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.view.json;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 

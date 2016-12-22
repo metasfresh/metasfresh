@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.view.json;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;

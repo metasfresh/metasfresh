@@ -66,7 +66,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 		return new JSONDocumentLayoutElement(element, jsonOpts);
 	}
 	
-	static JSONDocumentLayoutElement debuggingField(final String fieldName, DocumentFieldWidgetType widgetType)
+	public static JSONDocumentLayoutElement debuggingField(final String fieldName, DocumentFieldWidgetType widgetType)
 	{
 		return new JSONDocumentLayoutElement(fieldName, widgetType);
 	}

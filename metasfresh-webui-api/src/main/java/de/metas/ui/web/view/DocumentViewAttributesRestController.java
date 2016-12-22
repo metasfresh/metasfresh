@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.view;
 
 import java.util.List;
 
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewAttributesLayout;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentViewsRepository;
 
 /*
  * #%L

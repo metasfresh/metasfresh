@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.sql;
+package de.metas.ui.web.view;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,8 +36,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.window.controller.DocumentViewAttributesProviderFactory;
-import de.metas.ui.web.window.controller.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -52,11 +50,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
-import de.metas.ui.web.window.model.DocumentView;
-import de.metas.ui.web.window.model.DocumentViewResult;
-import de.metas.ui.web.window.model.IDocumentView;
-import de.metas.ui.web.window.model.IDocumentViewSelection;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
+import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 
 /*
  * #%L

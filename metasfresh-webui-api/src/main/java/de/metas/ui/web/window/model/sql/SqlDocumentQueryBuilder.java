@@ -52,7 +52,7 @@ import de.metas.ui.web.window.model.filters.DocumentFilterParam;
  * #L%
  */
 
-class SqlDocumentQueryBuilder
+public class SqlDocumentQueryBuilder
 {
 	public static SqlDocumentQueryBuilder newInstance(final DocumentEntityDescriptor entityDescriptor)
 	{

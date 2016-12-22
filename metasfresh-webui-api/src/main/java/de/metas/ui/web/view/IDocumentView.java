@@ -1,9 +1,8 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.view;
 
 import java.util.Map;
 import java.util.Set;
 
-import de.metas.ui.web.window.controller.IDocumentViewAttributes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*

@@ -13,8 +13,8 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
-import de.metas.ui.web.window.controller.IDocumentViewAttributes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;

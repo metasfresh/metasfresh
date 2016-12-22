@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.view;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

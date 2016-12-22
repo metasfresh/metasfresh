@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -8,6 +8,7 @@ import org.compiere.util.Evaluatee;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*

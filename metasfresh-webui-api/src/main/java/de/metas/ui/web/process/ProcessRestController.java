@@ -25,6 +25,8 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.DocumentViewsRepository;
+import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -33,9 +35,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentViewSelection;
 import io.swagger.annotations.Api;
 
 /*

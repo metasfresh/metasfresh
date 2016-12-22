@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.view;
 
 import java.util.List;
 
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONCreateDocumentViewRequest;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentViewLayout;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;

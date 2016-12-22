@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.view.json;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -14,10 +14,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.view.DocumentViewResult;
+import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
-import de.metas.ui.web.window.model.DocumentViewResult;
-import de.metas.ui.web.window.model.IDocumentViewSelection;
 
 /*
  * #%L

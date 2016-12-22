@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model.sql;
+package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -13,12 +13,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.window.datatypes.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentReferencesService;
-import de.metas.ui.web.window.model.DocumentViewsRepository;
-import de.metas.ui.web.window.model.IDocumentViewSelection;
 
 /*
  * #%L
