@@ -326,9 +326,11 @@ node('agent && linux')
 				// checkout our code. 
 				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
 				// we use this more complicated approach because that way we can also clean the workspace after checkout ('CleanCheckout') and we can ignore edits in ReleaseNotes, Readme etc
+				// update: commented this out for now. Maybe remove soon, because: it aparently doesn't work with "external" PRs. Also, i don't know if this solution is *really* capable of ignoring chagnes to README.md et all
+				/*
 				checkout([
 					$class: 'GitSCM', 
-					branches: [[name: "${env.BRANCH_NAME}"]], 
+					branches: [[name: "${env.BRANCH_NAME}"]],
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'PathRestriction', excludedRegions: '''ReleaseNotes\\.md
@@ -339,7 +341,11 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
-				])
+				]);
+				*/
+				checkout scm; // i hope this to do all the magic we need
+				sh 'git clean -d --force -x' // clean the workspace
+			
 			
 				// deploy de.metas.parent/pom.xml as it is now (still with version "1.0.0") so that other nodes can find it when they modify their own pom.xml versions
 				// doesn't work because 1.0.0 is not SNAPSHOT anymore and there is already a 1.0.0 parent pom
@@ -458,9 +464,11 @@ node('agent && linux && libc6-i386')
 				// checkout our code
 				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
 				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
+				// update: commented this out for now. Maybe remove soon, because: it aparently doesn't work with "external" PRs.
+				/*
 				checkout([
 					$class: 'GitSCM', 
-					branches: [[name: "${env.BRANCH_NAME}"]], 
+					branches: [[name: "${env.BRANCH_NAME}"]],
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
@@ -468,9 +476,12 @@ node('agent && linux && libc6-i386')
 						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
-					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
-				])
-		
+					userRemoteConfigs: [[credentialsId: 'github_metas-dev' , url: 'https://github.com/metasfresh/metasfresh.git']]
+				]);
+				*/
+				checkout scm; // i hope this to do all the magic we need
+				sh 'git clean -d --force -x' // clean the workspace
+				
 				final String mavenUpdatePropertyParam;
 				final String mavenUpdateParentParam;
 				if(!params.MF_SKIP_TO_DIST)
