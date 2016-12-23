@@ -160,7 +160,7 @@ final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 	<properties>
       <scheduled-task-property>
         <key>numberOfVersionsToKeep</key>
-        <value>1</value>
+        <value>3</value>
       </scheduled-task-property>
       <scheduled-task-property>
         <key>indexBackend</key>
