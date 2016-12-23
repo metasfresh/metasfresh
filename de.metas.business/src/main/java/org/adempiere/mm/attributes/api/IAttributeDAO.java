@@ -67,8 +67,8 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
 	 * 
-	 * @param attributeSetInstance
-	 * @return
+	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by {@code M_Attribute_ID}. Never {@code null}
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
