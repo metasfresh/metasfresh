@@ -100,19 +100,17 @@ public class ProcurementFlatrateRule extends PricingRuleAdapter
 
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(referencedObject, I_C_OrderLine.class);
 
-		final IPMMPricingAware pricingAware = PMMPricingAware_C_OrderLine.of(ol);
+		final PMMPricingAware_C_OrderLine pricingAware = PMMPricingAware_C_OrderLine.of(ol);
 
 		// update the price from procurement contract
 		Services.get(IPMMPricingBL.class).updatePriceFromContract(pricingAware);
 
 		// set details in result
-		result.setPriceStd(ol.getPriceStd());
-		result.setC_Currency_ID(ol.getC_Currency_ID());
+		result.setPriceStd(pricingAware.getPrice());
+		result.setC_Currency_ID(pricingAware.getC_Currency_ID());
 
 		// Mark the result as calculated.
 		// This price will be the final one if there is no superior rule to be applied.
 		result.setCalculated(true);
-
 	}
-
 }
