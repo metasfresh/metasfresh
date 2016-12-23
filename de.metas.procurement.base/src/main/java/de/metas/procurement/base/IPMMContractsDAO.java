@@ -48,7 +48,7 @@ public interface IPMMContractsDAO extends ISingletonService
 
 	/**
 	 * Retrieve the running procurement contract for the given Date, Partner and Product.
-	 * In case there are many, choose the one with the latest start date
+	 * In case there are many, choose the one with the latest start date that is yet before the given {@code date}.
 	 * 
 	 * @param date
 	 * @param bPartnerID

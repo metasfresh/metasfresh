@@ -145,6 +145,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 		return retrieveAllRunningContractsOnDateQuery(date)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bPartnerID)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID, pmmProductId)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate, Direction.Descending, Nulls.Last)
 				.endOrderBy()

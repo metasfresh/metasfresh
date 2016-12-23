@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.lang.NotImplementedException;
@@ -43,11 +44,24 @@ import de.metas.procurement.base.model.I_PMM_Product;
  * #L%
  */
 
+/**
+ * This implementation is backed by an order line.
+ * <p>
+ * <b>IMPORTANT:</b> The setters do not alter the wrapped orderline itself, because we currently only use this implementation in an {@link IPricingRule} implementation.
+ * But is should not be hard to add an option to also alter the wrapped olderLine in future, if needed.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 {
 
 	private final I_C_OrderLine orderLine;
 
+	private int currencyId;
+	
+	private BigDecimal price;
+	
 	public static PMMPricingAware_C_OrderLine of(final I_C_OrderLine orderLine)
 	{
 		return new PMMPricingAware_C_OrderLine(orderLine);
@@ -55,7 +69,6 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 
 	private PMMPricingAware_C_OrderLine(final I_C_OrderLine orderLine)
 	{
-		super();
 		Check.assumeNotNull(orderLine, "candidate not null");
 		this.orderLine = orderLine;
 	}
@@ -175,19 +188,40 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 
 	}
 
+	/**
+	 * Sets a private member variable to the given {@code C_Currency_ID}.
+	 */
 	@Override
 	public void setC_Currency_ID(int C_Currency_ID)
 	{
-		orderLine.setC_Currency_ID(C_Currency_ID);
-
+		currencyId = C_Currency_ID;
 	}
 
-	@Override
-	public void setPrice(BigDecimal priceStd)
+	/**
+	 * 
+	 * @return the value that was set via {@link #setC_Currency_ID(int)}.
+	 */
+	public int getC_Currency_ID()
 	{
-		orderLine.setPriceEntered(priceStd);
-		orderLine.setPriceStd(priceStd);
+		return currencyId;
+	}
 
+	/**
+	 * Sets a private member variable to the given {@code price}.
+	 */
+	@Override
+	public void setPrice(BigDecimal price)
+	{
+		this.price = price;
+	}
+
+	/**
+	 * 
+	 * @return the value that was set via {@link #setPrice(BigDecimal)}.
+	 */
+	public BigDecimal getPrice()
+	{
+		return price;
 	}
 
 }
