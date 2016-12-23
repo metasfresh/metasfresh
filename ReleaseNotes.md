@@ -31,8 +31,6 @@ upcoming
   * #89 Adjust DocAction Names
 
 # metasfresh 4.49.48 (2016-51)
-
- this week's RC
  
 ## Features
 * metasfresh
@@ -48,10 +46,13 @@ upcoming
 ## Fixes
 * metasfresh
   * #380 duplicate lines in inout
-    * Worked over each jasper report in order not to display matsterdata records that were deactivated
+    * Worked over each jasper report in order not to display materdata records that were deactivated.
   * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
+    * Fix a Bug that prevented Handling Units Storage to be adjusted when adding raw material to manufacturing order via action issue.
   * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
+    * Extend the where clause for matching of PO References in Aggregation inout documents. Additional Aggregation matching criteria now are ad_org_id, c_bpartner_id.
   * #713 Marginal Return Report (short version) doubled sums for accounting group
+    * Fix a partially double summed up accounting group in marginal return Report.
   
 # metasfresh 4.48.47 (2016-50)
 
