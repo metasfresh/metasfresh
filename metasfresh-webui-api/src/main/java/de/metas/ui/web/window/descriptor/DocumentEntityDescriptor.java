@@ -95,7 +95,7 @@ public class DocumentEntityDescriptor
 
 	private final DocumentFieldDependencyMap dependencies;
 
-	private final Map<Characteristic, List<DocumentFieldDescriptor>> _fieldsByCharacteristic = new ConcurrentHashMap<>();
+	private final Map<Characteristic, Set<String>> _fieldNamesByCharacteristic = new ConcurrentHashMap<>();
 
 	//
 	// Callouts
@@ -270,17 +270,18 @@ public class DocumentEntityDescriptor
 		return field;
 	}
 
-	public List<DocumentFieldDescriptor> getFieldsWithCharacteristic(final Characteristic characteristic)
+	public Set<String> getFieldNamesWithCharacteristic(final Characteristic characteristic)
 	{
-		return _fieldsByCharacteristic.computeIfAbsent(characteristic, this::buildFieldsWithCharacteristic);
+		return _fieldNamesByCharacteristic.computeIfAbsent(characteristic, this::buildFieldsWithCharacteristic);
 	}
 
-	private List<DocumentFieldDescriptor> buildFieldsWithCharacteristic(final Characteristic characteristic)
+	private Set<String> buildFieldsWithCharacteristic(final Characteristic characteristic)
 	{
 		return getFields()
 				.stream()
 				.filter(field -> field.hasCharacteristic(characteristic))
-				.collect(GuavaCollectors.toImmutableList());
+				.map(field->field.getFieldName())
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()

@@ -3,24 +3,16 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
@@ -30,23 +22,23 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
+import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.DocumentViewFieldValueLoader;
+import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentViewFieldValueLoader;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
@@ -92,11 +84,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private final String sqlSelectPage;
 	private final String sqlSelectById;
-	private final List<DocumentViewFieldValueLoader> fieldLoaders;
+	private final DocumentViewFieldValueLoader fieldLoaders;
 
-	private final OrderedSelectionFactory orderedSelectionFactory;
-	private final OrderedSelection defaultSelection;
-	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, OrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	private final IDocumentViewOrderedSelectionFactory orderedSelectionFactory;
+	private final DocumentViewOrderedSelection defaultSelection;
+	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, DocumentViewOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	//
 	// Filters
@@ -128,9 +120,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		sqlSelectPage = builder.buildSqlSelectPage();
 		sqlSelectById = builder.buildSqlSelectById();
-		fieldLoaders = builder.createDocumentViewFieldValueLoaders();
+		fieldLoaders = builder.getDocumentViewFieldValueLoaders();
 
-		orderedSelectionFactory = builder.buildSqlCreateSelectionFromSelection();
+		orderedSelectionFactory = builder.getOrderedSelectionFactory();
 		defaultSelection = builder.buildInitialSelection();
 		selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 
@@ -247,7 +239,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		Check.assume(firstRow >= 0, "firstRow >= 0 but it was {}", firstRow);
 		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
 
-		final OrderedSelection orderedSelection = getOrderedSelection(orderBys);
+		final DocumentViewOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 		logger.debug("Using: {}", orderedSelection);
 
 		final String uuid = orderedSelection.getUuid();
@@ -347,7 +339,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		
 	}
 
-	private OrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys) throws DBException
+	private DocumentViewOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys) throws DBException
 	{
 		if (orderBys == null || orderBys.isEmpty())
 		{
@@ -361,7 +353,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		final String fromUUID = defaultSelection.getUuid();
 		final ImmutableList<DocumentQueryOrderBy> orderBysImmutable = ImmutableList.copyOf(orderBys);
-		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.create(fromUUID, orderBysImmutable));
+		return selectionsByOrderBys.computeIfAbsent(orderBysImmutable, (newOrderBys) -> orderedSelectionFactory.createFromViewId(fromUUID, orderBysImmutable));
 	}
 
 	private final DocumentView.Builder newDocumentViewBuilder()
@@ -373,16 +365,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private IDocumentView loadDocumentView(final ResultSet rs) throws SQLException
 	{
 		final DocumentView.Builder documentViewBuilder = newDocumentViewBuilder();
-		
-		for (final DocumentViewFieldValueLoader fieldLoader : fieldLoaders)
-		{
-			final boolean loaded = fieldLoader.loadDocumentViewValue(documentViewBuilder, rs);
-			if (!loaded)
-			{
-				return null;
-			}
-		}
-
+		fieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
 		return documentViewBuilder.build();
 	}
 
@@ -450,7 +433,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private DocumentReferencesService documentReferencesService;
 
 		private final DocumentEntityDescriptor _entityDescriptor;
-		private List<DocumentFieldDescriptor> _viewFields;
+		private Set<String> _viewFieldNames;
 		private List<DocumentFilter> _stickyFilters;
 		private List<DocumentFilter> _filters;
 
@@ -468,38 +451,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return new SqlDocumentViewSelection(this);
 		}
 
-		private ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders()
+		private DocumentViewFieldValueLoader getDocumentViewFieldValueLoaders()
 		{
-			final List<DocumentFieldDescriptor> fieldDescriptors = getViewFields();
-			return createDocumentViewFieldValueLoaders(fieldDescriptors);
-		}
-
-		private static ImmutableList<DocumentViewFieldValueLoader> createDocumentViewFieldValueLoaders(final List<DocumentFieldDescriptor> fieldDescriptors)
-		{
-			final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
-			for (final DocumentFieldDescriptor fieldDescriptor : fieldDescriptors)
-			{
-				final SqlDocumentFieldDataBindingDescriptor fieldDataBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(fieldDescriptor.getDataBinding());
-				if (fieldDataBinding == null)
-				{
-					logger.warn("No SQL databinding provided for {}. Skip creating the field loader", fieldDescriptor);
-					continue;
-				}
-
-				final boolean keyColumn = fieldDataBinding.isKeyColumn();
-				final DocumentViewFieldValueLoader documentViewFieldLoader = fieldDataBinding.getDocumentViewFieldValueLoader();
-
-				if (keyColumn)
-				{
-					// If it's key column, add it first, because in case the record is missing, we want to fail fast
-					documentViewFieldLoaders.add(0, documentViewFieldLoader);
-				}
-				else
-				{
-					documentViewFieldLoaders.add(documentViewFieldLoader);
-				}
-			}
-			return ImmutableList.copyOf(documentViewFieldLoaders);
+			return getViewFieldsBinding()
+					.getValueLoaders();
 		}
 
 		private SqlDocumentQueryBuilder getQueryBuilder()
@@ -518,9 +473,9 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return _entityDescriptor;
 		}
 
-		private SqlDocumentEntityDataBindingDescriptor getBinding()
+		private SqlDocumentViewBinding getBinding()
 		{
-			return getQueryBuilder().getEntityBinding();
+			return getQueryBuilder().getEntityBinding().getDocumentViewBinding();
 		}
 
 		private DocumentFilterDescriptorsProvider getFilterDescriptors()
@@ -571,29 +526,23 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return _filters;
 		}
 
-		private Builder setViewFields(final List<DocumentFieldDescriptor> viewFields)
-		{
-			_viewFields = viewFields;
-			return this;
-		}
-
 		public Builder setViewFieldsByCharacteristic(final Characteristic characteristic)
 		{
-			final List<DocumentFieldDescriptor> viewFields = getEntityDescriptor().getFieldsWithCharacteristic(characteristic);
-			if (viewFields.isEmpty())
+			final Set<String> viewFieldNames = getEntityDescriptor().getFieldNamesWithCharacteristic(characteristic);
+			if (viewFieldNames.isEmpty())
 			{
 				throw new IllegalStateException("No fields were found for characteristic: " + characteristic);
 			}
 
-			setViewFields(viewFields);
+			_viewFieldNames = ImmutableSet.copyOf(viewFieldNames);
 
 			return this;
 		}
 
-		private List<DocumentFieldDescriptor> getViewFields()
+		private Set<String> getViewFields()
 		{
-			Check.assumeNotEmpty(_viewFields, "viewFields is not empty");
-			return _viewFields;
+			Check.assumeNotEmpty(_viewFieldNames, "viewFieldNames is not empty");
+			return _viewFieldNames;
 		}
 
 		private int getAD_Window_ID()
@@ -611,13 +560,17 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return getBinding().getKeyColumnName();
 		}
 		
+		private ViewFieldsBinding getViewFieldsBinding()
+		{
+			return getBinding().getViewFieldsBinding(getViewFields());
+		}
+		
 		private String getSqlPagedSelectAllFrom()
 		{
 			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = getBinding();
-			return dataBinding
-					.getSqlPagedSelectAllFrom()
+			return getViewFieldsBinding()
+					.getSqlPagedSelect()
 					.evaluate(evalCtx, OnVariableNotFound.Fail);
 			
 		}
@@ -625,137 +578,28 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		private String buildSqlSelectPage()
 		{
 			return getSqlPagedSelectAllFrom()
-					+ "\n WHERE " + SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_UUID + "=?"
-					+ "\n AND " + SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?"
-					+ "\n ORDER BY " + SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_SeqNo;
+					+ "\n WHERE " + SqlDocumentViewBinding.COLUMNNAME_Paging_UUID + "=?"
+					+ "\n AND " + SqlDocumentViewBinding.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?"
+					+ "\n ORDER BY " + SqlDocumentViewBinding.COLUMNNAME_Paging_SeqNo;
 		}
 
 		private String buildSqlSelectById()
 		{
 			return getSqlPagedSelectAllFrom()
-					+ "\n WHERE " + SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_UUID + "=?"
-					+ "\n AND " + SqlDocumentEntityDataBindingDescriptor.COLUMNNAME_Paging_Record_ID + "=?";
+					+ "\n WHERE " + SqlDocumentViewBinding.COLUMNNAME_Paging_UUID + "=?"
+					+ "\n AND " + SqlDocumentViewBinding.COLUMNNAME_Paging_Record_ID + "=?";
+		}
+		
+		public IDocumentViewOrderedSelectionFactory getOrderedSelectionFactory()
+		{
+			final Evaluatee evalCtx = getQueryBuilder().getEvaluationContext();
+			return getBinding().createOrderedSelectionFactory(evalCtx);
 		}
 
-		private OrderedSelection buildInitialSelection()
+		private DocumentViewOrderedSelection buildInitialSelection()
 		{
 			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
-			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = getBinding();
-
-			final String sqlTableName = dataBinding.getTableName();
-			final String sqlTableAlias = dataBinding.getTableAlias();
-			final String keyColumnNameFQ = dataBinding.getKeyColumnName();
-			if (keyColumnNameFQ == null)
-			{
-				throw new DBException("No key column found in " + dataBinding);
-			}
-
-			final IStringExpression sqlWhereClause = queryBuilder.getSqlWhere();
-			final List<Object> sqlWhereClauseParams = queryBuilder.getSqlWhereParams();
-
-			final List<DocumentQueryOrderBy> orderBys = queryBuilder.getOrderBysEffective();
-
-			final String uuid = UUID.randomUUID().toString();
-
-			//
-			// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
-			final List<Object> sqlParams = new ArrayList<>();
-			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
-					.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
-							+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
-							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
-							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
-							+ ")");
-
-			//
-			// SELECT ... FROM ... WHERE 1=1
-			{
-				IStringExpression orderBy = dataBinding.buildSqlFullOrderBy(orderBys);
-				if (orderBy.isNullExpression())
-				{
-					orderBy = ConstantStringExpression.of(keyColumnNameFQ);
-				}
-
-				sqlBuilder.append(
-						IStringExpression.composer()
-								.append("\n SELECT ")
-								.append("\n  ?") // UUID
-								.append("\n, ").append("row_number() OVER (ORDER BY ").append(orderBy).append(")") // Line
-								.append("\n, ").append(keyColumnNameFQ) // Record_ID
-								.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
-								.append("\n WHERE 1=1 ")
-								.wrap(AccessSqlStringExpression.wrapper(sqlTableAlias, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
-				);
-				sqlParams.add(uuid);
-			}
-
-			//
-			// WHERE clause (from query)
-			if (!sqlWhereClause.isNullExpression())
-			{
-				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
-				sqlParams.addAll(sqlWhereClauseParams);
-			}
-
-			//
-			// Evaluate the final SQL query
-			final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
-
-			//
-			// Execute it, so we insert in our T_WEBUI_ViewSelection
-			final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
-			logger.trace("Created selection {}, rowsCount={} -- {} -- {}", uuid, rowsCount, sql, sqlParams);
-
-			return new OrderedSelection(uuid, rowsCount, orderBys);
-		}
-
-		private OrderedSelectionFactory buildSqlCreateSelectionFromSelection()
-		{
-			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
-			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
-			final SqlDocumentEntityDataBindingDescriptor dataBinding = getBinding();
-
-			final String sqlTableName = dataBinding.getTableName();
-			final String sqlTableAlias = dataBinding.getTableAlias();
-			final String keyColumnName = dataBinding.getKeyColumnName();
-			if (keyColumnName == null)
-			{
-				throw new DBException("No key column found in " + dataBinding);
-			}
-			final String keyColumnNameFQ = sqlTableAlias + "." + keyColumnName;
-
-			//
-			// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
-			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
-					.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
-							+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
-							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
-							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
-							+ ")");
-
-			//
-			// SELECT ... FROM T_WEBUI_ViewSelection sel INNER JOIN ourTable WHERE sel.UUID=[fromUUID]
-			{
-				// final IStringExpression orderBy = dataBinding.buildSqlFullOrderBy(orderBys);
-
-				sqlBuilder.append(
-						IStringExpression.composer()
-								.append("\n SELECT ")
-								.append("\n  ?") // newUUID
-								.append("\n, ").append("row_number() OVER (ORDER BY ").append(OrderedSelectionFactory.PLACEHOLDER_OrderBy).append(")") // Line
-								.append("\n, ").append(keyColumnNameFQ) // Record_ID
-								.append("\n FROM ").append(I_T_WEBUI_ViewSelection.Table_Name).append(" sel")
-								.append("\n LEFT OUTER JOIN ").append(sqlTableName).append(" ").append(sqlTableAlias).append(" ON (").append(keyColumnNameFQ).append("=").append("sel.")
-								.append(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID).append(")")
-								.append("\n WHERE sel.").append(I_T_WEBUI_ViewSelection.COLUMNNAME_UUID).append("=?") // fromUUID
-				);
-			}
-
-			final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
-			final Map<String, String> fieldName2sqlDictionary = dataBinding.getAvailableFieldFullOrderBys(evalCtx);
-
-			return new OrderedSelectionFactory(sql, fieldName2sqlDictionary);
+			return getBinding().createOrderedSelection(queryBuilder);
 		}
 
 		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory, final DocumentReferencesService documentReferencesService)
@@ -777,112 +621,5 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return documentReferencesService;
 		}
 
-	}
-
-	//
-	//
-	// OrderSelection Factory
-	//
-	//
-
-	private static final class OrderedSelectionFactory
-	{
-		private static final String PLACEHOLDER_OrderBy = "/* ORDER BY PLACEHOLDER */";
-
-		private final String sql;
-		private final Map<String, String> fieldName2sqlDictionary;
-
-		private OrderedSelectionFactory(final String sql, final Map<String, String> fieldName2sqlDictionary)
-		{
-			super();
-			this.sql = sql;
-			this.fieldName2sqlDictionary = fieldName2sqlDictionary;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("sql", sql)
-					.add("fieldName2sqlDictionary", fieldName2sqlDictionary)
-					.toString();
-		}
-
-		public OrderedSelection create(final String fromUUID, final List<DocumentQueryOrderBy> orderBys)
-		{
-			final String newUUID = UUID.randomUUID().toString();
-			final String sqlOrderBys = buildOrderBys(orderBys); // NOTE: we assume it's not empty!
-			final String sqlFinal = sql.replace(PLACEHOLDER_OrderBy, sqlOrderBys);
-			final int rowCount = DB.executeUpdateEx(sqlFinal, new Object[] { newUUID, fromUUID }, ITrx.TRXNAME_ThreadInherited);
-			return new OrderedSelection(newUUID, rowCount, orderBys);
-		}
-
-		private final String buildOrderBys(final List<DocumentQueryOrderBy> orderBys)
-		{
-			if (orderBys == null || orderBys.isEmpty())
-			{
-				return "";
-			}
-
-			return orderBys
-					.stream()
-					.map(orderBy -> buildOrderBy(orderBy))
-					.filter(orderBy -> !Check.isEmpty(orderBy, true))
-					.collect(Collectors.joining(", "));
-		}
-
-		private final String buildOrderBy(final DocumentQueryOrderBy orderBy)
-		{
-			final String fieldName = orderBy.getFieldName();
-			final String fieldSql = fieldName2sqlDictionary.get(fieldName);
-			if (fieldSql == null)
-			{
-				throw new DBException("No SQL field mapping found for: " + fieldName + ". Available fields are: " + fieldName2sqlDictionary);
-			}
-
-			return "(" + fieldSql + ") " + (orderBy.isAscending() ? " ASC" : " DESC");
-		}
-
-	};
-
-	private static final class OrderedSelection
-	{
-		private final String uuid;
-		private final long size;
-		private final ImmutableList<DocumentQueryOrderBy> orderBys;
-
-		private OrderedSelection(final String uuid, final long size, final List<DocumentQueryOrderBy> orderBys)
-		{
-			super();
-			this.uuid = uuid;
-			this.size = size;
-			this.orderBys = ImmutableList.copyOf(orderBys);
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.omitNullValues()
-					.add("uuid", uuid)
-					.add("size", size)
-					.add("orderBys", orderBys.isEmpty() ? null : orderBys)
-					.toString();
-		}
-
-		public String getUuid()
-		{
-			return uuid;
-		}
-
-		public long getSize()
-		{
-			return size;
-		}
-
-		private ImmutableList<DocumentQueryOrderBy> getOrderBys()
-		{
-			return orderBys;
-		}
 	}
 }

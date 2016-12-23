@@ -315,7 +315,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		final IStringExpression sqlColumnSql = expressionFactory.compile(gridFieldVO.getColumnSQL(false), IStringExpression.class);
 
-		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
+		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
@@ -340,8 +340,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.setWidgetType(widgetType)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
-				.setValueClass(dataBinding.getValueClass())
-				.setVirtualField(dataBinding.isVirtualColumn())
+				.setValueClass(fieldBinding.getValueClass())
+				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())
 				//
 				.setDefaultValueExpression(defaultValueExpression)
@@ -355,7 +355,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setMandatoryLogic(gridFieldVO.getMandatoryLogic())
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
-				.setDataBinding(dataBinding);
+				.setDataBinding(fieldBinding);
 
 		//
 		// Add Field builder to document entity
@@ -363,7 +363,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		//
 		// Add Field's data binding to entity data binding
-		entityBindings.addField(dataBinding);
+		entityBindings.addField(fieldBinding);
 
 		//
 		// Collect special field
