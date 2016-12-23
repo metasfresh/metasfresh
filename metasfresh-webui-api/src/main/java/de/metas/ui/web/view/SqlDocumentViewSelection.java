@@ -659,7 +659,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final String uuid = UUID.randomUUID().toString();
 
 			//
-			// INSERT INTO T_Query_Selection (UUID, Line, Record_ID)
+			// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
 			final List<Object> sqlParams = new ArrayList<>();
 			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
 					.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
@@ -703,7 +703,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final String sql = sqlBuilder.build().evaluate(evalCtx, OnVariableNotFound.Fail);
 
 			//
-			// Execute it, so we insert in our T_Query_Selection
+			// Execute it, so we insert in our T_WEBUI_ViewSelection
 			final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Created selection {}, rowsCount={} -- {} -- {}", uuid, rowsCount, sql, sqlParams);
 
@@ -726,7 +726,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			final String keyColumnNameFQ = sqlTableAlias + "." + keyColumnName;
 
 			//
-			// INSERT INTO T_Query_Selection (UUID, Line, Record_ID)
+			// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
 			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
 					.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
 							+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
@@ -735,7 +735,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 							+ ")");
 
 			//
-			// SELECT ... FROM T_Query_Selection sel INNER JOIN ourTable WHERE sel.UUID=[fromUUID]
+			// SELECT ... FROM T_WEBUI_ViewSelection sel INNER JOIN ourTable WHERE sel.UUID=[fromUUID]
 			{
 				// final IStringExpression orderBy = dataBinding.buildSqlFullOrderBy(orderBys);
 
