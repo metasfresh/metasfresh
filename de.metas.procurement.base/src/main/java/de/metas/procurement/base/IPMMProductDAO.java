@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -44,8 +45,8 @@ public interface IPMMProductDAO extends ISingletonService
 	List<I_PMM_Product> retrieveByBPartner(I_C_BPartner bpartner);
 
 	/**
-	 * Retrieve the PMM Product for the given product, date and M_HU_PI_Item_Product.
-	 * The PMM product must be for the given partner or not have a partner set at all.
+	 * Retrieve the PMM Products for the given product, date and M_HU_PI_Item_Product.
+	 * The PMM products must be for the given partner or not have a partner set at all.
 	 * 
 	 * @param date
 	 * @param productId
@@ -53,5 +54,6 @@ public interface IPMMProductDAO extends ISingletonService
 	 * @param huPIPId
 	 * @return
 	 */
-	I_PMM_Product retrieveForDateAndProduct(Date date, int productId, int partnerId, int huPIPId);
+	List<I_PMM_Product> retrieveForDateAndProduct(Date date, int productId, int partnerId, int huPIPId);
+
 }

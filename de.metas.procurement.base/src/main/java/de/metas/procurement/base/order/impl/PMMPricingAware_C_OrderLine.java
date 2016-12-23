@@ -11,6 +11,7 @@ import org.adempiere.util.Services;
 import org.apache.commons.lang.NotImplementedException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -18,7 +19,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMPricingAware;
-import de.metas.procurement.base.IPMMProductDAO;
+import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 
@@ -59,9 +60,9 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	private final I_C_OrderLine orderLine;
 
 	private int currencyId;
-	
+
 	private BigDecimal price;
-	
+
 	public static PMMPricingAware_C_OrderLine of(final I_C_OrderLine orderLine)
 	{
 		return new PMMPricingAware_C_OrderLine(orderLine);
@@ -119,11 +120,12 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 		}
 
 		// the product and M_HU_PI_Item_Product must belong to a PMM_ProductEntry that is currently valid
-		final I_PMM_Product pmmProduct = Services.get(IPMMProductDAO.class).retrieveForDateAndProduct(
+		final I_PMM_Product pmmProduct = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				getDate(),
 				getM_Product().getM_Product_ID(),
 				getC_BPartner().getC_BPartner_ID(),
-				hupip.getM_HU_PI_Item_Product_ID());
+				hupip.getM_HU_PI_Item_Product_ID(),
+				getM_AttributeSetInstance());
 
 		if (pmmProduct == null)
 		{
@@ -222,6 +224,11 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	public BigDecimal getPrice()
 	{
 		return price;
+	}
+
+	public I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return orderLine.getM_AttributeSetInstance();
 	}
 
 }

@@ -9,8 +9,11 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
@@ -102,17 +105,17 @@ public class PMMProductDAO implements IPMMProductDAO
 	}
 
 	@Override
-	public I_PMM_Product retrieveForDateAndProduct(final Date date,final int productId, final int partnerId, final int huPIPId)
+	public List<I_PMM_Product> retrieveForDateAndProduct(final Date date, final int productId, final int partnerId, final int huPIPId)
 	{
 		return retrieveAllPMMProductsValidOnDateQuery(date)
-				.addInArrayFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) //for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
+				.addInArrayFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) // for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, productId)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, huPIPId)
 				.orderBy()
 				.addColumn(I_PMM_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
-				.first();
-	}
+				.list();
 
+	}
 }
