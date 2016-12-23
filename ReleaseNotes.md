@@ -39,10 +39,11 @@ upcoming
   * #489 Implement DLM within single logical tables
     * Data Life-cycle Management Implementation to enable archiving of non-operational data to separate partitions.
   * #682 Translation in window Vendor Returns
-    * Add German translation of additional Fields in Window Vendor Returns.
+    * Add german translation of additional Fields in Window Vendor Returns.
 
 * webui
   * #698 Pipeline - add webui deployment
+    * Add a new Pipeline into Continuous Integration/ Deployment for metasfresh WebUI.
 
 ## Fixes
 * metasfresh
