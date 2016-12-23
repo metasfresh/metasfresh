@@ -31,8 +31,10 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
@@ -47,8 +49,6 @@ import org.compiere.model.X_C_DocType;
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.inout.api.IQualityNoteDAO;
-import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -84,7 +84,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
-		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
 
 		receiptSchedule.setAD_Org_ID(line.getAD_Org_ID());
 		receiptSchedule.setIsActive(true); // make sure it's active
@@ -246,11 +245,47 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			{
 				lotNumberDateAI.setValueDate(lotNumberDate);
 
+				createLotNumberAI(ctx, rsASI, lotNumberDate, trxName);
+
 				// save the attribute instance
 				InterfaceWrapperHelper.save(lotNumberDateAI);
 			}
 
 		}
+	}
+
+	private void createLotNumberAI(Properties ctx, I_M_AttributeSetInstance rsASI, Timestamp lotNumberDate, String trxName)
+	{
+		Check.assume(lotNumberDate != null, "Lot number date attribute not null");
+
+		final I_M_Attribute lotNumberAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(ctx);
+
+		if (lotNumberAttr == null)
+		{
+			// nothing to do
+
+		}
+		else
+		{
+
+			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+			final int lotNumberAttrID = lotNumberAttr.getM_Attribute_ID();
+			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberAttrID, trxName);
+
+			if (lotNumberAI == null)
+			{
+				lotNumberAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberAttrID, trxName);
+			}
+
+			// provide the lotNumber in the ASI
+			final String lotNumberString = Services.get(ILotNumberBL.class).calculateLotNumber(lotNumberDate);
+			lotNumberAI.setValue(lotNumberString);
+
+			// save the attribute instance
+			InterfaceWrapperHelper.save(lotNumberAI);
+		}
+
 	}
 
 	/**

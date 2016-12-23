@@ -18,34 +18,41 @@ upcoming
 * metasfresh
   * #653 Calculated DailyLotNo in Material Receipt Candidates
   * #714 Marginal Return report calculation add additional Costcenter
+  * #742 R_Request column c_order_id autocomplete too slow
+    * Take out the autocomplete of c_order_id to speed up the lookup performance in R_Request.
 
 ## Fixes
 * metasfresh
   * #681 Automatic filling of BPartner and Location only shows value
   * #718 Wrong location in empties vendor return
+  * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
 
 * webui
   * #89 Adjust DocAction Names
 
 # metasfresh 4.49.48 (2016-51)
-
- this week's RC
  
 ## Features
 * metasfresh
   * #489 Implement DLM within single logical tables
+    * Data Life-cycle Management Implementation to enable archiving of non-operational data to separate partitions.
   * #682 Translation in window Vendor Returns
+    * Add german translation of additional Fields in Window Vendor Returns.
 
 * webui
   * #698 Pipeline - add webui deployment
+    * Add a new Pipeline into Continuous Integration/ Deployment for metasfresh WebUI.
 
 ## Fixes
 * metasfresh
   * #380 duplicate lines in inout
-    * Worked over each jasper report in order not to display matsterdata records that were deactivated
+    * Worked over each jasper report in order not to display materdata records that were deactivated.
   * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
+    * Fix a Bug that prevented Handling Units Storage to be adjusted when adding raw material to manufacturing order via action issue.
   * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
+    * Extend the where clause for matching of PO References in Aggregation inout documents. Additional Aggregation matching criteria now are ad_org_id, c_bpartner_id.
   * #713 Marginal Return Report (short version) doubled sums for accounting group
+    * Fix a partially double summed up accounting group in marginal return Report.
   
 # metasfresh 4.48.47 (2016-50)
 

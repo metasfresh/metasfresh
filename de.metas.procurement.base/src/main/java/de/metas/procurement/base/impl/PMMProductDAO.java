@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
@@ -29,11 +31,11 @@ import de.metas.procurement.base.model.I_PMM_Product;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -97,6 +99,20 @@ public class PMMProductDAO implements IPMMProductDAO
 				.addEqualsFilter(I_PMM_Product.COLUMN_C_BPartner_ID, bpartner.getC_BPartner_ID())
 				.create()
 				.list();
+	}
+
+	@Override
+	public I_PMM_Product retrieveForDateAndProduct(final Date date,final int productId, final int partnerId, final int huPIPId)
+	{
+		return retrieveAllPMMProductsValidOnDateQuery(date)
+				.addInArrayFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) //for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
+				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, huPIPId)
+				.orderBy()
+				.addColumn(I_PMM_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first();
 	}
 
 }

@@ -144,7 +144,8 @@ public class PMMPricingBL implements IPMMPricingBL
 		pricingAware.setPrice(pricingResult.getPriceStd());
 	}
 
-	private boolean updatePriceFromContract(final IPMMPricingAware pricingAware)
+	@Override
+	public boolean updatePriceFromContract(final IPMMPricingAware pricingAware)
 	{
 		final I_C_Flatrate_Term flatrateTerm = pricingAware.getC_Flatrate_Term();
 		if (flatrateTerm == null)

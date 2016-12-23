@@ -1110,20 +1110,26 @@ public class TimeUtil
 	/**
 	 * Get the week of year number for the given Date
 	 * 
+	 * The logic for calculating the week number is based on the ISO week date conventions.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
+	 * 
 	 * @param date
 	 * @return
 	 */
 	public static int getWeekNumber(final Date date)
 	{
+		// make sure the timing is not taken into account. The Timestamp will be set on the first millisecond of the given date.
 		final Calendar cal = asCalendar(date);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
+		// According to international standard ISO 8601, Monday is the first day of the week.
 		cal.setFirstDayOfWeek(Calendar.MONDAY);
 
 		// FIXME: This shall be taken from Locale, but Locale it is not reliable (doesn't always work the same way)
+		// It is the first week with a majority (4 or more) of its days in January.
 		cal.setMinimalDaysInFirstWeek(4);
 
 		final int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
@@ -1132,7 +1138,8 @@ public class TimeUtil
 
 	/**
 	 * Get the day of the week for the given date.
-	 * First day of the week is considered Monday.
+	 * First day of the week is considered Monday, due to ISO 8601.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
 	 * 
 	 * @param date
 	 * @return
@@ -1141,6 +1148,9 @@ public class TimeUtil
 	{
 		final int dayOfWeek = asCalendar(date).get(Calendar.DAY_OF_WEEK);
 
+		// According to international standard ISO 8601, Monday is the first day of the week.
+		// The Calendar considers it to be Sunday, so this adjustment is needed.
+		// see java.util.Calendar.MONDAY
 		if (dayOfWeek == 1)
 		{
 			return 7;
