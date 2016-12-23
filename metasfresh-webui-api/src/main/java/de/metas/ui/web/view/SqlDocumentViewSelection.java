@@ -24,7 +24,6 @@ import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
-import org.compiere.model.I_T_Query_Selection;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -33,6 +32,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
@@ -162,7 +162,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 					.add("AD_Window_ID", adWindowId)
 					.add("tableName", tableName)
 					.add("defaultSelection", defaultSelection)
-					.add("sql", sqlSelectPage)
+					// .add("sql", sqlSelectPage) // too long..
 					// .add("fieldLoaders", fieldLoaders) // no point to show them because all are lambdas
 					.toString();
 		}
@@ -393,10 +393,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		final String sqlKeyColumnName = getKeyColumnName();
 
 		final StringBuilder sqlWhereClause = new StringBuilder();
-		sqlWhereClause.append("exists (select 1 from " + I_T_Query_Selection.Table_Name + " sel "
+		sqlWhereClause.append("exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " sel "
 				+ " where "
-				+ " " + I_T_Query_Selection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId())
-				+ " and sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
+				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(getViewId())
+				+ " and sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
 				+ ")");
 
 		if (!Check.isEmpty(viewDocumentIds))
@@ -662,10 +662,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			// INSERT INTO T_Query_Selection (UUID, Line, Record_ID)
 			final List<Object> sqlParams = new ArrayList<>();
 			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
-					.append("INSERT INTO " + I_T_Query_Selection.Table_Name + " ("
-							+ " " + I_T_Query_Selection.COLUMNNAME_UUID
-							+ ", " + I_T_Query_Selection.COLUMNNAME_Line
-							+ ", " + I_T_Query_Selection.COLUMNNAME_Record_ID
+					.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
+							+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
+							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
+							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
 							+ ")");
 
 			//
@@ -728,10 +728,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			//
 			// INSERT INTO T_Query_Selection (UUID, Line, Record_ID)
 			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
-					.append("INSERT INTO " + I_T_Query_Selection.Table_Name + " ("
-							+ " " + I_T_Query_Selection.COLUMNNAME_UUID
-							+ ", " + I_T_Query_Selection.COLUMNNAME_Line
-							+ ", " + I_T_Query_Selection.COLUMNNAME_Record_ID
+					.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
+							+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
+							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
+							+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
 							+ ")");
 
 			//
@@ -745,10 +745,10 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 								.append("\n  ?") // newUUID
 								.append("\n, ").append("row_number() OVER (ORDER BY ").append(OrderedSelectionFactory.PLACEHOLDER_OrderBy).append(")") // Line
 								.append("\n, ").append(keyColumnNameFQ) // Record_ID
-								.append("\n FROM ").append(I_T_Query_Selection.Table_Name).append(" sel")
+								.append("\n FROM ").append(I_T_WEBUI_ViewSelection.Table_Name).append(" sel")
 								.append("\n LEFT OUTER JOIN ").append(sqlTableName).append(" ").append(sqlTableAlias).append(" ON (").append(keyColumnNameFQ).append("=").append("sel.")
-								.append(I_T_Query_Selection.COLUMNNAME_Record_ID).append(")")
-								.append("\n WHERE sel.").append(I_T_Query_Selection.COLUMNNAME_UUID).append("=?") // fromUUID
+								.append(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID).append(")")
+								.append("\n WHERE sel.").append(I_T_WEBUI_ViewSelection.COLUMNNAME_UUID).append("=?") // fromUUID
 				);
 			}
 

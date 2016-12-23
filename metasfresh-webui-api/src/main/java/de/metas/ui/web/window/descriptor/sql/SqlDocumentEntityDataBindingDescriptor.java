@@ -18,7 +18,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_T_Query_Selection;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
 
@@ -27,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -439,11 +439,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 						.append("\n FROM (")
 						.append("\n   SELECT ")
 						.append("\n   ").appendAllJoining(", ", sqlSelectValuesList)
-						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-						.append("\n   FROM " + I_T_Query_Selection.Table_Name + " sel")
-						.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + ")")
+						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
+						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+						.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+						.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
 						.append("\n ) " + sqlTableAlias) // FROM
 						.build();
 			}
@@ -452,11 +452,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				return IStringExpression.composer()
 						.append("SELECT ")
 						.append("\n ").appendAllJoining("\n, ", sqlSelectValuesList)
-						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-						.append("\n , sel." + I_T_Query_Selection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-						.append("\n FROM " + I_T_Query_Selection.Table_Name + " sel")
-						.append("\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_Query_Selection.COLUMNNAME_Record_ID
+						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
+						.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+						.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+						.append("\n LEFT OUTER JOIN " + sqlTableName + " " + sqlTableAlias + " ON (" + sqlTableAlias + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
 								+ ")")
 						.build();
 			}
