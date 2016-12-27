@@ -87,6 +87,9 @@ class RawList extends Component {
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
             </div>
         )
+        return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
+            <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
+        </div>)
     }
 
     renderOptions = () => {
@@ -95,7 +98,7 @@ class RawList extends Component {
         let ret = [];
 
         if(!mandatory){
-            emptyText && ret.push(this.getRow(0, {0: emptyText}));
+            emptyText && ret.push(this.getRow(0, null, emptyText));
         }
 
         list.map((option, index) => {
@@ -108,15 +111,16 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, mandatory, value
+            rowId, isModal, mandatory, value, tabIndex
         } = this.props;
 
         return (
             <div
-                tabIndex="0"
-                onFocus={()=>this.inputSearch.focus()}
+                tabIndex={tabIndex ? tabIndex : 0}
+                onFocus={() => this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
+                onKeyDown={this.handleKeyDown}
                 className={
                     "input-dropdown-container " +
                     (rowId ? "input-dropdown-container-static " : "") +

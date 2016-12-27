@@ -6,12 +6,12 @@ class DocumentContextShortcuts extends Component {
         super(props);
         
     }
-  _handleShortcuts = (action, event) => {
+  handleShortcuts = (action, event) => {
     const {} = this.props;
     switch (action) {
-      case 'OPEN_PRINT_RAPORT':
+      case 'FOCUS_FAST_LINE_ENTRY':
         break
-      case 'OPEN_ADVANCED_EDIT':
+      case 'REMOVE_SELECTED':
         break
     }
   }
@@ -20,10 +20,9 @@ class DocumentContextShortcuts extends Component {
     return (
       <Shortcuts
         name={"DOCUMENT_CONTEXT"}
-        handler= {this._handleShortcuts}
+        handler= {this.handleShortcuts}
         targetNodeSelector={"body"}
-      >
-      </Shortcuts>
+      />
     )
   }
 }

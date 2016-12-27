@@ -94,14 +94,15 @@ export function noConnection(status) {
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId) {
+export function openModal(title, windowType, type, tabId, rowId, isAdvanced) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
         modalType: type,
         tabId: tabId,
         rowId: rowId,
-        title: title
+        title: title,
+        isAdvanced: isAdvanced
     }
 }
 
@@ -133,7 +134,7 @@ export function indicatorState(state) {
 /*
  * Main method to generate window
  */
-export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false) {
+export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = false, isAdvanced) {
     return (dispatch) => {
         if (docId == "new") {
             docId = "NEW";
@@ -141,12 +142,12 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
 
         // this chain is really important,
         // to do not re-render widgets on init
-        return dispatch(initWindow(windowType, docId, tabId, rowId))
+        return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
 
                 let elem = 0;
 
-                response.data.forEach(function (value, index) {
+                response.data.forEach((value, index) => {
                     if (value.rowId === rowId) {
                         elem = index;
                     }
@@ -171,7 +172,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                     dispatch(getWindowBreadcrumb(windowType));
                 }
             }).then(() =>
-                dispatch(initLayout('window', windowType, tabId))
+                dispatch(initLayout('window', windowType, tabId, null, null, isAdvanced))
             ).then(response =>
                 dispatch(initLayoutSuccess(response.data, getScope(isModal)))
             ).then(response => {
@@ -192,17 +193,21 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
     }
 }
 
-export function initWindow(windowType, docId, tabId, rowId = null) {
+export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
     return (dispatch) => {
         if (docId === "NEW") {
+            //New master document
             return dispatch(patchRequest('window', windowType, docId))
         } else {
             if (rowId === "NEW") {
+                //New row document
                 return dispatch(patchRequest('window', windowType, docId, tabId, "NEW"))
             } else if (rowId) {
-                return dispatch(getData('window', windowType, docId, tabId, rowId))
+                //Existing row document
+                return dispatch(getData('window', windowType, docId, tabId, rowId, null, null, isAdvanced))
             } else {
-                return dispatch(getData('window', windowType, docId))
+                //Existing master document
+                return dispatch(getData('window', windowType, docId, null, null, null, null, isAdvanced))
             }
         }
     }
@@ -212,7 +217,7 @@ export function initWindow(windowType, docId, tabId, rowId = null) {
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
  */
-export function patch(entity, windowType, id = "NEW", tabId, rowId, property, value, isModal) {
+export function patch(entity, windowType, id = "NEW", tabId, rowId, property, value, isModal, isAdvanced) {
     return dispatch => {
         let responsed = false;
 
@@ -230,7 +235,10 @@ export function patch(entity, windowType, id = "NEW", tabId, rowId, property, va
         }
         timeoutLoop();
 
-        return dispatch(patchRequest('window', windowType, id, tabId, rowId, property, value)).then(response => {
+        return dispatch(patchRequest(
+            'window', windowType, id, tabId, rowId, property, value, null, null,
+            isAdvanced)
+        ).then(response => {
             responsed = true;
 
             dispatch(mapDataToState(response.data, isModal, rowId));
@@ -327,25 +335,27 @@ export function startProcess(processType) {
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
-export function initLayout(entity, docType, tabId, subentity = null, docId = null) {
+export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced) {
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' + docType +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (subentity ? "/" + subentity : "") +
-        '/layout'
+        '/layout' +
+        (isAdvanced ? "?advanced=true" : "")
     );
 }
 
-export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId) {
+export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced) {
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' + docType + '/' + docId +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
         (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "")
+        (subentityId ? "/" + subentityId : "") +
+        (isAdvanced ? "?advanced=true" : "")
     );
 }
 
@@ -358,7 +368,10 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
     );
 }
 
-export function patchRequest(entity, docType, docId = "NEW", tabId, rowId, property, value, subentity, subentityId) {
+export function patchRequest(
+    entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
+    subentityId, isAdvanced
+) {
     let payload = {};
 
     if (docId === "NEW") {
@@ -377,11 +390,14 @@ export function patchRequest(entity, docType, docId = "NEW", tabId, rowId, prope
 
     return () => axios.patch(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
+        '/' + entity + '/' +
+        (docType ? "/" + docType : "") +
+        (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
         (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : ""), payload);
+        (subentityId ? "/" + subentityId : "") +
+        (isAdvanced ? "?advanced=true" : ""), payload);
 }
 
 export function completeRequest(entity, docType, docId, tabId, rowId, subentity, subentityId) {

@@ -4,10 +4,18 @@ import {push} from 'react-router-redux';
 
 import MenuOverlay from './MenuOverlay';
 import MasterWidget from '../widget/MasterWidget';
+import Tooltips from '../tooltips/Tooltips';
+import keymap from '../../keymap.js';
 
 class Breadcrumb extends Component {
 	constructor(props) {
 		super(props);
+
+        this.state = {
+            tooltip: {
+                open: false
+            }
+        }
 	}
 
     linkToPage = (page) => {
@@ -15,11 +23,22 @@ class Breadcrumb extends Component {
         dispatch(push("/window/"+page));
     }
 
+    toggleTooltip = (tooltip) => {
+        this.setState(
+            Object.assign({}, this.state, {
+                tooltip: Object.assign({}, this.state, {
+                    open: tooltip
+                })
+            })
+        );
+    }
+
     renderBtn = (menu, index) => {
         const {handleMenuOverlay, menuOverlay, windowType, siteName} = this.props;
+        const {tooltip} = this.state;
         return (<div key={index}>
             {!!index && <span className="divider">/</span>}
-            <div className={"header-btn"}>
+            <div className={"header-btn tooltip-parent"}>
                 <div
                     title={!!index && menu.children.captionBreadcrumb}
                     className={"header-item-container pointer " +
@@ -29,6 +48,8 @@ class Breadcrumb extends Component {
                     onClick={ !(menu && menu.children && menu.children.elementId) ?
                         e => handleMenuOverlay(e, menu.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )
                     }
+                    onMouseEnter={!!index ? '' : (e) => this.toggleTooltip(true)}
+                    onMouseLeave={(e) => this.toggleTooltip(false)}
                 >
                     <span className={"header-item icon-sm"}>
                         {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
@@ -43,6 +64,14 @@ class Breadcrumb extends Component {
                         siteName={siteName}
                     />
                 }
+                {
+                    menu.nodeId === "0" && tooltip.open &&
+                    <Tooltips
+                        name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
+                        type={''}
+                    />
+                }
+                
             </div>
         </div>)
     }
