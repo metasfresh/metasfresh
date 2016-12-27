@@ -1979,3 +1979,11 @@ td.pulse-off input {
 .tooltip-parent {
     position: relative;
 }
+
+.tooltip-inline {
+    color: $brand-font-color-secondary;
+    font-size: 10px;
+    float: right;
+    opacity: 0.5;
+    font-weight: bold;
+}

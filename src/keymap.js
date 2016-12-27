@@ -25,6 +25,7 @@ export default {
             windows: 'delete',
             linux: 'delete',
         },
+        ADVANCED_EDIT: mod + '+' + 'a',
     },
     DOCUMENT_CONTEXT: {
         FOCUS_FAST_LINE_ENTRY: mod + '+' + 'q',
