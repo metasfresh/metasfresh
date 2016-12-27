@@ -197,7 +197,12 @@ class Lookup extends Component {
     }
 
     handleFocus = () => {
+        const {isInputEmpty} = this.state;
         this.dropdown.classList.add("input-dropdown-focused");
+
+        if(!isInputEmpty){
+            this.handleChange();
+        }
     }
 
     handleChange = () => {
@@ -376,6 +381,7 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
+                    (readonly ? "input-disabled " : "") +
                     (rowId ? "input-dropdown-container-static " : "") +
                     ((rowId && !isModal)? "input-table " : "")
                 }
@@ -416,28 +422,30 @@ class Lookup extends Component {
                     }
                 </div>
                 <div className="clearfix" />
-                <div className="input-dropdown-list">
-                    {(loading && list.length === 0) && (
-                        <div className="input-dropdown-list-header">
+                {!isInputEmpty &&
+                    <div className="input-dropdown-list">
+                        {(loading && list.length === 0) && (
                             <div className="input-dropdown-list-header">
-                                <ReactCSSTransitionGroup
-                                    transitionName="rotate"
-                                    transitionEnterTimeout={1000}
-                                    transitionLeaveTimeout={1000}
-                                >
-                                    <div className="rotate icon-rotate">
-                                        <i className="meta-icon-settings"/>
-                                    </div>
-                                </ReactCSSTransitionGroup>
+                                <div className="input-dropdown-list-header">
+                                    <ReactCSSTransitionGroup
+                                        transitionName="rotate"
+                                        transitionEnterTimeout={1000}
+                                        transitionLeaveTimeout={1000}
+                                    >
+                                        <div className="rotate icon-rotate">
+                                            <i className="meta-icon-settings"/>
+                                        </div>
+                                    </ReactCSSTransitionGroup>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div ref={(c) => this.items = c}>
-                        {this.renderLookup()}
-                        {list.length === 0 && this.renderEmpty()}
+                        <div ref={(c) => this.items = c}>
+                            {this.renderLookup()}
+                            {list.length === 0 && this.renderEmpty()}
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         )
     }

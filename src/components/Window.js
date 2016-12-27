@@ -118,7 +118,8 @@ class Window extends Component {
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
-                    {...elem} />
+                    {...elem}
+                />
             )
         })
     }
