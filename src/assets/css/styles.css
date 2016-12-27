@@ -554,7 +554,8 @@ body {
 .dropdown-status-item {
     padding: 8px 10px;
 }
-.dropdown-status-item:hover {
+.dropdown-status-item:hover,
+.dropdown-status-item.dropdown-status-item-on-key {
     background-color: $brand-dark-color;
 }
 
@@ -562,14 +563,16 @@ body {
     background-color: $brand-success-color;
     color: #fff;
 }
-.dropdown-status-item-def-1:hover {
+.dropdown-status-item-def-1:hover,
+.dropdown-status-item-def-1.dropdown-status-item-on-key {
     background-color: $brand-success-dark-color;
 }
 .dropdown-status-item-def {
     background-color: $brand-primary-color;
     color: #fff;
 }
-.dropdown-status-item-def:hover {
+.dropdown-status-item-def:hover,
+.dropdown-status-item-def.dropdown-status-item-on-key {
     background-color: $brand-primary-dark-color;
 }
 

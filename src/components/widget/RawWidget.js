@@ -375,7 +375,8 @@ class RawWidget extends Component {
                     <label
                         className={
                             "input-checkbox "
-                        }>
+                        }
+                    >
                         <input
                             type="checkbox"
                             checked={selectedField}

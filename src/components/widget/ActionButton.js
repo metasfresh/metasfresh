@@ -11,12 +11,48 @@ class ActionButton extends Component {
         this.state = {
             list: {
                 values: []
-            }
+            },
+            selected: 0
         }
     }
+
+    handleKeyDown = (e) => {
+        const {list, selected} = this.state;
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                this.navigate(true);
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                this.navigate();
+                break;
+            case "Enter":
+                e.preventDefault();
+                if(selected != null){
+                    this.handleChangeStatus(list.values[selected]);
+                }
+                break;
+            case "Escape":
+                e.preventDefault();
+                this.handleBlur();
+                break;
+        }
+    }
+
+    navigate = (up) => {
+        const {selected,list} = this.state;
+        const next = up ? selected + 1 : selected - 1;
+
+        this.setState(Object.assign({}, this.state, {
+            selected: (next >= 0 && next <= list.values.length) ? next : selected
+        }));
+    }
+
     handleDropdownBlur = () => {
         this.statusDropdown.classList.remove('dropdown-status-open');
     }
+
     handleDropdownFocus = () => {
         const { dispatch, windowType, fields, dataId} = this.props;
 
@@ -25,10 +61,12 @@ class ActionButton extends Component {
         });
         this.statusDropdown.classList.add('dropdown-status-open');
     }
+
     handleChangeStatus = (status) => {
         this.props.onChange(status);
         this.statusDropdown.blur();
     }
+
     getStatusClassName = (abrev) => {
         const {data} = this.props;
 
@@ -44,6 +82,7 @@ class ActionButton extends Component {
             return "";
         }
     }
+
     getStatusContext = (abrev) => {
         if(abrev === 'DR'){
             return "primary"
@@ -53,13 +92,17 @@ class ActionButton extends Component {
             return "default"
         }
     }
+
     renderStatusList = (list) => {
+        const {selected} = this.state;
+        console.log(selected)
         return list.values.map((item, index) => {
             const key = Object.keys(item)[0];
             return <li
                 key={index}
                 className={
                     "dropdown-status-item " +
+                    (selected === index ? "dropdown-status-item-on-key " : "") +
                     this.getStatusClassName(key)
                 }
                 onClick={() => this.handleChangeStatus(item)}
@@ -67,15 +110,15 @@ class ActionButton extends Component {
                 {item[key]}
             </li>
         })
-
-
     }
+
     render() {
-        const {data} = this.props
+        const {data} = this.props;
         const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
         const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
         return (
             <div
+                onKeyDown={this.handleKeyDown}
                 className="meta-dropdown-toggle dropdown-status-toggler"
                 tabIndex="0"
                 ref={(c) => this.statusDropdown = c}
@@ -96,11 +139,6 @@ ActionButton.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-ActionButton = connect(mapStateToProps)(ActionButton)
+ActionButton = connect()(ActionButton)
 
 export default ActionButton
