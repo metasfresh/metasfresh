@@ -529,12 +529,6 @@ input:checked + .input-slider:before {
 .input-dropdown-container:focus {
     outline-width: 0;
 }
-.input-dropdown-container .input-dropdown-list {
-    display:none;
-}
-.input-dropdown-focused .input-dropdown-list {
-    display:block;
-}
 .input-dropdown-focused .input-toggled {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;

@@ -10,7 +10,7 @@ import {
 
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
-import Lookup from './Lookup';
+import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List';
 import ActionButton from './ActionButton';

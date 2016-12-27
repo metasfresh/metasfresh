@@ -8,12 +8,15 @@ class RawList extends Component {
         super(props);
 
         this.state = {
-            selected: 0
+            selected: 0,
+            isOpen: false
         }
     }
 
     handleBlur = (e) => {
-        this.dropdown && this.dropdown.classList.remove("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: false
+        }))
     }
 
     handleFocus = (e) => {
@@ -22,7 +25,9 @@ class RawList extends Component {
 
         onFocus && onFocus();
 
-        this.dropdown.classList.add("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: true
+        }))
     }
 
     handleChange = (e) => {
@@ -114,6 +119,10 @@ class RawList extends Component {
             rowId, isModal, mandatory, value, tabIndex
         } = this.props;
 
+        const {
+            isOpen
+        } = this.state;
+
         return (
             <div
                 tabIndex={tabIndex ? tabIndex : 0}
@@ -153,7 +162,7 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                <div className="input-dropdown-list">
+                {isOpen && <div className="input-dropdown-list">
                     {(list.length === 0 && loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
@@ -169,7 +178,7 @@ class RawList extends Component {
                         </div>
                     )}
                     {this.renderOptions()}
-                </div>
+                </div>}
             </div>
         )
     }

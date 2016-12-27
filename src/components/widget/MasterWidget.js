@@ -7,10 +7,6 @@ import {
     findRowByPropName
 } from '../../actions/WindowActions';
 
-import Datetime from 'react-datetime';
-import Lookup from './Lookup';
-import List from './List';
-import ActionButton from './ActionButton';
 import RawWidget from './RawWidget';
 
 class Widget extends Component {

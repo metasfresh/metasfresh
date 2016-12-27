@@ -9,12 +9,14 @@ import {
     autocompleteRequest,
     dropdownRequest,
     filterAutocompleteRequest
-} from '../../actions/AppActions';
+} from '../../../actions/AppActions';
 
 import {
     getItemsByProperty,
     openModal
-} from '../../actions/WindowActions';
+} from '../../../actions/WindowActions';
+
+import LookupList from './LookupList';
 
 class Lookup extends Component {
     constructor(props) {
@@ -31,7 +33,8 @@ class Lookup extends Component {
             loading: false,
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
-            oldValue: ''
+            oldValue: '',
+            isOpen: false
         }
 
     }
@@ -49,10 +52,6 @@ class Lookup extends Component {
 
     componentDidUpdate() {
         this.handleValueChanged();
-    }
-
-    handleClickOutside = () => {
-        this.handleBlur();
     }
 
     handleSelect = (select) => {
@@ -193,12 +192,16 @@ class Lookup extends Component {
     }
 
     handleBlur = () => {
-        this.dropdown.classList.remove("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: false
+        }))
     }
 
     handleFocus = () => {
         const {isInputEmpty} = this.state;
-        this.dropdown.classList.add("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: true
+        }))
 
         if(!isInputEmpty){
             this.handleChange();
@@ -213,14 +216,13 @@ class Lookup extends Component {
 
         const {mainProperty} = this.state;
 
-        this.dropdown.classList.add("input-dropdown-focused");
-
         if(this.inputSearch.value != ""){
 
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: false,
                 loading: true,
-                query: this.inputSearch.value
+                query: this.inputSearch.value,
+                isOpen: true
             }));
 
             if(filterWidget){
@@ -314,20 +316,6 @@ class Lookup extends Component {
         }
     }
 
-    getDropdownComponent = (index, item) => {
-        const name = item[Object.keys(item)[0]];
-        const key = Object.keys(item)[0];
-        return (
-            <div
-                key={key}
-                className={"input-dropdown-list-option " + (this.state.selected === index ? 'input-dropdown-list-option-key-on' : "") }
-                onClick={() => this.handleSelect(item)}
-            >
-                <p className="input-dropdown-item-title">{name}</p>
-            </div>
-        )
-    }
-
     handleValueChanged = () => {
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
@@ -347,37 +335,21 @@ class Lookup extends Component {
         }
     }
 
-    renderLookup = () => {
-        const {list} = this.state;
-        return list.map((item, index) => this.getDropdownComponent(index, item) );
-    }
-
-    renderEmpty = () => {
-        const {query} = this.state;
-        return (
-            <div
-                className="input-dropdown-list-option input-dropdown-list-option-alt"
-                onClick={() => this.handleAddNew(query)}
-            >
-                <p className="input-dropdown-item-title">New {query ? '"' + query + '"' : ""}</p>
-            </div>
-        )
-    }
-
     render() {
         const {
             rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, selected, oldValue, filterWidget, mandatory, rowId
+            updated, oldValue, filterWidget, mandatory, rowId, tabIndex
         } = this.props;
 
-        const {propertiesCopy,isInputEmpty, list, query, loading} = this.state;
+        const {
+            propertiesCopy,isInputEmpty, list, query, loading, selected, isOpen
+        } = this.state;
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
                 onClick={()=>this.inputSearch.focus()}
                 onBlur={this.handleBlur}
-
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
@@ -422,30 +394,15 @@ class Lookup extends Component {
                     }
                 </div>
                 <div className="clearfix" />
-                {!isInputEmpty &&
-                    <div className="input-dropdown-list">
-                        {(loading && list.length === 0) && (
-                            <div className="input-dropdown-list-header">
-                                <div className="input-dropdown-list-header">
-                                    <ReactCSSTransitionGroup
-                                        transitionName="rotate"
-                                        transitionEnterTimeout={1000}
-                                        transitionLeaveTimeout={1000}
-                                    >
-                                        <div className="rotate icon-rotate">
-                                            <i className="meta-icon-settings"/>
-                                        </div>
-                                    </ReactCSSTransitionGroup>
-                                </div>
-                            </div>
-                        )}
-
-                        <div ref={(c) => this.items = c}>
-                            {this.renderLookup()}
-                            {list.length === 0 && this.renderEmpty()}
-                        </div>
-                    </div>
-                }
+                {isOpen && <LookupList
+                    selected={selected}
+                    list={list}
+                    loading={loading}
+                    handleSelect={this.handleSelect}
+                    isInputEmpty={isInputEmpty}
+                    onClickOutside={this.handleBlur}
+                    disableClickOutside={!isOpen}
+                />}
             </div>
         )
     }
@@ -456,6 +413,6 @@ Lookup.propTypes = {
     dispatch: PropTypes.func.isRequired
 }
 
-Lookup = connect()(onClickOutside(Lookup))
+Lookup = connect()(Lookup)
 
 export default Lookup
