@@ -13,9 +13,8 @@ class RawList extends Component {
     }
 
     handleBlur = (e) => {
-        this.dropdown.classList.remove("input-dropdown-focused");
+        this.dropdown && this.dropdown.classList.remove("input-dropdown-focused");
     }
-
 
     handleFocus = (e) => {
         e.preventDefault();
@@ -35,7 +34,11 @@ class RawList extends Component {
     handleSelect = (option) => {
         const {onSelect} = this.props;
 
-        onSelect(option);
+        if(option){
+            onSelect(option);
+        }else{
+            onSelect(null);
+        }
 
         this.handleBlur();
     }
@@ -87,9 +90,6 @@ class RawList extends Component {
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
             </div>
         )
-        return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
-            <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
-        </div>)
     }
 
     renderOptions = () => {
