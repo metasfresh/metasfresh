@@ -76,7 +76,7 @@ class Window extends Component {
                 elementsLine && elementsLine.length > 0 &&
                     <div
                         key={'elemGroups' + id}
-                        tabIndex={0}
+                        tabIndex={shouldBeFocused ? 0 : undefined}
                         className={
                             "panel panel-spaced panel-distance " +
                             ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
@@ -138,16 +138,5 @@ class Window extends Component {
         );
     }
 }
-
-Window.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-function mapStateToProps(state) {
-    return {
-    }
-}
-
-Window = connect(mapStateToProps)(Window)
 
 export default Window;

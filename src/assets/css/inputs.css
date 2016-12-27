@@ -548,7 +548,9 @@ input:checked + .input-slider:before {
     width: 100%;
     background-color: #fff;
     z-index:300;
-    border: 1px solid $brand-light-color;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+    border-color: $brand-light-color;
     max-height: 357px;
     height: auto;
     overflow-y: auto;
@@ -568,9 +570,11 @@ input:checked + .input-slider:before {
 }
 .input-dropdown-list-option {
     padding: .25rem .50rem;
-    border-top: 1px solid $brand-light-color;
-    cursor:pointer;
+    cursor: pointer;
     position: relative;
+}
+.input-dropdown-list-option:not(:first-of-type) {
+    border-top: 1px solid $brand-light-color;
 }
 .input-dropdown-list-option-alt {
     background-color: $brand-super-light-color;

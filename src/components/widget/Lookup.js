@@ -370,8 +370,9 @@ class Lookup extends Component {
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                tabIndex="0"
-                onFocus={()=>this.inputSearch.focus()}
+                onClick={()=>this.inputSearch.focus()}
+                onBlur={this.handleBlur}
+
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
@@ -409,28 +410,29 @@ class Lookup extends Component {
                         <div className="input-icon input-icon-lg">
                             <i className="meta-icon-preview" />
                         </div> :
-                        <div className="input-icon input-icon-lg" tabIndex="0">
+                        <div className="input-icon input-icon-lg">
                             {!readonly && <i onClick={this.handleClear} className="meta-icon-close-alt"/>}
                         </div>
                     }
                 </div>
                 <div className="clearfix" />
                 <div className="input-dropdown-list">
-                    <div className="input-dropdown-list-header">
-                        {(list.length > 0 ) ?
-                            (query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
-                            "There's no matching items."
-                        }
-                        {(loading && list.length === 0) && (
+                    {(loading && list.length === 0) && (
+                        <div className="input-dropdown-list-header">
                             <div className="input-dropdown-list-header">
-                                <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
+                                <ReactCSSTransitionGroup
+                                    transitionName="rotate"
+                                    transitionEnterTimeout={1000}
+                                    transitionLeaveTimeout={1000}
+                                >
                                     <div className="rotate icon-rotate">
                                         <i className="meta-icon-settings"/>
                                     </div>
                                 </ReactCSSTransitionGroup>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+
                     <div ref={(c) => this.items = c}>
                         {this.renderLookup()}
                         {list.length === 0 && this.renderEmpty()}

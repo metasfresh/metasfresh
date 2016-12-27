@@ -117,12 +117,13 @@ class RawList extends Component {
         return (
             <div
                 tabIndex={tabIndex ? tabIndex : 0}
-                onFocus={() => this.inputSearch.focus()}
+                onFocus={!readonly && this.handleFocus}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
                 onKeyDown={this.handleKeyDown}
                 className={
                     "input-dropdown-container " +
+                    (readonly ? "input-disabled " : "") +
                     (rowId ? "input-dropdown-container-static " : "") +
                     ((rowId && !isModal) ? "input-table " : "")
                 }
@@ -140,9 +141,9 @@ class RawList extends Component {
                             type="text"
                             className="input-field js-input-field font-weight-semibold"
                             readOnly
+                            tabIndex={-1}
                             placeholder={defaultValue}
                             value={selected ? selected[Object.keys(selected)[0]] : ""}
-                            onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             disabled={readonly}
