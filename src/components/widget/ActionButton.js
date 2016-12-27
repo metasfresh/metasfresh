@@ -35,7 +35,7 @@ class ActionButton extends Component {
                 break;
             case "Escape":
                 e.preventDefault();
-                this.handleBlur();
+                this.handleDropdownBlur();
                 break;
         }
     }
