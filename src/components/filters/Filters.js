@@ -149,7 +149,7 @@ class Filters extends Component {
     applyFilters = () => {
         const {filter, dispatch, windowType} = this.props;
         const notValid = this.isFilterValid(filter);
-        
+
         if (notValid.length) {
             this.setState(Object.assign({}, this.state, {
                 notValidFields: notValid
@@ -199,7 +199,7 @@ class Filters extends Component {
     }
 
     renderFiltersItem = (item, key, isActive) => {
-        const {windowType} = this.props;
+        const {windowType, viewId} = this.props;
         const {filterDataItem, selectedItem, notValidFields} = this.state;
         if(item){
             return (
@@ -219,6 +219,7 @@ class Filters extends Component {
                     isActive={isActive}
                     isShown={() => this.handleShow(true)}
                     isHidden={() => this.handleShow(false)}
+                    viewId={viewId}
                 />
             )
         }

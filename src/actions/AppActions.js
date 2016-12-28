@@ -171,17 +171,6 @@ export function logoutRequest(){
 	return () => axios.get(config.API_URL + '/login/logout');
 }
 
-export function filterDropdownRequest(type, filterId, parameterName) {
-	return () => axios.get(config.API_URL + '/documentView/filters/parameter/dropdown?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName);
-}
-
-export function filterAutocompleteRequest(type, filterId, parameterName, query) {
-	return () => {
-		query = encodeURIComponent(query);
-		return axios.get(config.API_URL + '/documentView/filters/parameter/typeahead?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName +'&query=' + query);
-	}
-}
-
 export function getNotifications() {
     return () => axios.get(config.API_URL + '/notifications/all?limit=20');
 }

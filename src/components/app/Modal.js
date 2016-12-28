@@ -117,7 +117,9 @@ class Modal extends Component {
         } = this.state;
 
         return (
-            data.length > 0 && <div className="screen-freeze js-not-unselect">
+            data.length > 0 && <div
+                className="screen-freeze js-not-unselect"
+            >
                 <div className="panel panel-modal panel-modal-primary">
                     <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
                         <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
@@ -130,7 +132,11 @@ class Modal extends Component {
                             </span>}
                         </div>
                     </div>
-                    <div className="panel-modal-content js-panel-modal-content container-fluid">
+                    <div
+                        className="panel-modal-content js-panel-modal-content container-fluid"
+                        tabIndex={0}
+                        ref={c => { c && c.focus()}}
+                    >
                         {modalType === "window" ?
                             <Window
                                 data={data}

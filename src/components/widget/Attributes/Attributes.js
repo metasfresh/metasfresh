@@ -28,7 +28,7 @@ class Attributes extends Component {
     render() {
         const {
             widgetData,fields, dispatch, docType, dataId, tabId, rowId, patch,
-            fieldName, attributeType
+            fieldName, attributeType, tabIndex
         } = this.props;
         const {dropdown} = this.state;
         const {value} = widgetData;
@@ -41,7 +41,8 @@ class Attributes extends Component {
                 (rowId ? "attributes-in-table " : "")
             }>
                 <div
-                    onClick={() => this.handleToggle(!dropdown)}
+                    onFocus={() => this.handleToggle(!dropdown)}
+                    tabIndex={tabIndex}
                     className={
                         "tag tag-lg tag-block tag-secondary pointer " +
                         (dropdown ? "tag-disabled " : "")

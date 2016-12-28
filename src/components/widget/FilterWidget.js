@@ -21,7 +21,7 @@ class FilterWidget extends Component {
         const {
             caption, widgetType, parameters, windowType, type, noLabel, widgetData,
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
-            item, filter, isShown, isHidden
+            item, filter, isShown, isHidden, viewId
         } = this.props;
 
 
@@ -50,6 +50,7 @@ class FilterWidget extends Component {
                     caption={item.caption}
                     noLabel={false}
                     filterWidget={true}
+                    viewId={viewId}
                 />
             )
         }else{

@@ -26,7 +26,12 @@ class Tabs extends Component {
     renderPills = (pills) => {
         return pills.map((item) => {
             return (
-                <li className="nav-item" key={"tab" + item.key} onClick={(e) => this.handleClick(e, item.key)}>
+                <li
+                    className="nav-item"
+                    key={"tab" + item.key}
+                    onClick={(e) => this.handleClick(e, item.key)}
+                    tabIndex="0"
+                >
                     <a className={"nav-link " + ((this.state.selected === item.key) ? "active" : "")}>{item.props.caption}</a>
                 </li>
             );

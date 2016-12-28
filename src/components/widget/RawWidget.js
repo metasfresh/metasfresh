@@ -12,7 +12,7 @@ import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
-import List from './List';
+import List from './List/List';
 import ActionButton from './ActionButton';
 
 class RawWidget extends Component {
@@ -37,7 +37,7 @@ class RawWidget extends Component {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex
+            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId
         } = this.props;
 
         const {textValue} = this.state;
@@ -173,6 +173,7 @@ class RawWidget extends Component {
                         tabId={tabId}
                         rowId={rowId}
                         tabIndex={tabIndex}
+                        viewId={viewId}
                     />
                 )
             case "List":
@@ -199,6 +200,7 @@ class RawWidget extends Component {
                         setSelectedItem={setSelectedItem}
                         emptyText={widgetFields.emptyText}
                         tabIndex={tabIndex}
+                        viewId={viewId}
                     />
                 )
             case "Text":

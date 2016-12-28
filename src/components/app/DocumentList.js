@@ -220,7 +220,6 @@ class DocumentList extends Component {
         const {dispatch, windowType, type, filters, pagination} = this.props;
 
         if(layout && data) {
-
             return (
                 <div>
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
@@ -236,6 +235,7 @@ class DocumentList extends Component {
                             filterData={layout.filters}
                             filtersActive={data.filters}
                             windowType={windowType}
+                            viewId={data.viewId}
                         />
                     </div>
 

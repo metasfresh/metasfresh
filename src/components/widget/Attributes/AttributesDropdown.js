@@ -130,7 +130,11 @@ class AttributesDropdown extends Component {
         const dataId = findRowByPropName(data, "ID").value;
 
         return (
-            <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
+            <div
+                className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
+                tabIndex={0}
+                ref={c => c && c.focus()}
+            >
                 {this.renderFields(layout, data, dataId, attributeType)}
             </div>
         )

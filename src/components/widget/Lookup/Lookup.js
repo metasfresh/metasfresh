@@ -7,8 +7,7 @@ import update from 'react-addons-update';
 
 import {
     autocompleteRequest,
-    dropdownRequest,
-    filterAutocompleteRequest
+    dropdownRequest
 } from '../../../actions/AppActions';
 
 import {
@@ -211,7 +210,8 @@ class Lookup extends Component {
     handleChange = () => {
         const {
             dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId, entity,subentity, subentityId
+            filterId, parameterName, tabId, rowId, entity,subentity, subentityId,
+            viewId
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -225,25 +225,15 @@ class Lookup extends Component {
                 isOpen: true
             }));
 
-            if(filterWidget){
-                dispatch(filterAutocompleteRequest(windowType, filterId, parameterName,  this.inputSearch.value ))
-                .then((response)=>{
-                    this.setState(Object.assign({}, this.state, {
-                        list: response.data.values,
-                        loading: false
-                    }));
-                })
-            }else {
-                dispatch(autocompleteRequest(
-                    windowType, mainProperty[0].field, this.inputSearch.value,
-                    dataId, tabId, rowId, entity, subentity, subentityId
-                )).then((response)=>{
-                    this.setState(Object.assign({}, this.state, {
-                        list: response.data.values,
-                        loading: false
-                    }));
-                })
-            }
+            dispatch(autocompleteRequest(
+                windowType, (filterWidget ? parameterName : mainProperty[0].field), this.inputSearch.value,
+                (filterWidget ? viewId : dataId), tabId, rowId, entity, subentity, subentityId
+            )).then((response)=>{
+                this.setState(Object.assign({}, this.state, {
+                    list: response.data.values,
+                    loading: false
+                }));
+            })
 
         }else{
             this.setState(Object.assign({}, this.state, {
@@ -275,6 +265,7 @@ class Lookup extends Component {
     }
 
     handleKeyDown = (e) => {
+        console.log("HANDLE KEY DOWN")
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();

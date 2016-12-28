@@ -4,9 +4,8 @@ import { connect } from 'react-redux';
 import RawList from './RawList';
 
 import {
-    dropdownRequest,
-    filterDropdownRequest
-} from '../../actions/AppActions';
+    dropdownRequest
+} from '../../../actions/AppActions';
 
 class List extends Component {
     constructor(props) {
@@ -27,24 +26,15 @@ class List extends Component {
             loading: true
         }));
 
-        if (filterWidget) {
-            dispatch(filterDropdownRequest(windowType, filterId, parameterName)).then((res) => {
-                this.setState(Object.assign({}, this.state, {
-                    list: res.data.values,
-                    loading: false
-                }));
-            });
-        } else {
-            dispatch(dropdownRequest(
-                windowType, properties[0].field, dataId, tabId, rowId, entity,
-                subentity, subentityId
-            )).then((res) => {
-                this.setState(Object.assign({}, this.state, {
-                    list: res.data.values,
-                    loading: false
-                }));
-            });
-        }
+        dispatch(dropdownRequest(
+            windowType, properties[0].field, dataId, tabId, rowId, entity,
+            subentity, subentityId
+        )).then((res) => {
+            this.setState(Object.assign({}, this.state, {
+                list: res.data.values,
+                loading: false
+            }));
+        });
     }
 
     handleSelect = (option) => {
