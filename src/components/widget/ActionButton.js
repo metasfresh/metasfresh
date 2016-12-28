@@ -95,7 +95,6 @@ class ActionButton extends Component {
 
     renderStatusList = (list) => {
         const {selected} = this.state;
-        console.log(selected)
         return list.values.map((item, index) => {
             const key = Object.keys(item)[0];
             return <li

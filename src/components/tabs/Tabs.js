@@ -23,6 +23,10 @@ class Tabs extends Component {
         }));
     }
 
+    handleKeyDown = (e, item) => {
+        console.log(e.key);
+    }
+
     renderPills = (pills) => {
         return pills.map((item) => {
             return (
@@ -31,6 +35,7 @@ class Tabs extends Component {
                     key={"tab" + item.key}
                     onClick={(e) => this.handleClick(e, item.key)}
                     tabIndex="0"
+                    onKeyDown={(e) => {e.key === "Enter" && this.handleClick(e, item.key)}}
                 >
                     <a className={"nav-link " + ((this.state.selected === item.key) ? "active" : "")}>{item.props.caption}</a>
                 </li>
