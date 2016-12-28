@@ -144,6 +144,8 @@ class Table extends Component {
             idFocused = idActive;
         }
 
+        const first = this.tbody.children[0] && this.tbody.children[0].children[0];
+
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
@@ -180,13 +182,17 @@ class Table extends Component {
                 e.preventDefault();
                 if(document.activeElement.previousSibling){
                     document.activeElement.previousSibling.focus();
+                }else if(first){
+                    first.focus();
                 }
                 break;
             case "ArrowRight":
                 e.preventDefault();
                 if(document.activeElement.nextSibling){
                    document.activeElement.nextSibling.focus();
-                }
+               }else if(first){
+                  first.focus();
+               }
                 break;
             case "Tab":
                 if(e.shiftKey){
@@ -478,7 +484,9 @@ class Table extends Component {
                                     page={page}
                                 />
                             </thead>
-                            <tbody>
+                            <tbody
+                                ref={c => this.tbody = c}
+                            >
                                 {this.renderTableBody()}
                             </tbody>
                             <tfoot
