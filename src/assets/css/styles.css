@@ -139,7 +139,7 @@ body {
     width: 100%;
 }
 .panel:focus {
-    outline:none;
+    /*outline:none;*/
 }
 .panel-modal {
     max-width: 90%;

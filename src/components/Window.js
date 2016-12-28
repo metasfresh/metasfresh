@@ -17,8 +17,8 @@ class Window extends Component {
 
         this.tabIndex = {
             firstColumn: 1,
-            tabs: 5,
-            secondColumn: 10
+            tabs: 2,
+            secondColumn: 3
         }
     }
 
@@ -98,7 +98,6 @@ class Window extends Component {
                             "panel panel-spaced panel-distance " +
                             ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
                         }
-                        ref={c => {(shouldBeFocused && c) && c.focus()}}
                     >
                         {this.renderElementsLine(elementsLine, tabIndex)}
                     </div>
