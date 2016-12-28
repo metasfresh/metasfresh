@@ -18,11 +18,9 @@ class DatePicker extends Component {
         const {patch, value} = this.props;
         const {cache} = this.state;
 
-        if(
-            JSON.stringify(cache) !== (
-                date !== "" ? JSON.stringify(date && date.toDate()) : ""
-            )
-        ){
+        if(JSON.stringify(cache) !== (
+            date !== "" ? JSON.stringify(date && date.toDate()) : ""
+        )){
             patch(date);
         }
 
@@ -60,6 +58,7 @@ class DatePicker extends Component {
 
     render() {
         const {open} = this.state;
+        const {tabIndex} = this.props;
 
         return (<Datetime
             closeOnTab={true}

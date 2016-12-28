@@ -46,7 +46,10 @@ class List extends Component {
     }
 
     render() {
-        const {rank, readonly, defaultValue, selected, align, updated, rowId, emptyText} = this.props;
+        const {
+            rank, readonly, defaultValue, selected, align, updated, rowId,
+            emptyText, tabIndex
+        } = this.props;
         const {list, loading} = this.state;
 
         return (
@@ -63,6 +66,7 @@ class List extends Component {
                 updated={updated}
                 rowId={rowId}
                 emptyText={emptyText}
+                tabIndex={tabIndex}
             />
         )
     }

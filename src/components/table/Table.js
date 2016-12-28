@@ -188,8 +188,16 @@ class Table extends Component {
                    document.activeElement.nextSibling.focus();
                 }
                 break;
+            case "Tab":
+                if(e.shiftKey){
+                    //passing focus over table cells backwards
+                    this.table.focus();
+                }else{
+                    //passing focus over table cells
+                    this.tfoot.focus();
+                }
+                break;
         }
-
     }
 
     handleKeyDownDocList = (e) => {
@@ -197,6 +205,7 @@ class Table extends Component {
         const {rowData, tabid, listenOnKeys, onDoubleClick} = this.props;
         const item = rowData[tabid];
         const selectRange = e.shiftKey;
+
 
         switch(e.key) {
             case "ArrowDown":
@@ -242,7 +251,6 @@ class Table extends Component {
                 if(selected.length <= 1) {
                    onDoubleClick(selected[selected.length-1]);
                 }
-
                 break;
         }
     }
@@ -341,9 +349,11 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow
+            onDoubleClick, mainTable, newRow, tabIndex
         } = this.props;
+
         const {selected} = this.state;
+
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
             const item = rowData[tabid];
@@ -369,6 +379,7 @@ class Table extends Component {
                         readonly={readonly}
                         mainTable={mainTable}
                         newRow={i === keys.length-1 ? newRow : false}
+                        tabIndex={tabIndex}
                     />
                 );
             }
@@ -404,15 +415,16 @@ class Table extends Component {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen
+            fullScreen, tabIndex
         } = this.props;
+
         const {
             contextMenu, selected, listenOnKeys
         } = this.state;
 
         return (
             <div>
-                <div >
+                <div>
                     {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
@@ -429,16 +441,15 @@ class Table extends Component {
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
-                            <div className="pull-xs-right">
-                                <TableFilter
-                                    openModal={() => this.openModal(type, tabid, "NEW")}
-                                    toggleFullScreen={toggleFullScreen}
-                                    fullScreen={fullScreen}
-                                    docType={type}
-                                    docId={docId}
-                                    tabId={tabid}
-                                />
-                            </div>
+                            <TableFilter
+                                openModal={() => this.openModal(type, tabid, "NEW")}
+                                toggleFullScreen={toggleFullScreen}
+                                fullScreen={fullScreen}
+                                docType={type}
+                                docId={docId}
+                                tabId={tabid}
+                                tabIndex={tabIndex}
+                            />
                         </div>
                     </div>}
 
@@ -448,7 +459,14 @@ class Table extends Component {
                                 "table table-bordered-vertically table-striped " +
                                 (readonly ? "table-read-only" : "")
                             }
-                            onKeyDown = { listenOnKeys && !readonly ? (e) => this.handleKeyDown(e) : (listenOnKeys && mainTable) ? (e) => this.handleKeyDownDocList(e) : ''}
+                            onKeyDown = { (listenOnKeys && !readonly) ?
+                                (e) => this.handleKeyDown(e) :
+                                (listenOnKeys && mainTable) ?
+                                    (e) => this.handleKeyDownDocList(e) :
+                                    ''
+                            }
+                            tabIndex={tabIndex}
+                            ref={c => this.table = c}
                         >
                             <thead>
                                 <TableHeader
@@ -463,8 +481,10 @@ class Table extends Component {
                             <tbody>
                                 {this.renderTableBody()}
                             </tbody>
-                            <tfoot>
-                            </tfoot>
+                            <tfoot
+                                ref={c => this.tfoot = c}
+                                tabIndex={tabIndex}
+                            />
                         </table>
 
                         {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}

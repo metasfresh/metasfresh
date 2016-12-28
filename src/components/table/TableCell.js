@@ -68,10 +68,13 @@ class TableCell extends Component {
     }
 
     render() {
-        const {isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick, onKeyDown, readonly, updatedRow} = this.props;
+        const {
+            isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
+            onKeyDown, readonly, updatedRow, tabIndex
+        } = this.props;
         return (
             <td
-                tabIndex="0"
+                tabIndex={tabIndex}
                 ref={(c) => this.cell = c}
                 onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}

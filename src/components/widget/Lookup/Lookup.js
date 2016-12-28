@@ -265,7 +265,7 @@ class Lookup extends Component {
     }
 
     handleKeyDown = (e) => {
-        console.log("HANDLE KEY DOWN")
+        const {selected, list} = this.state;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
@@ -281,8 +281,8 @@ class Lookup extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                if(this.state.selected != null){
-                    this.handleSelect(this.state.list[this.state.selected]);
+                if(selected != null){
+                    this.handleSelect(list[selected]);
                 }
                 break;
             case "Escape":
@@ -367,6 +367,7 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
+                            tabIndex={tabIndex}
                         />
                     </div>
                     {(propertiesCopy.length > 0) && <div className="input-rest">

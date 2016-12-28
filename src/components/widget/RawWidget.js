@@ -91,12 +91,12 @@ class RawWidget extends Component {
                                 dateFormat={true}
                                 inputProps={{
                                     placeholder: widgetFields.emptyText,
-                                    disabled: widgetData.readonly
+                                    disabled: widgetData.readonly,
+                                    tabIndex: tabIndex
                                 }}
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
-                                tabIndex={tabIndex}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -115,7 +115,11 @@ class RawWidget extends Component {
                         <DatePicker
                             timeFormat={true}
                             dateFormat={true}
-                            inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
+                            inputProps={{
+                                placeholder: widgetFields.emptyText,
+                                disabled: widgetData.readonly,
+                                tabIndex: tabIndex
+                            }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
@@ -137,7 +141,11 @@ class RawWidget extends Component {
                         <DatePicker
                             timeFormat={true}
                             dateFormat={false}
-                            inputProps={{placeholder: widgetFields.emptyText, disabled: widgetData.readonly}}
+                            inputProps={{
+                                placeholder: widgetFields.emptyText,
+                                disabled: widgetData.readonly,
+                                tabIndex: tabIndex
+                            }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
@@ -376,15 +384,17 @@ class RawWidget extends Component {
                 return (
                     <label
                         className={
-                            "input-checkbox "
+                            "input-checkbox " +
+                            (widgetData.readonly ? "input-disabled " : "")
                         }
+                        tabIndex={tabIndex}
                     >
                         <input
                             type="checkbox"
                             checked={selectedField}
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
-                            tabIndex={tabIndex}
+                            tabIndex="-1"
                         />
                         <div className={"input-checkbox-tick"}/>
                     </label>
@@ -396,13 +406,15 @@ class RawWidget extends Component {
                             "input-switch " +
                             (widgetData.readonly ? "input-disabled " : "") +
                             (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
-                        }>
+                        }
+                        tabIndex={tabIndex}
+                    >
                         <input
                             type="checkbox"
                             checked={selectedField}
                             disabled={widgetData.readonly}
+                            tabIndex="-1"
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
-                            tabIndex={tabIndex}
                         />
                         <div className={"input-slider"} />
                     </label>

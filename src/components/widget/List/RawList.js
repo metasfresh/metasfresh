@@ -63,7 +63,6 @@ class RawList extends Component {
         const {list} = this.props;
         const {selected} = this.state;
 
-        console.log("HANDLE KEY DOWN")
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();

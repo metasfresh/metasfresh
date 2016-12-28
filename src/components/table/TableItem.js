@@ -17,24 +17,25 @@ class TableItem extends Component {
     }
     handleEditProperty = (e,property, callback) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
-        
+
         if(!document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
             this.setState({
                 edited: property
             }, ()=>{
                 if(callback){
-                    let elem = document.activeElement.getElementsByClassName('js-input-field')[0];
+                    const elem = document.activeElement.getElementsByClassName('js-input-field')[0];
 
                     if(elem){
                         elem.focus();
                     }
 
-                    let disabled = document.activeElement.querySelector('.input-disabled');
-                    let readonly = document.activeElement.querySelector('.input-readonly');
+                    const disabled = document.activeElement.querySelector('.input-disabled');
+                    const readonly = document.activeElement.querySelector('.input-readonly');
+
                     if(disabled || readonly) {
                         changeListenOnTrue();
                         this.handleEditProperty(e);
-                        
+
                     } else {
                         changeListenOnFalse();
                     }
@@ -66,8 +67,14 @@ class TableItem extends Component {
     }
 
     renderCells = (cols, cells) => {
-        const { type, docId, rowId, tabId,readonly, mainTable, newRow, changeListenOnTrue} = this.props;
-        const { edited, updatedRow } = this.state;
+        const {
+            type, docId, rowId, tabId,readonly, mainTable, newRow, changeListenOnTrue,
+            tabIndex
+        } = this.props;
+
+        const {
+            edited, updatedRow
+        } = this.state;
 
         //iterate over layout settings
         return cols && cols.map((item, index) => {
@@ -91,6 +98,7 @@ class TableItem extends Component {
                     onKeyDown = {!mainTable ? (e) => this.handleKey(e, property) : ''}
                     updatedRow={updatedRow || newRow}
                     updateRow={this.updateRow}
+                    tabIndex={tabIndex}
                 />
             )
         })
