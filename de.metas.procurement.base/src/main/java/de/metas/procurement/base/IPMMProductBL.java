@@ -49,7 +49,7 @@ public interface IPMMProductBL extends ISingletonService
 	void update(I_PMM_Product pmmProduct);
 
 	/**
-	 * Get the PMM_Product for the date, product, partner and M_HU_PI_Item_Product that fit the given ASI the most.
+	 * Get the PMM_Product for the date, product, partner and M_HU_PI_Item_Product that fits the given ASI the most.
 	 * This means the attribute instances from the ASI of the PMM Product must be a subset of the given ASI's attribute instances
 	 * 
 	 * @param date
