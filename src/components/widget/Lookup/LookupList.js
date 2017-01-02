@@ -26,7 +26,7 @@ class LookupList extends Component {
 
     handleClickOutside = () => {
         const {onClickOutside} = this.props;
-        
+
         onClickOutside();
     }
 

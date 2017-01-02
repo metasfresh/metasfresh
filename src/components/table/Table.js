@@ -99,8 +99,9 @@ class Table extends Component {
     }
 
     deselectProduct = (id) => {
+        const index = this.state.selected.indexOf(id);
         this.setState(update(this.state, {
-            selected: {$splice: [[id, 1]]}
+            selected: {$splice: [[index, 1]]}
         }))
     }
 
@@ -301,21 +302,35 @@ class Table extends Component {
         const {selected} = this.state;
         const {clientX, clientY} = e;
         e.preventDefault();
-        this.selectOneProduct(id, null, null, () => {
-            this.setState(Object.assign({}, this.state, {
-                contextMenu: Object.assign({}, this.state.contextMenu, {
-                    x: clientX,
-                    y: clientY,
-                    open: true
-                })
-            }));
-        });
+
+        if(selected.indexOf(id) > -1){
+            this.setContextMenu(clientX, clientY);
+        }else{
+            this.selectOneProduct(id, null, null, () => {
+                this.setContextMenu(clientX, clientY);
+            });
+        }
+
+    }
+
+    setContextMenu = (clientX, clientY) => {
+        this.setState(Object.assign({}, this.state, {
+            contextMenu: Object.assign({}, this.state.contextMenu, {
+                x: clientX,
+                y: clientY,
+                open: true
+            })
+        }));
     }
 
     handleFocus = () => {
         const {rowData, tabid} = this.props;
-        const firstId = Object.keys(rowData[tabid])[0];
-        this.selectOneProduct(firstId);
+        const {selected} = this.state;
+
+        if(selected.length <= 0){
+            const firstId = Object.keys(rowData[tabid])[0];
+            this.selectOneProduct(firstId);
+        }
     }
 
     sumProperty = (items, prop) => {
