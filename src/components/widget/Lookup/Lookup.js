@@ -344,6 +344,7 @@ class Lookup extends Component {
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
+                    (isOpen ? "input-focused " : "") +
                     (readonly ? "input-disabled " : "") +
                     (rowId ? "input-dropdown-container-static " : "") +
                     ((rowId && !isModal)? "input-table " : "")

@@ -3,8 +3,7 @@
 /*
  *  MAIN PROPERTIES
  */
-table td:focus,
-*:focus
+table td:focus
  {
     outline-color: $brand-font-color;
     outline-width:1px;
@@ -219,7 +218,7 @@ input {
 
 .input-checkbox input:checked ~ .input-checkbox-tick {
 	background: $brand-success-dark-color;
-    border: 0;
+    border-color: $brand-success-dark-color;
 }
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
@@ -239,8 +238,8 @@ input {
 }
 
 .input-checkbox .input-checkbox-tick:after {
-	top: 3px;
-	left: 6px;
+	top: 2px;
+	left: 5px;
 	width: 6px;
 	height: 10px;
 	transform: rotate(45deg);

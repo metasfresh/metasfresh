@@ -26,7 +26,8 @@ class Tabs extends Component {
     handlePillKeyDown = (e, key) => {
         if(e.key === "Enter"){
             this.handleClick(e, key);
-            this.tabContent.focus();
+            console.log(this.tabContent.children[key-1].children[0].focus())
+            // this.tabContent.children[key].children[0].focus();
         }
     }
 
