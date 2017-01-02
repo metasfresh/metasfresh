@@ -15,6 +15,7 @@ import org.jgrapht.graph.DefaultEdge;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dlm.partitioner.impl.IIterateResult;
+import de.metas.dlm.partitioner.process.DLM_FindPathBetweenRecords;
 
 /*
  * #%L
@@ -38,6 +39,15 @@ import de.metas.dlm.partitioner.impl.IIterateResult;
  * #L%
  */
 
+/**
+ * This implementation is dedicated to finding a path between different records.
+ * It collects all records that the crawler finds and in the end uses a graph library to find a path bitween them.
+ *
+ * @see DLM_FindPathBetweenRecords
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class FindPathIterateResult implements IIterateResult
 {
 	private final ITableRecordReference start;

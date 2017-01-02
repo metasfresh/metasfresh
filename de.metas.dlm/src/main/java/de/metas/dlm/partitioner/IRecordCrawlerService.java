@@ -3,7 +3,6 @@ package de.metas.dlm.partitioner;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 
-import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.impl.IIterateResult;
 
@@ -32,9 +31,12 @@ import de.metas.dlm.partitioner.impl.IIterateResult;
 public interface IRecordCrawlerService extends ISingletonService
 {
 	/**
-	 * The method loads both the records which are referenced by the given <code>firstRecord</code> ("forward") and the records which do reference the given <code>firstRecord</code> ("backward") and adds them result.
-	 * For those forward and backward references that are not yet part of any partion (i.e. {@link IDLMAware#COLUMNNAME_DLM_Partition_ID} <code>== 0</code>), it repeats the procedure.
-	 * The method finishes and returns the result when there are no further records to repeat that procedure with.
+	 * For the records from the given {@code result}'s {@link IIterateResult#nextFromQueue()} load both the records which are referenced by those records ("forward")
+	 * and the records which do themselves reference those records ("backward") and add them all to the {@code result} using
+	 * {@link IIterateResult#addReferencedRecord(org.adempiere.util.lang.ITableRecordReference, org.adempiere.util.lang.ITableRecordReference, int)} resp.
+	 * {@link IIterateResult#addReferencingRecord(org.adempiere.util.lang.ITableRecordReference, org.adempiere.util.lang.ITableRecordReference, int)}.
+	 * <p>
+	 * The records that are added in this manner will also be returned by {@link IIterateResult#nextFromQueue()} later on, so this method shall actually implement a <a href="https://en.wikipedia.org/wiki/Breadth-first_search">breath-first-search</a>.
 	 *
 	 * @param config
 	 * @param ctxAware

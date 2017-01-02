@@ -5,6 +5,8 @@ import java.util.Iterator;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.dlm.model.IDLMAware;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -68,6 +70,11 @@ public interface IIterateResult
 
 	boolean contains(ITableRecordReference forwardReference);
 
+	/**
+	 * Return the current number of {@link IDLMAware} records this instance currently has in-memory.
+	 *
+	 * @return
+	 */
 	int size();
 
 	boolean isQueueEmpty();

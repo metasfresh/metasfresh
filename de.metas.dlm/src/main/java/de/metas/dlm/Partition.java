@@ -330,5 +330,11 @@ public class Partition
 			dlmPartitionWorkqueueId = dlm_Partition_Workqueue_ID;
 		}
 
+		@Override
+		public String toString()
+		{
+			return "Partition.WorkQueue [DLM_Partition_Workqueue_ID=" + dlmPartitionWorkqueueId + ", tableRecordReference=" + tableRecordReference + "]";
+		}
+
 	}
 }

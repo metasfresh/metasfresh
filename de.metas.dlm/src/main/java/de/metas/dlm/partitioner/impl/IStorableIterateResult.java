@@ -9,6 +9,8 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.dlm.Partition;
 import de.metas.dlm.Partition.WorkQueue;
+import de.metas.dlm.model.I_DLM_Partition_Workqueue;
+import de.metas.dlm.partitioner.IRecordCrawlerService;
 
 /*
  * #%L
@@ -40,8 +42,16 @@ public interface IStorableIterateResult extends IIterateResult
 
 	void clearAfterPartitionStored(Partition partition);
 
+	/**
+	 *
+	 * @return a list of records that were recently added to this instance's queue but were not yet processed.
+	 */
 	List<WorkQueue> getQueueRecordsToStore();
 
+	/**
+	 *
+	 * @return a list of items that are stored in {@link I_DLM_Partition_Workqueue}, were processed by the {@link IRecordCrawlerService} and can tehrefore be deleted.
+	 */
 	List<WorkQueue> getQueueRecordsToDelete();
 
 	/**

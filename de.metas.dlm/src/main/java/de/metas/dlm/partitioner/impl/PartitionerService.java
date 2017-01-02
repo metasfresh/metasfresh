@@ -252,11 +252,10 @@ public class PartitionerService implements IPartitionerService
 		try
 		{
 			// now figure out if records are missing:
-			// update each records' DLM_Level to 1 (1="test").
+			// update each records' DLM_Level to 2 (2="test").
 			final IMigratorService migratorService = Services.get(IMigratorService.class);
 
-			final String msg = "Calling testMigratePartition with partition={}";
-			logger.info(msg, partition);
+			Loggables.get().withLogger(logger, Level.INFO).addLog("Calling testMigratePartition with partition={}", partition);
 			migratorService.testMigratePartition(partition);
 		}
 		catch (final DLMReferenceException e)

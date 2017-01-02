@@ -642,7 +642,6 @@ public abstract class AbstractDLMService implements IDLMService
 		}
 		final String msg = "Stored DLM_Partition_Config={}";
 		logger.info(msg, configDB);
-		Loggables.get().addLog(msg, configDB);
 
 		return PartitionConfig.builder(config)
 				.setChanged(false)
