@@ -5,8 +5,12 @@ import update from 'react-addons-update';
 
 import {
     openModal,
-    selectTableItems
+    selectTableItems,
+    deleteData,
+    deleteLocal
 } from '../../actions/WindowActions';
+
+import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
 import TablePagination from './TablePagination';
@@ -31,6 +35,9 @@ class Table extends Component {
                 open: false,
                 x: 0,
                 y: 0
+            },
+            prompt: {
+                open: false
             }
         }
     }
@@ -417,6 +424,61 @@ class Table extends Component {
         window.open("/window/" + type + "/" + selected[0], "_blank");
     }
 
+    handleDelete = () => {
+        this.setState(update(this.state, {
+            prompt: {
+                open: {$set: true}
+            }
+        }));
+    }
+
+    handlePromptCancelClick = () => {
+        this.setState(update(this.state, {
+            prompt: {
+                open: {$set: false}
+            }
+        }))
+
+        
+    }
+
+    handlePromptSubmitClick = (selected, tabId) => {
+        const {dispatch, type, docId, mainTable, updateDocList} = this.props;
+        this.setState(update(this.state, {
+            prompt: {
+                open: {$set: false}
+            }
+        }))
+
+        if(mainTable){
+            if(selected.length>1){
+                for(let i=0;i<selected.length;i++){
+                    dispatch(deleteData(type, selected[i]));
+                }
+                updateDocList();
+                this.deselectAllProducts();
+            } else {
+                dispatch(deleteData(type, selected))
+                .then(response => {
+                    updateDocList();
+                }).then(response => {
+                    this.deselectAllProducts();
+                });
+            }
+
+        } else {
+            dispatch(deleteData(type, docId, tabId, selected))
+            .then(response => {
+                dispatch(deleteLocal(tabId, selected, "master"))
+            }).then(response => {
+                this.deselectAllProducts();
+            });
+        }
+
+       
+
+    }
+
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
@@ -425,7 +487,7 @@ class Table extends Component {
         } = this.props;
 
         const {
-            contextMenu, selected, listenOnKeys
+            contextMenu, selected, listenOnKeys, prompt
         } = this.state;
 
         return (
@@ -444,6 +506,7 @@ class Table extends Component {
                         updateDocList={updateDocList}
                         handleAdvancedEdit={() => this.handleAdvancedEdit(type, tabid, selected)}
                         handleOpenNewTab={() => this.handleOpenNewTab(selected)}
+                        handleDelete={() => this.handleDelete()}
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
@@ -512,9 +575,20 @@ class Table extends Component {
                         />
                     </div>
                 </div>}
+                {
+                    prompt.open &&
+                    <Prompt
+                        title={"Delete"}
+                        text={"Are you sure?"}
+                        buttons={{submit: "Delete", cancel: "Cancel"}}
+                        onCancelClick={this.handlePromptCancelClick}
+                        onSubmitClick={() => this.handlePromptSubmitClick(selected, tabid)}
+                    />
+                }
                 <DocumentListContextShortcuts
                     handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
+                    handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
                 />
             </div>
         )
