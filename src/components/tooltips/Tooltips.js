@@ -10,12 +10,11 @@ class Tooltips extends Component {
     }
 
     componentDidMount() {
-        const th = this;
-        setTimeout(function(){
-            th.setState(Object.assign({}, this.state, {
-                    opacity: 1
-                }));        
-            }, 1000)
+        setTimeout(() => {
+            this.setState(Object.assign({}, this.state, {
+                opacity: 1
+            }))
+        }, 1000);
     }
 
 
