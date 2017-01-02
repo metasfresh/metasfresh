@@ -438,6 +438,19 @@ class Table extends Component {
         window.open("/window/" + type + "/" + selected[0], "_blank");
     }
 
+    handleKey = (e) => {
+        const {readonly, mainTable} = this.props;
+        const {listenOnKeys} = this.state;
+
+        if(listenOnKeys){
+            if(!readonly){
+                this.handleKeyDown(e);
+            }else if(mainTable){
+                this.handleKeyDownDocList(e)
+            }
+        }
+    }
+
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
@@ -486,12 +499,7 @@ class Table extends Component {
                                 "table table-bordered-vertically table-striped " +
                                 (readonly ? "table-read-only" : "")
                             }
-                            onKeyDown = { (listenOnKeys && !readonly) ?
-                                (e) => this.handleKeyDown(e) :
-                                (listenOnKeys && mainTable) ?
-                                    (e) => this.handleKeyDownDocList(e) :
-                                    ''
-                            }
+                            onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
                             ref={c => this.table = c}
