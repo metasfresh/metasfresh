@@ -276,9 +276,9 @@ class RawWidget extends Component {
                             value={filterWidget ? textValue : selectedField}
                             disabled={widgetData.readonly}
                             placeholder={widgetFields.emptyText}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -301,9 +301,9 @@ class RawWidget extends Component {
                             step="1"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -324,9 +324,9 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetFields.field, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -349,9 +349,9 @@ class RawWidget extends Component {
                             step="1"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -374,9 +374,9 @@ class RawWidget extends Component {
                             step="1"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -397,9 +397,9 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>

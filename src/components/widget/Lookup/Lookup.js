@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import update from 'react-addons-update';
@@ -289,6 +288,9 @@ class Lookup extends Component {
                 e.preventDefault();
                 this.handleBlur();
                 break;
+            case "Tab":
+                this.handleBlur();
+                break;
         }
     }
 
@@ -340,7 +342,6 @@ class Lookup extends Component {
             <div
                 onKeyDown={this.handleKeyDown}
                 onClick={()=>this.inputSearch.focus()}
-                onBlur={this.handleBlur}
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
@@ -386,7 +387,6 @@ class Lookup extends Component {
                         </div>
                     }
                 </div>
-                <div className="clearfix" />
                 {isOpen && <LookupList
                     selected={selected}
                     list={list}
