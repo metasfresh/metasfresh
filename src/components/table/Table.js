@@ -106,8 +106,9 @@ class Table extends Component {
     }
 
     deselectProduct = (id) => {
+        const index = this.state.selected.indexOf(id);
         this.setState(update(this.state, {
-            selected: {$splice: [[id, 1]]}
+            selected: {$splice: [[index, 1]]}
         }))
     }
 
@@ -308,21 +309,35 @@ class Table extends Component {
         const {selected} = this.state;
         const {clientX, clientY} = e;
         e.preventDefault();
-        this.selectOneProduct(id, null, null, () => {
-            this.setState(Object.assign({}, this.state, {
-                contextMenu: Object.assign({}, this.state.contextMenu, {
-                    x: clientX,
-                    y: clientY,
-                    open: true
-                })
-            }));
-        });
+
+        if(selected.indexOf(id) > -1){
+            this.setContextMenu(clientX, clientY);
+        }else{
+            this.selectOneProduct(id, null, null, () => {
+                this.setContextMenu(clientX, clientY);
+            });
+        }
+
+    }
+
+    setContextMenu = (clientX, clientY) => {
+        this.setState(Object.assign({}, this.state, {
+            contextMenu: Object.assign({}, this.state.contextMenu, {
+                x: clientX,
+                y: clientY,
+                open: true
+            })
+        }));
     }
 
     handleFocus = () => {
         const {rowData, tabid} = this.props;
-        const firstId = Object.keys(rowData[tabid])[0];
-        this.selectOneProduct(firstId);
+        const {selected} = this.state;
+
+        if(selected.length <= 0){
+            const firstId = Object.keys(rowData[tabid])[0];
+            this.selectOneProduct(firstId);
+        }
     }
 
     sumProperty = (items, prop) => {
@@ -430,6 +445,7 @@ class Table extends Component {
         window.open("/window/" + type + "/" + selected[0], "_blank");
     }
 
+<<<<<<< HEAD
     handleDelete = () => {
         this.setState(update(this.state, {
             prompt: {
@@ -480,9 +496,19 @@ class Table extends Component {
                 this.deselectAllProducts();
             });
         }
+    }
 
-       
+    handleKey = (e) => {
+        const {readonly, mainTable} = this.props;
+        const {listenOnKeys} = this.state;
 
+        if(listenOnKeys){
+            if(!readonly){
+                this.handleKeyDown(e);
+            }else if(mainTable){
+                this.handleKeyDownDocList(e)
+            }
+        }
     }
 
     render() {
@@ -534,12 +560,7 @@ class Table extends Component {
                                 "table table-bordered-vertically table-striped " +
                                 (readonly ? "table-read-only" : "")
                             }
-                            onKeyDown = { (listenOnKeys && !readonly) ?
-                                (e) => this.handleKeyDown(e) :
-                                (listenOnKeys && mainTable) ?
-                                    (e) => this.handleKeyDownDocList(e) :
-                                    ''
-                            }
+                            onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
                             ref={c => this.table = c}

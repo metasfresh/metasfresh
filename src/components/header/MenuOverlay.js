@@ -218,11 +218,14 @@ class MenuOverlay extends Component {
     linkClick = (item) => {
         const {dispatch} = this.props;
         if(item.elementId && item.type == "newRecord") {
+            console.log('newRecord');
             this.handleNewRedirect(item.elementId)
         } else if (item.elementId && item.type == "window"){
+            console.log('window');
             this.handleRedirect(item.elementId)
             dispatch(getWindowBreadcrumb(item.elementId));
         } else if (item.type == "group"){
+            console.log('group');
             this.handleSubDeeper(item.nodeId);
             this.handleSubPath(item.nodeId);
         }
