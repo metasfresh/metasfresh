@@ -497,6 +497,7 @@ public abstract class AbstractDLMService implements IDLMService
 		return updated;
 	}
 
+	@Cached(cacheName = I_DLM_Partition_Config.Table_Name + "#" + I_DLM_Partition_Config_Line.Table_Name + "#" + I_DLM_Partition_Config_Reference.Table_Name)
 	@Override
 	public PartitionConfig loadDefaultPartitionConfig()
 	{

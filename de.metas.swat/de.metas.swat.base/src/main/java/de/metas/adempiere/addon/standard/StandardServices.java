@@ -93,8 +93,6 @@ public class StandardServices implements IAddOn
 		//
 		// misc services
 		Services.registerService(IAddonService.class, new AddonService());
-		Services.registerService(IBPartnerBL.class, new BPartnerBL());
-		Services.registerService(IBPartnerDAO.class, new BPartnerDAO());
 		Services.registerService(IClientOrgPA.class, new ClientOrgPA());
 		Services.registerService(IDatabaseBL.class, new DatabaseBL());
 		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());

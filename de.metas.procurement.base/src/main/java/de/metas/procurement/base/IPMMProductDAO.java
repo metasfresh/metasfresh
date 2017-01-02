@@ -44,8 +44,8 @@ public interface IPMMProductDAO extends ISingletonService
 	List<I_PMM_Product> retrieveByBPartner(I_C_BPartner bpartner);
 
 	/**
-	 * Retrieve the PMM Product for the given product, date and M_HU_PI_Item_Product.
-	 * The PMM product must be for the given partner or not have a partner set at all.
+	 * Retrieve the PMM Products for the given product, date and M_HU_PI_Item_Product.
+	 * The PMM products must be for the given partner or not have a partner set at all.
 	 * 
 	 * @param date
 	 * @param productId
@@ -53,5 +53,6 @@ public interface IPMMProductDAO extends ISingletonService
 	 * @param huPIPId
 	 * @return
 	 */
-	I_PMM_Product retrieveForDateAndProduct(Date date, int productId, int partnerId, int huPIPId);
+	List<I_PMM_Product> retrieveForDateAndProduct(Date date, int productId, int partnerId, int huPIPId);
+
 }
