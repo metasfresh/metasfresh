@@ -35,12 +35,11 @@ class Breadcrumb extends Component {
 
     renderBtn = (menu, index) => {
         const {handleMenuOverlay, menuOverlay, windowType, siteName} = this.props;
-        const {tooltip} = this.state;
         return (<div key={index}>
             {!!index && <span className="divider">/</span>}
             <div className={"header-btn tooltip-parent"}>
                 <div
-                    title={!!index && menu.children.captionBreadcrumb}
+                    title={!!index && menu.children.captionBreadcrumb ? !!index && menu.children.captionBreadcrumb : ''}
                     className={"header-item-container pointer " +
                         (menuOverlay === menu.nodeId ? "header-item-open " : "") +
                         (!index ? "header-item-container-static ": "")
@@ -64,14 +63,6 @@ class Breadcrumb extends Component {
                         siteName={siteName}
                     />
                 }
-                {
-                    menu.nodeId === "0" && tooltip.open &&
-                    <Tooltips
-                        name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
-                        type={''}
-                    />
-                }
-                
             </div>
         </div>)
     }
@@ -82,38 +73,53 @@ class Breadcrumb extends Component {
             siteName, menuOverlay, handleMenuOverlay
         } = this.props;
 
+        const {tooltip} = this.state;
+
         return (
-            <span className="header-breadcrumb">
-                {this.renderBtn(homemenu, 0)}
+            <span className="header-breadcrumb-wrapper">
+                    {
+                        tooltip.open &&
+                        <Tooltips
+                            extraClass="tooltip-home-menu"
+                            name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
+                            action={'Open submenu'}
+                            type={''}
+                        />
+                    }
+                <span className="header-breadcrumb">
+                    
+                    {this.renderBtn(homemenu, 0)}
 
-                {breadcrumb && breadcrumb.map((item, index) =>
-                    this.renderBtn(item,index+1)
-                )}
+                    {breadcrumb && breadcrumb.map((item, index) =>
+                        this.renderBtn(item,index+1)
+                    )}
 
-                {docNo && <span className="divider">/</span>}
+                    {docNo && <span className="divider">/</span>}
 
-                {docNo && <span className="header-input-id header-input-sm">
-                    <MasterWidget
-                        windowType={windowType}
-                        dataId={dataId}
-                        widgetData={[docNoData]}
-                        noLabel={true}
-                        icon={true}
-                        {...docNo}
-                    />
-                </span>}
+                    {docNo && <span className="header-input-id header-input-sm">
+                        <MasterWidget
+                            windowType={windowType}
+                            dataId={dataId}
+                            widgetData={[docNoData]}
+                            noLabel={true}
+                            icon={true}
+                            {...docNo}
+                        />
+                    </span>}
 
-                {docSummaryData && <div className="header-breadcrumb">
-                    <span>{docSummaryData.value}</span>
-                </div>}
+                    {docSummaryData && <div className="header-breadcrumb">
+                        <span>{docSummaryData.value}</span>
+                    </div>}
 
-                {siteName && <span className="divider">/</span>}
+                    {siteName && <span className="divider">/</span>}
 
-                {siteName && <div className="header-breadcrumb">
-                    <span>{siteName}</span>
-                </div>}
+                    {siteName && <div className="header-breadcrumb">
+                        <span>{siteName}</span>
+                    </div>}
 
+                </span>
             </span>
+            
         )
 	}
 }

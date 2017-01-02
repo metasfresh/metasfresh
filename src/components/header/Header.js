@@ -281,6 +281,7 @@ class Header extends Component {
                                     { tooltip.open === 'tooltip1' &&
                                     <Tooltips
                                         name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
+                                        action={'Open menu'}
                                         type={''}
                                     /> }
                                 </div>
@@ -330,6 +331,7 @@ class Header extends Component {
                                     { tooltip.open === 'tooltip2' &&
                                         <Tooltips
                                             name={keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU}
+                                            action={'Open inbox'}
                                             type={''}
                                         />
                                     }
@@ -358,6 +360,7 @@ class Header extends Component {
                                         { tooltip.open === 'tooltip3' &&
                                             <Tooltips
                                                 name={keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU}
+                                                action={'Open sidebar'}
                                                 type={''}
                                             />
                                         }
