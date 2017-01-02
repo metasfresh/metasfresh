@@ -22,6 +22,9 @@ class DocumentContextShortcuts extends Component {
         name={"DOCUMENT_CONTEXT"}
         handler= {this.handleShortcuts}
         targetNodeSelector={"body"}
+        isolate = { true }
+        preventDefault = { true }
+        stopPropagation = { true } 
       />
     )
   }

@@ -445,7 +445,6 @@ class Table extends Component {
         window.open("/window/" + type + "/" + selected[0], "_blank");
     }
 
-<<<<<<< HEAD
     handleDelete = () => {
         this.setState(update(this.state, {
             prompt: {
