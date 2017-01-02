@@ -319,6 +319,12 @@ class Table extends Component {
         });
     }
 
+    handleFocus = () => {
+        const {rowData, tabid} = this.props;
+        const firstId = Object.keys(rowData[tabid])[0];
+        this.selectOneProduct(firstId);
+    }
+
     sumProperty = (items, prop) => {
         return items.reduce((a, b) => {
             return b[prop] == null ? a : a + b[prop];
@@ -535,6 +541,7 @@ class Table extends Component {
                                     ''
                             }
                             tabIndex={tabIndex}
+                            onFocus={this.handleFocus}
                             ref={c => this.table = c}
                         >
                             <thead>

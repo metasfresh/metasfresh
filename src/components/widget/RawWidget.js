@@ -20,7 +20,8 @@ class RawWidget extends Component {
         super(props);
 
         this.state = {
-            textValue: props.selectedItem
+            textValue: props.selectedItem,
+            isEdited: false
         }
     }
 
@@ -33,6 +34,26 @@ class RawWidget extends Component {
         setSelectedItem(item);
     }
 
+    handleFocus = (e) => {
+        const {handleFocus} = this.props;
+
+        this.setState(Object.assign({}, this.state, {
+            isEdited: true
+        }))
+
+        handleFocus(e, e.target.value);
+    }
+
+    handleBlur = (widgetField, value, id) => {
+        const {handlePatch} = this.props;
+
+        this.setState(Object.assign({}, this.state, {
+            isEdited: false
+        }));
+
+        handlePatch(widgetField, value, id);
+    }
+
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
@@ -40,7 +61,7 @@ class RawWidget extends Component {
             isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId
         } = this.props;
 
-        const {textValue} = this.state;
+        const {textValue, isEdited} = this.state;
         const widgetData = data[0];
 
         let widgetField = "";
@@ -214,23 +235,26 @@ class RawWidget extends Component {
             case "Text":
                 return (
                     <div className={
-                        "input-block input-icon-container " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
-                    }>
+                            "input-block input-icon-container " +
+                            (type === "primary" ? "input-primary " : "input-secondary ") +
+                            (widgetData.readonly ? "input-disabled " : "") +
+                            (align ? "text-xs-" + align + " " : "") +
+                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                            (updated ? "pulse-on " : "pulse-off ") +
+                            ((rowId && !isModal) ? "input-table " : "") +
+                            (isEdited ? "input-focused " : "")
+                        }
+                    >
                         <input
                             type="text"
+                            ref={c => this.input = c}
                             className="input-field js-input-field"
                             value={selectedField}
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
@@ -252,9 +276,9 @@ class RawWidget extends Component {
                             value={filterWidget ? textValue : selectedField}
                             disabled={widgetData.readonly}
                             placeholder={widgetFields.emptyText}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -277,9 +301,9 @@ class RawWidget extends Component {
                             step="1"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -300,9 +324,9 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetFields.field, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -325,9 +349,9 @@ class RawWidget extends Component {
                             step="1"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -350,9 +374,9 @@ class RawWidget extends Component {
                             step="1"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -373,9 +397,9 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             value={selectedField}
                             disabled={widgetData.readonly}
-                            onFocus={(e) => handleFocus(e, e.target.value)}
+                            onFocus={this.handleFocus}
                             onChange={(e) => handleChange(widgetField, e.target.value)}
-                            onBlur={(e) => handlePatch(widgetField, e.target.value, id)}
+                            onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                         />
                     </div>
@@ -388,6 +412,12 @@ class RawWidget extends Component {
                             (widgetData.readonly ? "input-disabled " : "")
                         }
                         tabIndex={tabIndex}
+                        onKeyDown={e => {
+                            if(e.key === " "){
+                                e.preventDefault();
+                                this.checkbox.click();
+                            }
+                        }}
                     >
                         <input
                             type="checkbox"
@@ -395,6 +425,7 @@ class RawWidget extends Component {
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
+                            ref={c => this.checkbox = c}
                         />
                         <div className={"input-checkbox-tick"}/>
                     </label>
