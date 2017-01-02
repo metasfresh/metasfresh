@@ -16,6 +16,8 @@ upcoming
 
 ## Features
 * metasfresh
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * WI that works for the concrete problem at hand
   * #653 Calculated DailyLotNo in Material Receipt Candidates
   * #714 Marginal Return report calculation add additional Costcenter
   * #742 R_Request column c_order_id autocomplete too slow
