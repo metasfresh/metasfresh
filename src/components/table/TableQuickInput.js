@@ -113,7 +113,7 @@ class TableQuickInput extends Component {
                     handlePatch={(prop, value) => this.handlePatch(prop,value)}
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
-                    type="primary"
+                    type="secondary"
                 />)
             })
         }

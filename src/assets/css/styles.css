@@ -1991,15 +1991,21 @@ td.pulse-off input {
 .quick-input-container {
     display: flex;
     align-items: center;
+    flex:1;
 }
 
-.quick-input-container>* {
-    margin: 0;
+.quick-input-container > * {
+    margin:0;
+    width:100%;
 }
 
 .hint {
-    font-size: .7rem;
-    color: $brand-color-secondary;
+    font-size: .75rem;
+    color: $brand-font-color-weak;
+}
+
+.table-filter-line {
+    height:3rem;
 }
 
 .tooltip-wrapp {

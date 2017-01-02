@@ -17,9 +17,7 @@ class TableFilter extends Component {
 
         this.setState(Object.assign({}, this.state, {
             isBatchEntry: !isBatchEntry
-        }), () => {
-            toggleFullScreen(tabId);
-        })
+        }));
     }
 
     render() {
@@ -34,7 +32,7 @@ class TableFilter extends Component {
         const isFullScreen = (fullScreen === tabId);
 
         return (
-            <div className="form-flex-align">
+            <div className="form-flex-align table-filter-line">
                 <div className="form-flex-align">
                     <div>
                         {!isBatchEntry && <button
@@ -52,7 +50,7 @@ class TableFilter extends Component {
                             {isBatchEntry ? "Close batch entry" : "Batch entry"}
                         </button>
                     </div>
-                    {isFullScreen && isBatchEntry &&
+                    {isBatchEntry &&
                         <TableQuickInput
                             docType={docType}
                             docId={docId}
@@ -61,7 +59,7 @@ class TableFilter extends Component {
                     }
                 </div>
 
-                {!isBatchEntry && <button
+                {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
                     onClick={() => toggleFullScreen(isFullScreen ? null : tabId)}
                     tabIndex={tabIndex}
