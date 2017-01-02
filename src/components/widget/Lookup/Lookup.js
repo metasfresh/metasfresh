@@ -395,6 +395,7 @@ class Lookup extends Component {
                     isInputEmpty={isInputEmpty}
                     onClickOutside={this.handleBlur}
                     disableClickOutside={!isOpen}
+                    query={query}
                 />}
             </div>
         )

@@ -42,7 +42,7 @@ class LookupList extends Component {
                 className="input-dropdown-list-option input-dropdown-list-option-alt"
                 onClick={() => this.handleAddNew(query)}
             >
-                <p className="input-dropdown-item-title">New {query ? '"' + query + '"' : ""}</p>
+                <p>New {query ? '"' + query + '"' : ""}</p>
             </div>
         )
     }
