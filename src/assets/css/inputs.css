@@ -597,6 +597,8 @@ input:checked + .input-slider:before {
     justify-content: space-between;
     margin-bottom: .5rem;
     align-items: center;
+
+    flex:1;
 }
 .form-flex-align > *:not(:last-child){
     margin-right: .5rem;

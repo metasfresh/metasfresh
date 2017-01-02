@@ -147,7 +147,7 @@ class TableContextMenu extends Component {
                 }
 
                 <div className="context-menu-item" onClick={this.handleDelete}>
-                    <i className="meta-icon-edit" /> Delete
+                    <i className="meta-icon-trash" /> Delete
                 </div>
                 {
                     prompt.open &&
@@ -159,7 +159,7 @@ class TableContextMenu extends Component {
                         onSubmitClick={this.handlePromptSubmitClick}
                     />
                 }
-                
+
                 <DocumentListContextShortcuts
                     handleOpenNewTab={this.handleOpenNewTab}
                     handleDelete={this.handleDelete}
