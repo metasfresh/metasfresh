@@ -6,7 +6,6 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.mrp_productinfo.async.spi.impl.UpdateMRPProductInfoTableWorkPackageProcessor;
-import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 
 /*
  * #%L
@@ -42,11 +41,12 @@ public class M_Transaction
 	 * Note: it's important to enqueue the purchaseCandidate after it was saved, because we need its <code>PMM_PurchaseCandidate_ID</code>.
 	 *
 	 * @param purchaseCandidate
+	 * @task https://github.com/metasfresh/metasfresh/issues/710
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
-			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_AFTER_DELETE })
+			ModelValidator.TYPE_AFTER_CHANGE
+			/* ModelValidator.TYPE_AFTER_CHANGE don't try to enqueue after delete! the enqueue needs the record's ID */ })
 	public void enqueuePurchaseCandidates(final I_M_Transaction transaction)
 	{
 		UpdateMRPProductInfoTableWorkPackageProcessor.schedule(transaction);
