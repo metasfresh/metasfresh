@@ -26,15 +26,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.IService;
@@ -43,6 +37,10 @@ import org.adempiere.util.proxy.IInterceptorInstance;
 import org.adempiere.util.proxy.IInvocationContext;
 
 import com.google.common.collect.ImmutableSet;
+
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 
 public class JavaAssistInterceptor extends AbstractBaseInterceptor
 {
