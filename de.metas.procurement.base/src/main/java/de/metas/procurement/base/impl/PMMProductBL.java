@@ -2,10 +2,12 @@ package de.metas.procurement.base.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
@@ -30,11 +32,11 @@ import de.metas.procurement.base.model.I_PMM_Product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,7 +47,7 @@ public class PMMProductBL implements IPMMProductBL
 	public void update(final I_PMM_Product pmmProduct)
 	{
 		//
-		// Update PMM_Product from M_HU_PI_Item_Product 
+		// Update PMM_Product from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product huPiItemProd = pmmProduct.getM_HU_PI_Item_Product();
 		if (huPiItemProd != null)
 		{
@@ -64,7 +66,7 @@ public class PMMProductBL implements IPMMProductBL
 			pmmProduct.setC_BPartner(null);
 			pmmProduct.setPackDescription(null);
 		}
-		
+
 		//
 		// Build and set the full product name
 		final String productName = PMMProductNameBuilder.newBuilder()
@@ -118,7 +120,7 @@ public class PMMProductBL implements IPMMProductBL
 			InterfaceWrapperHelper.save(pmmProduct);
 		}
 	}
-	
+
 	@Override
 	public I_PMM_Product getPMMProductForDateProductAndASI(final Date date, final int productId, final int partnerId, final int huPIPId, final I_M_AttributeSetInstance asi)
 	{
@@ -137,7 +139,7 @@ public class PMMProductBL implements IPMMProductBL
 		// this shows which was the maximum number of instances set and fit in both the lists
 		// if it stays -1, there are no suitable pmm products
 		int maxmatches = -1;
-		
+
 		// the pmmProduct which fits the most
 		I_PMM_Product resultPMMProduct = null;
 
@@ -162,7 +164,7 @@ public class PMMProductBL implements IPMMProductBL
 	}
 
 	/**
-	 * This method checks how many of the instance attributes of the 2 lists fit.
+	 * This method checks how many of the instance attributes of the two lists have matching {@code value} fields.
 	 * If the first list contains instances that don't exist in the second and have a set value, the result will be -1.
 	 * If both the lists contain an instance but with different values the result will be -1.
 	 * In case the first list is empty, the result will be 0.
@@ -174,7 +176,13 @@ public class PMMProductBL implements IPMMProductBL
 	 */
 	private int countInstanceMatchings(final List<I_M_AttributeInstance> pmmAttributeInstances, final List<I_M_AttributeInstance> instances)
 	{
-		if (pmmAttributeInstances.isEmpty())
+		// Some AIs don't have a string value, but other sorts of values. 
+		// Don't count them for this BL, because they would lead to false negatives.
+		final List<I_M_AttributeInstance> pmmAttributeInstancesToUse = pmmAttributeInstances.stream()
+				.filter(i -> !Check.isEmpty(i.getValue()))
+				.collect(Collectors.toList());
+		
+		if (pmmAttributeInstancesToUse.isEmpty())
 		{
 			// there are no attributes in the pmm product. This pmm Product matches for any ASI
 			return 0;
@@ -192,7 +200,7 @@ public class PMMProductBL implements IPMMProductBL
 		// this counts how many of the instances are set and fit
 		int matchings = 0;
 
-		for (final I_M_AttributeInstance pmmAttributeInstance : pmmAttributeInstances)
+		for (final I_M_AttributeInstance pmmAttributeInstance : pmmAttributeInstancesToUse)
 		{
 			boolean found = false;
 
@@ -207,8 +215,8 @@ public class PMMProductBL implements IPMMProductBL
 
 				final String pmmStringValue = pmmAttributeInstance.getValue();
 				final String instanceStringValue = instance.getValue();
-				
-				if(pmmStringValue != null && instanceStringValue == null)
+
+				if (pmmStringValue != null && instanceStringValue == null)
 				{
 					// not valid
 					isValid = false;
@@ -241,12 +249,12 @@ public class PMMProductBL implements IPMMProductBL
 				break;
 			}
 		}
-		
-		if(!isValid)
+
+		if (!isValid)
 		{
 			return -1;
 		}
-		
+
 		return matchings;
 	}
 

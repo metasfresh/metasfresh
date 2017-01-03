@@ -13,20 +13,21 @@ package org.adempiere.util.proxy.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -40,6 +41,8 @@ import org.adempiere.util.IService;
 import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.proxy.IInterceptorInstance;
 import org.adempiere.util.proxy.IInvocationContext;
+
+import com.google.common.collect.ImmutableSet;
 
 public class JavaAssistInterceptor extends AbstractBaseInterceptor
 {
@@ -142,16 +145,13 @@ public class JavaAssistInterceptor extends AbstractBaseInterceptor
 	@Override
 	public <T extends IService> Class<T> createInterceptedClass(final Class<T> serviceInstanceClass)
 	{
+		// we need all methods: both inherited ones (unless they are overridden) and local private ones (because we want to do a warning or throw an exception if we encounter them and they are annotated).
+		final Set<Method> allMethods = ImmutableSet.<Method> builder()
+				.add(serviceInstanceClass.getMethods())
+				.add(serviceInstanceClass.getDeclaredMethods())
+				.build();
 		try
 		{
-			final boolean isFinal = Modifier.isFinal(serviceInstanceClass.getModifiers());
-			if (isFinal)
-			{
-				// TODO: show a warning/exception in case class is final and there are methods that need to be intercepted
-				// return defaultConstructor.newInstance(); // we won't be able to create a decorated subclass
-				return serviceInstanceClass;
-			}
-
 			for (final Entry<Class<? extends Annotation>, IInterceptorInstance> annotationClass2interceptor : getRegisteredInterceptors().entrySet())
 			{
 				final Class<? extends Annotation> annotationClass = annotationClass2interceptor.getKey();
@@ -160,7 +160,9 @@ public class JavaAssistInterceptor extends AbstractBaseInterceptor
 				//
 				// Check for annotated method which won't be intercepted
 				boolean hasMethodsToBeIntercepted = false;
-				for (final Method method : serviceInstanceClass.getDeclaredMethods())
+
+				for (final Method method : allMethods)
+				// for (final Method method : serviceInstanceClass.getMethods()) // gh #709: also intercept methods implemented in an abstract super class
 				{
 					if (!method.isAnnotationPresent(annotationClass))
 					{
@@ -217,7 +219,8 @@ public class JavaAssistInterceptor extends AbstractBaseInterceptor
 								return true;
 							}
 						});
-				factory.setHandler(new MethodHandler()
+
+				final MethodHandler handler = new MethodHandler()
 				{
 					@Override
 					public Object invoke(final Object self, final Method thisMethod, final Method proceed, final Object[] methodArgs) throws Throwable
@@ -226,17 +229,16 @@ public class JavaAssistInterceptor extends AbstractBaseInterceptor
 						final T serviceInstance = (T)self;
 						return invokeForJavassist0(interceptorInstance, serviceInstance, thisMethod, proceed, methodArgs);
 					}
-				});
+				};
+
+				// check out the deprecation notice.
+				// also note that we don't need the caching that badly since we are intercepting singletons, and that right now we have all the setup in this method (ofc we can retain that advantage, but it's more effort).
+				// for now I think if is OK this way. If we change it, we should at any rate make sure to still keep the interceptor's code localized in this class.
+				factory.setHandler(handler);
 
 				@SuppressWarnings("unchecked")
 				final Class<T> serviceInstanceInterceptedClass = factory.createClass();
 
-// @formatter:off
-// this only works with a recent javassist version which we can't use because of jboss-aop
-//				Check.errorUnless(serviceInstance instanceof Proxy,
-//						"Generated proxy class is not instanceof {}, which means that we still have an old javaassist implementation somewhere in the classpath", Proxy.class.getName());
-//				((Proxy)serviceInstance).setHandler(handler);
-// @formatter:on
 				return serviceInstanceInterceptedClass;
 			}
 
