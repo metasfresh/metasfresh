@@ -48,6 +48,10 @@ input {
  *  CUSTOM BUTTONS
  */
 
+ button {
+     position: relative;
+ }
+
  .btn-icon {
      width: 32px;
      height: 32px;

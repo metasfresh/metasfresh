@@ -1,13 +1,15 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import TableQuickInput from './TableQuickInput';
+import Tooltips from '../tooltips/Tooltips';
 
 class TableFilter extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            isBatchEntry: false
+            isBatchEntry: false,
+            isTooltipShow: false
         }
     }
 
@@ -20,13 +22,20 @@ class TableFilter extends Component {
         }));
     }
 
+    toggleTooltip = () => {
+        const {isTooltipShow} = this.state;
+        this.setState(Object.assign({}, this.state, {
+            isTooltipShow: !isTooltipShow
+        }));
+    }
+
     render() {
         const {
             openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex
         } = this.props;
 
         const {
-            isBatchEntry
+            isBatchEntry, isTooltipShow
         } = this.state;
 
         const isFullScreen = (fullScreen === tabId);
@@ -62,9 +71,16 @@ class TableFilter extends Component {
                 {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
                     onClick={() => toggleFullScreen(isFullScreen ? null : tabId)}
+                    onMouseOver={this.toggleTooltip}
+                    onMouseOut={this.toggleTooltip}
                     tabIndex={tabIndex}
                 >
                     <i className="meta-icon-fullscreen"/>
+
+                    {isTooltipShow && <Tooltips
+                        name={"Expand"}
+                        type={''}
+                    />}
                 </button>}
             </div>
         )
