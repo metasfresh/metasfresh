@@ -36,9 +36,7 @@ class Table extends Component {
                 x: 0,
                 y: 0
             },
-            prompt: {
-                open: false
-            }
+            promptOpen: false
         }
     }
 
@@ -446,30 +444,20 @@ class Table extends Component {
     }
 
     handleDelete = () => {
-        this.setState(update(this.state, {
-            prompt: {
-                open: {$set: true}
-            }
-        }));
+        this.setState(Object.assign({}, this.state, {
+            promptOpen: true
+        }))
     }
 
     handlePromptCancelClick = () => {
-        this.setState(update(this.state, {
-            prompt: {
-                open: {$set: false}
-            }
+        this.setState(Object.assign({}, this.state, {
+            promptOpen: false
         }))
-
-        
     }
 
     handlePromptSubmitClick = (selected, tabId) => {
         const {dispatch, type, docId, mainTable, updateDocList} = this.props;
-        this.setState(update(this.state, {
-            prompt: {
-                open: {$set: false}
-            }
-        }))
+        this.handlePromptCancelClick();
 
         if(mainTable){
             if(selected.length>1){
@@ -518,7 +506,7 @@ class Table extends Component {
         } = this.props;
 
         const {
-            contextMenu, selected, listenOnKeys, prompt
+            contextMenu, selected, listenOnKeys, promptOpen
         } = this.state;
 
         return (
@@ -603,7 +591,7 @@ class Table extends Component {
                     </div>
                 </div>}
                 {
-                    prompt.open &&
+                    promptOpen &&
                     <Prompt
                         title={"Delete"}
                         text={"Are you sure?"}

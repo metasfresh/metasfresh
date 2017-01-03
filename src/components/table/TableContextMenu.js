@@ -81,21 +81,6 @@ class TableContextMenu extends Component {
                 <div className="context-menu-item" onClick={handleDelete}>
                     <i className="meta-icon-trash" /> Delete <span className="tooltip-inline">{keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}</span>
                 </div>
-                {
-                    prompt.open &&
-                    <Prompt
-                        title={"Delete"}
-                        text={"Are you sure?"}
-                        buttons={{submit: "Delete", cancel: "Cancel"}}
-                        onCancelClick={this.handlePromptCancelClick}
-                        onSubmitClick={this.handlePromptSubmitClick}
-                    />
-                }
-
-                <DocumentListContextShortcuts
-                    handleOpenNewTab={this.handleOpenNewTab}
-                    handleDelete={this.handleDelete}
-                />
             </div>
         )
     }
