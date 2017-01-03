@@ -16,6 +16,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
+import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -82,13 +83,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private final String tableName;
 	private final String keyColumnName;
 
-	private final String sqlSelectPage;
-	private final String sqlSelectById;
-	private final DocumentViewFieldValueLoader fieldLoaders;
+	private final transient String sqlSelectPage;
+	private final transient String sqlSelectById;
+	private final transient DocumentViewFieldValueLoader fieldLoaders;
 
-	private final IDocumentViewOrderedSelectionFactory orderedSelectionFactory;
-	private final DocumentViewOrderedSelection defaultSelection;
-	private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, DocumentViewOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	private final transient IDocumentViewOrderedSelectionFactory orderedSelectionFactory;
+	private final transient DocumentViewOrderedSelection defaultSelection;
+	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, DocumentViewOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	//
 	// Filters
@@ -101,7 +102,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	//
 	// Related actions
 	private final transient ProcessDescriptorsFactory processDescriptorFactory;
-	
+
 	//
 	// Attributes
 	private final transient IDocumentViewAttributesProvider attributesProvider;
@@ -109,6 +110,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	//
 	// Misc
 	private transient String _toString;
+
+	private final transient CCache<Integer, IDocumentView> cache_documentViewsById;
 
 	private SqlDocumentViewSelection(final Builder builder)
 	{
@@ -135,10 +138,18 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		//
 		// Related actions
 		processDescriptorFactory = builder.getProcessDescriptorFactory();
-		
+
 		//
 		// Attributes
 		attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(DocumentType.Window, adWindowId);
+
+		//
+		// Cache
+		cache_documentViewsById = CCache.newLRUCache( //
+				tableName + "#DocumentViewById#viewId=" + defaultSelection.getUuid() // cache name
+				, 100 // maxSize
+				, 2 // expireAfterMinutes
+		);
 
 		logger.debug("View created: {}", this);
 	}
@@ -228,7 +239,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			throw new IllegalStateException("View already closed: " + getViewId());
 		}
 	}
-	
+
 	@Override
 	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys) throws DBException
 	{
@@ -270,6 +281,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			}
 
 			final List<IDocumentView> page = pageBuilder.build();
+			
+			// Add to cache
+			for (final IDocumentView documentView : page)
+			{
+				cache_documentViewsById.put(documentView.getDocumentId(), documentView);
+			}
+			
 			return DocumentViewResult.of(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
 		}
 		catch (final SQLException | DBException e)
@@ -286,9 +304,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public IDocumentView getById(final int documentId)
 	{
-		// TODO: shall we implement caching?
-		// one approach could be to populate the cache when getPage is called because usually we will be asked for DocumentView which was retrieved by getPage
-		
+		assertNotClosed();
+
+		return cache_documentViewsById.getOrLoad(documentId, () -> retrieveById(documentId));
+	}
+
+	private final IDocumentView retrieveById(final int documentId)
+	{
 		final Object[] sqlParams = new Object[] { getViewId(), documentId };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -308,8 +330,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				{
 					continue;
 				}
-				
-				if(firstDocument != null)
+
+				if (firstDocument != null)
 				{
 					logger.warn("More than one document found for documentId={} in {}. Returning only the first one: {}", documentId, this, firstDocument);
 					return firstDocument;
@@ -319,12 +341,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 					firstDocument = document;
 				}
 			}
-			
-			if(firstDocument == null)
+
+			if (firstDocument == null)
 			{
-				throw new EntityNotFoundException("No document found for documentId="+documentId);
+				throw new EntityNotFoundException("No document found for documentId=" + documentId);
 			}
-			
+
 			return firstDocument;
 		}
 		catch (final SQLException | DBException e)
@@ -336,7 +358,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			DB.close(rs, pstmt);
 		}
-		
+
 	}
 
 	private DocumentViewOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys) throws DBException
@@ -393,6 +415,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
+		assertNotClosed();
+
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
@@ -402,6 +426,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
+		assertNotClosed();
+
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
@@ -411,6 +437,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public Stream<ProcessDescriptor> streamActions()
 	{
+		assertNotClosed();
+
 		return processDescriptorFactory.streamDocumentRelatedProcesses(getTableName());
 	}
 
@@ -559,20 +587,21 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		{
 			return getBinding().getKeyColumnName();
 		}
-		
+
 		private ViewFieldsBinding getViewFieldsBinding()
 		{
 			return getBinding().getViewFieldsBinding(getViewFields());
 		}
-		
+
 		private String getSqlPagedSelectAllFrom()
 		{
+			// TODO: cache it locally
 			final SqlDocumentQueryBuilder queryBuilder = getQueryBuilder();
 			final Evaluatee evalCtx = queryBuilder.getEvaluationContext();
 			return getViewFieldsBinding()
 					.getSqlPagedSelect()
 					.evaluate(evalCtx, OnVariableNotFound.Fail);
-			
+
 		}
 
 		private String buildSqlSelectPage()
@@ -589,7 +618,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 					+ "\n WHERE " + SqlDocumentViewBinding.COLUMNNAME_Paging_UUID + "=?"
 					+ "\n AND " + SqlDocumentViewBinding.COLUMNNAME_Paging_Record_ID + "=?";
 		}
-		
+
 		public IDocumentViewOrderedSelectionFactory getOrderedSelectionFactory()
 		{
 			final Evaluatee evalCtx = getQueryBuilder().getEvaluationContext();
