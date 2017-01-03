@@ -115,7 +115,7 @@ class Header extends Component {
                         isMenuOverlayShow: false
                     }));
                 }
-                
+
             });
         }
         if(isSubheaderShow){
@@ -181,6 +181,7 @@ class Header extends Component {
     }
 
     handlePrint = (windowType, docId, docNo) => {
+        console.log(windowType, docId, docNo)
         const {dispatch} = this.props;
         const url = config.API_URL +
             '/window/' + windowType +
@@ -259,7 +260,7 @@ class Header extends Component {
                     onSubmitClick={() => this.handlePromptSubmitClick(windowType, dataId)}
                 />
             }
-                
+
                 {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
                 {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
                 <nav className={"header header-super-faded js-not-unselect " + (scrolled ? "header-shadow": "")}>
@@ -401,7 +402,7 @@ class Header extends Component {
                     handleInboxOpen = {isInboxOpen ? () => this.handleInboxOpen(false) : () => this.handleInboxOpen(true)}
                     closeInbox = {() => this.handleInboxOpen(false)}
                     openModal = {dataId? () => this.openModal(windowType, "window", "Advanced edit", true) : ''}
-                    handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNo) : ''}
+                    handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNoData.value) : ''}
                     handleDelete={dataId ? this.handleDelete: ''}
                     redirect={windowType ? () => this.redirect('/window/'+ windowType +'/new') : ''}
                 />
