@@ -486,6 +486,7 @@ class Table extends Component {
     }
 
     handleKey = (e) => {
+        console.log('handle key');
         const {readonly, mainTable} = this.props;
         const {listenOnKeys} = this.state;
 

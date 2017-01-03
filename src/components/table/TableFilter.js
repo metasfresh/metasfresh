@@ -71,8 +71,8 @@ class TableFilter extends Component {
                 {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
                     onClick={() => toggleFullScreen(isFullScreen ? null : tabId)}
-                    onMouseOver={this.toggleTooltip}
-                    onMouseOut={this.toggleTooltip}
+                    onMouseEnter={this.toggleTooltip}
+                    onMouseLeave={this.toggleTooltip}
                     tabIndex={tabIndex}
                 >
                     <i className="meta-icon-fullscreen"/>
