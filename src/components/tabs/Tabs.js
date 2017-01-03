@@ -26,8 +26,6 @@ class Tabs extends Component {
     handlePillKeyDown = (e, key) => {
         if(e.key === "Enter"){
             this.handleClick(e, key);
-            console.log(this.tabContent.children[key-1].children[0].focus())
-            // this.tabContent.children[key].children[0].focus();
         }
     }
 
@@ -64,8 +62,7 @@ class Tabs extends Component {
                 <div
                     key={"pane" + item.key}
                     className={"tab-pane " +
-                        ((selected == item.key) ? "active " : "") +
-                        ((fullScreen === item.key) ? "tab-pane-fullscreen panel-spaced " : "")
+                        ((selected == item.key) ? "active " : "")
                     }
                 >
                     {itemWithProps}
@@ -78,7 +75,10 @@ class Tabs extends Component {
         const {children, tabIndex} = this.props;
         const {fullScreen} = this.state;
         return (
-            <div className="mb-1">
+            <div className={
+                "mb-1 " +
+                (fullScreen ? "tabs-fullscreen container-fluid " : "")
+            }>
                 <ul className="nav nav-tabs mt-1">
                     {this.renderPills(children)}
                 </ul>

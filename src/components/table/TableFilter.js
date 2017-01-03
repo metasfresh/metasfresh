@@ -8,18 +8,8 @@ class TableFilter extends Component {
         super(props);
 
         this.state = {
-            isBatchEntry: false,
             isTooltipShow: false
         }
-    }
-
-    handleBatchEntryToggle = () => {
-        const {isBatchEntry} = this.state;
-        const {toggleFullScreen, tabId} = this.props;
-
-        this.setState(Object.assign({}, this.state, {
-            isBatchEntry: !isBatchEntry
-        }));
     }
 
     toggleTooltip = () => {
@@ -31,14 +21,13 @@ class TableFilter extends Component {
 
     render() {
         const {
-            openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex
+            openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex,
+            isBatchEntry, handleBatchEntryToggle
         } = this.props;
 
         const {
-            isBatchEntry, isTooltipShow
+            isTooltipShow
         } = this.state;
-
-        const isFullScreen = (fullScreen === tabId);
 
         return (
             <div className="form-flex-align table-filter-line">
@@ -47,19 +36,17 @@ class TableFilter extends Component {
                         {!isBatchEntry && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
                             onClick={openModal}
-                            tabIndex={tabIndex}
                         >
                             Add new
                         </button>}
-                        <button
+                        {!fullScreen && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                            onClick={this.handleBatchEntryToggle}
-                            tabIndex={tabIndex}
+                            onClick={handleBatchEntryToggle}
                         >
                             {isBatchEntry ? "Close batch entry" : "Batch entry"}
-                        </button>
+                        </button>}
                     </div>
-                    {isBatchEntry &&
+                    {(isBatchEntry || fullScreen) &&
                         <TableQuickInput
                             docType={docType}
                             docId={docId}
@@ -70,15 +57,14 @@ class TableFilter extends Component {
 
                 {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
-                    onClick={() => toggleFullScreen(isFullScreen ? null : tabId)}
-                    onMouseOver={this.toggleTooltip}
-                    onMouseOut={this.toggleTooltip}
-                    tabIndex={tabIndex}
+                    onClick={() => toggleFullScreen(!fullScreen)}
+                    onMouseEnter={this.toggleTooltip}
+                    onMouseLeave={this.toggleTooltip}
                 >
-                    <i className="meta-icon-fullscreen"/>
+                    {fullScreen ? <i className="meta-icon-fullscreen"/> : <i className="meta-icon-fullscreen"/>}
 
                     {isTooltipShow && <Tooltips
-                        name={"Expand"}
+                        name={fullScreen ? "Expand" : "Collapse"}
                         type={''}
                     />}
                 </button>}

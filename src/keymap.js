@@ -15,7 +15,7 @@ export default {
         OPEN_ADVANCED_EDIT: mod + '+' + 'e',
         OPEN_PRINT_RAPORT: mod + '+' + 'p',
         DELETE_DOCUMENT: mod + '+' + 'd',
-        NEW_DOCUMENT: mod + '+' + 'm',
+        NEW_DOCUMENT: mod + '+' + 'm'
 
     },
     DOCUMENT_LIST_CONTEXT: {
@@ -23,12 +23,8 @@ export default {
         REMOVE_SELECTED: mod + '+' + 'y',
         ADVANCED_EDIT: mod + '+' + 'a',
     },
-    DOCUMENT_CONTEXT: {
-        FOCUS_FAST_LINE_ENTRY: mod + '+' + 'q',
-        REMOVE_SELECTED: {
-            osx: 'command+backspace',
-            windows: 'delete',
-            linux: 'delete',
-        }
-    },
+    TABLE_CONTEXT: {
+        TOGGLE_QUICK_INPUT: mod + '+' + 'q',
+        TOGGLE_EXPAND: mod + '+' + 'l'
+    }
 }
