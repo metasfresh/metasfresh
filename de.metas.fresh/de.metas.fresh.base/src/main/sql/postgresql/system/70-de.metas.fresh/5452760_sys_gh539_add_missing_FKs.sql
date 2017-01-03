@@ -48,6 +48,7 @@ DELETE FROM c_bp_docline_sort s WHERE NOT EXISTS (select 1 from C_BPartner p whe
 
 DELETE FROM Fact_Acct_ActivityChangeRequest s WHERE NOT EXISTS (select 1 from fact_Acct a where a.fact_Acct_id=s.fact_Acct_id);
 
+UPDATE c_olcand s SET Exp_replicationtrx_id=NULL WHERE NOT EXISTS (select 1 from Exp_replicationtrx p where p.Exp_replicationtrx_id=s.Exp_replicationtrx_id);
 
 --
 -- fixing references from Table Direct to Table or Search 
