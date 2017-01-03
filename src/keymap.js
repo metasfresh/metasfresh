@@ -20,11 +20,7 @@ export default {
     },
     DOCUMENT_LIST_CONTEXT: {
         OPEN_SELECTED: mod + '+' + 'b', //open document in new tab
-        REMOVE_SELECTED: {
-            osx: 'command+backspace',
-            windows: 'delete',
-            linux: 'delete',
-        },
+        REMOVE_SELECTED: mod + '+' + 'y',
         ADVANCED_EDIT: mod + '+' + 'a',
     },
     DOCUMENT_CONTEXT: {

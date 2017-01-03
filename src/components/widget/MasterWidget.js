@@ -30,7 +30,7 @@ class Widget extends Component {
                     Object.assign({}, this.state, {
                         updated: true
                     }), () => {
-                        setTimeout(() => {
+                        this.timeout = setTimeout(() => {
                             this.setState(Object.assign({}, this.state, {
                                 updated: false
                             }))
@@ -43,6 +43,10 @@ class Widget extends Component {
                 }));
             }
         }
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timeout);
     }
 
     handlePatch = (property, value) => {
