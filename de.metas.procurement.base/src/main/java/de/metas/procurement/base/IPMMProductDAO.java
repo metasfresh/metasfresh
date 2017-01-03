@@ -46,6 +46,7 @@ public interface IPMMProductDAO extends ISingletonService
 	/**
 	 * Retrieve the PMM Products for the given product, date and M_HU_PI_Item_Product.
 	 * The PMM products must be for the given partner or not have a partner set at all.
+	 * The PMM Products will be sorted by SeqNo.
 	 * 
 	 * @param date
 	 * @param productId

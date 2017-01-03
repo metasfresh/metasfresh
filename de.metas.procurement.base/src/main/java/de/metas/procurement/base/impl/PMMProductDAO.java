@@ -109,7 +109,9 @@ public class PMMProductDAO implements IPMMProductDAO
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, productId)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, huPIPId)
 				.orderBy()
+				.addColumn(I_PMM_Product.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumn(I_PMM_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.addColumn(I_PMM_Product.COLUMNNAME_PMM_Product_ID)
 				.endOrderBy()
 				.create()
 				.list();
