@@ -106,6 +106,7 @@ public class SqlDocumentViewBinding
 
 	private SqlDocumentFieldDataBindingDescriptor getKeyField()
 	{
+		Check.assumeNotNull(_keyField, "Parameter _keyField is not null");
 		return _keyField;
 	}
 
@@ -554,7 +555,6 @@ public class SqlDocumentViewBinding
 
 		private SqlDocumentFieldDataBindingDescriptor getKeyField()
 		{
-			Check.assumeNotNull(_keyField, "Parameter _keyField is not null");
 			return _keyField;
 		}
 
