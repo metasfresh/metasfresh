@@ -117,10 +117,10 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        if(idFocused){
+        if(typeof idFocused == "number"){
             document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
         }
-        if(idFocusedDown){
+        if(typeof idFocusedDown == "number"){
             document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
         }
     }
@@ -142,15 +142,13 @@ class Table extends Component {
         const {selected} = this.state;
         const selectRange = e.shiftKey;
 
-        let nodeList = Array.prototype.slice.call( document.activeElement.parentElement.children);
-        let idActive = nodeList.indexOf(document.activeElement);
+        const nodeList = Array.prototype.slice.call(document.activeElement.parentElement.children);
+        const idActive = nodeList.indexOf(document.activeElement);
 
         let idFocused = null;
         if(idActive > -1) {
             idFocused = idActive;
         }
-
-        const first = this.tbody.children[0] && this.tbody.children[0].children[0];
 
         switch(e.key) {
             case "ArrowDown":
@@ -177,10 +175,9 @@ class Table extends Component {
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], idFocused);
-
+                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], idFocused, false);
                     } else {
-                        this.selectProduct(Object.keys(rowData[tabid])[newId], idFocused);
+                        this.selectProduct(Object.keys(rowData[tabid])[newId], idFocused, false);
                     }
                 }
                 break;
@@ -188,17 +185,13 @@ class Table extends Component {
                 e.preventDefault();
                 if(document.activeElement.previousSibling){
                     document.activeElement.previousSibling.focus();
-                }else if(first){
-                    first.focus();
                 }
                 break;
             case "ArrowRight":
                 e.preventDefault();
                 if(document.activeElement.nextSibling){
-                   document.activeElement.nextSibling.focus();
-               }else if(first){
-                  first.focus();
-               }
+                    document.activeElement.nextSibling.focus();
+                }
                 break;
             case "Tab":
                 if(e.shiftKey){
@@ -315,7 +308,6 @@ class Table extends Component {
                 this.setContextMenu(clientX, clientY);
             });
         }
-
     }
 
     setContextMenu = (clientX, clientY) => {
@@ -334,7 +326,7 @@ class Table extends Component {
 
         if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
-            this.selectOneProduct(firstId);
+            this.selectOneProduct(firstId, 0);
         }
     }
 
