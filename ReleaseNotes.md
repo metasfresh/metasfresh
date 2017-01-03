@@ -10,6 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.51.50 (2017-02)
+
+## Fixes
+* metasfresh
+  * #763 material receipt HU label always shown in preview
+
+
 # metasfresh 4.50.49 (2017-01)
 
 upcoming
