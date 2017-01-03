@@ -10,13 +10,16 @@ class Tooltips extends Component {
     }
 
     componentDidMount() {
-        setTimeout(() => {
+        this.timeout = setTimeout(() => {
             this.setState(Object.assign({}, this.state, {
                 opacity: 1
             }))
         }, 1000);
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.timeout);
+    }
 
     render() {
         const {name, action, type, extraClass} = this.props;
