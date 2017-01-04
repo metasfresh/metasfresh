@@ -2,8 +2,7 @@
 -- URL zum Konzept
 update ad_process set isdirectprint = 'Y' where ad_process_id in
 (
---select p.ad_process_id
-select p.ad_process_id, p.isdirectprint
+select p.ad_process_id
 from AD_Table_Process tp
 left join ad_process p on tp.ad_process_id = p.ad_process_id
 where true
