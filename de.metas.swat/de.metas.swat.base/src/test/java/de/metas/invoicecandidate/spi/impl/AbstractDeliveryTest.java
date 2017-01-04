@@ -26,9 +26,6 @@ package de.metas.invoicecandidate.spi.impl;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,6 +50,8 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public abstract class AbstractDeliveryTest
 {
@@ -116,9 +115,8 @@ public abstract class AbstractDeliveryTest
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		new NonStrictExpectations()
-		{
-			{
+		new Expectations()
+		{{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
 				result = activity;
 
@@ -137,8 +135,7 @@ public abstract class AbstractDeliveryTest
 						, order.isSOTrx()
 						, trxName);
 				result = 3;
-			}
-		};
+		}};
 	}
 
 	private void initC_BPartner()

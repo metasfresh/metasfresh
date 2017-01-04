@@ -28,9 +28,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
@@ -39,6 +36,8 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_CountryArea_Assign;
 import de.metas.adempiere.service.ICountryAreaBL;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class CountryAreaBLTest
 {
@@ -96,7 +95,7 @@ public class CountryAreaBLTest
 		final Timestamp validFrom = validFromStr == null ? null : TimeUtil.asTimestamp(df.parse(validFromStr));
 		final Timestamp validTo = validToStr == null ? null : TimeUtil.asTimestamp(df.parse(validToStr));
 
-		new NonStrictExpectations()
+		new Expectations()
 		{
 			{
 				assignment.getValidFrom();

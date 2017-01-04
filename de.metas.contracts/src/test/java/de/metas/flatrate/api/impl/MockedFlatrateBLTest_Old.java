@@ -25,10 +25,6 @@ package de.metas.flatrate.api.impl;
 
 import java.math.BigDecimal;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-import mockit.Verifications;
-
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.util.Env;
 import org.junit.Test;
@@ -40,6 +36,9 @@ import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
 
 public class MockedFlatrateBLTest_Old
 {
@@ -422,7 +421,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void entryHasUOM(final int C_UOM_ID)
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{
 			{
 				dataEntry.getC_UOM_ID();
@@ -433,7 +432,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void entryHasQty_Reported(final BigDecimal qtyReported)
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{
 			{
 				dataEntry.getQty_Reported();
@@ -444,7 +443,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void entryHasQty_Planned(final BigDecimal qtyReported)
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{
 			{
 				dataEntry.getQty_Planned();
@@ -455,7 +454,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void entryHasType(final String type)
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{
 			{
 				dataEntry.getType();
@@ -466,7 +465,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void conditionsHaveCorrectionAmtAtClosing(final boolean value)
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				conditions.isCorrectionAmtAtClosing();
 				result = value;
@@ -475,7 +474,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void setupCommon()
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				dataEntry.getC_Flatrate_Term();
 				result = term;
@@ -502,7 +501,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void setupEntryWithValuesAndQtyActualZero()
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				dataEntry.getActualQty();
 				result = BigDecimal.ZERO;
@@ -512,7 +511,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void setupEntryWithValues()
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				dataEntry.getActualQty();
 				result = new BigDecimal("138");
@@ -522,7 +521,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void setupEntryWithValuesCommon()
 	{
-		new NonStrictExpectations(flatrateBL)
+		new Expectations(flatrateBL)
 		{{
 				term.getPlannedQtyPerUnit();	result = new BigDecimal("5");
 
@@ -546,7 +545,7 @@ public class MockedFlatrateBLTest_Old
 
 	private void setupEntryWithIncompleteValues()
 	{
-		new NonStrictExpectations(flatrateBL)
+		new Expectations(flatrateBL)
 		{{
 				term.getPlannedQtyPerUnit();	result = new BigDecimal("5");
 

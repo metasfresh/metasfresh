@@ -25,9 +25,6 @@ package de.metas.flatrate.invoicecandidate.spi.impl;
 import java.util.List;
 import java.util.Properties;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
@@ -60,6 +57,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
@@ -276,7 +275,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		// 07442
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product1); result = activity;
 

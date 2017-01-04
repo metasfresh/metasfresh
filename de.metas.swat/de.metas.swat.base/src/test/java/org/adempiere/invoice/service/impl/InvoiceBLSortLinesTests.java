@@ -27,9 +27,6 @@ import static org.junit.Assert.assertSame;
 import java.util.Arrays;
 import java.util.List;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -39,6 +36,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class InvoiceBLSortLinesTests
 {
@@ -244,7 +243,7 @@ public class InvoiceBLSortLinesTests
 		if (inoutId <= 0)
 		{
 			// @formatter:off
-			new NonStrictExpectations()
+			new Expectations()
 			{{
 				il.getC_InvoiceLine_ID(); result = invoiceLineId;
 
@@ -260,7 +259,7 @@ public class InvoiceBLSortLinesTests
 		else
 		{
 			// @formatter:off
-			new NonStrictExpectations()
+			new Expectations()
 			{{
 				il.getC_InvoiceLine_ID();
 				result = invoiceLineId;

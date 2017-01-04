@@ -14,6 +14,8 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import mockit.Expectations;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,7 +39,6 @@ import org.junit.Test;
  */
 
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 
 public class InterfaceWrapperHelper_Tests
 {
@@ -164,7 +165,7 @@ public class InterfaceWrapperHelper_Tests
 	public void test_wrapToOldValues_GridTabWrapper()
 	{
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 			gridTab.getTableName();
 			result = I_TestModel.Table_Name;
@@ -181,7 +182,7 @@ public class InterfaceWrapperHelper_Tests
 	public void test_wrapToOldValues_POWrapper()
 	{
 		// @formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 			po.get_TableName();
 			result = I_TestModel.Table_Name;
