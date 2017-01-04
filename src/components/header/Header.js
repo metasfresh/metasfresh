@@ -182,7 +182,6 @@ class Header extends Component {
     }
 
     handlePrint = (windowType, docId, docNo) => {
-        console.log(windowType, docId, docNo)
         const {dispatch} = this.props;
         const url = config.API_URL +
             '/window/' + windowType +

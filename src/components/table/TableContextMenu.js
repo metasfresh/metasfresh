@@ -50,7 +50,8 @@ class TableContextMenu extends Component {
 
     render() {
         const {
-            isDisplayed, x, y, blur, selected, dispatch, mainTable, handleAdvancedEdit, handleOpenNewTab, handleDelete
+            isDisplayed, x, y, blur, selected, dispatch, mainTable, handleAdvancedEdit,
+            handleOpenNewTab, handleDelete
         } = this.props;
         const {prompt, contextMenu} = this.state;
 
@@ -68,18 +69,27 @@ class TableContextMenu extends Component {
                 >
                 {isSelectedOne && !mainTable &&
                     <div className="context-menu-item" onClick={handleAdvancedEdit}>
-                        <i className="meta-icon-edit" /> Advanced edit <span className="tooltip-inline">{keymap.DOCUMENT_LIST_CONTEXT.ADVANCED_EDIT}</span>
+                        <i className="meta-icon-edit" /> Advanced edit
+                        <span className="tooltip-inline">
+                            {keymap.DOCUMENT_LIST_CONTEXT.ADVANCED_EDIT}
+                        </span>
                     </div>
                 }
 
                 {mainTable &&
                     <div className="context-menu-item" onClick={handleOpenNewTab}>
-                        <i className="meta-icon-file" /> Open in new tab <span className="tooltip-inline">{keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}</span>
+                        <i className="meta-icon-file" /> Open in new tab
+                        <span className="tooltip-inline">
+                            {keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}
+                        </span>
                     </div>
                 }
 
                 <div className="context-menu-item" onClick={handleDelete}>
-                    <i className="meta-icon-trash" /> Delete <span className="tooltip-inline">{keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}</span>
+                    <i className="meta-icon-trash" /> Delete
+                    <span className="tooltip-inline">
+                        {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
+                    </span>
                 </div>
             </div>
         )

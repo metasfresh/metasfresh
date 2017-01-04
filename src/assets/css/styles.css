@@ -730,7 +730,7 @@ body {
     padding: 1rem 1.2rem;
 }
 
-.tab-pane-fullscreen {
+.tabs-fullscreen {
     position: fixed;
     top: 55px;
     left: 0;

@@ -176,3 +176,6 @@
 .meta-icon-important:before {
   content: "\54";
 }
+.meta-icon-collapse:before {
+  content: "\55";
+}

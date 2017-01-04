@@ -8,22 +8,10 @@ class Container extends Component {
         super(props);
     }
     render() {
-
         const {
-            docActionElem,
-            docStatusData,
-            docNoElement,
-            docNoData,
-            docSummaryData,
-            dataId,
-            windowType,
-            breadcrumb,
-            references,
-            actions,
-            showSidelist,
-            siteName,
-            connectionError,
-            noMargin
+            docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
+            dataId, windowType, breadcrumb, references, actions, showSidelist,
+            siteName, connectionError, noMargin
         } = this.props;
 
         return (

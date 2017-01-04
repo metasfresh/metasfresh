@@ -42,7 +42,7 @@ class Attributes extends Component {
             }>
                 <div
                     onFocus={() => this.handleToggle(!dropdown)}
-                    tabIndex={tabIndex}
+                    tabIndex={tabIndex ? tabIndex : 0}
                     className={
                         "tag tag-lg tag-block tag-secondary pointer " +
                         (dropdown ? "tag-disabled " : "")

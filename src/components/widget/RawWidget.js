@@ -35,6 +35,7 @@ class RawWidget extends Component {
     }
 
     handleFocus = (e) => {
+        console.log("FOCUS")
         const {handleFocus} = this.props;
 
         this.setState(Object.assign({}, this.state, {
@@ -45,6 +46,7 @@ class RawWidget extends Component {
     }
 
     handleBlur = (widgetField, value, id) => {
+        console.log("BLUR")
         const {handlePatch} = this.props;
 
         this.setState(Object.assign({}, this.state, {
@@ -270,7 +272,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "") +
+                        (isEdited ? "input-focused " : "")
                     }>
                         <textarea
                             className="input-field js-input-field"
@@ -293,7 +296,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "") +
+                        (isEdited ? "input-focused " : "")
                     }>
                         <input
                             type="number"
@@ -318,7 +322,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "") +
+                        (isEdited ? "input-focused " : "")
                     }>
                         <input
                             type="number"
@@ -341,7 +346,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "") +
+                        (isEdited ? "input-focused " : "")
                     }>
                         <input
                             type="number"
@@ -366,7 +372,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "") +
+                        (isEdited ? "input-focused " : "")
                     }>
                         <input
                             type="number"
@@ -391,7 +398,8 @@ class RawWidget extends Component {
                         (widgetData.readonly ? "input-disabled " : "") +
                         (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                        ((rowId && !isModal) ? "input-table " : "") +
+                        (isEdited ? "input-focused " : "")
                     }>
                         <input
                             type="number"

@@ -7,10 +7,17 @@ class GlobalContextShortcuts extends Component {
 
     }
     handleShortcuts = (action, event) => {
+<<<<<<< HEAD
         const { 
           handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal, 
           handlePrint, handleDelete, handleSideListToggle, handleInboxOpen, 
           closeInbox, redirect, handleDocStatusToggle 
+=======
+        const {
+          handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal,
+          handlePrint, handleDelete, handleSideListToggle, handleInboxOpen,
+          closeInbox, redirect
+>>>>>>> dev
         } = this.props;
         switch (action) {
             case 'OPEN_ACTIONS_MENU':
@@ -18,17 +25,17 @@ class GlobalContextShortcuts extends Component {
                 closeMenuOverlay();
                 closeInbox();
                 handleSubheaderOpen();
-                break
+                break;
             case 'OPEN_NAVIGATION_MENU':
                 event.preventDefault();
                 closeInbox();
                 handleMenuOverlay();
-                break
+                break;
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
                 closeMenuOverlay();
                 handleInboxOpen(true);
-                break
+                break;
             case 'OPEN_SIDEBAR_MENU':
                 event.preventDefault();
                 closeMenuOverlay();
@@ -36,47 +43,48 @@ class GlobalContextShortcuts extends Component {
                 if (handleSideListToggle) {
                     handleSideListToggle();
                 }
-                break
+                break;
             case 'DELETE_DOCUMENT':
                 event.preventDefault();
                 if (handleDelete) {
                     handleDelete();
                 }
-                break
+                break;
             case 'OPEN_ADVANCED_EDIT':
                 event.preventDefault();
                 if (openModal) {
                     openModal();
                 }
-                break
+                break;
             case 'OPEN_PRINT_RAPORT':
                 event.preventDefault();
                 if (handlePrint) {
                     handlePrint();
                 }
-                break
+                break;
             case 'NEW_DOCUMENT':
                 event.preventDefault();
                 if (redirect) {
                     redirect();
                 }
-                break
+                break;
             case 'DOC_STATUS':
                 event.preventDefault();
                 handleDocStatusToggle();
-                break
+                break;
         }
     }
 
     render() {
-        return ( 
-          <Shortcuts name = { "GLOBAL_CONTEXT" }
-            handler = { this.handleShortcuts }
-            targetNodeSelector = { "body" }
-            isolate = { true }
-            preventDefault = { true }
-            stopPropagation = { true } 
-          />
+        return (
+            <Shortcuts
+                name = { "GLOBAL_CONTEXT" }
+                handler = { this.handleShortcuts }
+                targetNodeSelector = { "body" }
+                isolate = { true }
+                preventDefault = { true }
+                stopPropagation = { true }
+            />
         )
     }
 }

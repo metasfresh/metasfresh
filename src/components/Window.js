@@ -15,10 +15,18 @@ class Window extends Component {
     constructor(props){
         super(props);
 
-        this.tabIndex = {
-            firstColumn: 1,
-            tabs: 2,
-            secondColumn: 3
+        if(props.isModal){
+            this.tabIndex = {
+                firstColumn: 0,
+                tabs: 0,
+                secondColumn: 0
+            }
+        }else{
+            this.tabIndex = {
+                firstColumn: 1,
+                tabs: 2,
+                secondColumn: 3
+            }
         }
     }
 

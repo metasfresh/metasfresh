@@ -21,6 +21,7 @@ import MasterWidget from '../widget/MasterWidget';
 
 import keymap from '../../keymap.js';
 import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -36,7 +37,8 @@ class Table extends Component {
                 x: 0,
                 y: 0
             },
-            promptOpen: false
+            promptOpen: false,
+            isBatchEntry: false
         }
     }
 
@@ -365,6 +367,14 @@ class Table extends Component {
             }
     }
 
+    handleBatchEntryToggle = () => {
+        const {isBatchEntry} = this.state;
+
+        this.setState(Object.assign({}, this.state, {
+            isBatchEntry: !isBatchEntry
+        }));
+    }
+
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, "window", tabId, rowId));
@@ -432,7 +442,9 @@ class Table extends Component {
 
     handleOpenNewTab = (selected) => {
         const {type} = this.props;
-        window.open("/window/" + type + "/" + selected[0], "_blank");
+        for(let i = 0; i < selected.length; i++){
+            window.open("/window/" + type + "/" + selected[i], "_blank");
+        }
     }
 
     handleDelete = () => {
@@ -498,7 +510,7 @@ class Table extends Component {
         } = this.props;
 
         const {
-            contextMenu, selected, listenOnKeys, promptOpen
+            contextMenu, selected, listenOnKeys, promptOpen, isBatchEntry
         } = this.state;
 
         return (
@@ -529,6 +541,8 @@ class Table extends Component {
                                 docId={docId}
                                 tabId={tabid}
                                 tabIndex={tabIndex}
+                                isBatchEntry={isBatchEntry}
+                                handleBatchEntryToggle={this.handleBatchEntryToggle}
                             />
                         </div>
                     </div>}
@@ -597,6 +611,13 @@ class Table extends Component {
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
                 />
+
+            {!readonly &&
+                <TableContextShortcuts
+                    handleToggleQuickInput={this.handleBatchEntryToggle}
+                    handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+                />
+            }
             </div>
         )
     }

@@ -2,43 +2,33 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import TableQuickInput from './TableQuickInput';
 import Tooltips from '../tooltips/Tooltips';
+import keymap from '../../keymap.js';
 
 class TableFilter extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            isBatchEntry: false,
             isTooltipShow: false
         }
     }
 
-    handleBatchEntryToggle = () => {
-        const {isBatchEntry} = this.state;
-        const {toggleFullScreen, tabId} = this.props;
-
-        this.setState(Object.assign({}, this.state, {
-            isBatchEntry: !isBatchEntry
-        }));
-    }
-
-    toggleTooltip = () => {
+    toggleTooltip = (key = null) => {
         const {isTooltipShow} = this.state;
         this.setState(Object.assign({}, this.state, {
-            isTooltipShow: !isTooltipShow
+            isTooltipShow: key
         }));
     }
 
     render() {
         const {
-            openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex
+            openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex,
+            isBatchEntry, handleBatchEntryToggle
         } = this.props;
 
         const {
-            isBatchEntry, isTooltipShow
+            isTooltipShow
         } = this.state;
-
-        const isFullScreen = (fullScreen === tabId);
 
         return (
             <div className="form-flex-align table-filter-line">
@@ -47,19 +37,24 @@ class TableFilter extends Component {
                         {!isBatchEntry && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
                             onClick={openModal}
-                            tabIndex={tabIndex}
                         >
                             Add new
                         </button>}
-                        <button
+                        {!fullScreen && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                            onClick={this.handleBatchEntryToggle}
-                            tabIndex={tabIndex}
+                            onClick={handleBatchEntryToggle}
+                            onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT)}
+                            onMouseLeave={this.toggleTooltip}
                         >
                             {isBatchEntry ? "Close batch entry" : "Batch entry"}
-                        </button>
+                            {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT && <Tooltips
+                                name={keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT}
+                                action={isBatchEntry ? "Close batch entry" : "Batch entry"}
+                                type={''}
+                            />}
+                        </button>}
                     </div>
-                    {isBatchEntry &&
+                    {(isBatchEntry || fullScreen) &&
                         <TableQuickInput
                             docType={docType}
                             docId={docId}
@@ -70,15 +65,15 @@ class TableFilter extends Component {
 
                 {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
-                    onClick={() => toggleFullScreen(isFullScreen ? null : tabId)}
-                    onMouseEnter={this.toggleTooltip}
+                    onClick={() => toggleFullScreen(!fullScreen)}
+                    onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_EXPAND)}
                     onMouseLeave={this.toggleTooltip}
-                    tabIndex={tabIndex}
                 >
-                    <i className="meta-icon-fullscreen"/>
+                    {fullScreen ? <i className="meta-icon-collapse"/> : <i className="meta-icon-fullscreen"/>}
 
-                    {isTooltipShow && <Tooltips
-                        name={"Expand"}
+                    {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND && <Tooltips
+                        name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
+                        action={fullScreen ? "Collapse" : "Expand"}
                         type={''}
                     />}
                 </button>}

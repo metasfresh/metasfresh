@@ -121,20 +121,36 @@ class Modal extends Component {
                 className="screen-freeze js-not-unselect"
             >
                 <div className="panel panel-modal panel-modal-primary">
-                    <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
-                        <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
+                    <div
+                        className={
+                            "panel-modal-header " +
+                            (scrolled ? "header-shadow": "")
+                        }
+                    >
+                        <span className="panel-modal-header-title">
+                            {modalTitle ? modalTitle : "Modal"}
+                        </span>
                         <div className="items-row-2">
-                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
+                            <button
+                                className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+                                onClick={this.handleClose}
+                                tabIndex={0}
+                            >
                                 {modalType === "process" ? "Cancel" : "Done"}
-                            </span>
-                            {modalType === "process" && <span className="btn btn-meta-primary btn-distance-3 btn-md" onClick={this.handleStart}>
-                                Start
-                            </span>}
+                            </button>
+                            {modalType === "process" &&
+                                <button
+                                    className="btn btn-meta-primary btn-distance-3 btn-md"
+                                    onClick={this.handleStart}
+                                    tabIndex={0}
+                                >
+                                    Start
+                                </button>
+                            }
                         </div>
                     </div>
                     <div
                         className="panel-modal-content js-panel-modal-content container-fluid"
-                        tabIndex={0}
                         ref={c => { c && c.focus()}}
                     >
                         {modalType === "window" ?
