@@ -610,10 +610,12 @@ class Table extends Component {
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
                 />
 
+            {!readonly &&
                 <TableContextShortcuts
                     handleToggleQuickInput={this.handleBatchEntryToggle}
-                    handleToggleExpand={toggleFullScreen && toggleFullScreen}
+                    handleToggleExpand={() => toggleFullScreen(!fullScreen)}
                 />
+            }
             </div>
         )
     }

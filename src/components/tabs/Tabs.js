@@ -58,16 +58,19 @@ class Tabs extends Component {
                 })
             });
 
-            return (
-                <div
-                    key={"pane" + item.key}
-                    className={"tab-pane " +
-                        ((selected == item.key) ? "active " : "")
-                    }
-                >
-                    {itemWithProps}
-                </div>
-            );
+            if(selected == item.key){
+                return (
+                    <div
+                        key={"pane" + item.key}
+                        className={"tab-pane active"}
+                    >
+                        {itemWithProps}
+                    </div>
+                );
+            }else{
+                return false
+            }
+
         });
     }
 

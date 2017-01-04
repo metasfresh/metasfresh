@@ -61,7 +61,7 @@ class TableFilter extends Component {
                     onMouseEnter={this.toggleTooltip}
                     onMouseLeave={this.toggleTooltip}
                 >
-                    {fullScreen ? <i className="meta-icon-fullscreen"/> : <i className="meta-icon-fullscreen"/>}
+                    {fullScreen ? <i className="meta-icon-collapse"/> : <i className="meta-icon-fullscreen"/>}
 
                     {isTooltipShow && <Tooltips
                         name={fullScreen ? "Expand" : "Collapse"}
