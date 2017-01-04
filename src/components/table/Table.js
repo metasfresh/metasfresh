@@ -442,7 +442,9 @@ class Table extends Component {
 
     handleOpenNewTab = (selected) => {
         const {type} = this.props;
-        window.open("/window/" + type + "/" + selected[0], "_blank");
+        for(let i = 0; i < selected.length; i++){
+            window.open("/window/" + type + "/" + selected[i], "_blank");
+        }
     }
 
     handleDelete = () => {
