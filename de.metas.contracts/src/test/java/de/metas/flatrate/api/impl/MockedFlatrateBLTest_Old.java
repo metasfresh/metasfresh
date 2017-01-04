@@ -436,6 +436,7 @@ public class MockedFlatrateBLTest_Old
 		{
 			{
 				dataEntry.getQty_Reported();
+				minTimes = 0;
 				result = qtyReported;
 			}
 		};
@@ -477,24 +478,31 @@ public class MockedFlatrateBLTest_Old
 		new Expectations()
 		{{
 				dataEntry.getC_Flatrate_Term();
+				minTimes = 0;
 				result = term;
 
 				term.getC_UOM_ID();
+				minTimes = 0;
 				result = C_UOM_TERM_ID;
 
 				term.getC_Flatrate_Conditions();
+				minTimes = 0;
 				result = conditions;
 
 				conditions.getType_Flatrate();
+				minTimes = 0;
 				result = X_C_Flatrate_Conditions.TYPE_FLATRATE_Korridor;
 
 				conditions.getM_Product_Flatrate();
+				minTimes = 0;
 				result = flatrateProduct;
 
 				term.getC_Currency();
+				minTimes = 0;
 				result = currency;
 
 				currency.getC_Currency_ID();
+				minTimes = 0;
 				result = 5;
 		}};
 	}
@@ -523,22 +531,26 @@ public class MockedFlatrateBLTest_Old
 	{
 		new Expectations(flatrateBL)
 		{{
-				term.getPlannedQtyPerUnit();	result = new BigDecimal("5");
+				term.getPlannedQtyPerUnit();	minTimes = 0; result = new BigDecimal("5");
 
-				conditions.getMargin_Max(); 	result = new BigDecimal("5");
+				conditions.getMargin_Max(); 	minTimes = 0; result = new BigDecimal("5");
 
-				conditions.getMargin_Min();	    result = new BigDecimal("5");
+				conditions.getMargin_Min();	    minTimes = 0; result = new BigDecimal("5");
 
 				conditions.getType_Clearing();
+				minTimes = 0; 
 				result = X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung;
 
 				conditions.getClearingAmtBaseOn();
+				minTimes = 0; 
 				result = X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis;
 
 				flatrateBL.getFlatFeePricePerUnit(term, new BigDecimal("23"), dataEntry);
+				minTimes = 0; 
 				result = new BigDecimal("2");
 
 				flatrateBL.getFlatFeePricePerUnit(term, new BigDecimal("23"), dataEntry);
+				minTimes = 0; 
 				result = new BigDecimal("2");
 		}};
 	}
@@ -549,23 +561,28 @@ public class MockedFlatrateBLTest_Old
 		{{
 				term.getPlannedQtyPerUnit();	result = new BigDecimal("5");
 
-				conditions.getMargin_Max();	    result = new BigDecimal("5");
+				conditions.getMargin_Max();	    minTimes = 0;  result = new BigDecimal("5");
 
-				conditions.getMargin_Min();	    result = new BigDecimal("5");
+				conditions.getMargin_Min();	    minTimes = 0;  result = new BigDecimal("5");
 
 				conditions.getType_Clearing();
+				minTimes = 0; 
 				result = X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung;
 
 				conditions.getClearingAmtBaseOn();
+				minTimes = 0; 
 				result = X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis;
 
 				dataEntry.getQty_Reported();
+				minTimes = 0; 
 				result = BigDecimal.ZERO;
 
 				dataEntry.getActualQty();
+				minTimes = 0; 
 				result = BigDecimal.ZERO;
 
 				flatrateBL.getFlatFeePricePerUnit(term, BigDecimal.ONE, dataEntry);
+				minTimes = 0; 
 				result = new BigDecimal("2");
 //
 //				flatrateBL.getFlatFeePricePerUnit(term, BigDecimal.ONE, dataEntry);

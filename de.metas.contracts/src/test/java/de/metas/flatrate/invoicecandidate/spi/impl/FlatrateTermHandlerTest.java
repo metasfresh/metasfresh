@@ -277,9 +277,9 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		// @formatter:off
 		new Expectations()
 		{{
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product1); result = activity;
+				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product1); minTimes = 0; result = activity;
 
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product1)); result = null;
+				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product1)); minTimes = 0; result = null;
 
 				final Properties ctx = Env.getCtx();
 				final String trxName = ITrx.TRXNAME_None;
@@ -302,6 +302,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, -1 // ship location ID
 						, isSOTrx
 						, trxName);
+				minTimes = 0;
 				result = 3;
 		}};
 		// @formatter:on

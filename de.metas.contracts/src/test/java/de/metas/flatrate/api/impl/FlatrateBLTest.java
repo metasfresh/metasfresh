@@ -197,6 +197,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		{
 			{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
+				minTimes = 0;
 				result = activity;
 
 				final Properties ctx = Env.getCtx();
@@ -220,6 +221,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						, -1 // ship location ID
 						, isSOTrx
 						, trxName);
+				minTimes = 0;
 				result = 3;
 			}
 		};
