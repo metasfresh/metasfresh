@@ -33,7 +33,10 @@ public class ProcessOLCands extends JavaProcess
 	{
 		// Display process logs only if the process failed.
 		// NOTE: we do that because this process is called from window Gear and user shall only see the status line, and no popup shall be displayed.
-		setShowProcessLogs(ShowProcessLogs.OnError);
+		
+		// gh #755 new note: this process is run manually from gear only rarely. So an (admin-) user who runs this should see what went on.
+		// particularly if there were problems (and this process would still return "OK" in that case).
+		setShowProcessLogs(ShowProcessLogs.Always);
 	}
 
 	@Override
