@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import TableQuickInput from './TableQuickInput';
 import Tooltips from '../tooltips/Tooltips';
+import keymap from '../../keymap.js';
 
 class TableFilter extends Component {
     constructor(props) {
@@ -12,10 +13,10 @@ class TableFilter extends Component {
         }
     }
 
-    toggleTooltip = () => {
+    toggleTooltip = (key = null) => {
         const {isTooltipShow} = this.state;
         this.setState(Object.assign({}, this.state, {
-            isTooltipShow: !isTooltipShow
+            isTooltipShow: key
         }));
     }
 
@@ -42,8 +43,15 @@ class TableFilter extends Component {
                         {!fullScreen && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
                             onClick={handleBatchEntryToggle}
+                            onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT)}
+                            onMouseLeave={this.toggleTooltip}
                         >
                             {isBatchEntry ? "Close batch entry" : "Batch entry"}
+                            {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT && <Tooltips
+                                name={keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT}
+                                action={isBatchEntry ? "Close batch entry" : "Batch entry"}
+                                type={''}
+                            />}
                         </button>}
                     </div>
                     {(isBatchEntry || fullScreen) &&
@@ -58,13 +66,14 @@ class TableFilter extends Component {
                 {<button
                     className="btn-icon btn-meta-outline-secondary pointer"
                     onClick={() => toggleFullScreen(!fullScreen)}
-                    onMouseEnter={this.toggleTooltip}
+                    onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_EXPAND)}
                     onMouseLeave={this.toggleTooltip}
                 >
                     {fullScreen ? <i className="meta-icon-collapse"/> : <i className="meta-icon-fullscreen"/>}
 
-                    {isTooltipShow && <Tooltips
-                        name={fullScreen ? "Expand" : "Collapse"}
+                    {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND && <Tooltips
+                        name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
+                        action={fullScreen ? "Collapse" : "Expand"}
                         type={''}
                     />}
                 </button>}
