@@ -12,14 +12,11 @@ Here come the actual release notes:
 
 # metasfresh 4.51.50 (2017-02)
 
-## Fixes
-* metasfresh
-  * #763 material receipt HU label always shown in preview
-
+upcoming
 
 # metasfresh 4.50.49 (2017-01)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
@@ -36,7 +33,8 @@ upcoming
   * #681 Automatic filling of BPartner and Location only shows value
   * #718 Wrong location in empties vendor return
   * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
-
+  * #763 material receipt HU label always shown in preview
+  
 * webui
   * #89 Adjust DocAction Names
 
