@@ -10,12 +10,18 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.50.49 (2016-52)
+# metasfresh 4.51.50 (2017-02)
 
 upcoming
 
+# metasfresh 4.50.49 (2017-01)
+
+this week's RC
+
 ## Features
 * metasfresh
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * WI that works for the concrete problem at hand
   * #653 Calculated DailyLotNo in Material Receipt Candidates
   * #714 Marginal Return report calculation add additional Costcenter
   * #742 R_Request column c_order_id autocomplete too slow
@@ -23,10 +29,12 @@ upcoming
 
 ## Fixes
 * metasfresh
+  * #757 Automatic contract extension doesn't work anymore
   * #681 Automatic filling of BPartner and Location only shows value
   * #718 Wrong location in empties vendor return
   * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
-
+  * #763 material receipt HU label always shown in preview
+  
 * webui
   * #89 Adjust DocAction Names
 
