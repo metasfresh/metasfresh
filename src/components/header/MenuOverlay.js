@@ -232,7 +232,7 @@ class MenuOverlay extends Component {
         const {queriedResults, deepNode, deepSubNode, subPath} = this.state;
         const {dispatch, nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
-
+        
         return (
             <div className="menu-overlay menu-overlay-primary">
                 <div className="menu-overlay-body breadcrumbs-shadow">
@@ -292,7 +292,7 @@ class MenuOverlay extends Component {
 
                         </div>
                     }
-                    {index === 0 && siteName !== "Sitemap" &&
+                    {nodeId == '0' && siteName !== "Sitemap" &&
                         <div className="text-xs-right">
                             <span className="menu-overlay-link tree-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
                         </div>
