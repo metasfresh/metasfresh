@@ -34,9 +34,9 @@ public class MockedTrxManager extends PlainTrxManager
 	private final List<ITrx> removedTransactions = new ArrayList<ITrx>();
 
 	@Override
-	protected ITrx createTrx(String trxName)
+	protected ITrx createTrx(String trxName, final boolean autoCommit)
 	{
-		return new MockedTrx(this, trxName);
+		return new MockedTrx(this, trxName, autoCommit);
 	}
 
 	@Override

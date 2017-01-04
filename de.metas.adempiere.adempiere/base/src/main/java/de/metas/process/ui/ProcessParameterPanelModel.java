@@ -24,6 +24,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -274,7 +275,7 @@ public class ProcessParameterPanelModel
 			final String parameterName = gridField.getColumnName();
 			try
 			{
-				defaultValue = defaultsProvider.getParameterDefaultValue(parameterName);
+				defaultValue = defaultsProvider.getParameterDefaultValue(gridField);
 			}
 			catch (final Exception e)
 			{
@@ -282,7 +283,7 @@ public class ProcessParameterPanelModel
 				log.error("Failed retrieving the parameters default value from defaults provider: ParameterName={}, Provider={}", parameterName, defaultsProvider, e);
 			}
 		}
-
+		
 		if (defaultValue == null)
 		{
 			defaultValue = gridField.getDefault();
@@ -427,7 +428,7 @@ public class ProcessParameterPanelModel
 				log.debug(changedColumnName + " changed - " + gridField.getColumnName() + " set to null");
 
 				// Invalidate current selection
-				// gridField.validateValue();
+				//gridField.validateValue();
 				setFieldValue(gridField, null);
 				// FIXME instead of reseting the value it would be better to reset only if the value is not valid anymore
 			}
@@ -452,8 +453,8 @@ public class ProcessParameterPanelModel
 			if (gridFieldTo != null && !gridFieldTo.validateValue())
 			{
 				missingMandatoryFields.add(gridField.getHeader());
-			}    // range field
-		}    // field loop
+			}   // range field
+		}   // field loop
 
 		if (!missingMandatoryFields.isEmpty())
 		{
@@ -470,13 +471,13 @@ public class ProcessParameterPanelModel
 		for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)
 		{
 			final ProcessInfoParameter param = createProcessInfoParameter(fieldIndex);
-			if (param == null)
+			if(param == null)
 			{
 				continue;
 			}
 			params.add(param);
-		} 	// for every parameter
-
+		}	// for every parameter
+		
 		return params;
 	}
 
@@ -509,14 +510,14 @@ public class ProcessParameterPanelModel
 		//
 		// FIXME: legacy: convert Boolean to String because some of the JavaProcess implementations are checking boolean parametes as:
 		// boolean value = "Y".equals(ProcessInfoParameter.getParameter());
-		if (value instanceof Boolean)
+		if(value instanceof Boolean)
 		{
 			value = DisplayType.toBooleanString((Boolean)value);
-		}
-		if (valueTo instanceof Boolean)
+			}
+		if(valueTo instanceof Boolean)
 		{
 			valueTo = DisplayType.toBooleanString((Boolean)valueTo);
-		}
+			}
 
 		return new ProcessInfoParameter(columnName, value, valueTo, displayValue, displayValueTo);
 	}

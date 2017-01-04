@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-04T17:45:03 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_page_header" pageWidth="534" pageHeight="842" columnWidth="534" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="4e4f8514-dfb8-46f4-ad68-0bc3b6a5415c">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -17,11 +19,11 @@
 	COALESCE( dtt.PrintName, dt.PrintName ) AS Printname
 FROM
 	C_Invoice i
-	LEFT OUTER JOIN C_DocType dt ON i.C_DocTypeTarget_ID = dt.C_DocType_ID
-	LEFT OUTER JOIN C_DocType_trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID
+	LEFT OUTER JOIN C_DocType dt ON i.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.isActive = 'Y'
 		AND dtt.AD_Language = $P{ad_language}
 WHERE
-	i.C_Invoice_ID = $P{RECORD_ID}
+	i.C_Invoice_ID = $P{RECORD_ID} AND i.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="documentno" class="java.lang.String"/>
@@ -33,7 +35,7 @@ WHERE
 	<title>
 		<band height="23" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="22714c45-8b08-4e22-8709-ca45e774a269" key="textField-1" x="464" y="0" width="63" height="11" forecolor="#000000"/>
+				<reportElement key="textField-1" x="464" y="0" width="63" height="11" forecolor="#000000" uuid="22714c45-8b08-4e22-8709-ca45e774a269"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -46,7 +48,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement uuid="4d25504c-873e-4c89-bc6e-c9cdc2281305" key="textField-3" x="464" y="11" width="63" height="11"/>
+				<reportElement key="textField-3" x="464" y="11" width="63" height="11" uuid="4d25504c-873e-4c89-bc6e-c9cdc2281305"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -59,7 +61,7 @@ WHERE
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="19aa8065-9e9d-490b-b023-5b886b35ce4f" key="textField-5" x="332" y="11" width="133" height="11"/>
+				<reportElement key="textField-5" x="332" y="11" width="133" height="11" uuid="19aa8065-9e9d-490b-b023-5b886b35ce4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -72,7 +74,7 @@ WHERE
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="a7b9592e-e6a7-45e9-baed-8d4a82d65100" key="textField-6" x="332" y="0" width="133" height="11" forecolor="#000000"/>
+				<reportElement key="textField-6" x="332" y="0" width="133" height="11" forecolor="#000000" uuid="a7b9592e-e6a7-45e9-baed-8d4a82d65100"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

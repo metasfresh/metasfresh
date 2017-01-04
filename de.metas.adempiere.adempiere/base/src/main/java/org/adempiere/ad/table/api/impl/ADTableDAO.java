@@ -10,14 +10,14 @@ package org.adempiere.ad.table.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.MTable;
@@ -58,7 +59,7 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public I_AD_Column retrieveColumnOrNull(final String tableName, final String columnName)
 	{
-		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName);
+		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_AD_Column.class);
@@ -67,17 +68,23 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public boolean hasColumnName(final String tableName, final String columnName)
 	{
-		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName);
+		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
 				.match();
 	}
 
-	private IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName, final String columnName)
+	@Override
+	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName,
+			final String columnName,
+			final String trxName)
 	{
+		final String trxNametoUse = trxName == null ? ITrx.TRXNAME_None : trxName;
+
 		//
 		// Create queryBuilder with default context (not needed for tables)
-		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class, Env.getCtx(), ITrx.TRXNAME_None);
+		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Column.class, Env.getCtx(), trxNametoUse);
 
 		//
 		// Filter by tableName
@@ -204,5 +211,26 @@ public class ADTableDAO implements IADTableDAO
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(table);
 		Services.get(ISequenceDAO.class).renameTableSequence(ctx, tableNameOld, tableNameNew);
+	}
+
+	@Override
+	public I_AD_Element retrieveElement(final String columnName)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_AD_Element element = queryBL.createQueryBuilder(I_AD_Element.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Element.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnly(I_AD_Element.class);
+		return element;
+	}
+
+	@Override
+	public I_AD_Table retrieveTable(final String tableName)
+	{
+		@SuppressWarnings("deprecation")
+		final int tableID = MTable.getTable_ID(tableName);
+		return InterfaceWrapperHelper.create(Env.getCtx(), tableID, I_AD_Table.class, ITrx.TRXNAME_None);
 	}
 }

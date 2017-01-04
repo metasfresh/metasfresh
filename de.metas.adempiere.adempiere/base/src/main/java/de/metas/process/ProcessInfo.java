@@ -490,7 +490,7 @@ public final class ProcessInfo implements Serializable
 			// no whereClause: return a "neutral" filter that does not exclude anything
 			return ConstantQueryFilter.of(true);
 		}
-		return new TypedSqlQueryFilter<T>(whereClause);
+		return new TypedSqlQueryFilter<>(whereClause);
 	}
 
 	/**
@@ -500,7 +500,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return this.reportLanguage;
 	}
-	
+
 	/**
 	 * @return AD_Language used to reports; could BE <code>null</code>
 	 */
@@ -544,7 +544,7 @@ public final class ProcessInfo implements Serializable
 		private boolean createTemporaryCtx = false;
 		/**
 		 * Window context variables to copy when {@link #createTemporaryCtx}
-		 * 
+		 *
 		 * NOTE to developer: before changing and mainly removing some context variables from this list,
 		 * please do a text search and check the code which is actually relying on this list.
 		 */
@@ -664,7 +664,7 @@ public final class ProcessInfo implements Serializable
 			// Date
 			final Timestamp date = SystemTime.asDayTimestamp();
 			Env.setContext(processCtx, Env.CTXNAME_Date, date);
-			
+
 			//
 			// Copy relevant properties from window context
 			final int windowNo = getWindowNo();
@@ -678,11 +678,11 @@ public final class ProcessInfo implements Serializable
 					{
 						continue;
 					}
-					
+
 					Env.setContext(processCtx, windowNo, windowCtxName, value);
 				}
 			}
-			
+
 
 			return processCtx;
 		}
@@ -857,7 +857,7 @@ public final class ProcessInfo implements Serializable
 			{
 				throw new AdempiereException("@NotFound@ @AD_Process_ID@ (@Classname@: " + processClassname + ")");
 			}
-			
+
 			setAD_Process_ID(adProcessId);
 			return this;
 		}
@@ -984,7 +984,7 @@ public final class ProcessInfo implements Serializable
 
 		/**
 		 * Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-		 * 
+		 *
 		 * @return
 		 */
 		public ProcessInfoBuilder setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
@@ -1077,7 +1077,7 @@ public final class ProcessInfo implements Serializable
 
 			return 0;
 		}
-		
+
 		private TableRecordReference getRecordOrNull()
 		{
 			final int adTableId = getAD_Table_ID();
@@ -1085,19 +1085,19 @@ public final class ProcessInfo implements Serializable
 			{
 				return null;
 			}
-			
+
 			final int recordId = getRecord_ID();
 			if(recordId <= 0)
 			{
 				return null;
 			}
-			
+
 			return TableRecordReference.of(adTableId, recordId);
 		}
 
 		/**
 		 * Sets language to be used in reports.
-		 * 
+		 *
 		 * @param reportLanguage optional report language
 		 */
 		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
@@ -1108,7 +1108,7 @@ public final class ProcessInfo implements Serializable
 
 		/**
 		 * Sets language to be used in reports.
-		 * 
+		 *
 		 * @param adLanguage optional report language
 		 */
 		public ProcessInfoBuilder setReportLanguage(final String adLanguage)
@@ -1136,7 +1136,7 @@ public final class ProcessInfo implements Serializable
 			{
 				return reportLanguage;
 			}
-			
+
 			//
 			// Load language from AD_PInstance, if any
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
@@ -1155,7 +1155,7 @@ public final class ProcessInfo implements Serializable
 			{
 				return findReportingLanguage();
 			}
-			
+
 			//
 			// Fallback: no reporting language
 			return null;
@@ -1307,7 +1307,7 @@ public final class ProcessInfo implements Serializable
 
 			return this;
 		}
-	
+
 		/**
 		 * Extracts reporting language.
 		 * @param pi
@@ -1318,7 +1318,7 @@ public final class ProcessInfo implements Serializable
 			final Properties ctx = getCtx();
 			final int windowNo = getWindowNo();
 			final boolean runningFromRegularWindow = Env.isRegularWindowNo(windowNo);
-			
+
 			//
 			// Get status of the InOut Document, if any, to have de_CH in case that document in DR or IP (03614)
 			if (runningFromRegularWindow)
@@ -1428,7 +1428,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final Properties ctx = getCtx();
-			final Object document = recordRef.getModel(PlainContextAware.createUsingThreadInheritedTransaction(ctx));
+			final Object document = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(ctx));
 			if(document == null)
 			{
 				return null;
@@ -1467,5 +1467,5 @@ public final class ProcessInfo implements Serializable
 			return Language.getLanguage(languageString);
 		}
 	} // ProcessInfoBuilder
-	
+
 }   // ProcessInfo

@@ -31,10 +31,10 @@
 	END AS postal
 FROM
 	ad_org o 		   
-	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id
-	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id
+	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id AND oi.isActive = 'Y'
+	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id AND l.isActive = 'Y'
 WHERE
-	o.ad_org_id = $P{AD_Org_ID}
+	o.ad_org_id = $P{AD_Org_ID} AND o.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="orgname" class="java.lang.String"/>

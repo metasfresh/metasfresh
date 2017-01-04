@@ -4,9 +4,11 @@
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ * Returns the URL of the deployed downstream artifact.
+ *
  * TODO: move it into a shared library
  */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
+def String invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -46,13 +48,23 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 	// Jenkins.instance.getAllItems()
 	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
 	
-	build job: jobName, 
+	final buildResult = build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
-			string(name: 'MF_METASFRESH_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
+			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
+	;
+	
+	final buildDescription = buildResult.getDescription();
+	echo "buildDescription=${buildDescription}";
+	
+	final matcher = buildDescription =~ '.*href=\"(.+)\".*';
+	final artifactURL = matcher[0][1];
+	echo "artifactURL=${artifactURL}";
+	
+	return artifactURL;
 }
 
 def boolean isRepoExists(String repoId)
@@ -107,8 +119,8 @@ def createRepo(String repoId)
     <repositories>
 	  <!-- include mvn-public that contains everything we need to perform the build-->
       <repo-group-member>
-        <name>mvn-public-new</name>
-        <id>mvn-public-new</id>
+        <name>mvn-public</name>
+        <id>mvn-public</id>
         <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
       </repo-group-member>
 	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
@@ -193,31 +205,6 @@ def deleteRepo(String repoId)
 final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
 echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
 
-// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
-properties([
-	parameters([
-		string(defaultValue: '', 
-			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
-<p>
-So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
-			name: 'MF_UPSTREAM_BRANCH'),
-		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
-			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
-		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
-Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
-			name: 'MF_SKIP_DEPLOYMENT'),
-		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
-			name: 'MF_SKIP_TO_DIST'),	
-		string(defaultValue: '', 
-			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
-			name: 'MF_BUILD_ID')
-	]), 
-	pipelineTriggers([]),
-	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
-	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
-])
 
 final MF_UPSTREAM_BRANCH;
 if(params.MF_UPSTREAM_BRANCH)
@@ -230,6 +217,43 @@ else
 	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
 	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
 }
+
+// keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
+final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable' || MF_UPSTREAM_BRANCH == 'FRESH-112') ? '20' : '5'
+
+// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
+properties([
+	parameters([
+		string(defaultValue: '', 
+			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
+<p>
+So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
+<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''', 
+			name: 'MF_UPSTREAM_BRANCH'),
+		string(defaultValue: '', 
+			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_VERSION', 
+			name: 'MF_UPSTREAM_JOBNAME'),
+		string(defaultValue: '',
+			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.', 
+			name: 'MF_UPSTREAM_VERSION'),
+		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''', 
+			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
+		booleanParam(defaultValue: (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != 'stable' && env.BRANCH_NAME != 'FRESH-112'), description: '''If this is true, then there will be a deployment step at the end of this pipeline.
+Task branch builds are usually not deployed, so the pipeline can finish without waiting.''', 
+			name: 'MF_SKIP_DEPLOYMENT'),
+		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''', 
+			name: 'MF_SKIP_TO_DIST'),	
+		string(defaultValue: '', 
+			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>', 
+			name: 'MF_BUILD_ID')
+	]),
+	// disableConcurrentBuilds(), // concurrend builds proved a bit too complicated. However, if we just disable them like this, then build waiting for input will block further builds
+	pipelineTriggers([]),
+	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
+	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
+])
+
 if(params.MF_BUILD_ID)
 {
 	echo "Setting MF_BUILD_ID from params.MF_BUILD_ID=${params.MF_BUILD_ID}"
@@ -302,9 +326,11 @@ node('agent && linux')
 				// checkout our code. 
 				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
 				// we use this more complicated approach because that way we can also clean the workspace after checkout ('CleanCheckout') and we can ignore edits in ReleaseNotes, Readme etc
+				// update: commented this out for now. Maybe remove soon, because: it aparently doesn't work with "external" PRs. Also, i don't know if this solution is *really* capable of ignoring chagnes to README.md et all
+				/*
 				checkout([
 					$class: 'GitSCM', 
-					branches: [[name: "${env.BRANCH_NAME}"]], 
+					branches: [[name: "${env.BRANCH_NAME}"]],
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'PathRestriction', excludedRegions: '''ReleaseNotes\\.md
@@ -315,7 +341,11 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 					], 
 					submoduleCfg: [], 
 					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
-				])
+				]);
+				*/
+				checkout scm; // i hope this to do all the magic we need
+				sh 'git clean -d --force -x' // clean the workspace
+			
 			
 				// deploy de.metas.parent/pom.xml as it is now (still with version "1.0.0") so that other nodes can find it when they modify their own pom.xml versions
 				// doesn't work because 1.0.0 is not SNAPSHOT anymore and there is already a 1.0.0 parent pom
@@ -335,10 +365,7 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
-				
-				// collect the test results
-				junit '**/target/surefire-reports/*.xml'
-				
+							
 				} // if(params.MF_SKIP_TO_DIST)
             }
 
@@ -360,16 +387,22 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
     		    sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-				
-				// collect the test results
-				junit '**/target/surefire-reports/*.xml'
-				
+								
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 
+			if(!params.MF_SKIP_TO_DIST) 
+			{
+				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
+				junit '**/target/surefire-reports/*.xml'
+			}
+			
 		} // withMaven
 	} // configFileProvider
 } // node			
+
+// this map is populated in the "Invoke downstream jobs" stage
+final EXTERNAL_ARTIFACT_URLS = [:];
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -378,16 +411,25 @@ stage('Invoke downstream jobs')
 {
 	if(params.MF_SKIP_TO_DIST) 
 	{
-		echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+		
+		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui.. 
+		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_VERSION is set
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
+		{
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
+			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+		}
+		// TODO: also handle procurement-webui
 	}
 	else
 	{
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
-			invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		}
-	
-		invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+
+		EXTERNAL_ARTIFACT_URLS['metasfresh-procurement-webui'] = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		// more do come: admin-webui, maybe the webui-javascript frontend too
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
@@ -422,9 +464,11 @@ node('agent && linux && libc6-i386')
 				// checkout our code
 				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
 				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
+				// update: commented this out for now. Maybe remove soon, because: it aparently doesn't work with "external" PRs.
+				/*
 				checkout([
 					$class: 'GitSCM', 
-					branches: [[name: "${env.BRANCH_NAME}"]], 
+					branches: [[name: "${env.BRANCH_NAME}"]],
 					doGenerateSubmoduleConfigurations: false, 
 					extensions: [
 						[$class: 'CleanCheckout'], 
@@ -432,9 +476,12 @@ node('agent && linux && libc6-i386')
 						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
 					], 
 					submoduleCfg: [], 
-					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
-				])
-		
+					userRemoteConfigs: [[credentialsId: 'github_metas-dev' , url: 'https://github.com/metasfresh/metasfresh.git']]
+				]);
+				*/
+				checkout scm; // i hope this to do all the magic we need
+				sh 'git clean -d --force -x' // clean the workspace
+				
 				final String mavenUpdatePropertyParam;
 				final String mavenUpdateParentParam;
 				if(!params.MF_SKIP_TO_DIST)
@@ -474,8 +521,7 @@ node('agent && linux && libc6-i386')
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-</ul>
-${currentBuild.description}"""
+</ul>"""
 				
 			}
 		} // withMaven
@@ -488,11 +534,11 @@ ${currentBuild.description}"""
 } // node
 
 // we need this one for both "Test-SQL" and "Deployment
-def downloadForDeployment = { String groupId, String artifactId, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
+def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
 	final packagingPart=packaging ? ":${packaging}" : ""
 	final classifierPart=classifier ? ":${classifier}" : ""
-	final artifact = "${groupId}:${artifactId}:${BUILD_VERSION}${packagingPart}${classifierPart}"
+	final artifact = "${groupId}:${artifactId}:${version}${packagingPart}${classifierPart}"
 
 	// we need configFileProvider because in mvn get -DremoteRepositories=https://repo.metasfresh.com/repository/mvn-public is ignored. 
 	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom" 
@@ -506,7 +552,7 @@ def downloadForDeployment = { String groupId, String artifactId, String packagin
 			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
 		}
 	}
-	sh "scp ${WORKSPACE}/deploy/${artifactId}-${BUILD_VERSION}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${BUILD_VERSION}-${classifier}.${packaging}"
+	sh "scp ${WORKSPACE}/deploy/${artifactId}-${version}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}-${classifier}.${packaging}"
 }
 
 // we need this one for both "Test-SQL" and "Deployment
@@ -535,7 +581,7 @@ stage('Test SQL-Migration')
 			final sshTargetHost='mf15cloudit';
 			final sshTargetUser='metasfresh'
 
-			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
+			downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
 
 			final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
 			final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
@@ -598,7 +644,7 @@ stage('Deployment')
 
 				// main part: provide and rollout the "main" distributable
 				// get the deployable dist file to the target host
-				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, packaging, classifier, sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.endcustomer.mf15', distArtifactId, BUILD_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
 
 				// extract the tar.gz
 				final fileAndDirName="${distArtifactId}-${BUILD_VERSION}-${classifier}"
@@ -614,14 +660,26 @@ stage('Deployment')
 				invokeRemoteInInstallDir('./sql_remote.sh');
 				invokeRemoteInInstallDir('./minor_remote.sh');
 				invokeRemoteInInstallDir('./start_service.sh');
-
+			
 				// clean up what we just rolled out
 				invokeRemoteInHomeDir("rm -r ${deployDir}")
 				
-				// also provide the webui-api and procurement-webui; TODO actually deploy them
-				//downloadForDeployment('de.metas.ui.web', 'metasfresh-webui-api', 'jar', null, sshTargetHost, sshTargetUser);
-				//downloadForDeployment('de.metas.procurement', 'de.metas.procurement.webui', 'jar', null, sshTargetHost, sshTargetUser);
-
+				final paramWebuiApiServerArtifactURL;
+				if( EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] )
+				{
+					echo "Deploying metasfresh-webui-api from URL ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+					paramWebuiApiServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+				}
+				else
+				{
+					echo "Deploying latest metasfresh-webui-api from the ${MF_MAVEN_REPO_NAME} repository (see console to check what is really deployed)"
+					paramWebuiApiServerArtifactURL="-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=LATEST";
+				}
+				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
+				
+				echo "Building and installing the latest metasfresh-webui-frontend"
+				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh");
+				
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
 				step([$class: 'WsCleanup', cleanWhenFailure: false])
 			} // node

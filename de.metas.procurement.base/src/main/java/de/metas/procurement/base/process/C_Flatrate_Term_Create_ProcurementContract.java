@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.GridField;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
@@ -42,7 +43,7 @@ import de.metas.procurement.base.model.I_PMM_Product;
  */
 /**
  * Process used to create procurement contracts
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -53,7 +54,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 {
 	// services
 	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
-	
+
 	@Param(mandatory = true, parameterName = "C_Flatrate_Conditions_ID")
 	private I_C_Flatrate_Conditions p_C_Flatrate_Conditions;
 
@@ -110,8 +111,10 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	 * then the method returns the user set in <code>AD_SysConfig</code> {@value #SYSCONFIG_AD_USER_IN_CHARGE}.
 	 */
 	@Override
-	public Object getParameterDefaultValue(final String parameterName)
+	public Object getParameterDefaultValue(final GridField parameter)
 	{
+		final String parameterName = parameter.getColumnName();
+
 		if (!PARAM_NAME_AD_USER_IN_CHARGE_ID.equals(parameterName))
 		{
 			return DEFAULT_VALUE_NOTAVAILABLE;

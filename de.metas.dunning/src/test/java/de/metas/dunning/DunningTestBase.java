@@ -10,12 +10,12 @@ package de.metas.dunning;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -80,7 +80,7 @@ public class DunningTestBase
 	/** Watches current test and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-	
+
 	@BeforeClass
 	public static void staticInit()
 	{
@@ -96,7 +96,7 @@ public class DunningTestBase
 
 	protected I_C_Currency currencyEUR;
 	protected I_C_Currency currencyCHF;
-	protected IDunningBL dunningBL;
+	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);;
 
 	@Before
 	public final void beforeTest()
@@ -109,8 +109,6 @@ public class DunningTestBase
 
 		db = dao.getDB();
 
-		dunningBL = Services.get(IDunningBL.class);
-
 		Services.registerService(IDocumentLocationBL.class, new DummyDocumentLocationBL());
 
 		//
@@ -118,7 +116,7 @@ public class DunningTestBase
 		Services.registerService(IInvoiceBL.class, invoiceBL);
 
 		dunningUtil = (PlainDunningUtil)Services.get(IDunningUtil.class);
-		
+
 		final PlainDocActionBL docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocActionBL.PROCESSINTERCEPTOR_CompleteDirectly);
 
@@ -178,7 +176,7 @@ public class DunningTestBase
 
 	/**
 	 * Process {@link I_C_Dunning_Candidate}s and generate {@link I_C_DunningDoc}s.
-	 * 
+	 *
 	 * @param dunningContext
 	 */
 	protected void processDunningCandidates(final PlainDunningContext dunningContext)
@@ -224,7 +222,7 @@ public class DunningTestBase
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dunningDateStr dunningDate in format yyyy-MM-dd
 	 * @param dunningLevel
 	 * @return
@@ -289,7 +287,7 @@ public class DunningTestBase
 
 	/**
 	 * Live list of dunnable documents.
-	 * 
+	 *
 	 * @param context
 	 * @return
 	 */

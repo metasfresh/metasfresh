@@ -7,14 +7,15 @@ import java.util.List;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.POInfo;
 import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IDocumentBL;
-import de.metas.process.Param;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 
 /*
  * #%L
@@ -26,12 +27,12 @@ import de.metas.process.JavaProcess;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +41,7 @@ import de.metas.process.JavaProcess;
 
 /**
  * The documents (created one day before) that were marked as posted but have no fact accounts will be reposted by this process
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -48,14 +49,13 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 {
 	@Param(parameterName = "DateStart")
 	private Date p_Date;
-	final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		// this process is posting documents that were created one day before the process runs
 		final Timestamp startTime;
-		
+
 		if (p_Date != null)
 		{
 			startTime = TimeUtil.getDay(p_Date);
@@ -75,7 +75,7 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 			return "All documents are posted";
 		}
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggable();
+		final ILoggable loggable = Loggables.get();
 
 		final IPostingService postingService = Services.get(IPostingService.class);
 

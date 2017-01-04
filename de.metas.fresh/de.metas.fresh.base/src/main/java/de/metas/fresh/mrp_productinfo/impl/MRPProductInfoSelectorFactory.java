@@ -8,7 +8,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -20,6 +20,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Transaction;
 import org.compiere.util.DB;
 
 import com.google.common.collect.ImmutableMap;
@@ -67,11 +68,13 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			return null;
 		}
 
+		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactory = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+		
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_C_OrderLine.class))
 		{
 			// note: we are interested in any DocStatus, because e.g. the order might have been reactivated
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
 			final Timestamp date = getDateForOrderLine(orderLine);
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
@@ -79,7 +82,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_MovementLine.class))
 		{
 			final I_M_MovementLine movementLine = InterfaceWrapperHelper.create(model, I_M_MovementLine.class);
-			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
 			final Timestamp date = movementLine.getM_Movement().getMovementDate();
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
@@ -87,7 +90,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
 		{
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
-			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
 			final Timestamp date = inOutLine.getM_InOut().getMovementDate();
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
@@ -104,7 +107,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			{
 				return null;
 			}
-			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
 			final Timestamp date = qtyOnHand.getDateDoc();
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
@@ -112,11 +115,20 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_PMM_PurchaseCandidate.class))
 		{
 			final I_PMM_PurchaseCandidate purchaseCandidate = InterfaceWrapperHelper.create(model, I_PMM_PurchaseCandidate.class);
-			final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(model);
+			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
 			final Timestamp date = purchaseCandidate.getDatePromised();
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
 		}
+		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_Transaction.class))
+		{
+			final I_M_Transaction transaction = InterfaceWrapperHelper.create(model, I_M_Transaction.class);
+			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
+
+			final Timestamp date = transaction.getMovementDate();
+			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model);
+		}
+		
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_X_MRP_ProductInfo_Detail_MV.class))
 		{
 			I_X_MRP_ProductInfo_Detail_MV detail = InterfaceWrapperHelper.create(model, I_X_MRP_ProductInfo_Detail_MV.class);
@@ -165,7 +177,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		final int productID = params.getParameterAsInt(productParamKey);
 		if (productID <= 0)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", productParamKey, model, params);
+			Loggables.get().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", productParamKey, model, params);
 			return createOrNull(model);
 		}
 
@@ -173,7 +185,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		final int asiID = params.getParameterAsInt(attributeSetInstanceParamKey);
 		if (asiID < 0) // might be 0
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", attributeSetInstanceParamKey, model, params);
+			Loggables.get().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", attributeSetInstanceParamKey, model, params);
 			return createOrNull(model);
 		}
 
@@ -181,7 +193,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		final Timestamp date = params.getParameterAsTimestamp(dateParamKey);
 		if (date == null)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", dateParamKey, model, params);
+			Loggables.get().addLog("Missing param with name={}; model={}; params={}; falling back to the model's *current* values", dateParamKey, model, params);
 			return createOrNull(model);
 		}
 
