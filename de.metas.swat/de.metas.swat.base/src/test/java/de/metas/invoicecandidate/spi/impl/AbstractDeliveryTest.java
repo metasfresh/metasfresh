@@ -118,6 +118,7 @@ public abstract class AbstractDeliveryTest
 		new Expectations()
 		{{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
+				minTimes = 0;
 				result = activity;
 
 				taxBL.getTax(
@@ -134,6 +135,7 @@ public abstract class AbstractDeliveryTest
 						, order.getC_BPartner_Location_ID()
 						, order.isSOTrx()
 						, trxName);
+				minTimes = 0;
 				result = 3;
 		}};
 	}

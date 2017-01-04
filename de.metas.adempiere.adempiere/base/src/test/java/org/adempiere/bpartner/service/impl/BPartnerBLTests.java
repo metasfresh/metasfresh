@@ -109,6 +109,7 @@ public class BPartnerBLTests
 		new Expectations()
 		{{
 				partner.isAllowConsolidateInOut();
+				minTimes = 0;
 				result = partnerAllowsConsolidateInOut;
 		}};
 		// @formatter:on
@@ -120,6 +121,7 @@ public class BPartnerBLTests
 		new Expectations()
 		{{
 				sysConfigBL.getBooleanValue(BPartnerBL.SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override, false);
+				minTimes = 0;
 				result = sysConfigReturnsTrue;
 		}};
 		// @formatter:on

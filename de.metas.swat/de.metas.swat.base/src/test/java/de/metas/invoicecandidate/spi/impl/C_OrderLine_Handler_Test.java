@@ -164,9 +164,11 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		new Expectations()
 		{{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
+				minTimes = 0;
 				result = activity;
 
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product));
+				minTimes = 0;
 				result = null;
 
 				final Properties ctx = Env.getCtx();
@@ -185,6 +187,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						, order1.getC_BPartner_Location_ID()
 						, order1.isSOTrx()
 						, trxName);
+				minTimes = 0;
 				result = 3;
 		}};
 		// @formatter:on

@@ -99,8 +99,11 @@ public class CountryAreaBLTest
 		{
 			{
 				assignment.getValidFrom();
+				minTimes = 0;
 				result = validFrom;
+				
 				assignment.getValidTo();
+				minTimes = 0;
 				result = validTo;
 			}
 		};

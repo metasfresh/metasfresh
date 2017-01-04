@@ -85,7 +85,7 @@ public class InterfaceWrapperHelper_Tests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		contextProvider = new PlainContextAware(Env.getCtx());
+		contextProvider = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 	}
 
 	/**
@@ -168,8 +168,11 @@ public class InterfaceWrapperHelper_Tests
 		new Expectations()
 		{{
 			gridTab.getTableName();
+			minTimes = 0;
 			result = I_TestModel.Table_Name;
+			
 			gridTab.get_TableName();
+			minTimes = 0;
 			result = I_TestModel.Table_Name;
 		}};
 		// @formatter:on
@@ -185,6 +188,7 @@ public class InterfaceWrapperHelper_Tests
 		new Expectations()
 		{{
 			po.get_TableName();
+			minTimes = 0;
 			result = I_TestModel.Table_Name;
 		}};
 		// @formatter:on
