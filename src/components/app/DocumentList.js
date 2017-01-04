@@ -259,6 +259,7 @@ class DocumentList extends Component {
                             updateDocList={this.updateData}
                             sort={this.sortData}
                             orderBy={data.orderBy}
+                            tabIndex={0}
                         />
                     </div>
                 </div>
