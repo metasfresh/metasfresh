@@ -58,7 +58,8 @@ class RawWidget extends Component {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId
+            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId, isDocStatusOpen,
+            handleDocStatusToggle
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -484,6 +485,8 @@ class RawWidget extends Component {
                         dataId={dataId}
                         onChange={(option) => handlePatch(fields[1].field, option)}
                         tabIndex={tabIndex}
+                        isDocStatusOpen={isDocStatusOpen}
+                        handleDocStatusToggle={handleDocStatusToggle}
                     />
                 )
             case "ProductAttributes":

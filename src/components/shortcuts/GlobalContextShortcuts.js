@@ -10,7 +10,7 @@ class GlobalContextShortcuts extends Component {
         const { 
           handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal, 
           handlePrint, handleDelete, handleSideListToggle, handleInboxOpen, 
-          closeInbox, redirect 
+          closeInbox, redirect, handleDocStatusToggle 
         } = this.props;
         switch (action) {
             case 'OPEN_ACTIONS_MENU':
@@ -60,6 +60,10 @@ class GlobalContextShortcuts extends Component {
                 if (redirect) {
                     redirect();
                 }
+                break
+            case 'DOC_STATUS':
+                event.preventDefault();
+                handleDocStatusToggle();
                 break
         }
     }

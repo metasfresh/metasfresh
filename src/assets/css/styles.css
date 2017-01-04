@@ -599,6 +599,10 @@ body {
     outline-width: 0;
 }
 
+.dropdown-status-toggler.dropdown-status-open {
+    background-color: #eef2f7;
+}
+
 .dropdown-status-toggler.dropdown-status-open .dropdown-status-list {
     display: block;
 }
@@ -613,6 +617,7 @@ body {
     background-color: inherit;
     min-width: 100%;
     width: auto;
+    z-index: 201;
 }
 
 .dropdown-status-item {

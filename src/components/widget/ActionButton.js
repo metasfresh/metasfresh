@@ -16,6 +16,18 @@ class ActionButton extends Component {
         }
     }
 
+    componentDidUpdate() {
+        const {isDocStatusOpen} = this.props;
+
+        if(isDocStatusOpen){
+            this.handleDropdownFocus();
+            this.statusDropdown.focus();
+        } else {
+            this.handleDropdownBlur();
+            this.statusDropdown.blur();
+        }
+    }
+
     handleKeyDown = (e) => {
         const {list, selected} = this.state;
         switch(e.key){
@@ -112,17 +124,17 @@ class ActionButton extends Component {
     }
 
     render() {
-        const {data} = this.props;
+        const {data, isDocStatusOpen, handleDocStatusToggle} = this.props;
         const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
         const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
                 className="meta-dropdown-toggle dropdown-status-toggler"
                 tabIndex="0"
                 ref={(c) => this.statusDropdown = c}
-                onBlur={this.handleDropdownBlur}
-                onFocus={this.handleDropdownFocus}
+                onMouseDown={handleDocStatusToggle}
             >
                 <div className={"tag tag-" + this.getStatusContext(abrev)}>{value} </div>
                 <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(abrev)} />

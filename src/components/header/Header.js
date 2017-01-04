@@ -31,7 +31,7 @@ import {
 
 
 import keymap from '../../keymap.js';
-import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
+import GlobalContextShortcuts from '../shortcuts/GlobalContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -46,6 +46,7 @@ class Header extends Component {
             menuOverlay: null,
             scrolled: false,
             isInboxOpen: false,
+            isDocStatusOpen: false,
             tooltip: {
                 open: ''
             },
@@ -230,6 +231,12 @@ class Header extends Component {
         );
     }
 
+    handleDocStatusToggle = () => {
+        this.setState(Object.assign({}, this.state, {
+            isDocStatusOpen: !this.state.isDocStatusOpen
+        }));
+    }
+
     redirect = (where) => {
         const {dispatch} = this.props;
         dispatch(push(where));
@@ -244,7 +251,8 @@ class Header extends Component {
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, isMenuOverlayShow, tooltip, prompt
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, 
+            isMenuOverlayShow, tooltip, prompt, handleDocStatusToggle, isDocStatusOpen
         } = this.state;
 
         return (
@@ -304,17 +312,30 @@ class Header extends Component {
                             <div className="header-center">
                                 <img src={logo} className="header-logo pointer" onClick={() => this.handleDashboardLink()} />
                             </div>
-                            <div className="header-right-side">
+                            <div className="header-right-side"
+                                onClick={(e) => this.toggleTooltip('')}
+                                onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.DOC_STATUS)}
+                                onMouseLeave={(e) => this.toggleTooltip('')}
+                            >
                                 {docStatus &&
-                                    <div className="hidden-sm-down">
+                                    <div className="hidden-sm-down tooltip-parent">
                                         <MasterWidget
                                             windowType={windowType}
                                             dataId={dataId}
                                             widgetData={[docStatusData]}
                                             noLabel={true}
                                             type="primary"
+                                            isDocStatusOpen={isDocStatusOpen}
+                                            handleDocStatusToggle={this.handleDocStatusToggle}
                                             {...docStatus}
                                         />
+                                        { tooltip.open === keymap.GLOBAL_CONTEXT.DOC_STATUS &&
+                                            <Tooltips
+                                                name={keymap.GLOBAL_CONTEXT.DOC_STATUS}
+                                                action={'Doc status'}
+                                                type={''}
+                                            />
+                                        }
                                     </div>
                                 }
 
@@ -394,7 +415,7 @@ class Header extends Component {
                     open={isSideListShow}
                 />}
 
-                <GlobalShortcuts
+                <GlobalContextShortcuts
                     handleSubheaderOpen={isSubheaderShow ? () => this.handleBackdropClick() : () => this.handleSubheaderOpen()}
                     handleMenuOverlay={isMenuOverlayShow ? () => this.handleMenuOverlay("", "") : () => this.handleMenuOverlay("", homemenu.nodeId)}
                     closeMenuOverlay={() => this.handleMenuOverlay("", "")}
@@ -405,6 +426,7 @@ class Header extends Component {
                     handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNoData.value) : ''}
                     handleDelete={dataId ? this.handleDelete: ''}
                     redirect={windowType ? () => this.redirect('/window/'+ windowType +'/new') : ''}
+                    handleDocStatusToggle={this.handleDocStatusToggle}
                 />
             </div>
         )
