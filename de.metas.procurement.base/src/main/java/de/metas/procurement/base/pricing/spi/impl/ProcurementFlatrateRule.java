@@ -41,6 +41,8 @@ public class ProcurementFlatrateRule extends PricingRuleAdapter
 
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
+	private ThreadLocal<PMMPricingAware_C_OrderLine> pricingAwareFromApplies = new ThreadLocal<>();
+
 	/**
 	 * Returns {@code true} if the referenced oblect of the given {@code pricingCtx} is a purchase order line whose {@link PMMPricingAware_C_OrderLine} has a flatrate term.
 	 */
@@ -85,25 +87,42 @@ public class ProcurementFlatrateRule extends PricingRuleAdapter
 			return false;
 		}
 
-		return true;
+		final PMMPricingAware_C_OrderLine pricingAware = PMMPricingAware_C_OrderLine.of(ol);
+		final boolean appliesResult = Services.get(IPMMPricingBL.class).updatePriceFromContract(pricingAware);
+		if (appliesResult)
+		{
+			pricingAwareFromApplies.set(pricingAware);
+		}
+		return appliesResult;
 	}
 
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		if (!applies(pricingCtx, result))
+		final PMMPricingAware_C_OrderLine pricingAware;
+		if (pricingAwareFromApplies.get() != null)
 		{
-			return;
+			pricingAware = pricingAwareFromApplies.get();
+			pricingAwareFromApplies.set(null); // set it to null now to avoid stale references.
 		}
+		else
+		{
+			final Object referencedObject = pricingCtx.getReferencedObject();
 
-		final Object referencedObject = pricingCtx.getReferencedObject();
+			final I_C_OrderLine ol = InterfaceWrapperHelper.create(referencedObject, I_C_OrderLine.class);
+			pricingAware = PMMPricingAware_C_OrderLine.of(ol);
+			if (pricingAware.getC_Flatrate_Term() == null)
+			{
+				return;
+			}
 
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(referencedObject, I_C_OrderLine.class);
-
-		final PMMPricingAware_C_OrderLine pricingAware = PMMPricingAware_C_OrderLine.of(ol);
-
-		// update the price from procurement contract
-		Services.get(IPMMPricingBL.class).updatePriceFromContract(pricingAware);
+			// update the price from procurement contract
+			final boolean priceComputed = Services.get(IPMMPricingBL.class).updatePriceFromContract(pricingAware);
+			if (!priceComputed)
+			{
+				return;
+			}
+		}
 
 		// set details in result
 		result.setPriceStd(pricingAware.getPrice());
