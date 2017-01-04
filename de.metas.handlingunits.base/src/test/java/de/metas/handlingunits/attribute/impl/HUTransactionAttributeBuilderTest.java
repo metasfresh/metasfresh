@@ -104,12 +104,14 @@ public class HUTransactionAttributeBuilderTest extends AbstractHUTest
 			result = Collections.singletonList(attribute);
 
 			attributesFrom.retrieveTransferStrategy(attribute);
+			minTimes = 0;
 			result = transferStrategy;
 
 			attributesTo.hasAttribute(attribute);
 			result = targetHasAttribute;
 
 			transferStrategy.isTransferable(request, attribute);
+			minTimes = 0;
 			result = transferable;
 		}};
 		// @formatter:on
