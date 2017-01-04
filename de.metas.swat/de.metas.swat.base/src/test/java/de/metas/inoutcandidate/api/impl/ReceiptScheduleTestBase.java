@@ -171,7 +171,7 @@ public abstract class ReceiptScheduleTestBase
 		//@formatter:off
 		new Expectations()
 		{{
-			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); result = activity;
+			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); minTimes=0; result = activity;
 		}};
 		//@formatter:on
 		
