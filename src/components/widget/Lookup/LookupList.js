@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
-
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 class LookupList extends Component {
@@ -16,8 +15,10 @@ class LookupList extends Component {
         return (
             <div
                 key={key}
-                className={"input-dropdown-list-option " + (selected === index ? 'input-dropdown-list-option-key-on' : "") }
-                onClick={() => handleSelect(item)}
+                className={
+                    "input-dropdown-list-option " +
+                    (selected === index ? 'input-dropdown-list-option-key-on' : "") }
+                onClick={() => {handleSelect(item)}}
             >
                 <p className="input-dropdown-item-title">{name}</p>
             </div>
@@ -26,13 +27,7 @@ class LookupList extends Component {
 
     handleClickOutside = () => {
         const {onClickOutside} = this.props;
-
         onClickOutside();
-    }
-
-    renderLookup = () => {
-        const {list} = this.props;
-        return list.map((item, index) => this.getDropdownComponent(index, item) );
     }
 
     renderEmpty = () => {
@@ -47,39 +42,37 @@ class LookupList extends Component {
         )
     }
 
+    renderLoader = () => {
+        return (<div className="input-dropdown-list-header">
+            <div className="input-dropdown-list-header">
+                <ReactCSSTransitionGroup
+                    transitionName="rotate"
+                    transitionEnterTimeout={1000}
+                    transitionLeaveTimeout={1000}
+                >
+                    <div className="rotate icon-rotate">
+                        <i className="meta-icon-settings"/>
+                    </div>
+                </ReactCSSTransitionGroup>
+            </div>
+        </div>)
+    }
+
     render() {
         const {
-            loading, list, isInputEmpty
+            loading, list
         } = this.props;
 
-        if(!isInputEmpty){
-            return (
-                <div className="input-dropdown-list">
-                    {(loading && list.length === 0) && (
-                        <div className="input-dropdown-list-header">
-                            <div className="input-dropdown-list-header">
-                                <ReactCSSTransitionGroup
-                                    transitionName="rotate"
-                                    transitionEnterTimeout={1000}
-                                    transitionLeaveTimeout={1000}
-                                >
-                                    <div className="rotate icon-rotate">
-                                        <i className="meta-icon-settings"/>
-                                    </div>
-                                </ReactCSSTransitionGroup>
-                            </div>
-                        </div>
-                    )}
+        return (
+            <div className="input-dropdown-list">
+                {(loading && list.length === 0) && this.renderLoader()}
 
-                    <div ref={(c) => this.items = c}>
-                        {this.renderLookup()}
-                        {list.length === 0 && this.renderEmpty()}
-                    </div>
+                <div ref={(c) => this.items = c}>
+                    {list.map((item, index) => this.getDropdownComponent(index, item))}
+                    {list.length === 0 && this.renderEmpty()}
                 </div>
-            )
-        }else{
-            return false;
-        }
+            </div>
+        )
 
     }
 }

@@ -35,7 +35,6 @@ class RawWidget extends Component {
     }
 
     handleFocus = (e) => {
-        console.log("FOCUS")
         const {handleFocus} = this.props;
 
         this.setState(Object.assign({}, this.state, {
@@ -46,7 +45,6 @@ class RawWidget extends Component {
     }
 
     handleBlur = (widgetField, value, id) => {
-        console.log("BLUR")
         const {handlePatch} = this.props;
 
         this.setState(Object.assign({}, this.state, {

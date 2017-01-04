@@ -34,12 +34,12 @@ class Lookup extends Component {
             oldValue: '',
             isOpen: false
         }
-
     }
 
     componentDidMount() {
-        this.handleValueChanged();
         const {selected, filterWidget} = this.props;
+
+        this.handleValueChanged();
 
         if(filterWidget || selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
@@ -232,7 +232,7 @@ class Lookup extends Component {
                     list: response.data.values,
                     loading: false
                 }));
-            })
+            });
 
         }else{
             this.setState(Object.assign({}, this.state, {
@@ -295,14 +295,15 @@ class Lookup extends Component {
     }
 
     navigate = (reverse) => {
-        if(this.state.selected !== null){
-            const selectTarget = this.state.selected + (reverse ? (-1) : (1));
-            if (typeof this.state.list[selectTarget] != "undefined") {
+        const {selected, list} = this.state;
+        if(selected !== null){
+            const selectTarget = selected + (reverse ? (-1) : (1));
+            if (typeof list[selectTarget] != "undefined") {
                 this.setState(Object.assign({}, this.state, {
                     selected: selectTarget
                 }));
             }
-        }else if(typeof this.state.list[0] != "undefined"){
+        }else if(typeof list[0] != "undefined"){
             this.setState(Object.assign({}, this.state, {
                 selected: 0
             }))
@@ -313,17 +314,17 @@ class Lookup extends Component {
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
-        if(!filterWidget) {
-            if(!!defaultValue[0].value && this.inputSearch) {
-                const init = defaultValue[0].value;
-                let inputValue = init[Object.keys(init)[0]];
-                if(inputValue !== oldValue){
-                    this.inputSearch.value = inputValue
-                    this.setState(Object.assign({}, this.state, {
-                        oldValue: inputValue,
-                        isInputEmpty: false
-                    }));
-                }
+        if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
+            const init = defaultValue[0].value;
+            const inputValue = init[Object.keys(init)[0]];
+
+            if(inputValue !== oldValue){
+                this.inputSearch.value = inputValue;
+
+                this.setState(Object.assign({}, this.state, {
+                    oldValue: inputValue,
+                    isInputEmpty: false
+                }));
             }
         }
     }
@@ -335,13 +336,13 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            propertiesCopy,isInputEmpty, list, query, loading, selected, isOpen
+            propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                onClick={()=>this.inputSearch.focus()}
+                onClick={()=> this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
