@@ -67,11 +67,11 @@ class Header extends Component {
         );
     }
 
-    handleInboxOpen = (state) => {
+    handleInboxOpen = (state, callback) => {
         this.setState(
             Object.assign({}, this.state, {
                 isInboxOpen: !!state
-            })
+            }), callback
         );
     }
 
@@ -268,7 +268,7 @@ class Header extends Component {
                         <div className="header-container">
                             <div className="header-left-side">
                                 <div
-                                    onClick={e => this.handleCloseSideList(this.handleSubheaderOpen)}
+                                    onClick={e => {this.handleCloseSideList(this.handleSubheaderOpen); this.toggleTooltip('')}}
                                     onMouseEnter={(e) => this.toggleTooltip('tooltip1')}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                     className={"btn-square btn-header tooltip-parent " +
@@ -282,7 +282,7 @@ class Header extends Component {
                                     { tooltip.open === 'tooltip1' &&
                                     <Tooltips
                                         name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
-                                        action={'Open menu'}
+                                        action={'Action menu'}
                                         type={''}
                                     /> }
                                 </div>
@@ -321,7 +321,7 @@ class Header extends Component {
                                 <div className={
                                     "header-item-container header-item-container-static pointer tooltip-parent "+
                                     (isInboxOpen ? "header-item-open " : "")}
-                                    onClick={() => this.handleInboxOpen(true)}
+                                    onClick={(e) => this.handleInboxOpen(true, this.handleMenuOverlay)}
                                     onMouseEnter={(e) => this.toggleTooltip('tooltip2')}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                 >
@@ -332,7 +332,7 @@ class Header extends Component {
                                     { tooltip.open === 'tooltip2' &&
                                         <Tooltips
                                             name={keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU}
-                                            action={'Open inbox'}
+                                            action={'Inbox'}
                                             type={''}
                                         />
                                     }
@@ -353,7 +353,7 @@ class Header extends Component {
                                                 "btn-meta-default-bright btn-header-open"
                                                 : "btn-meta-primary")
                                         }
-                                        onClick={e => this.handleBackdropClick(this.handleSideListToggle)}
+                                        onClick={e => {this.handleBackdropClick(this.handleSideListToggle); this.toggleTooltip('')}}
                                         onMouseEnter={(e) => this.toggleTooltip('tooltip3')}
                                         onMouseLeave={(e) => this.toggleTooltip('')}
                                     >
@@ -361,7 +361,7 @@ class Header extends Component {
                                         { tooltip.open === 'tooltip3' &&
                                             <Tooltips
                                                 name={keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU}
-                                                action={'Open sidebar'}
+                                                action={'Side list'}
                                                 type={''}
                                             />
                                         }

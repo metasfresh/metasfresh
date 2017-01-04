@@ -12,9 +12,7 @@ class Breadcrumb extends Component {
 		super(props);
 
         this.state = {
-            tooltip: {
-                open: false
-            }
+            tooltipOpen: false
         }
 	}
 
@@ -26,9 +24,7 @@ class Breadcrumb extends Component {
     toggleTooltip = (tooltip) => {
         this.setState(
             Object.assign({}, this.state, {
-                tooltip: Object.assign({}, this.state, {
-                    open: tooltip
-                })
+                tooltipOpen: tooltip
             })
         );
     }
@@ -45,7 +41,7 @@ class Breadcrumb extends Component {
                         (!index ? "header-item-container-static ": "")
                     }
                     onClick={ !(menu && menu.children && menu.children.elementId) ?
-                        e => handleMenuOverlay(e, menu.nodeId) : (windowType ? e => this.linkToPage(windowType) : '' )
+                        e => {handleMenuOverlay(e, menu.nodeId), this.toggleTooltip(false)} : (windowType ? e => {this.linkToPage(windowType), this.toggleTooltip(false)} : e => this.toggleTooltip(false) )
                     }
                     onMouseEnter={!!index ? '' : (e) => this.toggleTooltip(true)}
                     onMouseLeave={(e) => this.toggleTooltip(false)}
@@ -73,16 +69,16 @@ class Breadcrumb extends Component {
             siteName, menuOverlay, handleMenuOverlay
         } = this.props;
 
-        const {tooltip} = this.state;
+        const {tooltipOpen} = this.state;
 
         return (
             <span className="header-breadcrumb-wrapper">
                     {
-                        tooltip.open &&
+                        tooltipOpen &&
                         <Tooltips
                             extraClass="tooltip-home-menu"
                             name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
-                            action={'Open submenu'}
+                            action={'Navigation'}
                             type={''}
                         />
                     }
