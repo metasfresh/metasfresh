@@ -277,26 +277,33 @@ body {
 }
 
 .panel-prompt {
-    width: 584px;
-    height: 347px;
+    width: 450px;
+    height: 200px;
     border: solid 0 $brand-border-color;
 }
 
 .panel-prompt-header {
     box-shadow: none;
+    padding: 0 1rem;
+    height: 50px;
+
     i {
         cursor: pointer;
     }
 }
 
 .panel-prompt-content {
-    height: calc(100% - 150px);
-    padding: 2rem;
+    height: calc(100% - 100px);
+    padding: 1.1rem;
 }
 
 .panel-prompt-footer {
     border-top: 1px solid $brand-border-color;
     border-bottom: none;
+}
+
+.panel-prompt-header-title {
+    font-size: 1.1rem;
 }
 
 .panel-prompt-footer .btn-sm {
