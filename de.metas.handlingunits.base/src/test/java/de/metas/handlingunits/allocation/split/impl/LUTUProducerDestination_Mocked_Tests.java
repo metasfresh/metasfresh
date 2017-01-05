@@ -24,9 +24,6 @@ package de.metas.handlingunits.allocation.split.impl;
 
 
 import static org.junit.Assert.assertSame;
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-import mockit.Verifications;
 
 import org.adempiere.util.Services;
 import org.junit.Test;
@@ -39,6 +36,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
 
 public class LUTUProducerDestination_Mocked_Tests
 {
@@ -80,7 +80,7 @@ public class LUTUProducerDestination_Mocked_Tests
 	public void testCreatesTransactionForLoadUnit()
 	{
 		// @formatter:off
-		new NonStrictExpectations() {{
+		new Expectations() {{
 
 			Services.get(IHUTransactionBL.class);
 			result = huTransactionBL;

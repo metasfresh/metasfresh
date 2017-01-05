@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-14T16:05:29 -->
+<!-- 2016-12-22T11:46:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -8,6 +8,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -34,6 +35,7 @@
 	<field name="isdiscountprinted" class="java.lang.String"/>
 	<field name="rate" class="java.lang.String"/>
 	<field name="isprinttax" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -367,6 +369,23 @@
 				</textElement>
 				<text><![CDATA[%]]></text>
 			</staticText>
+		</band>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean( !$F{description}.isEmpty() && $R{showdescription}.equals("Y"))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="540" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="61952ef4-35c3-48bb-86e6-57617ce0cba9"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description} + "\n"]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
