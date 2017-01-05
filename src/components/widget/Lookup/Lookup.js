@@ -237,6 +237,7 @@ class Lookup extends Component {
         }else{
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
+                query: this.inputSearch.value,
                 list: recent
             }));
         }
@@ -249,7 +250,8 @@ class Lookup extends Component {
 
         properties.map(item => {
             onChange(item.field, null);
-        })
+        });
+
         this.setState(Object.assign({}, this.state, {
             list: [],
             isInputEmpty: true,
@@ -263,7 +265,7 @@ class Lookup extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {selected, list} = this.state;
+        const {selected, list, query} = this.state;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
@@ -279,7 +281,9 @@ class Lookup extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                if(selected != null){
+                if(selected === "new"){
+                    this.handleAddNew(query);
+                }else if(selected != null){
                     this.handleSelect(list[selected]);
                 }
                 break;
@@ -295,17 +299,26 @@ class Lookup extends Component {
 
     navigate = (reverse) => {
         const {selected, list} = this.state;
-        if(selected !== null){
-            const selectTarget = selected + (reverse ? (-1) : (1));
-            if (typeof list[selectTarget] != "undefined") {
+
+        if(list.length === 0){
+            // Case of selecting row for creting new instance
+            this.setState(Object.assign({}, this.state, {
+                selected: "new"
+            }));
+        }else{
+            // Case of selecting regular list items
+            if(typeof selected === "number"){
+                const selectTarget = selected + (reverse ? (-1) : (1));
+                if (typeof list[selectTarget] != "undefined") {
+                    this.setState(Object.assign({}, this.state, {
+                        selected: selectTarget
+                    }));
+                }
+            }else if(typeof list[0] != "undefined"){
                 this.setState(Object.assign({}, this.state, {
-                    selected: selectTarget
+                    selected: 0
                 }));
             }
-        }else if(typeof list[0] != "undefined"){
-            this.setState(Object.assign({}, this.state, {
-                selected: 0
-            }))
         }
     }
 
@@ -387,16 +400,19 @@ class Lookup extends Component {
                         </div>
                     }
                 </div>
-                {isOpen && <LookupList
-                    selected={selected}
-                    list={list}
-                    loading={loading}
-                    handleSelect={this.handleSelect}
-                    isInputEmpty={isInputEmpty}
-                    onClickOutside={this.handleBlur}
-                    disableClickOutside={!isOpen}
-                    query={query}
-                />}
+                {isOpen &&
+                    <LookupList
+                        selected={selected}
+                        list={list}
+                        loading={loading}
+                        handleSelect={this.handleSelect}
+                        handleAddNew={this.handleAddNew}
+                        isInputEmpty={isInputEmpty}
+                        onClickOutside={this.handleBlur}
+                        disableClickOutside={!isOpen}
+                        query={query}
+                    />
+                }
             </div>
         )
     }
