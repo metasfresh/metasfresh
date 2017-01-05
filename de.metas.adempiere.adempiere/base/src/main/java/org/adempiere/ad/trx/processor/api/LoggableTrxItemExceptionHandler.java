@@ -21,30 +21,30 @@ public final class LoggableTrxItemExceptionHandler implements ITrxItemExceptionH
 	@Override
 	public void onNewChunkError(final Exception e, final Object item)
 	{
-		Loggables.get().addLog("Error while trying to create a new chunk for item: " + item, e);
+		Loggables.get().addLog("Error while trying to create a new chunk for item={}; exception={}", item, e);
 	}
 
 	@Override
 	public void onItemError(final Exception e, final Object item)
 	{
-		Loggables.get().addLog("Error while trying to process item: " + item, e);
+		Loggables.get().addLog("Error while trying to process item={}; exception={}", item, e);
 	}
 
 	@Override
 	public void onCompleteChunkError(final Exception e)
 	{
-		Loggables.get().addLog("Error while completing current chunk", e);
+		Loggables.get().addLog("Error while completing current chunk; exception={}", e);
 	}
 
 	@Override
 	public void onCommitChunkError(final Exception e)
 	{
-		Loggables.get().addLog("Processor failed to commit current chunk => rollback transaction", e);
+		Loggables.get().addLog("Processor failed to commit current chunk => rollback transaction; exception={}", e);
 	}
 
 	@Override
 	public void onCancelChunkError(Exception e)
 	{
-		Loggables.get().addLog("Error while cancelling current chunk. Ignored.", e);
+		Loggables.get().addLog("Error while cancelling current chunk. Ignored; exception={}", e);
 	}
 }

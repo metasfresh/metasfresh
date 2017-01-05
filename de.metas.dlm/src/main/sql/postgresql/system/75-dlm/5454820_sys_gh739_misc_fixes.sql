@@ -10,7 +10,7 @@ UPDATE AD_Process_Trl SET IsTranslated='N' WHERE AD_Process_ID=540732
 
 -- 21.12.2016 10:04
 -- URL zum Konzept
-UPDATE AD_Process SET Description='Überprüpft die aktuelle Auswahl (falls aus dem Fenster heraus gestartet, sonst alle Partitionen) und legt ihre jeweiligen SOLL DLM-Level sowie ggf. den Zeitpunkt der der nächsten Überprüfung fest.',Updated=TO_TIMESTAMP('2016-12-21 10:04:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540734
+UPDATE AD_Process SET Description='ÃœberprÃ¼pft die aktuelle Auswahl (falls aus dem Fenster heraus gestartet, sonst alle Partitionen) und legt ihre jeweiligen SOLL DLM-Level sowie ggf. den Zeitpunkt der der nÃ¤chsten ÃœberprÃ¼fung fest.',Updated=TO_TIMESTAMP('2016-12-21 10:04:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540734
 ;
 
 -- 21.12.2016 10:04
@@ -67,5 +67,5 @@ UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2016-12-21
 ;
 
 COMMIT;
-SELECT dlm.recreate_dlm_triggers('M_HU_Trx_Line');
-SELECT dlm.recreate_dlm_triggers('M_ReceiptSchedule');
+SELECT dlm.recreate_dlm_triggers(tableName) from AD_Table WHERE TableName='M_HU_Trx_Line' AND IsDLM='Y';
+SELECT dlm.recreate_dlm_triggers(tableName) from AD_Table WHERE TableName='M_ReceiptSchedule' AND IsDLM='Y';

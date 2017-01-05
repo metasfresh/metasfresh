@@ -18,4 +18,6 @@ UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2016-12-15
 UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2016-12-15 16:53:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551756
 ;
 COMMIT;
-select dlm.recreate_dlm_triggers('m_hu_assignment');
+
+
+select dlm.recreate_dlm_triggers(tableName) from AD_Table WHERE TableName='m_hu_assignment' AND IsDLM='Y';

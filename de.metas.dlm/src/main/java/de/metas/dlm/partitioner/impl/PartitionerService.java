@@ -289,7 +289,7 @@ public class PartitionerService implements IPartitionerService
 			// retrieve all the records that might also be referenced from outside the partition via the new partitioner config augment.
 			final Iterator<WorkQueue> recordReferencesForTable = loadForTable(partition, referencedTableName);
 			final CreatePartitionIterateResult iterateResult = new CreatePartitionIterateResult(recordReferencesForTable, PlainContextAware.newWithThreadInheritedTrx());
-			iterateResult.clearAfterPartitionStored(partition);
+			iterateResult.clearAfterPartitionStored(partition); // to set "partition" as the result's partition
 			return attachToPartitionAndCheck(newRequest, iterateResult);
 		}
 
@@ -470,7 +470,10 @@ public class PartitionerService implements IPartitionerService
 	@Override
 	public ITemporaryConnectionCustomizer createConnectionCustomizer()
 	{
-		final int dlmLevel = IMigratorService.DLM_Level_TEST; // don't set it to 0, because otherwise, records will vanish from the partitionerService's radar after it successfully invoked testMigratePartition
+		// needs to be "TEST, because if it was "Live", then the "testmgiration" code would not be able to select and "pull back" records from "TEST" to "LIVE" after a successfull migration.
+		// then records would accululate in "TEST" and the DLM trigger functions would fail to throw DLMExceptions as they should
+		final int dlmLevel = IMigratorService.DLM_Level_TEST;
+
 		final int dlmCoalesceLevel = IMigratorService.DLM_Level_LIVE; // records that were not yet given a DLM-Level shall be assumed to be "operational"
 		final DLMConnectionCustomizer connectionCustomizer = new DLMConnectionCustomizer(dlmLevel, dlmCoalesceLevel);
 

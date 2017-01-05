@@ -6,4 +6,4 @@ UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2016-12-09
 ;
 
 COMMIT;
-SELECT dlm.recreate_dlm_triggers('C_Order');
+SELECT dlm.recreate_dlm_triggers(tableName) from AD_Table WHERE TableName='C_Order' AND IsDLM='Y';

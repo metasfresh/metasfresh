@@ -31,7 +31,7 @@ CREATE INDEX IF NOT EXISTS m_transaction_pp_cost_collector_id
   USING btree
   (pp_cost_collector_id);  
  
-DROP INDEX ad_changelog_speed;
+DROP INDEX IF EXISTS ad_changelog_speed;
 
 CREATE INDEX IF NOT EXISTS ad_changelog_record_id_ad_table_id
   ON ad_changelog
