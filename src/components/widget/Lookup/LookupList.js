@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
-
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 class LookupList extends Component {
@@ -16,8 +15,10 @@ class LookupList extends Component {
         return (
             <div
                 key={key}
-                className={"input-dropdown-list-option " + (selected === index ? 'input-dropdown-list-option-key-on' : "") }
-                onClick={() => handleSelect(item)}
+                className={
+                    "input-dropdown-list-option " +
+                    (selected === index ? 'input-dropdown-list-option-key-on' : "") }
+                onClick={() => {handleSelect(item)}}
             >
                 <p className="input-dropdown-item-title">{name}</p>
             </div>
@@ -26,60 +27,67 @@ class LookupList extends Component {
 
     handleClickOutside = () => {
         const {onClickOutside} = this.props;
-
         onClickOutside();
     }
 
-    renderLookup = () => {
-        const {list} = this.props;
-        return list.map((item, index) => this.getDropdownComponent(index, item) );
-    }
-
-    renderEmpty = () => {
-        const {query} = this.props;
+    renderNew = () => {
+        const {query, selected, handleAddNew} = this.props;
         return (
             <div
-                className="input-dropdown-list-option input-dropdown-list-option-alt"
-                onClick={() => this.handleAddNew(query)}
+                className={
+                    "input-dropdown-list-option input-dropdown-list-option-alt "  +
+                    (selected === "new" ? 'input-dropdown-list-option-key-on' : "")
+                }
+                onClick={() => handleAddNew(query)}
             >
                 <p>New {query ? '"' + query + '"' : ""}</p>
             </div>
         )
     }
 
+    renderEmpty = () => {
+        return (
+            <div className="input-dropdown-list-header">
+                <div className="input-dropdown-list-header">
+                    No results found
+                </div>
+            </div>
+        )
+    }
+
+    renderLoader = () => {
+        return (
+            <div className="input-dropdown-list-header">
+                <div className="input-dropdown-list-header">
+                    <ReactCSSTransitionGroup
+                        transitionName="rotate"
+                        transitionEnterTimeout={1000}
+                        transitionLeaveTimeout={1000}
+                    >
+                        <div className="rotate icon-rotate">
+                            <i className="meta-icon-settings"/>
+                        </div>
+                    </ReactCSSTransitionGroup>
+                </div>
+            </div>
+        )
+    }
+
     render() {
         const {
-            loading, list, isInputEmpty
+            loading, list
         } = this.props;
 
-        if(!isInputEmpty){
-            return (
-                <div className="input-dropdown-list">
-                    {(loading && list.length === 0) && (
-                        <div className="input-dropdown-list-header">
-                            <div className="input-dropdown-list-header">
-                                <ReactCSSTransitionGroup
-                                    transitionName="rotate"
-                                    transitionEnterTimeout={1000}
-                                    transitionLeaveTimeout={1000}
-                                >
-                                    <div className="rotate icon-rotate">
-                                        <i className="meta-icon-settings"/>
-                                    </div>
-                                </ReactCSSTransitionGroup>
-                            </div>
-                        </div>
-                    )}
-
-                    <div ref={(c) => this.items = c}>
-                        {this.renderLookup()}
-                        {list.length === 0 && this.renderEmpty()}
-                    </div>
+        return (
+            <div className="input-dropdown-list">
+                {(loading && list.length === 0) && this.renderLoader()}
+                {(!loading && list.length === 0) && this.renderEmpty()}
+                <div ref={(c) => this.items = c}>
+                    {list.map((item, index) => this.getDropdownComponent(index, item))}
+                    {list.length === 0 && this.renderNew()}
                 </div>
-            )
-        }else{
-            return false;
-        }
+            </div>
+        )
 
     }
 }

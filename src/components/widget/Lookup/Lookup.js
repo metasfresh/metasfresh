@@ -34,14 +34,14 @@ class Lookup extends Component {
             oldValue: '',
             isOpen: false
         }
-
     }
 
     componentDidMount() {
-        this.handleValueChanged();
         const {selected, filterWidget} = this.props;
 
-        if(filterWidget || selected) {
+        this.handleValueChanged();
+
+        if(selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
         }else{
             this.handleClear();
@@ -94,9 +94,9 @@ class Lookup extends Component {
             } else {
                 onChange(property, select);
 
-                this.setState(update(this.state, {
+                this.setState((prevState) => update(this.state, {
                     properts: {$apply: item => {
-                        delete item[this.state.property];
+                        delete item[prevState.property];
                         return item;
                     }},
                     list: {$set: []},
@@ -232,11 +232,12 @@ class Lookup extends Component {
                     list: response.data.values,
                     loading: false
                 }));
-            })
+            });
 
         }else{
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
+                query: this.inputSearch.value,
                 list: recent
             }));
         }
@@ -249,7 +250,7 @@ class Lookup extends Component {
 
         properties.map(item => {
             onChange(item.field, null);
-        })
+        });
 
         this.setState(Object.assign({}, this.state, {
             list: [],
@@ -264,7 +265,7 @@ class Lookup extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {selected, list} = this.state;
+        const {selected, list, query} = this.state;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
@@ -280,7 +281,9 @@ class Lookup extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                if(selected != null){
+                if(selected === "new"){
+                    this.handleAddNew(query);
+                }else if(selected != null){
                     this.handleSelect(list[selected]);
                 }
                 break;
@@ -295,17 +298,27 @@ class Lookup extends Component {
     }
 
     navigate = (reverse) => {
-        if(this.state.selected !== null){
-            const selectTarget = this.state.selected + (reverse ? (-1) : (1));
-            if (typeof this.state.list[selectTarget] != "undefined") {
+        const {selected, list} = this.state;
+
+        if(list.length === 0){
+            // Case of selecting row for creting new instance
+            this.setState(Object.assign({}, this.state, {
+                selected: "new"
+            }));
+        }else{
+            // Case of selecting regular list items
+            if(typeof selected === "number"){
+                const selectTarget = selected + (reverse ? (-1) : (1));
+                if (typeof list[selectTarget] != "undefined") {
+                    this.setState(Object.assign({}, this.state, {
+                        selected: selectTarget
+                    }));
+                }
+            }else if(typeof list[0] != "undefined"){
                 this.setState(Object.assign({}, this.state, {
-                    selected: selectTarget
+                    selected: 0
                 }));
             }
-        }else if(typeof this.state.list[0] != "undefined"){
-            this.setState(Object.assign({}, this.state, {
-                selected: 0
-            }))
         }
     }
 
@@ -313,17 +326,17 @@ class Lookup extends Component {
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
-        if(!filterWidget) {
-            if(!!defaultValue[0].value && this.inputSearch) {
-                const init = defaultValue[0].value;
-                let inputValue = init[Object.keys(init)[0]];
-                if(inputValue !== oldValue){
-                    this.inputSearch.value = inputValue
-                    this.setState(Object.assign({}, this.state, {
-                        oldValue: inputValue,
-                        isInputEmpty: false
-                    }));
-                }
+        if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
+            const init = defaultValue[0].value;
+            const inputValue = init[Object.keys(init)[0]];
+
+            if(inputValue !== oldValue){
+                this.inputSearch.value = inputValue;
+
+                this.setState(Object.assign({}, this.state, {
+                    oldValue: inputValue,
+                    isInputEmpty: false
+                }));
             }
         }
     }
@@ -335,13 +348,13 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            propertiesCopy,isInputEmpty, list, query, loading, selected, isOpen
+            propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                onClick={()=>this.inputSearch.focus()}
+                onClick={()=> this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
@@ -387,16 +400,19 @@ class Lookup extends Component {
                         </div>
                     }
                 </div>
-                {isOpen && <LookupList
-                    selected={selected}
-                    list={list}
-                    loading={loading}
-                    handleSelect={this.handleSelect}
-                    isInputEmpty={isInputEmpty}
-                    onClickOutside={this.handleBlur}
-                    disableClickOutside={!isOpen}
-                    query={query}
-                />}
+                {isOpen &&
+                    <LookupList
+                        selected={selected}
+                        list={list}
+                        loading={loading}
+                        handleSelect={this.handleSelect}
+                        handleAddNew={this.handleAddNew}
+                        isInputEmpty={isInputEmpty}
+                        onClickOutside={this.handleBlur}
+                        disableClickOutside={!isOpen}
+                        query={query}
+                    />
+                }
             </div>
         )
     }

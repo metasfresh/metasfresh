@@ -422,16 +422,24 @@ class Table extends Component {
         }
     }
 
-    renderEmptyInfo = () => {
+    renderEmptyInfo = (data, tabId) => {
         const {emptyText, emptyHint} = this.props;
-        return (
-            <div className="empty-info-text">
-                <div>
-                    <h5>{emptyText}</h5>
-                    <p>{emptyHint}</p>
+
+        if(
+            (data && data[tabId] && Object.keys(data[tabId]).length === 0) ||
+            (!data[tabId])
+        ){
+            return (
+                <div className="empty-info-text">
+                    <div>
+                        <h5>{emptyText}</h5>
+                        <p>{emptyHint}</p>
+                    </div>
                 </div>
-            </div>
-        )
+            )
+        }else{
+            return false;
+        }
     }
 
     handleAdvancedEdit = (type, tabId, selected) => {
@@ -579,7 +587,7 @@ class Table extends Component {
                             />
                         </table>
 
-                        {rowData && rowData[tabid] && Object.keys(rowData[tabid]).length === 0 && this.renderEmptyInfo()}
+                        {this.renderEmptyInfo(rowData, tabid)}
                     </div>
                 </div>
                 {page && pageLength && <div className="row">
