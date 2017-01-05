@@ -153,6 +153,10 @@
     width: 25%;
     border-right: 1px solid #e1e7ec;
 }
+.subheader-column:focus {
+    border: 1px solid $brand-font-color;
+}
+
 @media (max-width: $breakpoint) {
     .subheader-container {
         top: 55px;
@@ -179,6 +183,16 @@
 }
 
 .subheader-item:not(.subheader-item-disabled):hover {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.subheader-item:focus {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.subheader-item:focus {
     background-color: $brand-color-primary;
     color: #fff;
 }

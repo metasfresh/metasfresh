@@ -31,6 +31,10 @@ class Subheader extends Component {
         const {dispatch, windowType, dataId, viewId} = this.props;
         dispatch(setActions([]));
 
+        // this.subHeader.focus();
+        // document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
+        //  document.getElementsByClassName('js-subheader-column')[0].focus();
+
         windowType && dataId && dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
             dispatch(setReferences(response.data.references));
         });
@@ -49,6 +53,75 @@ class Subheader extends Component {
         onClick();
     }
 
+    handleKeyDown = (e) => {
+
+        // document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
+
+        // let navigateList = document.getElementsByClassName('js-subheader-column')[0].childNodes;
+
+        let columnList = document.getElementsByClassName('js-subheader-column');
+        let itemList = document.getElementsByClassName('js-subheader-column')[0].childNodes;
+
+        let lastColumnActiveElement = document.getElementsByClassName('js-subheader-column')[0];
+
+
+        // console.log(columnList.length);
+
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                // console.log(this.getItemActiveElem());
+                let activeElem = this.getItemActiveElem();
+                if(document.activeElem.nextSibling) {
+                    document.activeElem.nextSibling.focus();
+                }
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                // console.log(document.activeElement.previousSibling);
+                if(document.activeElement.previousSibling) {
+                    document.activeElement.previousSibling.focus();
+                }
+                break;
+            case "ArrowLeft":
+                e.preventDefault();
+                // console.log("ArrowLeft");
+                if(document.activeElement.previousSibling) {
+                    document.activeElement.previousSibling.focus();
+                }
+                break;
+            case "ArrowRight":
+                e.preventDefault();
+                // console.log(this.getColumnActiveElem());
+                let activeCol = this.getColumnActiveElem();
+                if(activeCol.nextSibling) {
+                    activeCol.nextSibling.focus();
+                }
+                break;
+            case "Enter":
+                e.preventDefault();
+                // console.log("Enter");
+                document.activeElement.click();
+                break;
+        }
+    }
+
+    getColumnActiveElem = () => {
+        if(document.activeElement.classList.contains("js-subheader-item")) {
+            return document.activeElement.parentNode;
+        } else {
+             return document.activeElement;
+        }
+    }
+
+    getItemActiveElem = () => {
+        if(document.activeElement.classList.contains("js-subheader-column")) {
+            return document.activeElement.childNodes[0];
+        } else {
+             return document.activeElement;
+        }
+    }
+
     render() {
         const {
             windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete, redirect, handleClone
@@ -56,21 +129,26 @@ class Subheader extends Component {
         const {prompt} = this.state;
 
         return (
-            <div className={"subheader-container overlay-shadow subheader-open js-not-unselect"}>
+            <div 
+                className={"subheader-container overlay-shadow subheader-open js-not-unselect"}
+                tabIndex={0}
+                onKeyDown={this.handleKeyDown}
+                ref={(c)=> this.subHeader = c}
+            >
                 <div className="container-fluid">
                     <div className="row">
                         <div className="subheader-row">
-                            <div className=" subheader-column" >
-                                {windowType && <div className="subheader-item" onClick={()=> redirect('/window/'+ windowType +'/new')}>
+                            <div className=" subheader-column js-subheader-column" tabIndex={0}>
+                                {windowType && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}</span>
                                 </div>}
-                                {dataId && <div className="subheader-item" onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}</span></div>}
-                                {dataId && <div className="subheader-item" onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}</span></div>}
-                                {dataId && <div className="subheader-item" onClick={()=> handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
-                                {dataId && <div className="subheader-item" onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}</span></div>}
-                                <div className="subheader-item" onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
+                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}</span></div>}
+                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}</span></div>}
+                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
+                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}</span></div>}
+                                <div className="subheader-item" tabIndex={0} onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
                             </div>
-                            <div className=" subheader-column">
+                            <div className=" subheader-column js-subheader-column" tabIndex={0}>
                                 <div className="subheader-header">Actions</div>
                                 <div className="subheader-break" />
                                 { actions && !!actions.length ? actions.map((item, key) =>
@@ -83,7 +161,7 @@ class Subheader extends Component {
                                     </div>
                                 ) : <div className="subheader-item subheader-item-disabled">There is no actions</div>}
                             </div>
-                            <div className=" subheader-column">
+                            <div className=" subheader-column js-subheader-column" tabIndex={0}>
                                 <div>
                                     <div className="subheader-header">Referenced documents</div>
                                     <div className="subheader-break" />
