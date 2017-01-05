@@ -12,14 +12,22 @@ Here come the actual release notes:
 
 # metasfresh 4.51.50 (2017-02)
 
-## Fixes
+upcoming
+
+## Features
 * metasfresh
-  * #763 material receipt HU label always shown in preview
-
-
+  * #696 add multi line description per order line
+  
+## Fixes
+* metasfresh  
+  * #752 request report does not show requestes that don't have product or inout
+  * #759 Destroyed HU causes problem with shipment creation
+  * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+  * #770 When extending a procurement contract, null becomes 0.00
+  
 # metasfresh 4.50.49 (2017-01)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
@@ -36,7 +44,8 @@ upcoming
   * #681 Automatic filling of BPartner and Location only shows value
   * #718 Wrong location in empties vendor return
   * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
-
+  * #763 material receipt HU label always shown in preview
+  
 * webui
   * #89 Adjust DocAction Names
 
