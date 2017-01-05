@@ -5,15 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import RawWidget from '../RawWidget';
 
 import {
-    getAttributesLayout,
-    getAttributesInstance,
-    attributesComplete
-} from '../../../actions/AppActions';
-
-import {
-    findRowByPropName,
-    patchRequest,
-    parseToDisplay
+    findRowByPropName
 } from '../../../actions/WindowActions'
 
 class AttributesDropdown extends Component {
@@ -21,88 +13,61 @@ class AttributesDropdown extends Component {
         super(props);
 
         this.state = {
-            layout: null,
-            data: null
+            shouldPropagateClickOutside: false,
+            focused: false
         }
     }
 
-    componentDidMount() {
-        const {
-            dispatch, tmpId, docType, dataId, tabId, rowId, fieldName, attributeType
-        } = this.props;
+    componentWillReceiveProps = (props) => {
+        const {shouldPropagateClickOutside} = this.state;
 
-        dispatch(
-            getAttributesInstance(
-                attributeType, tmpId, docType, dataId, tabId, rowId, fieldName
-            )
-        ).then(response => {
-            const {id, fields} = response.data;
+        if(shouldPropagateClickOutside){
+            const {onClickOutside} = this.props;
 
-            this.setState(Object.assign({}, this.state, {
-                data: parseToDisplay(fields)
-            }));
-
-            return dispatch(getAttributesLayout(attributeType, id));
-        }).then(response => {
-            const {elements} = response.data;
-
-            this.setState(Object.assign({}, this.state, {
-                layout: elements
-            }));
-        });
+            onClickOutside();
+        }
     }
 
     handleClickOutside = () => {
-        const {toggle, dispatch, patch, attributeType} = this.props;
-        const {data} = this.state;
-        const dataId = findRowByPropName(data, "ID").value;
+        const {onClickOutside} = this.props;
+        const {focused} = this.state;
 
-        dispatch(attributesComplete(attributeType,dataId)).then(response => {
-            patch(response.data);
-        });
-        toggle(false);
+        //we need to blur all fields, to patch them before completion
+        this.dropdown.focus();
+
+        //we need to wait for fetching all of PATCH fields on blur
+        //to complete on updated instance
+        if(focused){
+            this.setState(Object.assign({}, this.state, {
+                shouldPropagateClickOutside: true
+            }))
+        }else{
+            onClickOutside();
+        }
     }
 
-    handlePatch = (prop, value, id) => {
-        const {dispatch, attributeType, docType, tabId, rowId} = this.props;
-
-        // (
-        //     entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
-        //     subentityId, isAdvanced
-        // )
-
-        dispatch(patchRequest(attributeType, null, id, null, null, prop, value)).then(response => {
-            response.data[0].fields.map(item => {
-                this.setState(Object.assign({}, this.state, {
-                    data: this.state.data.map(field => {
-                        if(field.field === item.field){
-                            return Object.assign({}, field, item);
-                        }else{
-                            return field;
-                        }
-                    })
-                }));
-            })
-        })
-    }
-
-    handleChange = (field, value) => {
-        const {data} = this.state;
-
+    handleFocus = () => {
         this.setState(Object.assign({}, this.state, {
-            data: data.map(item => {
-                if(item.field === field){
-                    return Object.assign({}, item, {
-                        value: value
-                    })
-                }else{
-                    return item;
-                }
-            })
+            focused: true
         }))
     }
 
-    renderFields = (layout, data, dataId, attributeType) => {
+    handleBlur = (prop, value, attrId) => {
+        const {handlePatch} = this.props;
+
+        handlePatch(prop, value, attrId, () => {
+            this.setState(Object.assign({}, this.state, {
+                focused: false
+            }));
+        });
+    }
+
+    renderFields = () => {
+        const {
+            tabIndex, layout, data, dataId, attributeType, handlePatch,
+            handleChange, attrId
+        } = this.props;
+
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
@@ -116,26 +81,22 @@ class AttributesDropdown extends Component {
                     key={id}
                     type={item.type}
                     caption={item.caption}
-                    handlePatch={(prop, value) => this.handlePatch(prop, value, dataId)}
-                    handleFocus={() => {}}
-                    handleChange={this.handleChange}
+                    handlePatch={(prop, value) => this.handleBlur(prop, value, attrId)}
+                    handleFocus={this.handleFocus}
+                    handleChange={handleChange}
+                    tabIndex={tabIndex}
                 />)
             })
         }
     }
 
     render() {
-        const {attributeType} = this.props;
-        const {data,layout} = this.state;
-        const dataId = findRowByPropName(data, "ID").value;
-
         return (
             <div
                 className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
-                tabIndex={0}
-                ref={c => c && c.focus()}
+                ref={c => {this.dropdown = c; c && c.focus()}}
             >
-                {this.renderFields(layout, data, dataId, attributeType)}
+                {this.renderFields()}
             </div>
         )
     }

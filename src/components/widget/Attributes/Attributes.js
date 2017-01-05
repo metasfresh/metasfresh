@@ -3,6 +3,19 @@ import { connect } from 'react-redux';
 
 import AttributesDropdown from './AttributesDropdown';
 
+
+import {
+    getAttributesLayout,
+    getAttributesInstance,
+    attributesComplete
+} from '../../../actions/AppActions';
+
+import {
+    findRowByPropName,
+    patchRequest,
+    parseToDisplay
+} from '../../../actions/WindowActions'
+
 class Attributes extends Component {
     constructor(props) {
         super(props);
@@ -14,15 +27,103 @@ class Attributes extends Component {
         }
     }
 
+    handleChange = (field, value) => {
+        const {data} = this.state;
+
+        this.setState(Object.assign({}, this.state, {
+            data: data.map(item => {
+                if(item.field === field){
+                    return Object.assign({}, item, {
+                        value: value
+                    })
+                }else{
+                    return item;
+                }
+            })
+        }))
+    }
+
+    handlePatch = (prop, value, id, cb) => {
+        const {dispatch, attributeType, docType, tabId, rowId} = this.props;
+
+        dispatch(patchRequest(attributeType, null, id, null, null, prop, value)).then(response => {
+            response.data[0].fields.map(item => {
+                this.setState(Object.assign({}, this.state, {
+                    data: this.state.data.map(field => {
+                        if(field.field === item.field){
+                            return Object.assign({}, field, item);
+                        }else{
+                            return field;
+                        }
+                    })
+                }), () => cb && cb());
+            })
+        })
+    }
+
+    handleInit = () => {
+        const {
+            dispatch, docType, dataId, tabId, rowId, fieldName, attributeType, widgetData
+        } = this.props;
+        const tmpId = Object.keys(widgetData.value)[0];
+
+        dispatch(
+            getAttributesInstance(
+                attributeType, tmpId, docType, dataId, tabId, rowId, fieldName
+            )
+        ).then(response => {
+            const {id, fields} = response.data;
+
+            this.setState(Object.assign({}, this.state, {
+                data: parseToDisplay(fields)
+            }));
+
+            return dispatch(getAttributesLayout(attributeType, id));
+        }).then(response => {
+            const {elements} = response.data;
+
+            this.setState(Object.assign({}, this.state, {
+                layout: elements
+            }));
+        });
+    }
+
     handleToggle = (option) => {
         const {handleBackdropLock} = this.props;
+
         this.setState(Object.assign({}, this.state, {
+            data: null,
+            layout: null,
             dropdown: !!option
         }), () => {
             //Method is disabling outside click in parents
             //elements if there is some
             handleBackdropLock && handleBackdropLock(!!option);
+
+            if(!!option){
+                this.handleInit();
+            }
         })
+    }
+
+    handleCompletion = () => {
+        const {attributeType, dispatch, patch} = this.props;
+        const {data} = this.state;
+        const attrId = findRowByPropName(data, "ID").value;
+
+        dispatch(attributesComplete(attributeType, attrId)).then(response => {
+            patch(response.data);
+            this.handleToggle(false);
+        });
+    }
+
+    handleKeyDown = (e) => {
+        switch(e.key){
+            case "Escape":
+                e.preventDefault();
+                this.handleCompletion();
+                break;
+        }
     }
 
     render() {
@@ -30,37 +131,45 @@ class Attributes extends Component {
             widgetData,fields, dispatch, docType, dataId, tabId, rowId, patch,
             fieldName, attributeType, tabIndex
         } = this.props;
-        const {dropdown} = this.state;
+
+        const {
+            dropdown, data, layout
+        } = this.state;
+
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
         const label = value[tmpId];
+        const attrId = findRowByPropName(data, "ID").value;
 
         return (
-            <div className={
-                "attributes " +
-                (rowId ? "attributes-in-table " : "")
-            }>
-                <div
-                    onFocus={() => this.handleToggle(!dropdown)}
-                    tabIndex={tabIndex ? tabIndex : 0}
+            <div
+                onKeyDown={this.handleKeyDown}
+                className={
+                    "attributes " +
+                    (rowId ? "attributes-in-table " : "")
+                }
+            >
+                <button
+                    tabIndex={tabIndex}
+                    onClick={() => this.handleToggle(true)}
                     className={
-                        "tag tag-lg tag-block tag-secondary pointer " +
+                        "btn btn-block tag tag-lg tag-block tag-secondary pointer " +
                         (dropdown ? "tag-disabled " : "")
                     }
                 >
                     {label ? label : "Edit attributes"}
-                </div>
+                </button>
                 {dropdown &&
                     <AttributesDropdown
                         attributeType={attributeType}
-                        tmpId={tmpId}
-                        toggle={this.handleToggle}
-                        patch={patch}
-                        docType={docType}
                         dataId={dataId}
-                        rowId={rowId}
-                        tabId={tabId}
-                        fieldName={fieldName}
+                        tabIndex={tabIndex}
+                        onClickOutside={this.handleCompletion}
+                        data={data}
+                        layout={layout}
+                        handlePatch={this.handlePatch}
+                        handleChange={this.handleChange}
+                        attrId={attrId}
                     />
                 }
             </div>

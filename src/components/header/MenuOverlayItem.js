@@ -50,6 +50,8 @@ class MenuOverlayItem extends Component {
             printChildren
         } = this.props;
 
+        console.log(children)
+
         return (
             <span
                 className={
