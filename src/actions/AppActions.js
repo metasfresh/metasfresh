@@ -99,16 +99,18 @@ export function getUserDashboardIndicators() {
 }
 
 export function viewLayoutRequest(windowType, type){
-	return () => axios.get(config.API_URL + '/documentView/layout?type=' + windowType + '&viewType=' + type);
+	return () => axios.get(config.API_URL + '/documentView/' + windowType + '/layout?viewType=' + type);
 }
 
-export function browseViewRequest(viewId, page, pageLength, orderBy){
-	return () => axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + pageLength * (page - 1) + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
+export function browseViewRequest(viewId, page, pageLength, orderBy, windowType){
+	return () => axios.get(
+        config.API_URL + '/documentView/' + windowType +
+        '/' + viewId + '?firstRow=' + pageLength * (page - 1) +
+        '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
-    // TODO: waiting for unification of that enpoint, end than we should remove ending slash
-	return () => axios.post(config.API_URL + '/documentView/', {
+	return () => axios.post(config.API_URL + '/documentView/' + windowType, {
         "documentType": windowType,
         "viewType": viewType,
         "referencing": (refDocType && refDocId) ? {

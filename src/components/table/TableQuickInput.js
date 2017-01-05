@@ -5,14 +5,17 @@ import RawWidget from '../widget/RawWidget';
 
 import {
     findRowByPropName,
-    createInstance,
-    getData,
-    initLayout,
     parseToDisplay,
-    patchRequest,
-    completeRequest,
     addNewRow
 } from '../../actions/WindowActions';
+
+import {
+    initLayout,
+    getData,
+    patchRequest,
+    createInstance,
+    completeRequest
+} from '../../actions/GenericActions';
 
 import {
     addNotification

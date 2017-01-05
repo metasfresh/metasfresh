@@ -12,9 +12,12 @@ import {
 
 import {
     findRowByPropName,
-    patchRequest,
     parseToDisplay
-} from '../../../actions/WindowActions'
+} from '../../../actions/WindowActions';
+
+import {
+    patchRequest
+} from '../../../actions/GenericActions';
 
 class Attributes extends Component {
     constructor(props) {

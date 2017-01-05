@@ -90,7 +90,7 @@ class DocumentList extends Component {
                     layout: response.data
                 }), () => {
                     if(query && query.viewId && !isNewFilter){
-                        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters))
+                        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters, windowType))
                             .then((response) => {
                                 this.setListData(response.data);
                             }).catch((err) => {
@@ -145,9 +145,9 @@ class DocumentList extends Component {
 
     getData = (id, page, pages, sortingQuery) => {
         const {data} = this.state;
-        const {dispatch} = this.props;
+        const {dispatch, windowType} = this.props;
 
-        dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
+        dispatch(browseViewRequest(id, page, pages, sortingQuery, windowType)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))

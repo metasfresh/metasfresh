@@ -10,6 +10,12 @@ import {
     clearListProps
 } from './ListActions';
 
+import {
+    initLayout,
+    getData,
+    patchRequest
+} from './GenericActions';
+
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -18,6 +24,7 @@ export function initLayoutSuccess(layout, scope) {
         scope: scope
     }
 }
+
 export function initDataSuccess(data, scope) {
     return {
         type: types.INIT_DATA_SUCCESS,
@@ -25,6 +32,7 @@ export function initDataSuccess(data, scope) {
         scope: scope
     }
 }
+
 export function addRowData(data, scope) {
     return {
         type: types.ADD_ROW_DATA,
@@ -32,6 +40,7 @@ export function addRowData(data, scope) {
         scope: scope
     }
 }
+
 export function updateDataSuccess(item, scope) {
     return {
         type: types.UPDATE_DATA_SUCCESS,
@@ -39,6 +48,7 @@ export function updateDataSuccess(item, scope) {
         scope: scope
     }
 }
+
 export function updateRowSuccess(item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_SUCCESS,
@@ -48,6 +58,7 @@ export function updateRowSuccess(item, tabid, rowid, scope) {
         scope: scope
     }
 }
+
 export function addNewRow(item, tabid, rowid, scope) {
     return {
         type: types.ADD_NEW_ROW,
@@ -127,7 +138,6 @@ export function indicatorState(state) {
         state: state
     }
 }
-
 
 // THUNK ACTIONS
 
@@ -333,84 +343,7 @@ export function startProcess(processType) {
 
 // END PROCESS ACTIONS
 
-// IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
-export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced) {
-    return () => axios.get(
-        config.API_URL +
-        '/' + entity + '/' + docType +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (subentity ? "/" + subentity : "") +
-        '/layout' +
-        (isAdvanced ? "?advanced=true" : "")
-    );
-}
-
-export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced) {
-    return () => axios.get(
-        config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        (isAdvanced ? "?advanced=true" : "")
-    );
-}
-
-export function createInstance(entity, docType, docId, tabId, subentity) {
-    return () => axios.post(
-        config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (subentity ? "/" + subentity : "")
-    );
-}
-
-export function patchRequest(
-    entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
-    subentityId, isAdvanced
-) {
-    let payload = {};
-
-    if (docId === "NEW") {
-        payload = [];
-    } else {
-        if (property && value !== undefined) {
-            payload = [{
-                'op': 'replace',
-                'path': property,
-                'value': value
-            }];
-        } else {
-            payload = [];
-        }
-    }
-
-    return () => axios.patch(
-        config.API_URL +
-        '/' + entity +
-        (docType ? "/" + docType : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        (isAdvanced ? "?advanced=true" : ""), payload);
-}
-
-export function completeRequest(entity, docType, docId, tabId, rowId, subentity, subentityId) {
-    return () => axios.post(
-        config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        '/complete'
-    );
-}
 
 // UTILITIES
 
