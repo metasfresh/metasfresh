@@ -17,7 +17,8 @@ upcoming
 ## Features
 * metasfresh
   * #696 add multi line description per order line
-  
+  * #755 Automatic upload orders in csv file with COPY into c_olcand
+
 ## Fixes
 * metasfresh  
   * #752 request report does not show requestes that don't have product or inout
