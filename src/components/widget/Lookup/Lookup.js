@@ -41,7 +41,7 @@ class Lookup extends Component {
 
         this.handleValueChanged();
 
-        if(filterWidget || selected) {
+        if(selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
         }else{
             this.handleClear();

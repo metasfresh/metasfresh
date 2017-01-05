@@ -24,7 +24,6 @@ class FilterWidget extends Component {
             item, filter, isShown, isHidden, viewId
         } = this.props;
 
-
         if(widgetData){
             return (
                 <RawWidget
