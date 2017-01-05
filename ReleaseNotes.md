@@ -14,6 +14,17 @@ Here come the actual release notes:
 
 upcoming
 
+## Features
+* metasfresh
+  * #696 add multi line description per order line
+  
+## Fixes
+* metasfresh  
+  * #752 request report does not show requestes that don't have product or inout
+  * #759 Destroyed HU causes problem with shipment creation
+  * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+  * #770 When extending a procurement contract, null becomes 0.00
+  
 # metasfresh 4.50.49 (2017-01)
 
 this week's RC
