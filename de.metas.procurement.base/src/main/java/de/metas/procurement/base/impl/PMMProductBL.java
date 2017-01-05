@@ -223,7 +223,7 @@ public class PMMProductBL implements IPMMProductBL
 					break;
 				}
 
-				if (Check.equals(pmmStringValue,instanceStringValue))
+				if (!Check.equals(pmmStringValue,instanceStringValue))
 				{
 					// not valid
 					isValid = false;

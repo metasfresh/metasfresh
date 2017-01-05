@@ -164,7 +164,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		}
 		
 		final BigDecimal flatrateAmtPerUOM = dataEntryForProduct.getFlatrateAmtPerUOM();
-		if (flatrateAmtPerUOM == null || flatrateAmtPerUOM.signum() <= 0)
+		if (flatrateAmtPerUOM == null || flatrateAmtPerUOM.signum() < 0)
 		{
 			logger.info("Invalid FlatrateAmtPerUOM: {} (event={})", flatrateAmtPerUOM, pricingAware);
 			return false;
