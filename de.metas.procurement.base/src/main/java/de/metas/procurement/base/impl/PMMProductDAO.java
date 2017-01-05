@@ -43,7 +43,7 @@ import de.metas.procurement.base.model.I_PMM_Product;
 public class PMMProductDAO implements IPMMProductDAO
 {
 	@Override
-	public IQueryBuilder<I_PMM_Product> retrieveAllPMMProductsValidOnDateQuery(final Date date)
+	public IQueryBuilder<I_PMM_Product> retrievePMMProductsValidOnDateQuery(final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -53,6 +53,7 @@ public class PMMProductDAO implements IPMMProductDAO
 
 		//
 		// ValidFrom
+		// yup, this works :-)
 		queryBuilder.addCompositeQueryFilter()
 				.setJoinOr()
 				.addCompareFilter(I_PMM_Product.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, date)
@@ -104,7 +105,7 @@ public class PMMProductDAO implements IPMMProductDAO
 	@Override
 	public List<I_PMM_Product> retrieveForDateAndProduct(final Date date, final int productId, final int partnerId, final int huPIPId)
 	{
-		return retrieveAllPMMProductsValidOnDateQuery(date)
+		return retrievePMMProductsValidOnDateQuery(date)
 				.addInArrayFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) // for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, productId)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, huPIPId)

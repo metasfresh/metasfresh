@@ -35,7 +35,14 @@ import de.metas.procurement.base.model.I_PMM_Product;
 
 public interface IPMMProductDAO extends ISingletonService
 {
-	IQueryBuilder<I_PMM_Product> retrieveAllPMMProductsValidOnDateQuery(Date date);
+	/**
+	 * Create a query builder  retrieve to all active {@link I_PMM_Product}s that have a {@code M_HU_PI_Item_Product_ID} and {@code M_Warehouse_ID} set
+	 * and whose {@code ValidFrom} and {@code ValidTo} dates are either {@code null} or lie within the given {@code date}.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	IQueryBuilder<I_PMM_Product> retrievePMMProductsValidOnDateQuery(Date date);
 
 	List<I_PMM_Product> retrieveByHUPIItemProduct(I_M_HU_PI_Item_Product huPIItemProduct);
 
