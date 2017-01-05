@@ -46,7 +46,6 @@ class Header extends Component {
             menuOverlay: null,
             scrolled: false,
             isInboxOpen: false,
-            isDocStatusOpen: false,
             tooltip: {
                 open: ''
             },
@@ -230,10 +229,18 @@ class Header extends Component {
         );
     }
 
-    handleDocStatusToggle = () => {
-        this.setState(Object.assign({}, this.state, {
-            isDocStatusOpen: !this.state.isDocStatusOpen
-        }));
+    handleDocStatusToggle = (close) => {
+        let elem = document.getElementsByClassName("js-dropdown-toggler")[0];
+
+        if(close) {
+            elem.blur();
+        } else {
+            if(document.activeElement === elem) {
+                elem.blur();
+            } else {
+                elem.focus();
+            }
+        }
     }
 
     redirect = (where) => {
@@ -251,7 +258,7 @@ class Header extends Component {
 
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, 
-            isMenuOverlayShow, tooltip, prompt, handleDocStatusToggle, isDocStatusOpen
+            isMenuOverlayShow, tooltip, prompt, handleDocStatusToggle
         } = this.state;
 
         return (
@@ -275,7 +282,7 @@ class Header extends Component {
                         <div className="header-container">
                             <div className="header-left-side">
                                 <div
-                                    onClick={e => {this.handleCloseSideList(this.handleSubheaderOpen); this.toggleTooltip('')}}
+                                    onClick={e => {this.handleCloseSideList(this.handleSubheaderOpen)}}
                                     onMouseEnter={(e) => this.toggleTooltip('tooltip1')}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                     className={"btn-square btn-header tooltip-parent " +
@@ -311,21 +318,21 @@ class Header extends Component {
                             <div className="header-center">
                                 <img src={logo} className="header-logo pointer" onClick={() => this.handleDashboardLink()} />
                             </div>
-                            <div className="header-right-side"
-                                onClick={(e) => this.toggleTooltip('')}
-                                onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.DOC_STATUS)}
-                                onMouseLeave={(e) => this.toggleTooltip('')}
-                            >
+                            <div className="header-right-side">
                                 {docStatus &&
-                                    <div className="hidden-sm-down tooltip-parent">
+                                    <div 
+                                        className="hidden-sm-down tooltip-parent"
+                                        onClick={(e) => this.toggleTooltip('')}
+                                        onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.DOC_STATUS)}
+                                        onMouseLeave={(e) => this.toggleTooltip('')}
+                                    >
                                         <MasterWidget
                                             windowType={windowType}
                                             dataId={dataId}
                                             widgetData={[docStatusData]}
                                             noLabel={true}
                                             type="primary"
-                                            isDocStatusOpen={isDocStatusOpen}
-                                            handleDocStatusToggle={this.handleDocStatusToggle}
+                                            dropdownOpenCallback={(e)=>{this.handleInboxOpen(false); this.handleMenuOverlay("", "")}}
                                             {...docStatus}
                                         />
                                         { tooltip.open === keymap.GLOBAL_CONTEXT.DOC_STATUS &&
@@ -373,7 +380,7 @@ class Header extends Component {
                                                 "btn-meta-default-bright btn-header-open"
                                                 : "btn-meta-primary")
                                         }
-                                        onClick={e => {this.handleBackdropClick(this.handleSideListToggle); this.toggleTooltip('')}}
+                                        onClick={e => {this.handleBackdropClick(this.handleSideListToggle)}}
                                         onMouseEnter={(e) => this.toggleTooltip('tooltip3')}
                                         onMouseLeave={(e) => this.toggleTooltip('')}
                                     >
@@ -425,7 +432,7 @@ class Header extends Component {
                     handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNoData.value) : ''}
                     handleDelete={dataId ? this.handleDelete: ''}
                     redirect={windowType ? () => this.redirect('/window/'+ windowType +'/new') : ''}
-                    handleDocStatusToggle={this.handleDocStatusToggle}
+                    handleDocStatusToggle={document.getElementsByClassName("js-dropdown-toggler")[0] ? this.handleDocStatusToggle : ''}
                 />
             </div>
         )

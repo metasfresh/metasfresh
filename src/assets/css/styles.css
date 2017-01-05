@@ -595,12 +595,12 @@ body {
 
 .dropdown-status-toggler:hover,
 .dropdown-status-toggler:focus {
-    background-color: #eef2f7;
+    background-color: $brand-default-color;
     outline-width: 0;
 }
 
 .dropdown-status-toggler.dropdown-status-open {
-    background-color: #eef2f7;
+    background-color: $brand-default-color;
 }
 
 .dropdown-status-toggler.dropdown-status-open .dropdown-status-list {

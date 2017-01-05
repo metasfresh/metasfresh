@@ -7,39 +7,44 @@ class GlobalContextShortcuts extends Component {
 
     }
     handleShortcuts = (action, event) => {
-<<<<<<< HEAD
         const { 
           handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal, 
           handlePrint, handleDelete, handleSideListToggle, handleInboxOpen, 
           closeInbox, redirect, handleDocStatusToggle 
-=======
-        const {
-          handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal,
-          handlePrint, handleDelete, handleSideListToggle, handleInboxOpen,
-          closeInbox, redirect
->>>>>>> dev
         } = this.props;
         switch (action) {
             case 'OPEN_ACTIONS_MENU':
                 event.preventDefault();
                 closeMenuOverlay();
                 closeInbox();
+                if(handleDocStatusToggle){
+                    handleDocStatusToggle(true);
+                }
                 handleSubheaderOpen();
                 break;
             case 'OPEN_NAVIGATION_MENU':
                 event.preventDefault();
                 closeInbox();
+                if(handleDocStatusToggle){
+                    handleDocStatusToggle(true);
+                }
                 handleMenuOverlay();
                 break;
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
                 closeMenuOverlay();
+                if(handleDocStatusToggle){
+                    handleDocStatusToggle(true);
+                }
                 handleInboxOpen(true);
                 break;
             case 'OPEN_SIDEBAR_MENU':
                 event.preventDefault();
                 closeMenuOverlay();
                 closeInbox();
+                if(handleDocStatusToggle){
+                    handleDocStatusToggle(true);
+                }
                 if (handleSideListToggle) {
                     handleSideListToggle();
                 }
@@ -70,7 +75,11 @@ class GlobalContextShortcuts extends Component {
                 break;
             case 'DOC_STATUS':
                 event.preventDefault();
-                handleDocStatusToggle();
+                closeMenuOverlay();
+                closeInbox();
+                if(handleDocStatusToggle) {
+                    handleDocStatusToggle();
+                }
                 break;
         }
     }
