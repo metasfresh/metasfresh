@@ -37,7 +37,6 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        console.log('componentDidMount')
         const {selected, filterWidget} = this.props;
 
         this.handleValueChanged();
@@ -50,14 +49,10 @@ class Lookup extends Component {
     }
 
     componentDidUpdate() {
-        console.log('componentDidUpdate')
-
         this.handleValueChanged();
     }
 
     handleSelect = (select) => {
-        console.log('handleSelect')
-
         const {
             dispatch, properties, onChange, dataId, fields, filterWidget,
             parameterName, setSelectedItem, windowType
@@ -99,8 +94,6 @@ class Lookup extends Component {
             } else {
                 onChange(property, select);
 
-                console.log()
-
                 this.setState((prevState) => update(this.state, {
                     properts: {$apply: item => {
                         delete item[prevState.property];
@@ -116,7 +109,6 @@ class Lookup extends Component {
     }
 
     getAllDropdowns = () => {
-        console.log('getAllDropdowns')
         const {
             dispatch, windowType, item, dataId, newProps, select, tabId, rowId,
             entity, subentity, subentityId
@@ -157,7 +149,6 @@ class Lookup extends Component {
     }
 
     generatingPropsSelection = () => {
-        console.log('generatingPropsSelection')
         const {dispatch, onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
@@ -191,8 +182,6 @@ class Lookup extends Component {
     }
 
     handleAddNew = () => {
-        console.log('handleAddNew')
-
         const {query} = this.state;
         const {dispatch, windowType} = this.props;
 
@@ -201,15 +190,12 @@ class Lookup extends Component {
     }
 
     handleBlur = () => {
-        console.log('handleBlur')
-
         this.setState(Object.assign({}, this.state, {
             isOpen: false
         }))
     }
 
     handleFocus = () => {
-        console.log('handleFocus')
         const {isInputEmpty} = this.state;
         this.setState(Object.assign({}, this.state, {
             isOpen: true
@@ -221,7 +207,6 @@ class Lookup extends Component {
     }
 
     handleChange = () => {
-        console.log('handleChange')
         const {
             dispatch, recent, windowType, properties, dataId, filterWidget,
             filterId, parameterName, tabId, rowId, entity,subentity, subentityId,
@@ -265,21 +250,14 @@ class Lookup extends Component {
         properties.map(item => {
             onChange(item.field, null);
         })
-
-        console.log("//==========================")
-        console.log(this.state.property);
         this.setState(Object.assign({}, this.state, {
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
-            property: null,
+            property: "",
             loading: false
-        }), () => {
-            console.log(this.state.property);
-            console.log("//==========================")
-
-        });
+        }));
 
         this.handleBlur();
     }
@@ -332,7 +310,6 @@ class Lookup extends Component {
     }
 
     handleValueChanged = () => {
-        console.log('handleValueChanged')
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
@@ -352,7 +329,6 @@ class Lookup extends Component {
     }
 
     render() {
-        console.log('render')
         const {
             rank, readonly, properties, defaultValue, placeholder, align, isModal,
             updated, oldValue, filterWidget, mandatory, rowId, tabIndex
