@@ -42,10 +42,15 @@ upcoming
 ## Fixes
 * metasfresh
   * #757 Automatic contract extension doesn't work anymore
+    * Fix the automatic extension of contracts when flatrate term conditions are met.
   * #681 Automatic filling of BPartner and Location only shows value
+    * Fix the Search Field reference that showed only the value, instead of Name and value, in case of BPartner and BPartner Location.
   * #718 Wrong location in empties vendor return
+    * Close the Gap that allows to record empty returs with BPartner Location that does not belog to the empties BPartner.
   * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
+    * Adjust the Purchase Order control report to have the correct locale for time formatting.
   * #763 material receipt HU label always shown in preview
+    * Migrate the Handling Unit label enabling direct print, without print preview.
   
 * webui
   * #89 Adjust DocAction Names
