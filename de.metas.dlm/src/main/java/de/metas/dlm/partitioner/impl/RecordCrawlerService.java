@@ -409,8 +409,10 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 						// we know that the partitition with dlmPartitionId is now empty, so let's delete it
 						final I_DLM_Partition emptyPartitionDB = InterfaceWrapperHelper.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName());
-						InterfaceWrapperHelper.delete(emptyPartitionDB);
-
+						if (emptyPartitionDB != null)
+						{
+							InterfaceWrapperHelper.delete(emptyPartitionDB);
+						}
 						Loggables.get().withLogger(logger, Level.INFO).addLog("Deleted DLM_Partition_ID={} after merge with DLM_Partition_ID={}", dlmPartitionId, firstKey);
 					});
 		}
