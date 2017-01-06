@@ -69,16 +69,17 @@ public interface IHUTrxBL extends ISingletonService
 	 */
 	void transfer(IHUContext huContext, IAllocationSource source, IAllocationDestination destination, IAllocationRequest request);
 
-	/**
-	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
-	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc. The trx-hdr has a one line for every
-	 * {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc and one line for every created {@link de.metas.handlingunits.model.I_M_HU_Item}.
-	 *
-	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
-	 * @param huPI
-	 * @return the newly created HUs that were created from the transaction doc.
-	 */
-	List<I_M_HU> transferIncomingToHUs(I_M_Transaction incomingTrxDoc, I_M_HU_PI huPI);
+	// TODO remove, because it's only used from test code and won't work in real scenarios as there is no info about 
+//	/**
+//	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
+//	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc. The trx-hdr has a one line for every
+//	 * {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc and one line for every created {@link de.metas.handlingunits.model.I_M_HU_Item}.
+//	 *
+//	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
+//	 * @param huPI
+//	 * @return the newly created HUs that were created from the transaction doc.
+//	 */
+//	List<I_M_HU> transferIncomingToHUs(I_M_Transaction incomingTrxDoc, I_M_HU_PI huPI);
 
 	/**
 	 * Extracts (or maybe "detaches", makes into "stand-alone" HUs) the given qty of HU items that match the given definition form the given source HU(s). One or more source HUs are modified in the
@@ -93,7 +94,7 @@ public interface IHUTrxBL extends ISingletonService
 	List<I_M_HU> extractIncludedHUs(List<I_M_HU> sourceHUs, int huQty, I_M_HU_PI destinationHuPI);
 
 	/**
-	 * Create and <b>process</b> transaction lines for the candidates included in the given {@code result}.
+	 * Create and <b>process</b> transaction lines for the candidates (i.e. {@link IHUTransaction}s) included in the given {@code result}.
 	 *
 	 * @param huContext
 	 * @param result

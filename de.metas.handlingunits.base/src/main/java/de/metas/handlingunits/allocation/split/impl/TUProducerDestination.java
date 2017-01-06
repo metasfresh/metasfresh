@@ -136,7 +136,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 	}
 
 	/**
-	 * Allocates the given request to TU.
+	 * Allocates the given request to the given <code>tuHU</code>, using {@link UpperBoundAllocationStrategy}.
 	 *
 	 * @param tuHU TU to load
 	 * @param request

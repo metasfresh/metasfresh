@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -181,7 +180,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 * Returns <code>this</code> instances local <code>_currentHU</code>, making sure that is either <code>null</code> or its internal <code>TrxName</code> is the one that the given
+	 * Returns <code>this</code> instance's local <code>_currentHU</code>, making sure that is either <code>null</code> or its internal <code>TrxName</code> is the one that the given
 	 * <code>huContext</code> has.
 	 *
 	 *
@@ -480,6 +479,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return _createdHUs.size();
 	}
 
+	/**
+	 * ...also uses {@link IHUBuilder} to create the HU and its child-HUs according to the value returned by {@link #getM_HU_PI()}.
+	 */
 	@Override
 	public final IAllocationResult load(final IAllocationRequest request)
 	{
@@ -497,7 +499,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			// Get/create current HU
 			final ListCursor<I_M_HU> currentHUCursor = getCreateCurrentHU(request);
-			// If there is no current HU, stop here
+			// If there is no current HU to work with, stop here
 			if (currentHUCursor == null)
 			{
 				break;
@@ -537,12 +539,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			// Make sure current HU is no longer flagged as a new and empty HU
 			DYNATTR_IsEmptyHU.reset(currentHU);
 
-			// It seems that current HU is fully loaded, we need to move forward to a new one
-			if (currentResult.getQtyToAllocate().signum() != 0)
-			{
-				currentHUCursor.closeCurrent();
-				currentHU = null;
-			}
+			// don't proceed to a new one. the HU builder made sure that 'currentHU' has a compressed child HU and we shall aggregate further stuff to is as we see fit
+			// if (currentResult.getQtyToAllocate().signum() != 0) // It seems that current HU is fully loaded and there is still stuff left to allocate
+			// {
+			// // ..so we need to move forward to a new one
+			// currentHUCursor.closeCurrent();
+			// currentHU = null;
+			// }
 		}
 
 		//
@@ -586,7 +589,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 * Method called when after {@link #load(IAllocationRequest)}-ing we could not allocate all qty
+	 * Method called when after {@link #load(IAllocationRequest)}-ing we could not allocate all qty.
+	 * This implementation does nothing, but can be overridden.
 	 *
 	 * @param request request with remaining qty which was not allocated yet
 	 * @return result
@@ -598,7 +602,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public void loadComplete(final IHUContext huContext) // --NOPMD
+	public void loadComplete(final IHUContext huContext)
 	{
 		// Do nothing on this level.
 	}

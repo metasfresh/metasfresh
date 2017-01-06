@@ -151,7 +151,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 *
 	 * @param huItem
-	 * @return true if this is a virtual HU Item
+	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
 	 */
 	boolean isVirtual(I_M_HU_Item huItem);
 

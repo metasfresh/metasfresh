@@ -249,6 +249,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final String huUnitTypeToUse = huUnitTypeOverride == null ? handlingUnitsBL.getHU_UnitType(hu) : huUnitTypeOverride;
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
 		{
+			// 'hu' is a TO; count it
 			if (remove)
 			{
 				countTUs--;
@@ -260,6 +261,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 		else if (hu.isCompressedVHU())
 		{
+			// gh #640: 'hu' is a "bag" of homogenous HUs. Take into account the number of TUs it represents.
 			if(remove)
 			{
 				countTUs -= hu.getCompressed_TUsCount();

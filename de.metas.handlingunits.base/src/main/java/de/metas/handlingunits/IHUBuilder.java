@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 
@@ -45,7 +44,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 public interface IHUBuilder
 {
 	/**
-	 * Create handling unit
+	 * Create handling unit by calling {@link #create(I_M_HU_PI_Version)} with the current version of the given <code>pi</code>.
 	 *
 	 * @param pi
 	 * @return created handling unit; never return null
@@ -53,7 +52,7 @@ public interface IHUBuilder
 	I_M_HU create(I_M_HU_PI pi);
 
 	/**
-	 * Create handling unit
+	 * Create handling unit using the given <code>piVersion</code> and (as parent item) the {@link I_M_HU_Item} that was previously set via {@link #setM_HU_Item_Parent(I_M_HU_Item)}.
 	 *
 	 * @param piVersion
 	 * @return created handling unit; never return null
@@ -119,4 +118,5 @@ public interface IHUBuilder
 	 * @return true if the HU's owner is "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}
 	 */
 	boolean isHUPlanningReceiptOwnerPM();
+
 }

@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,6 +29,13 @@ import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.allocation.IAllocationResult;
 
+/**
+ * Implementors of this interface are altered by the allocation BL as the allocation takes place.<br>
+ * Use {@link AllocationUtils} to obtain an instance to work with. 
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IMutableAllocationResult extends IAllocationResult
 {
 	IMutableAllocationResult copy();

@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,6 +34,12 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
 
+/**
+ * Allocation result that be created as an empty one and then can be altered by the code which dioes the allocating.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 /* package */class MutableAllocationResult extends AbstractAllocationResult implements IMutableAllocationResult
 {
 	private final BigDecimal qtyToAllocateInitial;
@@ -45,11 +50,17 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 	private final List<IHUTransactionAttribute> attributeTransactions = new ArrayList<IHUTransactionAttribute>();
 	private final List<IHUTransactionAttribute> attributeTransactionsRO = Collections.unmodifiableList(attributeTransactions);
 
+	/**
+	 * 
+	 * @param qtyToAllocate the qty that shall be allocated. This quantity is subsequently reduced.
+	 * @param allocatedToCompressedVHU whether we allocate to a "compressed/bag" HU to to an "exploded/real" HU (gh #460).<br>
+	 *            Also see {@link #isAllocatedToCompressedVHU()}.
+	 */
 	public MutableAllocationResult(final BigDecimal qtyToAllocate)
 	{
 		Check.assume(qtyToAllocate.signum() >= 0, "qty >= 0 ({})");
 
-		qtyToAllocateInitial = qtyToAllocate;
+		this.qtyToAllocateInitial = qtyToAllocate;
 		this.qtyToAllocate = qtyToAllocate;
 	}
 
@@ -82,9 +93,11 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 	public IMutableAllocationResult copy()
 	{
 		final MutableAllocationResult resultNew = new MutableAllocationResult(qtyToAllocateInitial);
+
 		resultNew.qtyToAllocate = qtyToAllocate;
 		resultNew.transactions.addAll(transactions);
 		resultNew.attributeTransactions.addAll(attributeTransactions);
+
 		return resultNew;
 	}
 

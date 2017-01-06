@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -42,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
+import de.metas.handlingunits.model.X_M_HU_Item;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -71,6 +71,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	int getVirtual_HU_PI_Item_ID();
 
+	/**
+	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
+	 * 
+	 * @param huContext
+	 * @return
+	 */
 	IHUBuilder createHUBuilder(IHUContext huContext);
 
 	// Handling Unit Retrieval
@@ -88,7 +94,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void setParentItem(I_M_HU hu, I_M_HU_Item parentItem);
 
 	/**
-	 * Creates and saves {@link I_M_HU_Item}
+	 * Creates and saves a {@link I_M_HU_Item} for the given {@code hu}, using the given {@code piItem} as its template.
 	 *
 	 * @param hu
 	 * @param piItem
@@ -96,6 +102,15 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
+	/**
+	 * Similar to {@link #createHUItem(I_M_HU, I_M_HU_PI_Item)}, but does not use any {@link I_M_HU_PI_Item} as template.<br>
+	 * Instead, the new item is created with {@link X_M_HU_Item#ITEMTYPE_HUAggregate} as its {@link I_M_HU_Item#COLUMN_ItemType}.
+	 *  
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
+	
 	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
 
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -110,6 +125,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final I_C_BPartner partner);
 
+	/**
+	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
+	 * 
+	 * @param version mandatory. Only return items that reference this version.
+	 * @param partner optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMN_C_BPartner_ID}.
+	 * @return
+	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner);
 
 	/**
@@ -172,6 +194,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Retrieves the default LU.
+	 * 
 	 * @param ctx
 	 * @param adOrgId
 	 * @return default LU or <code>null</code>.
@@ -257,4 +280,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return all available (i.e. active) HU PIs from system, for the given org_id and for org 0
 	 */
 	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
+
+	/**
+	 * 
+	 * @param hu
+	 * @param piItem
+	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
+	 */
+	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 }

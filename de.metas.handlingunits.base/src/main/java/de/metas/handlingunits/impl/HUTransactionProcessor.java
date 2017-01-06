@@ -116,7 +116,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		final I_M_HU_Item huItem = trxLineCandidate.getM_HU_Item();
 		final I_M_HU hu = huItem == null ? null : huItem.getM_HU();
-
+		
 		trxLine.setAD_Org_ID(trxHdr.getAD_Org_ID());
 		trxLine.setM_HU_Trx_Hdr(trxHdr);
 		trxLine.setDateTrx(TimeUtil.asTimestamp(trxLineCandidate.getDate()));

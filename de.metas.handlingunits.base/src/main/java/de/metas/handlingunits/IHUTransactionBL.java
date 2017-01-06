@@ -38,8 +38,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 public interface IHUTransactionBL extends ISingletonService
 {
 	/**
-	 * Current use: creates a IHUTransaction for a LU, which is created from a receipt schedule. Just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not
-	 * just to the TUs (task 06748).
+	 * Current use: creates a IHUTransaction for a LU, which is created from a receipt schedule.<br>
+	 * Just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not just to the TUs (task 06748).
 	 *
 	 * @param luHU
 	 * @param luItemPI

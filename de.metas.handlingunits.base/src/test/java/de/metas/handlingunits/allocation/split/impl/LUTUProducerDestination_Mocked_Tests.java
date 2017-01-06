@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.split.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.junit.Assert.assertSame;
 
@@ -73,8 +72,8 @@ public class LUTUProducerDestination_Mocked_Tests
 	AllocationUtils allocationUtils;
 
 	/**
-	 * Verifies that {@link LUTUProducerDestination#loadHU(I_M_HU, IAllocationRequest)} creates a {@link IHUTransaction} for the given LU handling unit, and that this transaction is also added to the
-	 * method's return value (task 06748).
+	 * Verifies that {@link LUTUProducerDestination#loadHU(I_M_HU, IAllocationRequest)} creates a {@link IHUTransaction} for the given LU handling unit,<br>
+	 * and that this transaction is also added to the method's return value (task 06748).
 	 */
 	@Test
 	public void testCreatesTransactionForLoadUnit()

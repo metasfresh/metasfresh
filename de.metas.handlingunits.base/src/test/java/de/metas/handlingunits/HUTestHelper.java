@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -521,6 +520,9 @@ public class HUTestHelper
 		}
 	}
 
+	/**
+	 * Sets up all the nice fields this helper offers. Called by the {@link #init()} method.
+	 */
 	protected void setupMasterData()
 	{
 		uomEach = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
@@ -854,7 +856,7 @@ public class HUTestHelper
 
 	private void setupEmptiesWarehouse()
 	{
-		final PlainContextAware context = new PlainContextAware(getCtx());
+		final PlainContextAware context = PlainContextAware.newOutOfTrx(getCtx());
 
 		warehouse_Empties = createWarehouse("Empties warehouse");
 
@@ -902,7 +904,7 @@ public class HUTestHelper
 
 	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
 	{
-		final IContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return Services.get(IHandlingUnitsBL.class).createMutableHUContextForProcessing(contextProvider);
 	}
 
@@ -1042,9 +1044,9 @@ public class HUTestHelper
 
 	public I_M_HU_PI createHUDefinition(final String name, final String huUnitType)
 	{
-		final I_M_HU_PI hu = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
-		hu.setName(name);
-		InterfaceWrapperHelper.save(hu);
+		final I_M_HU_PI pi = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
+		pi.setName(name);
+		InterfaceWrapperHelper.save(pi);
 
 		// // Create some several dummy versions
 		// createVersion(hu, false);
@@ -1052,9 +1054,9 @@ public class HUTestHelper
 
 		// Create the current version
 		final Integer huPIVersionId = null;
-		createVersion(hu, true, huUnitType, huPIVersionId);
+		createVersion(pi, true, huUnitType, huPIVersionId);
 
-		return hu;
+		return pi;
 	}
 
 	public I_M_HU_PI_Version createVersion(final I_M_HU_PI handlingUnit, final boolean current)
@@ -1135,6 +1137,12 @@ public class HUTestHelper
 		return itemDefinition;
 	}
 
+	/**
+	 * 
+	 * @param huDefinition
+	 * @param huPackingMaterial
+	 * @return
+	 */
 	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial huPackingMaterial)
 	{
 		Check.assumeNotNull(huDefinition, "Parameter huDefinition is not null");
@@ -1143,7 +1151,7 @@ public class HUTestHelper
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
 		piItem.setM_HU_PI_Version(version);
-		
+
 		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		piItem.setM_HU_PackingMaterial(huPackingMaterial);
 		piItem.setQty(BigDecimal.ONE);
@@ -1489,7 +1497,10 @@ public class HUTestHelper
 	 * @param cuQty
 	 * @return created HUs
 	 */
-	public List<I_M_HU> createHUs(final IHUContext huContext, final ILUTUProducerAllocationDestination allocationDestination, final BigDecimal cuQty)
+	public List<I_M_HU> createHUs(
+			final IHUContext huContext, 
+			final ILUTUProducerAllocationDestination allocationDestination, 
+			final BigDecimal cuQty)
 	{
 		final IHUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();

@@ -35,7 +35,7 @@ public class FIFODeallocationStrategy extends AbstractFIFOStrategy
 	}
 
 	/**
-	 * Do nothing
+	 * Do nothing.
 	 */
 	@Override
 	protected IAllocationResult allocateRemainingOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request)

@@ -13,25 +13,27 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
@@ -41,6 +43,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -53,6 +56,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 
 /* package */final class HUBuilder extends AbstractHUIterator implements IHUBuilder
@@ -79,13 +84,11 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 	public HUBuilder(final IHUContext huContext)
 	{
-		super();
-
 		Check.assumeNotNull(huContext, "huContext not null");
 		setHUContext(huContext);
 
-		registerNodeIterator(I_M_HU.class, new HUNodeBuilder());
-		registerNodeIterator(I_M_HU_Item.class, new HUItemNodeBuilder());
+		registerNodeIterator(I_M_HU.class, new HUNodeIncludedItemBuilder());
+		registerNodeIterator(I_M_HU_Item.class, new HUItemNodeIncludedHUBuilderNOOP());
 	}
 
 	@Override
@@ -222,17 +225,31 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	@Override
 	public I_M_HU create(final I_M_HU_PI pi)
 	{
-		final I_M_HU_PI_Version piVersion = dao.retrievePICurrentVersion(pi);
+		final I_M_HU_PI_Version piVersion = handlingUnitsDAO.retrievePICurrentVersion(pi);
 		return create(piVersion);
 	}
 
 	@Override
 	public I_M_HU create(final I_M_HU_PI_Version piVersion)
 	{
-		return createInstanceRecursivelly(piVersion, getM_HU_Item_Parent());
+		return createInstanceRecursively(piVersion, getM_HU_Item_Parent());
 	}
 
-	private I_M_HU createInstanceRecursivelly(final I_M_HU_PI_Version huPIVersion, final I_M_HU_Item parentItem)
+	/**
+	 * This instance stores the {@code huPIVersion} parameter with which the {@link #createInstanceRecursively(I_M_HU_PI_Version, I_M_HU_Item)} method was called with.<br>
+	 * Background: if the parent item is a {@link X_M_HU_Item#ITEMTYPE_HUAggregate} item, then a virtual HU is created, no matter what the given {@code huPIVersion} sais.<br>
+	 * However, below that virtual HU, the given {@code huPIVersion}'s material and packaging items shall be created none the less.
+	 */
+	private final ModelDynAttributeAccessor<I_M_HU, I_M_HU_PI_Version> invocationParamPIVersion = new ModelDynAttributeAccessor<>("invocationParamPIVersion", I_M_HU_PI_Version.class);
+
+	/**
+	 * Note that currently this method does not really do work recursive since we registered {@link HUBuilder.HUItemNodeIncludedHUBuilderNOOP} do get the downstream nodes for HU items.
+	 * 
+	 * @param huPIVersion
+	 * @param parentItem
+	 * @return
+	 */
+	private I_M_HU createInstanceRecursively(final I_M_HU_PI_Version huPIVersion, final I_M_HU_Item parentItem)
 	{
 		//
 		// Check if parent item was specified, make sure it was saved
@@ -241,12 +258,24 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 			throw new AdempiereException(parentItem + " not saved");
 		}
 
-		//
-		// Create instance and save it
-		final I_M_HU hu = createHUInstance(huPIVersion);
+		final I_M_HU_PI_Version huPIVersionToUse;
+		if (parentItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType()))
+		{
+			// gh #460: if the parent item is "aggregate", then we create a virtual HU to hold all the packing an material aggregations
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			huPIVersionToUse = handlingUnitsDAO.retrieveVirtualPIItem(getHUContext().getCtx()).getM_HU_PI_Version();
+		}
+		else
+		{
+			huPIVersionToUse = huPIVersion;
+		}
+
+		// Create a single HU instance and save it.
+		final I_M_HU hu = createHUInstance(huPIVersionToUse);
+		invocationParamPIVersion.setValue(hu, huPIVersion);
 
 		final IHUContext huContext = getHUContext();
-		//
+
 		// Assign HU to Parent
 		huTrxBL.setParentHU(huContext, parentItem, hu);
 
@@ -259,7 +288,8 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		setStatus(HUIteratorStatus.Running);
 
 		//
-		// Call HU Builder to create items and other included things (if any)
+		// Call HU Builder to create items and other included things (if any).
+		// this is where we actually recurse
 		final AbstractNodeIterator<I_M_HU> huBuilder = getNodeIterator(I_M_HU.class);
 		huBuilder.iterate(hu);
 
@@ -300,7 +330,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	 *
 	 * This method is creating ONLY the {@link I_M_HU} object and not it's children.
 	 *
-	 * @param huPIVersion
+	 * @param huPIVersion set as the new HU's {@link I_M_HU_PI_Version}
 	 * @param parentItem parent HU Item to link on
 	 * @return created {@link I_M_HU}.
 	 */
@@ -337,7 +367,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 			huStatus = getHUStatus();
 		}
 
-		Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, huStatus);
+		handlingUnitsBL.setHUStatus(huContext, hu, huStatus);
 
 		//
 		// Copy C_BPartner_ID from parent
@@ -394,7 +424,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 		//
 		// Save HU
-		dao.saveHU(hu);
+		handlingUnitsDAO.saveHU(hu);
 
 		//
 		// Return
@@ -439,45 +469,90 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	/**
-	 * Builder used to create {@link I_M_HU_Item}s for given {@link I_M_HU}
+	 * Builder used to create {@link I_M_HU_Item}s for a given {@link I_M_HU}
 	 *
 	 * @author tsa
 	 *
 	 */
-	protected class HUNodeBuilder extends HUNodeIterator
+	protected class HUNodeIncludedItemBuilder extends HUNodeIterator
 	{
+		/**
+		 * Creates and returns {@link I_M_HU_Item}s according to the given HU's {@link I_M_HU_PI_Item}s
+		 */
 		@Override
 		public List<I_M_HU_Item> retrieveDownstreamNodes(final I_M_HU hu)
 		{
-			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+			final List<I_M_HU_Item> result = new ArrayList<I_M_HU_Item>();
 
-			final List<I_M_HU_PI_Item> piItems = dao.retrievePIItems(piVersion, getC_BPartner());
-			final List<I_M_HU_Item> result = new ArrayList<I_M_HU_Item>(piItems.size());
-
-			//
-			// Create HU Items
 			final IHUStorageDAO huStorageDAO = getHUContext().getHUStorageFactory().getHUStorageDAO();
+
+			final I_M_HU_Item huItemParent = hu.getM_HU_Item_Parent();
+			if (huItemParent != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(huItemParent.getItemType()))
+			{
+				// #460 the given 'hu' is an "aggregate/compressed/bag" one
+
+				// take a look at the M_HU_PI_Version with which the "create()" method for this given aggregate 'hu' was called.
+				final I_M_HU_PI_Version invocationPIVersion = invocationParamPIVersion.getValue(hu);
+				if (invocationPIVersion != null && invocationPIVersion.getM_HU_PI_Version_ID() != hu.getM_HU_PI_Version_ID())
+				{
+					// ...if invocationPIVersion differs from the M_HU_PI_Version that was effectively assigned to the 'hu'
+					// then we create and add items for the packaging piItems of 'piVersionToUse'
+					final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO
+							.retrievePIItems(invocationPIVersion, getC_BPartner())
+							.stream()
+							.filter(pi -> X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(pi.getItemType()))
+							.collect(Collectors.toList());
+					for (final I_M_HU_PI_Item piItem : piItems)
+					{
+						final IPair<I_M_HU_Item, Boolean> item = handlingUnitsDAO.createHUItemIfNotExists(hu, piItem);
+						if (item.getRight())
+						{
+							result.add(item.getLeft()); // a new item was created
+						}
+					}
+				}
+			}
+			else
+			{
+				final I_M_HU_Item bagItem = handlingUnitsDAO.createAggregateHUItem(hu);
+				result.add(bagItem);
+
+				// Notify Storage DAO that a new item was just created
+				huStorageDAO.initHUItemStorages(bagItem);
+			}
+
+			// Create "regular HU Items that are declared by the PI
+			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+			final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO.retrievePIItems(piVersion, getC_BPartner());
+
 			for (final I_M_HU_PI_Item piItem : piItems)
 			{
-				final I_M_HU_Item item = dao.createHUItem(hu, piItem);
+				final String itemType = piItem.getItemType();
+				if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+				{
+					// gh #460: don't create any HU item. we created the HU-aggregate "bag" item
+					// otherwise we would now create one item for each piItem. For a top-level LU like palette, this might mean to create dozends of different TU-items, even if only one of them is actually used
+					continue;
+				}
+
+				final I_M_HU_Item item = handlingUnitsDAO.createHUItem(hu, piItem);
 				result.add(item);
 
 				// Notify Storage DAO that a new item was just created
 				huStorageDAO.initHUItemStorages(item);
 			}
-
 			return result;
 		}
 	}
 
 	/**
-	 * Builder used to create included {@link I_M_HU}s for given {@link I_M_HU_Item}.
+	 * Builder that might be used <b>(but isn't!)</b> to create included {@link I_M_HU}s for given {@link I_M_HU_Item}.
 	 *
-	 *
-	 * Actually is doing nothing because we are not creating included HUs recursivelly.
+	 * Actually is doing nothing because we are not creating included HUs recursively.
 	 */
-	protected class HUItemNodeBuilder extends HUItemNodeIterator
+	protected class HUItemNodeIncludedHUBuilderNOOP extends HUItemNodeIterator
 	{
+		// we do want to create a downstream-HU for hu-items with type ITEMTYPE_HUAggregate
 		@Override
 		public AbstractNodeIterator<?> getDownstreamNodeIterator(final I_M_HU_Item node)
 		{

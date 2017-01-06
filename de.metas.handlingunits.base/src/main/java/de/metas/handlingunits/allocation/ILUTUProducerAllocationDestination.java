@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -37,7 +36,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 /**
- * It's an {@link IHUProducerAllocationDestination} which is able to be configured and produce TUs on LUs.
+ * It's an {@link IHUProducerAllocationDestination} which can be configured to produce TUs on LUs.
  *
  * @author tsa
  *
@@ -48,6 +47,11 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	void setTUPI(final I_M_HU_PI tuPI);
 
+	/**
+	 * Register another capacity spec with this producer.
+	 * 
+	 * @param tuCapacity
+	 */
 	void addTUCapacity(IHUCapacityDefinition tuCapacity);
 
 	/**
@@ -181,7 +185,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	int getMaxTUsForRemainingQty_ActuallyCreated();
 
 	/**
-	 * @param createTUsForRemainingQty true if we shall create TU handling units for remaining qty
+	 * @param createTUsForRemainingQty true if we shall create TU handling units for remaining qty.
+	 * @see #loadRe
 	 */
 	void setCreateTUsForRemainingQty(final boolean createTUsForRemainingQty);
 
@@ -237,8 +242,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @param cuProduct
 	 * @return Can return following values
 	 *         <ul>
-	 *         <li> {@link IAllocationRequest#QTY_INFINITE} if it can accept infinite quantity (i.e. some of the CU/TU, TU/LU, count LUs etc quantities are infinite)
-	 *         <li> {@link BigDecimal#ZERO} if this configuration cannot accept any quantity
+	 *         <li>{@link IAllocationRequest#QTY_INFINITE} if it can accept infinite quantity (i.e. some of the CU/TU, TU/LU, count LUs etc quantities are infinite)
+	 *         <li>{@link BigDecimal#ZERO} if this configuration cannot accept any quantity
 	 *         <li>positive quantity if maxium quantity could be calculated
 	 *         </ul>
 	 *

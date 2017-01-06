@@ -56,6 +56,9 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	public static final String ITEMTYPE_PackingMaterial = "PM";
 	/** HandlingUnit = HU */
 	public static final String ITEMTYPE_HandlingUnit = "HU";
+	
+	public static final String ITEMTYPE_HUAggregate="HA";
+	
 	/** Set Positionsart.
 		@param ItemType Positionsart	  */
 	@Override

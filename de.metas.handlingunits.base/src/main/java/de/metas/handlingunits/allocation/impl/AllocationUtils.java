@@ -259,7 +259,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * For cross-package use.
+	 * Creates an immutable allocation result. For cross-package use.
 	 *
 	 * @param qtyToAllocate
 	 * @param qtyAllocated
@@ -345,7 +345,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Creates and configures an {@link IHUBuilder} based on given <code>request</code>
+	 * Creates and configures an {@link IHUBuilder} based on the given <code>request</code> (bPartner and date).
 	 *
 	 * @param request
 	 * @return HU builder

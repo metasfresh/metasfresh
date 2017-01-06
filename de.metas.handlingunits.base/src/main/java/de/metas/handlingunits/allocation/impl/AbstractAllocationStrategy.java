@@ -63,16 +63,21 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 
 	/**
 	 *
-	 * @param outTrx true if outbound transaction (i.e. deallocation); false if inbound transaction (i.e. allocation)
+	 * @param outTrx <code>true</code> if outbound transaction (i.e. deallocation); false if inbound transaction (i.e. allocation)
 	 */
 	public AbstractAllocationStrategy(final boolean outTrx)
 	{
-		super();
 		this.outTrx = outTrx;
 	}
 
-	@Override
-	public final void setAllocationStrategyFactory(final IAllocationStrategyFactory factory)
+	/**
+	 * Set the factory that shall be used when a new {@link IAllocationStrategy} instance needs to be created from this instance.
+	 *
+	 * NOTE: don't call it directly.
+	 *
+	 * @param factory
+	 */
+	/* package */ final void setAllocationStrategyFactory(final IAllocationStrategyFactory factory)
 	{
 		this.factory = factory;
 		handlingUnitsDAO = factory.getHandlingUnitsDAO();
@@ -169,6 +174,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 		final I_M_HU_PI vhuPI = handlingUnitsDAO.retrieveVirtualPI(huContext.getCtx());
 
 		final IHUBuilder vhuBuilder = AllocationUtils.createHUBuilder(request);
+		
 		vhuBuilder.setM_HU_Item_Parent(parentItem);
 
 		final I_M_HU vhu = vhuBuilder.create(vhuPI);
@@ -176,7 +182,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	}
 
 	/**
-	 * Create transaction candidate which when it will be processed it will change the stoarge qty.
+	 * Create transaction candidate which when it will be processed it will change the storage quantity.
 	 *
 	 * @param requestActual request (used to get Product, UOM, Date, Qty etc)
 	 * @param vhuItem Virtual HU item on which we actually allocated/deallocated

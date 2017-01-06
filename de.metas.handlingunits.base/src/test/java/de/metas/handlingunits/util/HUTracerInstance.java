@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
@@ -175,7 +176,7 @@ public class HUTracerInstance
 	{
 		//
 		// HU Info: Display Name, Index/Count
-		out.append(linePrefix).append(toStringName(hu)); // NOPMD no need for toString warnings to fire up, due to it being a custom toString
+		out.append(linePrefix).append(toStringName(hu));
 		if (index > 0)
 		{
 			out.append(", Index=" + index);
@@ -426,7 +427,7 @@ public class HUTracerInstance
 			name.append("_").append(instanceName);
 		}
 
-		name.append("_HUStatus=").append(hui.getHUStatus());
+		name.append("_HUStatus=\"").append(hui.getHUStatus()).append("\"");
 
 		if (hui.getM_Locator_ID() > 0)
 		{

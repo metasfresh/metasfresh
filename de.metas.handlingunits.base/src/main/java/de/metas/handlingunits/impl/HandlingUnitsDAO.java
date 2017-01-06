@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -45,9 +45,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.FilterUtils;
 import org.adempiere.util.collections.IteratorUtils;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
@@ -267,6 +265,24 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		final I_M_HU_Item existingItem = getHUAndItemsDAO().retrieveItem(hu, piItem);
+		if (existingItem != null)
+		{
+			return ImmutablePair.of(existingItem, false);
+		}
+
+		return ImmutablePair.of(createHUItem(hu, piItem), true);
+	}
+
+	@Override
+	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	{
+		return getHUAndItemsDAO().createAggregateHUItem(hu);
+	}
+
+	@Override
 	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveItems(hu);
@@ -290,16 +306,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			{
 				continue;
 			}
-			
+
 			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
-			
+
 			final int count = huItem.getQty().intValueExact();
-			if(count <= 0)
+			if (count <= 0)
 			{
 				logger.warn("Invalid packing materials count for {}. Skip considering it.", huItem);
 				continue;
 			}
-			
+
 			packingMaterials.add(ImmutablePair.of(packingMaterial, count));
 		}
 		return packingMaterials;
@@ -322,6 +338,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner)
 	{
 		Check.assumeNotNull(version, "version not null");
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
 		final int huPIVersionId = version.getM_HU_PI_Version_ID();
@@ -501,7 +518,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.list(I_M_HU_PI.class);
 	}
-	
+
 	@Override
 	public List<I_M_HU_PI> retrieveAvailablePIsForOrg(final Properties ctx, final int adOrgId)
 	{
@@ -515,10 +532,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 			huPIsForOrg.add(huPI);
 		}
-		
+
 		return huPIsForOrg.build();
 	}
-
 
 	@Override
 	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator)
@@ -774,14 +790,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		else
 		{
 			// Get those PI Items which are about Default LUs
-			final List<I_M_HU_PI_Item> defaultLUPIItems = FilterUtils.filter(parentPIItems, new Predicate<I_M_HU_PI_Item>()
-			{
-				@Override
-				public boolean evaluate(final I_M_HU_PI_Item parentPIItem)
-				{
-					return parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU();
-				}
-			});
+			final List<I_M_HU_PI_Item> defaultLUPIItems = parentPIItems
+					.stream()
+					.filter(parentPIItem -> parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU())
+					.collect(Collectors.toList());
 
 			// If we found only one default, we can return it directly
 			if (defaultLUPIItems.size() == 1)
@@ -827,7 +839,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return retrieveEmptiesDistributionNetwork(ctx, trxName);
 	}
-	
+
 	@Cached(cacheName = I_DD_NetworkDistribution.Table_Name
 			+ "#by"
 			+ "#" + I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed)
@@ -841,7 +853,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.firstOnly(I_DD_NetworkDistribution.class);
 	}
-
 
 	@Override
 	public I_M_HU_Status retrieveHUStatus(final Properties ctx, final String huStatus)

@@ -117,31 +117,31 @@ public class HUTrxBL implements IHUTrxBL
 		return _trxListeners.asList();
 	}
 
-	@Override
-	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
-	{
-		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
-				"mtrx shall be inbound transaction: {}", mtrx);
-
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
-		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
-
-		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
-		final HUProducerDestination destination = new HUProducerDestination(huPI);
-		final HULoader loader = new HULoader(source, destination);
-
-		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(
-				huContext,
-				mtrx.getM_Product(),
-				mtrx.getMovementQty(),
-				uom, mtrx.getMovementDate(),
-				mtrx);
-
-		loader.load(request);
-
-		return destination.getCreatedHUs();
-	}
+//	@Override
+//	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
+//	{
+//		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
+//				"mtrx shall be inbound transaction: {}", mtrx);
+//
+//		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
+//		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+//
+//		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
+//		final HUProducerDestination destination = new HUProducerDestination(huPI);
+//		final HULoader loader = new HULoader(source, destination);
+//
+//		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
+//		final IAllocationRequest request = AllocationUtils.createQtyRequest(
+//				huContext,
+//				mtrx.getM_Product(),
+//				mtrx.getMovementQty(),
+//				uom, mtrx.getMovementDate(),
+//				mtrx);
+//
+//		loader.load(request);
+//
+//		return destination.getCreatedHUs();
+//	}
 
 	@Override
 	public void transfer(

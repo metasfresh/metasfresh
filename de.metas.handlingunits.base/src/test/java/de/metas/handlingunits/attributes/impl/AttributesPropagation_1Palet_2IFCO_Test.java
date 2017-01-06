@@ -44,6 +44,7 @@ import de.metas.handlingunits.attribute.strategy.impl.CopyAttributeSplitterStrat
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.impl.HUTrxBLTests;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -109,7 +110,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 	}
 
 	/**
-	 * Create initial HUs and attributes
+	 * Create initial HUs and attributes. In case this fails, I recommend to take a look at {@link HUTrxBLTests}.
 	 */
 	private void setupData()
 	{
@@ -118,13 +119,14 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		//
 		// Create inital Palets
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
-				pTomato,
-				AttributesPropagation_1Palet_2IFCO_Test.COUNT_IFCOS_PER_PALET.multiply(AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)));
+				pTomato, // product
+				AttributesPropagation_1Palet_2IFCO_Test.COUNT_IFCOS_PER_PALET.multiply(AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)) // qty
+				);
 		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
 
 		//
 		// Bind data to be able to access them in our tests
-		final I_M_HU huPalet = huPalets.get(0);
+		final I_M_HU huPalet = huPalets.get(0); 
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
 		final List<I_M_HU> huIncluded = helper.retrieveIncludedHUs(huPalet);
 		final I_M_HU huIFCO1 = huIncluded.get(0);
