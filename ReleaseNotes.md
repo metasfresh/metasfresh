@@ -28,14 +28,14 @@ upcoming
   
 # metasfresh 4.50.49 (2017-01)
 
-this week's RC
-
 ## Features
 * metasfresh
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
-    * WI that works for the concrete problem at hand
+    * Working Increment that works for the current requirement at hand.
   * #653 Calculated DailyLotNo in Material Receipt Candidates
+    * Add a Daily Lot No. thats calculated as Day from year, from a given Date in Purchase Order, Orderline Attributes.
   * #714 Marginal Return report calculation add additional Costcenter
+    * Adjust the marginal return report to show allow more columns with cost center sums on 1 page.
   * #742 R_Request column c_order_id autocomplete too slow
     * Take out the autocomplete of c_order_id to speed up the lookup performance in R_Request.
 
