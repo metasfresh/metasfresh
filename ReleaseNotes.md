@@ -54,6 +54,7 @@ upcoming
   
 * webui
   * #89 Adjust DocAction Names
+    * Adjust/ migrate DocAction Names for WebUI.
 
 # metasfresh 4.49.48 (2016-51)
  
