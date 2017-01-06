@@ -661,6 +661,11 @@ public class DocumentEntityDescriptor
 		{
 			return _tableName.orElse(null);
 		}
+		
+		public boolean isTableName(final String expectedTableName)
+		{
+			return Objects.equals(expectedTableName, _tableName.orElse(null));
+		}
 
 		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
 		{

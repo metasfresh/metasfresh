@@ -16,6 +16,7 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
+import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -470,7 +471,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 
 		// FIXME: hardcoded quickInput for Order lines
 
-		if (!org.compiere.model.I_C_OrderLine.Table_Name.equals(documentEntityDescriptor.getTableName()))
+		if (!documentEntityDescriptor.isTableName(I_C_OrderLine.Table_Name))
 		{
 			return null;
 		}

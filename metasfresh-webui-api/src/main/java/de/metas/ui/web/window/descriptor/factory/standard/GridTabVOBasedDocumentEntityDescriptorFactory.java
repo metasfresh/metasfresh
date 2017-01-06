@@ -101,7 +101,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		//
 		// FIXME: HARDCODED: C_Order's DocumentSummary
-		if (rootEntity && I_C_Order.Table_Name.equals(_documentEntryBuilder.getTableName()))
+		if (rootEntity && _documentEntryBuilder.isTableName(I_C_Order.Table_Name))
 		{
 			// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
 			final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
