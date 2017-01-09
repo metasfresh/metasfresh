@@ -1342,9 +1342,6 @@ th {
     border: 1px solid $brand-color-primary;
 }
 
-.menu-overlay-node-container:focus {
-    border: 1px solid $brand-color-primary;
-}
 .query-results .menu-overlay-expand {
     margin-left: 0 !important;
 }
