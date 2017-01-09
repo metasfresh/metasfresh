@@ -170,7 +170,7 @@ class MenuOverlay extends Component {
     }
 
     renderNaviagtion = (node) => {
-    	const {path, deepNode} = this.state;
+    	const {path} = this.state;
         return (
              <div className="menu-overlay-container-column-wrapper">
                 {node.nodeId != 0 &&
