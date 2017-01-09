@@ -35,6 +35,7 @@ import org.compiere.util.TrxRunnable;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUPIInvalidConfigurationException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -164,9 +165,11 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 		Check.assumeNotNull(hu, "hu not null");
 		Check.assumeNotNull(piItem, "piItem not null");
 
+		final boolean huIsAggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
+
 		//
 		// make different sanity checks, based on the item type
-		if (hu.getM_HU_Item_Parent() != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(hu.getM_HU_Item_Parent().getItemType()))
+		if (huIsAggregateHU)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -196,13 +199,24 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 			{
 				throw new HUPIInvalidConfigurationException("No packing material defined", piItem);
 			}
-			final BigDecimal qty = piItem.getQty();
-			if (qty.signum() <= 0)
-			{
-				throw new HUPIInvalidConfigurationException("Invalid packing material quantity defined", piItem);
-			}
 			item.setM_HU_PackingMaterial_ID(huPackingMaterialId);
-			item.setQty(qty);
+
+			if (huIsAggregateHU)
+			{
+				// gh #460: if the HU is an aggregate, then the packing material item's qty can't be determined by the piItem, 
+				// but will be set by the IHUProducerAllocationDestination's loadFinished() implementation.
+				// the value will depend on how many units were aggregated into the respective HU
+				item.setQty(BigDecimal.ZERO);
+			}
+			else
+			{
+				final BigDecimal qty = piItem.getQty();
+				if (qty.signum() <= 0)
+				{
+					throw new HUPIInvalidConfigurationException("Invalid packing material quantity defined", piItem);
+				}
+				item.setQty(qty);
+			}
 		}
 		return item;
 	}

@@ -13,11 +13,11 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -69,6 +69,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
@@ -237,8 +238,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					huTrxBL.setParentHU(huContext,
 							null, // New Parent = null
 							currentHU, // HU which we are changing
-							destroyOldParentIfEmptyStorage
-							);
+							destroyOldParentIfEmptyStorage);
 					//
 					// Mark current HU as destroyed
 					markDestroyed(huContext, currentHU);
@@ -567,11 +567,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		Check.assumeNotNull(huItem, "huItem not null");
 		final String itemType = huItem.getItemType();
-		if(itemType != null)
+		if (itemType != null)
 		{
 			return itemType;
 		}
-		
+
 		// FIXME: remove it after we migrate all HUs
 		return huItem.getM_HU_PI_Item().getItemType();
 	}
@@ -830,6 +830,23 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// we consider the rest of the statuses to be physical
 		// (Active and picked)
 		return true;
+	}
+
+	@Override
+	public boolean isAggregateHU(final I_M_HU hu)
+	{
+		if (hu == null)
+		{
+			return false;
+		}
+		
+		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
+		if(parentItem == null)
+		{
+			return false;
+		}
+		
+		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
 
 	@Override

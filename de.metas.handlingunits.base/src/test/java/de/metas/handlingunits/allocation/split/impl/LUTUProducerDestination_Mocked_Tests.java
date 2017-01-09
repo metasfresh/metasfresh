@@ -98,7 +98,6 @@ public class LUTUProducerDestination_Mocked_Tests
 		final LUTUProducerDestination testee = new LUTUProducerDestination();
 		testee.setTUProducer(luHU, tuProducerDestination);
 		testee.setLUItemPI(luItemPI);
-		testee.addHUToAllocate(luHU);
 
 		final IAllocationResult result = testee.loadHU(luHU, allocationRequest);
 		assertSame("Invalid IAllocationResult; was expecting the preconfigured mock", expectedReturnValueAllocationResult, result);

@@ -13,15 +13,14 @@ package de.metas.handlingunits.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.PrintStream;
 import java.math.BigDecimal;
@@ -33,7 +32,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
@@ -116,13 +114,12 @@ public class HUTracerInstance
 		final List<I_M_HU> hus = retrieveAllHUs();
 		dump(hus);
 	}
-	
+
 	public void dumpAllHUs(final String title)
 	{
 		printTitle(title);
 		dumpAllHUs();
 	}
-
 
 	private List<I_M_HU> retrieveAllHUs()
 	{
@@ -166,12 +163,12 @@ public class HUTracerInstance
 		printTitle(title);
 		dump(hu);
 	}
-	
+
 	private final void printTitle(final String title)
 	{
 		System.out.println("==============[ " + title + " ]==================================");
 	}
-	
+
 	public void dump(final PrintStream out, final String linePrefix, final I_M_HU hu, final int index, final int lastIndex)
 	{
 		//
@@ -383,11 +380,13 @@ public class HUTracerInstance
 		final String instanceName = POJOWrapper.getInstanceName(item);
 		if (!Check.isEmpty(instanceName))
 		{
-			name.append("-").append(instanceName);
+			name.append("-").append(instanceName).append(";");
 		}
 
 		final String itemType = handlingUnitsBL.getItemType(item);
-		name.append("-ItemType=").append(itemType).append("-ID=").append(item.getM_HU_Item_ID());
+		name.append(" ItemType=").append(itemType)
+				.append("; M_HU_Item_ID=").append(item.getM_HU_Item_ID())
+				.append("; Qty=").append(item.getQty());
 
 		return name.toString();
 	}
@@ -424,17 +423,17 @@ public class HUTracerInstance
 		final String instanceName = POJOWrapper.getInstanceName(hui);
 		if (!Check.isEmpty(instanceName))
 		{
-			name.append("_").append(instanceName);
+			name.append("_").append(instanceName).append(";");
 		}
 
-		name.append("_HUStatus=\"").append(hui.getHUStatus()).append("\"");
+		name.append(" HUStatus=\"").append(hui.getHUStatus()).append("\"");
 
 		if (hui.getM_Locator_ID() > 0)
 		{
-			name.append("_WH=").append(hui.getM_Locator().getM_Warehouse().getName());
+			name.append("-WH=").append(hui.getM_Locator().getM_Warehouse().getName()).append(";");
 		}
 
-		name.append("_ID=").append(hui.getM_HU_ID());
+		name.append(" M_HU_ID=").append(hui.getM_HU_ID());
 
 		return name.toString();
 	}

@@ -1,27 +1,21 @@
 package de.metas.handlingunits.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
-
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attributes.impl.AttributesPropagation_1Palet_2IFCO_Test;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
@@ -92,10 +86,14 @@ public class HUTrxBLTests
 				helper.pTomato, // product
 				new BigDecimal("86") // qty
 		);
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
 
+		final List<I_M_HU> huPalets = AbstractHUTest.createPlainHU(incomingTrxDoc, huDefPalet);
+
+		assertThat(huPalets.size(), is(1));
 		final I_M_HU huPalet = huPalets.get(0); // new de.metas.handlingunits.util.HUTracerInstance().dump(huPalet);
 
+		new de.metas.handlingunits.util.HUTracerInstance().dump(huPalet);
+		
 		//@formatter:off
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()
 			.newHUExpectation()
@@ -103,7 +101,23 @@ public class HUTrxBLTests
 				.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.huPIItem(null)
-					
+					.newIncludedHUExpectation()
+						.huPI(helper.huDefVirtual)
+						.newHUItemExpectation()
+							.itemType(X_M_HU_Item.ITEMTYPE_Material)
+							.newItemStorageExpectation()
+								.product(helper.pTomato)
+								.qty("86")
+								.uom(helper.uomEach)
+							.endExpectation() // itemStorageExcpectation
+						.endExpectation() // material item
+// AbstractHUTest.createPlainHU uses the HUProducerDestination and doesn't know or care about IFCOs since we only gave it information about the palet.
+//						.newHUItemExpectation()
+//							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+//							.qty("3")
+//							.packingMaterial(helper.pmIFCO)
+//						.endExpectation() // packing-material item
+					.endExpectation() // included "bag" VHU
 				.endExpectation() // huItemExpectation
 				.newHUItemExpectation() // the packing material item for this LU
 					.noIncludedHUs()
@@ -114,7 +128,5 @@ public class HUTrxBLTests
 		;
 		//@formatter:on
 		compressedHUExpectation.assertExpected(huPalets);
-
-		new de.metas.handlingunits.util.HUTracerInstance().dump(huPalet);
 	}
 }

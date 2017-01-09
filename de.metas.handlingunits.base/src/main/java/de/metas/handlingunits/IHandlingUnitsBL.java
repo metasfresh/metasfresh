@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -42,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Status;
@@ -423,4 +423,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	IEmptiesMovementBuilder createEmptiesMovementBuilder();
+
+	/**
+	 * Checks if the given {@code hu} is a "bag".
+	 * 
+	 * @param hu optional, may be {@code null}.
+	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
+	 */
+	boolean isAggregateHU(I_M_HU hu);
 }

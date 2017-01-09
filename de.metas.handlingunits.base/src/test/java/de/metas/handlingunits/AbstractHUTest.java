@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,29 +15,43 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 // NOPMD by al on 7/25/13 11:56 AM
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.inout.service.IMTransactionBL;
+import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 public abstract class AbstractHUTest
@@ -112,8 +128,8 @@ public abstract class AbstractHUTest
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_LotNumberDate}
 	 */
 	protected I_M_Attribute attr_LotNumberDate;
-	
-	//#653
+
+	// #653
 	protected I_M_Attribute attr_LotNumber;
 
 	@BeforeClass
@@ -173,8 +189,8 @@ public abstract class AbstractHUTest
 		attr_SubProducerBPartner = helper.attr_SubProducerBPartner;
 
 		attr_LotNumberDate = helper.attr_LotNumberDate;
-		
-		//#654
+
+		// #654
 		attr_LotNumber = helper.attr_LotNumber;
 
 		uomEach = helper.uomEach;
@@ -209,5 +225,40 @@ public abstract class AbstractHUTest
 	protected ErrorMessage newErrorMessage()
 	{
 		return ErrorMessage.newInstance();
+	}
+
+	/**
+	 * 
+	 * This method contains the code that used to be in {@link IHUTrxBL} {@code transferIncomingToHUs()}.<br> 
+	 * That method was used only by test cases and also doesn't make a lot of sense for production.
+	 * 
+	 * @param mtrx
+	 * @param huPI
+	 * @return
+	 */
+	@Deprecated
+	public static List<I_M_HU> createPlainHU(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
+	{
+		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
+				"mtrx shall be inbound transaction: {}", mtrx);
+
+		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
+		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+
+		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
+		final HUProducerDestination destination = new HUProducerDestination(huPI);
+		final HULoader loader = new HULoader(source, destination);
+
+		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(
+				huContext,
+				mtrx.getM_Product(),
+				mtrx.getMovementQty(),
+				uom, mtrx.getMovementDate(),
+				mtrx);
+
+		loader.load(request);
+
+		return destination.getCreatedHUs();
 	}
 }

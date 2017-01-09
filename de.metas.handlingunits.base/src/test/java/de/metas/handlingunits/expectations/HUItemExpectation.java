@@ -79,7 +79,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (_qty != null)
 		{
-			assertThat(prefix + "Qty", _qty, comparesEqualTo(huItem.getQty()));
+			assertThat(prefix + "Qty", huItem.getQty(), comparesEqualTo(_qty));
 		}
 
 		if (_packingMaterial != null)

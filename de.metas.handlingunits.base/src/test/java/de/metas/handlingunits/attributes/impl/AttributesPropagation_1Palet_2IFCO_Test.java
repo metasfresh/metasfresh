@@ -122,7 +122,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 				pTomato, // product
 				AttributesPropagation_1Palet_2IFCO_Test.COUNT_IFCOS_PER_PALET.multiply(AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)) // qty
 				);
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = createPlainHU(incomingTrxDoc, huDefPalet);
 
 		//
 		// Bind data to be able to access them in our tests

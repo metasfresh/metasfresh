@@ -150,7 +150,7 @@ public class HULoaderTest extends AbstractHUTest
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
 
 		// create and destroy instances only with a I_M_Transaction
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = createPlainHU(incomingTrxDoc, huDefPalet);
 
 		//
 		// Validate HUs
@@ -181,7 +181,7 @@ public class HULoaderTest extends AbstractHUTest
 		// assume that incomingTrxDoc is a material receipt of 20 tomatoes
 		final I_M_Transaction incomingTrx = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
 
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrx, huDefPalet);
+		final List<I_M_HU> huPalets = createPlainHU(incomingTrx, huDefPalet);
 
 		final IAttributeStorageFactory attrStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 		final IAttributeStorage huPalet1_Attrs = attrStorageFactory.getAttributeStorage(huPalets.get(0));
@@ -289,7 +289,7 @@ public class HULoaderTest extends AbstractHUTest
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
 
 		// create and destroy instances only with a I_M_Transaction
-		final List<I_M_HU> huTruck = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefTruck);
+		final List<I_M_HU> huTruck =createPlainHU(incomingTrxDoc, huDefTruck);
 
 		//
 		// Validate HUs

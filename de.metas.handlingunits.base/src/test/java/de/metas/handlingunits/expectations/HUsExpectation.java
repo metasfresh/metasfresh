@@ -63,7 +63,7 @@ public class HUsExpectation extends AbstractHUExpectation<Object>
 		final int count = hus.size();
 		final int expectedCount = expectations.size();
 
-		Assert.assertEquals(message + " lines count", expectedCount, count);
+		Assert.assertEquals(message + " HUs count", expectedCount, count);
 
 		for (int i = 0; i < count; i++)
 		{

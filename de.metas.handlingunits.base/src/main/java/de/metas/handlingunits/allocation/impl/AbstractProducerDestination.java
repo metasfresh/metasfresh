@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -31,18 +33,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.IdentityHashSet;
 import org.adempiere.util.collections.ListCursor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUTransaction;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -53,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.util.HUByIdComparator;
 
 /**
@@ -96,7 +104,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// */
 	// private I_M_HU _currentHU = null;
 	private final Map<Integer, ListCursor<I_M_HU>> productId2currentHU = new HashMap<>();
-	private final List<I_M_HU> availableHUs = new ArrayList<>();
 
 	/**
 	 * Set of created HUs or already existing HUs that need to be considered as "created".
@@ -105,13 +112,23 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private final Set<I_M_HU> _createdHUs = new TreeSet<I_M_HU>(HUByIdComparator.instance);
 
+	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<I_M_HU>(HUByIdComparator.instance);
+
+	/**
+	 * The number of HUs that were not really created as {@link I_M_HU} instances, but are represented within a HU-aggregation item and its VHU.<br>
+	 * This number together with the size of {@link #_createdNonAggregateHUs} is returned by {@link #getCreatedHUsCount()}.
+	 */
+	private int aggregatedHUsCount;
+
 	public AbstractProducerDestination()
 	{
 		super();
 	}
 
 	/**
-	 * @return true if we are allowed to create a new HU in case is needed
+	 * @return {@code true} if we are allowed to create a new HU <b>or allocate to the current aggregate/"bag"-HU</b> in case is needed.
+	 *         Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
+	 * 
 	 */
 	public abstract boolean isAllowCreateNewHU();
 
@@ -140,16 +157,30 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private final ListCursor<I_M_HU> getCreateCurrentHU(final IAllocationRequest request)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		final ListCursor<I_M_HU> currentHUCursor = getCurrentHUCursor(request);
 
 		// If we have a current HU and it's not null
 		// => cursor is positioned
 		if (currentHUCursor.hasCurrent() && currentHUCursor.current() != null)
 		{
-			return currentHUCursor;
+			final boolean currentHUIsAggregate = handlingUnitsBL.isAggregateHU(currentHUCursor.current());
+			if (!currentHUIsAggregate || isAllowCreateNewHU())
+			{
+				// the current HU is
+				// * either not a "bag" but a real/exploded HU,
+				// * or it is a "bag" that is not yet "full"
+				// By "full bag" we mean e.g. that we might have a bag which represents TUs within a LU and the LU can only hold 5 TUs.
+				// In this case, after we allocated a single "TU-portion" to the bag 5 times, we can't allocate anymore (and the bag is "full").
+
+				// We need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
+				aggregatedHUsCount++;
+				return currentHUCursor;
+			}
 		}
 
-		// If we have a next not null HU top pick, advance cursor and return the next one
+		// If we have a next not-null HU top pick, advance cursor and return the next one
 		// => advance the cursor until we found a current not null HU
 		while (currentHUCursor.hasNext())
 		{
@@ -194,7 +225,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		ListCursor<I_M_HU> currentHUCursor = productId2currentHU.get(productId);
 		if (currentHUCursor == null)
 		{
-			currentHUCursor = new ListCursor<I_M_HU>(availableHUs);
+			currentHUCursor = new ListCursor<I_M_HU>();
 			productId2currentHU.put(productId, currentHUCursor);
 		}
 		return currentHUCursor;
@@ -209,12 +240,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			InterfaceWrapperHelper.setTrxName(hu, contextTrxName);
 		}
-	}
-
-	public final void addHUToAllocate(final I_M_HU hu)
-	{
-		Check.assumeNotNull(hu, "hu not null");
-		availableHUs.add(hu);
 	}
 
 	/**
@@ -376,6 +401,16 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			afterHUAddedToCreatedList(hu);
 		}
+
+		if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu))
+		{
+			aggregatedHUsCount++;
+		}
+		else
+		{
+			_createdNonAggregateHUs.add(hu); // this is a subset of _createdHUs
+		}
+
 		return added;
 	}
 
@@ -433,6 +468,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		currentHUCursor.setCurrentValue(null); // mark it as removed from our list (which is shared between all other cursors)
 		currentHUCursor.closeCurrent(); // close the current position of this cursor
 
+		// since _createdNonAggregateHUs is just a subset of _createdHUs, we don't know if 'hu' was in there to start with. All we care is that it's not in _createdNonAggregateHUs after this method.
+		_createdNonAggregateHUs.remove(hu);
+
 		final boolean removedFromCreatedHUs = _createdHUs.remove(hu);
 		Check.assume(removedFromCreatedHUs, "Cannot destroy {} because it wasn't created by us", hu);
 
@@ -476,7 +514,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	@Override
 	public final int getCreatedHUsCount()
 	{
-		return _createdHUs.size();
+		return _createdNonAggregateHUs.size() + aggregatedHUsCount;
 	}
 
 	/**
@@ -499,9 +537,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			// Get/create current HU
 			final ListCursor<I_M_HU> currentHUCursor = getCreateCurrentHU(request);
-			// If there is no current HU to work with, stop here
+
 			if (currentHUCursor == null)
 			{
+				// If there is no current HU to work with, stop here. This happens e.g. if there are 5 TU allowed on one LU and we already created those 5 TUs.
+				// that's not a problem per se, it just means that another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet.
 				break;
 			}
 			I_M_HU currentHU = currentHUCursor.current();
@@ -539,13 +579,19 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			// Make sure current HU is no longer flagged as a new and empty HU
 			DYNATTR_IsEmptyHU.reset(currentHU);
 
-			// don't proceed to a new one. the HU builder made sure that 'currentHU' has a compressed child HU and we shall aggregate further stuff to is as we see fit
-			// if (currentResult.getQtyToAllocate().signum() != 0) // It seems that current HU is fully loaded and there is still stuff left to allocate
-			// {
-			// // ..so we need to move forward to a new one
-			// currentHUCursor.closeCurrent();
-			// currentHU = null;
-			// }
+			if (currentResult.getQtyToAllocate().signum() != 0) // It seems that current HU is fully loaded and there is still stuff left to allocate
+			{
+				if (currentHU.getM_HU_Item_Parent() != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(currentHU.getM_HU_Item_Parent().getItemType()))
+				{
+					// don't proceed to a new HU. currentHU is a "bag", so we can load much, much more into it.
+				}
+				else
+				{
+					currentHUCursor.closeCurrent(); // close the current "not-bag" HU and move on
+				}
+
+				currentHU = null;
+			}
 		}
 
 		//
@@ -577,15 +623,41 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 * Called by {@link #load(IAllocationRequest)} right before exiting.
-	 *
-	 * In this method, implementators can do final polishing because loader exits.
+	 * Called by {@link #load(IAllocationRequest)} right before exiting.<b>
+	 * In this method, implementors can do final polishing because loader exits.
+	 * <p>
+	 * <b>IMPORTANT:</b> overriding methods should invoke {@code super}, unless they know what they do.
+	 * <p>
+	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items. 
+	 * 
 	 *
 	 * @param result current result (that will be also returned by {@link #load(IAllocationRequest)} method)
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected void loadFinished(final IMutableAllocationResult result)
 	{
-		// nothing at this level
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final Set<I_M_HU_Item> itemsToSave = new IdentityHashSet<>();
+		final List<IHUTransaction> transactions = result.getTransactions();
+		for (final IHUTransaction trxCandidate : transactions)
+		{
+			final I_M_HU hu = trxCandidate.getM_HU_Item().getM_HU();
+
+			if (!handlingUnitsBL.isAggregateHU(hu))
+			{
+				continue;
+			}
+			handlingUnitsDAO.retrieveItems(hu).stream()
+					.filter(item -> X_M_HU_Item.ITEMTYPE_PackingMaterial.equals(item.getItemType()))
+					.forEach(item -> {
+						item.setQty(item.getQty().add(BigDecimal.ONE));
+						itemsToSave.add(item);
+					});
+		}
+		itemsToSave.forEach(item -> {
+			InterfaceWrapperHelper.save(item);
+		});
 	}
 
 	/**

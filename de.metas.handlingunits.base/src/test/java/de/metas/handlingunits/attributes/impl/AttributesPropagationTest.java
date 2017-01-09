@@ -143,7 +143,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
 
 		// create and destroy instances only with a I_M_Transaction
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = createPlainHU(incomingTrxDoc, huDefPalet);
 
 		return huPalets;
 	}

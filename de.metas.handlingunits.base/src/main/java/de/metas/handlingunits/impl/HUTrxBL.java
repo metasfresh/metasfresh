@@ -27,13 +27,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
-import org.adempiere.inout.service.IMTransactionBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Transaction;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -42,17 +39,13 @@ import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUContextProcessorExecutor;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
@@ -116,32 +109,6 @@ public class HUTrxBL implements IHUTrxBL
 	{
 		return _trxListeners.asList();
 	}
-
-//	@Override
-//	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
-//	{
-//		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
-//				"mtrx shall be inbound transaction: {}", mtrx);
-//
-//		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
-//		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
-//
-//		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
-//		final HUProducerDestination destination = new HUProducerDestination(huPI);
-//		final HULoader loader = new HULoader(source, destination);
-//
-//		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
-//		final IAllocationRequest request = AllocationUtils.createQtyRequest(
-//				huContext,
-//				mtrx.getM_Product(),
-//				mtrx.getMovementQty(),
-//				uom, mtrx.getMovementDate(),
-//				mtrx);
-//
-//		loader.load(request);
-//
-//		return destination.getCreatedHUs();
-//	}
 
 	@Override
 	public void transfer(

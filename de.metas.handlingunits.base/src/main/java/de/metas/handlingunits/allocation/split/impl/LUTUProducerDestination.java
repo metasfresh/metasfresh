@@ -74,8 +74,6 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	 */
 	private I_M_HU_PI_Item luItemPI;
 
-	private final Map<Integer, CompressedHUProducerDestination> luId2compressedHuProducer = new HashMap<>();
-
 	/**
 	 * Current Transport Units (TUs) producer
 	 */
@@ -123,6 +121,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	 * How many TUs to create for remaining Qty (i.e. after all LUs were created)?
 	 */
 	private int maxTUsForRemainingQty = Integer.MAX_VALUE;
+
 	/** How may TUs for remaining Qty were maximum created */
 	private int maxTUsForRemainingQty_ActuallyCreated = 0;
 
@@ -130,10 +129,12 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	 * How many LUs were actually created
 	 */
 	private int _createdLUsCount = 0;
+
 	/**
 	 * How many TUs were actually created for remaining Qty
 	 */
 	private int _createdTUsForRemaingQtyCount = 0;
+
 	/**
 	 * Config: existing HUs to be considered when we create the actual LUs/TUs.
 	 */
@@ -326,7 +327,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 
 		//
 		// Create a new TU Producer
-		final I_M_HU_PI_Item luItemPI = getLUItemPI(); 
+		final I_M_HU_PI_Item luItemPI = getLUItemPI();
 		Check.assumeNotNull(luItemPI, "Member luItemPI not null");
 
 		final I_M_HU_Item luItem = handlingUnitsDAO.retrieveItem(luHU, luItemPI);
@@ -462,6 +463,9 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		return huCapacityBL.createCapacity(qtyCUPerTU, cuProduct, cuUOM, false); // allowNegativeCapacity=false;
 	}
 
+	/**
+	 * Creates and invokes a {@link TUProducerDestination} to "fill" the given {@code luHU}.
+	 */
 	@Override
 	protected IAllocationResult loadHU(final I_M_HU luHU, final IAllocationRequest request)
 	{

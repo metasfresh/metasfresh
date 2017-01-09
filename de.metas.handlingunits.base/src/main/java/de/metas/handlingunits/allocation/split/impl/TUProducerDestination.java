@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.split.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,6 +43,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
  * Creates TUs.
  *
  * But, instead of using standard capacity definition of given TU PI, we will use the a constrained capacity which is provided.
+ * Its allocation strategy is the {@link UpperBoundAllocationStrategy}.
  *
  * @author tsa
  *
@@ -138,7 +138,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 	/**
 	 * Allocates the given request to the given <code>tuHU</code>, using {@link UpperBoundAllocationStrategy}.
 	 *
-	 * @param tuHU TU to load
+	 * @param tuHU TU to load. might also be the VHU of the LU's aggregation item.
 	 * @param request
 	 * @return allocation result
 	 */
@@ -157,4 +157,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 		final IAllocationStrategy allocationStrategy = new UpperBoundAllocationStrategy(capacityOverride);
 		return allocationStrategy;
 	}
+
+
+
 }
