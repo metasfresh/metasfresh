@@ -28,12 +28,31 @@ class TableQuickInput extends Component {
         this.state = {
             layout: null,
             data: null,
-            id: null
+            id: null,
+            editedField: 0
         }
     }
 
     componentDidMount() {
         this.initQuickInput();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const {data, layout, editedField} = this.state;
+        if(data){
+            for(let i = 0; i < layout.length; i++){
+                const item = layout[i].fields.map(elem => findRowByPropName(data, elem.field));
+                if(!item[0].value){
+                    if(editedField !== i){
+                        this.setState(Object.assign({}, this.state, {
+                            editedField: i
+                        }));
+                    }
+
+                    break;
+                }
+            }
+        }
     }
 
     initQuickInput = () => {
@@ -46,7 +65,8 @@ class TableQuickInput extends Component {
             dispatch(createInstance('window', docType, docId, tabId, 'quickInput')).then(instance => {
                 this.setState(Object.assign({}, this.state, {
                     data: parseToDisplay(instance.data.fields),
-                    id: instance.data.id
+                    id: instance.data.id,
+                    editedField: 0
                 }));
             }).catch(err => {
 
@@ -96,6 +116,7 @@ class TableQuickInput extends Component {
 
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
         const {tabId, docType} = this.props;
+        const {editedField} = this.state;
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
@@ -117,6 +138,7 @@ class TableQuickInput extends Component {
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
                     type="secondary"
+                    autoFocus={id === editedField}
                 />)
             })
         }
@@ -160,7 +182,11 @@ class TableQuickInput extends Component {
         } = this.state;
 
         return (
-            <form onSubmit={this.onSubmit} className="quick-input-container">
+            <form
+                onSubmit={this.onSubmit}
+                className="quick-input-container"
+                ref={c => this.form = c}
+            >
                 {this.renderFields(layout, data, docId, 'window', id)} <div className="hint">(Press 'Enter' to add)</div>
                 <button type="submit" className="hidden-xs-up"></button>
             </form>
