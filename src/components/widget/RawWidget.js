@@ -58,7 +58,8 @@ class RawWidget extends Component {
         const {
             handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId
+            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
+            autoFocus
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -118,6 +119,7 @@ class RawWidget extends Component {
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                                ref={c => {(c && autoFocus) && c.focus()}}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -145,6 +147,7 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -171,6 +174,7 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -203,6 +207,7 @@ class RawWidget extends Component {
                         rowId={rowId}
                         tabIndex={tabIndex}
                         viewId={viewId}
+                        autoFocus={autoFocus}
                     />
                 )
             case "List":
@@ -230,6 +235,7 @@ class RawWidget extends Component {
                         emptyText={widgetFields.emptyText}
                         tabIndex={tabIndex}
                         viewId={viewId}
+                        autoFocus={autoFocus}
                     />
                 )
             case "Text":
@@ -256,6 +262,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
@@ -281,6 +288,7 @@ class RawWidget extends Component {
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -307,6 +315,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {autoFocus && c.focus()}}
                         />
                     </div>
                 )
@@ -331,6 +340,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -357,6 +367,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -383,6 +394,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -407,6 +419,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -418,6 +431,7 @@ class RawWidget extends Component {
                             (widgetData.readonly ? "input-disabled " : "")
                         }
                         tabIndex={tabIndex}
+                        ref={c => this.input = c}
                         onKeyDown={e => {
                             if(e.key === " "){
                                 e.preventDefault();
@@ -431,7 +445,7 @@ class RawWidget extends Component {
                             disabled={widgetData.readonly}
                             onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
-                            ref={c => this.checkbox = c}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <div className={"input-checkbox-tick"}/>
                     </label>
@@ -445,6 +459,7 @@ class RawWidget extends Component {
                             (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
                         }
                         tabIndex={tabIndex}
+                        ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         <input
                             type="checkbox"
@@ -464,6 +479,7 @@ class RawWidget extends Component {
                             (align ? "text-xs-" + align + " " : "")
                         }
                         tabIndex={tabIndex}
+                        ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         {widgetData.value}
                     </div>
@@ -477,6 +493,7 @@ class RawWidget extends Component {
                         }
                         onClick={(e) => handlePatch(widgetField)}
                         tabIndex={tabIndex}
+                        ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
                     </button>
@@ -490,6 +507,7 @@ class RawWidget extends Component {
                         dataId={dataId}
                         onChange={(option) => handlePatch(fields[1].field, option)}
                         tabIndex={tabIndex}
+                        ref={c => {(c && autoFocus) && c.focus()}}
                     />
                 )
             case "ProductAttributes":
@@ -506,6 +524,7 @@ class RawWidget extends Component {
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => handlePatch(widgetField, option)}
                         tabIndex={tabIndex}
+                        autoFocus={autoFocus}
                     />
                 )
             case "Address":
@@ -522,6 +541,7 @@ class RawWidget extends Component {
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => handlePatch(widgetField, option)}
                         tabIndex={tabIndex}
+                        autoFocus={autoFocus}
                     />
                 )
             default:
@@ -555,7 +575,9 @@ class RawWidget extends Component {
                             {caption}
                         </div>
                     }
-                    <div className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}>
+                    <div
+                        className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}
+                    >
                         {this.renderWidget(
                             widgetType, fields, windowType, dataId, type, widgetData,
                             rowId, tabId, icon, gridAlign
