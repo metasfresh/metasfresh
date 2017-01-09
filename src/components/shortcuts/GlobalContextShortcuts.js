@@ -10,43 +10,46 @@ class GlobalContextShortcuts extends Component {
         const { 
           handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal, 
           handlePrint, handleDelete, handleSideListToggle, handleInboxOpen, 
-          closeInbox, redirect, handleDocStatusToggle 
+          closeInbox, redirect, handleDocStatusToggle, closeOverlays 
         } = this.props;
         switch (action) {
             case 'OPEN_ACTIONS_MENU':
                 event.preventDefault();
-                closeMenuOverlay();
-                closeInbox();
-                if(handleDocStatusToggle){
-                    handleDocStatusToggle(true);
-                }
-                handleSubheaderOpen();
+                // closeMenuOverlay();
+                // closeInbox();
+                // closeOverlays();
+                // if(handleDocStatusToggle){
+                //     handleDocStatusToggle(true);
+                // }
+                closeOverlays(handleSubheaderOpen);
+                
                 break;
             case 'OPEN_NAVIGATION_MENU':
                 event.preventDefault();
-                closeInbox();
-                if(handleDocStatusToggle){
-                    handleDocStatusToggle(true);
-                }
+                // closeInbox();
+                // if(handleDocStatusToggle){
+                    // handleDocStatusToggle(true);
+                // }
                 handleMenuOverlay();
                 break;
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
-                closeMenuOverlay();
-                if(handleDocStatusToggle){
-                    handleDocStatusToggle(true);
-                }
-                handleInboxOpen(true);
+                // closeMenuOverlay();
+                // if(handleDocStatusToggle){
+                //     handleDocStatusToggle(true);
+                // }
+                closeOverlays((e)=> handleInboxOpen(true));
+                
                 break;
             case 'OPEN_SIDEBAR_MENU':
                 event.preventDefault();
-                closeMenuOverlay();
-                closeInbox();
-                if(handleDocStatusToggle){
-                    handleDocStatusToggle(true);
-                }
+                // closeMenuOverlay();
+                // closeInbox();
+                // if(handleDocStatusToggle){
+                //     handleDocStatusToggle(true);
+                // }
                 if (handleSideListToggle) {
-                    handleSideListToggle();
+                    closeOverlays(handleSideListToggle);
                 }
                 break;
             case 'DELETE_DOCUMENT':
@@ -75,10 +78,10 @@ class GlobalContextShortcuts extends Component {
                 break;
             case 'DOC_STATUS':
                 event.preventDefault();
-                closeMenuOverlay();
-                closeInbox();
+                // closeMenuOverlay();
+                // closeInbox();
                 if(handleDocStatusToggle) {
-                    handleDocStatusToggle();
+                    closeOverlays(handleDocStatusToggle);
                 }
                 break;
         }
