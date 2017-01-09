@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-01-06T18:27:33 -->
+<!-- 2017-01-09T11:19:02 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -44,7 +44,7 @@
 		</band>
 	</background>
 	<title>
-		<band height="362" splitType="Stretch">
+		<band height="377" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
@@ -59,7 +59,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="207" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
+				<reportElement key="subreport-8" x="0" y="222" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="ad_language">
