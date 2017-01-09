@@ -25,13 +25,12 @@ package de.metas.adempiere.callout;
 
 import java.math.BigDecimal;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-import mockit.Verifications;
-
 import org.compiere.model.MProduct;
 
 import de.metas.adempiere.form.IClientUI;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
 
 public class OrderFastInputTests
 {
@@ -89,7 +88,7 @@ public class OrderFastInputTests
 	
 	public void hasWeight(final MProduct prod, final BigDecimal weight)
 	{
-		new NonStrictExpectations()
+		new Expectations()
 		{{
 			prod.getWeight();	result = weight;
 		}};

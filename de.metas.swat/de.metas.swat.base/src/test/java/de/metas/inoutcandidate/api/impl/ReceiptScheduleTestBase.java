@@ -62,8 +62,8 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.product.acct.api.IProductAcctDAO;
+import mockit.Expectations;
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 
 public abstract class ReceiptScheduleTestBase
 {
@@ -169,9 +169,9 @@ public abstract class ReceiptScheduleTestBase
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		//@formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
-			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); result = activity;
+			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); minTimes=0; result = activity;
 		}};
 		//@formatter:on
 		
