@@ -21,7 +21,8 @@ class RawWidget extends Component {
 
         this.state = {
             textValue: props.selectedItem,
-            isEdited: false
+            isEdited: false,
+            cachedValue: null
         }
     }
 
@@ -38,25 +39,49 @@ class RawWidget extends Component {
         const {handleFocus} = this.props;
 
         this.setState(Object.assign({}, this.state, {
-            isEdited: true
-        }))
+            isEdited: true,
+            cachedValue: e.target.value
+        }));
 
-        handleFocus(e, e.target.value);
+        handleFocus && handleFocus();
+    }
+
+    handlePatch = (property, value, id) => {
+        const {handlePatch, widgetData} = this.props;
+        const {cachedValue} = this.state;
+        let ret = null;
+
+        //do patch only when value is not equal state
+        //or cache is set and it is not equal value
+
+        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
+
+            if(handlePatch) {
+                ret = handlePatch(property, value, id);
+            }
+        }
+
+        if(ret){
+            this.setState(Object.assign({}, this.state, {
+                cachedValue: null
+            }));
+        }
+
+        return ret;
     }
 
     handleBlur = (widgetField, value, id) => {
-        const {handlePatch} = this.props;
-
         this.setState(Object.assign({}, this.state, {
             isEdited: false
         }));
 
-        handlePatch(widgetField, value, id);
+        this.handlePatch(widgetField, value, id);
     }
 
     renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
         const {
-            handlePatch, handleChange, handleFocus, updated, isModal, filterWidget,
+            handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
             isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
             autoFocus
@@ -89,7 +114,7 @@ class RawWidget extends Component {
                     //input! For further usage, needs upgrade.
                     return (
                         <DatetimeRange
-                            onChange={(value, valueTo) => handlePatch(widgetField, value, valueTo)}
+                            onChange={(value, valueTo) => this.handlePatch(widgetField, value, valueTo)}
                             mandatory={widgetData.mandatory}
                             isShown={isShown}
                             isHidden={isHidden}
@@ -118,7 +143,7 @@ class RawWidget extends Component {
                                 }}
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                                patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                                 ref={c => {(c && autoFocus) && c.focus()}}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
@@ -145,7 +170,7 @@ class RawWidget extends Component {
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -172,7 +197,7 @@ class RawWidget extends Component {
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -194,7 +219,7 @@ class RawWidget extends Component {
                         readonly={widgetData.readonly}
                         mandatory={widgetData.mandatory}
                         rank={type}
-                        onChange={handlePatch}
+                        onChange={this.handlePatch}
                         align={align}
                         isModal={isModal}
                         updated={updated}
@@ -225,7 +250,7 @@ class RawWidget extends Component {
                         windowType={windowType}
                         rowId={rowId}
                         tabId={tabId}
-                        onChange={(option) => handlePatch(widgetField, option, id)}
+                        onChange={(option) => this.handlePatch(widgetField, option, id)}
                         align={align}
                         updated={updated}
                         filterWidget={filterWidget}
@@ -443,7 +468,7 @@ class RawWidget extends Component {
                             type="checkbox"
                             checked={selectedField}
                             disabled={widgetData.readonly}
-                            onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
+                            onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -466,7 +491,7 @@ class RawWidget extends Component {
                             checked={selectedField}
                             disabled={widgetData.readonly}
                             tabIndex="-1"
-                            onChange={(e) => handlePatch(widgetField, e.target.checked, id)}
+                            onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                         />
                         <div className={"input-slider"} />
                     </label>
@@ -491,7 +516,7 @@ class RawWidget extends Component {
                             "btn btn-sm btn-meta-primary " +
                             (align ? "text-xs-" + align + " " : "")
                         }
-                        onClick={(e) => handlePatch(widgetField)}
+                        onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
@@ -505,7 +530,7 @@ class RawWidget extends Component {
                         windowType={windowType}
                         fields={fields}
                         dataId={dataId}
-                        onChange={(option) => handlePatch(fields[1].field, option)}
+                        onChange={(option) => this.handlePatch(fields[1].field, option)}
                         tabIndex={tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     />
@@ -522,7 +547,7 @@ class RawWidget extends Component {
                         rowId={rowId}
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
-                        patch={(option) => handlePatch(widgetField, option)}
+                        patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={tabIndex}
                         autoFocus={autoFocus}
                     />
@@ -539,7 +564,7 @@ class RawWidget extends Component {
                         rowId={rowId}
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
-                        patch={(option) => handlePatch(widgetField, option)}
+                        patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={tabIndex}
                         autoFocus={autoFocus}
                     />
