@@ -230,7 +230,7 @@ class Header extends Component {
     }
 
     handleDocStatusToggle = (close) => {
-        let elem = document.getElementsByClassName("js-dropdown-toggler")[0];
+        const elem = document.getElementsByClassName("js-dropdown-toggler")[0];
 
         if(close) {
             elem.blur();
@@ -282,7 +282,7 @@ class Header extends Component {
                             <div className="header-left-side">
                                 <div
                                     onClick={e => {this.handleCloseSideList(this.handleSubheaderOpen)}}
-                                    onMouseEnter={(e) => this.toggleTooltip('tooltip1')}
+                                    onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU)}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                     className={"btn-square btn-header tooltip-parent " +
                                         (isSubheaderShow ?
@@ -292,7 +292,7 @@ class Header extends Component {
                                 >
                                     <i className="meta-icon-more" />
 
-                                    { tooltip.open === 'tooltip1' &&
+                                    { tooltip.open === keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU &&
                                     <Tooltips
                                         name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
                                         action={'Action menu'}
@@ -348,14 +348,14 @@ class Header extends Component {
                                     "header-item-container header-item-container-static pointer tooltip-parent "+
                                     (isInboxOpen ? "header-item-open " : "")}
                                     onClick={(e) => this.handleInboxOpen(true, this.handleMenuOverlay)}
-                                    onMouseEnter={(e) => this.toggleTooltip('tooltip2')}
+                                    onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU)}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                 >
                                     <span className={"header-item header-item-badge icon-lg"}>
                                         <i className="meta-icon-notifications" />
                                         {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>
-                                    { tooltip.open === 'tooltip2' &&
+                                    { tooltip.open === keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU &&
                                         <Tooltips
                                             name={keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU}
                                             action={'Inbox'}
@@ -380,11 +380,11 @@ class Header extends Component {
                                                 : "btn-meta-primary")
                                         }
                                         onClick={e => {this.handleBackdropClick(this.handleSideListToggle)}}
-                                        onMouseEnter={(e) => this.toggleTooltip('tooltip3')}
+                                        onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU)}
                                         onMouseLeave={(e) => this.toggleTooltip('')}
                                     >
                                         <i className="meta-icon-list" />
-                                        { tooltip.open === 'tooltip3' &&
+                                        { tooltip.open === keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU &&
                                             <Tooltips
                                                 name={keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU}
                                                 action={'Side list'}

@@ -30,10 +30,8 @@ class Subheader extends Component {
     componentDidMount() {
         const {dispatch, windowType, dataId, viewId, selected} = this.props;
         dispatch(setActions([]));
-
-        // this.subHeader.focus();
-        // document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
-        //  document.getElementsByClassName('js-subheader-column')[0].focus();
+        
+        document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
 
         if(windowType && dataId){
             dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
@@ -65,44 +63,36 @@ class Subheader extends Component {
 
     handleKeyDown = (e) => {
 
-        // document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
-
-        // let navigateList = document.getElementsByClassName('js-subheader-column')[0].childNodes;
-
         let columnList = document.getElementsByClassName('js-subheader-column');
         let itemList = document.getElementsByClassName('js-subheader-column')[0].childNodes;
 
         let lastColumnActiveElement = document.getElementsByClassName('js-subheader-column')[0];
 
-
-        // console.log(columnList.length);
-
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
-                // console.log(this.getItemActiveElem());
+                
                 let activeElem = this.getItemActiveElem();
-                if(document.activeElem.nextSibling) {
-                    document.activeElem.nextSibling.focus();
+                if(activeElem.nextSibling) {
+                    activeElem.nextSibling.focus();
                 }
                 break;
             case "ArrowUp":
                 e.preventDefault();
-                // console.log(document.activeElement.previousSibling);
-                if(document.activeElement.previousSibling) {
-                    document.activeElement.previousSibling.focus();
+                let activeEl = this.getItemActiveElem();
+                if(activeEl.previousSibling) {
+                    activeEl.previousSibling.focus();
                 }
                 break;
             case "ArrowLeft":
                 e.preventDefault();
-                // console.log("ArrowLeft");
-                if(document.activeElement.previousSibling) {
-                    document.activeElement.previousSibling.focus();
+                let activeColumn = this.getColumnActiveElem();
+                if(activeColumn.previousSibling) {
+                    activeColumn.previousSibling.focus();
                 }
                 break;
             case "ArrowRight":
                 e.preventDefault();
-                // console.log(this.getColumnActiveElem());
                 let activeCol = this.getColumnActiveElem();
                 if(activeCol.nextSibling) {
                     activeCol.nextSibling.focus();
@@ -110,7 +100,6 @@ class Subheader extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                // console.log("Enter");
                 document.activeElement.click();
                 break;
         }
@@ -126,7 +115,7 @@ class Subheader extends Component {
 
     getItemActiveElem = () => {
         if(document.activeElement.classList.contains("js-subheader-column")) {
-            return document.activeElement.childNodes[0];
+            return document.activeElement.childNodes[2];
         } else {
              return document.activeElement;
         }
@@ -158,35 +147,37 @@ class Subheader extends Component {
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}</span></div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}</span></div>}
-                                <div className="subheader-item" tabIndex={0} onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
+                                <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
                             </div>
                             <div className=" subheader-column js-subheader-column" tabIndex={0}>
                                 <div className="subheader-header">Actions</div>
                                 <div className="subheader-break" />
                                 { actions && !!actions.length ? actions.map((item, key) =>
                                     <div
-                                        className="subheader-item"
+                                        className="subheader-item js-subheader-item"
                                         onClick={() => openModal(item.processId + "", "process", item.caption)}
                                         key={key}
+                                        tabIndex={0}
                                     >
                                         {item.caption}
                                     </div>
                                 ) : <div className="subheader-item subheader-item-disabled">There is no actions</div>}
                             </div>
                             <div className=" subheader-column js-subheader-column" tabIndex={0}>
-                                <div>
+                                
                                     <div className="subheader-header">Referenced documents</div>
                                     <div className="subheader-break" />
                                     { references && !!references.length ? references.map((item, key) =>
                                         <div
-                                            className="subheader-item"
+                                            className="subheader-item js-subheader-item"
                                             onClick={() => this.handleReferenceClick(item.documentType, item.filter)}
                                             key={key}
+                                            tabIndex={0}
                                         >
                                             {item.caption}
                                         </div>
                                     ) : <div className="subheader-item subheader-item-disabled">There is no referenced document</div>}
-                                </div>
+                              
                             </div>
                             <div className="subheader-column">
 
