@@ -32,7 +32,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.time.SystemTime;
@@ -145,7 +145,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		currentShipment = getCreateShipmentHeader(sched);
 		currentShipmentLineBuilder = null;
-		currentCandidates = new ArrayList<IShipmentScheduleWithHU>();
+		currentCandidates = new ArrayList<>();
 	}
 
 	/**
@@ -372,11 +372,11 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 				// save the shipment schedule using current transaction
 				InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 			}
-			ILoggable.THREADLOCAL.getLoggable().addLog("Shipment {0} was created;\nIShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
+			Loggables.get().addLog("Shipment {0} was created;\nIShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 		}
 		else
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
+			Loggables.get().addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
 			InterfaceWrapperHelper.delete(currentShipment);
 		}
 

@@ -5,6 +5,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -63,7 +64,7 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 					.getModelIndexerById(modelIndexerId)
 					.removeFromIndexByIds(idsToRemove);
 
-			getLoggable().addLog(result.getSummary());
+			Loggables.get().addLog(result.getSummary());
 
 			result.throwExceceptionIfAnyFailure();
 

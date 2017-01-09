@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -132,7 +132,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 		if (errorMsg != null)
 		{
-			getLoggable().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
+			Loggables.get().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
 		}
 
 		countProcessed.incrementAndGet();
@@ -145,7 +145,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 		if (errorMsg != null)
 		{
-			getLoggable().addLog("Event " + event + " skipped: " + errorMsg);
+			Loggables.get().addLog("Event " + event + " skipped: " + errorMsg);
 		}
 
 		countSkipped.incrementAndGet();
@@ -170,10 +170,10 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 	/**
 	 * Create an planning {@link I_PMM_QtyReport_Event}, for 2 weeks ago.
-	 * 
+	 *
 	 * The main reason for doing this is because when the user is reporting a trend, we want to see that trend in PMM Purchase Candidates window. So we are creating an ZERO planning QtyReport event
 	 * which will trigger the candidate creation if is not already there. And yes, we report for 2 weeks ago because in the candidates window we display the planning for next 2 weeks.
-	 * 
+	 *
 	 * @param weekReportEvent
 	 * @task FRESH-167
 	 */
@@ -191,11 +191,6 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		syncProductSupply_TwoWeeksAgo.setDay(dateTwoWeeksAgo);
 
 		Services.get(IServerSyncBL.class).reportProductSupplies(SyncProductSuppliesRequest.of(syncProductSupply_TwoWeeksAgo));
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
 	}
 
 	public String getProcessSummary()

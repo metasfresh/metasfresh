@@ -10,14 +10,14 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -350,9 +350,12 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID)
 				.createQueryOrderBy();
 
-		final POJOQuery<I_C_Printing_Queue> query = new POJOQuery<I_C_Printing_Queue>(ctx, I_C_Printing_Queue.class, trxName)
-				.addFilter(filter)
-				.setOrderBy(orderBy);
+		final POJOQuery<I_C_Printing_Queue> query = new POJOQuery<I_C_Printing_Queue>(ctx,
+				I_C_Printing_Queue.class,
+				null,  // tableName=null => get it from the given model class
+				trxName)
+						.addFilter(filter)
+						.setOrderBy(orderBy);
 
 		return query;
 	}

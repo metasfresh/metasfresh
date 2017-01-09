@@ -144,7 +144,8 @@ public class PMMPricingBL implements IPMMPricingBL
 		pricingAware.setPrice(pricingResult.getPriceStd());
 	}
 
-	private boolean updatePriceFromContract(final IPMMPricingAware pricingAware)
+	@Override
+	public boolean updatePriceFromContract(final IPMMPricingAware pricingAware)
 	{
 		final I_C_Flatrate_Term flatrateTerm = pricingAware.getC_Flatrate_Term();
 		if (flatrateTerm == null)
@@ -158,14 +159,14 @@ public class PMMPricingBL implements IPMMPricingBL
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pricingAware.getC_Flatrate_DataEntry();
 		if (dataEntryForProduct == null)
 		{
-			logger.warn("Event is missing C_Flatrate_DataEntry: {}", pricingAware);
+			logger.info("Event is missing C_Flatrate_DataEntry: {}", pricingAware);
 			return false;
 		}
 		
 		final BigDecimal flatrateAmtPerUOM = dataEntryForProduct.getFlatrateAmtPerUOM();
 		if (flatrateAmtPerUOM == null || flatrateAmtPerUOM.signum() <= 0)
 		{
-			logger.warn("Invalid FlatrateAmtPerUOM: {} (event={})", flatrateAmtPerUOM, pricingAware);
+			logger.info("Invalid FlatrateAmtPerUOM: {} (event={})", flatrateAmtPerUOM, pricingAware);
 			return false;
 		}
 

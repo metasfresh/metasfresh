@@ -35,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.util.TrxRunnable;
@@ -80,7 +81,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)
 	{
-		final List<IInvoiceCandidateHandler> result = new ArrayList<IInvoiceCandidateHandler>();
+		final List<IInvoiceCandidateHandler> result = new ArrayList<>();
 
 		final List<I_C_ILCandHandler> handlerRecordsForTable = Services.get(IInvoiceCandidateHandlerDAO.class).retrieveForTable(ctx, tableName);
 		for (final I_C_ILCandHandler record : handlerRecordsForTable)
@@ -209,7 +210,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final Object model,
 			final String trxName)
 	{
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
+		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
 		if (handlerRecords == null || handlerRecords.isEmpty())
 		{
 			logger.warn("No C_ILCandHandler were provided for '{}'. Nothing to do.", model);
@@ -218,7 +219,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		// services
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOrLogger(logger, Level.INFO);
+		final ILoggable loggable = Loggables.getLoggableOrLogger(logger, Level.INFO);
 
 		for (final I_C_ILCandHandler handlerRecord : handlerRecords)
 		{
@@ -344,7 +345,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				{
 					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
 
-					ILoggable.THREADLOCAL.getLoggable().addLog(msg, e.getClass(), request, requestInitial);
+					Loggables.get().addLog(msg, e.getClass(), request, requestInitial);
 					logger.error(msg, e.getClass(), request, requestInitial, e);
 				}
 			}
@@ -419,8 +420,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		// * AD_Table_ID
 		// * Record_ID
 		// add one representative for each combination to our map 'key2IC'
-		final Map<ArrayKey, I_C_Invoice_Candidate> headerAndPartnerKey2IC = new HashMap<ArrayKey, I_C_Invoice_Candidate>();
-		final Map<ArrayKey, I_C_Invoice_Candidate> referencedRecordKey2IC = new HashMap<ArrayKey, I_C_Invoice_Candidate>();
+		final Map<ArrayKey, I_C_Invoice_Candidate> headerAndPartnerKey2IC = new HashMap<>();
+		final Map<ArrayKey, I_C_Invoice_Candidate> referencedRecordKey2IC = new HashMap<>();
 		for (final I_C_Invoice_Candidate ic : candidates)
 		{
 			final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);

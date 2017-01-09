@@ -39,7 +39,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Activity;
@@ -194,7 +194,7 @@ public class InvoiceCandidateWriter
 		// Make sure the invoice candidate is saved, so that we can use its ID further down (e.g. to reference if from the detail lines)
 		InterfaceWrapperHelper.save(invoiceCandidate);
 
-		ILoggable.THREADLOCAL.getLoggable().addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
+		Loggables.get().addLog((newIc ? "Created new IC " : "Updated existing IC ") + invoiceCandidate);
 
 		//
 		// delete/recreate Invoice Clearing Allocation

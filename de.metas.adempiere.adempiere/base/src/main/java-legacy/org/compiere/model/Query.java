@@ -26,7 +26,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.exceptions.DBException;
 
 /**
- * 
+ *
  * @author Low Heng Sin
  * @author Teo Sarca, www.arhipac.ro <li>FR [ 1981760 ] Improve Query class <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue <li>FR [ 2041894 ] Add Query.match() method <li>FR [
  *         2107068 ] Query.setOrderBy should be more error tolerant <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method <li>FR [

@@ -38,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -122,7 +123,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (candidates.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			getLoggable().addLog("No unprocessed candidates were found");
+			Loggables.get().addLog("No unprocessed candidates were found");
 		}
 
 		//
@@ -179,7 +180,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private final List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext, final I_C_Queue_WorkPackage workpackage, final String trxName)
 	{
-		final List<IShipmentScheduleWithHU> candidates = new ArrayList<IShipmentScheduleWithHU>();
+		final List<IShipmentScheduleWithHU> candidates = new ArrayList<>();
 
 		final Iterator<I_M_ShipmentSchedule> schedules = retriveShipmentSchedules(workpackage, trxName);
 		while (schedules.hasNext())
@@ -273,7 +274,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				final boolean wereDelivered = shipmentScheduleAllocDAO.retrievePickedAndDeliveredRecordsQuery(schedule).create().match();
 				if (wereDelivered)
 				{
-					getLoggable().addLog("Skipped shipment schedule because it was already delivered: " + schedule);
+					Loggables.get().addLog("Skipped shipment schedule because it was already delivered: " + schedule);
 					return Collections.emptyList();
 				}
 
@@ -296,7 +297,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
-		final List<IShipmentScheduleWithHU> candidates = new ArrayList<IShipmentScheduleWithHU>(qtyPickedRecords.size());
+		final List<IShipmentScheduleWithHU> candidates = new ArrayList<>(qtyPickedRecords.size());
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
 		{
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);

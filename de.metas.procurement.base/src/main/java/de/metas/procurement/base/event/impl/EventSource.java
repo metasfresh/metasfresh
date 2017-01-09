@@ -95,7 +95,7 @@ public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 		if (_iterator == null)
 		{
 			final ILock lock = getOrAcquireLock();
-			final Object contextProvider = PlainContextAware.createUsingThreadInheritedTransaction(ctx);
+			final Object contextProvider = PlainContextAware.newWithThreadInheritedTrx(ctx);
 			_iterator = queryBL.createQueryBuilder(eventTypeClass, contextProvider)
 					.filter(lockManager.getLockedByFilter(eventTypeClass, lock))
 					//

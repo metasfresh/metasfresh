@@ -40,7 +40,7 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -72,6 +72,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
@@ -307,7 +308,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 
-		final List<I_C_Invoice_Candidate> result = new ArrayList<I_C_Invoice_Candidate>();
+		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
 
 		final int productIdCand;
 		final int productIdCorrCand = fc.getM_Product_Actual_ID();
@@ -750,7 +751,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final boolean auxEntry = flatrateTerm.getC_Flatrate_Conditions().getC_UOM_ID() != uom.getC_UOM_ID();
 
-		List<I_C_Flatrate_DataEntry> result = new ArrayList<I_C_Flatrate_DataEntry>();
+		List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
 
 		final List<I_C_Flatrate_DataEntry> invoicingEntries =
 				flatrateDB.retrieveInvoicingEntries(flatrateTerm, startDate, endDate, uom);
@@ -880,8 +881,7 @@ public class FlatrateBL implements IFlatrateBL
 						counter,
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate() });
-		addLog(msg);
-
+		Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
 	}
 
 	private void createEntriesForFlatFee(
@@ -933,13 +933,7 @@ public class FlatrateBL implements IFlatrateBL
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate(),
 						columnLookup.getDisplay(flatrateTerm.getUOMType()) });
-		addLog(msg);
-	}
-
-	private void addLog(final String msg)
-	{
-		logger.info(msg);
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg);
+		Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
 	}
 
 	@Override
@@ -1224,7 +1218,7 @@ public class FlatrateBL implements IFlatrateBL
 			{
 				if (nextTermStartDate.before(currentTerm.getStartDate()) || nextTermStartDate.after(dayAfterEndDate))
 				{
-					ILoggable.THREADLOCAL.getLoggable().addLog(
+					Loggables.get().addLog(
 							"Ignore nextTermStartDate={} because if is not between currentTerm's StartDate={} and DayAfterEndDate={}. Instead, use dayAfterEndDate",
 							nextTermStartDate, currentTerm.getStartDate(), dayAfterEndDate);
 					firstDayOfNewTerm = dayAfterEndDate;

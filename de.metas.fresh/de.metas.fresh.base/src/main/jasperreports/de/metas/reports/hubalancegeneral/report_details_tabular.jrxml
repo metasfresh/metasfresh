@@ -7,6 +7,8 @@
 	<property name="ireport.zoom" value="2.1204880918624327"/>
 	<property name="ireport.x" value="256"/>
 	<property name="ireport.y" value="96"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -32,9 +34,9 @@
 	*,
 
 	 now() as now,
-	(select name from C_BPartner where C_BPartner_ID = $P{C_BPartner_ID}) as bpartnername,
-	(select name from C_BP_Group where C_BP_Group_ID = $P{C_BP_Group_ID}) as bpgroupname,
-	(select name from M_Product where M_Product_ID = $P{M_Product_ID}) as productname
+	(select name from C_BPartner where C_BPartner_ID = $P{C_BPartner_ID} AND isActive = 'Y') as bpartnername,
+	(select name from C_BP_Group where C_BP_Group_ID = $P{C_BP_Group_ID} AND isActive = 'Y') as bpgroupname,
+	(select name from M_Product where M_Product_ID = $P{M_Product_ID} AND isActive = 'Y') as productname
 FROM
 	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(
 		$P{M_Material_Balance_Config_ID}, 

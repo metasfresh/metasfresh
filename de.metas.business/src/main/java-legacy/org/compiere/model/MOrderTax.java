@@ -44,7 +44,7 @@ import de.metas.tax.api.ITaxBL;
 public class MOrderTax extends X_C_OrderTax
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -6776007249310373908L;
 
@@ -149,13 +149,12 @@ public class MOrderTax extends X_C_OrderTax
 	 * @param ignored ignored
 	 * @param trxName transaction
 	 */
-	public MOrderTax(Properties ctx, int ignored, String trxName)
+	public MOrderTax(Properties ctx, int id, String trxName)
 	{
-		super(ctx, 0, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-Key");
-		setTaxAmt(Env.ZERO);
-		setTaxBaseAmt(Env.ZERO);
+		super(ctx, id, trxName);
+
+		setTaxAmt(BigDecimal.ZERO);
+		setTaxBaseAmt(BigDecimal.ZERO);
 		setIsTaxIncluded(false);
 	}	// MOrderTax
 
@@ -178,7 +177,7 @@ public class MOrderTax extends X_C_OrderTax
 
 	/**
 	 * Get Precision
-	 * 
+	 *
 	 * @return Returns the precision or 2
 	 */
 	private int getPrecision()
@@ -212,9 +211,9 @@ public class MOrderTax extends X_C_OrderTax
 
 	/**************************************************************************
 	 * Calculate/Set Tax Amt from Order Lines
-	 * 
+	 *
 	 * If there were no invoice lines found for this tax, this record will be inactivated. In this way, the caller method can know about this and it can decide if this record will be deleted.
-	 * 
+	 *
 	 * @return true if calculated
 	 */
 	public boolean calculateTaxFromLines()
@@ -231,7 +230,7 @@ public class MOrderTax extends X_C_OrderTax
 		final I_C_Tax tax = getTax();
 		//
 		final String sql = "SELECT "
-				+ I_C_OrderLine.COLUMNNAME_LineNetAmt // 1 
+				+ I_C_OrderLine.COLUMNNAME_LineNetAmt // 1
 				+ ", " + I_C_OrderLine.COLUMNNAME_IsPackagingMaterial // 2
 				+ " FROM " + I_C_OrderLine.Table_Name
 				+ " WHERE "
@@ -254,7 +253,7 @@ public class MOrderTax extends X_C_OrderTax
 				//
 				if (!documentLevel)		// calculate line tax
 					taxAmt = taxAmt.add(taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision()));
-				
+
 				//
 				final boolean lineIsPackingMaterial = DisplayType.toBoolean(rs.getString(2));
 				if (lineIsPackingMaterial)
@@ -276,7 +275,7 @@ public class MOrderTax extends X_C_OrderTax
 		{
 			DB.close(rs, pstmt);
 		}
-		
+
 		//
 		if (taxBaseAmt == null)
 			return false;
@@ -295,13 +294,13 @@ public class MOrderTax extends X_C_OrderTax
 		// Deactivate InvoiceTax if there were no invoice lines matching our C_Tax_ID
 		// Active it otherwise
 		setIsActive(foundInvoiceLines);
-		
+
 		setIsPackagingTax(checkIsPackagingMaterialTax(havePackingMaterialLines, haveNonPackingMaterialLines));
 
 		return true;
 	}	// calculateTaxFromLines
 
-	/** 
+	/**
 	 * @param havePackingMaterialLines
 	 * @param haveNonPackingMaterialLines
 	 * @return true if there are no non packing material lines with the same tax as the packing material lines, false otherwise
@@ -315,7 +314,7 @@ public class MOrderTax extends X_C_OrderTax
 				log.warn("Found lines with packaging materials and lines without packing materials for C_Order_ID={} and C_Tax_ID={}. Considering {} not a packing material tax.", getC_Order_ID(), getC_Tax_ID(), this);
 				return false;
 			}
-			
+
 			return true;
 		}
 		else
@@ -329,6 +328,7 @@ public class MOrderTax extends X_C_OrderTax
 	 *
 	 * @return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MOrderTax[")

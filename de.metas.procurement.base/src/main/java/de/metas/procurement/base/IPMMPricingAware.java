@@ -71,5 +71,5 @@ public interface IPMMPricingAware
 
 	void setC_Currency_ID(int C_Currency_ID);
 
-	void setPrice(BigDecimal priceStd);
+	void setPrice(BigDecimal price);
 }

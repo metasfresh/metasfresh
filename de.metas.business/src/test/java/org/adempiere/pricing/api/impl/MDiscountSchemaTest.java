@@ -10,12 +10,12 @@ package org.adempiere.pricing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,7 +70,6 @@ public class MDiscountSchemaTest
 		{
 			return trxName;
 		}
-
 	};
 
 	@Before
@@ -478,9 +477,9 @@ public class MDiscountSchemaTest
 		final BigDecimal expectedPrice = new BigDecimal("0.500000");
 
 		Assert.assertTrue("Expected price: " + expectedPrice + "But was " + price2, expectedPrice.equals(price2));
-		
+
 	}
-	
+
 	@Test
 	public void testCalculatePrice_Instances()
 	{
@@ -536,7 +535,7 @@ public class MDiscountSchemaTest
 		Assert.assertTrue("Expected price: " + expectedPrice + "but was " + price, expectedPrice.equals(price));
 
 		final I_M_AttributeValue attrValue3 = createAttrValue(attr1, "Attr Value 3");
-		
+
 		schemaBreak1.setM_AttributeValue(attrValue3);
 		InterfaceWrapperHelper.save(schemaBreak1);
 
