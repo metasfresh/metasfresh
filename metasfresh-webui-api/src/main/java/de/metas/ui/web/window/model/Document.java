@@ -629,7 +629,7 @@ public final class Document
 		final Document parentDocument = getParentDocument();
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("tableName", entityDescriptor.getTableName())
+				.add("tableName", entityDescriptor.getTableNameOrNull())
 				.add("parentId", parentDocument == null ? null : parentDocument.getDocumentId())
 				.add("id", getDocumentId())
 				.add("NEW", _new ? Boolean.TRUE : null)
