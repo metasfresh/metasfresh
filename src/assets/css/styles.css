@@ -1937,6 +1937,10 @@ td.pulse-off input {
     min-height: 80px;
 }
 
+.inbox-item:focus {
+    border: 1px solid $brand-color-primary;
+}
+
 .inbox-item:not(.inbox-item-empty):hover {
     background-color: #edf3f6;
 }
