@@ -340,7 +340,7 @@ class Header extends Component {
                             </div>
                             <div className="header-right-side">
                                 {docStatus &&
-                                    <div 
+                                    <div
                                         className="hidden-sm-down tooltip-parent"
                                         onClick={(e) => this.toggleTooltip('')}
                                         onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.DOC_STATUS)}

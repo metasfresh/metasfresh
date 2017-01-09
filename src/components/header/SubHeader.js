@@ -30,8 +30,8 @@ class Subheader extends Component {
     componentDidMount() {
         const {dispatch, windowType, dataId, viewId, selected} = this.props;
         dispatch(setActions([]));
-        
-        document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
+
+        document.getElementsByClassName('js-subheader-column')[0].childNodes[1].focus();
 
         if(windowType && dataId){
             dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
@@ -62,38 +62,33 @@ class Subheader extends Component {
     }
 
     handleKeyDown = (e) => {
-
-        let columnList = document.getElementsByClassName('js-subheader-column');
-        let itemList = document.getElementsByClassName('js-subheader-column')[0].childNodes;
-
-        let lastColumnActiveElement = document.getElementsByClassName('js-subheader-column')[0];
+        const {onClick} = this.props;
 
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
-                
-                let activeElem = this.getItemActiveElem();
+                const activeElem = this.getItemActiveElem();
                 if(activeElem.nextSibling) {
                     activeElem.nextSibling.focus();
                 }
                 break;
             case "ArrowUp":
                 e.preventDefault();
-                let activeEl = this.getItemActiveElem();
+                const activeEl = this.getItemActiveElem();
                 if(activeEl.previousSibling) {
                     activeEl.previousSibling.focus();
                 }
                 break;
             case "ArrowLeft":
                 e.preventDefault();
-                let activeColumn = this.getColumnActiveElem();
+                const activeColumn = this.getColumnActiveElem();
                 if(activeColumn.previousSibling) {
                     activeColumn.previousSibling.focus();
                 }
                 break;
             case "ArrowRight":
                 e.preventDefault();
-                let activeCol = this.getColumnActiveElem();
+                const activeCol = this.getColumnActiveElem();
                 if(activeCol.nextSibling) {
                     activeCol.nextSibling.focus();
                 }
@@ -102,22 +97,35 @@ class Subheader extends Component {
                 e.preventDefault();
                 document.activeElement.click();
                 break;
+            case "Escape":
+                e.preventDefault();
+                onClick();
+                break;
         }
     }
 
     getColumnActiveElem = () => {
-        if(document.activeElement.classList.contains("js-subheader-item")) {
-            return document.activeElement.parentNode;
+        const active = document.activeElement;
+        if(active.classList.contains("js-subheader-item")) {
+            return active.parentNode;
         } else {
-             return document.activeElement;
+             return active;
         }
     }
 
     getItemActiveElem = () => {
-        if(document.activeElement.classList.contains("js-subheader-column")) {
-            return document.activeElement.childNodes[2];
+        const active = document.activeElement;
+        if(
+            active.classList.contains("js-subheader-column")
+        ) {
+            const child = active.childNodes;
+            if(child[0] && child[0].classList.contains("js-spacer")){
+                return child[0];
+            }else{
+                return child[1];
+            }
         } else {
-             return document.activeElement;
+             return active;
         }
     }
 
@@ -130,7 +138,7 @@ class Subheader extends Component {
         const {prompt} = this.state;
 
         return (
-            <div 
+            <div
                 className={"subheader-container overlay-shadow subheader-open js-not-unselect"}
                 tabIndex={0}
                 onKeyDown={this.handleKeyDown}
@@ -140,6 +148,7 @@ class Subheader extends Component {
                     <div className="row">
                         <div className="subheader-row">
                             <div className=" subheader-column js-subheader-column" tabIndex={0}>
+                                <div className="js-spacer"/>
                                 {windowType && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> redirect('/window/'+ windowType +'/new')}>
                                     <i className="meta-icon-report-1" /> New <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}</span>
                                 </div>}
@@ -164,7 +173,7 @@ class Subheader extends Component {
                                 ) : <div className="subheader-item subheader-item-disabled">There is no actions</div>}
                             </div>
                             <div className=" subheader-column js-subheader-column" tabIndex={0}>
-                                
+
                                     <div className="subheader-header">Referenced documents</div>
                                     <div className="subheader-break" />
                                     { references && !!references.length ? references.map((item, key) =>
@@ -177,7 +186,7 @@ class Subheader extends Component {
                                             {item.caption}
                                         </div>
                                     ) : <div className="subheader-item subheader-item-disabled">There is no referenced document</div>}
-                              
+
                             </div>
                             <div className="subheader-column">
 
