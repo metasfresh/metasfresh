@@ -83,7 +83,7 @@ class Breadcrumb extends Component {
                         />
                     }
                 <span className="header-breadcrumb">
-                    
+
                     {this.renderBtn(homemenu, 0)}
 
                     {breadcrumb && breadcrumb.map((item, index) =>
@@ -103,19 +103,19 @@ class Breadcrumb extends Component {
                         />
                     </span>}
 
-                    {docSummaryData && <div className="header-breadcrumb">
+                    {docSummaryData && <div className="header-breadcrumb-line hidden-xs-down">
                         <span>{docSummaryData.value}</span>
                     </div>}
 
                     {siteName && <span className="divider">/</span>}
 
-                    {siteName && <div className="header-breadcrumb">
+                    {siteName && <div className="header-breadcrumb-line hidden-xs-down">
                         <span>{siteName}</span>
                     </div>}
 
                 </span>
             </span>
-            
+
         )
 	}
 }

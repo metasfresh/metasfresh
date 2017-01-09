@@ -56,19 +56,30 @@
     overflow: hidden;
 }
 
+.header-breadcrumb-line {
+    color: $brand-font-color-secondary;
+    font-size: 0.875rem;
+    width: auto;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    overflow: hidden;
+}
+
 @media (max-width: $breakpoint){
     .header-breadcrumb{
-        top: 54px;
-        left: 0px;
+        top: 25px;
+        left: -55px;
         position: absolute;
         background-color: #fff;
-        width: 100%;
+        width: calc(100vw);
         border-bottom: 1px solid $brand-border-color;
         border-top: 1px solid $brand-border-color;
         padding:4px 0;
     }
     .header-sticky-distance {
-        margin-top: 83px;
+        margin-top: 130px;
     }
 }
 

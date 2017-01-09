@@ -9,12 +9,11 @@ import {
 
 import RawWidget from './RawWidget';
 
-class Widget extends Component {
+class MasterWidget extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            cachedValue: null,
             updated: false,
             edited: false
         }
@@ -55,7 +54,6 @@ class Widget extends Component {
             rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
-        const {cachedValue} = this.state;
         let currRowId = rowId;
         let ret = null;
 
@@ -63,28 +61,17 @@ class Widget extends Component {
             currRowId = relativeDocId;
         }
 
-
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-            (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
-            //check if we should update store
-            //except button value
-            if(widgetType !== "Button"){
-                dispatch(updateProperty(property, value, tabId, currRowId, isModal));
-            }
-
-            ret = dispatch(patch(entity, windowType, dataId, tabId, currRowId, property, value, isModal, isAdvanced));
+        if(widgetType !== "Button"){
+            dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
 
-        this.setState(Object.assign({}, this.state, {
-            cachedValue: null
-        }));
+        ret = dispatch(patch(entity, windowType, dataId, tabId, currRowId, property, value, isModal, isAdvanced));
 
         //callback
         if(onChange){
             onChange();
         }
+
         return ret;
     }
     //
@@ -123,26 +110,18 @@ class Widget extends Component {
         }));
     }
 
-    handleFocus = (e, value) => {
-        e.preventDefault();
-
-        this.setState(Object.assign({}, this.state, {
-            cachedValue: value
-        }));
-    }
-
     validatePrecision = (value) => {
-        const {widgetType} = this.props;
-        let {precision} = this.props;
+        const {widgetType, precision} = this.props;
+        let precisionProcessed = precision;
 
         if(
             widgetType === "Integer" ||
             widgetType === "Quantity"
         ){
-            precision = 0;
+            precisionProcessed = 0;
         }
 
-        if(precision < (value.split('.')[1] || []).length){
+        if(precisionProcessed < (value.split('.')[1] || []).length){
             return false;
         }else{
             return true;
@@ -173,7 +152,6 @@ class Widget extends Component {
                 gridAlign={gridAlign}
                 handlePatch={this.handlePatch}
                 handleChange={this.handleChange}
-                handleFocus={this.handleFocus}
                 updated={updated}
                 isModal={isModal}
                 setEditedFlag={this.setEditedFlag}
@@ -188,10 +166,10 @@ class Widget extends Component {
     }
 }
 
-Widget.propTypes = {
+MasterWidget.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-Widget = connect()(Widget)
+MasterWidget = connect()(MasterWidget)
 
-export default Widget
+export default MasterWidget
