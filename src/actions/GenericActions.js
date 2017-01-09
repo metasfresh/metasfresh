@@ -80,3 +80,33 @@ export function completeRequest(
         '/complete'
     );
 }
+
+export function autocompleteRequest(docType, propertyName, query, docId, tabId, rowId, entity, subentity, subentityId) {
+    return () => axios.get(
+        config.API_URL +
+        '/' + entity +
+        (docType ? "/" + docType : "") +
+        (docId ? "/" + docId : "") +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "") +
+        '/attribute/' + propertyName +
+        '/typeahead' + '?query=' + encodeURIComponent(query)
+    );
+}
+
+export function dropdownRequest(docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId) {
+    return () => axios.get(
+        config.API_URL +
+        '/' + entity +
+        (docType ? "/" + docType : "") +
+        (docId ? "/" + docId : "") +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "") +
+        '/attribute/' + propertyName +
+        '/dropdown'
+    );
+}

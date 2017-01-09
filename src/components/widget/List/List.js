@@ -5,7 +5,7 @@ import RawList from './RawList';
 
 import {
     dropdownRequest
-} from '../../../actions/AppActions';
+} from '../../../actions/GenericActions';
 
 class List extends Component {
     constructor(props) {

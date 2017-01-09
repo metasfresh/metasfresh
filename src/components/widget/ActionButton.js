@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import {
     dropdownRequest
-} from '../../actions/AppActions';
+} from '../../actions/GenericActions';
 
 class ActionButton extends Component {
     constructor(props) {

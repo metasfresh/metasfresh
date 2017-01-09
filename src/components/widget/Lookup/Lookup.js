@@ -7,7 +7,7 @@ import update from 'react-addons-update';
 import {
     autocompleteRequest,
     dropdownRequest
-} from '../../../actions/AppActions';
+} from '../../../actions/GenericActions';
 
 import {
     getItemsByProperty,
