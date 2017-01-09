@@ -75,7 +75,7 @@ class AttributesDropdown extends Component {
                     entity={attributeType}
                     widgetType={item.widgetType}
                     fields={item.fields}
-                    dataId={dataId}
+                    dataId={attrId}
                     widgetData={widgetData}
                     gridAlign={item.gridAlign}
                     key={id}
