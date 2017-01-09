@@ -58,17 +58,30 @@ ALTER TABLE public.PMM_Product ADD SeqNo NUMERIC(10) DEFAULT NULL
 DROP INDEX public.pmm_product_uc;-- 03.01.2017 16:45
 
 
+----------------------------------------
+-- UPDATE SEQNO BEFORE INDEX
 
+-- set all the seqNo values to 0
 
-UPDATE PMM_Product SET SeqNo = 10 where M_AttributeSetInstance_ID IS  NULL;
+update PMM_Product set seqNo = 0;
 
-UPDATE PMM_Product SET SeqNo = 20 where M_AttributeSetInstance_ID IS NOT NULL;
+-- set the seqNo to a correct value ( multiple of 10)
 
+UPDATE
+PMM_Product pp
+SET SeqNo = x.SeqNo
 
---- !!!!!!!!!!!!!!!!!! IF THERE ARE MORE THAN 2 PMM_PRODUCT ENTRIES FOR THE SAME PRODUCT, M_HU_PI_ITEM_PRODUCT AND PARTNER, PLEASE UPDATE THE SEQNO MANUALLY HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!
--- IF THE UPDATE ABOVE IS NOT DONE, THE INDEX CREATION WILL FAIL
+FROM
+(
 
+select row_number() over(partition by M_Product_ID,M_HU_PI_Item_Product_ID order by pmm_Product_ID ) *10 as seqNo, M_Product_ID, 
+ M_HU_PI_Item_Product_ID,pmm_product_id
+ FROM pmm_product
+ order by m_product_id
 
+ )x;
+
+----------------------------------------
 
 
 -- URL zum Konzept
