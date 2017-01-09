@@ -253,19 +253,18 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu
+            viewId, inbox, homemenu, selected
         } = this.props;
 
         const {
-            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled, 
-            isMenuOverlayShow, tooltip, prompt, handleDocStatusToggle
+            isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
+            isMenuOverlayShow, tooltip, prompt
         } = this.state;
 
         return (
             <div>
             {
                 prompt.open &&
-
                 <Prompt
                     title={"Delete"}
                     text={"Are you sure?"}
@@ -414,6 +413,7 @@ class Header extends Component {
                     handleDelete={this.handleDelete}
                     handleClone={this.handleClone}
                     redirect={this.redirect}
+                    selected={selected}
                 />}
 
                 {showSidelist && <SideList
@@ -443,6 +443,7 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     indicator: PropTypes.string.isRequired,
+    selected: PropTypes.array.isRequired,
     viewId: PropTypes.string,
     homemenu: PropTypes.object.isRequired,
     inbox: PropTypes.object.isRequired
@@ -470,13 +471,16 @@ function mapStateToProps(state) {
     }
 
     const {
-        indicator
+        indicator,
+        selected
     } = windowHandler || {
-        indicator: ""
+        indicator: "",
+        selected: []
     }
 
     return {
         indicator,
+        selected,
         viewId,
         inbox,
         homemenu

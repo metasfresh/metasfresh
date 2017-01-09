@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     devtool: 'eval',
@@ -10,12 +11,15 @@ module.exports = {
     ],
     output: {
         path: '/',
-        filename: 'bundle.js',
+        filename: 'bundle[hash].js',
         publicPath: '/'
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
+        new webpack.NoErrorsPlugin(),
+        new HtmlWebpackPlugin({
+            template: 'index.html'
+        })
     ],
     module: {
         loaders: [{
@@ -29,8 +33,8 @@ module.exports = {
             test: /\.css$/,
             loaders: ["style-loader","css-loader","postcss-loader"]
         }, {
-            test: /\.html/,
-            loader: 'file?name=[name].[ext]'
+            test: /\.html$/,
+            loader: 'html'
         }
     ]},
     postcss: () => [

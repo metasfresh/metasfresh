@@ -28,22 +28,32 @@ class Subheader extends Component {
     }
 
     componentDidMount() {
-        const {dispatch, windowType, dataId, viewId} = this.props;
+        const {dispatch, windowType, dataId, viewId, selected} = this.props;
         dispatch(setActions([]));
 
         // this.subHeader.focus();
         // document.getElementsByClassName('js-subheader-column')[0].childNodes[0].focus();
         //  document.getElementsByClassName('js-subheader-column')[0].focus();
 
-        windowType && dataId && dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
-            dispatch(setReferences(response.data.references));
-        });
-        (windowType && dataId) && dispatch(getDocumentActions(windowType,dataId)).then((response) => {
-            dispatch(setActions(response.data.actions));
-        });
-        (viewId && !dataId) && dispatch(getViewActions(viewId)).then((response) => {
-            dispatch(setActions(response.data.actions));
-        });
+        if(windowType && dataId){
+            dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
+                dispatch(setReferences(response.data.references));
+            });
+
+            dispatch(getDocumentActions(windowType,dataId)).then((response) => {
+                dispatch(setActions(response.data.actions));
+            });
+        }else if (viewId && !dataId){
+            dispatch(getViewActions(viewId)).then((response) => {
+                dispatch(setActions(response.data.actions));
+            });
+            if(selected && selected.length === 1){
+                dispatch(getRelatedDocuments(windowType, selected[0])).then((response) => {
+                    dispatch(setReferences(response.data.references));
+                });
+            }
+        }
+
     }
 
     handleReferenceClick = (type, filter) => {
@@ -124,8 +134,10 @@ class Subheader extends Component {
 
     render() {
         const {
-            windowType, onClick, references, actions, dataId, viewId, docNo, openModal, handlePrint, handleDelete, redirect, handleClone
+            windowType, onClick, references, actions, dataId, viewId, docNo, openModal,
+            handlePrint, handleDelete, redirect, handleClone
         } = this.props;
+
         const {prompt} = this.state;
 
         return (
