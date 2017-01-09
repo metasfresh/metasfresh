@@ -34,6 +34,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*
  * #%L
@@ -207,8 +208,17 @@ public class ASIRepository
 	private void loadASIDocumentField(final Document asiDoc, final I_M_AttributeInstance fromAI)
 	{
 		final String fieldName = fromAI.getM_Attribute().getValue();
-
-		final Object value = asiDoc.getFieldView(fieldName)
+		final IDocumentFieldView field = asiDoc.getFieldViewOrNull(fieldName);
+		
+		// Skip loading the attribute instance if it's no longer exist.
+		// This can happen if we are trying to load an old ASI but in meantime the AttributeSet was changed and the attribute was removed or deactivated.
+		if(field == null)
+		{
+			logger.warn("Attribute {} no longer exist in {}", fieldName, asiDoc.getEntityDescriptor());
+			return;
+		}
+		
+		final Object value = field
 				.getDescriptor()
 				.getDataBindingNotNull(ASIAttributeFieldBinding.class)
 				.readValue(fromAI);
