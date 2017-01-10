@@ -54,7 +54,7 @@ class Inbox extends Component {
     render() {
         const {open, inbox, all, close} = this.props;
         return (
-            <div>
+            <div className="js-inbox-wrapper" tabIndex={0}>
                 {(all || open) && <div className={
                     (all ? "inbox-all ": "inbox")
                 }>

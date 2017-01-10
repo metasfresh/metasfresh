@@ -17,6 +17,10 @@ class InboxItem extends Component {
         }
     }
 
+    componentDidMount() {
+        document.getElementsByClassName('js-inbox-wrapper')[0].focus();
+    }
+
      handleKeyDown = (e) => {
         const {close} = this.props;
         switch(e.key){
