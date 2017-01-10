@@ -534,8 +534,8 @@ class Table extends Component {
         } = this.state;
 
         return (
-            <div>
-                <div>
+            <div className="table-flex-wrapper">
+                <div className="table-flex-wrapper">
                     {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
@@ -567,7 +567,9 @@ class Table extends Component {
                         </div>
                     </div>}
 
-                    <div className="panel panel-primary panel-bordered panel-bordered-force">
+                    <div
+                        className="panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper"
+                    >
                         <table
                             className={
                                 "table table-bordered-vertically table-striped " +
