@@ -54,6 +54,13 @@ class Table extends Component {
         }
     }
 
+    componentDidUpdate() {
+        const {mainTable, open} = this.props;
+        if(mainTable && open){
+            this.table.focus();
+        }
+    }
+
     changeListenOnTrue = () => {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: true
@@ -119,11 +126,13 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        if(typeof idFocused == "number"){
-            document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
-        }
-        if(typeof idFocusedDown == "number"){
-            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+        if(document.getElementsByClassName('row-selected').length > 0){
+            if(typeof idFocused == "number"){
+                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+            }
+            if(typeof idFocusedDown == "number"){
+                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+            }
         }
     }
 

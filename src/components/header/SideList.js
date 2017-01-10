@@ -10,7 +10,7 @@ class SideList extends Component {
         return (
             <div ref={(c)=>this.panel=c} className={"order-list-panel overlay-shadow " + (open ? "order-list-panel-open":"")}>
                 <div className="order-list-panel-body">
-                    <DocumentList windowType={windowType} type="list" />
+                    <DocumentList windowType={windowType} type="list" open={open} />
                 </div>
             </div>
 

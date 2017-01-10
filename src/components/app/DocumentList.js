@@ -217,7 +217,7 @@ class DocumentList extends Component {
 
     render() {
         const {layout, data} = this.state;
-        const {dispatch, windowType, type, filters, pagination} = this.props;
+        const {dispatch, windowType, type, filters, pagination, open} = this.props;
 
         if(layout && data) {
             return (
@@ -260,6 +260,7 @@ class DocumentList extends Component {
                             sort={this.sortData}
                             orderBy={data.orderBy}
                             tabIndex={0}
+                            open={open}
                         />
                     </div>
                 </div>
