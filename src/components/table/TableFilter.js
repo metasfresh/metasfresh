@@ -37,6 +37,7 @@ class TableFilter extends Component {
                         {!isBatchEntry && <button
                             className="btn btn-meta-outline-secondary btn-distance btn-sm"
                             onClick={openModal}
+                            tabIndex="-1"
                         >
                             Add new
                         </button>}
@@ -45,6 +46,7 @@ class TableFilter extends Component {
                             onClick={handleBatchEntryToggle}
                             onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT)}
                             onMouseLeave={this.toggleTooltip}
+                            tabIndex="-1"
                         >
                             {isBatchEntry ? "Close batch entry" : "Batch entry"}
                             {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT && <Tooltips
@@ -68,6 +70,7 @@ class TableFilter extends Component {
                     onClick={() => toggleFullScreen(!fullScreen)}
                     onMouseEnter={() => this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_EXPAND)}
                     onMouseLeave={this.toggleTooltip}
+                    tabIndex="-1"
                 >
                     {fullScreen ? <i className="meta-icon-collapse"/> : <i className="meta-icon-fullscreen"/>}
 

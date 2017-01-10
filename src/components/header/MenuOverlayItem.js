@@ -34,6 +34,63 @@ class MenuOverlayItem extends Component {
         this.renderBreadcrumb(elementId)
     }
 
+    componentDidMount() {
+        document.getElementsByClassName('js-menu-item')[0].focus();
+    }
+
+    handleKeyDown = (e) => {
+        e.preventDefault();
+        const {back} = this.props;
+
+        switch(e.key){
+            case "ArrowDown":
+                this.handleArrowDown();
+                break;
+            case "ArrowUp":
+                this.handeArrowUp();
+                break;
+            case "Backspace":
+                e.preventDefault();
+                back(e);
+                break;
+            case "Enter":
+                document.activeElement.childNodes[0].click();
+                break;
+        }
+    }
+
+    handeArrowUp() {
+        let prevSiblings = document.activeElement.previousSibling;
+        if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
+            document.activeElement.previousSibling.focus();
+        } else {
+            if (document.activeElement.parentElement.previousSibling) {
+                const listChildren = document.activeElement.parentElement.previousSibling.childNodes;
+
+                if(listChildren.length == 1){
+                    document.activeElement.parentElement.previousSibling.childNodes[0].focus();
+                }else{
+                    listChildren[listChildren.length - 1].focus();
+                }
+            }
+        }
+    }
+
+    handleArrowDown() {
+        if (document.activeElement.nextSibling) {
+            document.activeElement.nextSibling.focus();
+        } else {
+            if (document.activeElement.parentElement.nextSibling) {
+                const listChildren = document.activeElement.parentElement.nextSibling.childNodes;
+                if(listChildren.length == 1){
+                    listChildren[0].focus();
+                }else{
+                    listChildren[1].focus();
+                }
+            }
+        }
+    }
+
     render() {
         const {
             dispatch,
@@ -52,8 +109,10 @@ class MenuOverlayItem extends Component {
 
         return (
             <span
+                tabIndex={0}
+                onKeyDown={this.handleKeyDown}
                 className={
-                    "menu-overlay-expanded-link " +
+                    "menu-overlay-expanded-link js-menu-item " +
                     (!printChildren ? "menu-overlay-expanded-link-spaced " : "")
                 }
             >

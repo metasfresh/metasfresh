@@ -6,11 +6,11 @@ class SideList extends Component {
         super(props);
     }
     render() {
-        const {open, windowType} = this.props;
+        const {open, windowType, closeOverlays} = this.props;
         return (
             <div ref={(c)=>this.panel=c} className={"order-list-panel overlay-shadow " + (open ? "order-list-panel-open":"")}>
                 <div className="order-list-panel-body">
-                    <DocumentList windowType={windowType} type="list" />
+                    <DocumentList windowType={windowType} type="list" open={open} closeOverlays={closeOverlays} />
                 </div>
             </div>
 

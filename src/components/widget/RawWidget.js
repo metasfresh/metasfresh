@@ -84,7 +84,7 @@ class RawWidget extends Component {
             handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
             isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
-            autoFocus
+            dropdownOpenCallback, autoFocus
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -532,6 +532,7 @@ class RawWidget extends Component {
                         dataId={dataId}
                         onChange={(option) => this.handlePatch(fields[1].field, option)}
                         tabIndex={tabIndex}
+                        dropdownOpenCallback={dropdownOpenCallback}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     />
                 )

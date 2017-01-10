@@ -602,8 +602,12 @@ body {
 
 .dropdown-status-toggler:hover,
 .dropdown-status-toggler:focus {
-    background-color: #eef2f7;
+    background-color: $brand-default-color;
     outline-width: 0;
+}
+
+.dropdown-status-toggler.dropdown-status-open {
+    background-color: $brand-default-color;
 }
 
 .dropdown-status-toggler.dropdown-status-open .dropdown-status-list {
@@ -620,6 +624,7 @@ body {
     background-color: inherit;
     min-width: 100%;
     width: auto;
+    z-index: 201;
 }
 
 .dropdown-status-item {
@@ -1333,6 +1338,10 @@ th {
     margin: 0;
 }
 
+.menu-overlay-expanded-link:focus {
+    border: 1px solid $brand-color-primary;
+}
+
 .query-results .menu-overlay-expand {
     margin-left: 0 !important;
 }
@@ -1930,6 +1939,10 @@ td.pulse-off input {
     padding: .3rem .8rem;
     font-size: .8rem;
     min-height: 80px;
+}
+
+.inbox-item:focus {
+    border: 1px solid $brand-color-primary;
 }
 
 .inbox-item:not(.inbox-item-empty):hover {

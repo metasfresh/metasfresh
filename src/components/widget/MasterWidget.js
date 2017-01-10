@@ -133,7 +133,7 @@ class MasterWidget extends Component {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock, tabIndex
+            handleBackdropLock, tabIndex, dropdownOpenCallback
         } = this.props;
 
         const {updated, edited} = this.state;
@@ -160,6 +160,7 @@ class MasterWidget extends Component {
                 caption={caption}
                 handleBackdropLock={handleBackdropLock}
                 tabIndex={tabIndex}
+                dropdownOpenCallback={dropdownOpenCallback}
             />
         )
     }

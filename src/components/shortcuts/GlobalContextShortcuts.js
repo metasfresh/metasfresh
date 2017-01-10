@@ -7,34 +7,30 @@ class GlobalContextShortcuts extends Component {
 
     }
     handleShortcuts = (action, event) => {
-        const {
-          handleSubheaderOpen, handleMenuOverlay, closeMenuOverlay, openModal,
-          handlePrint, handleDelete, handleSideListToggle, handleInboxOpen,
-          closeInbox, redirect
+        const { 
+          handleMenuOverlay, openModal, 
+          handlePrint, handleDelete, handleSideList, handleInboxOpen, 
+          redirect, handleDocStatusToggle, closeOverlays 
         } = this.props;
         switch (action) {
             case 'OPEN_ACTIONS_MENU':
                 event.preventDefault();
-                closeMenuOverlay();
-                closeInbox();
-                handleSubheaderOpen();
+                closeOverlays('isSubheaderShow');
+                
                 break;
             case 'OPEN_NAVIGATION_MENU':
                 event.preventDefault();
-                closeInbox();
                 handleMenuOverlay();
                 break;
             case 'OPEN_INBOX_MENU':
                 event.preventDefault();
-                closeMenuOverlay();
-                handleInboxOpen(true);
+                closeOverlays('', (e)=> handleInboxOpen(true));
+                
                 break;
             case 'OPEN_SIDEBAR_MENU':
                 event.preventDefault();
-                closeMenuOverlay();
-                closeInbox();
-                if (handleSideListToggle) {
-                    handleSideListToggle();
+                if (handleSideList) {
+                    closeOverlays('isSideListShow');
                 }
                 break;
             case 'DELETE_DOCUMENT':
@@ -59,6 +55,12 @@ class GlobalContextShortcuts extends Component {
                 event.preventDefault();
                 if (redirect) {
                     redirect();
+                }
+                break;
+            case 'DOC_STATUS':
+                event.preventDefault();
+                if(handleDocStatusToggle) {
+                    closeOverlays('dropdown', handleDocStatusToggle);
                 }
                 break;
         }
