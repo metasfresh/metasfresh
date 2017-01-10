@@ -419,6 +419,7 @@ class Header extends Component {
                 {showSidelist && <SideList
                     windowType={windowType}
                     open={isSideListShow}
+                    closeOverlays={this.closeOverlays}
                 />}
 
                 <GlobalContextShortcuts

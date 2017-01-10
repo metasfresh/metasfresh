@@ -218,10 +218,9 @@ class Table extends Component {
 
     handleKeyDownDocList = (e) => {
         const {selected} = this.state;
-        const {rowData, tabid, listenOnKeys, onDoubleClick} = this.props;
+        const {rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open} = this.props;
         const item = rowData[tabid];
         const selectRange = e.shiftKey;
-
 
         switch(e.key) {
             case "ArrowDown":
@@ -266,6 +265,10 @@ class Table extends Component {
                 e.preventDefault();
                 if(selected.length <= 1) {
                    onDoubleClick(selected[selected.length-1]);
+                }
+
+                if(open) {
+                    closeOverlays();
                 }
                 break;
         }
