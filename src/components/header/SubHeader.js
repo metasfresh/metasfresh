@@ -84,7 +84,9 @@ class Subheader extends Component {
                 const activeColumn = this.getColumnActiveElem();
                 if(activeColumn.previousSibling) {
                     activeColumn.previousSibling.focus();
-                    this.getItemActiveElem().nextSibling.focus();
+                    if(this.getItemActiveElem().nextSibling) {
+                         this.getItemActiveElem().nextSibling.focus();
+                    }
                 }
                 break;
             case "ArrowRight":
@@ -92,7 +94,9 @@ class Subheader extends Component {
                 const activeCol = this.getColumnActiveElem();
                 if(activeCol.nextSibling) {
                     activeCol.nextSibling.focus();
-                    this.getItemActiveElem().nextSibling.focus();
+                    if(this.getItemActiveElem().nextSibling){
+                        this.getItemActiveElem().nextSibling.focus();
+                    }
                 }
                 break;
             case "Enter":
