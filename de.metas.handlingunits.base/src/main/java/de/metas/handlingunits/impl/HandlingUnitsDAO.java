@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -319,12 +320,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			packingMaterials.add(ImmutablePair.of(packingMaterial, count));
 		}
 		return packingMaterials;
-	}
-
-	@Override
-	public I_M_HU_PI retrievePIHandlingUnit(final Properties ctx, final int handlingUnitId, final String trxName)
-	{
-		return InterfaceWrapperHelper.create(ctx, handlingUnitId, I_M_HU_PI.class, trxName);
 	}
 
 	@Override
@@ -608,7 +603,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		piItemsQueryBuilder.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, bpartnerId);
 		piItemsQueryBuilder.orderBy()
 				.addColumn(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
-				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictible order
+				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
 
 		//
@@ -657,6 +652,33 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return parentPIItems;
 	}
 
+
+	@Override
+	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU childHU, final IContextAware ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		final I_M_HU_PI_Item piItemForChild = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
+				.addOnlyActiveRecordsFilter()
+
+				// it's an PI-item of the the parent's PI
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
+
+				// it includes the childs's HU PI as one of its "child" PI
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, childHU.getM_HU_PI_Version().getM_HU_PI_ID())
+
+				// it either has no C_BPartner_ID or a matching one
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, childHU.getC_BPartner_ID())
+
+				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
+				.orderBy().addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, false).endOrderBy()
+
+				.create()
+				.first();
+		
+		return piItemForChild;
+	}
+	
 	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final I_C_BPartner bpartner)
 	{

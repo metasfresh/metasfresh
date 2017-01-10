@@ -483,11 +483,9 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		public List<I_M_HU_Item> retrieveDownstreamNodes(final I_M_HU hu)
 		{
 			final List<I_M_HU_Item> result = new ArrayList<I_M_HU_Item>();
-
 			final IHUStorageDAO huStorageDAO = getHUContext().getHUStorageFactory().getHUStorageDAO();
 
-			final I_M_HU_Item huItemParent = hu.getM_HU_Item_Parent();
-			if (huItemParent != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(huItemParent.getItemType()))
+			if (handlingUnitsBL.isAggregateHU(hu))
 			{
 				// #460 the given 'hu' is an "aggregate/compressed/bag" one
 

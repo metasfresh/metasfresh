@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
@@ -105,12 +106,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Similar to {@link #createHUItem(I_M_HU, I_M_HU_PI_Item)}, but does not use any {@link I_M_HU_PI_Item} as template.<br>
 	 * Instead, the new item is created with {@link X_M_HU_Item#ITEMTYPE_HUAggregate} as its {@link I_M_HU_Item#COLUMN_ItemType}.
-	 *  
+	 * 
 	 * @param hu
 	 * @return
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
-	
+
 	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
 
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -120,8 +121,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU hu);
 
 	// Handling Unit PI Retrieval
-
-	I_M_HU_PI retrievePIHandlingUnit(final Properties ctx, final int handlingUnitId, final String trxName);
 
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final I_C_BPartner partner);
 
@@ -181,6 +180,16 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
+
+	/**
+	 * For the given {@code parentHU} and {@code childHU}, retrieve the hu PI item that can be used to link child and parent.
+	 * 
+	 * @param parentHU
+	 * @param childHU
+	 * @param ctx
+	 * @return
+	 */
+	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU childHU, IContextAware ctx);
 
 	/**
 	 * Retrieve first parent item if more are defined.
