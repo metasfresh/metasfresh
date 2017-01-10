@@ -405,6 +405,13 @@ body {
     text-align: center;
 }
 
+.table-flex-wrapper {
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
 .context-menu {
     position: fixed;
     display: none;
@@ -729,6 +736,10 @@ body {
 
 .tab-content {
     flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+
     border: 1px solid;
     border-color: transparent $brand-border-color $brand-border-color $brand-border-color;
     background-color: #fff;
@@ -751,7 +762,10 @@ body {
 }
 
 .tab-pane.active {
-    display: block;
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .tab-pane .panel:not(.panel-prompt) {
