@@ -29,7 +29,7 @@ import de.metas.ui.web.notification.UserNotification.TargetType;
 import de.metas.ui.web.process.ProcessInstancesRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.DocumentViewResult;
-import de.metas.ui.web.view.DocumentViewsRepository;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -76,7 +76,7 @@ public class DebugRestController
 
 	@Autowired
 	@Lazy
-	private DocumentViewsRepository documentViewsRepo;
+	private IDocumentViewsRepository documentViewsRepo;
 
 	@Autowired
 	@Lazy

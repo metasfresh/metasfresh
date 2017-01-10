@@ -21,6 +21,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
@@ -51,7 +52,7 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 public class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvider
 {
 	private final Supplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
-	private final ConcurrentHashMap<Integer, HUDocumentViewAttributes> documentId2attributes = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<DocumentId, HUDocumentViewAttributes> documentId2attributes = new ConcurrentHashMap<>();
 
 	public HUDocumentViewAttributesProvider()
 	{
@@ -59,14 +60,14 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 	}
 
 	@Override
-	public IDocumentViewAttributes getAttributes(final int documentId)
+	public IDocumentViewAttributes getAttributes(final DocumentId documentId)
 	{
 		return documentId2attributes.computeIfAbsent(documentId, key -> createDocumentViewAttributes(documentId));
 	}
 
-	private HUDocumentViewAttributes createDocumentViewAttributes(final int documentId)
+	private HUDocumentViewAttributes createDocumentViewAttributes(final DocumentId documentId)
 	{
-		final int huId = documentId;
+		final int huId = documentId.toInt();
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
 		if (hu == null)
 		{

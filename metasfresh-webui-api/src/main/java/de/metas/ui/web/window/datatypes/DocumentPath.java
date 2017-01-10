@@ -64,7 +64,7 @@ public final class DocumentPath
 	{
 		if (documentTypeId <= 0)
 		{
-			throw new IllegalArgumentException("adWindowId < 0");
+			throw new IllegalArgumentException("documentTypeId < 0");
 		}
 
 		final DocumentId documentId = DocumentId.of(idStr);
@@ -75,7 +75,22 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
-	
+
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
+	{
+		if (documentTypeId <= 0)
+		{
+			throw new IllegalArgumentException("documentTypeId < 0");
+		}
+
+		if (documentId == null || documentId.isNew())
+		{
+			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
+		}
+
+		return new DocumentPath(documentType, documentTypeId, documentId);
+	}
+
 	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		if(Check.isEmpty(detailId, true))

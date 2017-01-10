@@ -7,6 +7,7 @@ import org.compiere.util.Evaluatee;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -39,9 +40,9 @@ public interface IDocumentViewSelection
 
 	int getAD_Window_ID();
 
-	String getTableName();
-
 	long size();
+	
+	void close();
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
@@ -51,7 +52,12 @@ public interface IDocumentViewSelection
 		return getPage(firstRow, pageLength, orderBys);
 	}
 	
-	IDocumentView getById(int documentId) throws EntityNotFoundException;
+	IDocumentView getById(DocumentId documentId) throws EntityNotFoundException;
+
+	default IDocumentView getById(final int documentIdInt) throws EntityNotFoundException
+	{
+		return getById(DocumentId.of(documentIdInt));
+	}
 
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);

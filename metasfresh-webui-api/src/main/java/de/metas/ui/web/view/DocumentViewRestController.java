@@ -1,6 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +23,6 @@ import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
-import de.metas.ui.web.window.descriptor.DocumentDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -64,7 +56,7 @@ public class DocumentViewRestController
 {
 	private static final String PARAM_WindowId = "windowId";
 
-	/*package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
+	/* package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
 
 	private static final String PARAM_ViewDataType = "viewType";
 	private static final String PARAM_OrderBy = "orderBy";
@@ -78,10 +70,11 @@ public class DocumentViewRestController
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory; // TODO: get rid of it and move the logic to DocumentViewsRepository
-
+	private CompositeDocumentViewSelectionFactory factory;
+	
 	@Autowired
-	private DocumentViewsRepository documentViewsRepo;
+	private IDocumentViewsRepository documentViewsRepo;
+	
 
 	private JSONOptions newJSONOptions()
 	{
@@ -98,32 +91,7 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
-
-		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
-		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
-
-		final JSONOptions jsonOpts = newJSONOptions();
-
-		switch (viewDataType)
-		{
-			case grid:
-			{
-				final DocumentLayoutDetailDescriptor gridLayout = layout.getGridView();
-				final String idFieldName = entityDescriptor.getIdFieldName();
-				return JSONDocumentViewLayout.ofGridLayout(gridLayout, idFieldName, filters, jsonOpts);
-			}
-			case list:
-			{
-				final DocumentLayoutSideListDescriptor sideListLayout = layout.getSideList();
-				return JSONDocumentViewLayout.ofSideListLayout(sideListLayout, filters, jsonOpts);
-			}
-			default:
-			{
-				throw new IllegalArgumentException("Invalid " + PARAM_ViewDataType + "=" + viewDataType);
-			}
-		}
+		return factory.getViewLayout(adWindowId, viewDataType, newJSONOptions());
 	}
 
 	@PostMapping
@@ -143,7 +111,7 @@ public class DocumentViewRestController
 		{
 			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
 		}
-		
+
 		final IDocumentViewSelection view = documentViewsRepo.createView(jsonRequest);
 
 		//
@@ -235,7 +203,7 @@ public class DocumentViewRestController
 				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
-	
+
 	@GetMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getDocumentQuickActions(
 			@PathVariable(PARAM_WindowId) final int adWindowId //

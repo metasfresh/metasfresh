@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 
 /*
@@ -64,14 +65,14 @@ public final class DocumentLayoutDescriptor implements Serializable
 
 	/** Single row layout: header sections */
 	private final List<DocumentLayoutSectionDescriptor> sections;
-	private final DocumentLayoutDetailDescriptor gridView;
 	private final DocumentLayoutDetailDescriptor advancedView;
+	private final DocumentViewLayout gridView;
+	/** Side list layout */
+	private final DocumentViewLayout sideListView;
 
 	/** Single row layout: included tabs */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
 
-	/** Side list layout */
-	private final DocumentLayoutSideListDescriptor sideList;
 
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
@@ -85,14 +86,14 @@ public final class DocumentLayoutDescriptor implements Serializable
 		docActionElement = builder.docActionElement;
 
 		sections = ImmutableList.copyOf(builder.buildSections());
-		gridView = builder.gridView
+		gridView = builder.getGridView()
 				.setAD_Window_ID(AD_Window_ID)
 				.build();
-		advancedView = builder.advancedView
+		advancedView = builder.getAdvancedView()
 				.setAD_Window_ID(AD_Window_ID)
 				.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
-		sideList = builder.getSideList();
+		sideListView = builder.getSideList();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
 	}
@@ -107,7 +108,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 				.add("gridView", gridView)
 				.add("advancedView", advancedView)
 				.add("details", details.isEmpty() ? null : details)
-				.add("sideList", sideList)
+				.add("sideList", sideListView)
 				.toString();
 	}
 
@@ -142,9 +143,14 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/**
 	 * @return the layout for grid view (for header documents)
 	 */
-	public DocumentLayoutDetailDescriptor getGridView()
+	public DocumentViewLayout getGridViewLayout()
 	{
 		return gridView;
+	}
+
+	public DocumentViewLayout getSideListViewLayout()
+	{
+		return sideListView;
 	}
 
 	/**
@@ -177,11 +183,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return detail;
 	}
 
-	public DocumentLayoutSideListDescriptor getSideList()
-	{
-		return sideList;
-	}
-
 	public Map<String, String> getDebugProperties()
 	{
 		return debugProperties;
@@ -198,11 +199,11 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private DocumentLayoutElementDescriptor docActionElement;
 
 		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
-		private DocumentLayoutDetailDescriptor.Builder gridView;
-		private DocumentLayoutDetailDescriptor.Builder advancedView;
+		private DocumentViewLayout.Builder _gridView;
+		private DocumentLayoutDetailDescriptor.Builder _advancedView;
+		private DocumentViewLayout _sideListView;
 
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
-		private DocumentLayoutSideListDescriptor sideList;
 
 		private final Map<String, String> debugProperties = new LinkedHashMap<>();
 		private Stopwatch stopwatch;
@@ -341,16 +342,26 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return findSectionElementBuilderByFieldName(fieldName) != null;
 		}
 
-		public Builder setGridView(final DocumentLayoutDetailDescriptor.Builder gridView)
+		public Builder setGridView(final DocumentViewLayout.Builder gridView)
 		{
-			this.gridView = gridView;
+			this._gridView = gridView;
 			return this;
+		}
+		
+		private DocumentViewLayout.Builder getGridView()
+		{
+			return _gridView;
 		}
 
 		public Builder setAdvancedView(DocumentLayoutDetailDescriptor.Builder advancedView)
 		{
-			this.advancedView = advancedView;
+			this._advancedView = advancedView;
 			return this;
+		}
+		
+		private DocumentLayoutDetailDescriptor.Builder getAdvancedView()
+		{
+			return _advancedView;
 		}
 
 		/**
@@ -375,16 +386,16 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setSideList(final DocumentLayoutSideListDescriptor sideList)
+		public Builder setSideListView(final DocumentViewLayout sideListViewLayout)
 		{
-			this.sideList = sideList;
+			this._sideListView = sideListViewLayout;
 			return this;
 		}
 
-		public DocumentLayoutSideListDescriptor getSideList()
+		private DocumentViewLayout getSideList()
 		{
-			Preconditions.checkNotNull(sideList, "sideList");
-			return sideList;
+			Preconditions.checkNotNull(_sideListView, "sideList");
+			return _sideListView;
 		}
 
 		public Builder putDebugProperty(final String name, final String value)

@@ -25,7 +25,7 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.DocumentViewsRepository;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -77,7 +77,7 @@ public class ProcessRestController
 	private DocumentCollection documentsCollection;
 
 	@Autowired
-	private DocumentViewsRepository documentViewsRepo;
+	private IDocumentViewsRepository documentViewsRepo;
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 

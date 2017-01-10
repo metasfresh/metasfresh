@@ -8,6 +8,8 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -252,7 +254,25 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			this._caption = caption == null ? ImmutableTranslatableString.empty() : caption;
 			return this;
 		}
+
+		public Builder setCaption(final String caption)
+		{
+			setCaption(ImmutableTranslatableString.constant(caption));
+			return this;
+		}
+
+		public Builder setCaptionFromAD_Message(final String adMessage)
+		{
+			setCaption(Services.get(IMsgBL.class).translatable(adMessage));
+			return this;
+		}
 		
+		public Builder setCaptionNone()
+		{
+			this._caption = ImmutableTranslatableString.empty();
+			return this;
+		}
+
 		private ITranslatableString getCaption()
 		{
 			return _caption;

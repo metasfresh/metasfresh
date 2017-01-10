@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -65,12 +64,6 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		return ImmutableList.of(oneColumn(detailLayout, jsonOpts));
 	}
 
-	static List<JSONDocumentLayoutColumn> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
-	{
-		final JSONDocumentLayoutColumn column = new JSONDocumentLayoutColumn(sideListLayout, jsonOpts);
-		return ImmutableList.of(column);
-	}
-
 	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
 
 	@JsonProperty("elementGroups")
@@ -106,18 +99,6 @@ public final class JSONDocumentLayoutColumn implements Serializable
 	{
 		super();
 		elementGroups = JSONDocumentLayoutElementGroup.ofDetailTab(detailLayout, jsonOpts);
-	}
-
-	/**
-	 * From side-list layout constructor
-	 *
-	 * @param detailLayout
-	 * @param jsonOpts
-	 */
-	public JSONDocumentLayoutColumn(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
-	{
-		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofSideListLayout(sideListLayout, jsonOpts);
 	}
 
 	@Override

@@ -91,9 +91,9 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final LayoutFactory rootLayoutFactory = new LayoutFactory(gridWindowVO, mainTabVO, (GridTabVO)null);
 		{
 			layoutBuilder.addSections(rootLayoutFactory.layoutSectionsList());
-			layoutBuilder.setGridView(rootLayoutFactory.layoutDetail());
+			layoutBuilder.setGridView(rootLayoutFactory.layoutGridView());
 			layoutBuilder.setAdvancedView(rootLayoutFactory.layoutAdvancedView());
-			layoutBuilder.setSideList(rootLayoutFactory.layoutSideList());
+			layoutBuilder.setSideListView(rootLayoutFactory.layoutSideListView());
 			
 			// Set special field names
 			layoutBuilder

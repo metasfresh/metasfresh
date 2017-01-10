@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
@@ -39,7 +40,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
 
 /*
@@ -64,20 +64,20 @@ import de.metas.ui.web.window.descriptor.LayoutType;
  * #L%
  */
 
-/*package */class LayoutFactory
+public class LayoutFactory
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
+	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
 			.setDefaultValue("There are no detail rows")
 			.put("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
 			.put("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
 			.build();
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	private static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
+	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
 			.setDefaultValue("You can create them in this window.")
 			.put("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
 			.put("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
@@ -397,6 +397,59 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		return fields;
 	}
 
+	public DocumentViewLayout.Builder layoutGridView()
+	{
+		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
+		logger.trace("Generating grid view layout for {}", entityDescriptor);
+
+		final DocumentViewLayout.Builder layout = DocumentViewLayout.builder()
+				.setDetailId(entityDescriptor.getDetailId())
+				.setCaption(entityDescriptor.getCaption())
+				.setDescription(entityDescriptor.getDescription())
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setIdFieldName(entityDescriptor.getIdFieldName());
+
+		//
+		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
+		{
+			streamAD_UI_Elements()
+					.filter(adUIElement -> adUIElement.isDisplayedGrid())
+					.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
+					.map(adUIElement -> layoutElement(adUIElement))
+					.filter(uiElement -> uiElement != null)
+					.peek(uiElement -> uiElement.setGridElement())
+					.forEach(layout::addElement);
+		}
+
+		//
+		// Fallback: when no elements were found: creating the view using the single row layout
+		if (!layout.hasElements())
+		{
+			logger.warn("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
+			streamAD_UI_Elements()
+					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
+					.map(adUIElement -> layoutElement(adUIElement))
+					.filter(uiElement -> uiElement != null)
+					.peek(uiElement -> uiElement.setGridElement())
+					.forEach(layout::addElement);
+		}
+
+		//
+		// Fallback:
+		if (!layout.hasElements())
+		{
+			logger.warn("No grid layout found for {}. Continuing", entityDescriptor);
+		}
+
+		//
+		// Make sure all added elements have the GridViewField characteristic
+		descriptorsFactory.addFieldsCharacteristic(layout.getFieldNames(), Characteristic.GridViewField);
+
+		return layout;
+	}
+
+	/** @return included entity grid layout */
 	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
 	{
 		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
@@ -557,9 +610,9 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		return layoutElementFieldBuilder;
 	}
 
-	public final DocumentLayoutSideListDescriptor layoutSideList()
+	public final DocumentViewLayout layoutSideListView()
 	{
-		final DocumentLayoutSideListDescriptor.Builder layoutSideListBuilder = DocumentLayoutSideListDescriptor.builder()
+		final DocumentViewLayout.Builder layoutBuilder = DocumentViewLayout.builder()
 				.setAD_Window_ID(getAD_Window_ID())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
@@ -572,11 +625,11 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
 				.map(uiElement -> layoutElement(uiElement).setGridElement())
 				.filter(uiElement -> uiElement != null)
-				.forEach(layoutSideListBuilder::addElement);
+				.forEach(layoutBuilder::addElement);
 
 		//
 		// Fallback: when no elements were found: creating the view using the single row layout
-		if (!layoutSideListBuilder.hasElements())
+		if (!layoutBuilder.hasElements())
 		{
 			logger.warn("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
 			streamAD_UI_Elements()
@@ -584,21 +637,21 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 					.map(adUIElement -> layoutElement(adUIElement))
 					.filter(uiElement -> uiElement != null)
 					.peek(uiElement -> uiElement.setGridElement())
-					.forEach(layoutSideListBuilder::addElement);
+					.forEach(layoutBuilder::addElement);
 		}
 
 		//
 		// Fallback:
-		if (!layoutSideListBuilder.hasElements())
+		if (!layoutBuilder.hasElements())
 		{
 			logger.warn("No side list layout found for {}. Continuing", this);
 		}
 
 		//
 		// Make sure all added elements have the SideListField characteristic
-		descriptorsFactory.addFieldsCharacteristic(layoutSideListBuilder.getFieldNames(), Characteristic.SideListField);
+		descriptorsFactory.addFieldsCharacteristic(layoutBuilder.getFieldNames(), Characteristic.SideListField);
 
-		return layoutSideListBuilder.build();
+		return layoutBuilder.build();
 	}
 
 	public DocumentEntityDescriptor.Builder documentEntity()
@@ -615,7 +668,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		}
 
 		return DocumentLayoutElementDescriptor.builder()
-				.setCaption(null) // not relevant
+				.setCaptionNone() // not relevant
 				.setDescription(null) // not relevant
 				.setLayoutTypeNone() // not relevant
 				.setWidgetType(field.getWidgetType())
@@ -632,7 +685,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		}
 
 		return DocumentLayoutElementDescriptor.builder()
-				.setCaption(null) // not relevant
+				.setCaptionNone() // not relevant
 				.setDescription(null) // not relevant
 				.setLayoutTypeNone() // not relevant
 				.setWidgetType(field.getWidgetType())
@@ -652,7 +705,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 		final DocumentFieldDescriptor.Builder docActionField = fields.get(Characteristic.SpecialField_DocAction);
 
 		return DocumentLayoutElementDescriptor.builder()
-				.setCaption(null) // not relevant
+				.setCaptionNone() // not relevant
 				.setDescription(null) // not relevant
 				.setLayoutTypeNone() // not relevant
 				.setWidgetType(DocumentFieldWidgetType.ActionButton)

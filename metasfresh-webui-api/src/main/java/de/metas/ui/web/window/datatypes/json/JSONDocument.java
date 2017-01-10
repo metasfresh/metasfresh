@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
-import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -216,7 +215,7 @@ public final class JSONDocument implements Serializable
 			final String idFieldName = documentView.getIdFieldNameOrNull();
 			if (idFieldName != null)
 			{
-				final int id = documentView.getDocumentId();
+				final Object id = documentView.getDocumentId().toJson();
 				jsonFields.add(0, JSONDocumentField.idField(id));
 			}
 
@@ -233,7 +232,7 @@ public final class JSONDocument implements Serializable
 		//
 		// Included documents if any
 		{
-			final List<DocumentView> includedDocuments = documentView.getIncludedDocuments();
+			final List<IDocumentView> includedDocuments = documentView.getIncludedDocuments();
 			if (!includedDocuments.isEmpty())
 			{
 				final List<JSONDocument> jsonIncludedDocuments = includedDocuments

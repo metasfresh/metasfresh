@@ -1,47 +1,47 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Repository
-public class SqlDocumentViewsRepository implements DocumentViewsRepository
+@Service
+public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
 {
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
@@ -50,22 +50,40 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorsFactory;
 
-	private final Cache<String, SqlDocumentViewSelection> views = CacheBuilder.newBuilder()
-			.expireAfterAccess(1, TimeUnit.HOURS)
-			.removalListener(notification -> onViewRemoved(notification))
-			.build();
-
 	@Override
-	public List<IDocumentViewSelection> getViews()
+	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
 	{
-		return ImmutableList.copyOf(views.asMap().values());
+		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(adWindowId);
+
+		final DocumentLayoutDescriptor layout = descriptor.getLayout();
+		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
+		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
+
+		switch (viewDataType)
+		{
+			case grid:
+			{
+				final DocumentViewLayout viewLayout = layout.getGridViewLayout();
+				return JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+			}
+			case list:
+			{
+				final DocumentViewLayout viewLayout = layout.getSideListViewLayout();
+				return JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+			}
+			default:
+			{
+				throw new IllegalArgumentException("Invalid viewDataType: " + viewDataType);
+			}
+		}
 	}
+
 
 	@Override
 	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
 	{
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(jsonRequest.getAD_Window_ID());
-		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder(entityDescriptor)
+		return SqlDocumentViewSelection.builder(entityDescriptor)
 				.setServices(processDescriptorsFactory, documentReferencesService)
 				//
 				.setViewFieldsByCharacteristic(jsonRequest.getViewTypeRequiredFieldCharacteristic())
@@ -74,31 +92,6 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 				.setFiltersFromJSON(jsonRequest.getFilters())
 				//
 				.build();
-
-		views.put(view.getViewId(), view);
-		return view;
 	}
 
-	@Override
-	public IDocumentViewSelection getView(final String viewId)
-	{
-		final SqlDocumentViewSelection view = views.getIfPresent(viewId);
-		if (view == null)
-		{
-			throw new EntityNotFoundException("No view found for viewId=" + viewId);
-		}
-		return view;
-	}
-
-	@Override
-	public void deleteView(final String viewId)
-	{
-		views.invalidate(viewId);
-	}
-
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final SqlDocumentViewSelection view = (SqlDocumentViewSelection)notification.getValue();
-		view.close();
-	}
 }

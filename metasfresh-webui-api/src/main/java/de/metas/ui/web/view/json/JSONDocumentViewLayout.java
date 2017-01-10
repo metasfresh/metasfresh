@@ -12,12 +12,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 
 /*
@@ -46,25 +45,15 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentViewLayout implements Serializable
 {
-	public static JSONDocumentViewLayout ofGridLayout(
-			final DocumentLayoutDetailDescriptor gridLayout //
-			, final String idFieldName // for debug
+	public static JSONDocumentViewLayout of(
+			final DocumentViewLayout gridLayout //
 			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONOptions jsonOpts //
 	)
 	{
-		return new JSONDocumentViewLayout(gridLayout, idFieldName, filters, jsonOpts);
+		return new JSONDocumentViewLayout(gridLayout, filters, jsonOpts);
 	}
 
-	public static final JSONDocumentViewLayout ofSideListLayout(
-			final DocumentLayoutSideListDescriptor sideListLayout //
-			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONOptions jsonOpts //
-	)
-	{
-		return new JSONDocumentViewLayout(sideListLayout, filters, jsonOpts);
-	}
-	
 	/** i.e. AD_Window_ID */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -95,25 +84,25 @@ public final class JSONDocumentViewLayout implements Serializable
 	private final List<JSONDocumentFilterDescriptor> filters;
 
 	private JSONDocumentViewLayout(
-			final DocumentLayoutDetailDescriptor gridLayout //
-			, final String idFieldName //
+			final DocumentViewLayout layout //
 			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONOptions jsonOpts //
 	)
 	{
 		super();
 
-		type = String.valueOf(gridLayout.getAD_Window_ID());
+		type = String.valueOf(layout.getAD_Window_ID());
 
 		final String adLanguage = jsonOpts.getAD_Language();
-		caption = gridLayout.getCaption(adLanguage);
-		description = gridLayout.getDescription(adLanguage);
-		emptyResultText = gridLayout.getEmptyResultText(adLanguage);
-		emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
+		caption = layout.getCaption(adLanguage);
+		description = layout.getDescription(adLanguage);
+		emptyResultText = layout.getEmptyResultText(adLanguage);
+		emptyResultHint = layout.getEmptyResultHint(adLanguage);
 
 		//
 		// Elements
-		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
+		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
+		final String idFieldName = layout.getIdFieldName();
 		if(jsonOpts.isDebugShowColumnNamesForCaption() && idFieldName != null)
 		{
 			elements = ImmutableList.<JSONDocumentLayoutElement>builder()
@@ -122,26 +111,6 @@ public final class JSONDocumentViewLayout implements Serializable
 					.build();
 		}
 		this.elements = elements;
-
-		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-	}
-
-	private JSONDocumentViewLayout(
-			final DocumentLayoutSideListDescriptor sideListLayout //
-			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONOptions jsonOpts //
-	)
-	{
-		super();
-		type = String.valueOf(sideListLayout.getAD_Window_ID());
-
-		final String adLanguage = jsonOpts.getAD_Language();
-		caption = null; // n/a
-		description = null; // n/a
-		emptyResultText = sideListLayout.getEmptyResultText(adLanguage);
-		emptyResultHint = sideListLayout.getEmptyResultHint(adLanguage);
-
-		elements = JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 	}

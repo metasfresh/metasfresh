@@ -194,9 +194,9 @@ public class SqlDocumentViewBinding
 		}
 	}
 
-	private DocumentViewFieldValueLoader createDocumentViewFieldValueLoaders(final Set<String> fieldNames)
+	private SqlDocumentViewFieldValueLoader createDocumentViewFieldValueLoaders(final Set<String> fieldNames)
 	{
-		final List<DocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
+		final List<SqlDocumentViewFieldValueLoader> documentViewFieldLoaders = new ArrayList<>();
 		for (final SqlDocumentFieldDataBindingDescriptor field : getFields())
 		{
 			if (field == null)
@@ -209,7 +209,7 @@ public class SqlDocumentViewBinding
 			final boolean keyColumn = field.isKeyColumn();
 			final DocumentFieldValueLoader documentFieldLoader = field.getDocumentFieldValueLoader();
 			final boolean isDisplayColumnAvailable = fieldNames.contains(fieldName);
-			final DocumentViewFieldValueLoader documentViewFieldLoader = createDocumentViewFieldValueLoader(fieldName, keyColumn, documentFieldLoader, isDisplayColumnAvailable);
+			final SqlDocumentViewFieldValueLoader documentViewFieldLoader = createDocumentViewFieldValueLoader(fieldName, keyColumn, documentFieldLoader, isDisplayColumnAvailable);
 
 			if (keyColumn)
 			{
@@ -221,7 +221,7 @@ public class SqlDocumentViewBinding
 				documentViewFieldLoaders.add(documentViewFieldLoader);
 			}
 		}
-		return CompositeDocumentViewFieldValueLoader.of(documentViewFieldLoaders);
+		return CompositeSqlDocumentViewFieldValueLoader.of(documentViewFieldLoaders);
 	}
 
 	/**
@@ -232,7 +232,7 @@ public class SqlDocumentViewBinding
 	 * @param fieldValueLoader
 	 * @return
 	 */
-	private static DocumentViewFieldValueLoader createDocumentViewFieldValueLoader( //
+	private static SqlDocumentViewFieldValueLoader createDocumentViewFieldValueLoader( //
 			final String fieldName //
 			, final boolean keyColumn //
 			, final DocumentFieldValueLoader fieldValueLoader //
@@ -443,7 +443,7 @@ public class SqlDocumentViewBinding
 	 * Retrieves a particular field from given {@link ResultSet} and loads it to given {@link DocumentView.Builder}.
 	 */
 	@FunctionalInterface
-	public static interface DocumentViewFieldValueLoader
+	public static interface SqlDocumentViewFieldValueLoader
 	{
 		/**
 		 * @param documentViewBuilder
@@ -453,16 +453,16 @@ public class SqlDocumentViewBinding
 		boolean loadDocumentViewValue(final DocumentView.Builder documentViewBuilder, ResultSet rs) throws SQLException;
 	}
 
-	private static final class CompositeDocumentViewFieldValueLoader implements DocumentViewFieldValueLoader
+	private static final class CompositeSqlDocumentViewFieldValueLoader implements SqlDocumentViewFieldValueLoader
 	{
-		public static final CompositeDocumentViewFieldValueLoader of(final List<DocumentViewFieldValueLoader> fieldLoaders)
+		public static final CompositeSqlDocumentViewFieldValueLoader of(final List<SqlDocumentViewFieldValueLoader> fieldLoaders)
 		{
-			return new CompositeDocumentViewFieldValueLoader(fieldLoaders);
+			return new CompositeSqlDocumentViewFieldValueLoader(fieldLoaders);
 		}
 
-		private final ImmutableList<DocumentViewFieldValueLoader> fieldLoaders;
+		private final ImmutableList<SqlDocumentViewFieldValueLoader> fieldLoaders;
 
-		private CompositeDocumentViewFieldValueLoader(final List<DocumentViewFieldValueLoader> fieldLoaders)
+		private CompositeSqlDocumentViewFieldValueLoader(final List<SqlDocumentViewFieldValueLoader> fieldLoaders)
 		{
 			super();
 			this.fieldLoaders = ImmutableList.copyOf(fieldLoaders);
@@ -477,7 +477,7 @@ public class SqlDocumentViewBinding
 		@Override
 		public boolean loadDocumentViewValue(final DocumentView.Builder documentViewBuilder, final ResultSet rs) throws SQLException
 		{
-			for (final DocumentViewFieldValueLoader fieldLoader : fieldLoaders)
+			for (final SqlDocumentViewFieldValueLoader fieldLoader : fieldLoaders)
 			{
 				final boolean loaded = fieldLoader.loadDocumentViewValue(documentViewBuilder, rs);
 				if (!loaded)
@@ -493,7 +493,7 @@ public class SqlDocumentViewBinding
 	public final class ViewFieldsBinding
 	{
 		private final IStringExpression sqlPagedSelect;
-		private final DocumentViewFieldValueLoader valueLoaders;
+		private final SqlDocumentViewFieldValueLoader valueLoaders;
 
 		private ViewFieldsBinding(final Set<String> viewFieldNames)
 		{
@@ -507,7 +507,7 @@ public class SqlDocumentViewBinding
 			return sqlPagedSelect;
 		}
 
-		public DocumentViewFieldValueLoader getValueLoaders()
+		public SqlDocumentViewFieldValueLoader getValueLoaders()
 		{
 			return valueLoaders;
 		}

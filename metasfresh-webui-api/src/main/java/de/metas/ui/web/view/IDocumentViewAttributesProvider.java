@@ -1,5 +1,7 @@
 package de.metas.ui.web.view;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -24,5 +26,5 @@ package de.metas.ui.web.view;
 
 public interface IDocumentViewAttributesProvider
 {
-	IDocumentViewAttributes getAttributes(final int documentId);
+	IDocumentViewAttributes getAttributes(final DocumentId documentId);
 }

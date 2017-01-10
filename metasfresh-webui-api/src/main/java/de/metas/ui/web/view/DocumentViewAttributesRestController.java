@@ -55,7 +55,7 @@ public class DocumentViewAttributesRestController
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentViewsRepository documentViewsRepo;
+	private IDocumentViewsRepository documentViewsRepo;
 
 	private JSONOptions newJSONOptions()
 	{

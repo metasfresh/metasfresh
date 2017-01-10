@@ -11,6 +11,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -529,7 +530,7 @@ public class DocumentEntityDescriptor
 					.forEach(fieldUpdater);
 		}
 
-		public DocumentFieldDescriptor getIdField()
+		private DocumentFieldDescriptor getIdField()
 		{
 			if (_idField == null)
 			{
@@ -550,6 +551,27 @@ public class DocumentEntityDescriptor
 			}
 
 			return _idField.orElse(null);
+		}
+
+		public String getIdFieldName()
+		{
+			final List<DocumentFieldDescriptor.Builder> idFields = _fieldBuilders
+					.values()
+					.stream()
+					.filter(fieldBuilder -> fieldBuilder.isKey())
+					.collect(Collectors.toList());
+			if(idFields.isEmpty())
+			{
+				return null;
+			}
+			else if (idFields.size() == 1)
+			{
+				return idFields.get(0).getFieldName();
+			}
+			else
+			{
+				throw new IllegalArgumentException("More than one ID fields are not allowed: " + idFields);
+			}
 		}
 
 		private Map<String, DocumentFieldDescriptor> getFields()

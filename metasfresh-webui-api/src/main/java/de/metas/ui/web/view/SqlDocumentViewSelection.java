@@ -31,8 +31,9 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
-import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.DocumentViewFieldValueLoader;
+import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFieldValueLoader;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -85,7 +86,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 	private final transient String sqlSelectPage;
 	private final transient String sqlSelectById;
-	private final transient DocumentViewFieldValueLoader fieldLoaders;
+	private final transient SqlDocumentViewFieldValueLoader sqlFieldLoaders;
 
 	private final transient IDocumentViewOrderedSelectionFactory orderedSelectionFactory;
 	private final transient DocumentViewOrderedSelection defaultSelection;
@@ -111,7 +112,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	// Misc
 	private transient String _toString;
 
-	private final transient CCache<Integer, IDocumentView> cache_documentViewsById;
+	private final transient CCache<DocumentId, IDocumentView> cache_documentViewsById;
 
 	private SqlDocumentViewSelection(final Builder builder)
 	{
@@ -123,7 +124,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		sqlSelectPage = builder.buildSqlSelectPage();
 		sqlSelectById = builder.buildSqlSelectById();
-		fieldLoaders = builder.getDocumentViewFieldValueLoaders();
+		sqlFieldLoaders = builder.getDocumentViewFieldValueLoaders();
 
 		orderedSelectionFactory = builder.getOrderedSelectionFactory();
 		defaultSelection = builder.buildInitialSelection();
@@ -184,8 +185,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		return adWindowId;
 	}
 
-	@Override
-	public String getTableName()
+	private String getTableName()
 	{
 		return tableName;
 	}
@@ -219,6 +219,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 		return filters;
 	}
 
+	@Override
 	public void close()
 	{
 		if (closed.getAndSet(true))
@@ -302,16 +303,16 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public IDocumentView getById(final int documentId)
+	public IDocumentView getById(final DocumentId documentId)
 	{
 		assertNotClosed();
 
 		return cache_documentViewsById.getOrLoad(documentId, () -> retrieveById(documentId));
 	}
 
-	private final IDocumentView retrieveById(final int documentId)
+	private final IDocumentView retrieveById(final DocumentId documentId)
 	{
-		final Object[] sqlParams = new Object[] { getViewId(), documentId };
+		final Object[] sqlParams = new Object[] { getViewId(), documentId.toInt() };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -387,7 +388,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private IDocumentView loadDocumentView(final ResultSet rs) throws SQLException
 	{
 		final DocumentView.Builder documentViewBuilder = newDocumentViewBuilder();
-		fieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
+		sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
 		return documentViewBuilder.build();
 	}
 
@@ -479,7 +480,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return new SqlDocumentViewSelection(this);
 		}
 
-		private DocumentViewFieldValueLoader getDocumentViewFieldValueLoaders()
+		private SqlDocumentViewFieldValueLoader getDocumentViewFieldValueLoaders()
 		{
 			return getViewFieldsBinding()
 					.getValueLoaders();
@@ -567,7 +568,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return this;
 		}
 
-		private Set<String> getViewFields()
+		private Set<String> getViewFieldNames()
 		{
 			Check.assumeNotEmpty(_viewFieldNames, "viewFieldNames is not empty");
 			return _viewFieldNames;
@@ -590,7 +591,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		private ViewFieldsBinding getViewFieldsBinding()
 		{
-			return getBinding().getViewFieldsBinding(getViewFields());
+			return getBinding().getViewFieldsBinding(getViewFieldNames());
 		}
 
 		private String getSqlPagedSelectAllFrom()
