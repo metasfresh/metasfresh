@@ -735,10 +735,6 @@ body {
 }
 
 .tab-content {
-    flex-grow: 1;
-
-    display: flex;
-    flex-direction: column;
 
     border: 1px solid;
     border-color: transparent $brand-border-color $brand-border-color $brand-border-color;
