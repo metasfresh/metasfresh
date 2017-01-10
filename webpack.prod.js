@@ -10,7 +10,8 @@ module.exports = {
     ],
     output: {
         path: 'dist',
-        filename: '/bundle[hash].js'
+        filename: 'bundle[hash].js',
+        publicPath: '/'
     },
     plugins: [
         new webpack.DefinePlugin({
