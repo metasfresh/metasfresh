@@ -27,12 +27,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class CreateAdjustmentChargeFromInvoice extends JavaProcess
 {
@@ -57,7 +58,8 @@ public class CreateAdjustmentChargeFromInvoice extends JavaProcess
 			}
 			else if (CreateAdjustmentChargeFromInvoice.PARA_DocSubType.equals(name))
 			{
-				parameterDocSubType = (BigDecimal)parameter;
+				// convert the given value of the parameter to BigDecimal
+				parameterDocSubType = NumberUtils.asBigDecimal(parameter, new BigDecimal(-1));
 			}
 			else
 			{
