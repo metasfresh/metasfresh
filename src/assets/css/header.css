@@ -65,6 +65,13 @@
     flex-wrap: nowrap;
     flex-direction: row;
     overflow: hidden;
+
+    position: relative;
+    flex:1;
+}
+
+.header-breadcrumb-sitename {
+    position: absolute;
 }
 
 @media (max-width: $breakpoint){
@@ -108,6 +115,13 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    flex-shrink:1;
+}
+
+.header-breadcrumb-wrapper {
+    position: relative;
+    flex:1;
 }
 
 .header-breadcrumb > .menu-overlay-expand,
