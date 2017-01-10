@@ -1,8 +1,8 @@
 @import './variables.css';
 
-input[type=checkbox]:disabled, input[type=radio]:disabled {
+/*input[type=checkbox]:disabled, input[type=radio]:disabled {
     cursor: default;
-}
+}*/
 
 /*
  *  MAIN PROPERTIES
