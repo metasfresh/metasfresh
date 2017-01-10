@@ -225,13 +225,14 @@ class Header extends Component {
 
     closeOverlays = (clickedItem, callback) => {
 
-        const {isSideListShow} = this.state;
+        const {isSideListShow, isSubheaderShow} = this.state;
         
         this.setState(Object.assign({}, this.state, {
+            menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
             isSideListShow: (clickedItem == 'isSideListShow' ? !isSideListShow : false),
-            isSubheaderShow: (clickedItem == 'isSubheaderShow' ? !this.state.isSubheaderShow : false),
+            isSubheaderShow: (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
             tooltipOpen: '' 
         }), callback);
 

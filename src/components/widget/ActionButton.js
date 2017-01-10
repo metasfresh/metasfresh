@@ -50,7 +50,10 @@ class ActionButton extends Component {
     }
 
     handleDropdownBlur = () => {
-        this.statusDropdown.classList.remove('dropdown-status-open');
+        if(this.statusDropdown) {
+            this.statusDropdown.classList.remove('dropdown-status-open');
+        }
+        
     }
 
     handleDropdownFocus = () => {
