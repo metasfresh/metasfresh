@@ -13,11 +13,6 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=555685 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- Nov 28, 2016 1:38 PM
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE public.AD_PInstance ADD AD_Language VARCHAR(6) DEFAULT NULL 
-;
-
 -- Nov 28, 2016 1:39 PM
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,554395,557445,0,663,TO_TIMESTAMP('2016-11-28 13:39:51','YYYY-MM-DD HH24:MI:SS'),100,'Responsibility Role',10,'D','The Role determines security and access a user who has this Role will have in the System.','Y','Y','Y','N','N','N','N','N','Rolle',TO_TIMESTAMP('2016-11-28 13:39:51','YYYY-MM-DD HH24:MI:SS'),100)
@@ -93,3 +88,10 @@ UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('201
 UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2016-11-28 13:40:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557445
 ;
 
+COMMIT;
+
+
+-- Nov 28, 2016 1:38 PM
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE public.AD_PInstance ADD AD_Language VARCHAR(6) -- DEFAULT NULL commenting out DEFAULT null, because it takes a lot of time!
+;

@@ -52,7 +52,9 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Ref_Table;
@@ -76,6 +78,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderLineBL;
@@ -123,6 +126,8 @@ public class OLCandBL implements IOLCandBL
 			final ILoggable process,
 			final String trxName)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
+		
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
 		// but I'm afraid that grouping by time - granularity is not really portable. Also there might be other
 		// granularity levels, that can't be put into an sql later on.
@@ -133,9 +138,10 @@ public class OLCandBL implements IOLCandBL
 		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
+				
 		if (orderCandidates.isEmpty())
 		{
-			logProcess(process, "Found no Orders candidates; nothing to do");
+			loggable.addLog("Found no Orders candidates; nothing to do");
 			return;
 		}
 
@@ -143,11 +149,11 @@ public class OLCandBL implements IOLCandBL
 
 		if (candidates.isEmpty())
 		{
-			logProcess(process, "Found no unprocessed candidates; nothing to do");
+			loggable.addLog("Found no unprocessed candidates; nothing to do");
 			return;
 		}
 
-		logProcess(process, "Processing " + candidates.size() + " order line candidates");
+		loggable.addLog("Processing " + candidates.size() + " order line candidates");
 
 		//
 		// 2. Order the candidates
@@ -233,6 +239,10 @@ public class OLCandBL implements IOLCandBL
 				}
 				catch (final AdempiereException e)
 				{
+					final String msg = "Caught exception while processing {}; message={}; exception={}";
+					Loggables.get().addLog(msg, candOfGroup, e.getLocalizedMessage(), e);
+					logger.warn(StringUtils.formatMessage(msg, candOfGroup, e.getLocalizedMessage(), e), e);
+					
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 					// storing the error-info out of trx, i hope this solves the bug that the info just wasn't there
@@ -293,6 +303,10 @@ public class OLCandBL implements IOLCandBL
 			}
 			catch (final AdempiereException e)
 			{
+				final String msg = "Caught exception while completing {}; message={}; exception={}";
+				Loggables.get().addLog(msg, order, e.getLocalizedMessage(), e);
+				logger.warn(StringUtils.formatMessage(msg, order, e.getLocalizedMessage(), e), e);
+				
 				final StringBuilder sb = new StringBuilder();
 				boolean first = true;
 				int counter = 0;
@@ -448,7 +462,7 @@ public class OLCandBL implements IOLCandBL
 		if (order.processIt(X_C_Order.DOCACTION_Complete))
 		{
 			order.saveEx();
-			logProcess(process, "@Created@ @C_Order_ID@ " + order.getDocumentNo());
+			Loggables.get().withLogger(logger, Level.INFO).addLog("@Created@ @C_Order_ID@ " + order.getDocumentNo());
 		}
 		else
 		{
@@ -868,14 +882,6 @@ public class OLCandBL implements IOLCandBL
 			value = InterfaceWrapperHelper.getValueByColumnId(candidate, olCandColumn.getAD_Column_ID());
 		}
 		return value;
-	}
-
-	private void logProcess(final ILoggable process, final String msg)
-	{
-		if (process != null)
-		{
-			process.addLog(msg);
-		}
 	}
 
 	@Override
