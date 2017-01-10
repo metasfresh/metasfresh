@@ -242,6 +242,7 @@
     width: calc(50% - 75px);
     display: flex;
     flex-direction: row;
+    overflow: hidden;
 }
 .header-right-side {
     align-items: center;
