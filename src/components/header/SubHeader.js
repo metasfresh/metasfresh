@@ -31,7 +31,7 @@ class Subheader extends Component {
         const {dispatch, windowType, dataId, viewId, selected} = this.props;
         dispatch(setActions([]));
 
-        document.getElementsByClassName('js-subheader-column')[0].childNodes[1].focus();
+        document.getElementsByClassName('js-subheader-column')[0].focus();
 
         if(windowType && dataId){
             dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
@@ -84,6 +84,7 @@ class Subheader extends Component {
                 const activeColumn = this.getColumnActiveElem();
                 if(activeColumn.previousSibling) {
                     activeColumn.previousSibling.focus();
+                    this.getItemActiveElem().nextSibling.focus();
                 }
                 break;
             case "ArrowRight":
@@ -91,6 +92,7 @@ class Subheader extends Component {
                 const activeCol = this.getColumnActiveElem();
                 if(activeCol.nextSibling) {
                     activeCol.nextSibling.focus();
+                    this.getItemActiveElem().nextSibling.focus();
                 }
                 break;
             case "Enter":

@@ -235,7 +235,10 @@ class MenuOverlay extends Component {
         const nodeData = node.children;
 
         return (
-            <div className="menu-overlay menu-overlay-primary">
+            <div 
+                className="menu-overlay menu-overlay-primary js-menu-overlay"
+                tabIndex={0}
+            >
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT

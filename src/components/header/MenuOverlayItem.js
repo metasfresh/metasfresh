@@ -35,7 +35,7 @@ class MenuOverlayItem extends Component {
     }
 
     componentDidMount() {
-        document.getElementsByClassName('js-menu-item')[0].focus();
+        document.getElementsByClassName('js-menu-overlay')[0].focus();
     }
 
     handleKeyDown = (e) => {
@@ -52,9 +52,11 @@ class MenuOverlayItem extends Component {
             case "Backspace":
                 e.preventDefault();
                 back(e);
+                document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
             case "Enter":
                 document.activeElement.childNodes[0].click();
+                document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
         }
     }

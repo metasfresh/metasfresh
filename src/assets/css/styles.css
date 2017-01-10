@@ -1338,10 +1338,6 @@ th {
     margin: 0;
 }
 
-.menu-overlay-expanded-link:focus {
-    border: 1px solid $brand-color-primary;
-}
-
 .query-results .menu-overlay-expand {
     margin-left: 0 !important;
 }

@@ -165,7 +165,7 @@
     border-right: 1px solid #e1e7ec;
 }
 .subheader-column:focus {
-    border: 1px solid $brand-font-color;
+    border-color: #e1e7ec;;
 }
 
 @media (max-width: $breakpoint) {
@@ -399,6 +399,14 @@
     border-bottom: 1px dashed $brand-link-color;
 }
 .menu-overlay-link:hover {
+    border-bottom: 1px solid $brand-link-color;
+}
+
+.menu-overlay-expanded-link:focus .menu-overlay-expand {
+    border-bottom: 1px dashed $brand-link-color;
+}
+
+.menu-overlay-expanded-link:focus .menu-overlay-link {
     border-bottom: 1px solid $brand-link-color;
 }
 
