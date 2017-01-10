@@ -14,29 +14,47 @@ Here come the actual release notes:
 
 upcoming
 
-# metasfresh 4.50.49 (2017-01)
+## Features
+* metasfresh
+  * #696 add multi line description per order line
+  * #755 Automatic upload orders in csv file with COPY into c_olcand
 
-this week's RC
+## Fixes
+* metasfresh  
+  * #752 request report does not show requestes that don't have product or inout
+  * #759 Destroyed HU causes problem with shipment creation
+  * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+  * #770 When extending a procurement contract, null becomes 0.00
+  
+# metasfresh 4.50.49 (2017-01)
 
 ## Features
 * metasfresh
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
-    * WI that works for the concrete problem at hand
+    * Working Increment that works for the current requirement at hand.
   * #653 Calculated DailyLotNo in Material Receipt Candidates
+    * Add a Daily Lot No. thats calculated as Day from year, from a given Date in Purchase Order, Orderline Attributes.
   * #714 Marginal Return report calculation add additional Costcenter
+    * Adjust the marginal return report to show allow more columns with cost center sums on 1 page.
   * #742 R_Request column c_order_id autocomplete too slow
     * Take out the autocomplete of c_order_id to speed up the lookup performance in R_Request.
 
 ## Fixes
 * metasfresh
   * #757 Automatic contract extension doesn't work anymore
+    * Fix the automatic extension of contracts when flatrate term conditions are met.
   * #681 Automatic filling of BPartner and Location only shows value
+    * Fix the Search Field reference that showed only the value, instead of Name and value, in case of BPartner and BPartner Location.
   * #718 Wrong location in empties vendor return
+    * Close the Gap that allows to record empty returs with BPartner Location that does not belog to the empties BPartner.
   * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
+    * Adjust the Purchase Order control report to have the correct locale for time formatting.
   * #763 material receipt HU label always shown in preview
+    * Migrate the Handling Unit label enabling direct print, without print preview.
   
 * webui
   * #89 Adjust DocAction Names
+    * Adjust/ migrate DocAction Names for WebUI.
 
 # metasfresh 4.49.48 (2016-51)
  

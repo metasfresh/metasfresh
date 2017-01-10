@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-12-19T19:07:53 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.2418426461183105"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -21,6 +25,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 	<field name="movementqty" class="java.math.BigDecimal"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -34,21 +39,21 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement uuid="142bbe9f-777c-4879-ba97-2b347192bce4" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="142bbe9f-777c-4879-ba97-2b347192bce4"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000" uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="66821000-4e7b-4f69-b099-73eff29e9bd5" key="textField-19" x="362" y="0" width="41" height="12" forecolor="#000000"/>
+				<reportElement key="textField-19" x="362" y="0" width="41" height="12" forecolor="#000000" uuid="66821000-4e7b-4f69-b099-73eff29e9bd5"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -59,7 +64,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -72,7 +77,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -85,7 +90,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="362" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-33" mode="Transparent" x="362" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -96,6 +101,23 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean( !$F{description}.isEmpty() && $R{showdescription}.equals("Y"))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="408" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="8bbf1205-c8dd-4ce0-99a4-49693e54f0ae"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="SansSerif" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description} + "\n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

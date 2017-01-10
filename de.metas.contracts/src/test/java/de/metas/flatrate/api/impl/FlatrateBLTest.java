@@ -24,9 +24,6 @@ package de.metas.flatrate.api.impl;
 
 import java.util.Properties;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -65,6 +62,8 @@ import de.metas.flatrate.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class FlatrateBLTest extends ContractsTestBase
 {
@@ -194,10 +193,11 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		new NonStrictExpectations()
+		new Expectations()
 		{
 			{
 				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product);
+				minTimes = 0;
 				result = activity;
 
 				final Properties ctx = Env.getCtx();
@@ -221,6 +221,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						, -1 // ship location ID
 						, isSOTrx
 						, trxName);
+				minTimes = 0;
 				result = 3;
 			}
 		};
