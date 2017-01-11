@@ -275,9 +275,9 @@ public class WindowRestController
 		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 	}
 
-	@RequestMapping(value = "/{type}/{documentId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{windowId}/{documentId}", method = RequestMethod.DELETE)
 	public List<JSONDocument> deleteRootDocument(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 	)
 	{
@@ -285,9 +285,9 @@ public class WindowRestController
 		return deleteDocuments(documentPath);
 	}
 
-	@RequestMapping(value = "/{type}/{documentId}/{tabId}/{rowId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}", method = RequestMethod.DELETE)
 	public List<JSONDocument> deleteIncludedDocument(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
 			, @PathVariable("rowId") final String rowId //
@@ -297,9 +297,9 @@ public class WindowRestController
 		return deleteDocuments(documentPath);
 	}
 
-	@RequestMapping(value = "/{type}/{documentId}/{tabId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}", method = RequestMethod.DELETE)
 	public List<JSONDocument> deleteIncludedDocumentsList(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
 			, @RequestParam(name = "rowId", required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
@@ -335,9 +335,9 @@ public class WindowRestController
 	/**
 	 * Typeahead for root document's field
 	 */
-	@RequestMapping(value = "/{type}/{documentId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
+	@RequestMapping(value = "/{windowId}/{documentId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getDocumentFieldTypeahead(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("fieldName") final String fieldName //
 			, @RequestParam(name = "query", required = true) final String query //
@@ -350,9 +350,9 @@ public class WindowRestController
 	/**
 	 * Typeahead for included document's field
 	 */
-	@RequestMapping(value = "/{type}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
+	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getDocumentFieldTypeahead(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
 			, @PathVariable("rowId") final String rowId //
@@ -374,9 +374,9 @@ public class WindowRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{type}/{documentId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
+	@RequestMapping(value = "/{windowId}/{documentId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getDocumentFieldDropdown(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("fieldName") final String fieldName //
 	)
@@ -385,9 +385,9 @@ public class WindowRestController
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
 
-	@RequestMapping(value = "/{type}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
+	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getDocumentFieldDropdown(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
 			, @PathVariable("rowId") final String rowId //
@@ -409,7 +409,7 @@ public class WindowRestController
 
 	@RequestMapping(value = "/{windowId}/{documentId}/actions", method = RequestMethod.GET)
 	public JSONDocumentActionsList getDocumentActions(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 	)
 	{
@@ -434,7 +434,7 @@ public class WindowRestController
 
 	@RequestMapping(value = "/{windowId}/{documentId}/references", method = RequestMethod.GET)
 	public JSONDocumentReferencesList getDocumentReferences(
-			@PathVariable("type") final int adWindowId //
+			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 	)
 	{
