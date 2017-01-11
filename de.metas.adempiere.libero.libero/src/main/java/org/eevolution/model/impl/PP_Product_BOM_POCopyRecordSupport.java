@@ -22,25 +22,32 @@ import org.eevolution.model.I_PP_Product_BOMLine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * Enables copy-with-details from PP_Product_BOMs
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PP_Product_BOM_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
 	public List<TableInfoVO> getSuggestedChildren(final PO po, final GridTab gridTab)
 	{
 		final List<TableInfoVO> list = super.getSuggestedChildren(po, gridTab);
-		// remove order tax from list
+
 		final List<TableInfoVO> finalList = new ArrayList<TableInfoVO>();
 		for (final TableInfoVO childTableInfo : list)
 		{
+			// for the time being, PP_Product_BOMLine is the only accepted child.
 			if (I_PP_Product_BOMLine.Table_Name.equals(childTableInfo.tableName))
 			{
 				finalList.add(childTableInfo);
