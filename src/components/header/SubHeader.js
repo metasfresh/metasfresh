@@ -42,7 +42,7 @@ class Subheader extends Component {
                 dispatch(setActions(response.data.actions));
             });
         }else if (viewId && !dataId){
-            dispatch(getViewActions(viewId)).then((response) => {
+            dispatch(getViewActions(windowType, viewId)).then((response) => {
                 dispatch(setActions(response.data.actions));
             });
             if(selected && selected.length === 1){

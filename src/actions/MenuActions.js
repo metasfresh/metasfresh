@@ -115,25 +115,19 @@ export function getWindowBreadcrumb(id){
 
 export function getRelatedDocuments(type, id){
     return () => axios.get(
-        config.API_URL +
-        '/window/documentReferences?type=' + type +
-        '&id=' + id
+        config.API_URL + '/window/' + type + '/' + id + '/references'
     );
 }
 
 export function getDocumentActions(type, id){
     return () => axios.get(
-        config.API_URL +
-        '/window/documentActions?type=' + type +
-        '&id=' + id
+        config.API_URL + '/window/' + type + '/' + id + '/actions'
     );
 }
 
-export function getViewActions(viewId){
+export function getViewActions(type, viewId){
     return () => axios.get(
-        config.API_URL +
-        '/documentView/' + viewId +
-        '/actions'
+        config.API_URL + '/documentView/' + type + '/' + viewId + '/actions'
     );
 }
 
