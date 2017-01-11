@@ -200,7 +200,7 @@ class Header extends Component {
                 open: false
             })
         }), () => {
-            dispatch(deleteRequest('window', windowType, docId))
+            dispatch(deleteRequest('window', windowType, null, null, [docId]))
                 .then(response => {
                     dispatch(push('/window/' + windowType));
                 });
