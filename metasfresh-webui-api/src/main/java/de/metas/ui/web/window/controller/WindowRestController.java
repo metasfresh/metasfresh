@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
@@ -282,7 +284,22 @@ public class WindowRestController
 	)
 	{
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		return deleteDocuments(documentPath);
+		return deleteDocuments(ImmutableList.of(documentPath));
+	}
+
+	@RequestMapping(value = "/{windowId}", method = RequestMethod.DELETE)
+	public List<JSONDocument> deleteRootDocumentsList(
+			@PathVariable("windowId") final int adWindowId //
+			, @RequestParam(name = "ids") @ApiParam("comma separated documentIds") final String idsListStr //
+	)
+	{
+		final List<DocumentPath> documentPaths = DocumentPath.rootDocumentPathsList(DocumentType.Window, adWindowId, idsListStr);
+		if(documentPaths.isEmpty())
+		{
+			throw new IllegalArgumentException("No ids provided");
+		}
+		
+		return deleteDocuments(documentPaths);
 	}
 
 	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}", method = RequestMethod.DELETE)
@@ -294,7 +311,7 @@ public class WindowRestController
 	)
 	{
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(DocumentType.Window, adWindowId, documentId, tabId, rowId);
-		return deleteDocuments(documentPath);
+		return deleteDocuments(ImmutableList.of(documentPath));
 	}
 
 	@RequestMapping(value = "/{windowId}/{documentId}/{tabId}", method = RequestMethod.DELETE)
@@ -302,7 +319,7 @@ public class WindowRestController
 			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("tabId") final String tabId //
-			, @RequestParam(name = "rowId", required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr //
+			, @RequestParam(name = "ids") @ApiParam("comma separated rowIds") final String rowIdsListStr //
 	)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
@@ -315,10 +332,10 @@ public class WindowRestController
 		{
 			throw new IllegalArgumentException("No rowId(s) specified");
 		}
-		return deleteDocuments(documentPath);
+		return deleteDocuments(ImmutableList.of(documentPath));
 	}
 
-	List<JSONDocument> deleteDocuments(final DocumentPath documentPath)
+	List<JSONDocument> deleteDocuments(final List<DocumentPath> documentPaths)
 	{
 		userSession.assertLoggedIn();
 
@@ -327,7 +344,7 @@ public class WindowRestController
 				.build();
 
 		return Execution.callInNewExecution("window.delete", () -> {
-			documentCollection.delete(documentPath);
+			documentCollection.deleteAll(documentPaths);
 			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
 		});
 	}
