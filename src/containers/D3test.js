@@ -2,18 +2,11 @@ import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
-
-var d3 = require('d3');
+import BarChart from '../components/charts/BarChart';
 
 export class D3 extends Component {
     constructor(props){
         super(props);
-    }
-    
-    componentDidMount() {
-        d3.selectAll("p")
-        .data([4, 8, 15, 16, 23, 42])
-            .style("font-size", function(d) { return d + "px"; });
     }
 
     render() {
@@ -29,10 +22,9 @@ export class D3 extends Component {
             //     </div>
             // </Container>
             <div>
-                <p>asasas</p>
-                <p>sssdsd</p>
-                <p>sdsd</p>
+                 <BarChart/>
             </div>
+           
         );
     }
 }
