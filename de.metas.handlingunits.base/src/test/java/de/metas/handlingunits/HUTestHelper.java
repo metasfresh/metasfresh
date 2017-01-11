@@ -1222,36 +1222,6 @@ public class HUTestHelper
 		return itemDefProduct;
 	}
 
-	/**
-	 * Just in case you want to play with a random quantity
-	 *
-	 * @param itemPI
-	 * @param product
-	 * @param qty
-	 * @param uom
-	 * @return
-	 */
-	public I_M_HU_PI_Item_Product assignProductInfiniteCapacity(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
-	{
-		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
-		itemDefProduct.setM_HU_PI_Item(itemPI);
-		itemDefProduct.setM_Product(product);
-		itemDefProduct.setQty(qty);
-		itemDefProduct.setC_UOM(uom);
-		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-
-		// regardless of qty, we can allow however much we want here
-		itemDefProduct.setIsInfiniteCapacity(true);
-
-		InterfaceWrapperHelper.save(itemDefProduct);
-		return itemDefProduct;
-	}
-
-	public I_M_HU_PI_Item_Product assignProductInfiniteCapacity(final I_M_HU_PI_Item itemPI, final I_M_Product product, final I_C_UOM uom)
-	{
-		return assignProductInfiniteCapacity(itemPI, product, BigDecimal.ZERO, uom);
-	}
-
 	public I_M_Transaction createMTransaction(final String movementType, final I_M_Product product, final BigDecimal qty)
 	{
 		final I_M_Transaction mtrx = InterfaceWrapperHelper.newInstance(I_M_Transaction.class, contextProvider);
@@ -1830,34 +1800,11 @@ public class HUTestHelper
 	 * 
 	 * 
 	 */
-	@Deprecated
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
 		final IAllocationDestination destination = new HUListAllocationSourceDestination(destinationHUs);
 		final HULoader loader = new HULoader(source, destination);
-
-		//
-		// Create allocation request
-		final IMutableHUContext huContext = getHUContext();
-		final Date date = getTodayDate();
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
-
-		//
-		// Execute transfer
-		loader.load(request);
-	}
-
-	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, 
-			final List<I_M_HU> destinationHUs, 
-			final ILUTUProducerAllocationDestination lutuProducer,
-			final I_M_Product product, 
-			final BigDecimal qty, 
-			final I_C_UOM uom)
-	{
-		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
-		final IAllocationDestination destination = new HUListAllocationSourceDestination(destinationHUs);
-		final HULoader loader = new HULoader(source, lutuProducer);
 
 		//
 		// Create allocation request

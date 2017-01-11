@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.split.impl;
 
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,10 +28,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Node;
 
 import de.metas.handlingunits.HUAssert;
+import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
@@ -201,7 +206,7 @@ public class LUTUProducerDestinationLoadTests
 				});
 	}
 
-	public void performTest(final int cuQty, final int expectedFullLUs, final Consumer<HUsExpectation> lastExpectation)
+	private void performTest(final int cuQty, final int expectedFullLUs, final Consumer<HUsExpectation> lastExpectation)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setLUPI(data.piLU);
@@ -269,5 +274,41 @@ public class LUTUProducerDestinationLoadTests
 		husExpectation.assertExpected(createdHUs);
 		
 		HUAssert.assertAllStoragesAreValid();
+	}
+	
+	/**
+	 * Test loading tomatoes into a TU with unlimited capacity.
+	 */
+	@Test
+	public void testLoadIntoTUWithUnlimitedCapacity()
+	{
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+
+		lutuProducer.setTUPI(data.piTruckUnlimitedCapacity); // it's important to note that this PI was set up with unlimited capacity
+		lutuProducer.setLUPI(null);
+		lutuProducer.setLUItemPI(null);
+		lutuProducer.setMaxLUs(0);
+		lutuProducer.setCreateTUsForRemainingQty(true);
+			
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("999999"), data.helper.uomKg);
+		final List<I_M_HU> huTruck = lutuProducer.getCreatedHUs();
+		
+		//
+		// Validate HUs
+		{
+			final Node huPaletsXML = HUXmlConverter.toXml("Truck", huTruck);
+			System.out.println("" + HUXmlConverter.toString(huPaletsXML));
+
+			// We're asserting that only ONE truck was created, and that it has all 23 products.
+			// The truck's product item has the allowed qty limited to 6, BUT it has IsInfiniteCapacity checked
+			// As such, the entire qty will be allocated to this particular item
+			assertThat(huPaletsXML, Matchers.hasXPath("count(/Truck/HU-Truck)", Matchers.equalTo("1")));
+			assertThat(huPaletsXML, Matchers.hasXPath("/Truck/HU-Truck[1]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg' and @Qty='999999.000']"));
+
+			HUAssert.assertAllStoragesAreValid();
+		}
+
+		// TraceUtils.dump(huPalets);
+		//TraceUtils.dumpTransactions();
 	}
 }

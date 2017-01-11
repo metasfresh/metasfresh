@@ -1,15 +1,18 @@
 package de.metas.handlingunits.allocation.split.impl;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
-import static org.hamcrest.Matchers.*;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -57,7 +60,7 @@ public class LUTUProducerDestinationTransferTests
 	public void useCase2()
 	{
 		final List<I_M_HU> huPalets;
-		
+
 		//
 		// load 23 kg of tomatoes into huPalets
 		{
@@ -88,19 +91,19 @@ public class LUTUProducerDestinationTransferTests
 				HUAssert.assertAllStoragesAreValid();
 			}
 		}
-		
+
 		//
 		// Transfer 17 items from huPalets to new Bags
 		final LUTUProducerDestination lutuProducer = mkLUTUProducerDestination();
-		
+
 		// no palets allowed; the bags shall be on the top level
 		lutuProducer.setTUPI(data.piTU_Bag);
 		lutuProducer.setLUPI(null);
 		lutuProducer.setLUItemPI(null);
 		lutuProducer.setMaxLUs(0);
 		lutuProducer.setMaxTUsForRemainingQty(4); // allow four max; we will expect and verify 3
-		lutuProducer.setCreateTUsForRemainingQty(true); 
-		
+		lutuProducer.setCreateTUsForRemainingQty(true);
+
 		data.helper.transferMaterialToNewHUs(huPalets,
 				lutuProducer,
 				new BigDecimal("17"),
@@ -116,7 +119,7 @@ public class LUTUProducerDestinationTransferTests
 			// System.out.println("" + HUXmlConverter.toString(huPaletsXML));
 
 			// we had 23, so 23-17=6 should be left
-			assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-LU_Palet)", Matchers.equalTo("1")));
+			assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-LU_Palet)", equalTo("1")));
 			assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-LU_Palet[1]/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg']"));
 
 			assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-LU_Palet[1]/Item[@ItemType='HA']"));
@@ -129,28 +132,17 @@ public class LUTUProducerDestinationTransferTests
 		// Validate Bags after transferring 17 items to it
 		{
 			final Node huBagsXML = HUXmlConverter.toXml("Bags", huBags);
-			System.out.println("" + HUXmlConverter.toString(huBagsXML));
-			
-			assertThat(huBagsXML, Matchers.hasXPath("count(/Bags/HU-TU_Bag)", Matchers.equalTo("3"))); // one bag can hold 8 kg tomatoes, to there should be 3 bags for our 17 kg tomatoes
-			
-			// important: 
-			// actually, the aggregation feature is not used because there are no lower-level HUs such as IFCOs that would need to be represented
-			assertThat(huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[1]/Item[@ItemType='HA']")));
-			assertThat(huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[2]/Item[@ItemType='HA']")));
-			assertThat(huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[3]/Item[@ItemType='HA']")));
-			
-			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[1]/Item[@ItemType='MI']"));
-			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[1]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg']"));
-			
-			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[2]/Item[@ItemType='MI']"));
-			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[2]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg']"));
-			
-			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']"));
-			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg']"));
-			
-			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
-			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[2]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
-			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[3]/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg']"));
+			// System.out.println("" + HUXmlConverter.toString(huBagsXML));
+
+			useCase2VerifyBagInvariants(huBagsXML);
+
+			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[1]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[2]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg']"));
+
+			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[2]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("/Bags/HU-TU_Bag[3]/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg']"));
 		}
 
 		//
@@ -163,16 +155,24 @@ public class LUTUProducerDestinationTransferTests
 			final Node huBagsXML = HUXmlConverter.toXml("Bags", huBags);
 			System.out.println(HUXmlConverter.toString(huBagsXML));
 
-			Assert.assertThat(huBagsXML, Matchers.hasXPath("count(/Bags/HU-TU_Bag)", Matchers.equalTo("3")));
-			Assert.assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
-			Assert.assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[2]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
-			Assert.assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[3]/Storage[@M_Product_Value='Tomato' and @Qty='2.000' and @C_UOM_Name='Kg']"));
+			useCase2VerifyBagInvariants(huBagsXML);
+
+			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[1]/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg'])", is("1")));
+
+			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[2]/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[2]/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg'])", is("1")));
+
+			// for the last bag, since there were two different transfers, we expect two VHU with one item each
+			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[3]/Storage[@M_Product_Value='Tomato' and @Qty='2.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/HU-VirtualPI)", is("2")));
+			assertThat(huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[3]/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("2")));
 
 			HUAssert.assertAllStoragesAreValid();
 		}
 
 		//
-		// Shipment: ship 17 items from blisters
+		// Shipment: ship 17 items from bags
 		final I_M_Transaction outgoingTrx = data.helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_CustomerShipment,
 				data.helper.pTomato,
 				new BigDecimal("-17"));
@@ -181,20 +181,49 @@ public class LUTUProducerDestinationTransferTests
 		//
 		// Validate Blisters after taking out 17 items
 		{
-			final Node huBlistersXML = HUXmlConverter.toXml("Blisters", huBags);
-			// System.out.println(XmlConverter.toString(huBlistersXML));
+			final Node huBagsXML = HUXmlConverter.toXml("Bags", huBags);
+			// System.out.println(HUXmlConverter.toString(huBagsXML));
 
-			Assert.assertThat(huBlistersXML, Matchers.hasXPath("count(/Bags/HU-TU_Bag)", Matchers.equalTo("3")));
-			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='0']"));
-			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Bags/HU-TU_Bag[2]/Storage[@M_Product_Value='Tomato' and @Qty='0']"));
-			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Bags/HU-TU_Bag[3]/Storage[@M_Product_Value='Tomato' and @Qty='1']"));
+			useCase2VerifyBagInvariants(huBagsXML);
+
+			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[1]/Storage[@M_Product_Value='Tomato' and @Qty='0.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[2]/Storage[@M_Product_Value='Tomato' and @Qty='0.000' and @C_UOM_Name='Kg']"));
+			assertThat(huBagsXML, Matchers.hasXPath("/Bags/HU-TU_Bag[3]/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg']"));
 
 			HUAssert.assertAllStoragesAreValid();
 		}
 
 		// TraceUtils.dump(huPalets);
-		// TraceUtils.dump(huBlisters);
+		// TraceUtils.dump(huBags);
 		// TraceUtils.dumpTransactions();
+	}
+
+	/**
+	 * Verify some things that shall stay the same about the "Bag" TUs after different operations done within {@link #useCase2()}.
+	 * 
+	 * @param huBagsXML
+	 */
+	private void useCase2VerifyBagInvariants(final Node huBagsXML)
+	{
+		assertThat(huBagsXML, Matchers.hasXPath("count(/Bags/HU-TU_Bag)", is("3"))); // one bag can hold 8 kg tomatoes, to there should be 3 bags for our 17 kg tomatoes
+		IntStream.of(1, 2, 3).forEach(n -> {
+
+			final String failMsg = "assert failure in bag# " + n;
+
+			// actually, the aggregation feature is not used because there are no lower-level HUs such as IFCOs that would need to be represented within the aggregate.
+			// therefore, no item with type HA
+			assertThat(failMsg, huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='HA']")));
+
+			// the bag's material item has one tomato-kg storage
+			assertThat(failMsg, huBagsXML, hasXPath("count(/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg'])", is("1")));
+
+			// the item's VHU also has at least one storage, at least one "material" item and no items of other types
+			assertThat(failMsg, huBagsXML, hasXPath("/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']"));
+			assertThat(failMsg, huBagsXML, hasXPath("/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']"));
+			assertThat(failMsg, huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='HA']")));
+			assertThat(failMsg, huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='HU']")));
+			assertThat(failMsg, huBagsXML, not(hasXPath("/Bags/HU-TU_Bag[" + n + "]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='PM']")));
+		});
 	}
 
 	private LUTUProducerDestination mkLUTUProducerDestination()

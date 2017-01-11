@@ -24,7 +24,6 @@ package de.metas.handlingunits.allocation.impl;
 
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.util.Services;
@@ -33,26 +32,15 @@ import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.w3c.dom.Node;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.MockedAllocationSourceDestination;
-import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.handlingunits.util.TraceUtils;
 
 /**
  *
@@ -64,261 +52,13 @@ import de.metas.handlingunits.util.TraceUtils;
 // @SuppressWarnings("PMD.SingularField")
 public class HULoaderTest extends AbstractHUTest
 {
-	private I_M_HU_PI huDefPalet;
-	private I_M_HU_PI huDefIFCO;
-	
-	private I_M_HU_PI_Item palet_with_2_ifcos_pi_Item;
-	
-	private I_M_HU_PI huDefBlister;
-	private I_M_HU_PI huDefTruck;
 
 	@Override
 	protected void initialize()
 	{
-		//
-		// Handling Units Definition
-		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		{
-			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
 
-			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
-
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-					.setM_HU_PI(huDefIFCO));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
-					.setM_HU_PI(huDefIFCO));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
-					.setM_HU_PI(huDefIFCO)
-					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
-		}
-
-		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		{
-			palet_with_2_ifcos_pi_Item = helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, new BigDecimal("2"));
-			helper.createHU_PI_Item_PackingMaterial(huDefPalet, pmPallets);
-
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-					.setM_HU_PI(huDefPalet));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
-					.setM_HU_PI(huDefPalet));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
-					.setM_HU_PI(huDefPalet)
-					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
-		}
-
-		huDefBlister = helper.createHUDefinition(HUTestHelper.NAME_Blister_Product);
-		{
-			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefBlister);
-			helper.assignProduct(itemMA, pTomato, new BigDecimal("6"), uomEach);
-
-			//helper.createHU_PI_Item_PackingMaterial(huDefBlister, null); // in this case there is no blister M_Product
-
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-					.setM_HU_PI(huDefBlister));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
-					.setM_HU_PI(huDefBlister));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
-					.setM_HU_PI(huDefBlister)
-					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
-		}
-
-		huDefTruck = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product);
-		{
-			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefTruck);
-			helper.assignProductInfiniteCapacity(itemMA, pTomato, new BigDecimal("6"), uomEach);
-
-			//helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
-
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-					.setM_HU_PI(huDefTruck));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
-					.setM_HU_PI(huDefTruck));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
-					.setM_HU_PI(huDefTruck)
-					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
-		}
 	}
 
-	// covered by LUTUProducerTests
-//	@Test
-//	public void useCase1()
-//	{
-//		// assume that incomingTrxDoc is a material receipt of 23 tomatoes
-//		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
-//
-//		// create and destroy instances only with a I_M_Transaction
-//		final List<I_M_HU> huPalets = createPlainHU(incomingTrxDoc, huDefPalet);
-//
-//		//
-//		// Validate HUs
-//		{
-//			final Node huPaletsXML = HUXmlConverter.toXml("Palets", huPalets);
-//			System.out.println("" + HUXmlConverter.toString(huPaletsXML));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet)", Matchers.equalTo("2")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Storage[@M_Product_Value='Tomato' and @Qty='20']"));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet[1]/Item[1]/HU-IFCO)", Matchers.equalTo("2")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Item[1]/HU-IFCO[1]/Storage[@M_Product_Value='Tomato' and @Qty='10']"));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Item[1]/HU-IFCO[2]/Storage[@M_Product_Value='Tomato' and @Qty='10']"));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet[2]/Item[1]/HU-IFCO)", Matchers.equalTo("1")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[2]/Item[1]/HU-IFCO[1]/Storage[@M_Product_Value='Tomato' and @Qty='3']"));
-//		}
-//
-//		HUAssert.assertAllStoragesAreValid();
-//
-//		// TraceUtils.dump(huPalets);
-//		TraceUtils.dumpTransactions();
-//	}
-
-//	@Test
-//	public void useCase2()
-//	{
-//		// assume that incomingTrxDoc is a material receipt of 20 tomatoes
-//		final I_M_Transaction incomingTrx = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
-//
-//		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-//		lutuProducer.setLUPI(huDefPalet);
-//		lutuProducer.setLUItemPI(palet_with_2_ifcos_pi_Item);
-//		lutuProducer.setTUPI(huDefIFCO);
-//
-//		// TU capacity
-//		lutuProducer.addTUCapacity(helper.pTomato, new BigDecimal("40"), helper.uomKg);
-//		
-//		final List<I_M_HU> huPalets = createLUwithTU(incomingTrx, huDefPalet);
-//
-//		final IAttributeStorageFactory attrStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
-//		final IAttributeStorage huPalet1_Attrs = attrStorageFactory.getAttributeStorage(huPalets.get(0));
-//		huPalet1_Attrs.setValue(attr_CountryMadeIn, HUTestHelper.COUNTRYMADEIN_DE);
-//
-//		//
-//		// Validate HUs
-//		{
-//			final Node huPaletsXML = HUXmlConverter.toXml("Palets", huPalets);
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet)", Matchers.equalTo("2")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Storage[@M_Product_Value='Tomato' and @Qty='20']"));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet[1]/Item[1]/HU-IFCO)", Matchers.equalTo("2")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Item[1]/HU-IFCO[1]/Storage[@M_Product_Value='Tomato' and @Qty='10']"));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Item[1]/HU-IFCO[2]/Storage[@M_Product_Value='Tomato' and @Qty='10']"));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet[2]/Item[1]/HU-IFCO)", Matchers.equalTo("1")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[2]/Item[1]/HU-IFCO[1]/Storage[@M_Product_Value='Tomato' and @Qty='3']"));
-//
-//			HUAssert.assertAllStoragesAreValid();
-//		}
-//
-//		//
-//		// Transfer 17 items from Palets to new Blisters
-//		final List<I_M_HU> huBlisters = helper.transferMaterialToNewHUs(huPalets, new BigDecimal("17"), pTomato, huDefBlister);
-//
-//		//
-//		// Validate Palets after moving to blisters
-//		{
-//			final Node huPaletsXML = HUXmlConverter.toXml("Palets", huPalets);
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet)", Matchers.equalTo("2")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Storage[@M_Product_Value='Tomato' and @Qty='3']"));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet[1]/Item[1]/HU-IFCO)", Matchers.equalTo("2")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Item[1]/HU-IFCO[1]/Storage[@M_Product_Value='Tomato' and @Qty='0']"));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[1]/Item[1]/HU-IFCO[2]/Storage[@M_Product_Value='Tomato' and @Qty='3']"));
-//
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Palets/HU-Palet[2]/Item[1]/HU-IFCO)", Matchers.equalTo("1")));
-//			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Palets/HU-Palet[2]/Item[1]/HU-IFCO[1]/Storage[@M_Product_Value='Tomato' and @Qty='3']"));
-//
-//			HUAssert.assertAllStoragesAreValid();
-//		}
-//		//
-//		// Validate Blisters after transferring 17 items to it
-//		{
-//			final Node huBlistersXML = HUXmlConverter.toXml("Blisters", huBlisters);
-//			// System.out.println(XmlConverter.toString(huBlistersXML));
-//
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("count(/Blisters/HU-Blister)", Matchers.equalTo("3")));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[1]/Storage[@M_Product_Value='Tomato' and @Qty='6']"));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[2]/Storage[@M_Product_Value='Tomato' and @Qty='6']"));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[3]/Storage[@M_Product_Value='Tomato' and @Qty='5']"));
-//		}
-//
-//		//
-//		// Transfer another 1 item from Palets to existing Blisters
-//		helper.transferMaterialToExistingHUs(huPalets, huBlisters, pTomato, BigDecimal.ONE, uomEach);
-//
-//		//
-//		// Validate Blisters after transferring another 1 item to it (so we got 18 in total)
-//		{
-//			final Node huBlistersXML = HUXmlConverter.toXml("Blisters", huBlisters);
-//			// System.out.println(XmlConverter.toString(huBlistersXML));
-//
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("count(/Blisters/HU-Blister)", Matchers.equalTo("3")));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[1]/Storage[@M_Product_Value='Tomato' and @Qty='6']"));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[2]/Storage[@M_Product_Value='Tomato' and @Qty='6']"));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[3]/Storage[@M_Product_Value='Tomato' and @Qty='6']"));
-//
-//			HUAssert.assertAllStoragesAreValid();
-//		}
-//
-//		//
-//		// Shipment: ship 17 items from blisters
-//		final I_M_Transaction outgoingTrx = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_CustomerShipment,
-//				pTomato,
-//				new BigDecimal("-17"));
-//		helper.transferHUsToOutgoing(outgoingTrx, huBlisters);
-//
-//		//
-//		// Validate Blisters after taking out 17 items
-//		{
-//			final Node huBlistersXML = HUXmlConverter.toXml("Blisters", huBlisters);
-//			// System.out.println(XmlConverter.toString(huBlistersXML));
-//
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("count(/Blisters/HU-Blister)", Matchers.equalTo("3")));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[1]/Storage[@M_Product_Value='Tomato' and @Qty='0']"));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[2]/Storage[@M_Product_Value='Tomato' and @Qty='0']"));
-//			Assert.assertThat(huBlistersXML, Matchers.hasXPath("/Blisters/HU-Blister[3]/Storage[@M_Product_Value='Tomato' and @Qty='1']"));
-//
-//			HUAssert.assertAllStoragesAreValid();
-//		}
-//
-//		// TraceUtils.dump(huPalets);
-//		// TraceUtils.dump(huBlisters);
-//		// TraceUtils.dumpTransactions();
-//	}
-
-	@Test
-	public void useCase3()
-	{
-		// IsInfiniteCapacity=true will be tested here
-
-		// assume that incomingTrxDoc is a material receipt of 23 tomatoes
-		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
-
-		// create and destroy instances only with a I_M_Transaction
-		final List<I_M_HU> huTruck =createPlainHU(incomingTrxDoc, huDefTruck);
-
-		//
-		// Validate HUs
-		{
-			final Node huPaletsXML = HUXmlConverter.toXml("Truck", huTruck);
-			// System.out.println("" + XmlConverter.toString(huPaletsXML));
-
-			// We're asserting that only ONE truck was created, and that it has all 23 products.
-			// The truck's product item has the allowed qty limited to 6, BUT it has IsInfiniteCapacity checked
-			// As such, the entire qty will be allocated to this particular item
-			Assert.assertThat(huPaletsXML, Matchers.hasXPath("count(/Truck/HU-Truck)", Matchers.equalTo("1")));
-			Assert.assertThat(huPaletsXML, Matchers.hasXPath("/Truck/HU-Truck[1]/Storage[@M_Product_Value='Tomato' and @Qty='23']"));
-
-			HUAssert.assertAllStoragesAreValid();
-		}
-
-		// TraceUtils.dump(huPalets);
-		TraceUtils.dumpTransactions();
-	}
 
 	@Test
 	public void test_load_to_reversal()
