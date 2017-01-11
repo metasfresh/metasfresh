@@ -271,6 +271,11 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
+            case "Escape":
+                if(open){
+                    closeOverlays();
+                }
+                break;
         }
     }
 

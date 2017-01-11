@@ -40,7 +40,7 @@ class MenuOverlayItem extends Component {
 
     handleKeyDown = (e) => {
         e.preventDefault();
-        const {back} = this.props;
+        const {back, handleMenuOverlay} = this.props;
 
         switch(e.key){
             case "ArrowDown":
@@ -58,6 +58,8 @@ class MenuOverlayItem extends Component {
                 document.activeElement.childNodes[0].click();
                 document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
+            case "Escape":
+                handleMenuOverlay("","");
         }
     }
 
@@ -79,6 +81,7 @@ class MenuOverlayItem extends Component {
     }
 
     handleArrowDown() {
+        
         if (document.activeElement.nextSibling) {
             document.activeElement.nextSibling.focus();
         } else {

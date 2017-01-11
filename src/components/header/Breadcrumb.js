@@ -57,6 +57,7 @@ class Breadcrumb extends Component {
                         onClickOutside={e => handleMenuOverlay(e, "")}
                         disableOnClickOutside={menuOverlay !== menu.nodeId}
                         siteName={siteName}
+                        handleMenuOverlay={handleMenuOverlay}
                     />
                 }
             </div>

@@ -171,6 +171,7 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
     	const {path} = this.state;
+        const {handleMenuOverlay} = this.props;
         return (
              <div className="menu-overlay-container-column-wrapper">
                 {node.nodeId != 0 &&
@@ -189,6 +190,7 @@ class MenuOverlay extends Component {
                             handlePath={this.handlePath}
                             parent={node}
                             back={e => this.handleClickBack(e)}
+                            handleMenuOverlay={handleMenuOverlay}
                             {...item}
                         />
                     )}
@@ -229,15 +231,31 @@ class MenuOverlay extends Component {
         }
     }
 
+    handleKeyDown = (e) => {
+        const {handleMenuOverlay} = this.props;
+        e.preventDefault();
+        switch(e.key){
+            case "ArrowDown":
+                if (document.activeElement.classList.contains('js-menu-overlay')) {
+                    document.getElementsByClassName('js-menu-item')[0].focus();
+                }
+                break;
+            
+            case "Escape":
+                handleMenuOverlay("","");
+        }
+    }
+
     render() {
         const {queriedResults, deepNode, deepSubNode, subPath} = this.state;
-        const {dispatch, nodeId, node, siteName, index} = this.props;
+        const {dispatch, nodeId, node, siteName, index, handleMenuOverlay} = this.props;
         const nodeData = node.children;
 
         return (
             <div 
                 className="menu-overlay menu-overlay-primary js-menu-overlay"
                 tabIndex={0}
+                onKeyDown={(e)=>this.handleKeyDown(e)}
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
@@ -273,6 +291,7 @@ class MenuOverlay extends Component {
                                             handleNewRedirect={this.handleNewRedirect}
                                             query={true}
                                             handlePath={this.handlePath}
+                                            handleMenuOverlay={handleMenuOverlay}
                                             {...result}
                                         />
                                     )}
