@@ -149,7 +149,7 @@ public final class DocumentPA implements IDocumentPA
 
 		for (final MDocType docType : docTypes)
 		{
-			if (docSubType.equals(String.valueOf(docType.getC_DocType_ID())))
+			if (docSubType.equals(docType.getDocSubType()))
 			{
 				return docType.getC_DocType_ID();
 			}
