@@ -9,6 +9,7 @@ export default {
         OPEN_NAVIGATION_MENU: mod + '+' + '2',
         OPEN_INBOX_MENU: mod + '+' + '3',
         OPEN_SIDEBAR_MENU: mod + '+' + '4',
+        DOC_STATUS: mod + '+' + 'i',
 
         //=========== Document Context =================
 

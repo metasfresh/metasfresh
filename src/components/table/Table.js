@@ -54,6 +54,13 @@ class Table extends Component {
         }
     }
 
+    componentDidUpdate() {
+        const {mainTable, open} = this.props;
+        if(mainTable && open){
+            this.table.focus();
+        }
+    }
+
     changeListenOnTrue = () => {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: true
@@ -119,11 +126,13 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        if(typeof idFocused == "number"){
-            document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
-        }
-        if(typeof idFocusedDown == "number"){
-            document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+        if(document.getElementsByClassName('row-selected').length > 0){
+            if(typeof idFocused == "number"){
+                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+            }
+            if(typeof idFocusedDown == "number"){
+                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+            }
         }
     }
 
@@ -209,10 +218,9 @@ class Table extends Component {
 
     handleKeyDownDocList = (e) => {
         const {selected} = this.state;
-        const {rowData, tabid, listenOnKeys, onDoubleClick} = this.props;
+        const {rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open} = this.props;
         const item = rowData[tabid];
         const selectRange = e.shiftKey;
-
 
         switch(e.key) {
             case "ArrowDown":
@@ -257,6 +265,10 @@ class Table extends Component {
                 e.preventDefault();
                 if(selected.length <= 1) {
                    onDoubleClick(selected[selected.length-1]);
+                }
+
+                if(open) {
+                    closeOverlays();
                 }
                 break;
         }
@@ -522,8 +534,8 @@ class Table extends Component {
         } = this.state;
 
         return (
-            <div>
-                <div>
+            <div className="table-flex-wrapper">
+                <div className="table-flex-wrapper">
                     {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
@@ -555,7 +567,9 @@ class Table extends Component {
                         </div>
                     </div>}
 
-                    <div className="panel panel-primary panel-bordered panel-bordered-force">
+                    <div
+                        className="panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper"
+                    >
                         <table
                             className={
                                 "table table-bordered-vertically table-striped " +

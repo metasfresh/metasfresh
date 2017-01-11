@@ -1,5 +1,7 @@
 @import './variables.css';
 
+
+
 /*
  *  MAIN PROPERTIES
  */
@@ -593,7 +595,9 @@ input:checked + .input-slider:before {
 .input-dropdown-item-subtitle {
     font-size: .75rem;
 }
-
+input[type=checkbox]:disabled, input[type=radio]:disabled {
+    cursor: default;
+}
 
 .form-flex-align {
     display: flex;

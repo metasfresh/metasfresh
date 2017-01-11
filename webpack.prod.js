@@ -9,8 +9,9 @@ module.exports = {
         './favicon.png'
     ],
     output: {
-        path: 'dist',
-        filename: '/bundle[hash].js'
+        path: './dist',
+        filename: 'bundle[hash].js',
+        publicPath: '/'
     },
     plugins: [
         new webpack.DefinePlugin({

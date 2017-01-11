@@ -18,7 +18,7 @@ class Breadcrumb extends Component {
 
     linkToPage = (page) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/"+page));
+        dispatch(push("/window/" + page));
     }
 
     toggleTooltip = (tooltip) => {
@@ -72,27 +72,26 @@ class Breadcrumb extends Component {
         const {tooltipOpen} = this.state;
 
         return (
-            <span className="header-breadcrumb-wrapper">
-                    {
-                        tooltipOpen &&
-                        <Tooltips
-                            extraClass="tooltip-home-menu"
-                            name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
-                            action={'Navigation'}
-                            type={''}
-                        />
-                    }
-                <span className="header-breadcrumb">
-                    
+            <div className="header-breadcrumb-wrapper">
+                {tooltipOpen &&
+                    <Tooltips
+                        extraClass="tooltip-home-menu"
+                        name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
+                        action={'Navigation'}
+                        type={''}
+                    />
+                }
+                <div className="header-breadcrumb">
+
                     {this.renderBtn(homemenu, 0)}
 
                     {breadcrumb && breadcrumb.map((item, index) =>
                         this.renderBtn(item,index+1)
                     )}
 
-                    {docNo && <span className="divider">/</span>}
+                    {docNo && <div className="divider">/</div>}
 
-                    {docNo && <span className="header-input-id header-input-sm">
+                    {docNo && <div className="header-input-id header-input-sm">
                         <MasterWidget
                             windowType={windowType}
                             dataId={dataId}
@@ -101,21 +100,21 @@ class Breadcrumb extends Component {
                             icon={true}
                             {...docNo}
                         />
-                    </span>}
+                </div>}
 
-                    {docSummaryData && <div className="header-breadcrumb">
-                        <span>{docSummaryData.value}</span>
+                    {docSummaryData && <div className="hidden-xs-down header-breadcrumb-line">
+                        <span className=" header-breadcrumb-sitename">{docSummaryData.value}</span>
                     </div>}
 
-                    {siteName && <span className="divider">/</span>}
+                    {siteName && <div className="divider">/</div>}
 
-                    {siteName && <div className="header-breadcrumb">
+                    {siteName && <div className="hidden-xs-down">
                         <span>{siteName}</span>
                     </div>}
 
-                </span>
-            </span>
-            
+                </div>
+            </div>
+
         )
 	}
 }

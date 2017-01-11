@@ -188,6 +188,7 @@ class MenuOverlay extends Component {
                             handleNewRedirect={this.handleNewRedirect}
                             handlePath={this.handlePath}
                             parent={node}
+                            back={e => this.handleClickBack(e)}
                             {...item}
                         />
                     )}
@@ -232,9 +233,12 @@ class MenuOverlay extends Component {
         const {queriedResults, deepNode, deepSubNode, subPath} = this.state;
         const {dispatch, nodeId, node, siteName, index} = this.props;
         const nodeData = node.children;
-        
+
         return (
-            <div className="menu-overlay menu-overlay-primary">
+            <div 
+                className="menu-overlay menu-overlay-primary js-menu-overlay"
+                tabIndex={0}
+            >
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT

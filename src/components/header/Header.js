@@ -31,7 +31,7 @@ import {
 
 
 import keymap from '../../keymap.js';
-import GlobalShortcuts from '../shortcuts/GlobalContextShortcuts';
+import GlobalContextShortcuts from '../shortcuts/GlobalContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -46,9 +46,7 @@ class Header extends Component {
             menuOverlay: null,
             scrolled: false,
             isInboxOpen: false,
-            tooltip: {
-                open: ''
-            },
+            tooltipOpen: '',
             prompt: {
                 open: false
             }
@@ -59,29 +57,11 @@ class Header extends Component {
         return { shortcuts: shortcutManager }
     }
 
-    handleSubheaderOpen = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                isSubheaderShow: !this.state.isSubheaderShow
-            })
-        );
-    }
-
-    handleInboxOpen = (state, callback) => {
+    handleInboxOpen = (state) => {
+        
         this.setState(
             Object.assign({}, this.state, {
                 isInboxOpen: !!state
-            }), callback
-        );
-    }
-
-    handleSideListToggle = () => {
-        const {isSideListShow} = this.state;
-        this.toggleScrollScope(!isSideListShow);
-
-        this.setState(
-            Object.assign({}, this.state, {
-                isSideListShow: !isSideListShow
             })
         );
     }
@@ -109,7 +89,9 @@ class Header extends Component {
                 if(nodeId !== "") {
                     this.setState(Object.assign({}, this.state, {
                         isMenuOverlayShow: true
-                    }));
+                    }), () => {
+                        
+                    });
                 } else {
                     this.setState(Object.assign({}, this.state, {
                         isMenuOverlayShow: false
@@ -167,9 +149,7 @@ class Header extends Component {
     toggleTooltip = (tooltip) => {
         this.setState(
             Object.assign({}, this.state, {
-                tooltip: Object.assign({}, this.state, {
-                    open: tooltip
-                })
+                tooltipOpen: tooltip
             })
         );
     }
@@ -229,6 +209,41 @@ class Header extends Component {
         );
     }
 
+    handleDocStatusToggle = (close) => {
+        const elem = document.getElementsByClassName("js-dropdown-toggler")[0];
+
+        if(close) {
+            elem.blur();
+        } else {
+            if(document.activeElement === elem) {
+                elem.blur();
+            } else {
+                elem.focus();
+            }
+        }
+    }
+
+    closeOverlays = (clickedItem, callback) => {
+
+        const {isSideListShow, isSubheaderShow} = this.state;
+        
+        this.setState(Object.assign({}, this.state, {
+            menuOverlay: null,
+            isMenuOverlayShow: false,
+            isInboxOpen: false,
+            isSideListShow: (clickedItem == 'isSideListShow' ? !isSideListShow : false),
+            isSubheaderShow: (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
+            tooltipOpen: '' 
+        }), callback);
+
+        if(clickedItem == 'isSideListShow') {
+            this.toggleScrollScope(!isSideListShow);
+        }
+        if(document.getElementsByClassName("js-dropdown-toggler")[0] && (clickedItem != 'dropdown')){
+            this.handleDocStatusToggle(true);
+        }
+    }
+
     redirect = (where) => {
         const {dispatch} = this.props;
         dispatch(push(where));
@@ -244,7 +259,7 @@ class Header extends Component {
 
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
-            isMenuOverlayShow, tooltip, prompt
+            isMenuOverlayShow, tooltipOpen, prompt
         } = this.state;
 
         return (
@@ -267,8 +282,8 @@ class Header extends Component {
                         <div className="header-container">
                             <div className="header-left-side">
                                 <div
-                                    onClick={e => {this.handleCloseSideList(this.handleSubheaderOpen); this.toggleTooltip('')}}
-                                    onMouseEnter={(e) => this.toggleTooltip('tooltip1')}
+                                    onClick={(e) => this.closeOverlays('isSubheaderShow') }
+                                    onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU)}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                     className={"btn-square btn-header tooltip-parent " +
                                         (isSubheaderShow ?
@@ -278,7 +293,7 @@ class Header extends Component {
                                 >
                                     <i className="meta-icon-more" />
 
-                                    { tooltip.open === 'tooltip1' &&
+                                    { tooltipOpen === keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU &&
                                     <Tooltips
                                         name={keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU}
                                         action={'Action menu'}
@@ -305,30 +320,43 @@ class Header extends Component {
                             </div>
                             <div className="header-right-side">
                                 {docStatus &&
-                                    <div className="hidden-sm-down">
+                                    <div
+                                        className="hidden-sm-down tooltip-parent"
+                                        onClick={(e) => this.toggleTooltip('')}
+                                        onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.DOC_STATUS)}
+                                        onMouseLeave={(e) => this.toggleTooltip('')}
+                                    >
                                         <MasterWidget
                                             windowType={windowType}
                                             dataId={dataId}
                                             widgetData={[docStatusData]}
                                             noLabel={true}
                                             type="primary"
+                                            dropdownOpenCallback={(e)=>{this.closeOverlays('dropdown')}}
                                             {...docStatus}
                                         />
+                                        { tooltipOpen === keymap.GLOBAL_CONTEXT.DOC_STATUS &&
+                                            <Tooltips
+                                                name={keymap.GLOBAL_CONTEXT.DOC_STATUS}
+                                                action={'Doc status'}
+                                                type={''}
+                                            />
+                                        }
                                     </div>
                                 }
 
                                 <div className={
                                     "header-item-container header-item-container-static pointer tooltip-parent "+
                                     (isInboxOpen ? "header-item-open " : "")}
-                                    onClick={(e) => this.handleInboxOpen(true, this.handleMenuOverlay)}
-                                    onMouseEnter={(e) => this.toggleTooltip('tooltip2')}
+                                    onClick={(e) => this.closeOverlays('', (e)=> this.handleInboxOpen(true)) }
+                                    onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU)}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                 >
                                     <span className={"header-item header-item-badge icon-lg"}>
                                         <i className="meta-icon-notifications" />
                                         {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>
-                                    { tooltip.open === 'tooltip2' &&
+                                    { tooltipOpen === keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU &&
                                         <Tooltips
                                             name={keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU}
                                             action={'Inbox'}
@@ -352,12 +380,12 @@ class Header extends Component {
                                                 "btn-meta-default-bright btn-header-open"
                                                 : "btn-meta-primary")
                                         }
-                                        onClick={e => {this.handleBackdropClick(this.handleSideListToggle); this.toggleTooltip('')}}
-                                        onMouseEnter={(e) => this.toggleTooltip('tooltip3')}
+                                        onClick={(e) => this.closeOverlays('isSideListShow') }
+                                        onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU)}
                                         onMouseLeave={(e) => this.toggleTooltip('')}
                                     >
                                         <i className="meta-icon-list" />
-                                        { tooltip.open === 'tooltip3' &&
+                                        { tooltipOpen === keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU &&
                                             <Tooltips
                                                 name={keymap.GLOBAL_CONTEXT.OPEN_SIDEBAR_MENU}
                                                 action={'Side list'}
@@ -392,19 +420,19 @@ class Header extends Component {
                 {showSidelist && <SideList
                     windowType={windowType}
                     open={isSideListShow}
+                    closeOverlays={this.closeOverlays}
                 />}
 
-                <GlobalShortcuts
-                    handleSubheaderOpen={isSubheaderShow ? () => this.handleBackdropClick() : () => this.handleSubheaderOpen()}
-                    handleMenuOverlay={isMenuOverlayShow ? () => this.handleMenuOverlay("", "") : () => this.handleMenuOverlay("", homemenu.nodeId)}
-                    closeMenuOverlay={() => this.handleMenuOverlay("", "")}
-                    handleSideListToggle = {showSidelist ? isSideListShow ? this.handleCloseSideList : e => this.handleBackdropClick(this.handleSideListToggle) : ''}
+                <GlobalContextShortcuts
+                    handleMenuOverlay={isMenuOverlayShow ? () => this.handleMenuOverlay("", "") : () => this.closeOverlays('', (e)=> this.handleMenuOverlay("", homemenu.nodeId))}
+                    handleSideList = {showSidelist  ? showSidelist : ''}
                     handleInboxOpen = {isInboxOpen ? () => this.handleInboxOpen(false) : () => this.handleInboxOpen(true)}
-                    closeInbox = {() => this.handleInboxOpen(false)}
                     openModal = {dataId? () => this.openModal(windowType, "window", "Advanced edit", true) : ''}
                     handlePrint={dataId ? () => this.handlePrint(windowType, dataId, docNoData.value) : ''}
                     handleDelete={dataId ? this.handleDelete: ''}
                     redirect={windowType ? () => this.redirect('/window/'+ windowType +'/new') : ''}
+                    handleDocStatusToggle={document.getElementsByClassName("js-dropdown-toggler")[0] ? this.handleDocStatusToggle : ''}
+                    closeOverlays={this.closeOverlays}
                 />
             </div>
         )

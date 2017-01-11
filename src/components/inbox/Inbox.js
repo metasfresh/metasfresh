@@ -52,9 +52,9 @@ class Inbox extends Component {
     }
 
     render() {
-        const {open, inbox, all} = this.props;
+        const {open, inbox, all, close} = this.props;
         return (
-            <div>
+            <div className="js-inbox-wrapper" tabIndex={0}>
                 {(all || open) && <div className={
                     (all ? "inbox-all ": "inbox")
                 }>
@@ -80,6 +80,7 @@ class Inbox extends Component {
                                 <InboxItem
                                     key={id}
                                     item={item}
+                                    close={close}
                                     onClick={() => this.handleClick(item)}
                                 />
                             )}

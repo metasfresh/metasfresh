@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 import AttributesDropdown from './AttributesDropdown';
 
-
 import {
     getAttributesLayout,
     getAttributesInstance,
@@ -88,6 +87,10 @@ class Attributes extends Component {
             this.setState(Object.assign({}, this.state, {
                 layout: elements
             }));
+        }).then(() => {
+            this.setState(Object.assign({}, this.state, {
+                dropdown: true
+            }));
         });
     }
 
@@ -97,7 +100,7 @@ class Attributes extends Component {
         this.setState(Object.assign({}, this.state, {
             data: null,
             layout: null,
-            dropdown: !!option
+            dropdown: null
         }), () => {
             //Method is disabling outside click in parents
             //elements if there is some

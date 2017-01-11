@@ -28,7 +28,8 @@ class MenuOverlayContainer extends Component {
             handleNewRedirect,
             handlePath,
             printChildren,
-            deep
+            deep,
+            back
         } = this.props;
 		return (
 			<div
@@ -48,12 +49,16 @@ class MenuOverlayContainer extends Component {
 
 				{type!=='group' &&
 
-					<span
-						className="menu-overlay-link"
-						onClick={ e => type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick()}
-					>
-						{caption}
-					</span>
+                    <MenuOverlayItem
+                        elementId={elementId}
+                        caption={caption}
+                        type={type}
+                        handleClickOnFolder={handleClickOnFolder}
+                        handleRedirect={handleRedirect}
+                        handleNewRedirect={handleNewRedirect}
+                        handlePath={handlePath}
+                        back={back}
+                        printChildren={false}/>
 				}
 
 				{children && children.map((subitem, subindex) =>
@@ -74,6 +79,7 @@ class MenuOverlayContainer extends Component {
     						handleNewRedirect={handleNewRedirect}
     						handlePath={handlePath}
                             printChildren={printChildren}
+                            back={back}
     						{...subitem}
                         />
 				)}

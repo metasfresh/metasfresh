@@ -50,15 +50,19 @@ class ActionButton extends Component {
     }
 
     handleDropdownBlur = () => {
-        this.statusDropdown.classList.remove('dropdown-status-open');
+        if(this.statusDropdown) {
+            this.statusDropdown.classList.remove('dropdown-status-open');
+        }
+        
     }
 
     handleDropdownFocus = () => {
-        const { dispatch, windowType, fields, dataId} = this.props;
+        const { dispatch, windowType, fields, dataId, dropdownOpenCallback} = this.props;
 
         dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, "window")).then((res) => {
             this.setState({list: res.data});
         });
+        dropdownOpenCallback();
         this.statusDropdown.classList.add('dropdown-status-open');
     }
 
@@ -115,10 +119,11 @@ class ActionButton extends Component {
         const {data} = this.props;
         const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
         const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                className="meta-dropdown-toggle dropdown-status-toggler"
+                className="meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler"
                 tabIndex="0"
                 ref={(c) => this.statusDropdown = c}
                 onBlur={this.handleDropdownBlur}

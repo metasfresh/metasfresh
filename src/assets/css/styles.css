@@ -405,6 +405,13 @@ body {
     text-align: center;
 }
 
+.table-flex-wrapper {
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
 .context-menu {
     position: fixed;
     display: none;
@@ -602,8 +609,12 @@ body {
 
 .dropdown-status-toggler:hover,
 .dropdown-status-toggler:focus {
-    background-color: #eef2f7;
+    background-color: $brand-default-color;
     outline-width: 0;
+}
+
+.dropdown-status-toggler.dropdown-status-open {
+    background-color: $brand-default-color;
 }
 
 .dropdown-status-toggler.dropdown-status-open .dropdown-status-list {
@@ -620,6 +631,7 @@ body {
     background-color: inherit;
     min-width: 100%;
     width: auto;
+    z-index: 201;
 }
 
 .dropdown-status-item {
@@ -723,7 +735,7 @@ body {
 }
 
 .tab-content {
-    flex-grow: 1;
+
     border: 1px solid;
     border-color: transparent $brand-border-color $brand-border-color $brand-border-color;
     background-color: #fff;
@@ -746,7 +758,10 @@ body {
 }
 
 .tab-pane.active {
-    display: block;
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .tab-pane .panel:not(.panel-prompt) {
@@ -1932,6 +1947,10 @@ td.pulse-off input {
     min-height: 80px;
 }
 
+.inbox-item:focus {
+    border: 1px solid $brand-color-primary;
+}
+
 .inbox-item:not(.inbox-item-empty):hover {
     background-color: #edf3f6;
 }
@@ -2106,8 +2125,4 @@ td.pulse-off input {
     float: right;
     opacity: 0.5;
     font-weight: bold;
-}
-
-.header-breadcrumb-wrapper {
-    position: relative;
 }
