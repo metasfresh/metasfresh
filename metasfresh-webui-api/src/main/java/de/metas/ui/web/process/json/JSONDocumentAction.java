@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.process.IProcessPrecondition;
@@ -69,6 +70,15 @@ public class JSONDocumentAction
 		{
 			debugProperties = ImmutableMap.of();
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("caption", caption)
+				.add("processId", processId)
+				.toString();
 	}
 	
 	public int getProcessId()

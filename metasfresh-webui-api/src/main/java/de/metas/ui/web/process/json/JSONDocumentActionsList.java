@@ -11,6 +11,7 @@ import java.util.stream.Collector;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -60,6 +61,15 @@ public class JSONDocumentActionsList
 		actions = processDescriptors.stream()
 				.map(processDescriptor -> new JSONDocumentAction(processDescriptor, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("actions", actions.isEmpty() ? null : actions)
+				.toString();
 	}
 
 	public List<JSONDocumentAction> getActions()
