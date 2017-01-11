@@ -18,6 +18,7 @@ upcoming
 * metasfresh 
   * #774 show address on all docs so it fits the letter window
   * #773 show delivery address on sales order
+  * #507 Copy with Details for PP_Product_BOM
 
 ## Fixes
 * metasfresh 
