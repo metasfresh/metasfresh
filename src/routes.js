@@ -2,6 +2,7 @@ import React from 'react';
 import { Router, Route, IndexRoute, NoMatch } from 'react-router';
 import {push, replace} from 'react-router-redux';
 
+import D3 from './containers/D3test.js';
 import Login from './containers/Login.js';
 import Dashboard from './containers/Dashboard.js';
 import MasterWindow from './containers/MasterWindow.js';
@@ -61,6 +62,7 @@ export const getRoutes = (store) => {
                     onEnter={(nextState) => store.dispatch(createWindow(nextState.params.windowType, nextState.params.docId))}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
+                <Route path="/d3" component={D3} />
                 <Route path="/inbox" component={InboxAll} />
                 <Route path="/logout" onEnter={logout} />
             </Route>

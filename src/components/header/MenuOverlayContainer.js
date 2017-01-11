@@ -29,10 +29,12 @@ class MenuOverlayContainer extends Component {
             handlePath,
             printChildren,
             deep,
-            back
+            back,
+            handleMenuOverlay
         } = this.props;
 		return (
 			<div
+                tabIndex={0}
                 className={
                     "menu-overlay-node-container " +
                     (deep ? "menu-overlay-node-spaced " : "menu-overlay-expanded-link-spaced")
@@ -58,7 +60,9 @@ class MenuOverlayContainer extends Component {
                         handleNewRedirect={handleNewRedirect}
                         handlePath={handlePath}
                         back={back}
+                        handleMenuOverlay={handleMenuOverlay}
                         printChildren={false}/>
+                        
 				}
 
 				{children && children.map((subitem, subindex) =>
@@ -80,6 +84,7 @@ class MenuOverlayContainer extends Component {
     						handlePath={handlePath}
                             printChildren={printChildren}
                             back={back}
+                            handleMenuOverlay={handleMenuOverlay}
     						{...subitem}
                         />
 				)}

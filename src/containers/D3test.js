@@ -3,23 +3,36 @@ import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
 
-export class Dashboard extends Component {
+var d3 = require('d3');
+
+export class D3 extends Component {
     constructor(props){
         super(props);
+    }
+    
+    componentDidMount() {
+        d3.selectAll("p")
+        .data([4, 8, 15, 16, 23, 42])
+            .style("font-size", function(d) { return d + "px"; });
     }
 
     render() {
         const {breadcrumb} = this.props;
         return (
-            <Container
-                breadcrumb={breadcrumb}
-                siteName = {"Dashboard"}
-                noMargin = {true}
-            >
-                <div className="container-fluid dashboard-wrapper">
-                    <DraggableWrapper/>
-                </div>
-            </Container>
+            // <Container
+            //     breadcrumb={breadcrumb}
+            //     siteName = {"Dashboard"}
+            //     noMargin = {true}
+            // >
+            //     <div className="container-fluid dashboard-wrapper">
+            //         <DraggableWrapper/>
+            //     </div>
+            // </Container>
+            <div>
+                <p>asasas</p>
+                <p>sssdsd</p>
+                <p>sdsd</p>
+            </div>
         );
     }
 }
@@ -37,11 +50,11 @@ function mapStateToProps(state) {
     }
 }
 
-Dashboard.propTypes = {
+D3.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired
 };
 
-Dashboard = connect(mapStateToProps)(Dashboard);
+D3 = connect(mapStateToProps)(D3);
 
-export default Dashboard
+export default D3

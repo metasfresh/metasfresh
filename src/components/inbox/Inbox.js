@@ -51,10 +51,26 @@ class Inbox extends Component {
         close && close();
     }
 
+    handleKeyDown = (e) => {
+        const {close} = this.props;
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                if (document.activeElement.classList.contains('js-inbox-wrapper')) {
+                    document.getElementsByClassName('js-inbox-item')[0].focus();
+                }
+                break;
+            case "Escape":
+                e.preventDefault();
+                close && close();
+                break;
+        }
+    }
+
     render() {
         const {open, inbox, all, close} = this.props;
         return (
-            <div className="js-inbox-wrapper" tabIndex={0}>
+            <div className="js-inbox-wrapper" onKeyDown={(e) => this.handleKeyDown(e)} tabIndex={0}>
                 {(all || open) && <div className={
                     (all ? "inbox-all ": "inbox")
                 }>
