@@ -126,3 +126,23 @@ export function deleteRequest(entity, docType, docId, tabId, rowId) {
         (rowId ? "/" + rowId : "")
     );
 }
+
+export function actionsRequest(entity, type, id){
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        type + '/' +
+        id +
+        '/actions'
+    );
+}
+
+export function referencesRequest(entity, type, id){
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        type + '/' + 
+        id +
+        '/references'
+    );
+}

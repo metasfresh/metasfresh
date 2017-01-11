@@ -11,12 +11,15 @@ import {
 import keymap from '../../keymap.js';
 
 import {
-    getRelatedDocuments,
     setReferences,
-    getDocumentActions,
     setActions,
     getViewActions
 } from '../../actions/MenuActions';
+
+import {
+    actionsRequest,
+    referencesRequest
+} from '../../actions/GenericActions';
 
 class Subheader extends Component {
     constructor(props){
@@ -28,30 +31,23 @@ class Subheader extends Component {
     }
 
     componentDidMount() {
-        const {dispatch, windowType, dataId, viewId, selected} = this.props;
+        const {
+            dispatch, windowType, dataId, viewId, selected, entity
+        } = this.props;
+
         dispatch(setActions([]));
 
         document.getElementsByClassName('js-subheader-column')[0].focus();
 
-        if(windowType && dataId){
-            dispatch(getRelatedDocuments(windowType, dataId)).then((response) => {
+        if(selected.length === 1 || dataId){
+            dispatch(referencesRequest("window", windowType, dataId ? dataId : selected[0])).then((response) => {
                 dispatch(setReferences(response.data.references));
             });
-
-            dispatch(getDocumentActions(windowType,dataId)).then((response) => {
-                dispatch(setActions(response.data.actions));
-            });
-        }else if (viewId && !dataId){
-            dispatch(getViewActions(windowType, viewId)).then((response) => {
-                dispatch(setActions(response.data.actions));
-            });
-            if(selected && selected.length === 1){
-                dispatch(getRelatedDocuments(windowType, selected[0])).then((response) => {
-                    dispatch(setReferences(response.data.references));
-                });
-            }
         }
 
+        dispatch(actionsRequest(entity, windowType, dataId ? dataId : viewId)).then((response) => {
+            dispatch(setActions(response.data.actions));
+        });
     }
 
     handleReferenceClick = (type, filter) => {

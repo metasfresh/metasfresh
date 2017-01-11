@@ -113,25 +113,6 @@ export function getWindowBreadcrumb(id){
     }
 }
 
-export function getRelatedDocuments(type, id){
-    return () => axios.get(
-        config.API_URL + '/window/' + type + '/' + id + '/references'
-    );
-}
-
-export function getDocumentActions(type, id){
-    return () => axios.get(
-        config.API_URL + '/window/' + type + '/' + id + '/actions'
-    );
-}
-
-export function getViewActions(type, viewId){
-    return () => axios.get(
-        config.API_URL + '/documentView/' + type + '/' + viewId + '/actions'
-    );
-}
-
-
 //END OF THUNK ACTIONS
 
 // UTILITIES

@@ -253,7 +253,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu, selected
+            viewId, inbox, homemenu, selected, entity
         } = this.props;
 
         const {
@@ -414,6 +414,7 @@ class Header extends Component {
                     handleClone={this.handleClone}
                     redirect={this.redirect}
                     selected={selected}
+                    entity={entity}
                 />}
 
                 {showSidelist && <SideList
