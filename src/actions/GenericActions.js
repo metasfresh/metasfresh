@@ -146,3 +146,16 @@ export function referencesRequest(entity, type, id){
         '/references'
     );
 }
+
+export function printRequest(entity, docType, docId, name) {
+    return () => {
+        const url =
+            config.API_URL + '/' +
+            entity + '/' +
+            docType + '/' +
+            docId +
+            '/print/' + name;
+
+        window.open(url, "_blank");
+    }
+}
