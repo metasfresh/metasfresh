@@ -18,6 +18,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.dlm.Partition;
 import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.partitioner.IIterateResultHandler;
+import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
+import de.metas.dlm.partitioner.IterateResultHandlerSupport;
 
 /*
  * #%L
@@ -77,6 +80,8 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 	 */
 	private Partition partition = new Partition();
 
+	private IterateResultHandlerSupport handlerSupport = new IterateResultHandlerSupport();
+
 	public CreatePartitionIterateResult(
 			final Iterator<WorkQueue> initialQueue,
 			final IContextAware ctxAware)
@@ -88,20 +93,20 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 	}
 
 	@Override
-	public boolean addReferencedRecord(final ITableRecordReference IGNORED, final ITableRecordReference referencedRecord, final int dlmPartitionId)
+	public AddResult addReferencedRecord(final ITableRecordReference IGNORED, final ITableRecordReference referencedRecord, final int dlmPartitionId)
 	{
 		final boolean neverAddToqueue = false;
 		return add0(referencedRecord, dlmPartitionId, neverAddToqueue);
 	}
 
 	@Override
-	public boolean addReferencingRecord(final ITableRecordReference referencingRecord, final ITableRecordReference IGNORED, final int dlmPartitionId)
+	public AddResult addReferencingRecord(final ITableRecordReference referencingRecord, final ITableRecordReference IGNORED, final int dlmPartitionId)
 	{
 		final boolean neverAddToqueue = false;
 		return add0(referencingRecord, dlmPartitionId, neverAddToqueue);
 	}
 
-	private boolean add0(
+	private AddResult add0(
 			final ITableRecordReference tableRecordReference,
 			final int dlmPartitionId,
 			final boolean neverAddToqueue)
@@ -115,15 +120,23 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 				.computeIfAbsent(tableName, k -> new HashSet<>())
 				.add(tableRecordReference);
 
+		final AddResult preliminaryResult;
 		if (added)
 		{
+			preliminaryResult = AddResult.ADDED_CONTINUE;
 			size++;
 			if (!neverAddToqueue && dlmPartitionId <= 0)
 			{
 				queueItemsToProcess.addLast(WorkQueue.of(tableRecordReference));
 			}
+
 		}
-		return added;
+		else
+		{
+			preliminaryResult = AddResult.NOT_ADDED_CONTINUE;
+		}
+
+		return handlerSupport.onRecordAdded(tableRecordReference, preliminaryResult);
 	}
 
 	@Override
@@ -230,6 +243,18 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 	public Partition getPartition()
 	{
 		return partition;
+	}
+
+	@Override
+	public void registerHandler(IIterateResultHandler handler)
+	{
+		handlerSupport.registerListener(handler);
+	}
+
+	@Override
+	public List<IIterateResultHandler> getRegisteredHandlers()
+	{
+		return handlerSupport.getRegisteredHandlers();
 	}
 
 	@Override

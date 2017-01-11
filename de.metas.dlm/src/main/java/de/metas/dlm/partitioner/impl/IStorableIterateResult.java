@@ -10,6 +10,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import de.metas.dlm.Partition;
 import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
+import de.metas.dlm.partitioner.IIterateResult;
 import de.metas.dlm.partitioner.IRecordCrawlerService;
 
 /*

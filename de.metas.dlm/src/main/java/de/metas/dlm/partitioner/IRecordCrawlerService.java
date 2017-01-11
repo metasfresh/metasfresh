@@ -4,7 +4,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.impl.IIterateResult;
 
 /*
  * #%L

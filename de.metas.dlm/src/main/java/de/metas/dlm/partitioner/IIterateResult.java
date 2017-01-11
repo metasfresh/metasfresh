@@ -1,11 +1,13 @@
-package de.metas.dlm.partitioner.impl;
+package de.metas.dlm.partitioner;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
 
 /*
  * #%L
@@ -29,6 +31,14 @@ import de.metas.dlm.model.IDLMAware;
  * #L%
  */
 
+/**
+ * Implementors are passed as paramter to {@link IRecordCrawlerService#crawl(de.metas.dlm.partitioner.config.PartitionConfig, IContextAware, IIterateResult)}.
+ * <p>
+ * The crawler uses it both to add the records it found and to get the next record to load the incoming and outgoing references for.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IIterateResult
 {
 
@@ -50,7 +60,7 @@ public interface IIterateResult
 	 *
 	 * @return <code>true</code> if the given <code>referencedRecord</code> was added for the first time.
 	 */
-	boolean addReferencedRecord(ITableRecordReference referencingRecord, ITableRecordReference referencedRecord, int dlmPartitionId);
+	AddResult addReferencedRecord(ITableRecordReference referencingRecord, ITableRecordReference referencedRecord, int dlmPartitionId);
 
 	/**
 	 * Analog to {@link #addReferencedRecord(ITableRecordReference, ITableRecordReference, int)}.<br>
@@ -66,7 +76,7 @@ public interface IIterateResult
 	 *
 	 * @return <code>true</code> if the given <code>referencingRecord</code> was added for the first time.
 	 */
-	boolean addReferencingRecord(ITableRecordReference referencingRecord, ITableRecordReference referencedRecord, int dlmPartitionId);
+	AddResult addReferencingRecord(ITableRecordReference referencingRecord, ITableRecordReference referencedRecord, int dlmPartitionId);
 
 	boolean contains(ITableRecordReference forwardReference);
 
@@ -77,6 +87,10 @@ public interface IIterateResult
 	 */
 	int size();
 
+	/**
+	 *
+	 * @return {@code} if there is nothing more to be done by the crawler.
+	 */
 	boolean isQueueEmpty();
 
 	/**
@@ -88,4 +102,15 @@ public interface IIterateResult
 	 * @see #add(ITableRecordReference, int)
 	 */
 	ITableRecordReference nextFromQueue();
+
+	/**
+	 * Register a handler.
+	 * <p>
+	 * Hint: implementors can use {@link IterateResultHandlerSupport} and just delegate to it in order to implement the implementation.
+	 *
+	 * @param handler
+	 */
+	void registerHandler(IIterateResultHandler handler);
+
+	List<IIterateResultHandler> getRegisteredHandlers();
 }

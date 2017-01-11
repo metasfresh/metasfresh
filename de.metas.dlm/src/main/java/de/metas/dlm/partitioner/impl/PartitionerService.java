@@ -18,6 +18,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -49,6 +50,8 @@ import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Record_V;
+import de.metas.dlm.partitioner.IIterateResult;
+import de.metas.dlm.partitioner.IIterateResultHandler;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.IRecordCrawlerService;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
@@ -152,8 +155,9 @@ public class PartitionerService implements IPartitionerService
 			{
 				final Partition partition = attachToPartitionAndCheck(
 						request,
-						new CreatePartitionIterateResult(
+						mkIterateResult(
 								Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
+								null,
 								ctxAware));
 				id2Partition.put(partition.getDLM_Partition_ID(), partition);
 			}
@@ -167,8 +171,9 @@ public class PartitionerService implements IPartitionerService
 
 			final Partition partition = attachToPartitionAndCheck(
 					request,
-					new CreatePartitionIterateResult(
+					mkIterateResult(
 							queue,
+							null,
 							ctxAware));
 			id2Partition.put(partition.getDLM_Partition_ID(), partition);
 		}
@@ -182,8 +187,9 @@ public class PartitionerService implements IPartitionerService
 				Loggables.get().addLog("Working with an inclomplete partition");
 				final Partition partition = attachToPartitionAndCheck(
 						request,
-						new CreatePartitionIterateResult(
+						mkIterateResult(
 								incompletePartitionQueue,
+								null,
 								ctxAware));
 				id2Partition.put(partition.getDLM_Partition_ID(), partition);
 			}
@@ -199,8 +205,9 @@ public class PartitionerService implements IPartitionerService
 						continue;  // looks like we partitioned *every* record of the given table
 					}
 					final Partition partition = attachToPartitionAndCheck(request,
-							new CreatePartitionIterateResult(
+							mkIterateResult(
 									Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
+									null,
 									ctxAware));
 					id2Partition.put(partition.getDLM_Partition_ID(), partition);
 				}
@@ -288,7 +295,10 @@ public class PartitionerService implements IPartitionerService
 
 			// retrieve all the records that might also be referenced from outside the partition via the new partitioner config augment.
 			final Iterator<WorkQueue> recordReferencesForTable = loadForTable(partition, referencedTableName);
-			final CreatePartitionIterateResult iterateResult = new CreatePartitionIterateResult(recordReferencesForTable, PlainContextAware.newWithThreadInheritedTrx());
+			final CreatePartitionIterateResult iterateResult = mkIterateResult(recordReferencesForTable,
+					initialResult.getRegisteredHandlers(),
+					PlainContextAware.newWithThreadInheritedTrx());
+
 			iterateResult.clearAfterPartitionStored(partition); // to set "partition" as the result's partition
 			return attachToPartitionAndCheck(newRequest, iterateResult);
 		}
@@ -300,20 +310,23 @@ public class PartitionerService implements IPartitionerService
 		return partition;
 	}
 
-	// private Partition loadRecordsIfNeccesary(Partition partition)
-	// {
-	// if (partition.getDLM_Partition_ID() <= 0)
-	// {
-	// return partition;
-	// }
-	//
-	// final Map<String, Collection<ITableRecordReference>> allRecords = loadAllRecords(partition.getDLM_Partition_ID(), PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()));
-	// final Partition partitionReloaded = partition.withRecords(allRecords);
-	//
-	// logger.info("(Re)loaded the partition={}", partitionReloaded);
-	//
-	// return partitionReloaded;
-	// }
+	private CreatePartitionIterateResult mkIterateResult(final Iterator<WorkQueue> recordReferencesForTable,
+			final List<IIterateResultHandler> existingHandlers,
+			final IContextAware ctxAware)
+	{
+		final CreatePartitionIterateResult newResult = new CreatePartitionIterateResult(recordReferencesForTable, ctxAware);
+
+		if (existingHandlers == null)
+		{
+			newResult.registerHandler(new SalesPurchaseWatchDog());
+		}
+		else
+		{
+			existingHandlers.forEach(h -> newResult.registerHandler(h));
+		}
+
+		return newResult;
+	}
 
 	private void checkIfAllTablesAreDLM(final List<PartitionerConfigLine> lines, final OnNotDLMTable onNotDLMTable)
 	{
@@ -475,7 +488,7 @@ public class PartitionerService implements IPartitionerService
 		final int dlmLevel = IMigratorService.DLM_Level_TEST;
 
 		final int dlmCoalesceLevel = IMigratorService.DLM_Level_LIVE; // records that were not yet given a DLM-Level shall be assumed to be "operational"
-		final DLMConnectionCustomizer connectionCustomizer = new DLMConnectionCustomizer(dlmLevel, dlmCoalesceLevel);
+		final DLMConnectionCustomizer connectionCustomizer = DLMConnectionCustomizer.withLevels(dlmLevel, dlmCoalesceLevel);
 
 		return connectionCustomizer;
 	}

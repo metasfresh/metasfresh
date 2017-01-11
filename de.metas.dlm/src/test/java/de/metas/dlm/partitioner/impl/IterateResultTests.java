@@ -18,6 +18,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dlm.Partition.WorkQueue;
+import de.metas.dlm.partitioner.IIterateResult;
 
 /*
  * #%L

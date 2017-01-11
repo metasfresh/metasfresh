@@ -33,6 +33,8 @@ import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
+import de.metas.dlm.partitioner.IIterateResult;
+import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
 import de.metas.dlm.partitioner.IRecordCrawlerService;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
@@ -80,7 +82,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		// otherwise, the partiton we are in truth working on just now would be flagged as "completed" in the DB until further notice
 		storeIterateResult(config, result, ctxAware);
 
-		while (!result.isQueueEmpty())
+		mainLoop: while (!result.isQueueEmpty())
 		{
 			final ITableRecordReference currentReference = result.nextFromQueue();
 			final IDLMAware currentRecord = currentReference.getModel(ctxAware, IDLMAware.class);
@@ -173,12 +175,17 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						logger.debug("{}[{}] forward: loaded from table={} via {}.{}={}: referenced IDLMAware={}",
 								currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey, forwardRecord);
 
-						result.addReferencedRecord(currentReference, forwardReference, forwardRecord.getDLM_Partition_ID());
+						final AddResult addResult = result.addReferencedRecord(currentReference, forwardReference, forwardRecord.getDLM_Partition_ID());
 						if (forwardRecord.getDLM_Partition_ID() > 0)
 						{
 							// log why we do not search further using the new found foreign record
 							logger.debug("{}[{}] forward: referenced IDLMAware={} already has DLM_Partition_ID={}",
 									currentTableName, currentRecordId, forwardRecord, forwardRecord.getDLM_Partition_ID());
+						}
+						if(AddResult.STOP.equals(addResult))
+						{
+							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencedRecord={} the result. Stopping now", forwardReference);
+							break mainLoop;
 						}
 					}
 				}
@@ -245,27 +252,35 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 					final ITableRecordReference backwardTableRecordReference = ITableRecordReference.FromModelConverter.convert(backwardRecord);
 
-					final boolean recordWasNotYetAddedBefore = result.addReferencingRecord(backwardTableRecordReference, currentReference, backwardRecord.getDLM_Partition_ID());
+					final AddResult addRecordResult = result.addReferencingRecord(backwardTableRecordReference, currentReference, backwardRecord.getDLM_Partition_ID());
 
 					// should not happen because we excluded alreadyAddedBackwardIds from the loading query
 					// Check.errorUnless(recordWasNotYetAddedBefore, "{}[{}] backward: WAS ALREADY ADDED! - loaded referencing IDLMAware={} from table={} via {}.{}={}",
 					// currentTableName, currentRecordId, backwardRecord, backwardTableName, backwardTableName, backwardColumnName, currentRecordId);
-					if (recordWasNotYetAddedBefore)
-					{
-						// the foreign record was not yet added before. Add it now
-						logger.debug("{}[{}] backward: loaded from table={} via {}.{}={}: referencing IDLMAware={}",
-								currentTableName, currentRecordId, backwardTableName, backwardTableName, backwardColumnName, currentRecordId, backwardRecord);
 
-						if (backwardRecord.getDLM_Partition_ID() > 0)
-						{
-							// log why we did not search further using the new found foreign record
-							logger.debug("{}[{}] backward: referenced IDLMAware={} already has DLM_Partition_ID={}",
-									currentTableName, currentRecordId, backwardRecord, backwardRecord.getDLM_Partition_ID());
-						}
-					}
-					else
+					switch (addRecordResult)
 					{
-						logger.trace("{}[{}] backward: ITableRecordReference={} was already added in a previous iteration. Returning", currentTableName, currentRecordId, backwardTableRecordReference);
+						case ADDED_CONTINUE:
+							// log that the foreign record was not yet added before. We added it now
+							logger.debug("{}[{}] backward: loaded from table={} via {}.{}={}: referencing IDLMAware={}",
+									currentTableName, currentRecordId, backwardTableName, backwardTableName, backwardColumnName, currentRecordId, backwardRecord);
+
+							if (backwardRecord.getDLM_Partition_ID() > 0)
+							{
+								// log why we did not search further using the new found foreign record
+								logger.debug("{}[{}] backward: referenced IDLMAware={} already has DLM_Partition_ID={}",
+										currentTableName, currentRecordId, backwardRecord, backwardRecord.getDLM_Partition_ID());
+							}
+							break;
+						case NOT_ADDED_CONTINUE:
+							logger.trace("{}[{}] backward: ReferencingRecord={} was already added in a previous iteration. Returning", currentTableName, currentRecordId, backwardTableRecordReference);
+							break;
+						case STOP:
+							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencingRecord={} the result. Stopping now", backwardTableRecordReference);
+							break mainLoop;
+						default:
+							Check.errorIf(true, "Unexpected result={}", addRecordResult);
+							break;
 					}
 				}
 			}
@@ -437,9 +452,9 @@ public class RecordCrawlerService implements IRecordCrawlerService
 			// persist DLM_Partition_Workqueue record we still need to process.
 			final Mutable<Integer> storedSum = new Mutable<>(0);
 			result.getQueueRecordsToStore()
-					.forEach(r -> {
+					.forEach(queueRecordsToStore -> {
 
-						final ITableRecordReference tableRecordReference = r.getTableRecordReference();
+						final ITableRecordReference tableRecordReference = queueRecordsToStore.getTableRecordReference();
 
 						final I_DLM_Partition_Workqueue newQueueRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Workqueue.class);
 						newQueueRecord.setDLM_Partition_ID(storedPartition.getDLM_Partition_ID());
@@ -448,7 +463,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 						InterfaceWrapperHelper.save(newQueueRecord);
 
-						r.setDLM_Partition_Workqueue_ID(newQueueRecord.getDLM_Partition_Workqueue_ID());
+						queueRecordsToStore.setDLM_Partition_Workqueue_ID(newQueueRecord.getDLM_Partition_Workqueue_ID());
 
 						storedSum.setValue(storedSum.getValue() + 1);
 					});
