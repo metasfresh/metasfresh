@@ -66,6 +66,7 @@ class MasterWindow extends Component {
 
         return (
             <Container
+                entity="window"
                 docActionElem = {docActionElement}
                 docStatusData = {docStatusData}
                 docNoElement = {documentNoElement}

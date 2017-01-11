@@ -116,13 +116,46 @@ export function dropdownRequest(docType, propertyName, docId, tabId, rowId, enti
     );
 }
 
-export function deleteRequest(entity, docType, docId, tabId, rowId) {
+export function deleteRequest(entity, docType, docId, tabId, ids) {
     return () => axios.delete(
         config.API_URL +
         '/' + entity +
         (docType ? "/" + docType : "") +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "")
+        (ids ? "?ids=" + ids : "")
     );
+}
+
+export function actionsRequest(entity, type, id){
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        type + '/' +
+        id +
+        '/actions'
+    );
+}
+
+export function referencesRequest(entity, type, id){
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        type + '/' +
+        id +
+        '/references'
+    );
+}
+
+export function printRequest(entity, docType, docId, name) {
+    return () => {
+        const url =
+            config.API_URL + '/' +
+            entity + '/' +
+            docType + '/' +
+            docId +
+            '/print/' + name;
+
+        window.open(url, "_blank");
+    }
 }

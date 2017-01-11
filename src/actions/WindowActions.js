@@ -13,8 +13,13 @@ import {
 import {
     initLayout,
     getData,
-    patchRequest
+    patchRequest,
+    printRequest
 } from './GenericActions';
+
+import {
+    addNotification
+} from './AppActions'
 
 
 export function initLayoutSuccess(layout, scope) {
@@ -313,17 +318,27 @@ export function createProcess(processType, viewId, type, ids) {
             const preparedData = parseToDisplay(response.data.parameters);
             pid = response.data.pinstanceId;
             if (preparedData.length === 0) {
-                throw new Error('wrong_response');
+                dispatch(startProcess(processType, pid)).then(response => {
+                    const {data} = response;
+                    if(data.reportFilename){
+                        dispatch(printRequest('process', processType, pid, response.data.reportFilename))
+                    }else if(data.summary){
+                        dispatch(addNotification('Process', data.summary, 5000, 'primary'))
+                    }
+                });
+                throw new Error("close_modal");
+            }else{
+                dispatch(initDataSuccess(preparedData, "modal")).then(response =>
+                    dispatch(initLayout('process', processType))
+                ).then(response => {
+                    const preparedLayout = Object.assign({}, response.data, {
+                        pinstanceId: pid
+                    })
+                    return dispatch(initLayoutSuccess(preparedLayout, "modal"))
+                });
+
             }
-            return dispatch(initDataSuccess(preparedData, "modal"));
-        }).then(response =>
-            dispatch(initLayout('process', processType))
-        ).then(response => {
-            const preparedLayout = Object.assign({}, response.data, {
-                pinstanceId: pid
-            })
-            return dispatch(initLayoutSuccess(preparedLayout, "modal"))
-        });
+        })
 }
 
 function getProcessData(processId, viewId, type, ids) {

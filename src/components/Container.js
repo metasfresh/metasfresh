@@ -7,16 +7,18 @@ class Container extends Component {
     constructor(props){
         super(props);
     }
+
     render() {
         const {
             docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
             dataId, windowType, breadcrumb, references, actions, showSidelist,
-            siteName, connectionError, noMargin
+            siteName, connectionError, noMargin, entity, children
         } = this.props;
 
         return (
             <div>
                 <Header
+                    entity={entity}
                     docStatus = {docActionElem}
                     docStatusData = {docStatusData}
                     docNo = {docNoElement}
@@ -32,8 +34,13 @@ class Container extends Component {
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />
-                <div className={"header-sticky-distance js-unselect " + (!!noMargin ? "dashboard" : "container-fluid")}>
-                    {this.props.children}
+                <div
+                    className={
+                        "header-sticky-distance js-unselect " +
+                        (!!noMargin ? "dashboard" : "container-fluid")
+                    }
+                >
+                    {children}
                 </div>
             </div>
         );

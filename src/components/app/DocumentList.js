@@ -246,6 +246,7 @@ class DocumentList extends Component {
 
                     <div>
                         <Table
+                            entity="documentView"
                             ref={c => this.table = c && c.getWrappedInstance() && c.getWrappedInstance().refs.instance}
                             rowData={{1: data.result}}
                             cols={layout.elements}

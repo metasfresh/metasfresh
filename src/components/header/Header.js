@@ -26,7 +26,8 @@ import {
 } from '../../actions/MenuActions';
 
 import {
-    deleteRequest
+    deleteRequest,
+    handlePrint
 } from '../../actions/GenericActions';
 
 import keymap from '../../keymap.js';
@@ -161,11 +162,10 @@ class Header extends Component {
 
     handlePrint = (windowType, docId, docNo) => {
         const {dispatch} = this.props;
-        const url = config.API_URL +
-            '/window/' + windowType +
-            '/' + docId +
-            '/print/' + windowType + '_' + (docNo ? docNo : docId) + '.pdf';
-        window.open(url, "_blank");
+
+        dispatch(printRequest(
+            'window', windowType, docId, windowType + '_' + (docNo ? docNo : docId) + '.pdf'
+        ));
         this.handleBackdropClick(false);
     }
 
@@ -200,7 +200,7 @@ class Header extends Component {
                 open: false
             })
         }), () => {
-            dispatch(deleteRequest('window', windowType, docId))
+            dispatch(deleteRequest('window', windowType, null, null, [docId]))
                 .then(response => {
                     dispatch(push('/window/' + windowType));
                 });
@@ -253,7 +253,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu, selected
+            viewId, inbox, homemenu, selected, entity
         } = this.props;
 
         const {
@@ -414,6 +414,7 @@ class Header extends Component {
                     handleClone={this.handleClone}
                     redirect={this.redirect}
                     selected={selected}
+                    entity={entity}
                 />}
 
                 {showSidelist && <SideList

@@ -47,6 +47,7 @@ class DocList extends Component {
 
         return (
             <Container
+                entity="documentView"
                 breadcrumb={breadcrumb}
                 windowType={windowType}
                 actions={actions}

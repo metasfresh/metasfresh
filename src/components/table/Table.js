@@ -483,39 +483,31 @@ class Table extends Component {
     }
 
     handlePromptCancelClick = () => {
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: false
-        }))
+        this.setState(
+            Object.assign({}, this.state, {
+                promptOpen: false
+            })
+        )
     }
 
-    handlePromptSubmitClick = (selected, tabId) => {
-        const {dispatch, type, docId, mainTable, updateDocList} = this.props;
-        this.handlePromptCancelClick();
+    handlePromptSubmitClick = (selected) => {
+        const {
+            dispatch, type, docId, mainTable, updateDocList, entity, tabid
+        } = this.props;
 
-        if(mainTable){
-            if(selected.length>1){
-                for(let i=0;i<selected.length;i++){
-                    dispatch(deleteRequest(entity, type, null, null, selected[i]));
-                }
-                updateDocList();
-                this.deselectAllProducts();
-            } else {
-                dispatch(deleteRequest(entity, type, null, null, selected))
-                .then(response => {
+        this.setState(Object.assign({}, this.state, {
+            promptOpen: false,
+            selected: []
+        }), () => {
+            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
+            .then(() => {
+                if(docId){
+                    dispatch(deleteLocal(tabId, selected, "master"))
+                } else {
                     updateDocList();
-                }).then(response => {
-                    this.deselectAllProducts();
-                });
-            }
-
-        } else {
-            dispatch(deleteRequest(entity, type, docId, tabId, selected))
-            .then(response => {
-                dispatch(deleteLocal(tabId, selected, "master"))
-            }).then(response => {
-                this.deselectAllProducts();
+                }
             });
-        }
+        });
     }
 
     handleKey = (e) => {
@@ -634,7 +626,7 @@ class Table extends Component {
                         text={"Are you sure?"}
                         buttons={{submit: "Delete", cancel: "Cancel"}}
                         onCancelClick={this.handlePromptCancelClick}
-                        onSubmitClick={() => this.handlePromptSubmitClick(selected, tabid)}
+                        onSubmitClick={() => this.handlePromptSubmitClick(selected)}
                     />
                 }
                 <DocumentListContextShortcuts
