@@ -49,8 +49,9 @@ def invokeDownStreamJobs(String jobFolderName, String upstreamBranch, boolean wa
 	build job: jobName, 
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
-			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+			// the following two parameters need to be the same way they would be if the donwstream-job was triggered by a change and not by metasfresh-parent.
+			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), //
+			booleanParam(name: 'MF_SKIP_TO_DIST', value: false) // this param is only recognised by metasfresh.
 		], wait: wait
 }
 
