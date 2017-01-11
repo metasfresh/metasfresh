@@ -57,7 +57,7 @@ public interface IPMMProductBL extends ISingletonService
 	 * @param partnerId
 	 * @param huPIPId
 	 * @param asi
-	 * @return
+	 * @return PMM_Product if found, null otherwise
 	 */
 	I_PMM_Product getPMMProductForDateProductAndASI(Date date, int productId, int partnerId, int huPIPId, I_M_AttributeSetInstance asi);
 

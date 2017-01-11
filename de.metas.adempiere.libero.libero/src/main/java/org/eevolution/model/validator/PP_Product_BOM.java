@@ -1,5 +1,8 @@
 package org.eevolution.model.validator;
 
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -25,16 +28,26 @@ package org.eevolution.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 
 @Validator(I_PP_Product_BOM.class)
 public class PP_Product_BOM
 {
+	@Init
+	public void init(final IModelValidationEngine engine)
+	{
+
+		CopyRecordFactory.enableForTableName(I_PP_Product_BOM.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_PP_Product_BOM.Table_Name, PP_Product_BOM_POCopyRecordSupport.class);
+	}
+	
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void updateProduct(final I_PP_Product_BOM bom)
 	{
