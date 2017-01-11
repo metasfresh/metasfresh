@@ -10,9 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.51.51 (2017-03)
+
+## Fixes
+* metasfresh 
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * address the possible case of different procurement products that have different attributes and still both match equally well
+
 # metasfresh 4.51.50 (2017-02)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
