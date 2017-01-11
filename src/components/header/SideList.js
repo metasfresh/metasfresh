@@ -5,8 +5,10 @@ class SideList extends Component {
     constructor(props) {
         super(props);
     }
+
     render() {
         const {open, windowType, closeOverlays} = this.props;
+
         return (
             <div
                 ref={(c) => this.panel = c}
@@ -16,11 +18,16 @@ class SideList extends Component {
                 }
             >
                 <div className="order-list-panel-body">
-                    <DocumentList windowType={windowType} type="list" open={open} closeOverlays={closeOverlays} />
+                    <DocumentList
+                        windowType={windowType}
+                        type="list"
+                        open={open}
+                        closeOverlays={closeOverlays}
+                    />
                 </div>
             </div>
         )
     }
 }
 
-export default SideList
+export default SideList;

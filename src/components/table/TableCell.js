@@ -70,7 +70,7 @@ class TableCell extends Component {
     render() {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
-            onKeyDown, readonly, updatedRow, tabIndex
+            onKeyDown, readonly, updatedRow, tabIndex, entity
         } = this.props;
         return (
             <td
@@ -82,7 +82,13 @@ class TableCell extends Component {
                     (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
                     (widgetData[0].readonly ? "cell-disabled " : "") +
                     (widgetData[0].mandatory ? "cell-mandatory " : "") +
-                    (item.widgetType==="Lookup" || item.widgetType==="LongText" || item.widgetType==="List" || item.widgetType==="Date" || item.widgetType==="DateTime" || item.widgetType==="Time" ? "td-lg " : "") +
+                    (item.widgetType==="Lookup" ||
+                        item.widgetType==="LongText" ||
+                        item.widgetType==="List" ||
+                        item.widgetType==="Date" ||
+                        item.widgetType==="DateTime" ||
+                        item.widgetType==="Time" ?
+                            "td-lg " : "") +
                     (item.widgetType==="ProductAttributes" ? "td-md " : "") +
                     (item.widgetType==="Address" ? "td-md " : "") +
                     (item.widgetType==="Text" ? "td-md " : "") +
@@ -94,6 +100,7 @@ class TableCell extends Component {
                     isEdited ?
                         <MasterWidget
                             {...item}
+                            entity={entity}
                             dataId={docId}
                             widgetData={widgetData}
                             windowType={type}
@@ -104,7 +111,9 @@ class TableCell extends Component {
                             handleBackdropLock={this.handleBackdropLock}
                         />
                     :
-                       <div className="cell-text-wrapper"> {this.fieldToString(widgetData[0].value, item.widgetType)}</div>
+                       <div className="cell-text-wrapper">
+                           {this.fieldToString(widgetData[0].value, item.widgetType)}
+                       </div>
                 }
             </td>
         )

@@ -7,7 +7,10 @@ import Table from '../table/Table';
 import Filters from '../filters/Filters';
 
 import {
-    viewLayoutRequest,
+    initLayout
+} from '../../actions/GenericActions';
+
+import {
     createViewRequest,
     browseViewRequest,
     addNotification
@@ -85,7 +88,9 @@ class DocumentList extends Component {
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
         }else{
-            windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
+            windowType && dispatch(
+                initLayout('documentView', windowType, null, null, null, null, type))
+            .then(response => {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
                 }), () => {

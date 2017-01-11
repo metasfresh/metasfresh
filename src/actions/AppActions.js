@@ -68,10 +68,6 @@ export function getUserDashboardIndicators() {
     return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
 }
 
-export function viewLayoutRequest(windowType, type){
-	return () => axios.get(config.API_URL + '/documentView/' + windowType + '/layout?viewType=' + type);
-}
-
 export function browseViewRequest(viewId, page, pageLength, orderBy, windowType){
 	return () => axios.get(
         config.API_URL + '/documentView/' + windowType +
@@ -160,14 +156,6 @@ export function markAsRead(id) {
 }
 
 // Attribute widget backend
-
-export function getAttributesLayout(attrType, docId) {
-    return () => axios.get(config.API_URL + '/' + attrType + '/' + docId + '/layout');
-}
-
-export function attributesComplete(attrType, docId) {
-    return () => axios.get(config.API_URL + '/' + attrType + '/' + docId + '/complete');
-}
 
 export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, rowId, fieldName) {
     return () => axios.post(config.API_URL + '/' + attrType, {

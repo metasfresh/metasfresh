@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
-export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced) {
+export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced, list) {
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' + docType +
@@ -10,14 +10,17 @@ export function initLayout(entity, docType, tabId, subentity = null, docId = nul
         (tabId ? "/" + tabId : "") +
         (subentity ? "/" + subentity : "") +
         '/layout' +
-        (isAdvanced ? "?advanced=true" : "")
+        (isAdvanced ? "?advanced=true" : "") +
+        (list ? "?viewType=" + list : "")
     );
 }
 
 export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced) {
     return () => axios.get(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
+        '/' + entity + '/' +
+        docType + '/' +
+        (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
         (subentity ? "/" + subentity : "") +
@@ -72,7 +75,9 @@ export function completeRequest(
 ) {
     return () => axios.post(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
+        '/' + entity + '/' +
+        (docType ? "/" + docType : "") +
+        (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
         (subentity ? "/" + subentity : "") +
@@ -108,5 +113,16 @@ export function dropdownRequest(docType, propertyName, docId, tabId, rowId, enti
         (subentityId ? "/" + subentityId : "") +
         '/attribute/' + propertyName +
         '/dropdown'
+    );
+}
+
+export function deleteRequest(entity, docType, docId, tabId, rowId) {
+    return () => axios.delete(
+        config.API_URL +
+        '/' + entity +
+        (docType ? "/" + docType : "") +
+        (docId ? "/" + docId : "") +
+        (tabId ? "/" + tabId : "") +
+        (rowId ? "/" + rowId : "")
     );
 }

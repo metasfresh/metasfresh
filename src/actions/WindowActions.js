@@ -139,6 +139,15 @@ export function indicatorState(state) {
     }
 }
 
+//SELECT ON TABLE
+
+export function selectTableItems(ids) {
+    return {
+        type: types.SELECT_TABLE_ITEMS,
+        ids: ids
+    }
+}
+
 // THUNK ACTIONS
 
 /*
@@ -308,7 +317,7 @@ export function createProcess(processType, viewId, type, ids) {
             }
             return dispatch(initDataSuccess(preparedData, "modal"));
         }).then(response =>
-            dispatch(getProcessLayout(processType))
+            dispatch(initLayout('process', processType))
         ).then(response => {
             const preparedLayout = Object.assign({}, response.data, {
                 pinstanceId: pid
@@ -318,27 +327,28 @@ export function createProcess(processType, viewId, type, ids) {
 }
 
 function getProcessData(processId, viewId, type, ids) {
-    if (viewId) {
-        return () => axios.post(config.API_URL + '/process/instance', {
+    return () => axios.post(
+        config.API_URL +
+        '/process/' + processId,
+        viewId ? {
             processId: processId,
             viewId: viewId,
             viewDocumentIds: ids
-        });
-    } else {
-        return () => axios.post(config.API_URL + '/process/instance', {
+        } : {
             processId: processId,
             documentId: ids,
             documentType: type
-        });
-    }
+        }
+    );
 }
 
-function getProcessLayout(processType) {
-    return () => axios.get(config.API_URL + '/process/layout?processId=' + processType);
-}
-
-export function startProcess(processType) {
-    return () => axios.get(config.API_URL + '/process/instance/' + processType + '/start');
+export function startProcess(processType, pinstanceId) {
+    return () => axios.get(
+        config.API_URL +
+        '/process/' + processType +
+        '/' + pinstanceId +
+        '/start'
+    );
 }
 
 // END PROCESS ACTIONS
@@ -401,30 +411,10 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-//DELETE
-export function deleteData(windowType, id, tabId, rowId) {
-    return () => axios.delete(
-        config.API_URL +
-        '/window/delete?type=' + windowType +
-        '&id=' + id +
-        (tabId ? "&tabid=" + tabId : "") +
-        (rowId ? "&rowId=" + rowId : "")
-    );
-}
-
 export function deleteLocal(tabid, rowsid, scope) {
     return (dispatch) => {
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid, rowid, scope))
         }
-    }
-}
-
-//SELECT ON TABLE
-
-export function selectTableItems(ids) {
-    return {
-        type: types.SELECT_TABLE_ITEMS,
-        ids: ids
     }
 }

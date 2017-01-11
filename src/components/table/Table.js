@@ -6,9 +6,12 @@ import update from 'react-addons-update';
 import {
     openModal,
     selectTableItems,
-    deleteData,
     deleteLocal
 } from '../../actions/WindowActions';
+
+import {
+    deleteRequest
+} from '../../actions/GenericActions';
 
 import Prompt from '../app/Prompt';
 
@@ -395,7 +398,7 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex
+            onDoubleClick, mainTable, newRow, tabIndex, entity
         } = this.props;
 
         const {selected} = this.state;
@@ -409,6 +412,7 @@ class Table extends Component {
                 const index = keyProperty ? keyProperty : "rowId";
                 ret.push(
                     <TableItem
+                        entity={entity}
                         fields={item[key].fields}
                         key={i}
                         rowId={item[key].rowId}
@@ -486,12 +490,12 @@ class Table extends Component {
         if(mainTable){
             if(selected.length>1){
                 for(let i=0;i<selected.length;i++){
-                    dispatch(deleteData(type, selected[i]));
+                    dispatch(deleteRequest(entity, type, null, null, selected[i]));
                 }
                 updateDocList();
                 this.deselectAllProducts();
             } else {
-                dispatch(deleteData(type, selected))
+                dispatch(deleteRequest(entity, type, null, null, selected))
                 .then(response => {
                     updateDocList();
                 }).then(response => {
@@ -500,7 +504,7 @@ class Table extends Component {
             }
 
         } else {
-            dispatch(deleteData(type, docId, tabId, selected))
+            dispatch(deleteRequest(entity, type, docId, tabId, selected))
             .then(response => {
                 dispatch(deleteLocal(tabId, selected, "master"))
             }).then(response => {
