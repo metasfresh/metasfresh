@@ -38,6 +38,7 @@ class Modal extends Component {
             case "process":
                 //processid, viewId, docType, id or ids
                 dispatch(createProcess(windowType, viewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                    dispatch(addNotification("Error", "No parameters", null, "error"));
                     this.handleClose();
                 });
                 break;
