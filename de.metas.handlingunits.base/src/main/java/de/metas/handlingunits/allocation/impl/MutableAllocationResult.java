@@ -53,8 +53,6 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 	/**
 	 * 
 	 * @param qtyToAllocate the qty that shall be allocated. This quantity is subsequently reduced.
-	 * @param allocatedToCompressedVHU whether we allocate to a "compressed/bag" HU to to an "exploded/real" HU (gh #460).<br>
-	 *            Also see {@link #isAllocatedToCompressedVHU()}.
 	 */
 	public MutableAllocationResult(final BigDecimal qtyToAllocate)
 	{

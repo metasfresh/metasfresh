@@ -47,6 +47,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.junit.Ignore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -214,6 +215,16 @@ public class HUXmlConverter
 				final I_M_Product product = POJOLookupMap.get().lookup(I_M_Product.class, id);
 				final String productValue = product == null ? "" : product.getValue();
 				node.setAttribute("M_Product_Value", productValue);
+			}
+			
+			//
+			// Product
+			if ("C_UOM_ID".equals(name) && value != null)
+			{
+				final int id = (Integer)value;
+				final I_C_UOM uom = POJOLookupMap.get().lookup(I_C_UOM.class, id);
+				final String uomName = uom == null ? "" : uom.getName();
+				node.setAttribute("C_UOM_Name", uomName);
 			}
 
 		}

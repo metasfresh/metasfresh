@@ -79,8 +79,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	public HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
 	{
-		super();
-
 		// NOTE: we don't need contextProvider because we are creating nothing
 		// when needed HUContext from Request will be used
 		// this.contextProvider = contextProvider;

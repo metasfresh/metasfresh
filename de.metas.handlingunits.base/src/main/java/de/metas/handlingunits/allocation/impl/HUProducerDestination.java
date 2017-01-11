@@ -29,13 +29,16 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
+import de.metas.handlingunits.allocation.split.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 
 /**
- * This producer is used if stuff needs to be allocated into a "flat" HU.
+ * This producer is used if stuff needs to be allocated into a "flat" HU and no capacity constraints need to be taken into account.
  * I.e. don't invoke it with a palet and expect it to magically discover or create and allocate to included HUs.
+ * <p>
+ * For most real world use cases, you will probably want to use {@link LUTUProducerDestination} instead of this one.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -494,7 +494,8 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 				if (invocationPIVersion != null && invocationPIVersion.getM_HU_PI_Version_ID() != hu.getM_HU_PI_Version_ID())
 				{
 					// ...if invocationPIVersion differs from the M_HU_PI_Version that was effectively assigned to the 'hu'
-					// then we create and add items for the packaging piItems of 'piVersionToUse'
+					// then we create and add items for the packaging piItems of 'piVersionToUse'.
+					// The goal is that even if we don't create a full-fledged HU for an IFCO that's below a palet, we still add the IFCOs packing instruction to the aggregated VHU.
 					final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO
 							.retrievePIItems(invocationPIVersion, getC_BPartner())
 							.stream()
@@ -510,16 +511,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 					}
 				}
 			}
-			else
-			{
-				final I_M_HU_Item bagItem = handlingUnitsDAO.createAggregateHUItem(hu);
-				result.add(bagItem);
 
-				// Notify Storage DAO that a new item was just created
-				huStorageDAO.initHUItemStorages(bagItem);
-			}
+			boolean hasMaterialItem = false; // we only want either a material item or an aggregated item.
 
-			// Create "regular HU Items that are declared by the PI
+			// Create "regular" material and packing-material items that are declared by the PI
 			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
 			final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO.retrievePIItems(piVersion, getC_BPartner());
 
@@ -538,7 +533,22 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 				// Notify Storage DAO that a new item was just created
 				huStorageDAO.initHUItemStorages(item);
+
+				if (X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
+				{
+					hasMaterialItem = true;
+				}
 			}
+
+			if (!hasMaterialItem && !handlingUnitsBL.isAggregateHU(hu))
+			{
+				final I_M_HU_Item bagItem = handlingUnitsDAO.createAggregateHUItem(hu);
+				result.add(bagItem);
+
+				// Notify Storage DAO that a new item was just created
+				huStorageDAO.initHUItemStorages(bagItem);
+			}
+
 			return result;
 		}
 	}

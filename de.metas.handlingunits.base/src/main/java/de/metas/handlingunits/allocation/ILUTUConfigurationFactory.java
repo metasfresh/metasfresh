@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -38,6 +37,13 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, I_M_Product cuProduct, I_C_UOM cuUOM, I_C_BPartner bpartner);
 
+	/**
+	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
+	 * 
+	 * @param lutuConfiguration
+	 * 
+	 * @return
+	 */
 	ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	/**

@@ -26,105 +26,65 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHUCapacityDefinition;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
 
-public class LUTUProducerDestinationTest
+/**
+ * Note the "load" means "to create HUs and load qty into them from somehwere else". It's not about performance and stuff.
+ */
+public class LUTUProducerDestinationLoadTests
 {
-	private HUTestHelper helper;
-
-	private I_M_HU_PI piTU;
-	private I_M_HU_PI_Item piTU_Item;
-
-	@SuppressWarnings("unused")
-	private I_M_HU_PI_Item_Product piTU_Item_Product_Tomato;
-	@SuppressWarnings("unused")
-	private I_M_HU_PI_Item_Product piTU_Item_Product_Salad;
-
-	private I_M_HU_PI piLU;
-
-	/**
-	 * States that there can be <code>n</code> TUs be put into one LU.
-	 */
-	private I_M_HU_PI_Item piLU_Item_TU;
-
+	private LUTUProducerDestinationTestSupport data;
+	
 	@Before
 	public void init()
 	{
-		helper = new HUTestHelper();
-		helper.init();
-
-		piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-
-		piTU_Item = helper.createHU_PI_Item_Material(piTU);
-		piTU_Item_Product_Tomato = helper.assignProduct(piTU_Item, helper.pTomato, new BigDecimal("10"), helper.uomKg);
-		piTU_Item_Product_Salad = helper.assignProduct(piTU_Item, helper.pSalad, new BigDecimal("7"), helper.uomEach);
-
-		helper.createHU_PI_Item_PackingMaterial(piTU, helper.pmIFCO);
-
-		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		piLU_Item_TU = helper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("5"));
-
-		helper.createHU_PI_Item_PackingMaterial(piLU, helper.pmPalet);
-
+		data = new LUTUProducerDestinationTestSupport();
 	}
-
+	
 	@Test
 	public void test_1LU_With_Tomatoes_and_Salads()
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setLUPI(piLU);
-		lutuProducer.setLUItemPI(piLU_Item_TU);
-		lutuProducer.setTUPI(piTU);
+		lutuProducer.setLUPI(data.piLU);
+		lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
+		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		// TU capacity
-		lutuProducer.addTUCapacity(helper.pTomato, new BigDecimal("40"), helper.uomKg);
-		lutuProducer.addTUCapacity(helper.pSalad, new BigDecimal("7"), helper.uomEach);
+		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("40"), data.helper.uomKg);
+		lutuProducer.addTUCapacity(data.helper.pSalad, new BigDecimal("7"), data.helper.uomEach);
 
 		{
 			// load 10 salad into HUs
-			load(lutuProducer, helper.pSalad, new BigDecimal("10"));
+			data.helper.load(lutuProducer, data.helper.pSalad, new BigDecimal("10"), data.helper.uomEach);
 
 			final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 			TraceUtils.dump(createdHUs);
 
 			final I_M_HU luHU = createdHUs.get(0);
 			HUStorageExpectation.newExpectation()
-					.product(helper.pSalad).uom(helper.uomEach)
+					.product(data.helper.pSalad).uom(data.helper.uomEach)
 					.qty(10)
 					.assertExpected(luHU);
 		}
 
 		{
 			// load 60kg tomatos into HUs
-			load(lutuProducer, helper.pTomato, new BigDecimal("60"));
+			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("60"), data.helper.uomEach);
 
 			final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 			TraceUtils.dump(createdHUs);
 
 			final I_M_HU luHU = createdHUs.get(1);
 			HUStorageExpectation.newExpectation()
-					.product(helper.pTomato).uom(helper.uomKg)
+					.product(data.helper.pTomato).uom(data.helper.uomEach)
 					.qty(6 * 10)
 					.assertExpected(luHU);
 		}
@@ -156,32 +116,32 @@ public class LUTUProducerDestinationTest
 				husExpectation -> {
 					//@formatter:off
 					husExpectation.newHUExpectation()
-						.huPI(piLU)
+						.huPI(data.piLU)
 						.newHUItemExpectation()
 							.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 							.newIncludedHUExpectation()
 								.newHUItemExpectation()
 									.noIncludedHUs()
-									.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-									.qty("5") // 5 IFCOs. four full (40 kg tomatos) and one with the remaining 39kg
-									.packingMaterial(helper.pmIFCO)
-								.endExpectation()
-								.newHUItemExpectation()
-									.noIncludedHUs()
 									.itemType(X_M_HU_Item.ITEMTYPE_Material)
 									.newItemStorageExpectation()
-										.product(helper.pTomato)
+										.product(data.helper.pTomato)
 										.qty("199") // the 199 kg tomatos
-										.uom(helper.uomKg)
+										.uom(data.helper.uomKg)
 									.endExpectation() // itemStorageExcpectation
 								.endExpectation() // newHUItemExpectation;
+								.newHUItemExpectation()
+									.noIncludedHUs()
+									.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+									.qty("5") // 5 IFCOs. four full (40 kg tomatos) and one with the remaining 39kg
+									.packingMaterial(data.helper.pmIFCO)
+								.endExpectation()
 							.endExpectation() // includedHUExpectation
 						.endExpectation() // huItemExpectation - HUAggregate
 						.newHUItemExpectation()
 							.noIncludedHUs()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 							.qty("1")
-							.packingMaterial(helper.pmPalet)
+							.packingMaterial(data.helper.pmPalet)
 						.endExpectation()
 					.endExpectation(); // huExpectation
 					//@formatter:on
@@ -209,32 +169,32 @@ public class LUTUProducerDestinationTest
 					//@formatter:off
 					husExpectation
 						.newHUExpectation()
-						.huPI(piLU)
+						.huPI(data.piLU)
 						.newHUItemExpectation()
 							.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 							.newIncludedHUExpectation()
 								.newHUItemExpectation()
 									.noIncludedHUs()
-									.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-									.qty("2") // 2 more IFCOs. one full (40 kg tomatos) and one with the remaining 10kg
-									.packingMaterial(helper.pmIFCO)
-								.endExpectation()
-								.newHUItemExpectation()
-									.noIncludedHUs()
 									.itemType(X_M_HU_Item.ITEMTYPE_Material)
 									.newItemStorageExpectation()
-										.product(helper.pTomato)
+										.product(data.helper.pTomato)
 										.qty("50") // the ramining 50 kg tomatos
-										.uom(helper.uomKg)
+										.uom(data.helper.uomKg)
 									.endExpectation() // itemStorageExcpectation
 								.endExpectation() // newHUItemExpectation;
+								.newHUItemExpectation()
+									.noIncludedHUs()
+									.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+									.qty("2") // 2 more IFCOs. one full (40 kg tomatos) and one with the remaining 10kg
+									.packingMaterial(data.helper.pmIFCO)
+								.endExpectation()								
 							.endExpectation() // includedHUExpectation
 						.endExpectation() // huItemExpectation - HUAggregate
 						.newHUItemExpectation()
 							.noIncludedHUs()
 							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 							.qty("1")
-							.packingMaterial(helper.pmPalet)
+							.packingMaterial(data.helper.pmPalet)
 						.endExpectation()
 					.endExpectation(); // huExpectation
 					//@formatter:on
@@ -244,15 +204,15 @@ public class LUTUProducerDestinationTest
 	public void performTest(final int cuQty, final int expectedFullLUs, final Consumer<HUsExpectation> lastExpectation)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setLUPI(piLU);
-		lutuProducer.setLUItemPI(piLU_Item_TU);
-		lutuProducer.setTUPI(piTU);
+		lutuProducer.setLUPI(data.piLU);
+		lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
+		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		// TU capacity
-		lutuProducer.addTUCapacity(helper.pTomato, new BigDecimal("40"), helper.uomKg);
+		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("40"), data.helper.uomKg);
 
-		// load 6 tons of tomatoes into HUs
-		load(lutuProducer, helper.pTomato, new BigDecimal(cuQty));
+		// load the tomatoes into HUs
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(cuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
@@ -270,32 +230,32 @@ public class LUTUProducerDestinationTest
 			//@formatter:off
 			husExpectation
 				.newHUExpectation()
-					.huPI(piLU)
+					.huPI(data.piLU)
 					.newHUItemExpectation()
 						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 						.newIncludedHUExpectation()
 							.newHUItemExpectation()
 								.noIncludedHUs()
-								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-								.qty("5") // 5 ifcos per palet
-								.packingMaterial(helper.pmIFCO)
-							.endExpectation()
-							.newHUItemExpectation()
-								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_Material)
 								.newItemStorageExpectation()
-									.product(helper.pTomato)
+									.product(data.helper.pTomato)
 									.qty("200")
-									.uom(helper.uomKg)
+									.uom(data.helper.uomKg)
 								.endExpectation() // itemStorageExcpectation
 							.endExpectation() // newHUItemExpectation;
+							.newHUItemExpectation()
+								.noIncludedHUs()
+								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+								.qty("5") // 5 ifcos per palet
+								.packingMaterial(data.helper.pmIFCO)
+							.endExpectation()
 						.endExpectation() // includedHUExpectation
 					.endExpectation() // huItemExpectation - HUAggregate
 					.newHUItemExpectation()
 						.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.qty("1")
-						.packingMaterial(helper.pmPalet)
+						.packingMaterial(data.helper.pmPalet)
 					.endExpectation()
 				.endExpectation() // huExpectation
 			;
@@ -307,26 +267,7 @@ public class LUTUProducerDestinationTest
 		}
 
 		husExpectation.assertExpected(createdHUs);
-	}
-
-	private final void load(final LUTUProducerDestination lutuProducer, final I_M_Product cuProduct, final BigDecimal qty)
-	{
-		final IHUCapacityDefinition tuCapacity = lutuProducer.getTUCapacity(cuProduct);
-		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
-
-		final IAllocationSource source = helper.createDummySourceDestination(cuProduct, IHUCapacityDefinition.INFINITY, helper.uomEach, true);
-
-		final HULoader huLoader = new HULoader(source, lutuProducer);
-		huLoader.setAllowPartialUnloads(false);
-		huLoader.setAllowPartialLoads(false);
-
-		final IMutableHUContext huContext0 = helper.createMutableHUContextOutOfTransaction();
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
-				cuProduct, // product
-				qty, // qty
-				cuUOM, // uom
-				SystemTime.asTimestamp());
-
-		huLoader.load(request);
+		
+		HUAssert.assertAllStoragesAreValid();
 	}
 }

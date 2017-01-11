@@ -53,7 +53,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {
 	// Services
 	protected final transient Logger logger = LogManager.getLogger(getClass());
-	protected final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	/** NOTE: keep it private and use {@link #getHandlingUnitsDAO()} to get it */
 	private IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 

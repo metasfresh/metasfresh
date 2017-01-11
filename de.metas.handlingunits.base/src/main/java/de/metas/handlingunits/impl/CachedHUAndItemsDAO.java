@@ -279,7 +279,10 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		if (huItems != null)
 		{
 			huItems.add(huItem);
-			// TODO: sort
+			
+			// sort to make sure that the order we expect is still preserved
+			Collections.sort(huItems, HUItemsLocalCache.HU_ITEMS_COMPARATOR);
+
 			debugValidateHUItems(hu);
 		}
 

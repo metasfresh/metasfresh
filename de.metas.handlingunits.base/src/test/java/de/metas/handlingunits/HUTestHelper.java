@@ -51,6 +51,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
@@ -91,6 +92,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
 import de.metas.handlingunits.allocation.join.IHUJoinBL;
+import de.metas.handlingunits.allocation.split.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
@@ -205,7 +207,7 @@ public class HUTestHelper
 	public I_M_HU_PackingMaterial pmIFCO; // IFCO Packing Material
 
 	/**
-	 * Value: Bag
+	 * Value: Blister
 	 */
 	public I_M_Product pBag; // Bags are another kind of packing material
 	public final BigDecimal pBag_Weight_0_5Kg = BigDecimal.valueOf(0.5);
@@ -1108,6 +1110,14 @@ public class HUTestHelper
 		return piItem;
 	}
 
+	/**
+	 * Invokes {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal, I_C_BPartner)} with bPartner being {@code null}.
+	 * 
+	 * @param huDefinition
+	 * @param includedHuDefinition
+	 * @param qty
+	 * @return
+	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty)
@@ -1116,10 +1126,20 @@ public class HUTestHelper
 		return createHU_PI_Item_IncludedHU(huDefinition, includedHuDefinition, qty, bpartner);
 	}
 
+	/**
+	 * Creates an {@link I_M_HU_PI_Item} with the given {@code qty} ("capacity") and {@code pPartner}<br>
+	 * and links it with the given {@code huDefinition} and {@code includedHuDefinition}.
+	 * 
+	 * @param huDefinition
+	 * @param includedHuDefinition
+	 * @param qty
+	 * @param bPartner
+	 * @return
+	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty,
-			final I_C_BPartner bpartner)
+			final I_C_BPartner bPartner)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
@@ -1127,7 +1147,7 @@ public class HUTestHelper
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
-		itemDefinition.setC_BPartner(bpartner);
+		itemDefinition.setC_BPartner(bPartner);
 		if (!Check.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);
@@ -1498,8 +1518,8 @@ public class HUTestHelper
 	 * @return created HUs
 	 */
 	public List<I_M_HU> createHUs(
-			final IHUContext huContext, 
-			final ILUTUProducerAllocationDestination allocationDestination, 
+			final IHUContext huContext,
+			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
 		final IHUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
@@ -1631,7 +1651,71 @@ public class HUTestHelper
 	}
 
 	/**
-	 * This method creates one of many new HU(s) by "taking" the given product and qty out of the given source HU(s). The source HU's items are modified in this process. It also creates a
+	 * Take the given {@code lutuProducer} and load the given {@code loadCuQty} and {@code loadCuUOM} of the given {@code cuProduct} into new HUs.
+	 * <p>
+	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * 
+	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
+	 * @param cuProduct
+	 * @param loadCuQty
+	 * @param loadCuUOM
+	 */
+	public final void load(
+			final LUTUProducerDestination lutuProducer,
+			final I_M_Product cuProduct,
+			final BigDecimal loadCuQty,
+			final I_C_UOM loadCuUOM)
+	{
+		final IAllocationSource source = createDummySourceDestination(cuProduct, IHUCapacityDefinition.INFINITY, loadCuUOM, true);
+
+		final HULoader huLoader = new HULoader(source, lutuProducer);
+		huLoader.setAllowPartialUnloads(false);
+		huLoader.setAllowPartialLoads(false);
+
+		final IMutableHUContext huContext0 = createMutableHUContextOutOfTransaction();
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
+				cuProduct, // product
+				loadCuQty, // qty
+				loadCuUOM, // uom
+				SystemTime.asTimestamp());
+
+		huLoader.load(request);
+	}
+
+	/**
+	 * <p>
+	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * 
+	 * @param sourceHUs
+	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
+	 * @param qty
+	 * @param product
+	 * @param destinationHuPI
+	 * @return
+	 */
+	public void transferMaterialToNewHUs(final List<I_M_HU> sourceHUs,
+			final LUTUProducerDestination lutuProducer,
+			final BigDecimal qty,
+			final I_M_Product product,
+			final I_C_UOM uom,
+			final I_M_HU_PI destinationHuPI)
+	{
+		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
+
+		final IMutableHUContext huContext = getHUContext();
+		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
+
+		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+
+		final HULoader loader = new HULoader(source, lutuProducer);
+
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
+
+		loader.load(request); // use context date for now
+	}
+
+	/**
+	 * This method creates one or many new HU(s) by "taking" the given product and qty out of the given source HU(s). The source HU's items are modified in this process. It also creates a
 	 * {@link I_M_HU_Trx_Hdr} to document from which source items (of <code>sourceHU</code>) to which destination items (of the new HU) the qtys were moved. That trx-hdr has a one line for every
 	 * {@link de.metas.handlingunits.model.I_M_HU_Item} of the source HU and one line for
 	 *
@@ -1640,7 +1724,11 @@ public class HUTestHelper
 	 * @param product the product the shall be taken out of the <code>sourceHUs</code>
 	 * @param destinationHuPI the definition of the new HU that shall be created with the given product and qty
 	 * @return the newly created HUs that are "split off" the source HU
+	 * 
+	 * @deprecated uses {@link HUProducerDestination}; deprecated for the same reasons as {@link #transferIncomingToHUs(I_M_Transaction, I_M_HU_PI)}.
+	 *             Please consider calling {@link #transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, I_M_Product, I_C_UOM, I_M_HU_PI)}.
 	 */
+	@Deprecated
 	public List<I_M_HU> transferMaterialToNewHUs(final List<I_M_HU> sourceHUs, final BigDecimal qty, final I_M_Product product, final I_M_HU_PI destinationHuPI)
 	{
 		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
@@ -1700,7 +1788,11 @@ public class HUTestHelper
 	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
 	 * @return the newly created HUs that were created from the transaction doc.
+	 * 
+	 * @deprecated this method only uses {@link HUProducerDestination} which will only create a simple plain HU. In almost every scenario that's not what you want test-wise.
+	 *             Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
 	 */
+	@Deprecated
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
 		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
@@ -1728,6 +1820,17 @@ public class HUTestHelper
 		return destination.getCreatedHUs();
 	}
 
+	/**
+	 * 
+	 * @param sourceHUs
+	 * @param destinationHUs
+	 * @param product
+	 * @param qty
+	 * @param uom
+	 * 
+	 * 
+	 */
+	@Deprecated
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
@@ -1745,6 +1848,28 @@ public class HUTestHelper
 		loader.load(request);
 	}
 
+	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, 
+			final List<I_M_HU> destinationHUs, 
+			final ILUTUProducerAllocationDestination lutuProducer,
+			final I_M_Product product, 
+			final BigDecimal qty, 
+			final I_C_UOM uom)
+	{
+		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+		final IAllocationDestination destination = new HUListAllocationSourceDestination(destinationHUs);
+		final HULoader loader = new HULoader(source, lutuProducer);
+
+		//
+		// Create allocation request
+		final IMutableHUContext huContext = getHUContext();
+		final Date date = getTodayDate();
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
+
+		//
+		// Execute transfer
+		loader.load(request);
+	}
+	
 	public I_C_BPartner createBPartner(final String name)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);

@@ -74,7 +74,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	//
 	// Services
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
 	private static final String MSG_QTY_LOAD_ERROR = "AbstractProducerDestination.load_Error";

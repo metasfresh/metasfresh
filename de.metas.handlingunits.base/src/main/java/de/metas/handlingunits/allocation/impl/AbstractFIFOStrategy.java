@@ -82,7 +82,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 			//
 			// Gets ItemType
-			final String itemType = handlingUnitsBL.getItemType(item);
+			final String itemType= item.getItemType();
 
 			//
 			// Allocate to material item
@@ -91,6 +91,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 				final IAllocationRequest materialItemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
 				final IAllocationResult itemResult = allocateOnMaterialItem(item, materialItemRequest);
 				AllocationUtils.mergeAllocationResult(allocationResult, itemResult);
+				break; // e.g. if we already tried to allocate of the material item // TODO: there shouldn't be both HU and MI to start with.
 			}
 			//
 			// Allocate to included handling units
@@ -110,6 +111,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 					final IAllocationResult resultRemaining = allocateRemainingOnIncludedHUItem(item, requestRemaining);
 					AllocationUtils.mergeAllocationResult(allocationResult, resultRemaining);
 				}
+				break;  // TODO: there shouldn't be both HU and MI to start with.
 			}
 			else
 			{
@@ -209,7 +211,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		final IAllocationRequest requestActual = createActualRequest(parentItem, request);
 		if (requestActual.isZeroQty())
 		{
-			return AllocationUtils.nullResult();
+			return AllocationUtils.nullResult(); // might be that the actual request has zero qty because the parent item's storage is already "full"
 		}
 
 		final IHUContext huContext = request.getHUContext();
