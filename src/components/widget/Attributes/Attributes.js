@@ -4,16 +4,19 @@ import { connect } from 'react-redux';
 import AttributesDropdown from './AttributesDropdown';
 
 import {
-    getAttributesLayout,
-    getAttributesInstance,
-    attributesComplete
+    getAttributesInstance
 } from '../../../actions/AppActions';
 
 import {
     findRowByPropName,
-    patchRequest,
     parseToDisplay
-} from '../../../actions/WindowActions'
+} from '../../../actions/WindowActions';
+
+import {
+    patchRequest,
+    completeRequest,
+    initLayout
+} from '../../../actions/GenericActions';
 
 class Attributes extends Component {
     constructor(props) {
@@ -77,7 +80,7 @@ class Attributes extends Component {
                 data: parseToDisplay(fields)
             }));
 
-            return dispatch(getAttributesLayout(attributeType, id));
+            return dispatch(initLayout(attributeType, id));
         }).then(response => {
             const {elements} = response.data;
 
@@ -114,7 +117,7 @@ class Attributes extends Component {
         const {data} = this.state;
         const attrId = findRowByPropName(data, "ID").value;
 
-        dispatch(attributesComplete(attributeType, attrId)).then(response => {
+        dispatch(completeRequest(attributeType, attrId)).then(response => {
             patch(response.data);
             this.handleToggle(false);
         });

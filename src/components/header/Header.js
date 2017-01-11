@@ -16,7 +16,9 @@ import Tooltips from '../tooltips/Tooltips';
 import Prompt from '../app/Prompt';
 
 import {
-    indicatorState
+    indicatorState,
+    printDoc,
+    openModal
 } from '../../actions/WindowActions';
 
 import {
@@ -24,11 +26,8 @@ import {
 } from '../../actions/MenuActions';
 
 import {
-    printDoc,
-    openModal,
-    deleteData
-} from '../../actions/WindowActions';
-
+    deleteRequest
+} from '../../actions/GenericActions';
 
 import keymap from '../../keymap.js';
 import GlobalContextShortcuts from '../shortcuts/GlobalContextShortcuts';
@@ -58,7 +57,7 @@ class Header extends Component {
     }
 
     handleInboxOpen = (state) => {
-        
+
         this.setState(
             Object.assign({}, this.state, {
                 isInboxOpen: !!state
@@ -90,7 +89,7 @@ class Header extends Component {
                     this.setState(Object.assign({}, this.state, {
                         isMenuOverlayShow: true
                     }), () => {
-                        
+
                     });
                 } else {
                     this.setState(Object.assign({}, this.state, {
@@ -201,7 +200,7 @@ class Header extends Component {
                 open: false
             })
         }), () => {
-            dispatch(deleteData(windowType, docId))
+            dispatch(deleteRequest('window', windowType, docId))
                 .then(response => {
                     dispatch(push('/window/' + windowType));
                 });
@@ -226,14 +225,14 @@ class Header extends Component {
     closeOverlays = (clickedItem, callback) => {
 
         const {isSideListShow, isSubheaderShow} = this.state;
-        
+
         this.setState(Object.assign({}, this.state, {
             menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
             isSideListShow: (clickedItem == 'isSideListShow' ? !isSideListShow : false),
             isSubheaderShow: (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
-            tooltipOpen: '' 
+            tooltipOpen: ''
         }), callback);
 
         if(clickedItem == 'isSideListShow') {

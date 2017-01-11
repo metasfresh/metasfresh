@@ -3,9 +3,12 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    getData,
     startProcess
 } from '../actions/WindowActions';
+
+import {
+    getData
+} from '../actions/GenericActions';
 
 import {
     addNotification
