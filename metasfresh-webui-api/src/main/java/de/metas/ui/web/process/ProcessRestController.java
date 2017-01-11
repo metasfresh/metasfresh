@@ -25,8 +25,8 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -90,7 +90,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public JSONProcessLayout getLayout(
-			@PathVariable final int adProcessId //
+			@PathVariable("processId") final int adProcessId //
 	)
 	{
 		userSession.assertLoggedIn();
