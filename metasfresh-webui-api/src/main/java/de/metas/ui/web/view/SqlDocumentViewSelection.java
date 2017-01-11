@@ -388,7 +388,12 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	private IDocumentView loadDocumentView(final ResultSet rs) throws SQLException
 	{
 		final DocumentView.Builder documentViewBuilder = newDocumentViewBuilder();
-		sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
+		final boolean loaded = sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
+		if(!loaded)
+		{
+			return null;
+		}
+		
 		return documentViewBuilder.build();
 	}
 
