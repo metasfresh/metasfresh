@@ -32,23 +32,45 @@ export function setActions(actions){
 
 // THUNK ACTIONS
 export function pathRequest(nodeId) {
-    return () => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
+    return () => axios.get(
+        config.API_URL +
+        '/menu/path?nodeId=' + nodeId +
+        '&inclusive=true'
+    );
 }
 
 export function nodePathsRequest(nodeId, limit) {
-    return () => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2' + (limit ? '&childrenLimit=' + limit : ""));
+    return () => axios.get(
+        config.API_URL +
+        '/menu/node?nodeId=' + nodeId +
+        '&depth=2' +
+        (limit ? '&childrenLimit=' + limit : "")
+    );
 }
 
 export function elementPathRequest(pathType, elementId) {
-    return () => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId + '&inclusive=true');
+    return () => axios.get(
+        config.API_URL +
+        '/menu/elementPath?type=' + pathType +
+        '&elementId=' + elementId +
+        '&inclusive=true'
+    );
 }
 
 export function queryPathsRequest(query, limit, child) {
-    return () => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : "") + (child ? '&childrenInclusive=true':''));
+    return () => axios.get(
+        config.API_URL +
+        '/menu/queryPaths?nameQuery=' + query +
+        (limit ? '&childrenLimit=' + limit : "") +
+        (child ? '&childrenInclusive=true':'')
+    );
 }
 
 export function rootRequest(limit) {
-    return () => axios.get(config.API_URL + '/menu/root?depth=10' + (limit ? '&childrenLimit=' + limit : ""));
+    return () => axios.get(
+        config.API_URL +
+        '/menu/root?depth=10' +
+        (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function getRootBreadcrumb() {
@@ -92,15 +114,27 @@ export function getWindowBreadcrumb(id){
 }
 
 export function getRelatedDocuments(type, id){
-    return () => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
+    return () => axios.get(
+        config.API_URL +
+        '/window/documentReferences?type=' + type +
+        '&id=' + id
+    );
 }
 
 export function getDocumentActions(type, id){
-    return () => axios.get(config.API_URL + '/window/documentActions?type=' + type + '&id=' + id);
+    return () => axios.get(
+        config.API_URL +
+        '/window/documentActions?type=' + type +
+        '&id=' + id
+    );
 }
 
 export function getViewActions(viewId){
-    return () => axios.get(config.API_URL + '/documentView/' + viewId + '/actions');
+    return () => axios.get(
+        config.API_URL +
+        '/documentView/' + viewId +
+        '/actions'
+    );
 }
 
 

@@ -15,10 +15,14 @@ class TableItem extends Component {
             updatedRow: false
         };
     }
+
     handleEditProperty = (e,property, callback) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
-        if(!document.activeElement.className.includes('cell-disabled') || document.activeElement.className.includes('cell-readonly') ) {
+        if(
+            !document.activeElement.className.includes('cell-disabled') ||
+            document.activeElement.className.includes('cell-readonly')
+        ) {
             this.setState({
                 edited: property
             }, ()=>{
@@ -69,7 +73,7 @@ class TableItem extends Component {
     renderCells = (cols, cells) => {
         const {
             type, docId, rowId, tabId,readonly, mainTable, newRow, changeListenOnTrue,
-            tabIndex
+            tabIndex, entity
         } = this.props;
 
         const {
@@ -83,6 +87,7 @@ class TableItem extends Component {
 
             return (
                 <TableCell
+                    entity={entity}
                     type={type}
                     docId={docId}
                     rowId={rowId}

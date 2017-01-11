@@ -10,6 +10,12 @@ import {
     clearListProps
 } from './ListActions';
 
+import {
+    initLayout,
+    getData,
+    patchRequest
+} from './GenericActions';
+
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -18,6 +24,7 @@ export function initLayoutSuccess(layout, scope) {
         scope: scope
     }
 }
+
 export function initDataSuccess(data, scope) {
     return {
         type: types.INIT_DATA_SUCCESS,
@@ -25,6 +32,7 @@ export function initDataSuccess(data, scope) {
         scope: scope
     }
 }
+
 export function addRowData(data, scope) {
     return {
         type: types.ADD_ROW_DATA,
@@ -32,6 +40,7 @@ export function addRowData(data, scope) {
         scope: scope
     }
 }
+
 export function updateDataSuccess(item, scope) {
     return {
         type: types.UPDATE_DATA_SUCCESS,
@@ -39,6 +48,7 @@ export function updateDataSuccess(item, scope) {
         scope: scope
     }
 }
+
 export function updateRowSuccess(item, tabid, rowid, scope) {
     return {
         type: types.UPDATE_ROW_SUCCESS,
@@ -48,6 +58,7 @@ export function updateRowSuccess(item, tabid, rowid, scope) {
         scope: scope
     }
 }
+
 export function addNewRow(item, tabid, rowid, scope) {
     return {
         type: types.ADD_NEW_ROW,
@@ -128,6 +139,14 @@ export function indicatorState(state) {
     }
 }
 
+//SELECT ON TABLE
+
+export function selectTableItems(ids) {
+    return {
+        type: types.SELECT_TABLE_ITEMS,
+        ids: ids
+    }
+}
 
 // THUNK ACTIONS
 
@@ -298,7 +317,7 @@ export function createProcess(processType, viewId, type, ids) {
             }
             return dispatch(initDataSuccess(preparedData, "modal"));
         }).then(response =>
-            dispatch(getProcessLayout(processType))
+            dispatch(initLayout('process', processType))
         ).then(response => {
             const preparedLayout = Object.assign({}, response.data, {
                 pinstanceId: pid
@@ -308,109 +327,33 @@ export function createProcess(processType, viewId, type, ids) {
 }
 
 function getProcessData(processId, viewId, type, ids) {
-    if (viewId) {
-        return () => axios.post(config.API_URL + '/process/instance', {
+    return () => axios.post(
+        config.API_URL +
+        '/process/' + processId,
+        viewId ? {
             processId: processId,
             viewId: viewId,
             viewDocumentIds: ids
-        });
-    } else {
-        return () => axios.post(config.API_URL + '/process/instance', {
+        } : {
             processId: processId,
             documentId: ids,
             documentType: type
-        });
-    }
+        }
+    );
 }
 
-function getProcessLayout(processType) {
-    return () => axios.get(config.API_URL + '/process/layout?processId=' + processType);
-}
-
-export function startProcess(processType) {
-    return () => axios.get(config.API_URL + '/process/instance/' + processType + '/start');
+export function startProcess(processType, pinstanceId) {
+    return () => axios.get(
+        config.API_URL +
+        '/process/' + processType +
+        '/' + pinstanceId +
+        '/start'
+    );
 }
 
 // END PROCESS ACTIONS
 
-// IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
-export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced) {
-    return () => axios.get(
-        config.API_URL +
-        '/' + entity + '/' + docType +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (subentity ? "/" + subentity : "") +
-        '/layout' +
-        (isAdvanced ? "?advanced=true" : "")
-    );
-}
-
-export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced) {
-    return () => axios.get(
-        config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        (isAdvanced ? "?advanced=true" : "")
-    );
-}
-
-export function createInstance(entity, docType, docId, tabId, subentity) {
-    return () => axios.post(
-        config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (subentity ? "/" + subentity : "")
-    );
-}
-
-export function patchRequest(
-    entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
-    subentityId, isAdvanced
-) {
-    let payload = {};
-
-    if (docId === "NEW") {
-        payload = [];
-    } else {
-        if (property && value !== undefined) {
-            payload = [{
-                'op': 'replace',
-                'path': property,
-                'value': value
-            }];
-        } else {
-            payload = [];
-        }
-    }
-
-    return () => axios.patch(
-        config.API_URL +
-        '/' + entity +
-        (docType ? "/" + docType : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        (isAdvanced ? "?advanced=true" : ""), payload);
-}
-
-export function completeRequest(entity, docType, docId, tabId, rowId, subentity, subentityId) {
-    return () => axios.post(
-        config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        '/complete'
-    );
-}
 
 // UTILITIES
 
@@ -468,30 +411,10 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-//DELETE
-export function deleteData(windowType, id, tabId, rowId) {
-    return () => axios.delete(
-        config.API_URL +
-        '/window/delete?type=' + windowType +
-        '&id=' + id +
-        (tabId ? "&tabid=" + tabId : "") +
-        (rowId ? "&rowId=" + rowId : "")
-    );
-}
-
 export function deleteLocal(tabid, rowsid, scope) {
     return (dispatch) => {
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid, rowid, scope))
         }
-    }
-}
-
-//SELECT ON TABLE
-
-export function selectTableItems(ids) {
-    return {
-        type: types.SELECT_TABLE_ITEMS,
-        ids: ids
     }
 }
