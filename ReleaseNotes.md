@@ -11,6 +11,13 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 4.51.51 (2017-03)
+  
+upcoming
+
+## Features
+* metasfresh 
+  * #774 show address on all docs so it fits the letter window
+  * #773 show delivery address on sales order
 
 ## Fixes
 * metasfresh 
