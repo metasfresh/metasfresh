@@ -222,12 +222,13 @@ public interface ITrxManager extends ISingletonService
 	void run(String trxName, boolean manageTrx, TrxRunnable r);
 
 	/**
-	 * Execute callable object using provided transaction. If execution fails, database operations will be rolled back.
+	 * Execute the callable object using either the provided transaction or create a new one, depending on the {@code manageTrx} parameter.
+	 * If execution fails, database operations will be rolled back.
 	 * <p>
 	 * Example:
 	 *
 	 * <pre>
-	 * Trx.call(null, new {@link TrxCallable}() {
+	 * Trx.call("myTrxNamePrefix", true, new {@link TrxCallable}() {
 	 *     public SomeResult call() {
 	 *         // do something using in transaction
 	 *     }
@@ -433,7 +434,6 @@ public interface ITrxManager extends ISingletonService
 	 * @return true if current thread has thread inherited transaction set
 	 */
 	boolean hasThreadInheritedTrx();
-
 
 	/**
 	 * Assumes current thread has thread inherited transaction set.

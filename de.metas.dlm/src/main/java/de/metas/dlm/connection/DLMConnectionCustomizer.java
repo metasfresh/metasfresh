@@ -43,7 +43,24 @@ public class DLMConnectionCustomizer
 	private final int dlmLevel;
 	private final int dlmCoalesceLevel;
 
-	public DLMConnectionCustomizer(final int dlmLevel, final int dlmCoalesceLevel)
+	public static DLMConnectionCustomizer withLevels(final int dlmLevel, final int dlmCoalesceLevel)
+	{
+		return new DLMConnectionCustomizer(dlmLevel, dlmCoalesceLevel);
+	}
+
+	/**
+	 * Returns an instance with both DLM level and DLM coalesce level beeing the maximum value that a PostgreSQL {@code SMALLINT} can hold. Therefore, while this customizer is active, all records will be visislbe.
+	 * <p>
+	 * See <a href="https://www.postgresql.org/docs/9.5/static/datatype-numeric.html">PostgreSQL Numeric Types</a> documentation.
+	 *
+	 * @return
+	 */
+	public static DLMConnectionCustomizer seeThemAllCustomizer()
+	{
+		return new DLMConnectionCustomizer(Short.MAX_VALUE, Short.MAX_VALUE);
+	}
+
+	private DLMConnectionCustomizer(final int dlmLevel, final int dlmCoalesceLevel)
 	{
 		this.dlmLevel = dlmLevel;
 		this.dlmCoalesceLevel = dlmCoalesceLevel;

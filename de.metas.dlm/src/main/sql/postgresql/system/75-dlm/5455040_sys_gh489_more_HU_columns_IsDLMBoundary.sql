@@ -1,18 +1,4 @@
 --
--- DDL
---
-select dlm.recreate_dlm_triggers('PP_Order_BOMLine') WHERE (select IsDLM from AD_Table WHERE TableName='PP_Order_BOMLine')='Y';
-select dlm.recreate_dlm_triggers('M_Package_HU') WHERE (select IsDLM from AD_Table WHERE TableName='M_Package_HU')='Y';
-select dlm.recreate_dlm_triggers('M_PickingSlot') WHERE (select IsDLM from AD_Table WHERE TableName='M_PickingSlot')='Y';
-select dlm.recreate_dlm_triggers('M_PickingSlot_HU') WHERE (select IsDLM from AD_Table WHERE TableName='M_PickingSlot_HU')='Y';
-select dlm.recreate_dlm_triggers('M_PickingSlot_Trx') WHERE (select IsDLM from AD_Table WHERE TableName='M_PickingSlot_Trx')='Y';
-select dlm.recreate_dlm_triggers('EDI_DesadvLine') WHERE (select IsDLM from AD_Table WHERE TableName='EDI_DesadvLine')='Y';
-select dlm.recreate_dlm_triggers('PP_Order_ProductAttribute') WHERE (select IsDLM from AD_Table WHERE TableName='PP_Order_ProductAttribute')='Y';
-select dlm.recreate_dlm_triggers('DD_OrderLine_HU_Candidate') WHERE (select IsDLM from AD_Table WHERE TableName='DD_OrderLine_HU_Candidate')='Y';
-select dlm.recreate_dlm_triggers('PP_Order') WHERE (select IsDLM from AD_Table WHERE TableName='PP_Order')='Y';
-select dlm.recreate_dlm_triggers('M_ShipmentSchedule_QtyPicked') WHERE (select IsDLM from AD_Table WHERE TableName='M_ShipmentSchedule_QtyPicked')='Y';
-
---
 -- DML
 --
 -- 03.01.2017 08:57
@@ -68,3 +54,8 @@ UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2017-01-04
 -- URL zum Konzept
 UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2017-01-04 12:46:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551319
 ;
+
+--
+-- DDL
+--
+SELECT TableName, dlm.recreate_dlm_triggers(TableName) FROM AD_Table WHERE IsDLM='Y';
