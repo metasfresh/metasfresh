@@ -145,24 +145,11 @@ export class DraggableWidget extends Component {
                     }
                 </div>
                 <div className="draggable-widget-body">
-                    {id===1000001 &&
-                        <BarChart/>
-                    }
-                    {id===1000000 &&
-                        <PieChart/>
-                    }
-                    {id===1000003 &&
-                        <BarChart2/>
-                    }
-                    {id===1000002 &&
-                        <BarChart3/>
-                    }
-                    {id===1000006 &&
-                        <BarChart4/>
-                    }
-                    {id===1000007 &&
-                        <BarChart5/>
-                    }
+                    <iframe
+                        src={!refresh && url}
+                        scrolling="no"
+                        frameBorder="no"
+                    ></iframe>
                 </div>
             </div>
 
