@@ -55,7 +55,7 @@ UPDATE AD_Column SET AD_Reference_ID=11,Updated=TO_TIMESTAMP('2017-01-03 16:28:2
 ALTER TABLE public.PMM_Product ADD SeqNo NUMERIC(10) DEFAULT NULL 
 ;
 
-DROP INDEX public.pmm_product_uc;-- 03.01.2017 16:45
+DROP INDEX  IF EXISTS public.pmm_product_uc;-- 03.01.2017 16:45
 
 
 ----------------------------------------
@@ -67,6 +67,7 @@ update PMM_Product set seqNo = 0;
 
 -- set the seqNo to a correct value ( multiple of 10)
 
+
 UPDATE
 PMM_Product pp
 SET SeqNo = x.SeqNo
@@ -74,12 +75,14 @@ SET SeqNo = x.SeqNo
 FROM
 (
 
-select row_number() over(partition by M_Product_ID,M_HU_PI_Item_Product_ID order by pmm_Product_ID ) *10 as seqNo, M_Product_ID, 
+select row_number() over(partition by M_Product_ID,M_HU_PI_Item_Product_ID, C_BPartner_ID order by pmm_Product_ID ) *10 as seqNo, M_Product_ID, 
  M_HU_PI_Item_Product_ID,pmm_product_id
  FROM pmm_product
  order by m_product_id
 
- )x;
+ )x
+ WHERE pp.pmm_product_id = x.pmm_product_id;
+
 
 ----------------------------------------
 
