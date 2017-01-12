@@ -24,12 +24,19 @@ package de.metas.handlingunits.allocation.transfer.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
+import com.jgoodies.common.base.Objects;
+
+import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
@@ -38,6 +45,9 @@ import de.metas.handlingunits.allocation.impl.UpperBoundAllocationStrategy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 /**
  * Creates TUs.
@@ -153,11 +163,37 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 	private final IAllocationStrategy getAllocationStrategy(final IAllocationRequest request)
 	{
 		final int productId = request.getProduct().getM_Product_ID();
+		final IHUCapacityDefinition capacityToUse;
 		final IHUCapacityDefinition capacityOverride = productId2capacity.get(productId);
-		final IAllocationStrategy allocationStrategy = new UpperBoundAllocationStrategy(capacityOverride);
+		if (capacityOverride == null)
+		{
+			// So there was no override capacity provided for this product.
+			// The allocationStrategy we are creating just now might execute against the aggregate VHU which does not have any M_HU_PI_Item_Products and therefore does not know the TUs actual capacity.
+			// To compensate for this, we now find out the TU's capacity and make it the allocation strategie's upper bound
+			final List<I_M_HU_PI_Item> materialPIItems = handlingUnitsDAO.retrievePIItems(tuPI, getC_BPartner()).stream()
+					.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_Material, piItem.getItemType()))
+					.collect(Collectors.toList());
+
+			Check.errorIf(materialPIItems.size() != 1, "There has to be exactly one M_HU_PI_Item for the TU's M_HU_PI and and C_BPartner;\n "
+					+ "M_HU_PI={};\n "
+					+ "C_BPartner={};\n "
+					+ "M_HU_PI_Item(s) found={}\n "
+					+ "this={}", tuPI, getC_BPartner(), materialPIItems, this);
+
+			final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProduct(), request.getDate());
+
+			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
+			final IHUCapacityDefinition capacity = capacityBL.getCapacity(itemProduct, request.getProduct(), request.getC_UOM());
+			
+			capacityToUse = capacity;
+		}
+		else
+		{
+			capacityToUse = capacityOverride;
+		}
+		final IAllocationStrategy allocationStrategy = new UpperBoundAllocationStrategy(capacityToUse);
 		return allocationStrategy;
 	}
-
-
 
 }

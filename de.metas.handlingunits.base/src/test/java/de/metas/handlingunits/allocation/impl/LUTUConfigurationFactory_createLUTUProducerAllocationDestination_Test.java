@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,12 +31,16 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
+import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUCapacityDefinition;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -58,6 +61,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  */
 public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Test extends AbstractHUTest
 {
+	private IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	private LUTUConfigurationFactory lutuFactory;
 
 	private IMutableHUContext huContext;
@@ -75,6 +80,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	@Override
 	protected void initialize()
 	{
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		lutuFactory = (LUTUConfigurationFactory)Services.get(ILUTUConfigurationFactory.class);
 
 		huContext = helper.getHUContext();
@@ -163,6 +170,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	@Test
 	public void test_LU_TU()
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		//
 		// Configure:
 		// LU: Palet with 2 IFCOs
@@ -177,20 +186,37 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// 1 Palet with 1 IFCO x 5items
 		final List<I_M_HU> hus = createHUs(piIFCO_Product, 25);
 
-		Assert.assertEquals("Invalid created HUs count", 2, hus.size());
+		assertEquals("Invalid created HUs count", 2, hus.size());
 
+		// verify storage of palet1
 		final I_M_HU huPalet1 = hus.get(0);
 		assertHUStorageLevel(huPalet1, piPalet, 20);
-		final List<I_M_HU> huPalet1_IFCOs = helper.retrieveIncludedHUs(huPalet1);
-		Assert.assertEquals("Invalid IFCOs count for Palet1", 2, huPalet1_IFCOs.size());
-		assertHUStorageLevel(huPalet1_IFCOs.get(0), piIFCO, 10);
-		assertHUStorageLevel(huPalet1_IFCOs.get(1), piIFCO, 10);
 
+		// verify storage of palet1's aggregate HU
+		{
+			final List<I_M_HU> huPalet1_aggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet1);
+			assertThat(huPalet1_aggregateHUs.size(), is(1));
+
+			final I_M_HU aggregateVhu = huPalet1_aggregateHUs.get(0);
+			assertTrue(handlingUnitsBL.isAggregateHU(aggregateVhu));
+
+			assertHUStorageLevel(aggregateVhu, piVirtual, 20);
+		}
+		
+		// verify storage of palet2
 		final I_M_HU huPalet2 = hus.get(1);
 		assertHUStorageLevel(huPalet2, piPalet, 5);
-		final List<I_M_HU> huPalet2_IFCOs = helper.retrieveIncludedHUs(huPalet2);
-		Assert.assertEquals("Invalid IFCOs count for Palet2", 1, huPalet2_IFCOs.size());
-		assertHUStorageLevel(huPalet2_IFCOs.get(0), piIFCO, 5);
+
+		// verify storage of palet2's aggregate HU
+		{
+			final List<I_M_HU> huPalet2_aggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet2);
+			assertThat(huPalet2_aggregateHUs.size(), is(1));
+
+			final I_M_HU aggregateVhu = huPalet2_aggregateHUs.get(0);
+			assertTrue(handlingUnitsBL.isAggregateHU(aggregateVhu));
+			
+			assertHUStorageLevel(aggregateVhu, piVirtual, 5);
+		}
 	}
 
 	/**
@@ -241,7 +267,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final I_M_HU huPalet = hus.get(0);
 		assertHUStorageLevel(huPalet, piPalet, 25);
 
-		final List<I_M_HU> huPalet_VHUs = helper.retrieveIncludedHUs(huPalet);
+		final List<I_M_HU> huPalet_VHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
 		Assert.assertEquals("Invalid VHUs count for Palet", 1, huPalet_VHUs.size());
 		assertHUStorageLevel(huPalet_VHUs.get(0), piVirtual, 25);
 	}

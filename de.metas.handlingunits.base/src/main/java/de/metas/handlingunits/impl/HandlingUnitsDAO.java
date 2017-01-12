@@ -573,6 +573,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final int huPIId = huPI.getM_HU_PI_ID();
 		final int bpartnerId = bpartner == null ? -1 : bpartner.getC_BPartner_ID();
+		
 		return retrieveParentPIItemsForParentPI(ctx, huPIId, huUnitType, bpartnerId, trxName);
 	}
 

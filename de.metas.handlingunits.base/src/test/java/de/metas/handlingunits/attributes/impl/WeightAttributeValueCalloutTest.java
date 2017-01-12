@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.conversion.ConversionHelper;
@@ -136,7 +138,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
 				pTomato,
 				COUNT_IFCOS_PER_PALET.multiply(COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)));
-		final List<I_M_HU> huPalets = createPlainHU(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = createHUFromSimplePI(incomingTrxDoc, huDefPalet);
 
 		//
 		// Bind data to be able to access them in our tests
@@ -145,7 +147,8 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		InterfaceWrapperHelper.save(huPalet);
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
 
-		final List<I_M_HU> huIncluded = helper.retrieveIncludedHUs(huPalet);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final List<I_M_HU> huIncluded = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
 
 		final I_M_HU huIFCO1 = huIncluded.get(0);
 		huIFCO1.setValue("IFCO1");

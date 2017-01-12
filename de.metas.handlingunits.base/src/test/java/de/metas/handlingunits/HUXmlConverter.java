@@ -60,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -130,7 +131,7 @@ public class HUXmlConverter
 		final List<I_M_HU_Item> items = Services.get(IHandlingUnitsDAO.class).retrieveItems(hu);
 		for (final I_M_HU_Item item : items)
 		{
-			createNode(node, item);
+			createNodeForItem(node, item);
 		}
 
 		//
@@ -146,7 +147,7 @@ public class HUXmlConverter
 		return node;
 	}
 
-	private Node createNode(final Node parentNode, final I_M_HU_Item item)
+	private Node createNodeForItem(final Node parentNode, final I_M_HU_Item item)
 	{
 		final Node node = createNodeFromModel(parentNode, item);
 
@@ -218,7 +219,7 @@ public class HUXmlConverter
 			}
 			
 			//
-			// Product
+			// UOM
 			if ("C_UOM_ID".equals(name) && value != null)
 			{
 				final int id = (Integer)value;
@@ -227,6 +228,16 @@ public class HUXmlConverter
 				node.setAttribute("C_UOM_Name", uomName);
 			}
 
+			//
+			// Product
+			if ("M_HU_PackingMaterial_ID".equals(name) && value != null)
+			{
+				final int id = (Integer)value;
+				final I_M_HU_PackingMaterial packingMaterial = POJOLookupMap.get().lookup(I_M_HU_PackingMaterial.class, id);
+				final String packingMaterialProductValue = packingMaterial == null ? "" : packingMaterial.getM_Product().getName();
+				node.setAttribute("M_HU_PackingMaterial_Product_Value", packingMaterialProductValue);
+			}
+			
 		}
 
 		if (parentNode != null)

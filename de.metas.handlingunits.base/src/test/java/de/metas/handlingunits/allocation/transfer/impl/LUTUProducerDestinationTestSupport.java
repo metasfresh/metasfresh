@@ -79,7 +79,7 @@ public class LUTUProducerDestinationTestSupport
 			piTU_IFCO = helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_IFCO = helper.createHU_PI_Item_Material(piTU_IFCO);
-			helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("10"), helper.uomKg);
+			helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("40"), helper.uomKg);
 			helper.assignProduct(piTU_Item_IFCO, helper.pSalad, new BigDecimal("7"), helper.uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_IFCO, helper.pmIFCO);

@@ -48,13 +48,13 @@ import de.metas.handlingunits.util.TraceUtils;
 public class LUTUProducerDestinationLoadTests
 {
 	private LUTUProducerDestinationTestSupport data;
-	
+
 	@Before
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
 	}
-	
+
 	@Test
 	public void test_1LU_With_Tomatoes_and_Salads()
 	{
@@ -109,7 +109,7 @@ public class LUTUProducerDestinationLoadTests
 	@Test
 	public void testCompressedSingleLUFullyLoaded()
 	{
-		performTest(200, 1, null);
+		performTest(200, 1, null, null);
 	}
 
 	/**
@@ -151,21 +151,27 @@ public class LUTUProducerDestinationLoadTests
 						.endExpectation()
 					.endExpectation(); // huExpectation
 					//@formatter:on
-				});
+				}, null);
 	}
 
 	/**
 	 * Similar to {@link #testCompressedSingleLUFullyLoaded()}, but loads 6000kg of tomatoes. Therefore we expect not one LU, but 30 LU with each one holding 200kg tomatoes.
 	 */
 	@Test
-	public void testCompressed30LUsFullyLoaded()
+	public void testCompressed30LUsFullyLoadedExplicitTUCapacity()
 	{
-		performTest(6000, 30, null);
+		performTest(6000, 30, null, new BigDecimal("40"));
+	}
+
+	@Test
+	public void testCompressed30LUsFullyLoaded_UseTUCapacityFromPI()
+	{
+		performTest(6000, 30, null, null);
 	}
 
 	/**
-	 * Similar to {@link #testCompressed31LUsPartiallyLoaded()}, but loads 6050kg tomatoes. Therefore we expect the 30 LU from the other test, 
-	 * plus a 31st LU that contains just 2 "aggregated" TUs (similar to {@link #testCompressedSingleLUPartiallyLoaded()}) with two aggregated IFCOs. 
+	 * Similar to {@link #testCompressed31LUsPartiallyLoaded()}, but loads 6050kg tomatoes. Therefore we expect the 30 LU from the other test,
+	 * plus a 31st LU that contains just 2 "aggregated" TUs (similar to {@link #testCompressedSingleLUPartiallyLoaded()}) with two aggregated IFCOs.
 	 */
 	@Test
 	public void testCompressed31LUsPartiallyLoaded()
@@ -204,10 +210,22 @@ public class LUTUProducerDestinationLoadTests
 						.endExpectation()
 					.endExpectation(); // huExpectation
 					//@formatter:on
-				});
+				}, null);
 	}
 
-	private void performTest(final int cuQty, final int expectedFullLUs, final Consumer<HUsExpectation> lastExpectation)
+	/**
+	 * 
+	 * @param cuQty
+	 * @param expectedFullLUs
+	 * @param lastExpectation
+	 * @param tuCapacityOverride optional, may be {@code null}.
+	 *            If set, then call {@link LUTUProducerDestination#addTUCapacity(org.compiere.model.I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} to explicitly set a capacity.
+	 *            If not set, then expect the LUTUProducerDestination to get the capacity from the PI.
+	 */
+	private void performTest(final int cuQty,
+			final int expectedFullLUs,
+			final Consumer<HUsExpectation> lastExpectation,
+			final BigDecimal tuCapacityOverride)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setLUPI(data.piLU);
@@ -215,7 +233,10 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		// TU capacity
-		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("40"), data.helper.uomKg);
+		if (tuCapacityOverride != null)
+		{
+			lutuProducer.addTUCapacity(data.helper.pTomato, tuCapacityOverride, data.helper.uomKg);
+		}
 
 		// load the tomatoes into HUs
 		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(cuQty), data.helper.uomKg);
@@ -267,16 +288,19 @@ public class LUTUProducerDestinationLoadTests
 			;
 			//@formatter:on
 		}
+		
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("result", createdHUs)));
+		
 		if (lastExpectation != null)
 		{
 			lastExpectation.accept(husExpectation);
 		}
 
 		husExpectation.assertExpected(createdHUs);
-		
+
 		HUAssert.assertAllStoragesAreValid();
 	}
-	
+
 	/**
 	 * Test loading tomatoes into a TU with unlimited capacity.
 	 */
@@ -290,10 +314,10 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setLUItemPI(null);
 		lutuProducer.setMaxLUs(0);
 		lutuProducer.setCreateTUsForRemainingQty(true);
-			
+
 		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("999999"), data.helper.uomKg);
 		final List<I_M_HU> huTruck = lutuProducer.getCreatedHUs();
-		
+
 		//
 		// Validate HUs
 		{
@@ -310,6 +334,6 @@ public class LUTUProducerDestinationLoadTests
 		}
 
 		// TraceUtils.dump(huPalets);
-		//TraceUtils.dumpTransactions();
+		// TraceUtils.dumpTransactions();
 	}
 }

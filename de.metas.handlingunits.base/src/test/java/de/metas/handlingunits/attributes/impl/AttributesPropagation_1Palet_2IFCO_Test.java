@@ -26,6 +26,7 @@ package de.metas.handlingunits.attributes.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
@@ -35,6 +36,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -122,13 +124,16 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 				pTomato, // product
 				AttributesPropagation_1Palet_2IFCO_Test.COUNT_IFCOS_PER_PALET.multiply(AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)) // qty
 				);
-		final List<I_M_HU> huPalets = createPlainHU(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = createHUFromSimplePI(incomingTrxDoc, huDefPalet);
 
 		//
 		// Bind data to be able to access them in our tests
 		final I_M_HU huPalet = huPalets.get(0); 
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
-		final List<I_M_HU> huIncluded = helper.retrieveIncludedHUs(huPalet);
+		
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final List<I_M_HU> huIncluded = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
+		
 		final I_M_HU huIFCO1 = huIncluded.get(0);
 		huIFCO1_Attrs = attributeStorageFactory.getAttributeStorage(huIFCO1);
 		final I_M_HU huIFCO2 = huIncluded.get(1);

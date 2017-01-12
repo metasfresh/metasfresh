@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
@@ -35,8 +36,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import com.jgoodies.common.base.Objects;
+
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -54,6 +58,9 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.util.HUByIdComparator;
 
 public class LUTUProducerDestination extends AbstractProducerDestination implements ILUTUProducerAllocationDestination
@@ -460,6 +467,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		Check.assumeNotNull(qtyCUPerTU, "qtyCUPerTU not null");
 		Check.assume(qtyCUPerTU.signum() > 0, "qtyCUPerTU > 0, but it was {}", qtyCUPerTU);
 		Check.assumeNotNull(cuUOM, "cuUOM not null");
+
 		return huCapacityBL.createCapacity(qtyCUPerTU, cuProduct, cuUOM, false); // allowNegativeCapacity=false;
 	}
 

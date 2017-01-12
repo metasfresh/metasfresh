@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -1188,6 +1189,8 @@ public class HUTestHelper
 
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final I_C_BPartner bpartner)
 	{
+		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
+		
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product(product);
@@ -1601,20 +1604,6 @@ public class HUTestHelper
 			}
 
 			result.add(hu);
-		}
-
-		return result;
-	}
-
-	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU hu)
-	{
-		final List<I_M_HU> result = new ArrayList<I_M_HU>();
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		for (final I_M_HU_Item huItem : handlingUnitsDAO.retrieveItems(hu))
-		{
-			final List<I_M_HU> includedHUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huItem);
-			result.addAll(includedHUs);
 		}
 
 		return result;

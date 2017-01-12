@@ -87,7 +87,7 @@ public class HUTrxBLTests
 				new BigDecimal("86") // qty
 		);
 
-		final List<I_M_HU> huPalets = AbstractHUTest.createPlainHU(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = AbstractHUTest.createHUFromSimplePI(incomingTrxDoc, huDefPalet);
 
 		assertThat(huPalets.size(), is(1));
 		final I_M_HU huPalet = huPalets.get(0); // new de.metas.handlingunits.util.HUTracerInstance().dump(huPalet);

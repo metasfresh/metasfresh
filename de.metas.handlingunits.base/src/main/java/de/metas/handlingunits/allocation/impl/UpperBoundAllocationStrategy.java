@@ -44,6 +44,10 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 	private final IHUCapacityDefinition _capacityOverride;
 
+	/**
+	 * 
+	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
+	 */
 	public UpperBoundAllocationStrategy(final IHUCapacityDefinition capacityOverride)
 	{
 		super(false); // outTrx=false
@@ -58,7 +62,16 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 			return true;
 		}
 
-		final BigDecimal qty = capacity.getCapacity();
+		final BigDecimal qty;
+		if (capacity.isInfiniteCapacity())
+		{
+			qty = IHUCapacityDefinition.INFINITY;
+		}
+		else
+		{
+			qty = capacity.getCapacity();
+		}
+		
 		return Util.same(IHUCapacityDefinition.DEFAULT, qty);
 	}
 

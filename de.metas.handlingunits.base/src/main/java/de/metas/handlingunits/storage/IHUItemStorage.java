@@ -103,7 +103,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * 
 	 * @param request
 	 * 
-	 * @return the given <code>request</code>, if <code>this</code> storage instance is be enough for it.
+	 * @return the given <code>request</code>, if <code>this</code> storage instance is big enough for it.
 	 *         IF the requested quantity exceeds this storage's capacity, then return a new "smaller" request.
 	 * 
 	 * @see #getAvailableCapacity(I_M_Product, I_C_UOM, Date)

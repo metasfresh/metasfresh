@@ -40,6 +40,7 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -54,8 +55,12 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 {
 	/** Service under test */
 	private HandlingUnitsBL handlingUnitsBL;
+	
 	/** Service under test */
 	private HUTrxBL huTrxBL;
+	
+	/** other service */
+	private IHandlingUnitsDAO handlingUnitsDAO;
 
 	// CU config
 	private I_M_Product cuProduct;
@@ -96,6 +101,8 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		
 		handlingUnitsBL = (HandlingUnitsBL)Services.get(IHandlingUnitsBL.class);
 		huTrxBL = (HUTrxBL)Services.get(IHUTrxBL.class);
 
@@ -136,7 +143,7 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 
 		//
 		// Get created TU
-		final List<I_M_HU> tuHUs = helper.retrieveIncludedHUs(luHU);
+		final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 		Assert.assertEquals("Invalid TUs count", 1, tuHUs.size());
 		final I_M_HU tuHU = tuHUs.get(0);
 
@@ -175,7 +182,7 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 
 		//
 		// Get created TU
-		final List<I_M_HU> tuHUs = helper.retrieveIncludedHUs(luHU);
+		final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 		Assert.assertEquals("Invalid TUs count", 1, tuHUs.size());
 		final I_M_HU tuHU = tuHUs.get(0);
 
