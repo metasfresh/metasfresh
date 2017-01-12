@@ -10,9 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.52.51 (2017-03)
+  
+upcoming
+
+## Features
+* metasfresh 
+  * #774 show address on all docs so it fits the letter window
+  * #773 show delivery address on sales order
+  * #507 Copy with Details for PP_Product_BOM
+
+## Fixes
+* metasfresh 
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * address the possible case of different procurement products that have different attributes and still both match equally well
+  * #791 Create Nachbelastung from Invoice Cast exception
+
 # metasfresh 4.51.50 (2017-02)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
