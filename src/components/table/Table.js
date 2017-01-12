@@ -502,7 +502,7 @@ class Table extends Component {
             dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
             .then(() => {
                 if(docId){
-                    dispatch(deleteLocal(tabId, selected, "master"))
+                    dispatch(deleteLocal(tabid, selected, "master"))
                 } else {
                     updateDocList();
                 }
