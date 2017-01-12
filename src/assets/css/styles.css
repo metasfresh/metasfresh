@@ -3,6 +3,7 @@
 @import './datetime.css';
 @import './daterangepicker.css';
 @import './inputs.css';
+@import './charts.css';
 @import './font-meta.css';
 
 /**
@@ -1761,6 +1762,7 @@ td.pulse-off input {
     min-height: 250px;
     height: calc(100% - 34px);
     z-index: 1;
+    overflow: hidden;
 }
 
 .draggable-widget-icon {
