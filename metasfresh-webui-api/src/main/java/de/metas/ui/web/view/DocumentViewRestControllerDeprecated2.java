@@ -108,7 +108,11 @@ public class DocumentViewRestControllerDeprecated2
 	)
 	{
 		userSession.assertDeprecatedRestAPIAllowed();
-		final JSONCreateDocumentViewRequest jsonRequest = JSONCreateDocumentViewRequest.of(adWindowId, viewDataType, jsonFilters, firstRow, pageLength);
+
+		final JSONCreateDocumentViewRequest jsonRequest = JSONCreateDocumentViewRequest.builder(adWindowId, viewDataType)
+				.setFilters(jsonFilters)
+				.setFetchPage(firstRow, pageLength)
+				.build();
 		return createView(jsonRequest);
 	}
 

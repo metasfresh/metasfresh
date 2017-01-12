@@ -3,24 +3,37 @@ package de.metas.ui.web.process;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
+import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -51,6 +64,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 public final class ProcessInstance
 {
+	private static final transient Logger logger = LogManager.getLogger(ProcessInstance.class);
+	
+	@Autowired
+	@Lazy
+	private IDocumentViewsRepository documentViewsRepo;
 
 	private final ProcessDescriptor processDescriptor;
 	private final int adPInstanceId;
@@ -75,6 +93,8 @@ public final class ProcessInstance
 	private ProcessInstance(final ProcessInstance from, final CopyMode copyMode)
 	{
 		super();
+		Adempiere.autowire(this);
+		
 		processDescriptor = from.processDescriptor;
 		adPInstanceId = from.adPInstanceId;
 		parameters = from.parameters.copy(copyMode);
@@ -214,6 +234,10 @@ public final class ProcessInstance
 				resultBuilder.setReportData(processExecutionResult.getReportFilename(), processExecutionResult.getReportContentType(), reportTempFile);
 			}
 
+			//
+			// Result: records to select
+			createViewIfNeeded(resultBuilder, processExecutionResult.getRecordsToSelectAfterExecution());
+
 			final ProcessInstanceResult result = resultBuilder.build();
 			executionResult = result;
 			if (result.isSuccess())
@@ -257,6 +281,42 @@ public final class ProcessInstance
 
 		return reportFile;
 	}
+	
+	private void createViewIfNeeded(final ProcessInstanceResult.Builder resultBuilder, final List<TableRecordReference> recordRefs)
+	{
+		if(recordRefs.isEmpty())
+		{
+			return;
+		}
+		
+		final Map<String, JSONCreateDocumentViewRequest.Builder> tableName2viewBuilder = new HashMap<>();
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final String tableName = recordRef.getTableName();
+			final JSONCreateDocumentViewRequest.Builder viewRequestBuilder = tableName2viewBuilder.computeIfAbsent(tableName, key -> {
+				final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+				return JSONCreateDocumentViewRequest.builder(adWindowId, JSONViewDataType.grid);
+			});
+			
+			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
+		}
+		
+		if (tableName2viewBuilder.isEmpty())
+		{
+			return;
+		}
+		
+		if (tableName2viewBuilder.size() > 1)
+		{
+			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
+		}
+		
+		final JSONCreateDocumentViewRequest viewRequest = tableName2viewBuilder.values().iterator().next().build();
+		
+		final IDocumentViewSelection view = documentViewsRepo.createView(viewRequest);
+		resultBuilder.setView(view.getAD_Window_ID(), view.getViewId());
+	}
+
 
 	/**
 	 * Save

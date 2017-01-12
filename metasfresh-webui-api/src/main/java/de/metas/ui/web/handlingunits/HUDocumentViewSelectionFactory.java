@@ -2,8 +2,10 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -230,12 +232,28 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 
 	private List<I_M_HU> retrieveTopLevelHUs(final JSONCreateDocumentViewRequest jsonRequest)
 	{
-		// TODO Auto-generated method stub
+		boolean haveFilters = false;
 
-		return Services.get(IHandlingUnitsDAO.class)
+		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
 				.setOnlyTopLevelHUs()
+				.createQueryBuilder();
+
+		final Set<Integer> filterOnlyIds = jsonRequest.getFilterOnlyIds();
+		if (filterOnlyIds != null && !filterOnlyIds.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, filterOnlyIds);
+			haveFilters = true;
+		}
+
+		if (!haveFilters)
+		{
+			throw new IllegalArgumentException("No filters specified for " + jsonRequest);
+		}
+
+		return queryBuilder
+				.create()
 				.list();
 	}
 

@@ -115,10 +115,39 @@ public class ProcessRestController
 
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 
+		//
+		// Extract process where clause from view
+		final String whereClause;
+		int view_AD_Window_ID = -1;
+		int view_DocumentId = -1;
+		if (!Check.isEmpty(request.getViewId()))
+		{
+			final IDocumentViewSelection view = documentViewsRepo.getView(request.getViewId());
+			final List<Integer> viewDocumentIds = request.getViewDocumentIds();
+			whereClause = view.getSqlWhereClause(viewDocumentIds);
+			
+			if (viewDocumentIds.size() == 1)
+			{
+				view_AD_Window_ID = view.getAD_Window_ID();
+				view_DocumentId = viewDocumentIds.get(0);
+			}
+		}
+		else
+		{
+			whereClause = null;
+		}
+
+		//
+		// Extract the (single) referenced document
 		final TableRecordReference documentRef;
 		if (request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
 		{
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
+			documentRef = documentsCollection.getTableRecordReference(documentPath);
+		}
+		else if (view_AD_Window_ID > 0 && view_DocumentId >= 0)
+		{
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_DocumentId);
 			documentRef = documentsCollection.getTableRecordReference(documentPath);
 		}
 		else
@@ -126,16 +155,6 @@ public class ProcessRestController
 			documentRef = null;
 		}
 
-		final String whereClause;
-		if (!Check.isEmpty(request.getViewId()))
-		{
-			final IDocumentViewSelection view = documentViewsRepo.getView(request.getViewId());
-			whereClause = view.getSqlWhereClause(request.getViewDocumentIds());
-		}
-		else
-		{
-			whereClause = null;
-		}
 
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
