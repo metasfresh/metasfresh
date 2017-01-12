@@ -91,7 +91,6 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 				final IAllocationRequest materialItemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
 				final IAllocationResult itemResult = allocateOnMaterialItem(item, materialItemRequest);
 				AllocationUtils.mergeAllocationResult(allocationResult, itemResult);
-				break; // e.g. if we already tried to allocate of the material item // TODO: there shouldn't be both HU and MI to start with.
 			}
 			//
 			// Allocate to included handling units
@@ -111,7 +110,6 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 					final IAllocationResult resultRemaining = allocateRemainingOnIncludedHUItem(item, requestRemaining);
 					AllocationUtils.mergeAllocationResult(allocationResult, resultRemaining);
 				}
-				break;  // TODO: there shouldn't be both HU and MI to start with.
 			}
 			else
 			{

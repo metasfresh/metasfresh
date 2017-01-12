@@ -181,22 +181,12 @@ public class HUBuilderTests
 						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)	
 						.huPIItem(null)
 						.noIncludedHUs()
-					.endExpectation() // HUItemExpectation()
-					.newHUItemExpectation()
-						.noIncludedHUs()
-						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-						.packingMaterial(helper.pmPalet)
-					.endExpectation() // HUItemExpectation()
+					.endExpectation() // HA - HUItemExpectation()
 					.newHUItemExpectation()
 						.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 						// the HU builder does not really recurse, but only creates the HU for the given piVersion, plus the HU's items
 						.newIncludedHUExpectation()
 						.huPI(piTU)
-							.newHUItemExpectation()
-								.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)	
-								.huPIItem(null)
-								.noIncludedHUs()
-							.endExpectation() // HUItemExpectation()
 							.newHUItemExpectation()
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_Material)
@@ -209,7 +199,12 @@ public class HUBuilderTests
 							.endExpectation() // HUItemExpectation()
 
 						.endExpectation() // includedHUExpectation
-					.endExpectation() // huItemExpectation
+					.endExpectation() // HU - huItemExpectation
+						.newHUItemExpectation()
+						.noIncludedHUs()
+						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+						.packingMaterial(helper.pmPalet)
+					.endExpectation() // PM - HUItemExpectation()
 				.endExpectation(); // huExpectation
 		//@formatter:on
 		compressedHUExpectation.assertExpected(Collections.singletonList(luHU));
@@ -242,14 +237,14 @@ public class HUBuilderTests
 						.huPIItem(null)
 						.newIncludedHUExpectation() // the "bag" VHU itself
 							.huPI(helper.huDefVirtual)
+							.newVirtualHUItemExpectation() // the product qty that is still "bagged"
+								.noIncludedHUs()
+								.itemType(X_M_HU_Item.ITEMTYPE_Material)
+							.endExpectation()
 							.newHUItemExpectation() // the remaining packaging (IFCO) that is still "bagged"
 								.noIncludedHUs()
 								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 								.packingMaterial(helper.pmIFCO)
-							.endExpectation()
-							.newVirtualHUItemExpectation() // the product qty that is still "bagged"
-								.noIncludedHUs()
-								.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.endExpectation()
 						.endExpectation() // includedHUExpectation
 					.endExpectation() // huItemExpectation with itemType=HA

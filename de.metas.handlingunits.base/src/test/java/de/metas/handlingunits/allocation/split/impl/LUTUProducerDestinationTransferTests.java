@@ -57,7 +57,7 @@ public class LUTUProducerDestinationTransferTests
 	}
 
 	@Test
-	public void useCase2()
+	public void testCreatePaletWithIfcoThenTransferToTopLevelTU()
 	{
 		final List<I_M_HU> huPalets;
 

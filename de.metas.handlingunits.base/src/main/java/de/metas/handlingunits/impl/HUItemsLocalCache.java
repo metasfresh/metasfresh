@@ -60,19 +60,18 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 			.createQueryOrderBy();;
 
 	/**
-	 * Specifies that material items shall be first, followed by HU-aggregate items, HU-items and finally packing material items. 
+	 * Specifies that material items shall be first, followed by HU-aggregate items, HU-items and finally packing material items.
 	 */
-	static final Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
+	private static final Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
 			X_M_HU_Item.ITEMTYPE_Material, 1,
 			X_M_HU_Item.ITEMTYPE_HUAggregate, 2,
 			X_M_HU_Item.ITEMTYPE_HandlingUnit, 3,
 			X_M_HU_Item.ITEMTYPE_PackingMaterial, 4);
 
-
-	public final static Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
+	public static final Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
 			.<I_M_HU_Item, Integer> comparing(item -> ITEM_TYPE_ORDERING.get(item.getItemType()))
 			.thenComparing(queryOrderBy.getComparator(I_M_HU_Item.class));
-	
+
 	private static final String DYNATTR_Instance = HUItemsLocalCache.class.getName();
 
 	public static final HUItemsLocalCache getCreate(final I_M_HU hu)

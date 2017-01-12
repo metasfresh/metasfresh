@@ -44,6 +44,8 @@ import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IAllocationDestination;
+import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -60,6 +62,15 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 
+/**
+ * Important class to build new HUs.
+ * More or less employed and driven by the {@link IAllocationDestination}s and also {@link IAllocationStrategy}s, whenever the need to create a new {@link I_M_HU}.
+ * 
+ * This builder also creates {@link I_M_HU_Item} for the new {@link I_M_HU} it creates (see {@link HUNodeIncludedItemBuilder}), but out of itself it doesn't create any child HUs.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 /* package */final class HUBuilder extends AbstractHUIterator implements IHUBuilder
 {
 	// Services
@@ -469,7 +480,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	/**
-	 * Builder used to create {@link I_M_HU_Item}s for a given {@link I_M_HU}
+	 * Builder used to create {@link I_M_HU_Item}s for a given {@link I_M_HU}. Also see the comments within the code to figure out what it does.
 	 *
 	 * @author tsa
 	 *
@@ -487,34 +498,37 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 			if (handlingUnitsBL.isAggregateHU(hu))
 			{
-				// #460 the given 'hu' is an "aggregate/compressed/bag" one
+				// #460 the given 'hu' is an "aggregate/compressed/bag" one.
 
 				// take a look at the M_HU_PI_Version with which the "create()" method for this given aggregate 'hu' was called.
 				final I_M_HU_PI_Version invocationPIVersion = invocationParamPIVersion.getValue(hu);
 				if (invocationPIVersion != null && invocationPIVersion.getM_HU_PI_Version_ID() != hu.getM_HU_PI_Version_ID())
 				{
-					// ...if invocationPIVersion differs from the M_HU_PI_Version that was effectively assigned to the 'hu'
-					// then we create and add items for the packaging piItems of 'piVersionToUse'.
-					// The goal is that even if we don't create a full-fledged HU for an IFCO that's below a palet, we still add the IFCOs packing instruction to the aggregated VHU.
+					// If 'invocationPIVersion' differs from the the M_HU_PI_Version of the aggregate 'hu' we got here
+					// then we create and add items for the packaging piItems of 'invocationPIVersion'.
+					// The goal is that even if e.g. we don't create a full-fledged trade-unit-HU for an IFCO that's below a palet,
+					// we still add the IFCOs' packing instruction to the aggregate 'hu', so the number of included IFCOs can be represented there.
 					final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO
 							.retrievePIItems(invocationPIVersion, getC_BPartner())
 							.stream()
 							.filter(pi -> X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(pi.getItemType()))
 							.collect(Collectors.toList());
+
 					for (final I_M_HU_PI_Item piItem : piItems)
 					{
 						final IPair<I_M_HU_Item, Boolean> item = handlingUnitsDAO.createHUItemIfNotExists(hu, piItem);
 						if (item.getRight())
 						{
-							result.add(item.getLeft()); // a new item was created
+							result.add(item.getLeft()); // a new item was created, so add it.
 						}
 					}
 				}
 			}
 
-			boolean hasMaterialItem = false; // we only want either a material item or an aggregated item.
+			// For any given 'hu' we only want either a material item or an aggregated item, but not both.
+			boolean hasMaterialItem = false;
 
-			// Create "regular" material and packing-material items that are declared by the PI
+			// Create "regular" material items and packing-material items that are declared by the PI
 			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
 			final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO.retrievePIItems(piVersion, getC_BPartner());
 
@@ -523,8 +537,9 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 				final String itemType = piItem.getItemType();
 				if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 				{
-					// gh #460: don't create any HU item. we created the HU-aggregate "bag" item
-					// otherwise we would now create one item for each piItem. For a top-level LU like palette, this might mean to create dozends of different TU-items, even if only one of them is actually used
+					// gh #460: don't create any HU item.
+					// otherwise we would now create one item for each piItem. For a top-level LU like palette, this might mean to create dozens of different TU-items, even if only one of them is actually used.
+					// *If* we actually really need to add child-HU later, then the respective HU-item will be created on the fly (currently that's happening in LULoaderInstance).
 					continue;
 				}
 
@@ -540,6 +555,8 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 				}
 			}
 
+			// The given HU is not configured to hold material itself because e.g. it is a palet.
+			// Therefore we add one "aggregate" item which can then later onwards represent the child-HUs and its content.
 			if (!hasMaterialItem && !handlingUnitsBL.isAggregateHU(hu))
 			{
 				final I_M_HU_Item bagItem = handlingUnitsDAO.createAggregateHUItem(hu);
