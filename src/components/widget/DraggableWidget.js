@@ -3,6 +3,13 @@ import { findDOMNode } from 'react-dom';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
+import BarChart from '../charts/BarChart';
+import BarChart2 from '../charts/BarChart2';
+import BarChart3 from '../charts/BarChart3';
+import BarChart4 from '../charts/BarChart4';
+import BarChart5 from '../charts/BarChart5';
+import PieChart from '../charts/PieChart';
+
 
 const cardSource = {
     beginDrag(props) {
@@ -111,7 +118,7 @@ export class DraggableWidget extends Component {
     render() {
         const {
             text, url, isDragging, connectDragSource, connectDropTarget,
-            hideWidgets, showWidgets, index, idMaximized
+            hideWidgets, showWidgets, index, idMaximized, id
         } = this.props;
         const { toggleWidgetMenu, isMaximize, refresh } = this.state;
 
@@ -138,11 +145,24 @@ export class DraggableWidget extends Component {
                     }
                 </div>
                 <div className="draggable-widget-body">
-                    <iframe
-                        src={!refresh && url}
-                        scrolling="no"
-                        frameBorder="no"
-                    ></iframe>
+                    {id===1000001 &&
+                        <BarChart/>
+                    }
+                    {id===1000000 &&
+                        <PieChart/>
+                    }
+                    {id===1000003 &&
+                        <BarChart2/>
+                    }
+                    {id===1000002 &&
+                        <BarChart3/>
+                    }
+                    {id===1000006 &&
+                        <BarChart4/>
+                    }
+                    {id===1000007 &&
+                        <BarChart5/>
+                    }
                 </div>
             </div>
 

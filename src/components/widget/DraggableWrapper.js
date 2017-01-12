@@ -25,7 +25,7 @@ export class DraggableWrapper extends Component {
 
     componentDidMount = () => {
         this.getDashboard();
-        this.getIndicators();
+
     }
 
     getIndicators = () => {
@@ -106,6 +106,7 @@ export class DraggableWrapper extends Component {
                         </div>
                     )}
                 </div>}
+             
                 {cards.map((card, i) => {
                     return (
                         <DraggableWidget
