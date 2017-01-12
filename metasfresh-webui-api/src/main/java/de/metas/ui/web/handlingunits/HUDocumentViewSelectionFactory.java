@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -36,7 +37,7 @@ import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -129,6 +130,12 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 						.setGridElement()
 						.addField(DocumentLayoutElementFieldDescriptor.builder(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID)))
 				//
+				.addElement(DocumentLayoutElementDescriptor.builder()
+						.setCaptionFromAD_Message(I_WEBUI_HU_View.COLUMNNAME_HUStatus)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setGridElement()
+						.addField(DocumentLayoutElementFieldDescriptor.builder(I_WEBUI_HU_View.COLUMNNAME_HUStatus)))
+				//
 				.build();
 	}
 
@@ -156,13 +163,20 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		final IDocumentViewAttributesProvider attributesProvider = DocumentViewAttributesProviderFactory.instance.createProviderOrNull(DocumentType.Window, adWindowId);
 
 		final String huUnitType = hu.getM_HU_PI_Version().getHU_UnitType();
+		
+		final String huStatusKey = hu.getHUStatus();
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), I_WEBUI_HU_View.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final JSONLookupValue huStatus = JSONLookupValue.of(huStatusKey, huStatusDisplayName);
+		
+		
 		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				.setAttributesProvider(attributesProvider)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitType);
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitType)
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus);
 
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
 		{
@@ -209,7 +223,7 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.build();
 	}
 
-	private IntegerLookupValue createLookupValue(final I_M_Product product)
+	private JSONLookupValue createLookupValue(final I_M_Product product)
 	{
 		if (product == null)
 		{
@@ -217,17 +231,17 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 		}
 
 		final String displayName = product.getValue() + "_" + product.getName();
-		return IntegerLookupValue.of(product.getM_Product_ID(), displayName);
+		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
 	}
 
-	private IntegerLookupValue createLookupValue(final I_C_UOM uom)
+	private JSONLookupValue createLookupValue(final I_C_UOM uom)
 	{
 		if (uom == null)
 		{
 			return null;
 		}
 
-		return IntegerLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
+		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
 	private List<I_M_HU> retrieveTopLevelHUs(final JSONCreateDocumentViewRequest jsonRequest)
