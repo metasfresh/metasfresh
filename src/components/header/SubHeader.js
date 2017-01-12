@@ -39,15 +39,17 @@ class Subheader extends Component {
 
         document.getElementsByClassName('js-subheader-column')[0].focus();
 
-        if(selected.length === 1 || dataId){
-            dispatch(referencesRequest("window", windowType, dataId ? dataId : selected[0])).then((response) => {
-                dispatch(setReferences(response.data.references));
+        if(windowType){
+            if(selected.length === 1 || dataId){
+                dispatch(referencesRequest("window", windowType, dataId ? dataId : selected[0])).then((response) => {
+                    dispatch(setReferences(response.data.references));
+                });
+            }
+
+            dispatch(actionsRequest(entity, windowType, dataId ? dataId : viewId)).then((response) => {
+                dispatch(setActions(response.data.actions));
             });
         }
-
-        dispatch(actionsRequest(entity, windowType, dataId ? dataId : viewId)).then((response) => {
-            dispatch(setActions(response.data.actions));
-        });
     }
 
     handleReferenceClick = (type, filter) => {
