@@ -405,7 +405,7 @@ class Lookup extends Component {
                         </div>
                     }
                 </div>
-                {isOpen &&
+                {isOpen && !isInputEmpty &&
                     <LookupList
                         selected={selected}
                         list={list}
