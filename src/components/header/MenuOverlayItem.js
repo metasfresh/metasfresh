@@ -35,7 +35,10 @@ class MenuOverlayItem extends Component {
     }
 
     componentDidMount() {
-        document.getElementsByClassName('js-menu-overlay')[0].focus();
+        const {query} = this.props;
+        if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
+             document.getElementsByClassName('js-menu-overlay')[0].focus();
+        }
     }
 
     handleKeyDown = (e) => {
