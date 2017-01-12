@@ -48,10 +48,13 @@ class MenuOverlay extends Component {
                 }))
             });
         }else{
+
             this.setState(Object.assign({}, this.state, {
-                queriedResults: [],
-                query: ""
-            }))
+                query: "",
+                queriedResults: []
+            }), ()=> {
+                document.getElementById('search-input-query').value=""
+            });
         }
     }
 
@@ -60,7 +63,9 @@ class MenuOverlay extends Component {
         this.setState(Object.assign({}, this.state, {
             query: "",
             queriedResults: []
-        }));
+        }), ()=> {
+            document.getElementById('search-input-query').value=""
+        });
     }
 
     handleDeeper = (e, nodeId) => {
@@ -282,7 +287,7 @@ class MenuOverlay extends Component {
                                 <div className="menu-overlay-query hidden-sm-down">
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
-                                        <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
+                                        <DebounceInput debounceTimeout={250} type="text" id="search-input-query" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
                                         {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                                     </div>
                                     {queriedResults && queriedResults.map((result, index) =>
