@@ -3,12 +3,12 @@ import { findDOMNode } from 'react-dom';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
-import BarChart from '../charts/BarChart';
-import BarChart2 from '../charts/BarChart2';
-import BarChart3 from '../charts/BarChart3';
 import BarChart4 from '../charts/BarChart4';
 import BarChart5 from '../charts/BarChart5';
 import PieChart from '../charts/PieChart';
+import PieChart2 from '../charts/PieChart2';
+import StackedGroupedBars from '../charts/StackedGroupedBars';
+import StackedGroupedBars2 from '../charts/StackedGroupedBars2';
 
 
 const cardSource = {
@@ -146,22 +146,22 @@ export class DraggableWidget extends Component {
                 </div>
                 <div className="draggable-widget-body">
                     {id===1000001 &&
-                        <BarChart/>
+                        <BarChart5/>
                     }
                     {id===1000000 &&
                         <PieChart/>
                     }
                     {id===1000003 &&
-                        <BarChart2/>
+                        <StackedGroupedBars/>
                     }
                     {id===1000002 &&
-                        <BarChart3/>
+                        <PieChart2/>
                     }
                     {id===1000006 &&
-                        <BarChart4/>
+                        <StackedGroupedBars2/>
                     }
                     {id===1000007 &&
-                        <BarChart5/>
+                        <BarChart4/>
                     }
                 </div>
             </div>

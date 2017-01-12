@@ -104,7 +104,7 @@ class BarChart extends Component {
 
 
         return (
-            <div>
+            <div className="chart-bar">
                 <svg className="chart5"></svg>
             </div>
         );

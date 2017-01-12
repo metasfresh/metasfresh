@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as d3 from "d3";
 
-class BarChart extends Component {
+class PieChart extends Component {
     constructor(props){
         super(props);
     }
@@ -67,4 +67,4 @@ class BarChart extends Component {
     }
 }
 
-export default BarChart;
+export default PieChart;
