@@ -8,12 +8,12 @@ class BarChart extends Component {
 
     componentDidMount() {
         var data = [
-            {name: "Locke",    value:  4},
+            {name: "Locke",    value:  44},
             {name: "Reyes",    value:  8},
             {name: "Ford",     value: 15},
-            {name: "Jarrah",   value: 16},
-            {name: "Shephard", value: 23},
-            {name: "Kwon",     value: 42}
+            {name: "Jarrah",   value: 36},
+            {name: "Shephard", value: 13},
+            {name: "Kwon",     value: 12}
         ];
 
         var margin = {top: 20, right: 30, bottom: 30, left: 40},
@@ -34,7 +34,7 @@ class BarChart extends Component {
         var yAxis = d3.axisLeft()
             .scale(y);
 
-        var chart = d3.select(".chart")
+        var chart = d3.select(".chart5")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
@@ -43,7 +43,7 @@ class BarChart extends Component {
 
         //Add a clip path, so the content outside the domain should be hidden
 
-        var mSvg = d3.select(".chart");
+        var mSvg = d3.select(".chart5");
 
 
 
@@ -105,7 +105,7 @@ class BarChart extends Component {
 
         return (
             <div>
-                <svg className="chart"></svg>
+                <svg className="chart5"></svg>
             </div>
         );
     }

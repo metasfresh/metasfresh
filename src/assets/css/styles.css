@@ -3,6 +3,7 @@
 @import './datetime.css';
 @import './daterangepicker.css';
 @import './inputs.css';
+@import './charts.css';
 @import './font-meta.css';
 
 /**
@@ -1761,6 +1762,7 @@ td.pulse-off input {
     min-height: 250px;
     height: calc(100% - 34px);
     z-index: 1;
+    overflow: hidden;
 }
 
 .draggable-widget-icon {
@@ -2125,125 +2127,4 @@ td.pulse-off input {
     float: right;
     opacity: 0.5;
     font-weight: bold;
-}
-
-
-path {
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
-}
-.axis path, .axis line {
-    fill: none;
-    stroke: grey;
-    stroke-width: 1;
-    shape-rendering: crispEdges;
-}
-
-path {
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
-}
-.axis path, .axis line {
-    fill: none;
-    stroke: grey;
-    stroke-width: 1;
-    shape-rendering: crispEdges;
-}
-
-.overview-title {
-	color: rgb(28,71,134);
-	font-weight:bold;
-	font-size:1.45em;
-	text-align:center;
-}
-
-.overview-amount {
-	color: rgb(133,191,69);
-	font-size:2em;
-	font-style:italic;
-	font-weight:bolder;
-	text-align:center;
-}
-
-.legend-list{
-	position:relative;
-	top:100px;
-	left:20px;
-}
-
-.legend-list li {
-	list-style-type:none;
-	font-size:1.2em;
-	text-align:right;
-}
-
-path {
-  stroke: #333;
-  stroke-width: 1.5px;
-  transition: fill 250ms linear;
-  transition-delay: 150ms;
-}
-
-path:hover {
-  fill: #999;
-  stroke: #000;
-  transition-delay: 0;
-}
-
-#pie_2 {
-  margin:15px;
-}
-
-#wrap {
-	margin:0 auto;
-	width:90%;
-	background:rgba(0,0,0,0.1);
-}
-#selectList {
-	margin:1.5em 2.4em;
-	position:relative;
-}
-
-#graph-sect {
-	margin:3em auto;
-}
-
-h2 {
-	text-transform:uppercase;
-	margin-left:2em;
-}
-
-#graph-sect div {
-	width:45%;
-	display:inline-block;
-	padding:10px;
-}
-
-#graph-sect form {
-	margin-left:2em;
-}
-
-#graph-sect input[type="text"] {
-	margin-left:8em;
-	font-size:1.2em;
-
-}
-
-
-.optionlist li.options-of-list {
-	display:inline-block;
-	padding: 0 5px;
-}
-
-
-nav.topnav {
-	position:relative;
-	margin-right:0 auto;
-}
-
-.optionlist li.options-of-list {
-	display:inline-block;
-	margin-left:5px;
 }

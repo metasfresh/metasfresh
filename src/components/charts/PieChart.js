@@ -60,8 +60,8 @@ class BarChart extends Component {
 
 
         return (
-            <div>
-                <canvas width="640" height="500"></canvas>
+            <div className="chart-wrapp">
+                <canvas width="200" height="200"></canvas>
             </div>
         );
     }
