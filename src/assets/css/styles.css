@@ -600,7 +600,7 @@ body {
     padding: 0 1.2rem;
     cursor: pointer;
     position: relative;
-    border-bottom: 1px solid $brand-border-color;
+    border-bottom: 1px solid transparent;
     height: 55px;
 }
 
@@ -611,6 +611,8 @@ body {
 .dropdown-status-toggler:hover,
 .dropdown-status-toggler:focus {
     background-color: $brand-default-color;
+
+    border-bottom: 1px solid $brand-border-color;
     outline-width: 0;
 }
 
