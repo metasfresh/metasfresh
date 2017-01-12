@@ -117,21 +117,30 @@ export function getWindowBreadcrumb(id){
 
 // UTILITIES
 
-export function flatten(node) {
+export function flatten(node, parent) {
     let result = [];
 
     if(!!node.children){
-        flatten(node.children[0]).map(item => {
-            result.push(
-                item
-            );
+        node.children.map(child => {
+            let mergedParent;
+            let currentNode = node
+            currentNode.children = undefined;
+
+            if(typeof parent === "object"){
+                parent.push(currentNode);
+                mergedParent = parent;
+            }else{
+                mergedParent = [currentNode];
+            }
+            flatten(child, mergedParent);
         })
+    }else{
+        console.log(parent);
+        return parent.push(node);
     }
 
-    result.push({
-        nodeId: node.nodeId,
-        caption: node.caption
-    });
-
-    return result;
+    // result.push({
+    //     nodeId: node.nodeId,
+    //     caption: node.caption
+    // });
 }
