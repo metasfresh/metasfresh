@@ -2,6 +2,10 @@
 	fill: steelblue;
 }
 
+.chart-bar .bar {
+	fill: green;
+}
+
 .axis text {
 	font: 10px sans-serif;
 }

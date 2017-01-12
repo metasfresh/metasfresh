@@ -173,7 +173,11 @@ class MenuOverlay extends Component {
     	const {path} = this.state;
         const {handleMenuOverlay} = this.props;
         return (
-             <div className="menu-overlay-container-column-wrapper">
+             <div 
+                className="menu-overlay-container-column-wrapper js-menu-overlay"
+                tabIndex={0}
+                onKeyDown={(e)=>this.handleKeyDown(e)}
+             >
                 {node.nodeId != 0 &&
                     <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
                         {this.renderPath(path)}
@@ -253,9 +257,7 @@ class MenuOverlay extends Component {
 
         return (
             <div 
-                className="menu-overlay menu-overlay-primary js-menu-overlay"
-                tabIndex={0}
-                onKeyDown={(e)=>this.handleKeyDown(e)}
+                className="menu-overlay menu-overlay-primary"
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
@@ -280,7 +282,7 @@ class MenuOverlay extends Component {
                                 <div className="menu-overlay-query hidden-sm-down">
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
-                                        <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                                        <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
                                         {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                                     </div>
                                     {queriedResults && queriedResults.map((result, index) =>

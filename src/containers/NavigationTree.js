@@ -95,7 +95,7 @@ class NavigationTree extends Component {
         <div className="search-wrapper">
             <div className="input-flex input-primary">
                 <i className="input-icon meta-icon-preview"/>
-                <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
+                <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
                 {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
             </div>
         </div>
