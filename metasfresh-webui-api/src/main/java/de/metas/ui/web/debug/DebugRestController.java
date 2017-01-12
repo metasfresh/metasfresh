@@ -121,6 +121,12 @@ public class DebugRestController
 		logResourceValueChanged(UserSession.PARAM_DisableDeprecatedRestAPI, disableDeprecatedRestAPI, disableDeprecatedRestAPIOldObj);
 	}
 
+	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.GET)
+	public boolean isDisableDeprecatedRestAPI()
+	{
+		return userSession.getPropertyAsBoolean(UserSession.PARAM_DisableDeprecatedRestAPI, false);
+	}
+
 
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
 	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)
