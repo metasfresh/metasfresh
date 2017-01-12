@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.split.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 import static org.junit.Assert.assertThat;
 
@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;

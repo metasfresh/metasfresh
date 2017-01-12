@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.split;
+package de.metas.handlingunits.allocation.transfer;
 
 /*
  * #%L
@@ -32,7 +32,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 /**
- * Split definition for Transport Unit / Loading Unit
+ * Split definition for Transport Unit / Loading Unit. Can be used in 
  *
  * @author al
  *

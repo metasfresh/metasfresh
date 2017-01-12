@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.builder.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.allocation.join.IHUJoinBL;
+import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.split.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 import java.math.BigDecimal;
 

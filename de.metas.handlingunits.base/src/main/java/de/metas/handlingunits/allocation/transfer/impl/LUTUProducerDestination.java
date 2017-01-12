@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.split.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.allocation.split.IHUSplitDefinition;
+import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;

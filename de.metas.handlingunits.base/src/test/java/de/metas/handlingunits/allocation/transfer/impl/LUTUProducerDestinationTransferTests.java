@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.split.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasXPath;
@@ -20,6 +20,7 @@ import org.w3c.dom.Node;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;

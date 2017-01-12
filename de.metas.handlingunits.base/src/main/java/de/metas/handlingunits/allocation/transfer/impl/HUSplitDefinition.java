@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.split.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 /*
  * #%L
@@ -29,7 +29,7 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.allocation.split.IHUSplitDefinition;
+import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.builder;
+package de.metas.handlingunits.allocation.transfer;
 
 /*
  * #%L

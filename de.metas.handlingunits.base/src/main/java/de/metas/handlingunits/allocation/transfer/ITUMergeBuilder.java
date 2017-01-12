@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.builder;
+package de.metas.handlingunits.allocation.transfer;
 
 /*
  * #%L
@@ -29,22 +29,21 @@ import java.util.List;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.allocation.builder.impl.TUMergeBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 
 public interface ITUMergeBuilder
 {
-	TUMergeBuilder setSourceHUs(List<I_M_HU> sourceHUs);
+	ITUMergeBuilder setSourceHUs(List<I_M_HU> sourceHUs);
 
-	TUMergeBuilder setTargetTU(I_M_HU targetHU);
+	ITUMergeBuilder setTargetTU(I_M_HU targetHU);
 
-	TUMergeBuilder setCUProduct(I_M_Product product);
+	ITUMergeBuilder setCUProduct(I_M_Product product);
 
-	TUMergeBuilder setCUQty(BigDecimal qty);
+	ITUMergeBuilder setCUQty(BigDecimal qty);
 
-	TUMergeBuilder setCUUOM(I_C_UOM uom);
+	ITUMergeBuilder setCUUOM(I_C_UOM uom);
 
-	TUMergeBuilder setCUTrxReferencedModel(Object trxReferencedModel);
+	ITUMergeBuilder setCUTrxReferencedModel(Object trxReferencedModel);
 
 	void mergeTUs();
 }

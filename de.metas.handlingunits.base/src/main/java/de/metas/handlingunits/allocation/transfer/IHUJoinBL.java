@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.join;
+package de.metas.handlingunits.allocation.transfer;
 
 /*
  * #%L

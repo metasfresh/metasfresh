@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.builder.impl;
+package de.metas.handlingunits.allocation.transfer.impl;
 
 /*
  * #%L
@@ -41,11 +41,11 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.builder.ITUMergeBuilder;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
+import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 
 public class TUMergeBuilder implements ITUMergeBuilder
