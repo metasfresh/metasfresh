@@ -69,9 +69,11 @@ class NavigationTree extends Component {
             });
         }else{
             this.setState(Object.assign({}, this.state, {
-                queriedResults: rootResults.children,
-                query: ""
-            }))
+                query: "",
+                queriedResults: rootResults.children
+            }), ()=> {
+                document.getElementById('search-input').value=""
+            });
         }
 
     }
@@ -83,7 +85,9 @@ class NavigationTree extends Component {
         this.setState(Object.assign({}, this.state, {
             query: "",
             queriedResults: rootResults.children
-        }));
+        }), ()=> {
+            document.getElementById('search-input').value=""
+        });
     }
 
     renderTree = (res) => {
@@ -95,7 +99,7 @@ class NavigationTree extends Component {
         <div className="search-wrapper">
             <div className="input-flex input-primary">
                 <i className="input-icon meta-icon-preview"/>
-                <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
+                <DebounceInput debounceTimeout={250} type="text" id="search-input" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
                 {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
             </div>
         </div>
