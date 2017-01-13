@@ -30,7 +30,10 @@ class Breadcrumb extends Component {
     }
 
     renderBtn = (menu, index) => {
-        const {handleMenuOverlay, menuOverlay, windowType, siteName} = this.props;
+        const {
+            handleMenuOverlay, menuOverlay, windowType, siteName, openModal
+        } = this.props;
+        
         return (<div key={index}>
             {!!index && <span className="divider">/</span>}
             <div className={"header-btn tooltip-parent"}>
@@ -41,7 +44,11 @@ class Breadcrumb extends Component {
                         (!index ? "header-item-container-static ": "")
                     }
                     onClick={ !(menu && menu.children && menu.children.elementId) ?
-                        e => {handleMenuOverlay(e, menu.nodeId), this.toggleTooltip(false)} : (windowType ? e => {this.linkToPage(windowType), this.toggleTooltip(false)} : e => this.toggleTooltip(false) )
+                        e => {handleMenuOverlay(e, menu.nodeId), this.toggleTooltip(false)} :
+                        (windowType ?
+                            e => {this.linkToPage(windowType), this.toggleTooltip(false)} :
+                            e => this.toggleTooltip(false)
+                        )
                     }
                     onMouseEnter={!!index ? '' : (e) => this.toggleTooltip(true)}
                     onMouseLeave={(e) => this.toggleTooltip(false)}
@@ -58,6 +65,7 @@ class Breadcrumb extends Component {
                         disableOnClickOutside={menuOverlay !== menu.nodeId}
                         siteName={siteName}
                         handleMenuOverlay={handleMenuOverlay}
+                        openModal={openModal}
                     />
                 }
             </div>
@@ -67,7 +75,7 @@ class Breadcrumb extends Component {
 	render() {
         const {
             breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData, dataId,
-            siteName, menuOverlay, handleMenuOverlay
+            siteName, menuOverlay, handleMenuOverlay, openModal
         } = this.props;
 
         const {tooltipOpen} = this.state;
@@ -83,7 +91,6 @@ class Breadcrumb extends Component {
                     />
                 }
                 <div className="header-breadcrumb">
-
                     {this.renderBtn(homemenu, 0)}
 
                     {breadcrumb && breadcrumb.map((item, index) =>

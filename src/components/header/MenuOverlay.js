@@ -212,7 +212,7 @@ class MenuOverlay extends Component {
                             className={item.elementId ? 'menu-overlay-link' : 'menu-overlay-expand'}
                             onClick={ e => this.linkClick(item) }>
                                 {item.caption}
-                            </span>
+                        </span>
                     </span>
                 )}
             </div>
@@ -250,7 +250,9 @@ class MenuOverlay extends Component {
 
     render() {
         const {queriedResults, deepNode, deepSubNode, subPath, query} = this.state;
-        const {dispatch, nodeId, node, siteName, index, handleMenuOverlay} = this.props;
+        const {
+            dispatch, nodeId, node, siteName, index, handleMenuOverlay, openModal
+        } = this.props;
         const nodeData = node.children;
 
         return (
@@ -294,6 +296,7 @@ class MenuOverlay extends Component {
                                             query={true}
                                             handlePath={this.handlePath}
                                             handleMenuOverlay={handleMenuOverlay}
+                                            openModal={openModal}
                                             {...result}
                                         />
                                     )}

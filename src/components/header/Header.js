@@ -311,6 +311,7 @@ class Header extends Component {
                                     siteName={siteName}
                                     menuOverlay={menuOverlay}
                                     handleMenuOverlay={this.handleMenuOverlay}
+                                    openModal={this.openModal}
                                 />
 
                             </div>

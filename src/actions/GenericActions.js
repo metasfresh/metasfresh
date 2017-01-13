@@ -3,6 +3,7 @@ import axios from 'axios';
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
 export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced, list) {
+    console.log("INIT LAYOUT")
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' + docType +

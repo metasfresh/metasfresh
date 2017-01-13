@@ -11,7 +11,10 @@ class MenuOverlayItem extends Component {
     }
 
     clickedItem = (e, elementId, nodeId, type ) => {
-        const {handleClickOnFolder, handleRedirect, handleNewRedirect} = this.props;
+        const {
+            handleClickOnFolder, handleRedirect, handleNewRedirect, openModal,
+            caption
+        } = this.props;
 
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
@@ -19,6 +22,8 @@ class MenuOverlayItem extends Component {
             this.handleClick(elementId)
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
+        } else if (type === 'report') {
+            openModal(elementId + "", "process", caption)
         }
     }
 
