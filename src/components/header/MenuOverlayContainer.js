@@ -19,19 +19,11 @@ class MenuOverlayContainer extends Component {
 
 	render() {
 		const {
-            children,
-            elementId,
-            caption,
-            type,
-            handleClickOnFolder,
-            handleRedirect,
-            handleNewRedirect,
-            handlePath,
-            printChildren,
-            deep,
-            back,
-            handleMenuOverlay
+            children, elementId, caption, type, handleClickOnFolder, handleRedirect,
+            handleNewRedirect, handlePath, printChildren, deep, back, handleMenuOverlay,
+            openModal
         } = this.props;
+
 		return (
 			<div
                 tabIndex={0}
@@ -39,7 +31,7 @@ class MenuOverlayContainer extends Component {
                     "menu-overlay-node-container " +
                     (deep ? "menu-overlay-node-spaced " : "menu-overlay-expanded-link-spaced")
                 }>
-				{type==='group' &&
+				{type === 'group' &&
 					<span
                         className={
                             "menu-overlay-header " +
@@ -47,10 +39,8 @@ class MenuOverlayContainer extends Component {
                             (!deep ? "menu-overlay-header-main" : " ")
                         }
                     >{caption}</span>
-				}
-
-				{type!=='group' &&
-
+                }
+                {type !== 'group' &&
                     <MenuOverlayItem
                         elementId={elementId}
                         caption={caption}
@@ -61,8 +51,10 @@ class MenuOverlayContainer extends Component {
                         handlePath={handlePath}
                         back={back}
                         handleMenuOverlay={handleMenuOverlay}
-                        printChildren={false}/>
-                        
+                        printChildren={false}
+                        openModal={openModal}
+                    />
+
 				}
 
 				{children && children.map((subitem, subindex) =>
@@ -74,6 +66,7 @@ class MenuOverlayContainer extends Component {
                             handleNewRedirect={handleNewRedirect}
                             printChildren={true}
                             deep={true}
+                            openModal={openModal}
                             {...subitem}
     					/> :
                         <MenuOverlayItem
@@ -85,6 +78,7 @@ class MenuOverlayContainer extends Component {
                             printChildren={printChildren}
                             back={back}
                             handleMenuOverlay={handleMenuOverlay}
+                            openModal={openModal}
     						{...subitem}
                         />
 				)}
