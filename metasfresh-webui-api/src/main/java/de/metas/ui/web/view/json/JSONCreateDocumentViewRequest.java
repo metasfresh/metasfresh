@@ -190,12 +190,18 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	public static final class JSONReferencing implements Serializable
 	{
+		public static final JSONReferencing of(final int adWindowId, final int documentId)
+		{
+			return new JSONReferencing(String.valueOf(adWindowId), String.valueOf(documentId));
+		}
+		
 		@JsonProperty("documentType")
 		private final String documentType;
 
 		@JsonProperty("documentId")
 		private final String documentId;
 
+		@JsonCreator
 		public JSONReferencing(
 				@JsonProperty("documentType") final String documentType //
 				, @JsonProperty("documentId") final String documentId //

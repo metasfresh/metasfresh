@@ -78,9 +78,6 @@ public final class JSONDocumentViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentViewOrderBy> orderBy;
 
-	@JsonProperty(value = "supportAttributes", index = 80)
-	private final boolean supportAttributes;
-
 	@JsonProperty(value = "result", index = 1000)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocument> result;
@@ -102,8 +99,6 @@ public final class JSONDocumentViewResult implements Serializable
 
 		filters = JSONDocumentFilter.ofList(viewResult.getFilters());
 		orderBy = JSONDocumentViewOrderBy.ofList(viewResult.getOrderBys());
-
-		supportAttributes = view.hasAttributesSupport();
 
 		result = JSONDocument.ofDocumentViewList(viewResult.getPage());
 
@@ -141,8 +136,6 @@ public final class JSONDocumentViewResult implements Serializable
 		this.filters = filters == null ? ImmutableList.of() : filters;
 		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
 
-		this.supportAttributes = supportAttributes;
-
 		this.result = result;
 
 		debugPropeties = new HashMap<>();
@@ -158,7 +151,6 @@ public final class JSONDocumentViewResult implements Serializable
 				.add("size", size)
 				.add("firstRow", firstRow)
 				.add("pageLength", pageLength)
-				.add("supportAttributes", supportAttributes ? Boolean.TRUE : null)
 				.add("result", result)
 				.toString();
 	}
@@ -171,11 +163,6 @@ public final class JSONDocumentViewResult implements Serializable
 	public Long getSize()
 	{
 		return size;
-	}
-
-	public boolean isSupportAttributes()
-	{
-		return supportAttributes;
 	}
 
 	public List<JSONDocument> getResult()

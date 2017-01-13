@@ -4,10 +4,12 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.handlingunits.HUDocumentViewSelectionFactory;
@@ -43,7 +45,7 @@ import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 @Primary
 public class CompositeDocumentViewSelectionFactory implements IDocumentViewSelectionFactory
 {
-	private Map<Integer, IDocumentViewSelectionFactory> factoriesByWindowId = ImmutableMap.of();
+	private Map<ArrayKey, IDocumentViewSelectionFactory> factories = ImmutableMap.of();
 
 	@Autowired
 	private SqlDocumentViewSelectionFactory defaultFactory;
@@ -58,25 +60,53 @@ public class CompositeDocumentViewSelectionFactory implements IDocumentViewSelec
 	@PostConstruct
 	private void init()
 	{
-		factoriesByWindowId = ImmutableMap.<Integer, IDocumentViewSelectionFactory> builder()
-				.put(WEBUI_HU_Constants.WEBUI_HU_Window_ID, huViewFactory)
+		factories = ImmutableMap.<ArrayKey, IDocumentViewSelectionFactory> builder()
+				.put(mkKey(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.grid), huViewFactory)
 				.build();
 	}
-
-	private final IDocumentViewSelectionFactory getFactory(final int adWindowId)
+	
+	@Override
+	public String toString()
 	{
-		return factoriesByWindowId.getOrDefault(adWindowId, defaultFactory);
+		return MoreObjects.toStringHelper(this)
+				.add("factories", factories)
+				.add("defaultFactory", defaultFactory)
+				.toString();
+	}
+
+	private final IDocumentViewSelectionFactory getFactory(final int adWindowId, final JSONViewDataType viewType)
+	{
+		IDocumentViewSelectionFactory factory = factories.get(mkKey(adWindowId, viewType));
+		if(factory != null)
+		{
+			return factory;
+		}
+		
+		factory = factories.get(mkKey(adWindowId, null));
+		if(factory != null)
+		{
+			return factory;
+		}
+		
+		return defaultFactory;
+	}
+
+	private static final ArrayKey mkKey(final int adWindowId, final JSONViewDataType viewType)
+	{
+		return ArrayKey.of((adWindowId <= 0 ? 0 : adWindowId), viewType);
 	}
 
 	@Override
 	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
 	{
-		return getFactory(adWindowId).getViewLayout(adWindowId, viewDataType, jsonOpts);
+		return getFactory(adWindowId, viewDataType).getViewLayout(adWindowId, viewDataType, jsonOpts);
 	}
 
 	@Override
 	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
 	{
-		return getFactory(jsonRequest.getAD_Window_ID()).createView(jsonRequest);
+		final int adWindowId = jsonRequest.getAD_Window_ID();
+		final JSONViewDataType viewType = jsonRequest.getViewType();
+		return getFactory(adWindowId, viewType).createView(jsonRequest);
 	}
 }

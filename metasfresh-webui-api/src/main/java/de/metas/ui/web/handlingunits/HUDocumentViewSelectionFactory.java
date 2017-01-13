@@ -99,6 +99,9 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
 				//
+				.setHasAttributesSupport(true)
+				.setHasTreeSupport(true)
+				//
 				.addElement(DocumentLayoutElementDescriptor.builder()
 						.setCaption("Code")
 						.setWidgetType(DocumentFieldWidgetType.Text)
@@ -154,7 +157,8 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 				.setViewId(viewId)
 				.setAD_Window_ID(adWindowId)
 				.setRecords(records)
-				.setProcessDescriptorsFactory(processDescriptorsFactory)
+				.setReferencingDocumentPath(jsonRequest.getReferencingDocumentPathOrNull())
+				.setServices(processDescriptorsFactory)
 				.build();
 	}
 

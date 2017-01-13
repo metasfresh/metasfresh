@@ -8,6 +8,7 @@ import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.ui.web.handlingunits.HUDocumentViewAttributesProvider;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentType;
 
 /*
@@ -43,7 +44,7 @@ public final class DocumentViewAttributesProviderFactory
 		super();
 
 		// FIXME: hardcoded factories
-		registerProvider(DocumentType.Window, 540189, HUDocumentViewAttributesProvider.class);
+		registerProvider(DocumentType.Window, WEBUI_HU_Constants.WEBUI_HU_Window_ID, HUDocumentViewAttributesProvider.class);
 	}
 
 	public void registerProvider(final DocumentType documentType, final int documentTypeId, final Class<? extends IDocumentViewAttributesProvider> providerClass)
@@ -54,7 +55,7 @@ public final class DocumentViewAttributesProviderFactory
 
 	public IDocumentViewAttributesProvider createProviderOrNull(final DocumentType documentType, final int documentTypeId)
 	{
-		final Class<? extends IDocumentViewAttributesProvider> providerClass = providerClasses.get(mkKey(documentType, documentTypeId));
+		final Class<? extends IDocumentViewAttributesProvider> providerClass = getProviderClassOrNull(documentType, documentTypeId);
 		if (providerClass == null)
 		{
 			return null;
@@ -68,6 +69,16 @@ public final class DocumentViewAttributesProviderFactory
 		{
 			throw new AdempiereException("Cannot instantiate " + providerClass, e);
 		}
+	}
+	
+	public boolean hasProvider(final DocumentType documentType, final int documentTypeId)
+	{
+		return getProviderClassOrNull(documentType, documentTypeId) != null;
+	}
+	
+	private final Class<? extends IDocumentViewAttributesProvider> getProviderClassOrNull(final DocumentType documentType, final int documentTypeId)
+	{
+		return providerClasses.get(mkKey(documentType, documentTypeId));
 	}
 
 	private static final ArrayKey mkKey(final DocumentType documentType, final int documentTypeId)

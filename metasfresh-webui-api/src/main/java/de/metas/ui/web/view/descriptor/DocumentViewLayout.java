@@ -55,6 +55,10 @@ public class DocumentViewLayout
 	private final List<DocumentLayoutElementDescriptor> elements;
 	
 	private final String idFieldName;
+	
+	private final boolean hasAttributesSupport;
+	private final boolean hasTreeSupport;
+
 
 	private DocumentViewLayout(final Builder builder)
 	{
@@ -67,6 +71,9 @@ public class DocumentViewLayout
 		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
 		elements = ImmutableList.copyOf(builder.buildElements());
 		idFieldName = builder.getIdFieldName();
+		
+		hasAttributesSupport = builder.hasAttributesSupport;
+		hasTreeSupport = builder.hasTreeSupport;
 	}
 
 	@Override
@@ -124,6 +131,16 @@ public class DocumentViewLayout
 	{
 		return idFieldName;
 	}
+	
+	public boolean isAttributesSupport()
+	{
+		return hasAttributesSupport;
+	}
+	
+	public boolean isTreeSupport()
+	{
+		return hasTreeSupport;
+	}
 
 	public static final class Builder
 	{
@@ -133,6 +150,9 @@ public class DocumentViewLayout
 		private ITranslatableString description;
 		private ITranslatableString emptyResultText;
 		private ITranslatableString emptyResultHint;
+		
+		private boolean hasAttributesSupport = false;
+		private boolean hasTreeSupport = false;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 		
@@ -261,6 +281,18 @@ public class DocumentViewLayout
 		private String getIdFieldName()
 		{
 			return idFieldName;
+		}
+		
+		public Builder setHasAttributesSupport(boolean hasAttributesSupport)
+		{
+			this.hasAttributesSupport = hasAttributesSupport;
+			return this;
+		}
+		
+		public Builder setHasTreeSupport(boolean hasTreeSupport)
+		{
+			this.hasTreeSupport = hasTreeSupport;
+			return this;
 		}
 	}
 }

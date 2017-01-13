@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Strings;
+
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
@@ -116,16 +118,17 @@ public class ProcessRestController
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 
 		//
-		// Extract process where clause from view
-		final String whereClause;
+		// Extract process where clause from view, in case the process was called from a view.
+		final String sqlWhereClause;
+		final String viewId = Strings.emptyToNull(request.getViewId());
 		int view_AD_Window_ID = -1;
 		int view_DocumentId = -1;
-		if (!Check.isEmpty(request.getViewId()))
+		if (!Check.isEmpty(viewId))
 		{
-			final IDocumentViewSelection view = documentViewsRepo.getView(request.getViewId());
+			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
 			final List<Integer> viewDocumentIds = request.getViewDocumentIds();
-			whereClause = view.getSqlWhereClause(viewDocumentIds);
-			
+			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
+
 			if (viewDocumentIds.size() == 1)
 			{
 				view_AD_Window_ID = view.getAD_Window_ID();
@@ -134,7 +137,7 @@ public class ProcessRestController
 		}
 		else
 		{
-			whereClause = null;
+			sqlWhereClause = null;
 		}
 
 		//
@@ -155,13 +158,16 @@ public class ProcessRestController
 			documentRef = null;
 		}
 
-
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(adProcessId)
 				.setRecord(documentRef)
-				.setWhereClause(whereClause)
+				.setWhereClause(sqlWhereClause)
+				//
+				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
+				//
 				.build();
 
 		return Execution.callInNewExecution("pinstance.create", () -> {

@@ -83,6 +83,11 @@ public final class JSONDocumentViewLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
 
+	@JsonProperty(value = "supportAttributes")
+	private final boolean supportAttributes;
+	@JsonProperty(value = "supportTree")
+	private final boolean supportTree;
+
 	private JSONDocumentViewLayout(
 			final DocumentViewLayout layout //
 			, final Collection<DocumentFilterDescriptor> filters //
@@ -103,9 +108,9 @@ public final class JSONDocumentViewLayout implements Serializable
 		// Elements
 		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
 		final String idFieldName = layout.getIdFieldName();
-		if(jsonOpts.isDebugShowColumnNamesForCaption() && idFieldName != null)
+		if (jsonOpts.isDebugShowColumnNamesForCaption() && idFieldName != null)
 		{
-			elements = ImmutableList.<JSONDocumentLayoutElement>builder()
+			elements = ImmutableList.<JSONDocumentLayoutElement> builder()
 					.add(JSONDocumentLayoutElement.debuggingField(idFieldName, DocumentFieldWidgetType.Text))
 					.addAll(elements)
 					.build();
@@ -113,6 +118,9 @@ public final class JSONDocumentViewLayout implements Serializable
 		this.elements = elements;
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
+
+		supportAttributes = layout.isAttributesSupport();
+		supportTree = layout.isTreeSupport();
 	}
 
 	@JsonCreator
@@ -124,7 +132,8 @@ public final class JSONDocumentViewLayout implements Serializable
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-	)
+			, @JsonProperty(value = "supportAttributes") final boolean supportAttributes //
+			, @JsonProperty(value = "supportTree") final boolean supportTree)
 	{
 		super();
 		this.type = type;
@@ -136,6 +145,9 @@ public final class JSONDocumentViewLayout implements Serializable
 
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
+
+		this.supportAttributes = supportAttributes;
+		this.supportTree = supportTree;
 	}
 
 	@Override
@@ -183,5 +195,15 @@ public final class JSONDocumentViewLayout implements Serializable
 	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
+	}
+
+	public boolean isSupportAttributes()
+	{
+		return supportAttributes;
+	}
+
+	public boolean isSupportTree()
+	{
+		return supportTree;
 	}
 }

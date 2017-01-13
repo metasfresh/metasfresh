@@ -92,17 +92,20 @@ public class ProcessInstancesRepository
 
 	public ProcessInstance createNewProcessInstance(final ProcessInfo processInfo)
 	{
-		Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(processInfo);
+		//
+		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
+		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
 		final int adPInstanceId = processInfo.getAD_PInstance_ID();
 
 		//
-		// Build the parameters (as document)
+		// Build the parameters document
 		final int adProcessId = processInfo.getAD_Process_ID();
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
 		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
 		final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
 
 		//
+		// Create (webui) process instance and add it to our internal cache.
 		final ProcessInstance pinstance = new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
 		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
 		return pinstance;

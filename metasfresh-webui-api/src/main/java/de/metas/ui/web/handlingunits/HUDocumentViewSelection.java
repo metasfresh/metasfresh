@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -20,6 +21,7 @@ import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
@@ -52,17 +54,24 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return new Builder();
 	}
+	
+	// services
+	private final ProcessDescriptorsFactory processDescriptorsFactory;
 
 	private final String viewId;
 	private final int adWindowId;
 	private final List<IDocumentView> records;
 	private final Map<DocumentId, IDocumentView> recordsById;
+	
+	private final DocumentPath referencingDocumentPath;
 
-	private final ProcessDescriptorsFactory processDescriptorsFactory;
 
 	private HUDocumentViewSelection(final Builder builder)
 	{
 		super();
+		
+		// services
+		processDescriptorsFactory = builder.getProcessDescriptorFactory();
 
 		viewId = builder.getViewId();
 		adWindowId = builder.getAD_Window_ID();
@@ -70,7 +79,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		records = ImmutableList.copyOf(builder.getRecords());
 		recordsById = builder.buildRecordsByIdMap();
 
-		processDescriptorsFactory = builder.getProcessDescriptorFactory();
+		referencingDocumentPath = builder.getReferencingDocumentPath();
 	}
 
 	@Override
@@ -182,7 +191,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public String getSqlWhereClause(final List<Integer> viewDocumentIds)
 	{
-		throw new UnsupportedOperationException();
+		Check.assumeNotEmpty(viewDocumentIds, "viewDocumentIds is not empty");
+		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIds) + ")";
 	}
 
 	@Override
@@ -196,6 +206,11 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return true;
 	}
+	
+	public DocumentPath getReferencingDocumentPath()
+	{
+		return referencingDocumentPath;
+	}
 
 	//
 	//
@@ -206,6 +221,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private String viewId;
 		private int adWindowId;
 		private List<IDocumentView> records;
+		private DocumentPath referencingDocumentPath;
 
 		private ProcessDescriptorsFactory processDescriptorsFactory;
 
@@ -277,7 +293,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 					.forEach(includedRecord -> indexById(recordsById, includedRecord));
 		}
 
-		public Builder setProcessDescriptorsFactory(final ProcessDescriptorsFactory processDescriptorsFactory)
+		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory)
 		{
 			this.processDescriptorsFactory = processDescriptorsFactory;
 			return this;
@@ -287,6 +303,17 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		{
 			Check.assumeNotNull(processDescriptorsFactory, "Parameter processDescriptorsFactory is not null");
 			return processDescriptorsFactory;
+		}
+		
+		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath)
+		{
+			this.referencingDocumentPath = referencingDocumentPath;
+			return this;
+		}
+		
+		private DocumentPath getReferencingDocumentPath()
+		{
+			return referencingDocumentPath;
 		}
 	}
 
