@@ -123,6 +123,8 @@ class TableItem extends Component {
         )
     }
 
+    
+
     render() {
         const {
             isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
