@@ -40,18 +40,20 @@ class MenuOverlayItem extends Component {
     }
 
     componentDidMount() {
-        document.getElementsByClassName('js-menu-overlay')[0].focus();
+        const menuOverlay = document.getElementsByClassName('js-menu-overlay')[0];
+        menuOverlay && menuOverlay.focus();
     }
 
     handleKeyDown = (e) => {
-        e.preventDefault();
         const {back, handleMenuOverlay} = this.props;
 
         switch(e.key){
             case "ArrowDown":
+                e.preventDefault();
                 this.handleArrowDown();
                 break;
             case "ArrowUp":
+                e.preventDefault();
                 this.handeArrowUp();
                 break;
             case "Backspace":
@@ -60,10 +62,12 @@ class MenuOverlayItem extends Component {
                 document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
             case "Enter":
+                e.preventDefault();
                 document.activeElement.childNodes[0].click();
                 document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
             case "Escape":
+                e.preventDefault();
                 handleMenuOverlay("","");
         }
     }
@@ -122,15 +126,13 @@ class MenuOverlayItem extends Component {
                     className={
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
-                    onClick={e => children ?
-                        handleClickOnFolder(e, nodeId) :
-                        (type==='newRecord' ?
-                            handleNewRedirect(elementId) :
-                            this.handleClick(elementId)
-                        )
-                    }
+                    onClick={e => {
+                        children ?
+                            handleClickOnFolder(e, nodeId) :
+                            this.clickedItem(e, elementId, nodeId, type)
+                    }}
                 >
-                {caption}
+                    {caption}
                 </span>
 
             }
