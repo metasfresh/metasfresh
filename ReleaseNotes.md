@@ -28,12 +28,12 @@ upcoming
 
 # metasfresh 4.51.50 (2017-02)
 
-this week's RC
-
 ## Features
 * metasfresh
   * #696 add multi line description per order line
+    * Possibility to now add multiline descriptions. These can be used to add individual Texts to an Orderline.
   * #755 Automatic upload orders in csv file with COPY into c_olcand
+    * Enhancement to allow the Upload of Sales Orders into Order Candidates via COPY.
 
 ## Fixes
 * metasfresh  
