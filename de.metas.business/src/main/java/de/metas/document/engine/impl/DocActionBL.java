@@ -139,7 +139,7 @@ public final class DocActionBL extends AbstractDocActionBL
 
 		final POInfo poInfo = POInfo.getPOInfo(ctx, adTableId);
 		final String keyColumn = poInfo.getKeyColumnName();
-		if (keyColumn == null)
+		if (keyColumn != null)
 		{
 			return null;
 		}
