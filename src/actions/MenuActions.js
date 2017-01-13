@@ -85,7 +85,7 @@ export function getWindowBreadcrumb(id){
     return dispatch => {
         dispatch(elementPathRequest("window", id)).then(response => {
             let req = 0;
-            let pathData = flatten(response.data);
+            let pathData = flattenOneLine(response.data);
 
             // promise to get all of the breadcrumb menu options
             let breadcrumbProcess = new Promise((resolve) => {
@@ -117,30 +117,38 @@ export function getWindowBreadcrumb(id){
 
 // UTILITIES
 
-export function flatten(node, parent) {
+export function flattenLastElem(node) {
     let result = [];
 
     if(!!node.children){
         node.children.map(child => {
-            let mergedParent;
-            let currentNode = node
-            currentNode.children = undefined;
+            const flat = flattenLastElem(child);
 
-            if(typeof parent === "object"){
-                parent.push(currentNode);
-                mergedParent = parent;
+            if(typeof flat === "object"){
+                result = result.concat(flat);
             }else{
-                mergedParent = [currentNode];
+                result.push(flattenLastElem(child));
             }
-            flatten(child, mergedParent);
         })
-    }else{
-        console.log(parent);
-        return parent.push(node);
-    }
+        return result;
 
-    // result.push({
-    //     nodeId: node.nodeId,
-    //     caption: node.caption
-    // });
+    }else{
+        return [node];
+    }
+}
+
+export function flattenOneLine(node) {
+    let result = [];
+    if(!!node.children){
+        flattenOneLine(node.children[0]).map(item => {
+            result.push(
+                item
+            );
+        })
+    }
+    result.push({
+        nodeId: node.nodeId,
+        caption: node.caption
+    });
+    return result;
 }

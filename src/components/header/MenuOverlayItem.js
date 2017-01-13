@@ -81,7 +81,7 @@ class MenuOverlayItem extends Component {
     }
 
     handleArrowDown() {
-        
+
         if (document.activeElement.nextSibling) {
             document.activeElement.nextSibling.focus();
         } else {
@@ -98,18 +98,8 @@ class MenuOverlayItem extends Component {
 
     render() {
         const {
-            dispatch,
-            nodeId,
-            type,
-            elementId,
-            caption,
-            children,
-            handleClickOnFolder,
-            handleRedirect,
-            handleNewRedirect,
-            handlePath,
-            query,
-            printChildren
+            dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder,
+            handleRedirect, handleNewRedirect, handlePath, query, printChildren
         } = this.props;
 
         return (
@@ -127,7 +117,13 @@ class MenuOverlayItem extends Component {
                     className={
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
-                    onClick={e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick(elementId))}
+                    onClick={e => children ?
+                        handleClickOnFolder(e, nodeId) :
+                        (type==='newRecord' ?
+                            handleNewRedirect(elementId) :
+                            this.handleClick(elementId)
+                        )
+                    }
                 >
                 {caption}
                 </span>

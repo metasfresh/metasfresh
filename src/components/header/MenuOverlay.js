@@ -10,7 +10,7 @@ import {
     queryPathsRequest,
     pathRequest,
     getWindowBreadcrumb,
-    flatten
+    flattenLastElem
 } from '../../actions/MenuActions';
 
 class MenuOverlay extends Component {
@@ -45,12 +45,8 @@ class MenuOverlay extends Component {
                 query: e.target.value
             }));
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
-                let path = [];
-                response.data.children.map(item => {
-                    path.push(flatten(item));
-                });
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: path
+                    queriedResults: flattenLastElem(response.data)
                 }))
             });
         }else{
