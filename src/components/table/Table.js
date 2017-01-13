@@ -62,6 +62,33 @@ class Table extends Component {
         if(mainTable && open){
             this.table.focus();
         }
+
+
+
+
+        if(document.getElementsByClassName('panel-primary')[4] && document.getElementsByClassName('table')[1]){
+                const tablePanel = document.getElementsByClassName('panel-primary')[4].offsetHeight;
+        const table = document.getElementsByClassName('table')[1].offsetHeight + 100;
+            // console.log(tablePanel);
+            // console.log(table);
+            // console.log(tablePanel>table);
+            if(tablePanel>table){
+                        // console.log('true');
+                            document.getElementsByClassName('mb-1')[0].className="mb-1 flex-helper";
+
+                        
+            } else {
+                // console.log('false');
+                    document.getElementsByClassName('mb-1')[0].className="mb-1";
+
+            }
+        }
+    }
+
+    componentDidMount() {
+        
+        
+        
     }
 
     changeListenOnTrue = () => {

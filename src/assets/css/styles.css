@@ -2130,3 +2130,23 @@ td.pulse-off input {
     opacity: 0.5;
     font-weight: bold;
 }
+
+/*.nav-tabs {
+    display: flex;
+}
+
+.tab-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}*/
+
+.flex-helper .nav-tabs{
+    display: flex;
+}
+
+.flex-helper .tab-content{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
