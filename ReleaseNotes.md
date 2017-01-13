@@ -37,10 +37,14 @@ upcoming
 
 ## Fixes
 * metasfresh  
-  * #752 request report does not show requestes that don't have product or inout
+  * #752 request report does not show requests that don't have product or inout
+    * Fix to show request lines in report, which don't have a product included nor a reference to an inout line.
   * #759 Destroyed HU causes problem with shipment creation
+    * Fix problem when checking for not-yet-delivered M_ShipmentSchedule_QtyPicked records, the system did not check if they reference actually destroyed HUs.
   * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+    * Fix this error shown on server startup. Making DocumentPA not final anymore.
   * #770 When extending a procurement contract, null becomes 0.00
+    * Fix an issue that set the price to 0,00 when extending a procurement contract, although the initial price was null which means "not set".
   
 # metasfresh 4.50.49 (2017-01)
 
