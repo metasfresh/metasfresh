@@ -25,7 +25,9 @@ upcoming
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
     * address the possible case of different procurement products that have different attributes and still both match equally well
   * #791 Create Nachbelastung from Invoice Cast exception
-
+  * #761 Reactivating an InOut fails sometimes
+    * now this also works with records that were deleted at the time the async-package is processed
+    
 # metasfresh 4.51.50 (2017-02)
 
 ## Features
