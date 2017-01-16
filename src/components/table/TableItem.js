@@ -123,13 +123,15 @@ class TableItem extends Component {
         )
     }
 
-    
+
 
     render() {
         const {
             isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
-            onMouseDown, onDoubleClick
+            onMouseDown, onDoubleClick, includedDocuments, tabid, type, docId,
+            tabIndex, mainTable
         } = this.props;
+
 
         return (
             <tr
@@ -142,7 +144,7 @@ class TableItem extends Component {
             >
                 {this.renderCells(cols, fields)}
             </tr>
-        )
+        );
     }
 }
 

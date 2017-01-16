@@ -129,12 +129,13 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        if(document.getElementsByClassName('row-selected').length > 0){
+        const rowSelected = document.getElementsByClassName('row-selected');
+        if(rowSelected.length > 0){
             if(typeof idFocused == "number"){
-                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+                rowSelected[0].children[idFocused].focus();
             }
             if(typeof idFocusedDown == "number"){
-                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+                rowSelected[rowSelected.length-1].children[idFocusedDown].focus();
             }
         }
     }
@@ -419,6 +420,7 @@ class Table extends Component {
                     <TableItem
                         entity={entity}
                         fields={item[key].fields}
+                        includedDocuments={item[key].includedDocuments}
                         key={i}
                         rowId={item[key].rowId}
                         tabId={tabid}
