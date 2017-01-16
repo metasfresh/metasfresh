@@ -10,22 +10,38 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.53.52 (2017-04)
+
+upcoming
+
+## Features
+* metasfresh
+  * #800 Order by product name and partner name in pmm_PurchaseCandidates
+
+## Fixes
+* metasfresh 
+  * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+  * #808 DocActionBL.retrieveString method is broken
+
 # metasfresh 4.52.51 (2017-03)
   
-upcoming
+this week's RC
 
 ## Features
 * metasfresh 
   * #774 show address on all docs so it fits the letter window
   * #773 show delivery address on sales order
   * #507 Copy with Details for PP_Product_BOM
-
+  * #780 Have logo on jasper report that spans from left to right
+  
 ## Fixes
 * metasfresh 
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
     * address the possible case of different procurement products that have different attributes and still both match equally well
   * #791 Create Nachbelastung from Invoice Cast exception
-
+  * #761 Reactivating an InOut fails sometimes
+    * now this also works with records that were deleted at the time the async-package is processed
+    
 # metasfresh 4.51.50 (2017-02)
 
 ## Features
