@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import { push } from 'react-router-redux';
 
 import Window from '../Window';
 import Process from '../Process';
@@ -8,7 +9,8 @@ import {
     closeModal,
     createWindow,
     createProcess,
-    startProcess
+    startProcess,
+    handleProcessResponse
 } from '../../actions/WindowActions';
 
 import {
@@ -87,15 +89,7 @@ class Modal extends Component {
     handleStart = () => {
         const {dispatch, modalType, layout} = this.props;
         dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
-            const {data} = response;
-
-            if(data.error){
-                dispatch(addNotification("Process error", data.summary, 5000, "error"));
-                return false;
-            }else{
-                dispatch(addNotification("Process success", data.summary, 5000, "success"));
-                this.removeModal();
-            }
+            dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
         });
     }
 

@@ -349,12 +349,7 @@ export function createProcess(processType, viewId, type, ids) {
             pid = response.data.pinstanceId;
             if (preparedData.length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
-                    const {data} = response;
-                    if(data.reportFilename){
-                        dispatch(printRequest('process', processType, pid, response.data.reportFilename))
-                    }else if(data.summary){
-                        dispatch(addNotification('Process', data.summary, 5000, 'primary'))
-                    }
+                    dispatch(handleProcessResponse(response, processType, pid));
                 });
                 throw new Error("close_modal");
             }else{
@@ -369,6 +364,28 @@ export function createProcess(processType, viewId, type, ids) {
 
             }
         })
+}
+
+export function handleProcessResponse(response, type, id, successCallback) {
+    return (dispatch) => {
+        const {error, summary, viewId, viewWindowId, reportFilename} = response.data;
+
+        if(error){
+            dispatch(addNotification("Process error", summary, 5000, "error"));
+        }else{
+            if(viewId && viewWindowId){
+                dispatch(push('/window/' + viewWindowId + '?viewId=' + viewId));
+            }else if(reportFilename){
+                dispatch(printRequest('process', type, id, reportFilename))
+            }
+
+            if(summary){
+                dispatch(addNotification('Process', summary, 5000, 'primary'))
+            }
+
+            successCallback && successCallback();
+        }
+    }
 }
 
 function getProcessData(processId, viewId, type, ids) {

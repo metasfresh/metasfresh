@@ -2,7 +2,9 @@ import axios from 'axios';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
-export function initLayout(entity, docType, tabId, subentity = null, docId = null, isAdvanced, list) {
+export function initLayout(
+    entity, docType, tabId, subentity = null, docId = null, isAdvanced, list, supportTree
+) {
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' + docType +
@@ -11,11 +13,14 @@ export function initLayout(entity, docType, tabId, subentity = null, docId = nul
         (subentity ? "/" + subentity : "") +
         '/layout' +
         (isAdvanced ? "?advanced=true" : "") +
-        (list ? "?viewType=" + list : "")
+        (list ? "?viewType=" + list : "") +
+        (supportTree ? "&supportTree=true" : "")
     );
 }
 
-export function getData(entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced) {
+export function getData(
+    entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced
+) {
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' +

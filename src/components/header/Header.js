@@ -17,7 +17,6 @@ import Prompt from '../app/Prompt';
 
 import {
     indicatorState,
-    printDoc,
     openModal
 } from '../../actions/WindowActions';
 
@@ -27,7 +26,7 @@ import {
 
 import {
     deleteRequest,
-    handlePrint
+    printRequest
 } from '../../actions/GenericActions';
 
 import keymap from '../../keymap.js';
