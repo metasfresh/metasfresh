@@ -56,8 +56,8 @@ class DocumentList extends Component {
     componentDidUpdate(prevProps) {
         const {windowType, type, filters} = this.props;
 
-        let oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
-        let newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
+        const oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
+        const newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
 
         if(newFilter !== oldFilter){
             this.updateData(type, windowType, true);
@@ -89,7 +89,7 @@ class DocumentList extends Component {
             dispatch(setFilter(null,null));
         }else{
             windowType && dispatch(
-                initLayout('documentView', windowType, null, null, null, null, type))
+                initLayout('documentView', windowType, null, null, null, null, type, true))
             .then(response => {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
