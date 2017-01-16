@@ -27,6 +27,6 @@ export default {
     },
     TABLE_CONTEXT: {
         TOGGLE_QUICK_INPUT: mod + '+' + 'q',
-        TOGGLE_EXPAND: mod + '+' + 'k'
+        TOGGLE_EXPAND: mod + '+' + 'space'
     }
 }
