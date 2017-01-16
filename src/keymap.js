@@ -2,6 +2,8 @@
 
 let mod = 'ctrl';
 
+// DO NOT USE:
+// mod + l - windows browser focusing address bar
 
 export default {
     GLOBAL_CONTEXT: {
@@ -25,6 +27,6 @@ export default {
     },
     TABLE_CONTEXT: {
         TOGGLE_QUICK_INPUT: mod + '+' + 'q',
-        TOGGLE_EXPAND: mod + '+' + 'l'
+        TOGGLE_EXPAND: mod + '+' + 'k'
     }
 }
