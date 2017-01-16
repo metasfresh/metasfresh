@@ -28,8 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFieldValueLoader;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
@@ -441,7 +441,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public Stream<ProcessDescriptor> streamActions()
+	public Stream<RelatedProcessDescriptorWrapper> streamActions()
 	{
 		assertNotClosed();
 

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -73,34 +75,44 @@ public class ProcessDescriptorsFactory
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final CCache<Integer, ProcessDescriptor> cacheByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
+	private final CCache<Integer, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
 	@Autowired
 	private UserSession userSession;
 
-	public Stream<ProcessDescriptor> streamDocumentRelatedProcesses(final String tableName)
+	public Stream<RelatedProcessDescriptorWrapper> streamDocumentRelatedProcesses(final String tableName)
 	{
 		final int adTableId = adTableDAO.retrieveTableId(tableName);
 		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
-		return adProcessDAO.retrieveProcessesIdsForTable(Env.getCtx(), adTableId)
+		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId)
+				.values()
 				.stream()
-				.map(adProcessId -> getProcessDescriptor(adProcessId))
+				.map(relatedProcess -> getRelatedProcessDescriptorWrapper(relatedProcess))
 				.filter(processDescriptor -> processDescriptor.isExecutionGranted(userRolePermissions));
 	}
-
+	
+	private RelatedProcessDescriptorWrapper getRelatedProcessDescriptorWrapper(final RelatedProcessDescriptor relatedProcess)
+	{
+		final int adProcessId = relatedProcess.getAD_Process_ID();
+		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+		return RelatedProcessDescriptorWrapper.of(relatedProcess, processDescriptor);
+	}
+	
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
 	{
-		return cacheByProcessId.getOrLoad(adProcessId, () -> {
-			final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
-			return retrieveProcessDescriptor(adProcess);
-		});
+		return processDescriptorsByProcessId.getOrLoad(adProcessId, ()->retrieveProcessDescriptor(adProcessId));
 	}
 
-	public ProcessDescriptor retrieveProcessDescriptor(final I_AD_Process adProcess)
-	{
-		final IModelTranslationMap adProcessTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 
-		final int adProcessId = adProcess.getAD_Process_ID();
+	private ProcessDescriptor retrieveProcessDescriptor(final int adProcessId)
+	{
+		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), adProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
+		if (adProcess == null)
+		{
+			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + adProcessId + ")");
+		}
+
+		final IModelTranslationMap adProcessTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
 
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setAD_Process_ID(adProcessId)

@@ -294,11 +294,11 @@ public class WindowRestController
 	)
 	{
 		final List<DocumentPath> documentPaths = DocumentPath.rootDocumentPathsList(DocumentType.Window, adWindowId, idsListStr);
-		if(documentPaths.isEmpty())
+		if (documentPaths.isEmpty())
 		{
 			throw new IllegalArgumentException("No ids provided");
 		}
-		
+
 		return deleteDocuments(documentPaths);
 	}
 
@@ -444,9 +444,8 @@ public class WindowRestController
 		final DocumentPreconditionsContext preconditionsContext = DocumentPreconditionsContext.of(document);
 
 		return processDescriptorFactory.streamDocumentRelatedProcesses(tableName)
-				.filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
+				.filter(relatedProcessWrapper -> relatedProcessWrapper.isPreconditionsApplicable(preconditionsContext))
 				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
-
 	}
 
 	@RequestMapping(value = "/{windowId}/{documentId}/references", method = RequestMethod.GET)

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
@@ -210,9 +211,14 @@ public class DocumentViewRestController
 			, @PathVariable("viewId") final String viewId//
 	)
 	{
-		// TODO: implement
-		final String selectedIdsListStr = null;
-		return getDocumentActions(adWindowId, viewId, selectedIdsListStr);
+		userSession.assertLoggedIn();
+
+		return documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.streamActions()
+				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
+				.filter(RelatedProcessDescriptorWrapper::isQuickAction)
+				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
 }

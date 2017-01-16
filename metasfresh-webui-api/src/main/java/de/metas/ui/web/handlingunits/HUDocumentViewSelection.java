@@ -15,8 +15,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
@@ -196,7 +196,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public Stream<ProcessDescriptor> streamActions()
+	public Stream<RelatedProcessDescriptorWrapper> streamActions()
 	{
 		return processDescriptorsFactory.streamDocumentRelatedProcesses(I_M_HU.Table_Name);
 	}

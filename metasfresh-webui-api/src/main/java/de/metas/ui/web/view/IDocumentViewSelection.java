@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import org.compiere.util.Evaluatee;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -76,7 +76,7 @@ public interface IDocumentViewSelection
 	String getSqlWhereClause(List<Integer> viewDocumentIds);
 
 	/** @return stream of actions which can be executed on this view */
-	Stream<ProcessDescriptor> streamActions();
+	Stream<RelatedProcessDescriptorWrapper> streamActions();
 
 	boolean hasAttributesSupport();
 

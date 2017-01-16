@@ -1,5 +1,7 @@
 package de.metas.ui.web.process.json;
 
+import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -9,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -33,27 +36,44 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  * #L%
  */
 
-public class JSONDocumentAction
+@SuppressWarnings("serial")
+public final class JSONDocumentAction implements Serializable
 {
+	public static final Comparator<JSONDocumentAction> ORDERBY_QuickActionFirst_Caption = Comparator
+			.<JSONDocumentAction, Boolean> comparing(action -> !action.isDefaultQuickAction()) // Default QuickAction first
+			.thenComparing(action -> !action.isQuickAction()) // QuickAction
+			.thenComparing(JSONDocumentAction::getCaption) // Caption
+			;
+
 	@JsonProperty("processId")
 	private final int processId;
 	@JsonProperty("caption")
 	private final String caption;
 	@JsonProperty("description")
 	private final String description;
+	@JsonProperty("quickAction")
+	private final boolean quickAction;
+	@JsonProperty("defaultQuickAction")
+	private final boolean defaultQuickAction;
 
 	private final Map<String, Object> debugProperties;
 
-	JSONDocumentAction(final ProcessDescriptor processDescriptor, final JSONOptions jsonOpts)
+	JSONDocumentAction(final RelatedProcessDescriptorWrapper relatedProcessDescriptorWrapper, final JSONOptions jsonOpts)
 	{
 		super();
-		
+
 		final String adLanguage = jsonOpts.getAD_Language();
-		
+
+		final ProcessDescriptor processDescriptor = relatedProcessDescriptorWrapper.getProcessDescriptor();
 		processId = processDescriptor.getAD_Process_ID();
 		caption = processDescriptor.getCaption(adLanguage);
 		description = processDescriptor.getDescription(adLanguage);
 
+		quickAction = relatedProcessDescriptorWrapper.isQuickAction();
+		defaultQuickAction = relatedProcessDescriptorWrapper.isDefaultQuickAction();
+
+		//
+		// Debug properties
 		if (jsonOpts.isProtocolDebugging())
 		{
 			final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.<String, Object> builder();
@@ -71,16 +91,18 @@ public class JSONDocumentAction
 			debugProperties = ImmutableMap.of();
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("caption", caption)
 				.add("processId", processId)
+				.add("quickAction", quickAction)
+				.add("defaultQuickAction", defaultQuickAction)
 				.toString();
 	}
-	
+
 	public int getProcessId()
 	{
 		return processId;
@@ -94,6 +116,16 @@ public class JSONDocumentAction
 	public String getDescription()
 	{
 		return description;
+	}
+
+	public boolean isQuickAction()
+	{
+		return quickAction;
+	}
+
+	public boolean isDefaultQuickAction()
+	{
+		return defaultQuickAction;
 	}
 
 	@JsonAnyGetter
