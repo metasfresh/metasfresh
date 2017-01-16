@@ -32,7 +32,8 @@ this week's RC
   * #774 show address on all docs so it fits the letter window
   * #773 show delivery address on sales order
   * #507 Copy with Details for PP_Product_BOM
-
+  * #780 Have logo on jasper report that spans from left to right
+  
 ## Fixes
 * metasfresh 
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
