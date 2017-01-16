@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.52.52 (2017-04)
+# metasfresh 4.53.52 (2017-04)
 
 upcoming
 
@@ -21,6 +21,7 @@ upcoming
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+  * #808 DocActionBL.retrieveString method is broken
 
 # metasfresh 4.52.51 (2017-03)
   
