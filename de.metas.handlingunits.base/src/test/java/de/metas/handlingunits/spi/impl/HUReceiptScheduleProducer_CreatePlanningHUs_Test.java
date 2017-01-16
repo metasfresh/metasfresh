@@ -402,8 +402,19 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 
 				// Validate VHU allocation
 				final I_M_ReceiptSchedule_Alloc alloc = removeReceiptScheduleAllocFromList(rsAllocs, luHU, tuHU, vhu);
-				final BigDecimal huQtyAllocatedExpected = qtyCUsPerTU == null ? huQtyNotAllocatedTotal : qtyCUsPerTU.min(huQtyNotAllocatedTotal);
 				final BigDecimal huQtyAllocatedActual = alloc.getHU_QtyAllocated();
+
+				final BigDecimal huQtyAllocatedExpected;
+				if (handlingUnitsBL.isAggregateHU(vhu))
+				{
+					// an aggregate/"bag" VHU can contain its LU's full capacity
+					huQtyAllocatedExpected = qtyCUsPerTU == null || qtyTUsPerLU == null ? huQtyNotAllocatedTotal : qtyCUsPerTU.multiply(qtyTUsPerLU).min(huQtyNotAllocatedTotal);
+				}
+				else
+				{
+					// if vhu is not a "bag" then is can just contain the qty that matches its capacity
+					huQtyAllocatedExpected = qtyCUsPerTU == null ? huQtyNotAllocatedTotal : qtyCUsPerTU.min(huQtyNotAllocatedTotal);
+				}
 				assertThat("Invalid HU_QtyAllocated", huQtyAllocatedActual, comparesEqualTo(huQtyAllocatedExpected));
 
 				// Update remaining unallocated qty
