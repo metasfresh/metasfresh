@@ -12,24 +12,26 @@ class DatetimeRange extends Component {
     }
 
     componentDidMount() {
-        const {value, valueTo} = this.props;
-
-
+        const {value, valueTo, onChange} = this.props;
         if(value && valueTo){
             this.setState(Object.assign({}, this.state, {
                 startDate: Moment(value),
                 endDate: Moment(valueTo)
             }));
         }else{
+            const initDate = new Date();
             this.setState(Object.assign({}, this.state, {
-                startDate: new Date(),
-                endDate: new Date()
-            }));
+                startDate: initDate,
+                endDate: initDate
+            }), () => {
+                onChange(initDate, initDate)
+            });
         }
     }
 
     handleEvent = (event, picker) => {
         const {onChange} = this.props;
+
         this.setState(Object.assign({}, this.state, {
             startDate: picker.startDate,
             endDate: picker.endDate
