@@ -11,7 +11,10 @@ class MenuOverlayItem extends Component {
     }
 
     clickedItem = (e, elementId, nodeId, type ) => {
-        const {handleClickOnFolder, handleRedirect, handleNewRedirect} = this.props;
+        const {
+            handleClickOnFolder, handleRedirect, handleNewRedirect, openModal,
+            caption
+        } = this.props;
 
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
@@ -19,6 +22,8 @@ class MenuOverlayItem extends Component {
             this.handleClick(elementId)
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
+        } else if (type === 'report') {
+            openModal(elementId + "", "process", caption)
         }
     }
 
@@ -42,14 +47,15 @@ class MenuOverlayItem extends Component {
     }
 
     handleKeyDown = (e) => {
-        e.preventDefault();
         const {back, handleMenuOverlay} = this.props;
 
         switch(e.key){
             case "ArrowDown":
+                e.preventDefault();
                 this.handleArrowDown();
                 break;
             case "ArrowUp":
+                e.preventDefault();
                 this.handeArrowUp();
                 break;
             case "Backspace":
@@ -58,10 +64,12 @@ class MenuOverlayItem extends Component {
                 document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
             case "Enter":
+                e.preventDefault();
                 document.activeElement.childNodes[0].click();
                 document.getElementsByClassName('js-menu-overlay')[0].focus();
                 break;
             case "Escape":
+                e.preventDefault();
                 handleMenuOverlay("","");
         }
     }
@@ -84,7 +92,7 @@ class MenuOverlayItem extends Component {
     }
 
     handleArrowDown() {
-        
+
         if (document.activeElement.nextSibling) {
             document.activeElement.nextSibling.focus();
         } else {
@@ -101,18 +109,8 @@ class MenuOverlayItem extends Component {
 
     render() {
         const {
-            dispatch,
-            nodeId,
-            type,
-            elementId,
-            caption,
-            children,
-            handleClickOnFolder,
-            handleRedirect,
-            handleNewRedirect,
-            handlePath,
-            query,
-            printChildren
+            dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder,
+            handleRedirect, handleNewRedirect, handlePath, query, printChildren
         } = this.props;
 
         return (
@@ -130,9 +128,13 @@ class MenuOverlayItem extends Component {
                     className={
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
-                    onClick={e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick(elementId))}
+                    onClick={e => {
+                        children ?
+                            handleClickOnFolder(e, nodeId) :
+                            this.clickedItem(e, elementId, nodeId, type)
+                    }}
                 >
-                {caption}
+                    {caption}
                 </span>
 
             }

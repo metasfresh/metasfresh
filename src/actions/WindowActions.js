@@ -358,9 +358,9 @@ export function createProcess(processType, viewId, type, ids) {
                 });
                 throw new Error("close_modal");
             }else{
-                dispatch(initDataSuccess(preparedData, "modal")).then(response =>
-                    dispatch(initLayout('process', processType))
-                ).then(response => {
+                dispatch(initDataSuccess(preparedData, "modal"));
+
+                dispatch(initLayout('process', processType)).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })

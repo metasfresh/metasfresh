@@ -9,7 +9,8 @@ import {
     nodePathsRequest,
     queryPathsRequest,
     pathRequest,
-    getWindowBreadcrumb
+    getWindowBreadcrumb,
+    flattenLastElem
 } from '../../actions/MenuActions';
 
 class MenuOverlay extends Component {
@@ -33,6 +34,7 @@ class MenuOverlay extends Component {
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
         onClickOutside(e);
+
     }
 
     handleQuery = (e) => {
@@ -44,7 +46,7 @@ class MenuOverlay extends Component {
             }));
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: response.data.children
+                    queriedResults: flattenLastElem(response.data)
                 }))
             });
         }else{
@@ -178,7 +180,7 @@ class MenuOverlay extends Component {
     	const {path} = this.state;
         const {handleMenuOverlay} = this.props;
         return (
-             <div 
+             <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
                 tabIndex={0}
                 onKeyDown={(e)=>this.handleKeyDown(e)}
@@ -189,7 +191,6 @@ class MenuOverlay extends Component {
                     </p>
                 }
                 <div className="column-wrapper">
-
                     {node && node.children.map((item,index) =>
                         <MenuOverlayContainer
                             key={index}
@@ -220,7 +221,7 @@ class MenuOverlay extends Component {
                             className={item.elementId ? 'menu-overlay-link' : 'menu-overlay-expand'}
                             onClick={ e => this.linkClick(item) }>
                                 {item.caption}
-                            </span>
+                        </span>
                     </span>
                 )}
             </div>
@@ -242,26 +243,29 @@ class MenuOverlay extends Component {
 
     handleKeyDown = (e) => {
         const {handleMenuOverlay} = this.props;
-        e.preventDefault();
         switch(e.key){
             case "ArrowDown":
+                e.preventDefault();
                 if (document.activeElement.classList.contains('js-menu-overlay')) {
                     document.getElementsByClassName('js-menu-item')[0].focus();
                 }
                 break;
-            
+
             case "Escape":
+                e.preventDefault();
                 handleMenuOverlay("","");
         }
     }
 
     render() {
-        const {queriedResults, deepNode, deepSubNode, subPath} = this.state;
-        const {dispatch, nodeId, node, siteName, index, handleMenuOverlay} = this.props;
+        const {queriedResults, deepNode, deepSubNode, subPath, query} = this.state;
+        const {
+            dispatch, nodeId, node, siteName, index, handleMenuOverlay, openModal
+        } = this.props;
         const nodeData = node.children;
 
         return (
-            <div 
+            <div
                 className="menu-overlay menu-overlay-primary"
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
@@ -287,8 +291,19 @@ class MenuOverlay extends Component {
                                 <div className="menu-overlay-query hidden-sm-down">
                                     <div className="input-flex input-primary">
                                         <i className="input-icon meta-icon-preview"/>
-                                        <DebounceInput debounceTimeout={250} type="text" id="search-input-query" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
-                                        {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                                        <DebounceInput
+                                            debounceTimeout={250}
+                                            type="text"
+                                            id="search-input-query"
+                                            className="input-field"
+                                            placeholder="Type phrase here"
+                                            onChange={e => this.handleQuery(e) }
+                                        />
+                                        {this.state.query && <i
+                                            className="input-icon meta-icon-close-alt pointer"
+                                            onClick={e => this.handleClear(e) }
+                                            />
+                                        }
                                     </div>
                                     {queriedResults && queriedResults.map((result, index) =>
                                         <MenuOverlayItem
@@ -299,6 +314,7 @@ class MenuOverlay extends Component {
                                             query={true}
                                             handlePath={this.handlePath}
                                             handleMenuOverlay={handleMenuOverlay}
+                                            openModal={openModal}
                                             {...result}
                                         />
                                     )}
