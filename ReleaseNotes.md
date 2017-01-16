@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 upcoming
 
+## Features
+* metasfresh
+  * #800 Order by product name and partner name in pmm_PurchaseCandidates
+
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
