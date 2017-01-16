@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import de.metas.process.Param;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
 import de.metas.ui.web.process.ProcessInstance;
 import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -67,19 +69,29 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess
 		final List<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.of(getM_ReceiptSchedule());
 		final Set<I_M_HU> selectedHUs = retrieveHUsToReceive();
 		final boolean storeReceipts = true;
-
 		final InOutGenerateResult result = Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(getCtx(), receiptSchedules, selectedHUs, storeReceipts);
 
+		// TODO: notify user about the result
 		// result.getInOuts();
+
+		// Reset the view's affected HUs
+		getView().notifyRecordsChanged(selectedHUs.stream()
+				.map(hu -> DocumentId.of(hu.getM_HU_ID()))
+				.collect(GuavaCollectors.toImmutableSet()));
 
 		return MSG_OK;
 	}
 
+	private HUDocumentViewSelection getView()
+	{
+		return documentViewsRepo.getView(p_WebuiViewId, HUDocumentViewSelection.class);
+	}
+
 	private I_M_ReceiptSchedule getM_ReceiptSchedule()
 	{
-		final HUDocumentViewSelection view = documentViewsRepo.getView(p_WebuiViewId, HUDocumentViewSelection.class);
+		final HUDocumentViewSelection view = getView();
 		final DocumentPath referencingDocumentPath = view.getReferencingDocumentPath();
-		
+
 		return documentsCollection.getTableRecordReference(referencingDocumentPath)
 				.getModel(this, I_M_ReceiptSchedule.class);
 	}

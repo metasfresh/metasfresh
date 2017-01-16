@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -60,11 +61,13 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 	private final String viewId;
 	private final int adWindowId;
-	private final List<IDocumentView> records;
-	private final Map<DocumentId, IDocumentView> recordsById;
 	
 	private final DocumentPath referencingDocumentPath;
-
+	
+	/** Top level records list */
+	private final List<IDocumentView> records;
+	/** All records (included ones too) indexed by DocumentId */
+	private final Map<DocumentId, IDocumentView> recordsById;
 
 	private HUDocumentViewSelection(final Builder builder)
 	{
@@ -210,6 +213,18 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	public DocumentPath getReferencingDocumentPath()
 	{
 		return referencingDocumentPath;
+	}
+	
+	public void notifyRecordsChanged(final Collection<DocumentId> documentIds)
+	{
+		// TODO: implement
+		
+		if(documentIds == null || documentIds.isEmpty())
+		{
+			return;
+		}
+		
+		
 	}
 
 	//
