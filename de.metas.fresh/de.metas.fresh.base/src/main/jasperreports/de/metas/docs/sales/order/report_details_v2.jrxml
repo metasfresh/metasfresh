@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-14T17:32:40 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2016-12-23T12:05:05 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.650000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erp metasfresh"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -44,6 +44,10 @@
 	</variable>
 	<variable name="showAttributes" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[$F{attributes}!=null ? "showAttr":null]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="showHu" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{huname}!=null ? "showHU":null]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
 	<background>
@@ -102,14 +106,14 @@
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{showHu} !=0 ? $R{HUQuantity} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-17" x="272" y="0" width="82" height="12" forecolor="#000000" uuid="69bc0f7c-8d28-400e-bcab-7f8e40d60ffa"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{showHu} !=0 ? $R{Pack_Inst} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="436" y="0" width="30" height="12" forecolor="#000000" uuid="5269b295-30ce-4be4-a9c4-5fa0c4cca517">
@@ -231,6 +235,7 @@
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="237" y="0" width="34" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($V{showHu}!=0)]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="0">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -261,6 +266,7 @@
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-31" mode="Transparent" x="272" y="0" width="82" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{huname}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
