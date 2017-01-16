@@ -10,9 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.52.52 (2017-04)
+
+upcoming
+
+## Fixes
+* metasfresh 
+  * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+
 # metasfresh 4.52.51 (2017-03)
   
-upcoming
+this week's RC
 
 ## Features
 * metasfresh 
