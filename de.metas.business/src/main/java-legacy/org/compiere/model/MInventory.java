@@ -76,7 +76,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 	} //	get
 
 	/**	Cache						*/
-	private static CCache<Integer,MInventory> s_cache = new CCache<Integer,MInventory>("M_Inventory", 5, 5);
+	private static CCache<Integer,MInventory> s_cache = new CCache<>("M_Inventory", 5, 5);
 
 
 	/**
@@ -470,14 +470,29 @@ public class MInventory extends X_M_Inventory implements DocAction
 						}
 
 						String m_MovementType =null;
-						if(QtyMA.negate().compareTo(Env.ZERO) > 0 )
+						if(QtyMA.negate().signum() > 0 )
+						{
 							m_MovementType = MTransaction.MOVEMENTTYPE_InventoryIn;
+						}
 						else
+						{
 							m_MovementType = MTransaction.MOVEMENTTYPE_InventoryOut;
+						}
 						//	Transaction
-						mtrx = new MTransaction (getCtx(), line.getAD_Org_ID(), m_MovementType,
-								line.getM_Locator_ID(), line.getM_Product_ID(), ma.getM_AttributeSetInstance_ID(),
-								QtyMA.negate(), getMovementDate(), get_TrxName());
+						mtrx = new MTransaction (getCtx(),
+								line.getAD_Org_ID(),
+								m_MovementType,
+								line.getM_Locator_ID(),
+								line.getM_Product_ID(),
+
+								// #gh489: M_Storage is a legacy and currently doesn't really work.
+								// In this case, its use of M_AttributeSetInstance_ID (which is forwarded from storage to 'ma') introduces a coupling between random documents.
+								// this coupling is a big problem, so we don't forward the ASI-ID to the M_Transaction
+								0, // ma.getM_AttributeSetInstance_ID(),
+
+								QtyMA.negate(),
+								getMovementDate(),
+								get_TrxName());
 
 							mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
 							if (!mtrx.save())
@@ -511,17 +526,20 @@ public class MInventory extends X_M_Inventory implements DocAction
 							line.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), 0,
-							qtyDiff, Env.ZERO, Env.ZERO, get_TrxName()))
+							qtyDiff, BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
 						return DocAction.STATUS_Invalid;
 					}
 
 					// Only Update Date Last Inventory if is a Physical Inventory
-					if(line.getQtyInternalUse().compareTo(Env.ZERO) == 0)
+					if(line.getQtyInternalUse().signum() == 0)
 					{
-						MStorage storage = MStorage.get(getCtx(), line.getM_Locator_ID(),
-								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(), get_TrxName());
+						MStorage storage = MStorage.get(getCtx(),
+								line.getM_Locator_ID(),
+								line.getM_Product_ID(),
+								line.getM_AttributeSetInstance_ID(),
+								get_TrxName());
 
 						storage.setDateLastInventory(getMovementDate());
 						if (!storage.save(get_TrxName()))
@@ -532,14 +550,20 @@ public class MInventory extends X_M_Inventory implements DocAction
 					}
 
 					String m_MovementType = null;
-					if(qtyDiff.compareTo(Env.ZERO) > 0 )
+					if(qtyDiff.signum() > 0 )
 						m_MovementType = MTransaction.MOVEMENTTYPE_InventoryIn;
 					else
 						m_MovementType = MTransaction.MOVEMENTTYPE_InventoryOut;
 					//	Transaction
-					mtrx = new MTransaction (getCtx(), line.getAD_Org_ID(), m_MovementType,
-							line.getM_Locator_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-							qtyDiff, getMovementDate(), get_TrxName());
+					mtrx = new MTransaction (getCtx(),
+							line.getAD_Org_ID(),
+							m_MovementType,
+							line.getM_Locator_ID(),
+							line.getM_Product_ID(),
+							line.getM_AttributeSetInstance_ID(),
+							qtyDiff,
+							getMovementDate(),
+							get_TrxName());
 					mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
 					if (!mtrx.save())
 					{

@@ -1,5 +1,7 @@
 package de.metas.fresh.mrp_productinfo;
 
+import java.util.List;
+
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.api.IParams;
 
@@ -28,16 +30,17 @@ import org.adempiere.util.api.IParams;
 public interface IMRPProductInfoSelectorFactory extends ISingletonService
 {
 	/**
-	 * Create a selector for the given <code>model</code>. Support the following kinds of models:
+	 * Create a selector for the given <code>model</code>. Support {@link IParams} and the following kinds of models:
 	 * <ul>
 	 * <li>M_InOutLine
 	 * <li>M_MovementLine
 	 * <li>C_OrderLine
 	 * <li>Fresh_QtyOnHand
 	 * <li>X_MRP_ProductInfo_Detail_MV
+	 * <li>M_Transaction
 	 * </ul>
 	 * <p>
-	 * Notes: In case another table is added to the view <code>"de.metas.sq80".M_Product_ID_M_AttributeSetInstance_ID_V</code>, then also this factory needs to be extended.<br>
+	 * Notes: In case another table is added to the view <code>M_Product_ID_M_AttributeSetInstance_ID_V</code>, then also this factory needs to be extended.<br>
 	 * M_InOutLine and M_MovementLine are actually about particular M_Transactions, but we can't work with M_Transtactions directly as they are a bit elusive (they are deleted on reactivate and then
 	 * we can't async-process them anymore).<br>
 	 * Also, please keeps the date related code in sync.
@@ -45,16 +48,15 @@ public interface IMRPProductInfoSelectorFactory extends ISingletonService
 	 * @param model
 	 * @return
 	 */
-	IMRPProductInfoSelector createOrNull(Object model);
+	IMRPProductInfoSelector createOrNullForModel(Object model);
 
 	/**
-	 * Create a selector using the given <code>model</code>, but set the selector's <code>M_Product_ID</code>, <code>M_attributeSetInstance_ID</code> and <code>Date</code> from the given <code>params</code>.
-	 * If the given <code>params</code> is <code>null</code>, then delegate to {@link #createOrNull(Object)}.
-	 *
-	 * @param model
+	 * Create an ordered list of selectors from the given {@code params} instance. From the instance, parameter values with the same name prefix are grouped into one selector.
+	 * If in doubt, check out the unit tests for what i mean.
+	 * 
 	 * @param params
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/409
 	 */
-	IMRPProductInfoSelector createOrNull(Object model, IParams params);
+	List<IMRPProductInfoSelector> createForParams(IParams params);
 }

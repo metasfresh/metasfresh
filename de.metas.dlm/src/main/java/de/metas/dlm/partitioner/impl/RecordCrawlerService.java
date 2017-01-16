@@ -184,7 +184,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						}
 						if(AddResult.STOP.equals(addResult))
 						{
-							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencedRecord={} the result. Stopping now", forwardReference);
+							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
 							break mainLoop;
 						}
 					}

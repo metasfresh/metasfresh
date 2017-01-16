@@ -1255,7 +1255,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				final String soCreditStatus = stats.getSOCreditStatus();
 
 				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
-			
+
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
@@ -1515,11 +1515,20 @@ public class MInOut extends X_M_InOut implements DocAction
 									Env.ZERO, reservedDiff, orderedDiff, get_TrxName());
 						}
 						// Create Transaction
-						mtrx = new MTransaction(getCtx(), sLine.getAD_Org_ID(),
-								MovementType, sLine.getM_Locator_ID(),
+						mtrx = new MTransaction(getCtx(),
+								sLine.getAD_Org_ID(),
+								MovementType,
+								sLine.getM_Locator_ID(),
 								sLine.getM_Product_ID(),
-								ma.getM_AttributeSetInstance_ID(),
-								QtyMA, getMovementDate(), get_TrxName());
+
+								// #gh489: M_Storage is a legacy and currently doesn't really work.
+								// In this case, its use of M_AttributeSetInstance_ID (which is forwarded from storage to 'ma') introduces a coupling between random documents.
+								// this coupling is a big problem, so we don't forward the ASI-ID to the M_Transaction
+								0, // ma.getM_AttributeSetInstance_ID(),
+
+								QtyMA,
+								getMovementDate(),
+								get_TrxName());
 						mtrx.setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 						InterfaceWrapperHelper.save(mtrx);
 					}
@@ -1755,7 +1764,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	 */
 	private static void sortByProductAndASI(final MInOutLine[] lines)
 	{
-		final ComparatorChain<MInOutLine> c = new ComparatorChain<MInOutLine>();
+		final ComparatorChain<MInOutLine> c = new ComparatorChain<>();
 		c.addComparator(new Comparator<MInOutLine>()
 		{
 			@Override

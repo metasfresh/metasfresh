@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
@@ -62,18 +63,18 @@ public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
 
 		final I_C_Flatrate_Term oldTermtoUse = InterfaceWrapperHelper.create(oldTerm, I_C_Flatrate_Term.class);
 		final I_C_Flatrate_Term newTermtoUse = InterfaceWrapperHelper.create(newTerm, I_C_Flatrate_Term.class);
-		
+
 		newTermtoUse.setPMM_Product(oldTermtoUse.getPMM_Product());
 		InterfaceWrapperHelper.save(newTermtoUse);
-		
+
 		final List<I_C_Flatrate_DataEntry> oldDataEntries = flatrateDAO.retrieveDataEntries(oldTerm, null, null);
-		
+
 		final PMMContractBuilder builder = PMMContractBuilder.newBuilder(newTermtoUse)
 				.setComplete(false);
 
 		oldDataEntries
 				.forEach(e -> {
-
+					Check.errorUnless(e.getC_Period() != null, "{} has a missing C_Period", e);
 					final Timestamp dateOldEntry = e.getC_Period().getStartDate();
 
 					final Timestamp dateNewEntry;
@@ -86,7 +87,15 @@ public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
 						dateNewEntry = dateOldEntry;
 					}
 
-					builder.setFlatrateAmtPerUOM(dateNewEntry, e.getFlatrateAmtPerUOM());
+					if (InterfaceWrapperHelper.isNull(e, I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM))
+					{
+						// if the current entry has a null value, then also the new entry shall have a null value
+						builder.setFlatrateAmtPerUOM(dateNewEntry, null);
+					}
+					else
+					{
+						builder.setFlatrateAmtPerUOM(dateNewEntry, e.getFlatrateAmtPerUOM());
+					}
 					builder.addQtyPlanned(dateNewEntry, e.getQty_Planned());
 				});
 

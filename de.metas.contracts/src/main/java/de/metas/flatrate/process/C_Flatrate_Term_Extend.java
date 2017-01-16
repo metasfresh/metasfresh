@@ -28,6 +28,7 @@ import java.util.Iterator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -36,14 +37,14 @@ import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.process.Param;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 
 public class C_Flatrate_Term_Extend
 		extends JavaProcess
 {
-	@Param(parameterName = I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, mandatory = true)
-	private boolean p_forceComplete;
+	@Param(parameterName = I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, mandatory = false)
+	private String p_forceComplete;
 
 	@Param(parameterName = I_C_Flatrate_Term.COLUMNNAME_StartDate, mandatory = false)
 	private Timestamp p_startDate;
@@ -53,14 +54,16 @@ public class C_Flatrate_Term_Extend
 	{
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
+		final Boolean forceComplete = StringUtils.toBooleanOrNull(p_forceComplete);
+		
 		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
 		{
 			final I_C_Flatrate_Term termToExtend = getRecord(I_C_Flatrate_Term.class);
-
+			
 			// we are called from a given term => extend the term
 			flatrateBL.extendContract(termToExtend,
 					true,   // forceExtend
-					p_forceComplete,
+					forceComplete,
 					p_startDate,
 					null); // ol
 			termToExtend.setAD_PInstance_EndOfTerm_ID(getAD_PInstance_ID());
@@ -92,7 +95,7 @@ public class C_Flatrate_Term_Extend
 				final I_C_Flatrate_Term termToExtend = termsToExtend.next();
 				flatrateBL.extendContract(termToExtend,
 						false,   // forceExtend
-						false,   // forceComplete
+						forceComplete,   //
 						p_startDate,
 						null); // ol
 				termToExtend.setAD_PInstance_EndOfTerm_ID(getAD_PInstance_ID());
