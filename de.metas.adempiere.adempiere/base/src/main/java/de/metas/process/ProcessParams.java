@@ -13,18 +13,18 @@ package de.metas.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +36,7 @@ import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 /**
@@ -82,8 +83,7 @@ public class ProcessParams implements IRangeAwareParams
 		{
 			final List<ProcessInfoParameter> processInfoParameters = _parametersLoader.getValue();
 			_parameterName2parameter = Maps.uniqueIndex(
-					processInfoParameters.iterator()
-					, new Function<ProcessInfoParameter, String>()
+					processInfoParameters.iterator(), new Function<ProcessInfoParameter, String>()
 					{
 
 						@Override
@@ -129,7 +129,6 @@ public class ProcessParams implements IRangeAwareParams
 		}
 		return processInfoParameter.getParameter_ToAsString();
 	}
-
 
 	@Override
 	public final int getParameterAsInt(final String parameterName)
@@ -217,5 +216,14 @@ public class ProcessParams implements IRangeAwareParams
 			return null;
 		}
 		return processInfoParameter.getParameter_ToAsTimestamp();
+	}
+
+	/**
+	 * Returns an immutable collection of the wrapped process parameter names.
+	 */
+	@Override
+	public Collection<String> getParameterNames()
+	{
+		return ImmutableSet.copyOf(getParametersMap().keySet());
 	}
 }

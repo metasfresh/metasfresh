@@ -98,7 +98,9 @@ public class X_MRP_ProductInfo_Detail_MV_Update_Records extends JavaProcess
 					public void process(final I_X_MRP_ProductInfo_Detail_MV item) throws Exception
 					{
 						final IMRPProductInfoBL mrpProductInfoBL = Services.get(IMRPProductInfoBL.class);
-						mrpProductInfoBL.updateItems(new PlainContextAware(getCtx(), getTrxName()), Collections.singletonList(item), null);
+						mrpProductInfoBL.updateItems(
+								PlainContextAware.newWithTrxName(getCtx(), getTrxName()), 
+								Collections.singletonList(item));
 						counter++;
 					}
 
