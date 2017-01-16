@@ -2124,6 +2124,7 @@ td.pulse-off input {
 
 .tooltip-name {
     opacity: 0.5;
+    white-space: normal;
 }
 
 .tooltip-parent {
