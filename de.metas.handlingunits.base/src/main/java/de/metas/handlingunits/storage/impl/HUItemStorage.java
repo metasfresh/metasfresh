@@ -77,6 +77,11 @@ public class HUItemStorage implements IHUItemStorage
 
 	private final Map<Integer, IHUCapacityDefinition> productId2customCapacity = new HashMap<Integer, IHUCapacityDefinition>();
 
+	/**
+	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
+	 * @param storageFactory
+	 * @param item
+	 */
 	public HUItemStorage(final IHUStorageFactory storageFactory, final I_M_HU_Item item)
 	{
 		Check.assumeNotNull(storageFactory, "storageFactory not null");
@@ -128,7 +133,7 @@ public class HUItemStorage implements IHUItemStorage
 			storage.setQty(BigDecimal.ZERO);
 			storage.setC_UOM(uom);
 
-			// don't save it; it will be saved after Qty update
+			// don't save it; it will be saved after qty update
 			// dao.saveStorageLine(storage);
 		}
 		return storage;

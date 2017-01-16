@@ -1,5 +1,10 @@
 package de.metas.handlingunits.spi.impl;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +18,14 @@ package de.metas.handlingunits.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,7 +51,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 
 /**
- * Tests if HUs are correctly generated when {@link I_M_ReceiptSchedule} is generated.
+ * Tests if HUs are correctly generated when {@link I_M_ReceiptSchedule} is generated. Note that the actual HU creation which we test there is done in {@link ReceiptScheduleHUGenerator}.
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07451_Palette_capacity_calculation_for_LU-TU_configuration_screwed_%28103309808369%29
@@ -67,7 +71,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 	private BigDecimal qtyTUsToOrder;
 
 	/** Expectation: How many LUs are expected to be produced? */
-	private BigDecimal expect_QtyLUs;
+	private int expect_QtyLUs;
 	/** Expectation: How many TUs (top level) are expected to be produced? */
 	private BigDecimal expect_QtyTUs = BigDecimal.ZERO;
 	/** Expectation: LU/TU Configuration: QtyTU */
@@ -84,7 +88,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(1);
 		qtyCUsToOrder = BigDecimal.valueOf(1); // under one TU
 
-		expect_QtyLUs = BigDecimal.valueOf(0);
+		expect_QtyLUs = 0;
 		expect_QtyTUs = BigDecimal.valueOf(1);
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder;
 		expect_LUTUConfig_QtyCUs = qtyCUsToOrder; // ...instead of QtyCUsPerTU
@@ -101,7 +105,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(1);
 		qtyCUsToOrder = qtyCUsPerTU; // 1 TU
 
-		expect_QtyLUs = BigDecimal.valueOf(0);
+		expect_QtyLUs = 0;
 		expect_QtyTUs = BigDecimal.valueOf(1);
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder;
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -118,7 +122,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(2);
 		qtyCUsToOrder = BigDecimal.valueOf(10 + 1); // 1TU and 1CU
 
-		expect_QtyLUs = BigDecimal.valueOf(0);
+		expect_QtyLUs = 0;
 		expect_QtyTUs = BigDecimal.valueOf(2);
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder;
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -135,7 +139,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(2);
 		qtyCUsToOrder = BigDecimal.valueOf(10 + 10); // 2xTU
 
-		expect_QtyLUs = BigDecimal.valueOf(0);
+		expect_QtyLUs = 0;
 		expect_QtyTUs = BigDecimal.valueOf(2);
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder;
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -152,7 +156,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(1);
 		qtyCUsToOrder = BigDecimal.valueOf(1); // under one TU
 
-		expect_QtyLUs = BigDecimal.valueOf(1);
+		expect_QtyLUs = 1;
 		expect_QtyTUs = BigDecimal.valueOf(0); // no top level TUs
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder; // ...instead of QtyTUsPerLU
 		expect_LUTUConfig_QtyCUs = qtyCUsToOrder; // ...instead of QtyCUsPerTU
@@ -169,7 +173,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(1);
 		qtyCUsToOrder = qtyTUsToOrder.multiply(qtyCUsPerTU); // full TUs
 
-		expect_QtyLUs = BigDecimal.valueOf(1);
+		expect_QtyLUs = 1;
 		expect_QtyTUs = BigDecimal.valueOf(0); // no top level TUs
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder; // ...instead of QtyTUsPerLU
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -186,7 +190,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(5 + 1);
 		qtyCUsToOrder = qtyTUsToOrder.multiply(qtyCUsPerTU); // full TUs
 
-		expect_QtyLUs = BigDecimal.valueOf(2);
+		expect_QtyLUs = 2;
 		expect_QtyTUs = BigDecimal.valueOf(0); // no top level TUs
 		expect_LUTUConfig_QtyTUs = qtyTUsPerLU;
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -195,7 +199,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 	}
 
 	@Test
-	public void testCreate_OneFullLU_OnePartialLU_With_OnPartialTU()
+	public void testCreate_OneFullLU_OnePartialLU_With_OnePartialTU()
 	{
 		qtyTUsPerLU = BigDecimal.valueOf(5);
 		qtyCUsPerTU = BigDecimal.valueOf(10);
@@ -203,7 +207,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(5 + 1);
 		qtyCUsToOrder = BigDecimal.valueOf(5 * 10 + 1);
 
-		expect_QtyLUs = BigDecimal.valueOf(2);
+		expect_QtyLUs = 2;
 		expect_QtyTUs = BigDecimal.valueOf(0); // no top level TUs
 		expect_LUTUConfig_QtyTUs = qtyTUsPerLU;
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -220,7 +224,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(5 + 5);
 		qtyCUsToOrder = qtyTUsToOrder.multiply(qtyCUsPerTU); // full TUs
 
-		expect_QtyLUs = BigDecimal.valueOf(2);
+		expect_QtyLUs = 2;
 		expect_QtyTUs = BigDecimal.valueOf(0); // no top level TUs
 		expect_LUTUConfig_QtyTUs = qtyTUsPerLU;
 		expect_LUTUConfig_QtyCUs = qtyCUsPerTU;
@@ -238,7 +242,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(1);
 		qtyCUsToOrder = BigDecimal.valueOf(100);
 
-		expect_QtyLUs = BigDecimal.valueOf(0);
+		expect_QtyLUs = 0;
 		expect_QtyTUs = BigDecimal.valueOf(1);
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder;
 		expect_LUTUConfig_QtyCUs = qtyCUsToOrder; // ...instead of QtyCUsPerTU
@@ -256,7 +260,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		qtyTUsToOrder = BigDecimal.valueOf(1);
 		qtyCUsToOrder = BigDecimal.valueOf(100);
 
-		expect_QtyLUs = BigDecimal.valueOf(1);
+		expect_QtyLUs = 1;
 		expect_QtyTUs = BigDecimal.valueOf(0);
 		expect_LUTUConfig_QtyTUs = qtyTUsToOrder;
 		expect_LUTUConfig_QtyCUs = qtyCUsToOrder; // ...instead of QtyCUsPerTU
@@ -271,7 +275,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 	{
 		//
 		// Setup: create LU and TU PIs
-		setupLUTU(piTU_ToUse, qtyTUsPerLU, qtyCUsPerTU);
+		setupLUandTUPackingInstructions(piTU_ToUse, qtyTUsPerLU, qtyCUsPerTU);
 
 		//
 		// Create Order
@@ -285,13 +289,12 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 			final List<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> previousReceiptSchedules = Collections.emptyList();
 			final List<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules = orderReceiptScheduleProducer.createOrUpdateReceiptSchedules(order, previousReceiptSchedules);
 
-			Assert.assertEquals(1, receiptSchedules.size());
+			assertThat(receiptSchedules.size(), is(1));
 			receiptSchedule = InterfaceWrapperHelper.create(receiptSchedules.get(0), I_M_ReceiptSchedule.class);
+
 			assertOrderMatches(receiptSchedule, order);
 			assertOrderLineMatches(receiptSchedule, orderLine);
 		}
-
-		// TraceUtils.dump(POJOLookupMap.get().getRecords(I_M_HU.class));
 
 		//
 		// Validate generated LU/TU configuration
@@ -311,9 +314,11 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		final List<I_M_ReceiptSchedule_Alloc> rsAllocs = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_None);
 		BigDecimal huQtyNotAllocatedTotal = receiptSchedule.getQtyOrdered();
 
+		System.out.println(de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("assignedLUs", assignedLUs)));
+
 		//
 		// Validate LUs against allocations
-		Assert.assertEquals("Invalid LUs assigned count", expect_QtyLUs.intValueExact(), assignedLUs.size());
+		assertThat("Invalid LUs assigned count", assignedLUs.size(), is(expect_QtyLUs));
 		{
 			// Iterate LUs and validate them
 			for (final I_M_HU luHU : assignedLUs)
@@ -372,7 +377,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		for (final I_M_HU tuHU : tuHUs)
 		{
 			// Validate TU
-			Assert.assertTrue("Invalid TU's UnitType", handlingUnitsBL.isTransportUnitOrVirtual(tuHU)); // assert valid TU or VHU
+			assertTrue("Invalid TU's UnitType", handlingUnitsBL.isTransportUnitOrVirtual(tuHU)); // assert valid TU or VHU
 
 			//
 			// Retrieve VHUs
@@ -393,13 +398,13 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 			for (final I_M_HU vhu : vhus)
 			{
 				// Validate VHU
-				Assert.assertTrue("Invalid VHU's UnitType", handlingUnitsBL.isVirtual(vhu));
+				assertTrue("Invalid VHU's UnitType", handlingUnitsBL.isVirtual(vhu));
 
 				// Validate VHU allocation
 				final I_M_ReceiptSchedule_Alloc alloc = removeReceiptScheduleAllocFromList(rsAllocs, luHU, tuHU, vhu);
 				final BigDecimal huQtyAllocatedExpected = qtyCUsPerTU == null ? huQtyNotAllocatedTotal : qtyCUsPerTU.min(huQtyNotAllocatedTotal);
 				final BigDecimal huQtyAllocatedActual = alloc.getHU_QtyAllocated();
-				Assert.assertThat("Invalid HU_QtyAllocated", huQtyAllocatedActual, Matchers.comparesEqualTo(huQtyAllocatedExpected));
+				assertThat("Invalid HU_QtyAllocated", huQtyAllocatedActual, comparesEqualTo(huQtyAllocatedExpected));
 
 				// Update remaining unallocated qty
 				huQtyNotAllocatedTotal = huQtyNotAllocatedTotal.subtract(huQtyAllocatedActual);
@@ -418,7 +423,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 					// NOTE: only top level HUs have the configuration is not set (not good, not bad, but this is how it is)
 					lutuConfigurationExpected = null;
 				}
-				Assert.assertEquals("Invalid LU's LU/TU Configuration", lutuConfigurationExpected, tuHU.getM_HU_LUTU_Configuration());
+				assertThat("Invalid LU's LU/TU Configuration", tuHU.getM_HU_LUTU_Configuration(), is(lutuConfigurationExpected));
 			}
 		}
 		return huQtyNotAllocatedTotal;
@@ -464,6 +469,11 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		return allocFound;
 	}
 
+	/**
+	 * Verifies the M_HU_LUTU_Configuration of the given {@code receiptSchedule}.
+	 * 
+	 * @param receiptSchedule
+	 */
 	private void assertValidLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_M_HU_LUTU_Configuration lutuConfiguration = receiptSchedule.getM_HU_LUTU_Configuration();
@@ -479,7 +489,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		Assert.assertEquals("Invalid LU/TU Configuration - IsInfiniteQtyTU", false, lutuConfiguration.isInfiniteQtyTU());
 		Assert.assertEquals("Invalid LU/TU Configuration - QtyTU", expect_LUTUConfig_QtyTUs, lutuConfiguration.getQtyTU().setScale(0));
 		Assert.assertEquals("Invalid LU/TU Configuration - IsInfiniteQtyLU", false, lutuConfiguration.isInfiniteQtyLU());
-		Assert.assertEquals("Invalid LU/TU Configuration - QtyLU", expect_QtyLUs, lutuConfiguration.getQtyLU().setScale(0));
+		Assert.assertEquals("Invalid LU/TU Configuration - QtyLU", expect_QtyLUs, lutuConfiguration.getQtyLU().intValue());
 
 		Assert.assertEquals("Invalid LU/TU Configuration - C_BPartner_ID", receiptSchedule.getC_BPartner_ID(), lutuConfiguration.getC_BPartner_ID());
 		Assert.assertEquals("Invalid LU/TU Configuration - C_BPartner_Location_ID", receiptSchedule.getC_BPartner_Location_ID(), lutuConfiguration.getC_BPartner_Location_ID());

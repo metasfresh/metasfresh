@@ -624,12 +624,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Called by {@link #load(IAllocationRequest)} right before exiting.<b>
-	 * In this method, implementors can do final polishing because loader exits.
+	 * In this method, implementors can do final polishing because the loader exits.
 	 * <p>
 	 * <b>IMPORTANT:</b> overriding methods should invoke {@code super}, unless they know what they do.
 	 * <p>
 	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items. 
-	 * 
+	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU. 
 	 *
 	 * @param result current result (that will be also returned by {@link #load(IAllocationRequest)} method)
 	 */
@@ -658,6 +658,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		itemsToSave.forEach(item -> {
 			InterfaceWrapperHelper.save(item);
 		});
+		
+		// now aggregate the IHUTransactions
+		result.aggregateTransactions();
 	}
 
 	/**

@@ -47,6 +47,11 @@ public interface IMutableAllocationResult extends IAllocationResult
 	 */
 	void substractAllocatedQty(BigDecimal qtyAllocated);
 
+	/**
+	 * 
+	 * @param trxCandidates
+	 * @return
+	 */
 	void addTransaction(IHUTransaction trx);
 
 	void addTransactions(List<IHUTransaction> trxs);
@@ -54,4 +59,10 @@ public interface IMutableAllocationResult extends IAllocationResult
 	void addAttributeTransaction(IHUTransactionAttribute attributeTrx);
 
 	void addAttributeTransactions(List<IHUTransactionAttribute> attributeTrxs);
+
+	/**
+	 * Iterate the {@link IHUTransaction}s that were added so far and aggregate those that only differ in their quantity.
+	 * In other words, group the them by their properties (besides qty) and store a new list with summed-up qtys. The new candidates have unique properties.
+	 */
+	void aggregateTransactions();
 }

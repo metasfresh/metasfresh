@@ -89,20 +89,7 @@ public interface IHUAssignmentBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_Assignment assignHU(Object model, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
-
-	/**
-	 * Create handling unit assignment for given loading / trading unit(s) of the top-level HU
-	 *
-	 * @param ctx
-	 * @param model
-	 * @param topLevelHU
-	 * @param luHU
-	 * @param tuHU
-	 * @param trxName
-	 * @see #createTradingUnitDerivedAssignmentBuilder(Properties, Object, I_M_HU, I_M_HU, I_M_HU, String)
-	 */
-	void createTradingUnitDerivedAssignment(Properties ctx, Object model, I_M_HU topLevelHU, I_M_HU luHU, I_M_HU tuHU, String trxName);
-
+	
 	/**
 	 * Create handling unit assignment builder for given loading / trading unit(s) of the top-level HU
 	 *

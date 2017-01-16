@@ -182,14 +182,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
 
 	/**
-	 * For the given {@code parentHU} and {@code childHU}, retrieve the hu PI item that can be used to link child and parent.
+	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
 	 * 
 	 * @param parentHU
-	 * @param childHU
+	 * @param piOfChildHU
 	 * @param ctx
 	 * @return
 	 */
-	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU childHU, IContextAware ctx);
+	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
 
 	/**
 	 * Retrieve first parent item if more are defined.

@@ -230,7 +230,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			receiptLines.add(receiptLineWithoutIssues);
 		}
-		
 
 		//
 		// If there is Qty with issues, an extra receipt line is needed (with qtyWithIssues)
@@ -671,7 +670,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			final I_M_HU luHU = huToAssign.getM_LU_HU();
 			final I_M_HU tuHU = huToAssign.getM_TU_HU();
-			huAssignmentBL.createTradingUnitDerivedAssignment(huContext.getCtx(), receiptLine, topLevelHU, luHU, tuHU, huContext.getTrxName());
+			huAssignmentBL
+					.createTradingUnitDerivedAssignmentBuilder(huContext.getCtx(), receiptLine, topLevelHU, luHU, tuHU, huContext.getTrxName())
+					.build();
 		}
 	}
 

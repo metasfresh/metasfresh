@@ -30,9 +30,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 /**
- * Contains business logic to create different {@link IHUTransaction}s for different purposes.
- *
- * @author ts
+ * Declare business logic to create different {@link IHUTransaction}s for different purposes.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IHUTransactionBL extends ISingletonService

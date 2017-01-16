@@ -137,7 +137,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	protected final IAllocationResult allocateOnVirtualMaterialItem(final I_M_HU_Item vhuItem, final IAllocationRequest request)
 	{
 		//
-		// Create Actual Allocation Request
+		// Create Actual Allocation Request depending on vhuItem's (remaining) capacity 
 		final IAllocationRequest requestActual = createActualRequest(vhuItem, request);
 		if (requestActual.isZeroQty())
 		{

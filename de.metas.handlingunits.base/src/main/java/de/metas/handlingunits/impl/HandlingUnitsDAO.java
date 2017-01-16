@@ -573,7 +573,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final int huPIId = huPI.getM_HU_PI_ID();
 		final int bpartnerId = bpartner == null ? -1 : bpartner.getC_BPartner_ID();
-		
+
 		return retrieveParentPIItemsForParentPI(ctx, huPIId, huUnitType, bpartnerId, trxName);
 	}
 
@@ -653,12 +653,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return parentPIItems;
 	}
 
-
 	@Override
-	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU childHU, final IContextAware ctx)
+	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
+
 		final I_M_HU_PI_Item piItemForChild = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
 				.addOnlyActiveRecordsFilter()
 
@@ -666,20 +665,20 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
 
 				// it includes the childs's HU PI as one of its "child" PI
-				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, childHU.getM_HU_PI_Version().getM_HU_PI_ID())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
 
 				// it either has no C_BPartner_ID or a matching one
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, childHU.getC_BPartner_ID())
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
 
 				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
 				.orderBy().addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, false).endOrderBy()
 
 				.create()
-				.first();
-		
+				.first(); // get the first one (favoring the one with C_BPartner_ID = parentHU.getC_BPartner_ID() if it exists)
+
 		return piItemForChild;
 	}
-	
+
 	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final I_C_BPartner bpartner)
 	{

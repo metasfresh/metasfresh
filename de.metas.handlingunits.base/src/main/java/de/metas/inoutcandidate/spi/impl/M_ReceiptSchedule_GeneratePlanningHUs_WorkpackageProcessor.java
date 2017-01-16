@@ -107,7 +107,7 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends 
 	}
 
 	/**
-	 * Generate it's LU-TU structure automatically
+	 * Generate it's LU-TU structure automatically, but don't do any transaction commits
 	 *
 	 * @param schedule
 	 */

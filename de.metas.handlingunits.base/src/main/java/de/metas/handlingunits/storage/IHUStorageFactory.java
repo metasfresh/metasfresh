@@ -37,8 +37,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
  */
 public interface IHUStorageFactory
 {
-	// void addHUStorageListener(IHUStorageListener listener);
-
 	IHUStorage getStorage(I_M_HU hu);
 
 	IHUItemStorage getStorage(I_M_HU_Item item);

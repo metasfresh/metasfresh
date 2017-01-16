@@ -172,7 +172,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 		// in case tuHU can't be added, we'll need to know if it's because there is no matching LULoaderItemInstance.
 		boolean matchingItemInstanceExists = false;
-		
+
 		for (final LULoaderItemInstance luItemInstance : luItemInstances)
 		{
 			if (luItemInstance.isMatchTU(tuHU))
@@ -190,7 +190,10 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 		{
 			// #gh 460: the HUBuilder doesn't add just any possible HU item anymore, so chances are big that luHU does not yet have a HU-item to attach tuHU to.
 			// therefore we now need to identify the correct HU PI item and create that item on the fly.
-			final I_M_HU_PI_Item piItemForTU = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuHU, huContext);
+			final I_M_HU_PI_Item piItemForTU = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU,
+					tuHU.getM_HU_PI_Version().getM_HU_PI(),
+					huContext);
+
 			if (piItemForTU != null)
 			{
 				final I_M_HU_Item newItem = handlingUnitsDAO.createHUItem(luHU, piItemForTU);

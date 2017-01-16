@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -62,6 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
@@ -80,6 +80,7 @@ public class HUXmlConverter
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Item.Table_Name, "Item");
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Storage.Table_Name, "Storage");
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Item_Storage.Table_Name, "Storage");
+		HUXmlConverter.tableName2tagName.put(I_M_HU_Trx_Line.Table_Name, "TrxLine");
 	}
 
 	public static Node toXml(final I_M_HU hu)
@@ -118,7 +119,7 @@ public class HUXmlConverter
 		final Node node = createNodeFromModel(parentNode, name, hu);
 
 		//
-		// HU Attributes
+		// HU Attribute
 		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
 		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu);
 		for (final I_M_HU_Attribute attr : attrs)
@@ -127,7 +128,7 @@ public class HUXmlConverter
 		}
 
 		//
-		// HU Items
+		// HU Item
 		final List<I_M_HU_Item> items = Services.get(IHandlingUnitsDAO.class).retrieveItems(hu);
 		for (final I_M_HU_Item item : items)
 		{
@@ -154,19 +155,21 @@ public class HUXmlConverter
 		//
 		// Item level storage
 		final IHUStorageDAO dao = Services.get(IHandlingUnitsBL.class).getStorageFactory().getHUStorageDAO();
-		final List<I_M_HU_Item_Storage> itemStorages = dao.retrieveItemStorages(item);
-		for (final I_M_HU_Item_Storage itemStorage : itemStorages)
-		{
-			createNodeFromModel(node, itemStorage);
-		}
+		dao
+				.retrieveItemStorages(item)
+				.forEach(itemStorage -> createNodeFromModel(node, itemStorage));
 
 		//
 		// Included HUs
-		final List<I_M_HU> includedHUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(item);
-		for (final I_M_HU includedHU : includedHUs)
-		{
-			createNode(node, includedHU);
-		}
+		Services.get(IHandlingUnitsDAO.class)
+				.retrieveIncludedHUs(item)
+				.forEach(includedHU -> createNode(node, includedHU));
+
+		//
+		// HU Transaction
+		Services.get(IHUTrxDAO.class)
+				.retrieveTrxLines(item)
+				.forEach(trxLine -> createNodeFromModel(node, trxLine));
 
 		return node;
 	}
@@ -217,7 +220,7 @@ public class HUXmlConverter
 				final String productValue = product == null ? "" : product.getValue();
 				node.setAttribute("M_Product_Value", productValue);
 			}
-			
+
 			//
 			// UOM
 			if ("C_UOM_ID".equals(name) && value != null)
@@ -237,7 +240,7 @@ public class HUXmlConverter
 				final String packingMaterialProductValue = packingMaterial == null ? "" : packingMaterial.getM_Product().getName();
 				node.setAttribute("M_HU_PackingMaterial_Product_Value", packingMaterialProductValue);
 			}
-			
+
 		}
 
 		if (parentNode != null)

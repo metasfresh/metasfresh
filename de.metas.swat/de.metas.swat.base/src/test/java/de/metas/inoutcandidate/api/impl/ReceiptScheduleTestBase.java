@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
@@ -59,7 +58,6 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
-import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.product.acct.api.IProductAcctDAO;
 import mockit.Expectations;
@@ -123,14 +121,10 @@ public abstract class ReceiptScheduleTestBase
 	@Before
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
+		AdempiereTestHelper.get().init(); // need to init this now
 
-		//
-		// Register model interceptors
-		{
-			Services.get(IModelInterceptorRegistry.class)
-					.addModelInterceptor(ReceiptScheduleValidator.instance);
-		}
+		// this is already done by HUTestHelper.init()
+		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
 
 		receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);

@@ -29,12 +29,13 @@ import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 
 /**
- * Transaction Line Candidate.
+ * Transaction Line Candidate. Use the constructor of {@link HUTransaction} to get instances.
  *
  * Based on this object the actual {@link I_M_HU_Trx_Line}s will be created.
  *
@@ -124,16 +125,7 @@ public interface IHUTransaction
 	IHUTransaction getCounterpart();
 
 	/**
-	 * Sets counterpart transaction candidate.
-	 *
-	 * NOTE: DON'T call it directly but use {@link #pair(IHUTransaction)}.
-	 *
-	 * @param counterpartTrx
-	 */
-	void setCounterpart(IHUTransaction counterpartTrx);
-
-	/**
-	 * Cross link this transaction with given transaction by cross setting {@link #setCounterpart(IHUTransaction)}.
+	 * Cross link this transaction with given transaction by cross setting their {@link #getCounterpart()} properties.
 	 *
 	 * NOTE: DON'T call it directly. It will be called by API
 	 *

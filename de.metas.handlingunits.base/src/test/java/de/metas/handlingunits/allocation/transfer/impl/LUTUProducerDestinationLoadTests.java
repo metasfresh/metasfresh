@@ -72,7 +72,7 @@ public class LUTUProducerDestinationLoadTests
 			data.helper.load(lutuProducer, data.helper.pSalad, new BigDecimal("10"), data.helper.uomEach);
 
 			final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
-			TraceUtils.dump(createdHUs);
+			// TraceUtils.dump(createdHUs);
 
 			final I_M_HU luHU = createdHUs.get(0);
 			HUStorageExpectation.newExpectation()
@@ -289,7 +289,7 @@ public class LUTUProducerDestinationLoadTests
 			//@formatter:on
 		}
 		
-		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("result", createdHUs)));
+		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("result", createdHUs)));
 		
 		if (lastExpectation != null)
 		{
