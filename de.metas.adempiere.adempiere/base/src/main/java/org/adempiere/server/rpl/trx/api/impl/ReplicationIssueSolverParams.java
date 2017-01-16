@@ -25,8 +25,10 @@ package org.adempiere.server.rpl.trx.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 
 import org.adempiere.server.rpl.trx.api.IReplicationIssueSolverParams;
+import org.adempiere.util.Check;
 import org.adempiere.util.api.IParams;
 
 /* package */class ReplicationIssueSolverParams implements IReplicationIssueSolverParams
@@ -35,7 +37,7 @@ import org.adempiere.util.api.IParams;
 
 	public ReplicationIssueSolverParams(final IParams params)
 	{
-		super();
+		Check.assumeNotNull(params, "Parameter 'params' is not null");
 		this.params = params;
 	}
 
@@ -73,5 +75,14 @@ import org.adempiere.util.api.IParams;
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);
+	}
+
+	/**
+	 * Just delegates to the wrapped {@link IParams} instance.
+	 */
+	@Override
+	public Collection<String> getParameterNames()
+	{
+		return params.getParameterNames();
 	}
 }
