@@ -284,7 +284,7 @@ public class ReceiptScheduleHUGenerator
 
 		// Make sure we are returning them out-of-transaction
 		result.forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None));
-		de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("name",result));
+
 		return result;
 	}
 
