@@ -24,6 +24,7 @@ package de.metas.handlingunits.attribute;
 
 
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
@@ -69,6 +70,8 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 * @return available PI attributes
 	 */
 	List<I_M_HU_PI_Attribute> retrievePIAttributes(I_M_HU_PI_Version version);
+	
+	List<I_M_HU_PI_Attribute> retrievePIAttributes(Properties ctx, int M_HU_PI_Version_ID);
 
 	/**
 	 * Retrieve available PI Attributes assigned to current version of given <code>huPI</code>.
@@ -79,6 +82,7 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 * @return available PI attributes
 	 */
 	List<I_M_HU_PI_Attribute> retrievePIAttributes(I_M_HU_PI huPI);
+	
 
 	/**
 	 *
@@ -91,4 +95,5 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 * @task FRESH-578 #275
 	 */
 	boolean isTemplateAttribute(I_M_HU_PI_Attribute huPIAttribute);
+
 }

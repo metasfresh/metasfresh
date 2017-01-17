@@ -25,16 +25,14 @@ package org.adempiere.util.lang;
 
 import java.io.Serializable;
 
-import com.google.common.base.Supplier;
-
 /**
  * An memorizing supplier which also allows to forget the value or to peek current value.
  * 
  * @param <T>
  */
-public final class ExtendedMemorizingSupplier<T> implements Supplier<T>, Serializable
+public final class ExtendedMemorizingSupplier<T> implements com.google.common.base.Supplier<T>, java.util.function.Supplier<T>, Serializable
 {
-	public static final <T> ExtendedMemorizingSupplier<T> of(final Supplier<T> supplier)
+	public static final <T> ExtendedMemorizingSupplier<T> of(final com.google.common.base.Supplier<T> supplier)
 	{
 		if (supplier instanceof ExtendedMemorizingSupplier)
 		{
@@ -43,15 +41,41 @@ public final class ExtendedMemorizingSupplier<T> implements Supplier<T>, Seriali
 		return new ExtendedMemorizingSupplier<T>(supplier);
 	}
 
-	private final Supplier<T> delegate;
+	public static final <T> ExtendedMemorizingSupplier<T> ofJUFSupplier(final java.util.function.Supplier<T> supplier)
+	{
+		if (supplier instanceof ExtendedMemorizingSupplier)
+		{
+			return (ExtendedMemorizingSupplier<T>)supplier;
+		}
+		return new ExtendedMemorizingSupplier<T>(supplier);
+	}
+
+	private final com.google.common.base.Supplier<T> delegate;
 	private transient volatile boolean initialized;
 	// "value" does not need to be volatile; visibility piggy-backs
 	// on volatile read of "initialized".
 	private transient T value;
 
-	private ExtendedMemorizingSupplier(final Supplier<T> delegate)
+	private ExtendedMemorizingSupplier(final com.google.common.base.Supplier<T> guavaDelegate)
 	{
-		this.delegate = delegate;
+		super();
+		this.delegate = guavaDelegate;
+	}
+	
+	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> jufDelegate)
+	{
+		super();
+		
+		if(jufDelegate instanceof com.google.common.base.Supplier)
+		{
+			@SuppressWarnings("unchecked")
+			final com.google.common.base.Supplier<T> guavaSupplier = (com.google.common.base.Supplier<T>)jufDelegate;
+			this.delegate = guavaSupplier;
+		}
+		else
+		{
+			this.delegate = jufDelegate::get;
+		}
 	}
 
 	@Override
