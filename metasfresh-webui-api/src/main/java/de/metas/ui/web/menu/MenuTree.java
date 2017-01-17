@@ -173,7 +173,7 @@ public final class MenuTree
 						return MenuNodeFilterResolution.Accept;
 					}
 
-					if (node.isGrouppingNode())
+					if (node.isGroupingNode())
 					{
 						logger.trace("Filter: accept node (if has children!) because does matches and it's a groupping node: {}", node);
 						return MenuNodeFilterResolution.AcceptIfHasChildren;
@@ -191,7 +191,7 @@ public final class MenuTree
 				});
 	}
 
-	private final boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
+	private static final boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
 	{
 		return node.getCaption().toLowerCase().indexOf(nameQueryLC) >= 0;
 	}

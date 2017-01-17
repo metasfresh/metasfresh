@@ -75,7 +75,10 @@ public class MenuRestController
 		final MenuNode node = getMenuTree()
 				.getRootNode();
 
-		return JSONMenuNode.of(node, depth, childrenLimit);
+		return JSONMenuNode.builder(node)
+				.setMaxDepth(depth)
+				.setMaxChildrenPerNode(childrenLimit)
+				.build();
 	}
 
 	@RequestMapping(value = "/node", method = RequestMethod.GET)
@@ -90,7 +93,10 @@ public class MenuRestController
 		final MenuNode node = getMenuTree()
 				.getNodeById(nodeId);
 
-		return JSONMenuNode.of(node, depth, childrenLimit);
+		return JSONMenuNode.builder(node)
+				.setMaxDepth(depth)
+				.setMaxChildrenPerNode(childrenLimit)
+				.build();
 	}
 
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
@@ -147,7 +153,9 @@ public class MenuRestController
 			throw new NoMenuNodesFoundException();
 		}
 
-		return JSONMenuNode.of(rootFiltered, childrenLimit);
+		return JSONMenuNode.builder(rootFiltered)
+				.setMaxLeafNodes(childrenLimit)
+				.build();
 	}
 
 }

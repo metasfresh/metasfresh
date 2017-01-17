@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.lang.MutableInt;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -70,15 +72,24 @@ public final class JSONMenuNode implements Serializable
 		return jsonChildNode;
 	}
 
-	public static JSONMenuNode of(final MenuNode node, final int childrenLimit)
+	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes)
 	{
-		final int depth = Integer.MAX_VALUE;
-		return new JSONMenuNode(node, depth, childrenLimit);
+		if (maxLeafNodes.getValue() <= 0)
+		{
+			return null;
+		}
+		
+		if(node.isEffectiveLeafNode())
+		{
+			maxLeafNodes.decrementAndGet();
+		}
+		
+		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes);
 	}
 
-	public static JSONMenuNode of(final MenuNode node, final int depth, final int childrenLimit)
+	public static final Builder builder(final MenuNode node)
 	{
-		return new JSONMenuNode(node, depth, childrenLimit);
+		return new Builder(node);
 	}
 
 	@JsonProperty("nodeId")
@@ -109,7 +120,7 @@ public final class JSONMenuNode implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean matched;
 
-	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit)
+	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes)
 	{
 		super();
 		nodeId = node.getId();
@@ -129,7 +140,8 @@ public final class JSONMenuNode implements Serializable
 			children = node.getChildren()
 					.stream()
 					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
-					.map(childNode -> new JSONMenuNode(childNode, depth - 1, childrenLimit))
+					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes))
+					.filter(jsonNode -> jsonNode != null)
 					.collect(GuavaCollectors.toImmutableList());
 		}
 	}
@@ -226,8 +238,52 @@ public final class JSONMenuNode implements Serializable
 		return children;
 	}
 	
+	@JsonIgnore
+	public boolean isLeaf()
+	{
+		return children == null || children.isEmpty();
+	}
+	
 	public Boolean getMatched()
 	{
 		return matched;
+	}
+	
+	public static final class Builder
+	{
+		private final MenuNode node;
+		private int maxDepth = Integer.MAX_VALUE;
+		private int maxChildrenPerNode = Integer.MAX_VALUE;
+		private int maxLeafNodes = Integer.MAX_VALUE;
+
+		private Builder(final MenuNode node)
+		{
+			super();
+			this.node = node;
+		}
+
+		public JSONMenuNode build()
+		{
+			final MutableInt maxLeafNodes = new MutableInt(this.maxLeafNodes);
+			return JSONMenuNode.newInstanceOrNull(node, maxDepth, maxChildrenPerNode, maxLeafNodes);
+		}
+		
+		public Builder setMaxDepth(int maxDepth)
+		{
+			this.maxDepth = maxDepth > 0 ? maxDepth : Integer.MAX_VALUE;
+			return this;
+		}
+		
+		public Builder setMaxChildrenPerNode(int maxChildrenPerNode)
+		{
+			this.maxChildrenPerNode = maxChildrenPerNode > 0 ? maxChildrenPerNode : Integer.MAX_VALUE;
+			return this;
+		}
+		
+		public Builder setMaxLeafNodes(int maxLeafNodes)
+		{
+			this.maxLeafNodes = maxLeafNodes > 0 ? maxLeafNodes : Integer.MAX_VALUE;
+			return this;
+		}
 	}
 }
