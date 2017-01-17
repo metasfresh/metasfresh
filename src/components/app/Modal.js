@@ -87,7 +87,7 @@ class Modal extends Component {
     }
 
     handleStart = () => {
-        const {dispatch, modalType, layout} = this.props;
+        const {dispatch, modalType, layout, windowType} = this.props;
         dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
             dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
         });
