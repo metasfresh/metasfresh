@@ -1,0 +1,118 @@
+
+.indicators-wrapper {
+    border: 1px solid $brand-border-color;
+    border-radius: 3px;
+    overflow: hidden;
+    height: 130px;
+    margin: .5rem;
+    font-size: 0;
+}
+
+.indicator {
+    display: inline-block;
+    width: 25%;
+    height: 100%;
+}
+
+@media screen and (max-width: 991px) {
+    .indicator {
+        width: 50%;
+        height: 130px;
+        border: 0 !important;
+        display: inline-block;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .indicators-wrapper {
+        height: 100%;
+    }
+    .indicator {
+        width: 100%;
+        height: 130px;
+        border: 0 !important;
+        display: block;
+    }
+}
+
+.indicator-hidden {
+    display: none;
+}
+
+.indicator iframe {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.indicator:not(:first-of-type) {
+    border-left: 1px solid $brand-border-color;
+}
+
+
+.indicator-bar {
+    height: 2px;
+}
+
+.indicator-saved {
+    animation-name: indicator-saving;
+    animation-duration: 1s;
+}
+
+.indicator-pending {
+    background-color: #D0D2CE;
+    animation-name: indicator-pending;
+    animation-duration: 1s;
+}
+
+.indicator-error {
+    animation-name: indicator-error;
+    animation-duration: 1s;
+}
+
+@keyframes indicator-pending {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 30%;
+    }
+}
+
+@keyframes indicator-saving {
+    0% {
+        width: 30%;
+        background-color: #ADADAD;
+    }
+    60% {
+        width: 100%;
+        background-color: #ADADAD;
+    }
+    85% {
+        width: 100%;
+        background-color: $brand-success-color;
+    }
+    100% {
+        width: 0%;
+        background-color: transparent;
+    }
+}
+
+@keyframes indicator-error {
+    0% {
+        width: 30%;
+        background-color: #ADADAD;
+    }
+    60% {
+        width: 100%;
+        background-color: #ADADAD;
+    }
+    85% {
+        width: 100%;
+        background-color: $brand-font-color-danger;
+    }
+    100% {
+        width: 0%;
+        background-color: transparent;
+    }
+}

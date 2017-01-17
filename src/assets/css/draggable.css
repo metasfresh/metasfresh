@@ -1,0 +1,89 @@
+
+.draggable-widget {
+    border: 1px solid $brand-light-color;
+    width: calc(33.333% - 1rem);
+    margin: .5rem;
+    background-color: white;
+    display: inline-block;
+    border-radius: 3px;
+    pointer-events: visible;
+    @media screen and (max-width: 991px) {
+        width: calc(50% - 1rem);
+    }
+    @media screen and (max-width: 768px) {
+        width: calc(100% - 1rem);
+    }
+}
+
+.draggable-widget-header {
+    padding: 6px 10px;
+    background: $brand-super-light-color;
+    border-bottom: 1px solid $brand-light-color;
+    font-size: 0.875rem;
+    color: $brand-font-color;
+    position: relative;
+    cursor: move;
+    height: 34px;
+}
+
+.draggable-widget-body {
+    min-height: 250px;
+    height: calc(100% - 34px);
+    z-index: 1;
+    overflow: hidden;
+}
+
+.draggable-widget-icon {
+    padding: 10px;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.draggable-widget-menu {
+    background: white;
+    border: 1px solid $brand-light-color;
+    border-radius: 3px;
+    display: inline-block;
+    position: absolute;
+    top: 25px;
+    right: -4px;
+    z-index: 100;
+}
+
+.draggable-widget-menu span {
+    width: 100%;
+    padding: 5px;
+    display: inline-block;
+}
+
+.draggable-widget-menu span:hover {
+    cursor: pointer;
+    background: $brand-super-light-color;
+}
+
+.draggable-widget-maximize {
+    width: 100%;
+    height: calc(100vh - 100px);
+    position: relative;
+    margin: 0;
+}
+
+.dragging {
+    border: 2px dashed $brand-light-color;
+    opacity: 0.5;
+}
+
+.dragging .draggable-widget-header {
+    background: transparent;
+    border-bottom: none;
+    color: transparent;
+}
+
+.draggable-widget-body iframe {
+    width: calc(100% - 1px);
+    min-height: 280px;
+    height: 100%;
+    float: left;
+}

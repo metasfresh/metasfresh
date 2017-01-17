@@ -653,3 +653,149 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     width: 100%;
     max-width: 450px;
 }
+
+.quick-input-container {
+    display: flex;
+    align-items: center;
+    flex:1;
+}
+
+.quick-input-container > * {
+    margin:0;
+    width:100%;
+}
+.btn-select {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-active {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn-active:hover {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn i {
+    padding-right: 4px;
+}
+
+
+
+.input-table .input-field {
+    background: white;
+    height: 20px;
+    font-weight: normal;
+}
+
+.input-table .input-secondary {
+    margin: 0;
+    border-bottom: 0;
+}
+
+.input-table .input-secondary,
+.input-table .input-dropdown {
+    padding: 0;
+}
+
+.form-group-table {
+    margin-bottom: 0;
+}
+
+.input-table .input-disabled input,
+.input-table .input-mandatory input {
+    background: transparent;
+}
+
+.input-dropdown-focused input {
+    background-color: transparent;
+}
+
+.cell-mandatory:focus {
+    outline: 1px solid $brand-mandatory-color;
+}
+
+.cell-disabled:focus {
+    outline: 1px dashed #cbcbcb;
+}
+
+.rdtPicker {
+    left: -.75rem;
+    margin-top: 7px;
+}
+
+.rdtPicker table {
+    margin: 0;
+}
+
+.input-table .input-dropdown .input-field {
+    background: transparent;
+    color: $brand-font-color;
+    font-style: italic;
+}
+
+.input-table .input-dropdown {
+    border: none;
+}
+
+table .List .input-dropdown-item-title {
+    font-weight: normal;
+}
+
+.input-disabled .input-field::-webkit-outer-spin-button,
+.input-disabled .input-field::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input-disabled .meta-icon-calendar {
+    display: none;
+}
+
+table .input-secondary .input-icon-right {
+    color: $brand-icon-color;
+}
+
+table .input-icon {
+    color: $brand-icon-color;
+}
+
+.table .rdtPicker thead th {
+    background-color: white;
+    color: #6b7b86;
+}
+
+.table.table-bordered-vertically .rdtPicker td {
+    border-right: 0;
+}
+
+.table-striped tbody .rdtPicker tr:nth-of-type(odd) {
+    background-color: white;
+}
+
+table .rdtPicker tbody {
+    background-color: white;
+}
+
+table .rdtPicker td,
+.rdtPicker th {
+    height: 28px;
+}
+
+table .rdtPicker table td,
+.rdtPicker table th {
+    vertical-align: middle;
+    padding: 0;
+}
+.Lookup .input-icon {
+    height: 16px;
+    bottom: 0;
+}

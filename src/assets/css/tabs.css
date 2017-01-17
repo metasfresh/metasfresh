@@ -1,0 +1,73 @@
+
+.nav-tabs {
+    display: flex;
+}
+
+.nav-tabs .nav-link {
+    border: 1px solid $brand-border-color;
+    background-color: #fdfdfd;
+    cursor: pointer;
+    padding: .6rem 1.2rem;
+    font-weight: 400;
+}
+
+.nav-tabs .nav-item.nav-item {
+    margin-right: .5rem;
+    margin-left: 0;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 500;
+}
+
+.tab-content {
+    border: 1px solid;
+    border-color: transparent $brand-border-color $brand-border-color $brand-border-color;
+    background-color: #fff;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    padding: 1rem 1.2rem;
+
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.tabs-fullscreen {
+    position: fixed;
+    top: 55px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 55px);
+    background-color: #fff;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-pane .panel:not(.panel-prompt) {
+    padding-bottom: 100px;
+}
+
+.tab-pane .input-dropdown-list {
+    max-height: 100px;
+}
+
+.tab-pane tbody tr:last-child {
+    border-bottom: 1px solid $brand-border-color;
+}
+
+.tabs-wrapper,
+.tabs-wrapper>div {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
