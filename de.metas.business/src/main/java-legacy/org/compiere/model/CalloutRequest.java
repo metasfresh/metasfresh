@@ -16,130 +16,108 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 
 /**
- *	Request Callouts
- *	
- *  @author Jorg Janke
- *  @version $Id: CalloutRequest.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
+ * R_Request Callouts
+ *
+ * @author based on original CalloutRequest class developed by: Jorg Janke
+ * @author metasfresh
  */
 public class CalloutRequest extends CalloutEngine
 {
 	/**
-	 *  Request - Copy Mail Text - <b>Callout</b>
+	 * Request - Copy Mail Text
 	 *
-	 *  @param ctx      Context
-	 *  @param WindowNo current Window No
-	 *  @param mTab     Model Tab
-	 *  @param mField   Model Field
-	 *  @param value    The new value
-	 *  @return Error message or ""
+	 * Triggered by {@link I_R_Request#COLUMN_R_MailText_ID}.
 	 */
-	public String copyMail (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String copyMail(final ICalloutField calloutField)
 	{
-		String colName = mField.getColumnName();
-		log.info(colName + "=" + value);
-		if (value == null)
-			return "";
+		final I_R_Request request = calloutField.getModel(I_R_Request.class);
 
-		final Integer R_MailText_ID = (Integer)value;
+		final int R_MailText_ID = request.getR_MailText_ID();
+		if (R_MailText_ID <= 0)
+		{
+			return NO_ERROR;
+		}
+
+		final Properties ctx = calloutField.getCtx();
 		final IMailTextBuilder mailTextBuilder = Services.get(IMailBL.class)
 				.newMailTextBuilder(InterfaceWrapperHelper.create(ctx, R_MailText_ID, I_R_MailText.class, ITrx.TRXNAME_None));
 
-		Integer userID = (Integer) mTab.getValue("AD_User_ID");
-		if (userID != null)
-			mailTextBuilder.setAD_User(userID.intValue());
-		Integer bpID = (Integer) mTab.getValue("C_BPartner_ID");
-		if (bpID != null)
-			mailTextBuilder.setC_BPartner(bpID.intValue());
-		
+		final int userId = request.getAD_User_ID();
+		if (userId > 0)
+		{
+			mailTextBuilder.setAD_User(userId);
+		}
+		final int bpartnerId = request.getC_BPartner_ID();
+		if (bpartnerId > 0)
+		{
+			mailTextBuilder.setC_BPartner(bpartnerId);
+		}
+
 		String txt = mailTextBuilder.getMailText();
-		txt = Env.parseContext(ctx, WindowNo, txt, false, true);
-		mTab.setValue("Result", txt);
+		txt = Env.parseContext(ctx, calloutField.getWindowNo(), txt, false, true);
+		request.setResult(txt);
 
-		return "";
-	}   //  copyText
-
-	
-	/**
-	 *  Request - Copy Response Text - <b>Callout</b>
-	 *
-	 *  @param ctx      Context
-	 *  @param WindowNo current Window No
-	 *  @param mTab     Model Tab
-	 *  @param mField   Model Field
-	 *  @param value    The new value
-	 *  @return Error message or ""
-	 */
-	public String copyResponse (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
-	{
-		String colName = mField.getColumnName();
-		log.info(colName + "=" + value);
-		if (value == null)
-			return "";
-
-		Integer R_StandardResponse_ID = (Integer)value;
-		String sql = "SELECT Name, ResponseText FROM R_StandardResponse "
-			+ "WHERE R_StandardResponse_ID=?";
-		try
-		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, R_StandardResponse_ID.intValue());
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				String txt = rs.getString(2);
-				txt = Env.parseContext(ctx, WindowNo, txt, false, true);
-				mTab.setValue("Result", txt);
-			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (SQLException e)
-		{
-			log.error(sql, e);
-		}
-		return "";
-	}   //  copyResponse
+		return NO_ERROR;
+	}
 
 	/**
-	 *  Request - Chane of Request Type - <b>Callout</b>
+	 * Request - Copy Response Text
 	 *
-	 *  @param ctx      Context
-	 *  @param WindowNo current Window No
-	 *  @param mTab     Model Tab
-	 *  @param mField   Model Field
-	 *  @param value    The new value
-	 *  @return Error message or ""
+	 * Triggered by {@link I_R_Request#COLUMN_R_StandardResponse_ID}.
 	 */
-	public String type (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String copyResponse(final ICalloutField calloutField)
 	{
-		String colName = mField.getColumnName();
-		log.info(colName + "=" + value);
-		mTab.setValue("R_Status_ID", null);
-		if (value == null)
-			return "";
-		int R_RequestType_ID = ((Integer)value).intValue();
-		if (R_RequestType_ID == 0)
-			return "";
-		MRequestType rt = MRequestType.get(ctx, R_RequestType_ID);
-		int R_Status_ID = rt.getDefaultR_Status_ID();
-		if (R_Status_ID != 0)
-			mTab.setValue("R_Status_ID", new Integer(R_Status_ID));
-		
-		return "";
-	}	//	type
-}	//	CalloutRequest
+		final I_R_Request request = calloutField.getModel(I_R_Request.class);
+
+		final I_R_StandardResponse standardResponse = request.getR_StandardResponse();
+		if (standardResponse == null)
+		{
+			return NO_ERROR;
+		}
+
+		String txt = standardResponse.getResponseText();
+		txt = Env.parseContext(calloutField.getCtx(), calloutField.getWindowNo(), txt, false, true);
+		request.setResult(txt);
+
+		return NO_ERROR;
+	}
+
+	/**
+	 * Request - Change of Request Type
+	 *
+	 * Triggered by {@link I_R_Request#COLUMN_R_RequestType_ID}.
+	 */
+	public String type(final ICalloutField calloutField)
+	{
+		final I_R_Request request = calloutField.getModel(I_R_Request.class);
+
+		request.setR_Status(null);
+
+		final int R_RequestType_ID = request.getR_RequestType_ID();
+		if (R_RequestType_ID <= 0)
+		{
+			return NO_ERROR;
+		}
+
+		final MRequestType requestType = MRequestType.get(calloutField.getCtx(), R_RequestType_ID);
+		final int R_Status_ID = requestType.getDefaultR_Status_ID();
+		if (R_Status_ID > 0)
+		{
+			request.setR_Status_ID(R_Status_ID);
+		}
+
+		return NO_ERROR;
+	}
+}

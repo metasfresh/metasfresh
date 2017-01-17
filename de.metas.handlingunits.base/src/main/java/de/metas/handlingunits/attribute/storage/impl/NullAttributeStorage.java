@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -215,6 +216,15 @@ public final class NullAttributeStorage implements IAttributeStorage
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
+	
+	/**
+	 * @throws AttributeNotFoundException
+	 */
+	@Override
+	public String getValueAsString(I_M_Attribute attribute)
+	{
+		throw new AttributeNotFoundException(attribute, this);
+	}
 
 	/**
 	 * @throws AttributeNotFoundException
@@ -230,6 +240,15 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 */
 	@Override
 	public int getValueAsInt(final I_M_Attribute attribute)
+	{
+		throw new AttributeNotFoundException(attribute, this);
+	}
+
+	/**
+	 * @throws AttributeNotFoundException
+	 */
+	@Override
+	public Date getValueAsDate(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}

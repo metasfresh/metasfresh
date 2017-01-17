@@ -470,6 +470,15 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		final IAttributeValue value = getAttributeValue(attribute);
 		return value.getValue();
 	}
+	
+	@Override
+	public String getValueAsString(final I_M_Attribute attribute)
+	{
+		// assertNotDisposed(); // checked in next called method
+
+		final IAttributeValue value = getAttributeValue(attribute);
+		return value.getValueAsString();
+	}
 
 	@Override
 	public BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
@@ -487,6 +496,15 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		final IAttributeValue value = getAttributeValue(attribute);
 		return value.getValueAsInt();
+	}
+
+	@Override
+	public Date getValueAsDate(final I_M_Attribute attribute)
+	{
+		// assertNotDisposed(); // checked in next called method
+
+		final IAttributeValue value = getAttributeValue(attribute);
+		return value.getValueAsDate();
 	}
 
 	@Override

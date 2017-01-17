@@ -24,7 +24,6 @@ package org.adempiere.util;
 
 
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_InOut;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
@@ -122,17 +121,6 @@ public final class CustomColNames {
 	public static final String C_Tax_Acct_T_REVENUE_ACCT = "T_Revenue_Acct";
 
 	public static final String C_Tax_ISTO_EU_LOCATION = "IsToEULocation";
-
-	public static final String M_InOut_ISUSE_BPARTNER_ADDRESS = "IsUseBPartnerAddress";
-
-	/**
-	 * @deprecated use {@link I_M_InOut} instead
-	 */
-	@Deprecated
-	public static final String M_InOut_BPARTNERADDRESS = "BPartnerAddress";
-	public static final String M_InOut_DESCRIPTION_BOTTOM = "DescriptionBottom";
-	public static final String M_InOut_INCOTERM = "Incoterm";
-	public static final String M_InOut_INCOTERMLOCATION = "IncotermLocation";
 
 	public static final String M_InOutLine_PRODUCT_DESC = "ProductDescription";
 

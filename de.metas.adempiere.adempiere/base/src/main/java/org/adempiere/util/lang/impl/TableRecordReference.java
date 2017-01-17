@@ -91,9 +91,27 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 		return of(model);
 	}
+	
+	/**
+	 * @return immutable list of {@link TableRecordReference}s
+	 */
+	public static final List<TableRecordReference> ofList(final List<?> models)
+	{
+		if(models == null || models.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return models
+				.stream()
+				.filter(model -> model != null)
+				.map(model -> of(model))
+				.collect(GuavaCollectors.toImmutableList());
+	}
 
 
-	public static ITableRecordReference ofReferenced(final Object model)
+
+	public static TableRecordReference ofReferenced(final Object model)
 	{
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);

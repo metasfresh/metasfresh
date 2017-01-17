@@ -772,6 +772,18 @@ public final class POInfo implements Serializable
 		return isVirtualColumn(columnIndex);
 	}
 
+	/** @return true if column exist and it's physical (i.e. not a virtual column) */ 
+	public boolean isPhysicalColumn(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		if (columnIndex < 0)
+		{
+			return false;
+		}
+		
+		return !isVirtualColumn(columnIndex);
+	}
+
 	/**
 	 * Get Column Label
 	 * 

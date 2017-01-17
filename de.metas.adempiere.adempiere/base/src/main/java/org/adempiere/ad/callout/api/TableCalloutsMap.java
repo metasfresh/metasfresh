@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -71,7 +70,7 @@ public final class TableCalloutsMap
 	{
 		Check.assumeNotNull(callout, "Parameter callout is not null");
 		final ImmutableListMultimap<String, ICalloutInstance> map = ImmutableListMultimap.of(columnName, callout);
-		final ImmutableSet<ArrayKey> calloutKeys = ImmutableSet.of(mkKey(columnName, callout));
+		final ImmutableSet<ArrayKey> calloutKeys = ImmutableSet.of(mkCalloutKey(columnName, callout));
 		return new TableCalloutsMap(map, calloutKeys);
 	}
 
@@ -173,7 +172,7 @@ public final class TableCalloutsMap
 	public TableCalloutsMap compose(final String columnName, final ICalloutInstance callout)
 	{
 		Check.assumeNotNull(callout, "Parameter callout is not null");
-		final ArrayKey calloutKey = mkKey(columnName, callout);
+		final ArrayKey calloutKey = mkCalloutKey(columnName, callout);
 		if (calloutKeys.contains(calloutKey))
 		{
 			logger.warn("Skip composing {} to {} because the callout key {} is already present in the map", callout, this, calloutKey);
@@ -192,9 +191,9 @@ public final class TableCalloutsMap
 		return new TableCalloutsMap(calloutsByColumnIdNew, calloutKeysNew);
 	}
 
-	private static final ArrayKey mkKey(final String columnName, final ICalloutInstance callout)
+	private static final ArrayKey mkCalloutKey(final String columnName, final ICalloutInstance callout)
 	{
-		return Util.mkKey(columnName, callout.getId());
+		return ArrayKey.of(columnName, callout.getId());
 	}
 
 	public static final class Builder
@@ -227,7 +226,7 @@ public final class TableCalloutsMap
 				return this;
 			}
 
-			final ArrayKey calloutKey = mkKey(columnName, callout);
+			final ArrayKey calloutKey = mkCalloutKey(columnName, callout);
 			if (!seenCalloutKeys.add(calloutKey))
 			{
 				logger.warn("Skip adding callout {} with key '{}' to map because was already added", callout, calloutKey);

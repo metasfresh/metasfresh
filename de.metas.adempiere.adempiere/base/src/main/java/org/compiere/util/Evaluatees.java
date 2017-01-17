@@ -70,7 +70,7 @@ public final class Evaluatees
 	{
 		return new MapEvaluatee(map);
 	}
-	
+
 	public static final MapEvaluateeBuilder mapBuilder()
 	{
 		return new MapEvaluateeBuilder();
@@ -146,6 +146,12 @@ public final class Evaluatees
 	private static final Evaluatee2 EMPTY = new Evaluatee2()
 	{
 		@Override
+		public String toString()
+		{
+			return "EMPTY";
+		};
+
+		@Override
 		public boolean has_Variable(final String variableName)
 		{
 			return false;
@@ -217,23 +223,23 @@ public final class Evaluatees
 			return null;
 		}
 	}
-	
+
 	public static final class MapEvaluateeBuilder
 	{
 		private LinkedHashMap<String, Object> map;
-		
+
 		private MapEvaluateeBuilder()
 		{
 			super();
 		}
-		
+
 		public Evaluatee build()
 		{
-			if(map == null || map.isEmpty())
+			if (map == null || map.isEmpty())
 			{
 				return EMPTY;
 			}
-			else if(map.size() == 1)
+			else if (map.size() == 1)
 			{
 				final Entry<String, Object> entry = map.entrySet().iterator().next();
 				return new SingletonEvaluatee(entry.getKey(), entry.getValue());
@@ -243,24 +249,23 @@ public final class Evaluatees
 				return new MapEvaluatee(ImmutableMap.copyOf(map));
 			}
 		}
-		
+
 		public MapEvaluateeBuilder put(final String variableName, final Object value)
 		{
-			if(map == null)
+			if (map == null)
 			{
 				map = new LinkedHashMap<>();
 			}
 			map.put(variableName, value);
 			return this;
 		}
-		
+
 		public MapEvaluateeBuilder put(CtxName name, final Object value)
 		{
 			put(name.getName(), value);
 			return this;
 		}
 	}
-
 
 	/**
 	 * Wraps a given {@link Properties} context to {@link Evaluatee}
