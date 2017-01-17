@@ -17,11 +17,13 @@ upcoming
 ## Features
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
-
+  
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
   * #808 DocActionBL.retrieveString method is broken
+  * #806 Fixes in Custom reports
+  * #819 fix/refactor CalloutRequest 
 
 # metasfresh 4.52.51 (2017-03)
   
@@ -33,7 +35,8 @@ this week's RC
   * #773 show delivery address on sales order
   * #507 Copy with Details for PP_Product_BOM
   * #780 Have logo on jasper report that spans from left to right
-  
+  * #816 Do not show prices on shipment note
+
 ## Fixes
 * metasfresh 
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product

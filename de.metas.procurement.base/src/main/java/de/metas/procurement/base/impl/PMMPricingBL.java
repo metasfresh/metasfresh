@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
@@ -41,11 +42,11 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -162,9 +163,12 @@ public class PMMPricingBL implements IPMMPricingBL
 			logger.info("Event is missing C_Flatrate_DataEntry: {}", pricingAware);
 			return false;
 		}
-		
+
 		final BigDecimal flatrateAmtPerUOM = dataEntryForProduct.getFlatrateAmtPerUOM();
-		if (flatrateAmtPerUOM == null || flatrateAmtPerUOM.signum() < 0)
+
+		// in case of null or negative flatrateAmtPerUOM, do not use it for pricing
+		if (InterfaceWrapperHelper.isNull(dataEntryForProduct, I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM)
+				|| flatrateAmtPerUOM.signum() < 0)
 		{
 			logger.info("Invalid FlatrateAmtPerUOM: {} (event={})", flatrateAmtPerUOM, pricingAware);
 			return false;
