@@ -17,7 +17,8 @@ upcoming
 ## Features
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
-
+  * #816 Do not show prices on shipment note
+  
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
