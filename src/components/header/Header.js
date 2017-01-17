@@ -73,9 +73,9 @@ class Header extends Component {
         this.toggleScrollScope(false);
     }
 
-    handleBackdropClick = (callback) => {
-        this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
-    }
+    // handleBackdropClick = (callback) => {
+    //     this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
+    // }
 
     handleMenuOverlay = (e, nodeId) => {
         const {isSubheaderShow, isSideListShow} = this.state;
@@ -99,11 +99,14 @@ class Header extends Component {
 
             });
         }
-        if(isSubheaderShow){
-            this.handleBackdropClick(toggleBreadcrumb);
-        }else if(isSideListShow){
-            this.handleCloseSideList(toggleBreadcrumb);
-        }else{
+        // if(isSubheaderShow){
+        //     this.handleBackdropClick(toggleBreadcrumb);
+        // }else if(isSideListShow){
+        //     this.handleCloseSideList(toggleBreadcrumb);
+        // }else{
+        //     toggleBreadcrumb();
+        // }
+        if(!isSubheaderShow && !isSideListShow){
             toggleBreadcrumb();
         }
     }
@@ -156,7 +159,7 @@ class Header extends Component {
     openModal = (windowType, type, caption, isAdvanced) => {
         const {dispatch} = this.props;
         dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
-        this.handleBackdropClick(false);
+        // this.handleBackdropClick(false);
     }
 
     handlePrint = (windowType, docId, docNo) => {
@@ -165,7 +168,7 @@ class Header extends Component {
         dispatch(printRequest(
             'window', windowType, docId, windowType + '_' + (docNo ? docNo : docId) + '.pdf'
         ));
-        this.handleBackdropClick(false);
+        // this.handleBackdropClick(false);
     }
 
     handleDelete = () => {
@@ -183,7 +186,7 @@ class Header extends Component {
     }
 
     handlePromptCancelClick = () => {
-        this.handleBackdropClick(false);
+        // this.handleBackdropClick(false);
         this.setState(Object.assign({}, this.state, {
             prompt: Object.assign({}, this.state.prompt, {
                 open: false
@@ -222,7 +225,6 @@ class Header extends Component {
     }
 
     closeOverlays = (clickedItem, callback) => {
-
         const {isSideListShow, isSubheaderShow} = this.state;
 
         this.setState(Object.assign({}, this.state, {
@@ -273,14 +275,12 @@ class Header extends Component {
                 />
             }
 
-                {(isSubheaderShow) ? <div className="backdrop" onClick={e => this.handleBackdropClick(false)}></div> : null}
-                {(isSideListShow) ? <div className="backdrop" onClick={e => this.handleCloseSideList(false)}></div> : null}
                 <nav className={"header header-super-faded js-not-unselect " + (scrolled ? "header-shadow": "")}>
                     <div className="container-fluid">
                         <div className="header-container">
                             <div className="header-left-side">
                                 <div
-                                    onClick={(e) => this.closeOverlays('isSubheaderShow') }
+                                    onClick={(e) => this.closeOverlays('isSubheaderShow')  }
                                     onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU)}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                     className={"btn-square btn-header tooltip-parent " +
@@ -406,7 +406,8 @@ class Header extends Component {
                     actions={actions}
                     windowType={windowType}
                     viewId={viewId}
-                    onClick={e => this.handleBackdropClick(false)}
+                    closeSubheader={(e) => this.closeOverlays('isSubheaderShow')}
+                    // onClick={e => this.handleBackdropClick(false)}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
@@ -421,6 +422,7 @@ class Header extends Component {
                     windowType={windowType}
                     open={isSideListShow}
                     closeOverlays={this.closeOverlays}
+                    closeSideList={this.handleCloseSideList}
                 />}
 
                 <GlobalContextShortcuts
