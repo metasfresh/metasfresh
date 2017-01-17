@@ -87,11 +87,11 @@ export class DraggableWrapper extends Component {
         const { cards, isVisible, idMaximized, indicators } = this.state;
         return (
             <div>
-                {indicators.length > 0 && <div className={
+                {false && indicators.length > 0 && <div className={
                     "indicators-wrapper " +
                     (idMaximized !== false ? "indicator-hidden" : "")
                 }>
-                    {indicators.map((indicator, id) =>
+                    {false && indicators.map((indicator, id) =>
                         <div
                             className={
                                 "indicator "

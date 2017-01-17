@@ -428,3 +428,59 @@
     color: $brand-link-color;
     width: auto;
 }
+
+
+.header-breadcrumb>span:first-of-type>.ico-home {
+    min-width: 24px;
+}
+
+.header-breadcrumb>span:first-child {
+    min-width: 26px;
+}
+
+.header-item {
+    color: $brand-link-color;
+    display: inline-block;
+    position: relative;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    text-align: center;
+}
+
+.header-item-container {
+    min-width: 55px;
+    height: 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    padding-left: .2rem;
+    padding-right: .2rem;
+}
+
+.header-item-container-static {
+    width: 55px;
+}
+
+.header-item-container:hover {
+    background-color: $brand-bright-color;
+    border-bottom: 1px solid $brand-border-color;
+}
+
+.header-item-open {
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    pointer-events: none;
+    z-index: 2;
+    border-bottom: 0 !important;
+}
+
+.header-item-open .header-item {
+    margin-top: -1px;
+}
+
+.header-item-badge.header-item {
+    overflow: visible;
+}

@@ -97,15 +97,20 @@ class Lookup extends Component {
                 )}
             } else {
                 onChange(property, select);
-
+                console.log('hello', this.state.list);
                 this.setState((prevState) => update(this.state, {
                     properts: {$apply: item => {
+                        console.log(item);
                         delete item[prevState.property];
+                        console.log(item);
+                        
                         return item;
                     }},
                     list: {$set: []},
                     property: {$set: ""}
                 }), () => {
+                    console.log('byebye', this.state.list);
+
                     this.generatingPropsSelection();
                 });
             }
@@ -200,12 +205,12 @@ class Lookup extends Component {
     }
 
     handleFocus = () => {
-        const {isInputEmpty} = this.state;
+        const {isInputEmpty, property} = this.state;
         this.setState(Object.assign({}, this.state, {
             isOpen: true
         }))
 
-        if(!isInputEmpty){
+        if(!isInputEmpty && property === ""){
             this.handleChange();
         }
     }

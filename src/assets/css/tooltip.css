@@ -1,0 +1,140 @@
+.tooltip-wrapp {
+    background: white;
+    color: $brand-font-color-secondary;
+    font-size: 10px;
+    border: 1px solid $tooltip-border-color;
+    padding: 5px;
+    text-align: center;
+    z-index: 200;
+    border-radius: 3px;
+    position: absolute;
+    top: 110%;
+    left: 50%;
+    width: 80px;
+    margin-left: -40px;
+}
+
+.header-breadcrumb > .tooltip-wrapp {
+    display: block;
+    overflow: visible;
+}
+
+.tooltip-home-menu {
+    left: 25px;
+}
+
+.tooltip-wrapp:after {
+    position: absolute;
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid white;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -4px;
+}
+
+.tooltip-wrapp:before {
+    position: absolute;
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 8px solid $tooltip-border-color;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6px;
+}
+
+.tooltip-right:after {
+    border-top: 4px solid transparent;
+    border-right: 6px solid white;
+    border-bottom: 4px solid transparent;
+    bottom: 50%;
+    left: auto;
+    right: 100%;
+    margin-left: auto;
+    margin-bottom: -4px;
+}
+
+.tooltip-right:before {
+    border-top: 6px solid transparent;
+    border-right: 8px solid $tooltip-border-color;
+    border-bottom: 6px solid transparent;
+    bottom: 50%;
+    left: auto;
+    right: 100%;
+    margin-left: auto;
+    margin-bottom: -6px;
+}
+
+.tooltip-shortcut {
+    font-weight: bold;
+}
+
+.tooltip-name {
+    opacity: 0.5;
+    white-space: normal;
+}
+
+.tooltip-parent {
+    position: relative;
+}
+
+.tooltip-inline {
+    color: $brand-font-color-secondary;
+    font-size: 10px;
+    float: right;
+    opacity: 0.5;
+    font-weight: bold;
+}
+
+
+.tooltip-extended {
+    position: absolute;
+    display: none;
+    width: 480px;
+    z-index: 100;
+}
+
+.tooltip-extended-show {
+    display: block;
+}
+
+.tooltip-extended-right {
+    left: 100%;
+}
+
+.tooltip-arrowed:after,
+.tooltip-arrowed:before {
+    content: '';
+    display: block;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.tooltip-arrowed:before {
+    margin-top: -5px;
+    border-color: transparent #c9d5dc transparent transparent;
+    border-width: 9px;
+}
+
+.tooltip-arrowed:after {
+    margin-top: -4px;
+    border-color: transparent #fff transparent transparent;
+    border-width: 8px;
+}
+
+.tooltip-primary {
+    border-radius: 3px;
+    background-color: #ffffff;
+    border: solid 1px #c9d5dc;
+    padding: 20px;
+}
