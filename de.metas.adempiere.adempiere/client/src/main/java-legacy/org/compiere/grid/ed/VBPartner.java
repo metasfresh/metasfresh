@@ -23,8 +23,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
@@ -45,14 +43,16 @@ import org.compiere.model.MUser;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *	Business Partner Editor.
@@ -417,8 +417,8 @@ public final class VBPartner extends CDialog implements ActionListener
 			//	get Table Documet No
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			value = documentNoFactory.forTableName(I_C_BPartner.Table_Name, Env.getAD_Client_ID(Env.getCtx()), -1) // no AD_Org_ID
-					.setPO(m_partner)
-					.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
+					.setDocumentModel(m_partner)
+					.setFailOnError(true) // backward compatibility: initially, an DBException was thrown here
 					.build();
 			fValue.setText(value);
 		}

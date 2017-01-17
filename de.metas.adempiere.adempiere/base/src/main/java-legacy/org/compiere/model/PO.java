@@ -90,6 +90,7 @@ import org.w3c.dom.Element;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -652,6 +653,14 @@ public abstract class PO
 	{
 		return get_Value(columnName);
 	}   // get_ValueE
+	
+	@Override
+	public <T> T get_ValueAsObject(String variableName)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)get_Value(variableName);
+		return value;
+	}
 
 	/**
 	 * Get Column Value
@@ -3141,8 +3150,8 @@ public abstract class PO
 			// Update Document No
 			if (columnName.equals("DocumentNo"))
 			{
-				String strValue = (String)value;
-				if (strValue.startsWith("<") && strValue.endsWith(">"))
+				String documentNo = (String)value;
+				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
@@ -3155,7 +3164,7 @@ public abstract class PO
 						final int docTypeId = get_ValueAsInt(docTypeIndex);
 						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 					}
@@ -3163,7 +3172,7 @@ public abstract class PO
 					{
 						value = documentNoFactory.forTableName(p_info.getTableName(), getAD_Client_ID(), getAD_Org_ID())
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
@@ -3409,21 +3418,21 @@ public abstract class PO
 			if (index != -1 && p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value != null && value.startsWith("<") && value.endsWith(">"))
+				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
 					value = null;
-				if (value == null || value.length() == 0)
+				if (value == null || value.isEmpty())
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
-					int dt = p_info.getColumnIndex("C_DocTypeTarget_ID");
-					if (dt == -1)
+					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
+					if (docTypeIndex == -1)
 					{
-						dt = p_info.getColumnIndex("C_DocType_ID");
+						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
-					if (dt != -1) 		// get based on Doc Type (might return null)
+					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(dt), false) // useDefiniteSequence=false
+						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 					}
@@ -3431,7 +3440,7 @@ public abstract class PO
 					{
 						value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 								.setTrxName(m_trxName)
-								.setPO(this)
+								.setDocumentModel(this)
 								.setFailOnError(false)
 								.build();
 						value = value == IDocumentNoBuilder.NO_DOCUMENTNO ? null : value; // just to make sure we get null in case no DocumentNo
@@ -3459,7 +3468,7 @@ public abstract class PO
 					// metas: using AD_Org_ID as additional parameter
 					value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 							.setTrxName(m_trxName)
-							.setPO(this)
+							.setDocumentModel(this)
 							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
 							.build();
 					set_ValueNoCheck(index, value);

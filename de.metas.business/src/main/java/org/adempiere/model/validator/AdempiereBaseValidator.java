@@ -156,6 +156,10 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// Script/Rule engine
 		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
 		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance, client);
+		
+		//
+		// Request
+		engine.addModelValidator(de.metas.request.model.interceptor.RequestsModuleInterceptor.instance, client);
 	}
 
 	@Override
