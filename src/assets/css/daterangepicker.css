@@ -370,3 +370,58 @@
     font-size: 1rem;
     content: "‹"
 }
+
+
+/* Date range datepicker custom styles */
+
+.daterangepicker td.in-range {
+    background-color: $brand-super-light-color;
+}
+
+.daterangepicker td.active,
+.daterangepicker td.active:hover {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.cancelBtn {
+    border: solid 1px $brand-light-color;
+    color: $brand-font-color-secondary;
+    background-color: transparent;
+}
+
+.applyBtn {
+    color: #fff;
+    background-color: $brand-success-dark-color;
+    border-color: $brand-success-dark-color;
+}
+
+.applyBtn:hover,
+.applyBtn:focus,
+.daterangepicker .applyBtn:active {
+    background-color: $brand-success-dark-color;
+    border-color: $brand-success-dark-color;
+}
+
+.ranges li {
+    background-color: $brand-super-light-color;
+    color: $brand-font-color;
+}
+
+.ranges li:hover {
+    background-color: $brand-color-primary;
+    border: 1px solid $brand-color-primary;
+}
+
+.ranges li.active {
+    background-color: $brand-color-primary;
+    border: 1px solid $brand-color-primary;
+}
+
+.daterangepicker .input-mini.active {
+    border: 1px solid $brand-color-primary;
+}
+
+.dropdown-menu.daterangepicker {
+    border: 1px solid $brand-light-color;
+}

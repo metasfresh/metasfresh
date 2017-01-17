@@ -1,0 +1,131 @@
+.inbox {
+    position: fixed;
+    top: 54px;
+    right: 0;
+    z-index: 2;
+    width: 400px;
+}
+
+.inbox-all {
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.inbox-all .inbox-body {
+    background-color: #fff;
+}
+
+.inbox-header,
+.inbox-footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: .4rem .8rem;
+}
+
+.inbox-header {
+    border-bottom: 1px solid #e1e8ee;
+}
+
+.inbox-footer {
+    border-top: 1px solid #e1e8ee;
+    justify-content: flex-end;
+}
+
+.inbox-caption {
+    position: relative;
+    width: 55px;
+    height: 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.inbox-body {
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    position: relative;
+}
+
+.inbox-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.inbox-header-title {
+    font-weight: 700;
+}
+
+.inbox-link {
+    font-size: .8rem;
+    color: $brand-link-color;
+    cursor: pointer;
+}
+
+.inbox-link:hover {
+    text-decoration: underline;
+}
+
+.inbox-item {
+    display: flex;
+    flex-direction: row;
+    border-top: 1px solid $brand-border-color;
+    padding: .3rem .8rem;
+    font-size: .8rem;
+    min-height: 80px;
+}
+
+.inbox-item:focus {
+    border: 1px solid $brand-color-primary;
+}
+
+.inbox-item:not(.inbox-item-empty):hover {
+    background-color: #edf3f6;
+}
+
+.inbox-item-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.inbox-item-unread {
+    background-color: $brand-primary-light-color;
+}
+
+.inbox-item:first-child {
+    border-top: 0;
+}
+
+.inbox-item:last-child {
+    border-bottom: 0;
+}
+
+.inbox-item-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    padding-right: .8rem;
+    padding-left: .4rem;
+    font-size: 1.5rem;
+}
+
+.inbox-item-icon-sm {
+    font-size: .7rem;
+    margin-left: -.5rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.inbox-item-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: .7rem;
+    color: $brand-font-color-weak;
+    padding-top: .3rem;
+}

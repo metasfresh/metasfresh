@@ -1,0 +1,83 @@
+
+.notification-handler {
+    position: fixed;
+    top: 55px;
+    right: 10px;
+    width: 300px;
+    z-index: 800;
+    text-align: right;
+}
+
+.notification-item {
+    text-align: left;
+    width: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
+    display: inline-block;
+    border: 2px solid red;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    background: white;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
+    padding: 10px 15px 10px 13px;
+    position: relative;
+    opacity: 0;
+    transition: all 0.5s;
+}
+
+.notification-item.primary {
+    border: 2px solid $brand-primary-color;
+}
+
+.notification-item.primary .notification-header {
+    color: $brand-primary-color;
+}
+
+.notification-item.success {
+    border: 2px solid $brand-success-dark-color;
+}
+
+.notification-item.success .notification-header {
+    color: $brand-success-dark-color;
+}
+
+.notification-item.warning {
+    border: 2px solid $brand-warning-color;
+}
+
+.notification-item.warning .notification-header {
+    color: $brand-warning-color;
+}
+
+.notification-item.error {
+    border: 2px solid $brand-danger-color;
+}
+
+.notification-item.error .notification-header {
+    color: $brand-danger-color;
+}
+
+.notification-item i {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: $brand-light-color;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.notification-header {
+    font-weight: 500;
+}
+
+.notification-content {
+    line-height: 1.2em;
+    font-size: 14px;
+}
+
+.notif-animate {
+    opacity: 1;
+    transition: all 0.5s;
+}
