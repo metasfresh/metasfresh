@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
+import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
 import io.swagger.annotations.ApiParam;
 
@@ -139,7 +140,11 @@ public class MenuRestController
 
 		if (rootFiltered == null)
 		{
-			return null;
+			throw new NoMenuNodesFoundException();
+		}
+		if(rootFiltered.getChildren().isEmpty())
+		{
+			throw new NoMenuNodesFoundException();
 		}
 
 		return JSONMenuNode.of(rootFiltered, childrenLimit);

@@ -18,6 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
+import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 
 /*
  * #%L
@@ -93,7 +94,7 @@ public final class MenuTree
 		final MenuNode node = nodesById.get(nodeId);
 		if (node == null)
 		{
-			throw new IllegalArgumentException("No menu node found for nodeId=" + nodeId);
+			throw new NoMenuNodesFoundException("No menu node found for nodeId=" + nodeId);
 		}
 		return node;
 	}
@@ -104,7 +105,7 @@ public final class MenuTree
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())
 		{
-			throw new IllegalArgumentException("No menu node found for type=" + type + " and elementId=" + elementId);
+			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
 		}
 		return nodes.get(0);
 	}
