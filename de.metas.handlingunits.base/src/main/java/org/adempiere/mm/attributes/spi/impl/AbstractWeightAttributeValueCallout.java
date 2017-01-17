@@ -36,7 +36,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -47,6 +46,7 @@ import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.HUStorageChangeEvent;
 import de.metas.handlingunits.storage.IHUStorageListener;
+import de.metas.logging.LogManager;
 
 /**
  * Common super class of all weight related callouts.

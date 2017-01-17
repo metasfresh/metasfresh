@@ -68,6 +68,7 @@ public final class AdempiereToolsHelper
 		// Adempiere system shall be started with a minimal set of entity types.
 		// In particular, we don't want async, btw, because it doesn't stop when this process is already finished
 		ModelValidationEngine.setInitEntityTypes(ModelValidationEngine.INITENTITYTYPE_Minimal);
+		ModelValidationEngine.setFailOnMissingModelInteceptors(false);
 		
 		//
 		// Initialize logging

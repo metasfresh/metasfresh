@@ -22,8 +22,8 @@ import org.compiere.model.MColumn;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Synchronize Column with Database
@@ -88,6 +88,11 @@ public class ColumnSync extends JavaProcess implements IProcessPrecondition
 	public boolean isPreconditionApplicable(final PreconditionsContext context)
 	{
 		final I_AD_Column column = context.getModel(I_AD_Column.class);
+		if(column == null)
+		{
+			return false;
+		}
+		
 		final String columnSQL = column.getColumnSQL();
 
 		if (!Check.isEmpty(columnSQL, true))

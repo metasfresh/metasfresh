@@ -131,7 +131,7 @@ public class HUReportModel implements IDisposable
 
 		final List<I_AD_Process> availableReportProcesses = Services.get(IADProcessDAO.class).retrieveReportProcessesForTable(getCtx(), I_M_HU.Table_Name);
 
-		final List<ITerminalKey> availableProcessKeys = new ArrayList<ITerminalKey>(availableReportProcesses.size());
+		final List<ITerminalKey> availableProcessKeys = new ArrayList<>(availableReportProcesses.size());
 
 		// In case of no selected HUs display the available processes for the current HU
 
@@ -210,6 +210,8 @@ public class HUReportModel implements IDisposable
 			final HUADProcessKey processKey = new HUADProcessKey(getTerminalContext(), process);
 			availableProcessKeys.add(processKey);
 		}
+		
+		Collections.sort(availableProcessKeys, HUADProcessKey.COMPARATOR_ByName);
 		reportKeyLayout.setKeys(availableProcessKeys);
 	}
 
