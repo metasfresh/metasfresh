@@ -380,8 +380,25 @@ body {
     cursor: pointer;
 }
 
+.document-list-wrapper {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.document-list-header {
+    display: flex;
+}
+
 .document-list-header>*:not(:last-child) {
     margin-right: .5rem;
+}
+
+.document-list-body {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
 }
 
 .map-tree-wrapper {
@@ -809,3 +826,4 @@ td.pulse-off input {
     font-size: .75rem;
     color: $brand-font-color-weak;
 }
+

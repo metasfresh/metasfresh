@@ -231,7 +231,7 @@ class DocumentList extends Component {
 
         if(layout && data) {
             return (
-                <div>
+                <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         {type === "grid" &&
                             <button
@@ -249,7 +249,7 @@ class DocumentList extends Component {
                         />
                     </div>
 
-                    <div>
+                    <div className="document-list-body">
                         <Table
                             entity="documentView"
                             ref={c => this.table = c && c.getWrappedInstance() && c.getWrappedInstance().refs.instance}
