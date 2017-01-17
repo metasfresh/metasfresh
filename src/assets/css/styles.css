@@ -1,17 +1,21 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
-@import './datetime.css';
-@import './daterangepicker.css';
-@import './inputs.css';
+
 @import './charts.css';
+@import './daterangepicker.css';
+@import './datetime.css';
+@import './draggable.css';
 @import './font-meta.css';
-@import './tooltip.css';
+@import './header.css';
 @import './inbox.css';
+@import './indicator.css';
+@import './inputs.css';
+@import './notification.css';
 @import './panel.css';
 @import './table.css';
-@import './indicator.css';
-@import './draggable.css';
+@import './tabs.css';
 @import './tag.css';
+@import './tooltip.css';
 
 /**
 *  IMPORTANT NOTE

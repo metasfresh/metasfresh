@@ -271,7 +271,7 @@ export function patch(entity, windowType, id = "NEW", tabId, rowId, property, va
         timeoutLoop();
 
         return dispatch(patchRequest(
-            'window', windowType, id, tabId, rowId, property, value, null, null,
+            entity, windowType, id, tabId, rowId, property, value, null, null,
             isAdvanced)
         ).then(response => {
             responsed = true;
