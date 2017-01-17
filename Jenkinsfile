@@ -202,7 +202,7 @@ def deleteRepo(String repoId)
 //
 
 // currently, the code in these these branches is at a stage that does not support the webui. Therefore we shall not try to invoke the metasfresh-webui build from this pipeline
-final branchesWithNoWebUI = ['stable', 'release-2016-49' ];
+final branchesWithNoWebUI = ['stable', 'release-2016-49', 'v4.50.49.3-HF791' ];
 echo "env.BRANCH_NAME=${env.BRANCH_NAME} is included in branchesWithNoWebUI=${branchesWithNoWebUI}: ${branchesWithNoWebUI.contains(env.BRANCH_NAME)}"
 
 
