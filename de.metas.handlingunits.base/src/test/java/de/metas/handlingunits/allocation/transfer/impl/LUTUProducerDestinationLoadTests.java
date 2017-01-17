@@ -289,7 +289,7 @@ public class LUTUProducerDestinationLoadTests
 			//@formatter:on
 		}
 		
-		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("result", createdHUs)));
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("result", createdHUs)));
 		
 		if (lastExpectation != null)
 		{

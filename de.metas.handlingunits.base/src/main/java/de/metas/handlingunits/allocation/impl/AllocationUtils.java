@@ -212,6 +212,13 @@ public final class AllocationUtils
 				.create();
 	}
 
+	/**
+	 * This method creates a new request that represents the portion of the given {@code request} that is not yet covered by the given {@code result}.
+	 * 
+	 * @param request
+	 * @param status
+	 * @return
+	 */
 	public static IAllocationRequest createQtyRequestForRemaining(final IAllocationRequest request, final IMutableAllocationResult status)
 	{
 		return deriveAsQtyRequestForRemaining(request, status)

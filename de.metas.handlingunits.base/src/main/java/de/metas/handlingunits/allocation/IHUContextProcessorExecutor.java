@@ -39,7 +39,7 @@ import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
  * <ul>
  * <li>manage database transaction</li>
  * <li>will collect and automatically process {@link IHUTransactionAttribute}s</li>
- * <li>create packing materials/empties movements if needed (see {@link IHUContext#getDestroyedHUPackingMaterialsCollector()})</li>
+ * <li>create packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
  * </ul>
  *
  * @author User

@@ -555,7 +555,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		//
 		// Gebinde Lager packing materials collector; will be used when the HU's owner is "us"
-		final IHUPackingMaterialsCollector<?> destroyedHUPackingMaterialsCollector = huContext.getDestroyedHUPackingMaterialsCollector();
+		final IHUPackingMaterialsCollector<?> destroyedHUPackingMaterialsCollector = huContext.getHUPackingMaterialsCollector();
 
 		//
 		// We only collect top level HUs for transfer.

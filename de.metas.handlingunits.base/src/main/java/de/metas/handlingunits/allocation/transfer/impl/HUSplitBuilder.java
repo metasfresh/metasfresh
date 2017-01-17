@@ -237,7 +237,7 @@ public class HUSplitBuilder implements IHUSplitBuilder
 		final I_M_HU huToSplit = getHUToSplit();
 
 		//
-		// FIXME: workaround to let this split key work in transaction and out of transaction
+		//using thread-inherited to let this split key work in transaction and out of transaction
 		InterfaceWrapperHelper.setTrxName(huToSplit, ITrx.TRXNAME_ThreadInherited);
 
 		//

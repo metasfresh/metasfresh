@@ -494,6 +494,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * Add or Remove given HU (and recursively its children).
 	 *
 	 * @param hu
+	 * @param source
 	 * @param remove In case the boolean value is true, the HU will be removed (decremented qty); otherwise, it will be added (its qty will be incremented)
 	 */
 	private void addOrRemoveHURecursively(final I_M_HU hu,

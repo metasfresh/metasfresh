@@ -55,7 +55,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 
 /**
- * An Allocation Source/Destination which has a list of HUs in behind.
+ * An Allocation Source/Destination which has a list of HUs in behind. Ususally used to load from HUs.
  *
  * @author tsa
  *

@@ -187,7 +187,7 @@ public class HULoader
 	 * <ul>
 	 * <li>managing database transaction</li>
 	 * <li>collecting and automatically processing {@link IHUTransactionAttribute}s</li>
-	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getDestroyedHUPackingMaterialsCollector()})</li>
+	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
 	 *
 	 * @param huContext

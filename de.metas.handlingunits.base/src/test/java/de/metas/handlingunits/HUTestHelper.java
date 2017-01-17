@@ -1189,7 +1189,7 @@ public class HUTestHelper
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final I_C_BPartner bpartner)
 	{
 		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
-		
+
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product(product);
@@ -1804,7 +1804,7 @@ public class HUTestHelper
 		// Execute transfer
 		loader.load(request);
 	}
-	
+
 	public I_C_BPartner createBPartner(final String name)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
@@ -1945,11 +1945,6 @@ public class HUTestHelper
 		return splitBuilder;
 	}
 
-	public IHUSplitBuilder splitHUs()
-	{
-		return new HUSplitBuilder(ctx);
-	}
-
 	/**
 	 * Join given <code>tradingUnits</code> to the <code>loadingUnit</code>
 	 *
@@ -1958,10 +1953,11 @@ public class HUTestHelper
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final Collection<I_M_HU> tradingUnits)
 	{
-		for (final I_M_HU tradingUnit : tradingUnits)
-		{
-			Services.get(IHUJoinBL.class).assignTradingUnitToLoadingUnit(huContext, loadingUnit, tradingUnit);
-		}
+		Check.assumeNotNull(tradingUnits, "PAram 'tradingUnits' is not null; other params: huContext={}, loadingUnit={}", huContext, loadingUnit);
+		final IHUJoinBL huJoinBL = Services.get(IHUJoinBL.class);
+
+		tradingUnits
+				.forEach(tradingUnit -> huJoinBL.assignTradingUnitToLoadingUnit(huContext, loadingUnit, tradingUnit));
 	}
 
 	/**

@@ -29,12 +29,17 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 /**
- * Instances of this interface can be user to perform HU split. A split means that a HU is distributed on two new HUs. The original HU is destroyed in the process.
+ * Instances of this interface can be used to perform HU split. A split means that a HU is distributed on two new HUs.
+ * The original HU is destroyed in the process.
+ *
+ * Use the {@link HUSplitBuilder} constructor to get an instance.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -98,8 +103,20 @@ public interface IHUSplitBuilder
 
 	IHUSplitBuilder setMaxLUToAllocate(BigDecimal maxLUToAllocate);
 
+	/**
+	 * Specify the PI item with type {@link X_M_HU_PI_Item#ITEMTYPE_Material} to be used in the new HU hierarchy
+	 * 
+	 * @param tuPIItem
+	 * @return
+	 */
 	IHUSplitBuilder setTU_M_HU_PI_Item(I_M_HU_PI_Item tuPIItem);
 
+	/**
+	 * Specify the PI item with type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit} to be used in the new HU hierarchy
+	 * 
+	 * @param luPIItem
+	 * @return
+	 */
 	IHUSplitBuilder setLU_M_HU_PI_Item(I_M_HU_PI_Item luPIItem);
 
 	/**

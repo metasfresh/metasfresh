@@ -74,7 +74,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 	public TUProducerDestination(final I_M_HU_PI tuPI)
 	{
 		super();
-
 		Check.assumeNotNull(tuPI, "tuPI not null");
 		this.tuPI = tuPI;
 	}

@@ -75,7 +75,7 @@ public class EmptiesMovementBuilder implements IEmptiesMovementBuilder
 	@Override
 	public List<I_M_Movement> createMovements(final IHUContext huContext)
 	{
-		final List<HUPackingMaterialDocumentLineCandidate> candidates = huContext.getDestroyedHUPackingMaterialsCollector().getAndClearCandidates();
+		final List<HUPackingMaterialDocumentLineCandidate> candidates = huContext.getHUPackingMaterialsCollector().getAndClearCandidates();
 
 		//
 		// Iterate all receipt lines and group them by target warehouse

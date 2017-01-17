@@ -45,6 +45,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.junit.Ignore;
@@ -55,6 +56,7 @@ import org.w3c.dom.Node;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
+import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -199,6 +201,11 @@ public class HUXmlConverter
 			final Object value = e.getValue();
 			final String valueStr;
 
+			if(!Check.isEmpty(POJOWrapper.getInstanceName(model),true))
+			{
+				node.setAttribute("InstanceName", POJOWrapper.getInstanceName(model));
+			}
+			
 			if (POJOWrapper.isHandled(value))
 			{
 				// skip included beans; only IDs are sufficient
@@ -241,6 +248,16 @@ public class HUXmlConverter
 				node.setAttribute("M_HU_PackingMaterial_Product_Value", packingMaterialProductValue);
 			}
 
+			//
+			// Attribute
+			if ("M_Attribute_ID".equals(name) && value != null)
+			{
+				final int id = (Integer)value;
+				final I_M_Attribute attribute = POJOLookupMap.get().lookup(I_M_Attribute.class, id);
+				final String attributeName = attribute == null ? "" : attribute.getName();
+				node.setAttribute("M_Attribute_Name", attributeName);
+			}
+			
 		}
 
 		if (parentNode != null)

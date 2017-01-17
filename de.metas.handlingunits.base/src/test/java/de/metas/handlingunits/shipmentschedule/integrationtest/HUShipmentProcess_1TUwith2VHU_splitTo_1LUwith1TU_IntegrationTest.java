@@ -1,5 +1,10 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +18,14 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -34,12 +38,16 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
+import org.w3c.dom.Node;
 
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.shipping.interfaces.I_M_Package;
@@ -61,7 +69,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		shipmentSchedules = Arrays.asList(
 				createShipmentSchedule(), // shipment schedule 0
 				createShipmentSchedule() // shipment schedule 1
-				);
+		);
 	}
 
 	@Override
@@ -117,6 +125,8 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		//@formatter:on
 		afterPick_HUExpectations.createHUs();
 
+		assertTUPreAggregateInvariants(tu.getValue());
+
 		//
 		// Assign VHU1 to shipmentSchedule1
 		// Assign VHU2 to shipmentSchedule2
@@ -132,6 +142,27 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.endExpectation()
 			.createM_ShipmentSchedule_QtyPickeds(helper.getContextProvider());
 		//@formatter:on
+
+		assertTUPreAggregateInvariants(tu.getValue());
+	}
+
+	/**
+	 * Verify that the TU before {@link #step30_aggregateHUs()} is the way we expect it to be.
+	 * 
+	 * @param tu
+	 */
+	private void assertTUPreAggregateInvariants(final I_M_HU tu)
+	{
+		final Node tuXML = HUXmlConverter.toXml(tu);
+		// System.out.println(HUXmlConverter.toString(tuXML));
+		assertThat(tuXML, hasXPath("count(/HU-TU)", is("1")));
+		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
+		assertThat(tuXML, not(hasXPath("count(/HU-TU[1]/Item[@ItemType='HA'])"))); // no HU aggregate item, included-HU or packing material item
+		assertThat(tuXML, not(hasXPath("count(/HU-TU[1]/Item[@ItemType='HU'])")));
+		assertThat(tuXML, not(hasXPath("count(/HU-TU[1]/Item[@ItemType='PM'])")));
+		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Item[@ItemType='MI'])", is("1"))); // one MI item with two virtual HUs below
+		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Item[@ItemType='MI']/HU-VirtualPI)", is("2")));
+		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='10.000' and @C_UOM_Name='Kg'])", is("2")));
 	}
 
 	@Override
@@ -141,6 +172,9 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		// Get Picked TU
 		final I_M_HU tu = afterPick_HUExpectations.huExpectation(0)
 				.getCapturedHU();
+
+		assertTUPreAggregateInvariants(tu);
+
 		//
 		// Get shipment schedules
 		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
@@ -149,10 +183,13 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		//
 		// Split our TU to an LU/TU with 15items
 		final IMutable<I_M_HU> afterAggregation_LU = new Mutable<>();
-		final IMutable<I_M_HU> splitHU_TU = new Mutable<>();
-		final IMutable<I_M_HU> splitHU_vhu1 = new Mutable<>();
-		final IMutable<I_M_HU> splitHU_vhu2 = new Mutable<>();
-		final List<I_M_HU> splitHUs = helper.splitHUs()
+
+		// final IMutable<I_M_HU> splitHU_TU = new Mutable<>(); there is none, because the TU is represented within the aggregate VHU
+		final IMutable<I_M_HU> splitHU_AggregateVHU = new Mutable<>();
+//		final IMutable<I_M_HU> splitHU_vhu1 = new Mutable<>();
+//		final IMutable<I_M_HU> splitHU_vhu2 = new Mutable<>();
+
+		final List<I_M_HU> splitHUs = new HUSplitBuilder(helper.ctx)
 				.setHUToSplit(tu)
 				.setCUQty(new BigDecimal("15"))
 				// LU
@@ -168,6 +205,8 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				//
 				.split();
 
+		// System.out.println(de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("splitHUs", splitHUs)));
+
 		//
 		// Validate split LU/TU/VHUs
 		//@formatter:off
@@ -178,36 +217,24 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.capture(afterAggregation_LU)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				.newHUItemExpectation(piLU_Item)
+				.newHUItemExpectation()
 					//
-					// TU
+					// aggregate VHU
+					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.newIncludedHUExpectation()
-						.capture(splitHU_TU)
-						.huPI(piTU)
-						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newHUItemExpectation(piTU_Item)
-							//
-							// VHU 1
-							.newIncludedVirtualHU()
-								.capture(splitHU_vhu1)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
-										.product(product).qty("10").uom(productUOM)
-										.endExpectation()
-									.endExpectation()
-								.endExpectation()
-							//
-							// VHU 2
-							.newIncludedVirtualHU()
-								.capture(splitHU_vhu2)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
-										.product(product).qty("5").uom(productUOM)
-										.endExpectation()
-									.endExpectation()
-								.endExpectation()
-							.endExpectation()
-					.endExpectation()
+						.capture(splitHU_AggregateVHU)
+						.newHUItemExpectation()
+							.itemType(X_M_HU_Item.ITEMTYPE_Material)
+							.newItemStorageExpectation()
+								.product(product).qty("15").uom(productUOM)
+							.endExpectation() // itemStorage
+						.endExpectation() // packing item
+						.newHUItemExpectation()
+							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+							.qty("1")
+							.packingMaterial(helper.pmIFCO)
+						.endExpectation() // packing material item
+					.endExpectation() // included aggregate VHU
 				.endExpectation()
 			.endExpectation()
 			//
@@ -220,11 +247,11 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		afterAggregation_ShipmentScheduleQtyPickedExpectations = new ShipmentScheduleQtyPickedExpectations()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule1)
-				.lu(afterAggregation_LU).tu(splitHU_TU).vhu(splitHU_vhu1).qtyPicked("10")
+				.lu(afterAggregation_LU).tu(splitHU_AggregateVHU).vhu(splitHU_AggregateVHU).qtyPicked("10")
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule2)
-				.lu(afterAggregation_LU).tu(splitHU_TU).vhu(splitHU_vhu2).qtyPicked("5")
+				.lu(afterAggregation_LU).tu(splitHU_AggregateVHU).vhu(splitHU_AggregateVHU).qtyPicked("5")
 				.endExpectation()
 			.assertExpected("after split");
 		//@formatter:on

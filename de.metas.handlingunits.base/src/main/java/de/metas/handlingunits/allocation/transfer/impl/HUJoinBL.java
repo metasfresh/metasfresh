@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -35,6 +34,7 @@ import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.exceptions.NoCompatibleHUItemParentFoundException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 public class HUJoinBL implements IHUJoinBL
@@ -46,6 +46,7 @@ public class HUJoinBL implements IHUJoinBL
 		// Services
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 		boolean availableLUPIFound = false;
@@ -76,9 +77,23 @@ public class HUJoinBL implements IHUJoinBL
 			}
 
 			//
-			// Assign HU to Item
+			// Assign HU to the luItem which we just found
 			huTrxBL.setParentHU(huContext, luItem, tradingUnit);
 			availableLUPIFound = true;
+		}
+
+		if (!availableLUPIFound)
+		{
+			final I_M_HU_PI_Item luPI = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(loadingUnit, tradingUnit.getM_HU_PI_Version().getM_HU_PI(), huContext);
+			if (luPI != null)
+			{
+				final I_M_HU_Item newLUItem = handlingUnitsDAO.createHUItem(loadingUnit, luPI);
+
+				//
+				// Assign HU to the newLUItem which we just created
+				huTrxBL.setParentHU(huContext, newLUItem, tradingUnit);
+				availableLUPIFound = true;
+			}
 		}
 
 		if (!availableLUPIFound)

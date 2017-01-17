@@ -307,7 +307,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		// Collect the HU (only if physical) in order to be taken from the gebindelager into the current lager
 		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
 		{
-			huContext.getDestroyedHUPackingMaterialsCollector().removeHURecursively(hu);
+			huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
 		}
 		//
 		// If after running everything the status is still running, switch it to finished

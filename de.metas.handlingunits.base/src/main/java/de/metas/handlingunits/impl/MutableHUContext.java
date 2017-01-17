@@ -261,7 +261,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	}
 
 	@Override
-	public IHUPackingMaterialsCollector<I_M_InOutLine> getDestroyedHUPackingMaterialsCollector()
+	public IHUPackingMaterialsCollector<I_M_InOutLine> getHUPackingMaterialsCollector()
 	{
 
 		return _destroyedHUPackingMaterialsCollector;

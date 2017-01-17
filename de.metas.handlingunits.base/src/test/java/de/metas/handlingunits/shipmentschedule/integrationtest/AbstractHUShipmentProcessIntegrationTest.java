@@ -181,9 +181,14 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Handling Units Definition
 		piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
+			// PM
+			helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO); // we need such a PI item so we can verify M_HU_Item.Qty of the aggregate VHU's packing material item. without this PI item there is no such M_HU_Item
+			
+			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
 			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
+			
 		}
 
 		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

@@ -925,14 +925,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			{
 				// collect the "destroyed" HUs in case they were already physical (active)
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.addHURecursively(hu, null);
 			}
 			else
 			{
 				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.removeHURecursively(hu);
 			}
 		}
@@ -948,14 +948,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			if (initialHUStatus == null)
 			{
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.removeHURecursively(hu);
 			}
 			// only collect the destroyed HUs in case they were already physical (active)
 			else if (isPhysicalHU(initialHUStatus))
 			{
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.addHURecursively(hu, null);
 			}
 			else

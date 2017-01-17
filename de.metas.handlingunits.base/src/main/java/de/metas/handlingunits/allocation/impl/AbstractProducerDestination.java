@@ -41,14 +41,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.adempiere.util.collections.ListCursor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -120,6 +118,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private int aggregatedHUsCount;
 
+	private int aggregatedHUsCountSinceLoadFinished;
+
 	public AbstractProducerDestination()
 	{
 		super();
@@ -157,27 +157,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private final ListCursor<I_M_HU> getCreateCurrentHU(final IAllocationRequest request)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		final ListCursor<I_M_HU> currentHUCursor = getCurrentHUCursor(request);
 
 		// If we have a current HU and it's not null
 		// => cursor is positioned
 		if (currentHUCursor.hasCurrent() && currentHUCursor.current() != null)
 		{
-			final boolean currentHUIsAggregate = handlingUnitsBL.isAggregateHU(currentHUCursor.current());
-			if (!currentHUIsAggregate || isAllowCreateNewHU())
-			{
-				// the current HU is
-				// * either not a "bag" but a real/exploded HU,
-				// * or it is a "bag" that is not yet "full"
-				// By "full bag" we mean e.g. that we might have a bag which represents TUs within a LU and the LU can only hold 5 TUs.
-				// In this case, after we allocated a single "TU-portion" to the bag 5 times, we can't allocate anymore (and the bag is "full").
-
-				// We need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
-				aggregatedHUsCount++;
-				return currentHUCursor;
-			}
+			return currentHUCursor;
 		}
 
 		// If we have a next not-null HU top pick, advance cursor and return the next one
@@ -404,7 +390,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu))
 		{
-			aggregatedHUsCount++;
+			incAggregatedHUsCount();
 		}
 		else
 		{
@@ -412,6 +398,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		}
 
 		return added;
+	}
+
+	private void incAggregatedHUsCount()
+	{
+		aggregatedHUsCount++;
+		aggregatedHUsCountSinceLoadFinished++;
 	}
 
 	/**
@@ -517,6 +509,11 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return _createdNonAggregateHUs.size() + aggregatedHUsCount;
 	}
 
+	public final int getCreatedHUsCountSinceLoadFinished()
+	{
+		return aggregatedHUsCountSinceLoadFinished;
+	}
+
 	/**
 	 * ...also uses {@link IHUBuilder} to create the HU and its child-HUs according to the value returned by {@link #getM_HU_PI()}.
 	 */
@@ -581,9 +578,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 			if (currentResult.getQtyToAllocate().signum() != 0) // It seems that current HU is fully loaded and there is still stuff left to allocate
 			{
-				if (currentHU.getM_HU_Item_Parent() != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(currentHU.getM_HU_Item_Parent().getItemType()))
+				if (Services.get(IHandlingUnitsBL.class).isAggregateHU(currentHU) && isAllowCreateNewHU())
 				{
-					// don't proceed to a new HU. currentHU is a "bag", so we can load much, much more into it.
+					// don't proceed to a new HU. currentHU is a "bag" and we can load more into it.
+
+					// We need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
+					incAggregatedHUsCount();
 				}
 				else
 				{
@@ -628,8 +628,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * <p>
 	 * <b>IMPORTANT:</b> overriding methods should invoke {@code super}, unless they know what they do.
 	 * <p>
-	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items. 
-	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU. 
+	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items.
+	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU.
 	 *
 	 * @param result current result (that will be also returned by {@link #load(IAllocationRequest)} method)
 	 */
@@ -638,27 +638,20 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final Set<I_M_HU_Item> itemsToSave = new IdentityHashSet<>();
-		final List<IHUTransaction> transactions = result.getTransactions();
-		for (final IHUTransaction trxCandidate : transactions)
+		if (aggregatedHUsCountSinceLoadFinished > 0)
 		{
-			final I_M_HU hu = trxCandidate.getM_HU_Item().getM_HU();
-
-			if (!handlingUnitsBL.isAggregateHU(hu))
-			{
-				continue;
-			}
-			handlingUnitsDAO.retrieveItems(hu).stream()
+			// iterate the packing material items of all aggregate VHUs we created and make sure their qty reflects the number of actual TUs/packagings (e.g. IFCOs) which we represent in the respective aggregate VHU
+			_createdHUs.stream()
+					.filter(hu -> handlingUnitsBL.isAggregateHU(hu))
+					.flatMap(hu -> handlingUnitsDAO.retrieveItems(hu).stream())
 					.filter(item -> X_M_HU_Item.ITEMTYPE_PackingMaterial.equals(item.getItemType()))
 					.forEach(item -> {
-						item.setQty(item.getQty().add(BigDecimal.ONE));
-						itemsToSave.add(item);
+						item.setQty(item.getQty().add(new BigDecimal(aggregatedHUsCountSinceLoadFinished)));
+						InterfaceWrapperHelper.save(item);
 					});
 		}
-		itemsToSave.forEach(item -> {
-			InterfaceWrapperHelper.save(item);
-		});
-		
+		aggregatedHUsCountSinceLoadFinished = 0;
+
 		// now aggregate the IHUTransactions
 		result.aggregateTransactions();
 	}
