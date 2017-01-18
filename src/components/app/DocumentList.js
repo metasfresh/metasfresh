@@ -45,6 +45,7 @@ class DocumentList extends Component {
         //does not re-construct component, so we need to
         //make it manually while the windowType changes.
         if(windowType !== this.props.windowType) {
+            console.log("HELLO?", windowType)
             this.setState(Object.assign({}, this.state, {
                 data:null,
                 layout:null
