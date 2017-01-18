@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
+import onClickOutside from 'react-onclickoutside';
 
 import {
     setFilter
@@ -30,6 +31,11 @@ class Subheader extends Component {
         }
     }
 
+    handleClickOutside = () => {
+        const { closeSubheader } = this.props;
+        closeSubheader();
+    }
+
     componentDidMount() {
         const {
             dispatch, windowType, dataId, viewId, selected, entity
@@ -53,18 +59,18 @@ class Subheader extends Component {
     }
 
     handleReferenceClick = (type, filter) => {
-        const {dispatch, onClick, windowType, dataId, selected} = this.props;
+        const {dispatch, closeSubheader, windowType, dataId, selected} = this.props;
         dispatch(setFilter(filter, type));
         dispatch(push(
             "/window/" + type +
             '?refType=' + windowType +
             '&refId=' + (dataId ? dataId : selected)
         ));
-        onClick();
+        closeSubheader();
     }
 
     handleKeyDown = (e) => {
-        const {onClick} = this.props;
+        const {closeSubheader} = this.props;
 
         switch(e.key){
             case "ArrowDown":
@@ -107,7 +113,7 @@ class Subheader extends Component {
                 break;
             case "Escape":
                 e.preventDefault();
-                onClick();
+                closeSubheader();
                 break;
         }
     }
@@ -212,6 +218,6 @@ Subheader.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-Subheader = connect()(Subheader);
+Subheader = connect()(onClickOutside(Subheader));
 
 export default Subheader;

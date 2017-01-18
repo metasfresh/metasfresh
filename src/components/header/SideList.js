@@ -1,9 +1,16 @@
 import React, { Component } from 'react';
+import {connect} from 'react-redux';
 import DocumentList from '../app/DocumentList';
+import onClickOutside from 'react-onclickoutside';
 
 class SideList extends Component {
     constructor(props) {
         super(props);
+    }
+
+    handleClickOutside = () => {
+        const {closeSideList} = this.props;
+        closeSideList();
     }
 
     render() {
@@ -29,5 +36,7 @@ class SideList extends Component {
         )
     }
 }
+
+SideList = connect()(onClickOutside(SideList))
 
 export default SideList;

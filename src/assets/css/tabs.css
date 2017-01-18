@@ -42,6 +42,10 @@
     background-color: #fff;
 }
 
+.tabs-fullscreen.container-fluid {
+    height: calc(100% - 55px);
+}
+
 .tab-pane {
     display: none;
 }

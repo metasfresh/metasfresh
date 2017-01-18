@@ -51,13 +51,25 @@ class Inbox extends Component {
         close && close();
     }
 
+    componentDidUpdate() {
+        const {open} = this.props;
+        const inboxWrapper = document.getElementsByClassName('js-inbox-wrapper')[0];
+        if(inboxWrapper && open){
+            inboxWrapper.focus();
+        }
+    }
+
     handleKeyDown = (e) => {
         const {close} = this.props;
+        const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
                 if (document.activeElement.classList.contains('js-inbox-wrapper')) {
-                    document.getElementsByClassName('js-inbox-item')[0].focus();
+                    if(inboxItem){
+                        inboxItem.focus();
+                    }
+                    
                 }
                 break;
             case "Escape":
@@ -77,7 +89,9 @@ class Inbox extends Component {
                     <div className={
                         "inbox-body " +
                         (!all ? "breadcrumbs-shadow" : "")
-                    }>
+                    }
+                    
+                    >
                         <div
                             className="inbox-header"
                         >
