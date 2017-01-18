@@ -166,7 +166,9 @@
 
 th {
     font-weight: 500;
+    position: relative;
 }
+
 .empty-info-text {
     display: flex;
     justify-content: center;

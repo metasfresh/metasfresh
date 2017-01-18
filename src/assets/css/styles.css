@@ -1,5 +1,6 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import './variables.css';
+@import './focus.css';
 
 @import './charts.css';
 @import './daterangepicker.css';
@@ -29,33 +30,6 @@
 * - 400 - screen-freeze
 */
 
-* {
-    margin: 0;
-}
-
-*:focus,
-.input-checkbox:focus input ~ .input-checkbox-tick,
-*:focus > .input-dropdown,
-.input-focused > .input-dropdown,
-.input-focused {
-    border-color: $brand-font-color;
-    outline: 0;
-}
-
-*:focus > .nav-link.active {
-    border-color: $brand-font-color $brand-font-color transparent !important;
-    outline:0;
-}
-
-*:focus > .nav-link {
-    border-color: $brand-font-color $brand-font-color $brand-border-color !important;
-    outline:0;
-}
-
-.btn:focus,
-button:focus {
-    outline: 0;
-}
 
 body {
     background-color: #F8FAFB;
@@ -697,10 +671,13 @@ body {
     }
 }
 
+<<<<<<< Updated upstream
 th {
     position: relative;
 }
 
+=======
+>>>>>>> Stashed changes
 .rotate-90 {
     transform: rotate(180deg);
 }

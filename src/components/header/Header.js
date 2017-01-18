@@ -313,6 +313,7 @@ class Header extends Component {
                                         onMouseLeave={(e) => this.toggleTooltip('')}
                                     >
                                         <MasterWidget
+                                            entity="window"
                                             windowType={windowType}
                                             dataId={dataId}
                                             widgetData={[docStatusData]}
