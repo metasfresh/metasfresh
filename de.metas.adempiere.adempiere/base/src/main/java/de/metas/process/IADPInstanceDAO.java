@@ -10,12 +10,12 @@ package de.metas.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,26 +31,54 @@ import org.compiere.model.I_AD_PInstance;
 public interface IADPInstanceDAO extends ISingletonService
 {
 	/**
-	 * 
-	 * @param adPInstanceId
+	 * Saves {@link ProcessInfo} together with it's parameters.
+	 *
+	 * @param pi
+	 * @see #saveProcessInfoOnly(ProcessInfo)
+	 * @see #saveParameterToDB(int, List)
+	 */
+	void saveProcessInfo(ProcessInfo pi);
+
+	/**
+	 * Saves {@link ProcessInfo} only, excluding depending records like process parameters.
+	 *
+	 * Also, in case the {@link ProcessInfo#getAD_PInstance_ID()} is missing, this method will create it and it will set it to {@link ProcessInfo}.
+	 *
+	 * @param pi
+	 */
+	void saveProcessInfoOnly(ProcessInfo pi);
+
+	/**
+	 * Saves process parameters.
+	 *
+	 * @param adPInstanceId existing AD_PInstance_ID (mandatory)
 	 * @param piParams
-	 * @see #saveParameterToDB(ProcessInfo)
 	 */
 	void saveParameterToDB(int adPInstanceId, List<ProcessInfoParameter> piParams);
 
 	/**
 	 * Retrieve process parameters for given AD_PInstance_ID
-	 * 
+	 *
 	 * @param ctx
 	 * @param adPInstanceId AD_PInstance_ID
 	 * @return
 	 */
 	List<ProcessInfoParameter> retrieveProcessInfoParameters(Properties ctx, int adPInstanceId);
 
-	void saveProcessInfoOnly(ProcessInfo pi);
-
+	/**
+	 * Locks underlying AD_PInstance.
+	 *
+	 * @param ctx
+	 * @param adPInstanceId
+	 */
 	void lock(Properties ctx, int adPInstanceId);
 
+	/**
+	 * Unlocks underlying AD_PInstance, saves the result and logs.
+	 *
+	 * @param ctx
+	 * @param result
+	 */
 	void unlockAndSaveResult(Properties ctx, ProcessExecutionResult result);
 
 	void loadResultSummary(ProcessExecutionResult result);
@@ -59,9 +87,10 @@ public interface IADPInstanceDAO extends ISingletonService
 
 	/**
 	 * Creates a new AD_PInstance_ID.
-	 * 
-	 * NOTE: this method is NOT creating an {@link I_AD_PInstance} record.
-	 * 
+	 *
+	 * IMPORTANT: <b>this method is NOT creating an {@link I_AD_PInstance} record.</b>
+	 * If you want to create an {@link I_AD_PInstance}, please use {@link #createAD_PInstance(Properties, int, int, int)}.
+	 *
 	 * @param ctx
 	 * @return new AD_PInstance_ID
 	 */
@@ -69,7 +98,7 @@ public interface IADPInstanceDAO extends ISingletonService
 
 	/**
 	 * Creates and saves a new AD_PInstance.
-	 * 
+	 *
 	 * @param ctx
 	 * @param AD_Process_ID
 	 * @param AD_Table_ID
@@ -80,7 +109,7 @@ public interface IADPInstanceDAO extends ISingletonService
 
 	/**
 	 * Loads AD_PInstance.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adPInstanceId
 	 * @return process instance; never returns null

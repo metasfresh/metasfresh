@@ -24,6 +24,7 @@ package de.metas.handlingunits.attribute.storage;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -237,6 +238,13 @@ public interface IAttributeStorage extends IAttributeSet
 	@Override
 	BigDecimal getValueAsBigDecimal(I_M_Attribute attribute);
 
+	@Override
+	Date getValueAsDate(I_M_Attribute attribute);
+	
+	@Override
+	String getValueAsString(I_M_Attribute attribute);
+
+
 	/**
 	 * @param attribute
 	 * @return name of given attribute current value (aka. valueName)
@@ -355,5 +363,4 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @throws HUException if any storage is disposed
 	 */
 	boolean assertNotDisposedTree();
-
 }

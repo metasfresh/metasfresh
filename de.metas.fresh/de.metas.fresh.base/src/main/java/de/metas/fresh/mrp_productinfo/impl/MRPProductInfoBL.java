@@ -65,28 +65,46 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 	@Override
 	public void updateItems(
 			final IContextAware ctxProvider,
-			final List<Object> items,
-			final IParams params)
+			final List<Object> items)
 	{
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
-		final IADInfoWindowDAO adInfoWindowDAO = Services.get(IADInfoWindowDAO.class);
-
-		final I_AD_InfoWindow infoWindow = adInfoWindowDAO.retrieveInfoWindowByTableName(ctxProvider.getCtx(), I_X_MRP_ProductInfo_V.Table_Name);
-		final I_AD_InfoColumn qtyMRPColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP);
-		final I_AD_InfoColumn qtyOnHandColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOnHand);
 
 		// we need a fixed ordering to make sure that the items are always updated in the same order, in case we go multi-threaded.
 		final SortedSet<IMRPProductInfoSelector> orderedSelectors = new TreeSet<>();
 
 		for (final Object item : items)
 		{
-			final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNull(item, params);
+			final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNullForModel(item);
 			if (selector == null)
 			{
 				continue;
 			}
 			orderedSelectors.add(selector);
 		}
+		updateItems(ctxProvider, orderedSelectors);
+	}
+
+	@Override
+	public void updateItems(
+			final IContextAware ctxProvider,
+			final IParams params)
+	{
+		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
+		final List<IMRPProductInfoSelector> selectors = mrpProductInfoSelectorFactory.createForParams(params);
+
+		final SortedSet<IMRPProductInfoSelector> orderedSelectors = new TreeSet<>(selectors);
+		updateItems(ctxProvider, orderedSelectors);
+	}
+
+	private void updateItems(
+			final IContextAware ctxProvider,
+			final SortedSet<IMRPProductInfoSelector> orderedSelectors)
+	{
+		final IADInfoWindowDAO adInfoWindowDAO = Services.get(IADInfoWindowDAO.class);
+
+		final I_AD_InfoWindow infoWindow = adInfoWindowDAO.retrieveInfoWindowByTableName(ctxProvider.getCtx(), I_X_MRP_ProductInfo_V.Table_Name);
+		final I_AD_InfoColumn qtyMRPColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP);
+		final I_AD_InfoColumn qtyOnHandColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOnHand);
 
 		for (final IMRPProductInfoSelector selector : orderedSelectors)
 		{
@@ -103,10 +121,12 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 					doDBFunctionCall(functionCall, selector, ctxProvider.getTrxName());
 				}
 
-				// If the selector originates from a C_OrderLine, the also update the poor man's MRP records of the BOM-products which
+				// If the selector originates from a C_OrderLine, then also update the poor man's MRP records of the BOM-products which
 				// the given order line's product is made of.
 				// This needs to happen after having refreshed X_MRP_ProductInfo_Detail_MV, because it uses QtyOrdered_Sale_OnDate
-				if (qtyMRPColumn != null && qtyMRPColumn.isActive() && InterfaceWrapperHelper.isInstanceOf(selector.getModel(), I_C_OrderLine.class))
+				if (qtyMRPColumn != null
+						&& qtyMRPColumn.isActive()
+						&& selector.getParamPrefix().contains(I_C_OrderLine.Table_Name))
 				{
 					final String functionCall = DB_FUNCTION_X_MRP_PRODUCTINFO_DETAIL_UPDATE_POOR_MANS_MRP;
 					logMsg.append("\nCalling " + functionCall);
@@ -116,7 +136,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 
 				if (qtyOnHandColumn != null && qtyOnHandColumn.isActive())
 				{
-					updateQtyOnHandForInOutLine(ctxProvider.getCtx(), selector);
+					updateQtyOnHand(ctxProvider.getCtx(), selector);
 				}
 			}
 			finally
@@ -128,18 +148,21 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 	}
 
 	/**
-	 * Updates all {@link I_X_MRP_ProductInfo_Detail_MV}s whose product and ASI matc h the given selector and which date is greater than or equal to the <code>selector</code>'s date.
+	 * Updates all {@link I_X_MRP_ProductInfo_Detail_MV}s whose product and ASI match the given selector and which date is greater than or equal to the <code>selector</code>'s date.
 	 *
 	 * @param ctx
 	 * @param selector
 	 */
-	private void updateQtyOnHandForInOutLine(final Properties ctx, final IMRPProductInfoSelector selector)
+	private void updateQtyOnHand(final Properties ctx, final IMRPProductInfoSelector selector)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
 
 		// we do this even if selector's model is a I_X_MRP_ProductInfo_Detail_MV, because we also want to update its future siblings.
-		final List<I_X_MRP_ProductInfo_Detail_MV> list = queryBL.createQueryBuilder(I_X_MRP_ProductInfo_Detail_MV.class, selector.getModel())
+		final List<I_X_MRP_ProductInfo_Detail_MV> list = queryBL.createQueryBuilder(
+				I_X_MRP_ProductInfo_Detail_MV.class,
+				PlainContextAware.newWithThreadInheritedTrx(ctx))
+
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_DateGeneral, Operator.GREATER_OR_EQUAL, selector.getDate())
 				.addEqualsFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_M_Product_ID, selector.getM_Product_ID())
@@ -158,7 +181,8 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 		boolean resetAllQtys = false;
 		for (I_X_MRP_ProductInfo_Detail_MV item : list)
 		{
-			if (!InterfaceWrapperHelper.isInstanceOf(selector.getModel(), I_M_InOutLine.class)
+			if (selector.getModelOrNull() == null // if the model is null, then we already know that we need to reset all qtys, because there is no model to extract the delta from.
+					|| !selector.getParamPrefix().startsWith(I_M_InOutLine.Table_Name)
 					|| InterfaceWrapperHelper.isNull(item, I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_QtyOnHand))
 			{
 				resetAllQtys = true; // at least one item needs a full computation, so we can do it for all
@@ -175,7 +199,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 		BigDecimal qtyOnHand = null;
 		for (final I_X_MRP_ProductInfo_Detail_MV item : list)
 		{
-			if(!seenSelectors.add(mrpProductInfoSelectorFactory.createOrNull(item)))
+			if (!seenSelectors.add(mrpProductInfoSelectorFactory.createOrNullForModel(item)))
 			{
 				continue;
 			}
@@ -204,11 +228,11 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 				}
 				itemToUse.setQtyOnHand(qtyOnHand);
 			}
-			else if (InterfaceWrapperHelper.isInstanceOf(selector.getModel(), I_M_InOutLine.class))
+			else if (selector.getParamPrefix().startsWith(I_M_InOutLine.Table_Name))
 			{
 				// just increase or decrease by the inout line's qty
 				final IInOutBL inOutBL = Services.get(IInOutBL.class);
-				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(selector.getModel(), I_M_InOutLine.class);
+				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(selector.getModelOrNull(), I_M_InOutLine.class);
 				final BigDecimal delta = inOutBL.getEffectiveStorageChange(inOutLine);
 				itemToUse.setQtyOnHand(itemToUse.getQtyOnHand().add(delta));
 			}
@@ -249,7 +273,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 		}
 
 		qtyOnHand = storageEngine
-				.retrieveStorageRecords(new PlainContextAware(ctx), storageQuery)
+				.retrieveStorageRecords(PlainContextAware.newOutOfTrx(ctx), storageQuery)
 				.stream()
 				.map(storageRecord -> storageRecord.getQtyOnHand())
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
