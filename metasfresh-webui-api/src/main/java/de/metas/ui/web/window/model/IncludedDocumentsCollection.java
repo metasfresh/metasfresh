@@ -146,7 +146,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			throw new NullPointerException("documentId cannot be null");
 		}
-		_staleDocumentIds.add(documentId);
+		_staleDocumentIds.remove(documentId);
 	}
 
 	public final void markStaleAll()
