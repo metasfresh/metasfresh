@@ -17,13 +17,17 @@ upcoming
 ## Features
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
+  * #829 receivedVia entry not translated in Baselanguage de_DE
+
+* webui
+  * #817 Request Window in WebUI
   
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
   * #808 DocActionBL.retrieveString method is broken
   * #806 Fixes in Custom reports
-  * #819 fix/refactor CalloutRequest 
+  * #819 fix/refactor CalloutRequest
 
 # metasfresh 4.52.51 (2017-03)
   
