@@ -65,8 +65,6 @@ class MasterWidget extends Component {
             dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
 
-        console.log("change", property, value)
-
         ret = dispatch(patch(
             entity, windowType, dataId, tabId, currRowId, property, value, isModal,
             isAdvanced

@@ -48,6 +48,10 @@ class MenuOverlay extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: flattenLastElem(response.data)
                 }))
+            }).catch(err => {
+                this.setState(Object.assign({}, this.state, {
+                    queriedResults: []
+                }))
             });
         }else{
 
@@ -183,7 +187,7 @@ class MenuOverlay extends Component {
              <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
                 tabIndex={0}
-                onKeyDown={(e)=>this.handleKeyDown(e)}
+                onKeyDown={(e) => this.handleKeyDown(e)}
              >
                 {node.nodeId != 0 &&
                     <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
