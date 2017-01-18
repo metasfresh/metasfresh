@@ -73,10 +73,6 @@ class Header extends Component {
         this.toggleScrollScope(false);
     }
 
-    // handleBackdropClick = (callback) => {
-    //     this.setState(Object.assign({}, this.state, {isSubheaderShow: false}), callback);
-    // }
-
     handleMenuOverlay = (e, nodeId) => {
         const {isSubheaderShow, isSideListShow} = this.state;
         e && e.preventDefault();
@@ -99,13 +95,7 @@ class Header extends Component {
 
             });
         }
-        // if(isSubheaderShow){
-        //     this.handleBackdropClick(toggleBreadcrumb);
-        // }else if(isSideListShow){
-        //     this.handleCloseSideList(toggleBreadcrumb);
-        // }else{
-        //     toggleBreadcrumb();
-        // }
+
         if(!isSubheaderShow && !isSideListShow){
             toggleBreadcrumb();
         }
@@ -159,7 +149,6 @@ class Header extends Component {
     openModal = (windowType, type, caption, isAdvanced) => {
         const {dispatch} = this.props;
         dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
-        // this.handleBackdropClick(false);
     }
 
     handlePrint = (windowType, docId, docNo) => {
@@ -168,7 +157,6 @@ class Header extends Component {
         dispatch(printRequest(
             'window', windowType, docId, windowType + '_' + (docNo ? docNo : docId) + '.pdf'
         ));
-        // this.handleBackdropClick(false);
     }
 
     handleDelete = () => {
@@ -186,7 +174,6 @@ class Header extends Component {
     }
 
     handlePromptCancelClick = () => {
-        // this.handleBackdropClick(false);
         this.setState(Object.assign({}, this.state, {
             prompt: Object.assign({}, this.state.prompt, {
                 open: false
@@ -407,7 +394,6 @@ class Header extends Component {
                     windowType={windowType}
                     viewId={viewId}
                     closeSubheader={(e) => this.closeOverlays('isSubheaderShow')}
-                    // onClick={e => this.handleBackdropClick(false)}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
