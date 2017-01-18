@@ -13,10 +13,6 @@ import {
     flattenLastElem
 } from '../../actions/MenuActions';
 
-import {
-    updateUri
-} from '../../actions/AppActions';
-
 class MenuOverlay extends Component {
     constructor(props){
         super(props);
