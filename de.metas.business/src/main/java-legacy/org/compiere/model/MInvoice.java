@@ -1723,11 +1723,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					{
 						ol.setQtyInvoiced(ol.getQtyInvoiced().add(line.getQtyInvoiced()));
 					}
-					if (!ol.save(get_TrxName()))
-					{
-						m_processMsg = "Could not update Order Line";
-						return DocAction.STATUS_Invalid;
-					}
+					
+					ol.saveEx(get_TrxName());
 				}
 				// Order Invoiced Qty updated via Matching Inv-PO
 				else if (!isSOTrx()
@@ -1737,15 +1734,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					BigDecimal matchQty = line.getQtyInvoiced();
 					MMatchPO po = MMatchPO.create(line, null, getDateInvoiced(), matchQty);
-					if (!po.save(get_TrxName()))
-					{
-						m_processMsg = "Could not create PO Matching";
-						return DocAction.STATUS_Invalid;
-					}
-					else
-					{
-						matchPO++;
-					}
+					po.saveEx(get_TrxName());
+					matchPO++;
 				}
 			}
 
@@ -1757,11 +1747,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					rmaLine.setQtyInvoiced(rmaLine.getQtyInvoiced().add(line.getQtyInvoiced()));
 				else
 					rmaLine.setQtyInvoiced(line.getQtyInvoiced());
-				if (!rmaLine.save(get_TrxName()))
-				{
-					m_processMsg = "Could not update RMA Line";
-					return DocAction.STATUS_Invalid;
-				}
+				
+				rmaLine.saveEx(get_TrxName());
 			}
 			//
 
@@ -1850,11 +1837,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					+ ") Project " + project.getName()
 					+ " - Invoiced=" + project.getInvoicedAmt() + "->" + newAmt);
 			project.setInvoicedAmt(newAmt);
-			if (!project.save(get_TrxName()))
-			{
-				m_processMsg = "Could not update Project";
-				return DocAction.STATUS_Invalid;
-			}
+			project.saveEx(get_TrxName());
 		} 	// project
 
 		// User Validation
