@@ -355,7 +355,7 @@ class Header extends Component {
                                 <Inbox
                                     open={isInboxOpen}
                                     close={this.handleInboxOpen}
-                                    disableClickOutside={!isInboxOpen}
+                                    disableOnClickOutside={!isInboxOpen}
                                     inbox={inbox}
                                 />
 
@@ -403,6 +403,7 @@ class Header extends Component {
                     redirect={this.redirect}
                     selected={selected}
                     entity={entity}
+                    disableOnClickOutside={!isSubheaderShow}
                 />}
 
                 {showSidelist && <SideList
@@ -410,6 +411,7 @@ class Header extends Component {
                     open={isSideListShow}
                     closeOverlays={this.closeOverlays}
                     closeSideList={this.handleCloseSideList}
+                    disableOnClickOutside={!showSidelist}
                 />}
 
                 <GlobalContextShortcuts

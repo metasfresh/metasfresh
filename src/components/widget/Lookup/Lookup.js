@@ -416,7 +416,7 @@ class Lookup extends Component {
                         handleAddNew={this.handleAddNew}
                         isInputEmpty={isInputEmpty}
                         onClickOutside={this.handleBlur}
-                        disableClickOutside={!isOpen}
+                        disableOnClickOutside={!isOpen}
                         query={query}
                     />
                 }
