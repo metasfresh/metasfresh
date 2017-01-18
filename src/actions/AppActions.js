@@ -104,24 +104,19 @@ export function deleteNotification(id){
 	}
 }
 
-export function updateUri(pathname, query, prop, value, reset) {
+export function updateUri(pathname, query, prop, value) {
 	return (dispatch) => {
 		let url = pathname;
-		
-        if(reset){
-            url = pathname;
-        } else {
-            url += "?";
+        url += "?";
 
-            // add new prop
-            // or overwrite existing
-            query[prop] = value;
+        // add new prop
+        // or overwrite existing
+        query[prop] = value;
 
-            const queryKeys = Object.keys(query);
+        const queryKeys = Object.keys(query);
 
-            for(let i = 0; i < queryKeys.length; i++){
-                url += queryKeys[i] + "=" + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? "&": "");
-            }
+        for(let i = 0; i < queryKeys.length; i++){
+            url += queryKeys[i] + "=" + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? "&": "");
         }
 
 		dispatch(replace(url));

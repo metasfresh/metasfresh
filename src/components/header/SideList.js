@@ -9,7 +9,7 @@ class SideList extends Component {
     }
 
     handleClickOutside = () => {
-        const{ closeSideList } = this.props;
+        const {closeSideList} = this.props;
         closeSideList();
     }
 

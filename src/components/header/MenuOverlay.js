@@ -238,11 +238,10 @@ class MenuOverlay extends Component {
 
     linkClick = (item) => {
         
-        const {dispatch, query, pathname} = this.props;
+        const {dispatch} = this.props;
         if(item.elementId && item.type == "newRecord") {
             this.handleNewRedirect(item.elementId)
         } else if (item.elementId && item.type == "window"){
-            dispatch(updateUri(pathname, query, "", "", true));
             this.handleRedirect(item.elementId)
             dispatch(getWindowBreadcrumb(item.elementId));
         } else if (item.type == "group"){
@@ -363,23 +362,6 @@ MenuOverlay.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-function mapStateToProps(state) {
-    const { routing } = state;
-
-    const {
-        query,
-        pathname
-    } = routing.locationBeforeTransitions || {
-        query: {},
-        pathname: ""
-    }
-
-    return {
-        query,
-        pathname
-    }
-}
-
-MenuOverlay = connect(mapStateToProps)(onClickOutside(MenuOverlay));
+MenuOverlay = connect()(onClickOutside(MenuOverlay));
 
 export default MenuOverlay;
