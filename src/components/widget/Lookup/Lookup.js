@@ -69,52 +69,49 @@ class Lookup extends Component {
         // removing selection
         this.setState(Object.assign({}, this.state, {
             selected: null
-        }));
-
-        if(filterWidget) {
-            onChange(parameterName, select);
-            setSelectedItem(select[Object.keys(select)[0]]);
-
-            this.inputSearch.value = select[Object.keys(select)[0]];
-
-            this.handleBlur();
-        } else {
-            // handling selection when main is not set or set.
-
-            if(property === "") {
-                const promise = onChange(mainProperty[0].field, select);
+        }), () => {
+            if(filterWidget) {
+                onChange(parameterName, select);
+                setSelectedItem(select[Object.keys(select)[0]]);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
 
-                // handle case when there is no call to Api
-                // by the cached value
-                if(!promise){
-                    this.getAllDropdowns();
-                }else{
-                    promise.then(() => {
-                        this.getAllDropdowns();
-                    }
-                )}
+                this.handleBlur();
             } else {
-                onChange(property, select);
-                console.log('hello', this.state.list);
-                this.setState((prevState) => update(this.state, {
-                    properts: {$apply: item => {
-                        console.log(item);
-                        delete item[prevState.property];
-                        console.log(item);
-                        
-                        return item;
-                    }},
-                    list: {$set: []},
-                    property: {$set: ""}
-                }), () => {
-                    console.log('byebye', this.state.list);
+                // handling selection when main is not set or set.
 
-                    this.generatingPropsSelection();
-                });
+                if(property === "") {
+                    const promise = onChange(mainProperty[0].field, select);
+
+                    this.inputSearch.value = select[Object.keys(select)[0]];
+
+                    // handle case when there is no call to Api
+                    // by the cached value
+                    if(!promise){
+                        this.getAllDropdowns();
+                    }else{
+                        promise.then(() => {
+                            this.getAllDropdowns();
+                        }
+                    )}
+                } else {
+                    onChange(property, select);
+
+                    this.setState((prevState) => update(this.state, {
+                        properts: {$apply: item => {
+                            delete item[prevState.property];
+                            return item;
+                        }},
+                        list: {$set: []},
+                        property: {$set: ""}
+                    }), () => {
+                        this.generatingPropsSelection();
+                    });
+                }
             }
-        }
+        });
+
+
     }
 
     getAllDropdowns = () => {
@@ -253,12 +250,12 @@ class Lookup extends Component {
     }
 
     handleClear = (e) => {
-        const {onChange, properties} = this.props;
+        const {onChange, properties, defaultValue} = this.props;
         e && e.preventDefault();
         this.inputSearch.value = "";
 
         properties.map(item => {
-            onChange(item.field, null);
+            onChange(item.field, "");
         });
 
         this.setState(Object.assign({}, this.state, {
