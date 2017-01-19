@@ -16,10 +16,10 @@ import {
 import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
+import TableItemWrapper from './TableItemWrapper';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
-import TableItem from './TableItem';
 import MasterWidget from '../widget/MasterWidget';
 
 import keymap from '../../keymap.js';
@@ -416,27 +416,27 @@ class Table extends Component {
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 const index = keyProperty ? keyProperty : "rowId";
+                const included = item[key].includedDocuments;
                 ret.push(
-                    <TableItem
-                        entity={entity}
-                        fields={item[key].fields}
-                        includedDocuments={item[key].includedDocuments}
+                    <TableItemWrapper
+                        included={included}
                         key={i}
-                        rowId={item[key].rowId}
+                        item={item[key]}
+                        entity={entity}
                         tabId={tabid}
                         cols={cols}
                         type={type}
                         docId={docId}
+                        tabIndex={tabIndex}
+                        readonly={readonly}
+                        mainTable={mainTable}
                         isSelected={selected.indexOf(item[key][index]) > -1}
                         onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
                         onMouseDown={(e) => this.handleClick(e, item[key][index])}
                         onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
                         changeListenOnFalse={() => this.changeListenOnFalse()}
-                        readonly={readonly}
-                        mainTable={mainTable}
                         newRow={i === keys.length-1 ? newRow : false}
-                        tabIndex={tabIndex}
                     />
                 );
             }
@@ -593,11 +593,7 @@ class Table extends Component {
                                     page={page}
                                 />
                             </thead>
-                            <tbody
-                                ref={c => this.tbody = c}
-                            >
-                                {this.renderTableBody()}
-                            </tbody>
+                            {this.renderTableBody()}
                             <tfoot
                                 ref={c => this.tfoot = c}
                                 tabIndex={tabIndex}
@@ -607,20 +603,22 @@ class Table extends Component {
                         {this.renderEmptyInfo(rowData, tabid)}
                     </div>
                 </div>
-                {page && pageLength && <div className="row">
-                    <div className="col-xs-12">
-                        <TablePagination
-                            handleChangePage={handleChangePage}
-                            handleSelectAll={this.selectAll}
-                            pageLength={pageLength}
-                            size={size}
-                            selected={selected}
-                            page={page}
-                            orderBy={orderBy}
-                            deselect={this.deselectAllProducts}
-                        />
+                {page && pageLength &&
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <TablePagination
+                                handleChangePage={handleChangePage}
+                                handleSelectAll={this.selectAll}
+                                pageLength={pageLength}
+                                size={size}
+                                selected={selected}
+                                page={page}
+                                orderBy={orderBy}
+                                deselect={this.deselectAllProducts}
+                            />
+                        </div>
                     </div>
-                </div>}
+                }
                 {
                     promptOpen &&
                     <Prompt
@@ -637,12 +635,12 @@ class Table extends Component {
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
                 />
 
-            {!readonly &&
-                <TableContextShortcuts
-                    handleToggleQuickInput={this.handleBatchEntryToggle}
-                    handleToggleExpand={() => toggleFullScreen(!fullScreen)}
-                />
-            }
+                {!readonly &&
+                    <TableContextShortcuts
+                        handleToggleQuickInput={this.handleBatchEntryToggle}
+                        handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+                    />
+                }
             </div>
         )
     }

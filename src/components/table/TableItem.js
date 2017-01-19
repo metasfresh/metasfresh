@@ -123,13 +123,11 @@ class TableItem extends Component {
         )
     }
 
-
-
     render() {
         const {
             isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
-            onMouseDown, onDoubleClick, includedDocuments, tabid, type, docId,
-            tabIndex, mainTable
+            onMouseDown, onDoubleClick, included, tabid, type, docId,
+            tabIndex, mainTable, entity, readonly
         } = this.props;
 
 
@@ -147,6 +145,30 @@ class TableItem extends Component {
         );
     }
 }
+
+// {included && included.map((item, index) =>
+//     <TableItem
+//         entity={entity}
+//         fields={item.fields}
+//         key={index + item.rowId}
+//         rowId={item.rowId}
+//         tabId={tabid}
+//         cols={cols}
+//         type={type}
+//         docId={docId}
+//         isSelected={false}
+//         onDoubleClick={null}
+//         onMouseDown={null}
+//         onContextMenu={null}
+//         changeListenOnTrue={null}
+//         changeListenOnFalse={null}
+//         readonly={readonly}
+//         mainTable={mainTable}
+//         newRow={false}
+//         tabIndex={tabIndex}
+//         included={item.includedDocuments}
+//     />
+// )}
 
 TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired
