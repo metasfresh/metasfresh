@@ -52,6 +52,7 @@ export const getRoutes = (store) => {
                 <Route path="/window/:windowType"
                     component={(nextState) =>
                         <DocList
+                            query={nextState.location.query}
                             windowType={nextState.params.windowType}
                         />
                     }

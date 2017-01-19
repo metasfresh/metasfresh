@@ -12,7 +12,7 @@ class Container extends Component {
         const {
             docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
             dataId, windowType, breadcrumb, references, actions, showSidelist,
-            siteName, connectionError, noMargin, entity, children
+            siteName, connectionError, noMargin, entity, children, query
         } = this.props;
 
         return (
@@ -31,6 +31,7 @@ class Container extends Component {
                     actions={actions}
                     showSidelist={showSidelist}
                     siteName = {siteName}
+                    query={query}
                 />
                 {connectionError && <ErrorScreen />}
                 <NotificationHandler />

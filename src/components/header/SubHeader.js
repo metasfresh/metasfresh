@@ -38,7 +38,7 @@ class Subheader extends Component {
 
     componentDidMount() {
         const {
-            dispatch, windowType, dataId, viewId, selected, entity
+            dispatch, windowType, dataId, viewId, selected, entity, query
         } = this.props;
 
         dispatch(setActions([]));
@@ -52,7 +52,7 @@ class Subheader extends Component {
                 });
             }
 
-            dispatch(actionsRequest(entity, windowType, dataId ? dataId : viewId)).then((response) => {
+            dispatch(actionsRequest(entity, windowType, dataId ? dataId : query && query.viewId)).then((response) => {
                 dispatch(setActions(response.data.actions));
             });
         }
@@ -166,7 +166,7 @@ class Subheader extends Component {
                                 {windowType && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> {redirect('/window/'+ windowType +'/new'); closeSubheader()}}>
                                     <i className="meta-icon-report-1" /> New <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}</span>
                                 </div>}
-                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}</span></div>}
+                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> {openModal(windowType, "window", "Advanced edit", true); closeSubheader();}}><i className="meta-icon-edit" /> Advanced Edit <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}</span></div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> {handlePrint(windowType, dataId, docNo); closeSubheader()}}><i className="meta-icon-print" /> Print <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}</span></div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}</span></div>}
