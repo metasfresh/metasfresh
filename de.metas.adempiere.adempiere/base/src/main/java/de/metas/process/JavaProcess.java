@@ -38,11 +38,11 @@ import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
  *
  * Also see
  * <ul>
- * <li> {@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
- * <li> {@link IProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
- * <li> {@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
- * <li> {@link Process} annotation if you add more info about how the process shall be executed
- * <li> {@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
+ * <li>{@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
+ * <li>{@link IProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
+ * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
+ * <li>{@link Process} annotation if you add more info about how the process shall be executed
+ * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
  * </ul>
  *
  *
@@ -368,7 +368,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		final ProcessExecutionResult result = getResult();
 		final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
 
-		if(!error)
+		if (!error)
 		{
 			result.markAsSuccess(msgTrl);
 		}
@@ -438,6 +438,19 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	protected void postProcess(final boolean success)
 	{
 		// nothing at this level
+	}
+
+	/**
+	 * Schedule runnable to be executed after current transaction is committed.
+	 * If there is no current transaction, the runnable will be executed right away.
+	 * 
+	 * @param runnable
+	 */
+	protected final void runAfterCommit(final Runnable runnable)
+	{
+		Check.assumeNotNull(runnable, "Parameter runnable is not null");
+		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+				.onAfterCommit(runnable);
 	}
 
 	/**
@@ -555,7 +568,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		// In case the transaction is null, it's better to use the thread inherited trx marker.
 		// This will cover the cases when the process runs out of transaction
 		// but the transaction is managed inside the process implementation and this method is called from there.
-		if(trxManager.isNull(trxName))
+		if (trxManager.isNull(trxName))
 		{
 			trxName = ITrx.TRXNAME_ThreadInherited;
 		}
@@ -712,7 +725,6 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		getResult().setRecordToSelectAfterExecution(recordToSelectAfterExecution);
 	}
-
 
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
