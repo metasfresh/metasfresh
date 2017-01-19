@@ -196,12 +196,9 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		@Override
 		public void windowOpened(final WindowEvent e)
 		{
-			if(parameterPanel == null)
-			{
-				// nothing to do
-				return;
-			}
-			parameterPanel.focustFirstParameter();
+
+			requestFocusInWindow();
+
 		}
 	};
 
@@ -249,6 +246,24 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		}
 
 		mainPanel.revalidate();
+	}
+
+	/**
+	 * Request focus in the first parameter possible, if any is available.
+	 */
+	protected void requestFocusInWindow()
+	{
+		if (parameterPanel == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		if (CARDNAME_ProcessParameters.equals(getCurrentCardName()))
+		{
+			parameterPanel.focusFirstParameter();
+		}
+
 	}
 
 	private ProcessPanelWindow getWindow()

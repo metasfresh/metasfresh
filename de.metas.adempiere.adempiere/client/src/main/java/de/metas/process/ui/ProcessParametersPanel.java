@@ -431,15 +431,24 @@ public class ProcessParametersPanel extends CPanel // implements IProcessParamet
 	/**
 	 * #782 Request focus on the first process parameter (if possible)
 	 */
-	public void focustFirstParameter()
+	public void focusFirstParameter()
 	{
-		if(fieldEditors.size() < 1)
+		if (fieldEditors.isEmpty())
 		{
 			// there are no parameters in this process. Nothing to focus
 			return;
 		}
-		final VEditor editor = fieldEditors.get(0);
-		getComponent(editor).requestFocusInWindow();
+
+		for (int i = 0; i <= fieldEditors.size(); i++)
+		{
+			final VEditor editor = fieldEditors.get(i);
+			final boolean focusGained = getComponent(editor).requestFocusInWindow();
+			
+			if(focusGained)
+			{
+				return;
+			}
+		}
 
 	}
 }	// ProcessParameterPanel
