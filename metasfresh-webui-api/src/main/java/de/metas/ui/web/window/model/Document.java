@@ -1427,6 +1427,8 @@ public final class Document
 
 	/* package */DocumentSaveStatus saveIfHasChanges() throws RuntimeException
 	{
+		boolean wasNew = isNew();
+		
 		//
 		// Save this document
 		if (hasChanges())
@@ -1440,11 +1442,21 @@ public final class Document
 			logger.debug("Skip saving because document has NO change: {}", this);
 		}
 
+		// Update "wasNew" flag: true only if the document was new before and we just save it now.
+		wasNew = wasNew && !isNew();
+
 		//
 		// Try also saving the included documents
 		for (final IncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
 		{
 			includedDocumentsForDetailId.saveIfHasChanges();
+			
+			// If document was new we need to invalidate all included documents.
+			// NOTE: Usually this has no real effect besides some corner cases like BPartner window where Vendor and Customer tabs are referencing exactly the same record as the header.
+			if(wasNew)
+			{
+				includedDocumentsForDetailId.markStaleAll();
+			}
 		}
 
 		return setSaveStatusAndReturn(DocumentSaveStatus.saved());
