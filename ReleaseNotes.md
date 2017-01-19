@@ -19,10 +19,12 @@ upcoming
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
   * #829 receivedVia entry not translated in Baselanguage de_DE
   * #810 Propagate Attribute from Issue to Receive in Production
-  
+  * #835 Switch off Process Confirmation Window
+
 * webui
   * #817 Request Window in WebUI
-  
+  * #831 Default Document Layout for WebUI
+
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
