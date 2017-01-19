@@ -80,6 +80,13 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 		super.queueEventsUntilTrxCommit(trxName);
 		return this;
 	}
+	
+	@Override
+	public InOutGeneratedEventBus queueEventsUntilCurrentTrxCommit()
+	{
+		super.queueEventsUntilCurrentTrxCommit();
+		return this;
+	}
 
 	/**
 	 * Post events about given inouts that were generated.
