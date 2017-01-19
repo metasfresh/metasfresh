@@ -1,9 +1,15 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.util.GuavaCollectors;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -62,7 +68,7 @@ public abstract class DocumentId implements Serializable
 		{
 			return new StringDocumentId(idStr);
 		}
-		
+
 		return of(idInt);
 	}
 
@@ -75,7 +81,7 @@ public abstract class DocumentId implements Serializable
 
 		return new IntDocumentId(idInt);
 	}
-	
+
 	public static DocumentId ofString(final String idStr)
 	{
 		return new StringDocumentId(idStr);
@@ -88,6 +94,16 @@ public abstract class DocumentId implements Serializable
 			return null;
 		}
 		return of(idStr.trim());
+	}
+
+	public static final Set<Integer> toIntSet(final Collection<DocumentId> documentIds)
+	{
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return documentIds.stream().map(documentId -> documentId.toInt()).collect(GuavaCollectors.toImmutableSet());
 	}
 
 	private DocumentId()

@@ -3,6 +3,7 @@ package de.metas.ui.web.config;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.Check;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;
@@ -50,10 +51,17 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
 	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
+	private static final String TOPIC_DocumentView = "/view";
 
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
 		return TOPIC_Notifications + "/" + adUserId;
+	}
+
+	public static final String buildDocumentViewNotificationsTopicName(final String viewId)
+	{
+		Check.assumeNotEmpty(viewId, "viewId is not empty");
+		return TOPIC_DocumentView + "/" + viewId;
 	}
 
 	@Override
@@ -72,7 +80,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	public void configureMessageBroker(final MessageBrokerRegistry config)
 	{
 		// use the /topic prefix for outgoing WebSocket communication
-		config.enableSimpleBroker(TOPIC_Notifications);
+		config.enableSimpleBroker(TOPIC_Notifications, TOPIC_DocumentView);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");

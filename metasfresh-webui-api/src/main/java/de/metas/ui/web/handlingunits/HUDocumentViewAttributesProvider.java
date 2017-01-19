@@ -1,7 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -51,7 +50,7 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 
 public class HUDocumentViewAttributesProvider implements IDocumentViewAttributesProvider
 {
-	private final Supplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
+	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
 	private final ConcurrentHashMap<DocumentId, HUDocumentViewAttributes> documentId2attributes = new ConcurrentHashMap<>();
 
 	public HUDocumentViewAttributesProvider()
@@ -95,6 +94,22 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 		huAttributeStorageFactory.addAttributeStorageListener(AttributeStorage2ExecutionEventsForwarder.instance);
 
 		return huAttributeStorageFactory;
+	}
+
+	@Override
+	public void invalidateAll()
+	{
+		//
+		// Destroy AttributeStorageFactory 
+		IAttributeStorageFactory attributeStorageFactory = _attributeStorageFactory.forget();
+		if (attributeStorageFactory != null)
+		{
+			attributeStorageFactory.removeAttributeStorageListener(AttributeStorage2ExecutionEventsForwarder.instance);
+		}
+		
+		//
+		// Destroy attribute documents
+		documentId2attributes.clear();
 	}
 
 	private static final class AttributeStorage2ExecutionEventsForwarder implements IAttributeStorageListener
