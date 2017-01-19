@@ -404,7 +404,7 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity
+            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays
         } = this.props;
 
         const {selected} = this.state;
@@ -428,7 +428,7 @@ class Table extends Component {
                         type={type}
                         docId={docId}
                         isSelected={selected.indexOf(item[key][index]) > -1}
-                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
+                        onDoubleClick={() => {onDoubleClick && onDoubleClick(item[key][index]); closeOverlays()}}
                         onMouseDown={(e) => this.handleClick(e, item[key][index])}
                         onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
                         changeListenOnTrue={() => this.changeListenOnTrue()}
