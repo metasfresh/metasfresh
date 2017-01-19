@@ -485,3 +485,15 @@
 .header-item-badge.header-item {
     overflow: visible;
 }
+
+.logo-wrapper {
+    text-align: center;
+}
+
+.dashboard-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

@@ -17,7 +17,7 @@ export class Dashboard extends Component {
                 noMargin = {true}
             >
                 <div className="container-fluid dashboard-wrapper">
-                    <DraggableWrapper/>
+                    <DraggableWrapper dashboard={this.props.location.pathname} />
                 </div>
             </Container>
         );

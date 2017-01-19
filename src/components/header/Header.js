@@ -234,7 +234,6 @@ class Header extends Component {
     redirect = (where) => {
         const {dispatch} = this.props;
         dispatch(push(where));
-        this.handleBackdropClick(false);
     }
 
     render() {
