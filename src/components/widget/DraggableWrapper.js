@@ -4,6 +4,7 @@ import update from 'react/lib/update';
 import DraggableWidget from './DraggableWidget';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import {
     getUserDashboardWidgets,
@@ -86,7 +87,15 @@ export class DraggableWrapper extends Component {
     render() {
         const { cards, isVisible, idMaximized, indicators } = this.state;
         return (
-            <div>
+            <div className={this.props.dashboard == "/"?"dashboard-wrapper":""}> 
+                {this.props.dashboard == "/" &&
+                    <div className="logo-wrapper">
+                        <img src={logo} />
+                    </div>
+                }
+                
+                
+                
                 {false && indicators.length > 0 && <div className={
                     "indicators-wrapper " +
                     (idMaximized !== false ? "indicator-hidden" : "")
@@ -107,7 +116,7 @@ export class DraggableWrapper extends Component {
                     )}
                 </div>}
 
-                {cards.map((card, i) => {
+                {this.props.dashboard != "/" && cards.map((card, i) => {
                     return (
                         <DraggableWidget
                             key={card.id}
@@ -119,6 +128,7 @@ export class DraggableWrapper extends Component {
                             hideWidgets={this.hideWidgets}
                             showWidgets={this.showWidgets}
                             idMaximized={idMaximized}
+                            dashboard={this.props.dashboard}
                         />
                     );
                 })}

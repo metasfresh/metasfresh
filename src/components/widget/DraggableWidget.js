@@ -144,26 +144,38 @@ export class DraggableWidget extends Component {
                         </div>
                     }
                 </div>
-                <div className="draggable-widget-body">
-                    {id===1000001 &&
-                        <BarChart5/>
-                    }
-                    {id===1000000 &&
-                        <PieChart/>
-                    }
-                    {id===1000003 &&
-                        <StackedGroupedBars/>
-                    }
-                    {id===1000002 &&
-                        <PieChart2/>
-                    }
-                    {id===1000006 &&
-                        <StackedGroupedBars2/>
-                    }
-                    {id===1000007 &&
-                        <BarChart4/>
-                    }
-                </div>
+                {this.props.dashboard == "/dashboard2" && 
+                    <div className="draggable-widget-body">
+                        {id===1000001 &&
+                            <BarChart5/>
+                        }
+                        {id===1000000 &&
+                            <PieChart/>
+                        }
+                        {id===1000003 &&
+                            <StackedGroupedBars/>
+                        }
+                        {id===1000002 &&
+                            <PieChart2/>
+                        }
+                        {id===1000006 &&
+                            <StackedGroupedBars2/>
+                        }
+                        {id===1000007 &&
+                            <BarChart4/>
+                        }
+                    </div>
+                }
+                {this.props.dashboard == "/dashboard1" && 
+                    <div className="draggable-widget-body">
+                        <iframe
+                            src={!refresh && url}
+                            scrolling="no"
+                            frameBorder="no"
+                        ></iframe>
+                    </div>
+                }
+                
             </div>
 
 
