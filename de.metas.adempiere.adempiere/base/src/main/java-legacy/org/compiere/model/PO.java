@@ -3463,7 +3463,12 @@ public abstract class PO
 			else if (p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value == null || value.length() == 0)
+				if(IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
+				{
+					value = null;
+				}
+				
+				if (value == null || value.isEmpty())
 				{
 					// metas: using AD_Org_ID as additional parameter
 					value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
