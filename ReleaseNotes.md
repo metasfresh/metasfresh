@@ -18,7 +18,8 @@ upcoming
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
   * #829 receivedVia entry not translated in Baselanguage de_DE
-
+  * #810 Propagate Attribute from Issue to Receive in Production
+  
 * webui
   * #817 Request Window in WebUI
   
@@ -28,6 +29,7 @@ upcoming
   * #808 DocActionBL.retrieveString method is broken
   * #806 Fixes in Custom reports
   * #819 fix/refactor CalloutRequest
+  * #806 Customs report minor fixes
 
 # metasfresh 4.52.51 (2017-03)
   
