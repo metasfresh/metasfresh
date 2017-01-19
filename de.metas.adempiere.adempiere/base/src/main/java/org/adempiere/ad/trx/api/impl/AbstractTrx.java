@@ -549,6 +549,15 @@ public abstract class AbstractTrx implements ITrx
 		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.get());
 		return value;
 	}
+	
+	@Override
+	public <T> T getProperty(final String name, final Function<ITrx, T> valueInitializer)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
+		return value;
+	}
+
 
 	protected final void setDebugConnectionBackendId(final String debugConnectionBackendId)
 	{
