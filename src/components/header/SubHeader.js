@@ -146,7 +146,7 @@ class Subheader extends Component {
     render() {
         const {
             windowType, onClick, references, actions, dataId, viewId, docNo, openModal,
-            handlePrint, handleDelete, redirect, handleClone, dispatch
+            handlePrint, handleDelete, redirect, handleClone, dispatch, closeSubheader
         } = this.props;
 
         const {prompt} = this.state;
@@ -163,11 +163,11 @@ class Subheader extends Component {
                         <div className="subheader-row">
                             <div className=" subheader-column js-subheader-column" tabIndex={0}>
                                 <div className="js-spacer"/>
-                                {windowType && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> redirect('/window/'+ windowType +'/new')}>
+                                {windowType && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> {redirect('/window/'+ windowType +'/new'); closeSubheader()}}>
                                     <i className="meta-icon-report-1" /> New <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}</span>
                                 </div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> openModal(windowType, "window", "Advanced edit", true)}><i className="meta-icon-edit" /> Advanced Edit <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}</span></div>}
-                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handlePrint(windowType, dataId, docNo)}><i className="meta-icon-print" /> Print <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}</span></div>}
+                                {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> {handlePrint(windowType, dataId, docNo); closeSubheader()}}><i className="meta-icon-print" /> Print <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}</span></div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleClone(windowType, dataId)}><i className="meta-icon-duplicate" /> Clone</div>}
                                 {dataId && <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> handleDelete()}><i className="meta-icon-delete" /> Delete <span className="tooltip-inline">{keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}</span></div>}
                                 <div className="subheader-item js-subheader-item" tabIndex={0} onClick={()=> redirect('/logout')}><i className="meta-icon-logout" /> Log out</div>
