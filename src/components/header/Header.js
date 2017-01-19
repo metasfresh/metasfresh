@@ -405,9 +405,8 @@ class Header extends Component {
                     disableOnClickOutside={!isSubheaderShow}
                 />}
 
-                {showSidelist && <SideList
+                {showSidelist && isSideListShow && <SideList
                     windowType={windowType}
-                    open={isSideListShow}
                     closeOverlays={this.closeOverlays}
                     closeSideList={this.handleCloseSideList}
                     disableOnClickOutside={!showSidelist}

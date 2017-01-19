@@ -284,7 +284,7 @@ class RawWidget extends Component {
                             placeholder={widgetFields.emptyText}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}
@@ -337,7 +337,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                             ref={c => {autoFocus && c.focus()}}
@@ -362,7 +362,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetFields.field, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}
@@ -389,7 +389,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}
@@ -416,7 +416,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}
@@ -441,7 +441,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
                             ref={c => {(c && autoFocus) && c.focus()}}

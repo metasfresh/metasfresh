@@ -33,7 +33,7 @@ class Breadcrumb extends Component {
         const {
             handleMenuOverlay, menuOverlay, windowType, siteName, openModal
         } = this.props;
-        
+
         return (<div key={index}>
             {!!index && <span className="divider">/</span>}
             <div className={"header-btn tooltip-parent"}>
@@ -101,6 +101,7 @@ class Breadcrumb extends Component {
 
                     {docNo && <div className="header-input-id header-input-sm">
                         <MasterWidget
+                            entity="window"
                             windowType={windowType}
                             dataId={dataId}
                             widgetData={[docNoData]}
