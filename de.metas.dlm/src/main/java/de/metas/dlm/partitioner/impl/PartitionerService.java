@@ -195,7 +195,7 @@ public class PartitionerService implements IPartitionerService
 			}
 			else
 			{
-				Loggables.get().addLog("Iterating the config's lines and working on one record for each line");
+				Loggables.get().addLog("Iterating the config's lines and starting with on one record for each line");
 				// iterate the lines and look for the first record out o
 				for (final PartitionerConfigLine line : lines)
 				{
@@ -207,9 +207,15 @@ public class PartitionerService implements IPartitionerService
 					final Partition partition = attachToPartitionAndCheck(request,
 							mkIterateResult(
 									Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
-									null,
+									null, // no exiting handlers
 									ctxAware));
 					id2Partition.put(partition.getDLM_Partition_ID(), partition);
+
+					if (partition.isAborted())
+					{
+						Loggables.get().withLogger(logger, Level.WARN).addLog("Aborting while working on config line={}", line);
+						break; // abort
+					}
 				}
 			}
 		}
@@ -247,6 +253,12 @@ public class PartitionerService implements IPartitionerService
 		return null;
 	}
 
+	/**
+	 *
+	 * @param request
+	 * @param initialResult
+	 * @return never {@code null}.
+	 */
 	private Partition attachToPartitionAndCheck(
 			final CreatePartitionRequest request,
 			final CreatePartitionIterateResult initialResult)
@@ -255,6 +267,11 @@ public class PartitionerService implements IPartitionerService
 
 		final CreatePartitionIterateResult result = attachToPartition(initialResult, config);
 		final Partition partition = result.getPartition();
+
+		if (result.isHandlerSignaledToStop())
+		{
+			return partition.withAborted(true);
+		}
 
 		try
 		{

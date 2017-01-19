@@ -138,7 +138,7 @@ public class MInOut extends X_M_InOut implements DocAction
 
 			if (!forceDelivery)
 			{
-				BigDecimal maxQty = Env.ZERO;
+				BigDecimal maxQty = BigDecimal.ZERO;
 				for (int ll = 0; ll < storages.length; ll++)
 					maxQty = maxQty.add(storages[ll].getQtyOnHand());
 				if (DELIVERYRULE_Availability.equals(order.getDeliveryRule()))
@@ -163,7 +163,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					lineQty = qty;
 				MInOutLine line = new MInOutLine(retValue);
 				line.setOrderLine(oLines[i], storages[ll].getM_Locator_ID(),
-						order.isSOTrx() ? lineQty : Env.ZERO);
+						order.isSOTrx() ? lineQty : BigDecimal.ZERO);
 				line.setQty(lineQty); // Correct UOM for QtyEntered
 				if (oLines[i].getQtyEntered().compareTo(oLines[i].getQtyOrdered()) != 0)
 					line.setQtyEntered(lineQty
@@ -821,15 +821,15 @@ public class MInOut extends X_M_InOut implements DocAction
 			line.setRef_InOutLine_ID(0);
 			line.setIsInvoiced(false);
 			//
-			line.setConfirmedQty(Env.ZERO);
-			line.setPickedQty(Env.ZERO);
-			line.setScrappedQty(Env.ZERO);
-			line.setTargetQty(Env.ZERO);
+			line.setConfirmedQty(BigDecimal.ZERO);
+			line.setPickedQty(BigDecimal.ZERO);
+			line.setScrappedQty(BigDecimal.ZERO);
+			line.setTargetQty(BigDecimal.ZERO);
 			// Set Locator based on header Warehouse
 			if (getM_Warehouse_ID() != otherShipment.getM_Warehouse_ID())
 			{
 				line.setM_Locator_ID(0);
-				line.setM_Locator_ID(Env.ZERO);
+				line.setM_Locator_ID(BigDecimal.ZERO);
 			}
 			//
 			if (counter)
@@ -1291,8 +1291,8 @@ public class MInOut extends X_M_InOut implements DocAction
 			m_processMsg = "@NoLines@";
 			return DocAction.STATUS_Invalid;
 		}
-		BigDecimal Volume = Env.ZERO;
-		BigDecimal Weight = Env.ZERO;
+		BigDecimal Volume = BigDecimal.ZERO;
+		BigDecimal Weight = BigDecimal.ZERO;
 
 		// Mandatory Attributes
 		for (int i = 0; i < lines.length; i++)
@@ -1415,8 +1415,8 @@ public class MInOut extends X_M_InOut implements DocAction
 			BigDecimal Qty = sLine.getMovementQty();
 			if (MovementType.charAt(1) == '-')  // C- Customer Shipment - V- Vendor Return
 				Qty = Qty.negate();
-			BigDecimal QtySO = Env.ZERO;
-			BigDecimal QtyPO = Env.ZERO;
+			BigDecimal QtySO = BigDecimal.ZERO;
+			BigDecimal QtyPO = BigDecimal.ZERO;
 
 			// Update Order Line
 			MOrderLine oLine = null;
@@ -1479,8 +1479,8 @@ public class MInOut extends X_M_InOut implements DocAction
 						BigDecimal QtyMA = ma.getMovementQty();
 						if (MovementType.charAt(1) == '-')  // C- Customer Shipment - V- Vendor Return
 							QtyMA = QtyMA.negate();
-						BigDecimal reservedDiff = Env.ZERO;
-						BigDecimal orderedDiff = Env.ZERO;
+						BigDecimal reservedDiff = BigDecimal.ZERO;
+						BigDecimal orderedDiff = BigDecimal.ZERO;
 						if (sLine.getC_OrderLine_ID() != 0)
 						{
 							if (isSOTrx())
@@ -1498,8 +1498,8 @@ public class MInOut extends X_M_InOut implements DocAction
 								sLine.getM_Product_ID(),
 								ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								QtyMA,
-								sameWarehouse ? reservedDiff : Env.ZERO,
-								sameWarehouse ? orderedDiff : Env.ZERO,
+								sameWarehouse ? reservedDiff : BigDecimal.ZERO,
+								sameWarehouse ? orderedDiff : BigDecimal.ZERO,
 								get_TrxName());
 						if (!sameWarehouse)
 						{
@@ -1512,7 +1512,7 @@ public class MInOut extends X_M_InOut implements DocAction
 									Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(),
 									sLine.getM_Product_ID(),
 									ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
-									Env.ZERO, reservedDiff, orderedDiff, get_TrxName());
+									BigDecimal.ZERO, reservedDiff, orderedDiff, get_TrxName());
 						}
 						// Create Transaction
 						mtrx = new MTransaction(getCtx(),
@@ -1536,8 +1536,8 @@ public class MInOut extends X_M_InOut implements DocAction
 				// sLine.getM_AttributeSetInstance_ID() != 0
 				if (mtrx == null)
 				{
-					BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : Env.ZERO;
-					BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : Env.ZERO;
+					BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : BigDecimal.ZERO;
+					BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : BigDecimal.ZERO;
 
 					// Fallback: Update Storage - see also VMatch.createMatchRecord
 					// task 08999 : update the storage async
@@ -1558,7 +1558,7 @@ public class MInOut extends X_M_InOut implements DocAction
 								Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID(),
 								Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(), +sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
-								Env.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
+								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
 					}
 					// FallBack: Create Transaction
 					mtrx = new MTransaction(getCtx(), sLine.getAD_Org_ID(),
@@ -2064,7 +2064,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		{
 			// MWarehouse w = MWarehouse.get(getCtx(), getM_Warehouse_ID());
 			line.setM_Warehouse_ID(getM_Warehouse_ID());
-			line.setM_Locator_ID(inTrx ? Env.ZERO : line.getMovementQty()); // default Locator
+			line.setM_Locator_ID(inTrx ? BigDecimal.ZERO : line.getMovementQty()); // default Locator
 			needSave = true;
 		}
 
@@ -2116,15 +2116,15 @@ public class MInOut extends X_M_InOut implements DocAction
 					if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 					{
 						MInOutLineMA ma = new MInOutLineMA(line,
-								storage.getM_AttributeSetInstance_ID(),
+								0, // storage.getM_AttributeSetInstance_ID(),
 								qtyToDeliver);
 						ma.saveEx();
-						qtyToDeliver = Env.ZERO;
+						qtyToDeliver = BigDecimal.ZERO;
 					}
 					else
 					{
 						MInOutLineMA ma = new MInOutLineMA(line,
-								storage.getM_AttributeSetInstance_ID(),
+								0, // storage.getM_AttributeSetInstance_ID(),
 								storage.getQtyOnHand());
 						ma.saveEx();
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
@@ -2238,7 +2238,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			counterLine.setClientOrg(counter);
 			counterLine.setM_Warehouse_ID(counter.getM_Warehouse_ID());
 			counterLine.setM_Locator_ID(0);
-			counterLine.setM_Locator_ID(inTrx ? Env.ZERO : counterLine.getMovementQty());
+			counterLine.setM_Locator_ID(inTrx ? BigDecimal.ZERO : counterLine.getMovementQty());
 			//
 			counterLine.save(get_TrxName());
 		}
@@ -2295,7 +2295,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				BigDecimal old = line.getMovementQty();
 				if (old.signum() != 0)
 				{
-					line.setQty(Env.ZERO);
+					line.setQty(BigDecimal.ZERO);
 					line.addDescription("Void (" + old + ")");
 					line.save(get_TrxName());
 				}
@@ -2699,7 +2699,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	} // getApprovalAmt
 
 	/**

@@ -148,6 +148,24 @@ public class FindPathIterateResult implements IIterateResult
 		return queueItemsToProcess.removeFirst();
 	}
 
+	@Override
+	public void registerHandler(IIterateResultHandler handler)
+	{
+		handlerSupport.registerListener(handler);
+	}
+
+	@Override
+	public List<IIterateResultHandler> getRegisteredHandlers()
+	{
+		return handlerSupport.getRegisteredHandlers();
+	}
+
+	@Override
+	public boolean isHandlerSignaledToStop()
+	{
+		return handlerSupport.isHandlerSignaledToStop();
+	}
+
 	public boolean isFoundGoalRecord()
 	{
 		return foundGoal;
@@ -197,17 +215,5 @@ public class FindPathIterateResult implements IIterateResult
 	public String toString()
 	{
 		return "FindPathIterateResult [start=" + start + ", goal=" + goal + ", size=" + size + ", foundGoal=" + foundGoal + ", queueItemsToProcess.size()=" + queueItemsToProcess.size() + "]";
-	}
-
-	@Override
-	public void registerHandler(IIterateResultHandler handler)
-	{
-		handlerSupport.registerListener(handler);
-	}
-
-	@Override
-	public List<IIterateResultHandler> getRegisteredHandlers()
-	{
-		return handlerSupport.getRegisteredHandlers();
 	}
 }

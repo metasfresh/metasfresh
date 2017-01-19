@@ -1,7 +1,7 @@
 
 
-DROP VIEW IF EXISTS DLM_Partition_Size_per_Table_V;
-CREATE VIEW DLM_Partition_Size_per_Table_V AS
+DROP VIEW IF EXISTS public.DLM_Partition_Size_per_Table_V;
+CREATE VIEW public.DLM_Partition_Size_per_Table_V AS
 SELECT 
 	p.AD_Client_ID,
 	p.AD_Org_ID,

@@ -48,6 +48,9 @@ public class IterateResultHandlerSupport
 
 	private List<IIterateResultHandler> handlers = new ArrayList<>();
 
+	// as soon as we have >1 handler implementation, we can consider to e.g. have a map handler => last result instead of this boolean.
+	private boolean handlerSignaledToStop = false;
+
 	/**
 	 * Invoke all handlers. If anoyone of them returns {@link AddResult#STOP} then it returns "STOP".
 	 * Else If anoyone of them returns {@link AddResult#NOT_ADDED_CONTINUE} then it returns "NOT_ADDED_CONTINUE".
@@ -62,6 +65,7 @@ public class IterateResultHandlerSupport
 
 		if (differentResults.contains(AddResult.STOP))
 		{
+			handlerSignaledToStop = true;
 			return AddResult.STOP;
 		}
 		if (differentResults.contains(AddResult.NOT_ADDED_CONTINUE))
@@ -69,6 +73,11 @@ public class IterateResultHandlerSupport
 			return AddResult.NOT_ADDED_CONTINUE;
 		}
 		return AddResult.ADDED_CONTINUE;
+	}
+
+	public boolean isHandlerSignaledToStop()
+	{
+		return handlerSignaledToStop;
 	}
 
 	/**
@@ -87,4 +96,9 @@ public class IterateResultHandlerSupport
 		return ImmutableList.copyOf(handlers);
 	}
 
+	@Override
+	public String toString()
+	{
+		return "IterateResultHandlerSupport [handlers=" + handlers + "]";
+	}
 }

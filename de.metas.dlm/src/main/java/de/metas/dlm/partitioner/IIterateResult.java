@@ -112,5 +112,12 @@ public interface IIterateResult
 	 */
 	void registerHandler(IIterateResultHandler handler);
 
+	/**
+	 * Return the handlers that were registered.
+	 *
+	 * @return
+	 */
 	List<IIterateResultHandler> getRegisteredHandlers();
+
+	boolean isHandlerSignaledToStop();
 }

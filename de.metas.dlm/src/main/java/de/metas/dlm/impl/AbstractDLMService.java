@@ -550,6 +550,8 @@ public abstract class AbstractDLMService implements IDLMService
 						.setReferencedTableName(ref.getDLM_Referenced_Table().getTableName())
 						.setReferencingColumnName(ref.getDLM_Referencing_Column().getColumnName())
 						.setDLM_Partition_Config_Reference_ID(ref.getDLM_Partition_Config_Reference_ID())
+
+						// IsPartitionBoundary is loaded from AD_Column
 						.setIsPartitionBoundary(
 								InterfaceWrapperHelper.create(ref.getDLM_Referencing_Column(), de.metas.dlm.model.I_AD_Column.class)
 										.isDLMPartitionBoundary());

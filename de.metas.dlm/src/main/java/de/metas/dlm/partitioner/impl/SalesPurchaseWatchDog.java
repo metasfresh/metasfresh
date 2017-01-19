@@ -1,13 +1,19 @@
 package de.metas.dlm.partitioner.impl;
 
+import java.util.Date;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.dlm.partitioner.IIterateResultHandler;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -40,45 +46,107 @@ import de.metas.dlm.partitioner.IIterateResultHandler;
  */
 public class SalesPurchaseWatchDog implements IIterateResultHandler
 {
+	private static final transient Logger logger = LogManager.getLogger(SalesPurchaseWatchDog.class);
+
 	private ITableRecordReference lastSalesReference;
+	private Date lastSalesReferenceSeen;
+
 	private ITableRecordReference lastPurchaseReference;
+	private Date lastPurchaseReferenceSeen;
+
+	private ITableRecordReference lastHUReference;
+	private Date lastHUReferenceSeen;
 
 	@Override
 	public AddResult onRecordAdded(final ITableRecordReference r, final AddResult preliminaryResult)
 	{
 		final PlainContextAware ctx = PlainContextAware.newWithThreadInheritedTrx(Env.getCtx());
 		final Object model = r.getModel(ctx);
-		if (!InterfaceWrapperHelper.hasModelColumnName(model, "IsSOTrx") && !InterfaceWrapperHelper.hasModelColumnName(model, "SOTrx"))
+
+		final String tableName = r.getTableName();
+		if (tableName.startsWith("M_HU") && !tableName.startsWith("M_HU_Assign"))
 		{
-			return preliminaryResult;
+			lastHUReference = r;
+			lastHUReferenceSeen = SystemTime.asDate();
+		}
+		else
+		{
+			setSalesOrPurchaseReference(r, model);
+		}
+		if (getNotNullReferenceCount() > 1)
+		{
+			Loggables.get().withLogger(logger, Level.WARN).addLog("Records which do not fit together are added to the same result.\n"
+					+ "Signaling the crawler to stop! The records are:\n"
+					+ "IsSOTrx=true, seen at {}: {}\n"
+					+ "IsSOTrx=false, seen at {}: {}\n"
+					+ "HU-record, seen at {}: {}\n",
+					lastSalesReferenceSeen, lastSalesReference, lastPurchaseReferenceSeen, lastPurchaseReference, lastHUReferenceSeen, lastHUReference);
+
+			return AddResult.STOP;
 		}
 
-		final Boolean soTrx = Util.coalesce(InterfaceWrapperHelper.getValueOrNull(model, "IsSOTrx"), InterfaceWrapperHelper.getValueOrNull(model, "SOTrx"));
+		return preliminaryResult;
+	}
+
+	private int getNotNullReferenceCount()
+	{
+		int result = 0;
+		if (lastHUReference != null)
+		{
+			result++;
+		}
+		if (lastSalesReference != null)
+		{
+			result++;
+		}
+		if (lastPurchaseReference != null)
+		{
+			result++;
+		}
+		return result;
+	}
+
+	/**
+	 * If the given model has {@code IsSOTrx} or {@code SOTrx}, then this method set the respective members within this class.
+	 *
+	 * @param r
+	 * @param model
+	 */
+	private void setSalesOrPurchaseReference(final ITableRecordReference r, final Object model)
+	{
+		final String soTrxColName1 = "IsSOTrx";
+		final String soTrxColName2 = "SOTrx";
+
+		if (!InterfaceWrapperHelper.hasModelColumnName(model, soTrxColName1) && !InterfaceWrapperHelper.hasModelColumnName(model, soTrxColName2))
+		{
+			return;
+		}
+
+		final Boolean soTrx = Util.coalesce(
+				InterfaceWrapperHelper.getValueOrNull(model, soTrxColName1),
+				InterfaceWrapperHelper.getValueOrNull(model, soTrxColName2));
+
 		if (soTrx == null)
 		{
-			return preliminaryResult;
+			return;
 		}
 
 		if (soTrx)
 		{
 			lastSalesReference = r;
+			lastSalesReferenceSeen = SystemTime.asDate();
 		}
 		else
 		{
 			lastPurchaseReference = r;
+			lastPurchaseReferenceSeen = SystemTime.asDate();
 		}
+	}
 
-		if (lastPurchaseReference != null && lastSalesReference != null)
-		{
-			Loggables.get().addLog("Earlier a record with IsSOTrx={} was added and now a record with IsSOTrx={} is added.\n"
-					+ "Signaling the crawler to stop! The two records are:\n"
-					+ "IsSOTrx=true: {}\n"
-					+ "IsSOTrx=false: {}\n",
-					!soTrx, soTrx, lastSalesReference, lastPurchaseReference);
-			return AddResult.STOP;
-		}
-
-		return preliminaryResult;
+	@Override
+	public String toString()
+	{
+		return "SalesPurchaseWatchDog [lastSalesReference=" + lastSalesReference + ", lastPurchaseReference=" + lastPurchaseReference + "]";
 	}
 
 }

@@ -13,7 +13,7 @@
  * For the text or an alternative of this public license, you may reach us *
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
  * or via info@compiere.org or http://www.compiere.org/license.html *
- * 
+ *
  * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ] *
  *              Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
@@ -104,7 +104,7 @@ import de.metas.process.IProcessPrecondition;
  *      - dataChanged (from MTable)
  *          - setCurrentRow
  *              - Update all Field Values
- * 
+ *
  *      - setValue
  *          - Update Field Value
  *          - Callout
@@ -248,10 +248,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/** Order By Array if SortNo 1..3 */
 	private String[] m_OrderBys = new String[3];
 	/** List of Key Parents */
-	private ArrayList<String> m_parents = new ArrayList<String>(2);
+	private ArrayList<String> m_parents = new ArrayList<>(2);
 
 	/** Map of ColumnName of source field (key) and the dependant field (value) */
-	private MultiMap<String, GridField> m_depOnField = new MultiMap<String, GridField>();
+	private MultiMap<String, GridField> m_depOnField = new MultiMap<>();
 
 	/** Async Loader */
 	private Loader m_loader = null;
@@ -344,7 +344,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Initialize Tab with record from AD_Tab_v.
-	 * 
+	 *
 	 * If this tab was already initialized, this method does nothing and returns true.
 	 *
 	 * @param async true if the tab shall be initialized asynchronously (in another thread)
@@ -583,7 +583,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public ArrayList<String> getDependentOn()
 	{
-		final ArrayList<String> list = new ArrayList<String>();
+		final ArrayList<String> list = new ArrayList<>();
 		// Display
 		Evaluator.parseDepends(list, m_vo.getDisplayLogic()); // metas: 03093
 		//
@@ -2461,7 +2461,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			if (m_Chats == null)
 			{
-				m_Chats = new HashMap<Integer, Integer>();
+				m_Chats = new HashMap<>();
 			}
 			else
 			{
@@ -2558,7 +2558,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			if (m_Lock == null)
 			{
-				m_Lock = new ArrayList<Integer>();
+				m_Lock = new ArrayList<>();
 			}
 			else
 			{
@@ -3656,7 +3656,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public List<GridTab> getIncludedTabs()
 	{
-		final List<GridTab> list = new ArrayList<GridTab>(1);
+		final List<GridTab> list = new ArrayList<>(1);
 		for (final GridField field : getFields())
 		{
 			if (field.getIncluded_Tab_ID() > 0)
@@ -3710,7 +3710,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	// metas
 	public List<Integer> getKeyIDs()
 	{
-		final List<Integer> ids = new ArrayList<Integer>();
+		final List<Integer> ids = new ArrayList<>();
 		final GridTable gridTable = getTableModel();
 		final int currentRow = getCurrentRow();
 
@@ -4064,9 +4064,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Returns if we are in record copying mode.
-	 * 
+	 *
 	 * NOTE: this information is available while we are in {@link #dataNew(DataNewCopyMode)} method.
-	 * 
+	 *
 	 * @return true if we are in copy record mode (i.e. {@link #dataNew(DataNewCopyMode)} was called with copy with/without details
 	 */
 	public boolean isDataNewCopy()
@@ -4076,7 +4076,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Sets currently active copying mode when {@link #dataNew(DataNewCopyMode)}.
-	 * 
+	 *
 	 * @param dataNewCopyMode
 	 */
 	private final void setDataNewCopyMode(final DataNewCopyMode dataNewCopyMode)
@@ -4182,7 +4182,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Creates a {@link IQueryBuilder} which will return exactly the rows that we have in this {@link GridTab}.
-	 * 
+	 *
 	 * FIXME: no ORDER BY is enforced
 	 *
 	 * @param modelClass
@@ -4272,7 +4272,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			recordId2attachementId.remove(recordId);
 
 			// #578 commented out because it was preventing the attachment from being put in the map when loaded.
-			
+
 			// if(attachmentId == null)
 			// {
 			// return;

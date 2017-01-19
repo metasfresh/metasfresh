@@ -1,6 +1,6 @@
 
-DROP VIEW IF EXISTS DLM_Partition_Record_V;
-CREATE VIEW DLM_Partition_Record_V AS
+DROP VIEW IF EXISTS public.DLM_Partition_Record_V;
+CREATE VIEW public.DLM_Partition_Record_V AS
 SELECT 
 	c.DLM_Partition_Config_ID, p.DLM_Partition_ID, t.TableName, t.IsDLM, t.AD_Table_ID, 
 	records.Record_ID AS DLM_Partition_Record_V_ID,

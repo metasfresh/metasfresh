@@ -174,15 +174,6 @@ public class StorageEngine
 		final MProduct product = MProduct.get(line.getCtx(), line.getM_Product_ID());
 		final String mmPolicy = Services.get(IProductBL.class).getMMPolicy(product);
 
-		// Need to have Location
-		if (line.getM_Locator_ID() == 0)
-		{
-			// MWarehouse w = MWarehouse.get(getCtx(), getM_Warehouse_ID());
-			// line.setM_Warehouse_ID(M_Warehouse_ID);
-			// line.setM_Locator_ID(getM_Locator_ID(line.getCtx(),line.getM_Warehouse_ID(), line.getM_Product_ID(),line.getM_AttributeSetInstance_ID(), incomingTrx ? Env.ZERO : line.getMovementQty(),
-			// line.get_TrxName()));
-		}
-
 		// Attribute Set Instance
 		// Create an Attribute Set Instance to any receipt FIFO/LIFO
 		if (line.getM_AttributeSetInstance_ID() == 0)
@@ -192,24 +183,7 @@ public class StorageEngine
 			// (we receive materials to our warehouse/locator)
 			if (incomingTrx)
 			{
-				MAttributeSetInstance asi = null;
-				// auto balance negative on hand
-				MStorage[] storages = MStorage.getWarehouse(line.getCtx(), M_Warehouse_ID, line.getM_Product_ID(), 0,
-						null, MClient.MMPOLICY_FiFo.equals(mmPolicy), false, line.getM_Locator_ID(), line.get_TrxName());
-				for (final I_M_Storage storage : storages)
-				{
-					if (storage.getQtyOnHand().signum() < 0)
-					{
-						asi = new MAttributeSetInstance(line.getCtx(), storage.getM_AttributeSetInstance_ID(), line.get_TrxName());
-						break;
-					}
-				}
-				// always create asi so fifo/lifo work.
-				if (asi == null)
-				{
-					asi = MAttributeSetInstance.create(line.getCtx(), product, line.get_TrxName());
-				}
-				line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+				line.setM_AttributeSetInstance_ID(0 /* asi.getM_AttributeSetInstance_ID() */);
 				log.info("New ASI=" + line);
 				createMA(line, line.getM_AttributeSetInstance_ID(), line.getMovementQty());
 			}
@@ -226,12 +200,16 @@ public class StorageEngine
 				{
 					if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 					{
-						createMA(line, storage.getM_AttributeSetInstance_ID(), qtyToDeliver);
+						createMA(line,
+								0, // storage.getM_AttributeSetInstance_ID(),
+								qtyToDeliver);
 						qtyToDeliver = BigDecimal.ZERO;
 					}
 					else
 					{
-						createMA(line, storage.getM_AttributeSetInstance_ID(), storage.getQtyOnHand());
+						createMA(line,
+								0, // storage.getM_AttributeSetInstance_ID(),
+								storage.getQtyOnHand());
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
 						log.debug("QtyToDeliver=" + qtyToDeliver);
 					}

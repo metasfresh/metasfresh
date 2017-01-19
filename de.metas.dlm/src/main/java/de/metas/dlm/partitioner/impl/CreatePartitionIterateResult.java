@@ -258,6 +258,12 @@ public class CreatePartitionIterateResult implements IStorableIterateResult
 	}
 
 	@Override
+	public boolean isHandlerSignaledToStop()
+	{
+		return handlerSupport.isHandlerSignaledToStop();
+	}
+
+	@Override
 	public String toString()
 	{
 		return "IterateResult [queueItemsToProcess.size()=" + queueItemsToProcess.size()

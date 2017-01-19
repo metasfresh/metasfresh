@@ -605,16 +605,16 @@ public class MMovement extends X_M_Movement implements DocAction
 				if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 				{
 					MMovementLineMA ma = new MMovementLineMA (line,
-							storage.getM_AttributeSetInstance_ID(),
+							0, // storage.getM_AttributeSetInstance_ID(),
 							qtyToDeliver);
 					ma.saveEx();
-					qtyToDeliver = Env.ZERO;
+					qtyToDeliver = BigDecimal.ZERO;
 					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
 				}
 				else
 				{
 					MMovementLineMA ma = new MMovementLineMA (line,
-								storage.getM_AttributeSetInstance_ID(),
+								0, // storage.getM_AttributeSetInstance_ID(),
 								storage.getQtyOnHand());
 					ma.saveEx();
 					qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
@@ -676,9 +676,9 @@ public class MMovement extends X_M_Movement implements DocAction
 			{
 				MMovementLine line = lines[i];
 				BigDecimal old = line.getMovementQty();
-				if (old.compareTo(Env.ZERO) != 0)
+				if (old.compareTo(BigDecimal.ZERO) != 0)
 				{
-					line.setMovementQty(Env.ZERO);
+					line.setMovementQty(BigDecimal.ZERO);
 					line.addDescription("Void (" + old + ")");
 					line.save(get_TrxName());
 				}
@@ -767,9 +767,9 @@ public class MMovement extends X_M_Movement implements DocAction
 			rLine.setReversalLine_ID(oLine.getM_MovementLine_ID());
 			//
 			rLine.setMovementQty(rLine.getMovementQty().negate());
-			rLine.setTargetQty(Env.ZERO);
-			rLine.setScrappedQty(Env.ZERO);
-			rLine.setConfirmedQty(Env.ZERO);
+			rLine.setTargetQty(BigDecimal.ZERO);
+			rLine.setScrappedQty(BigDecimal.ZERO);
+			rLine.setConfirmedQty(BigDecimal.ZERO);
 			rLine.setProcessed(false);
 			if (!rLine.save())
 			{

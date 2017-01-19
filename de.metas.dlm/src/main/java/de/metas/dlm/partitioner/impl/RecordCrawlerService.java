@@ -167,7 +167,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						if (forwardRecord == null)
 						{
 							// this happens with our "minidump" where we left out the HUs
-							logger.debug("{}[{}] forward: the record from table={} which we attempted to load via {}.{}={} is NULL",
+							Loggables.get().withLogger(logger, Level.WARN).addLog(
+									"{}[{}] forward: the record from table={} which we attempted to load via {}.{}={} is NULL",
 									currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey);
 							continue;
 						}
@@ -184,7 +185,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						}
 						if(AddResult.STOP.equals(addResult))
 						{
-							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
+							Loggables.get().withLogger(logger, Level.WARN)
+								.addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
 							break mainLoop;
 						}
 					}

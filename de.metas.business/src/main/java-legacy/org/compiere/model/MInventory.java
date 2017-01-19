@@ -28,7 +28,6 @@ import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -433,7 +432,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 				MTransaction mtrx = null;
 
 				//If AttributeSetInstance = Zero then create new  AttributeSetInstance use Inventory Line MA else use current AttributeSetInstance
-				if (line.getM_AttributeSetInstance_ID() == 0 || qtyDiff.compareTo(Env.ZERO) == 0)
+				if (line.getM_AttributeSetInstance_ID() == 0 || qtyDiff.compareTo(BigDecimal.ZERO) == 0)
 				{
 					MInventoryLineMA mas[] = MInventoryLineMA.get(getCtx(),
 							line.getM_InventoryLine_ID(), get_TrxName());
@@ -450,14 +449,14 @@ public class MInventory extends X_M_Inventory implements DocAction
 								line.getM_Locator_ID(),
 								line.getM_Product_ID(),
 								ma.getM_AttributeSetInstance_ID(), 0,
-								QtyMA.negate(), Env.ZERO, Env.ZERO, get_TrxName()))
+								QtyMA.negate(), BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
 							return DocAction.STATUS_Invalid;
 						}
 
 						// Only Update Date Last Inventory if is a Physical Inventory
-						if(line.getQtyInternalUse().compareTo(Env.ZERO) == 0)
+						if(line.getQtyInternalUse().compareTo(BigDecimal.ZERO) == 0)
 						{
 							MStorage storage = MStorage.get(getCtx(), line.getM_Locator_ID(),
 									line.getM_Product_ID(), ma.getM_AttributeSetInstance_ID(), get_TrxName());
@@ -642,23 +641,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 			MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
 			if (qtyDiff.signum() > 0)	//	Incoming Trx
 			{
-				MAttributeSetInstance asi = null;
-				//auto balance negative on hand
-				MStorage[] storages = MStorage.getWarehouse(getCtx(), getM_Warehouse_ID(), line.getM_Product_ID(), 0,
-						null, MClient.MMPOLICY_FiFo.equals(product.getMMPolicy()), false, line.getM_Locator_ID(), get_TrxName());
-				for (MStorage storage : storages)
-				{
-					if (storage.getQtyOnHand().signum() < 0)
-					{
-						asi = new MAttributeSetInstance(getCtx(), storage.getM_AttributeSetInstance_ID(), get_TrxName());
-						break;
-					}
-				}
-				if (asi == null)
-				{
-					asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-				}
-				line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+				line.setM_AttributeSetInstance_ID(0 /* asi.getM_AttributeSetInstance_ID() */);
 				needSave = true;
 			}
 			else	//	Outgoing Trx
@@ -674,16 +657,16 @@ public class MInventory extends X_M_Inventory implements DocAction
 					if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 					{
 						MInventoryLineMA ma = new MInventoryLineMA (line,
-								storage.getM_AttributeSetInstance_ID(),
+								0, // storage.getM_AttributeSetInstance_ID(),
 								qtyToDeliver);
 						ma.saveEx();
-						qtyToDeliver = Env.ZERO;
+						qtyToDeliver = BigDecimal.ZERO;
 						log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
 					}
 					else
 					{
 						MInventoryLineMA ma = new MInventoryLineMA (line,
-								storage.getM_AttributeSetInstance_ID(),
+								0, // storage.getM_AttributeSetInstance_ID(),
 								storage.getQtyOnHand());
 						ma.saveEx();
 						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
@@ -752,7 +735,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 				if (oldCount.compareTo(line.getQtyBook()) != 0
 					|| oldInternal.signum() != 0)
 				{
-					line.setQtyInternalUse(Env.ZERO);
+					line.setQtyInternalUse(BigDecimal.ZERO);
 					line.setQtyCount(line.getQtyBook());
 					line.addDescription("Void (" + oldCount + "/" + oldInternal + ")");
 					line.save(get_TrxName());
@@ -1017,7 +1000,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 				continue;
 			}
 
-			BigDecimal costs = Env.ZERO;
+			BigDecimal costs = BigDecimal.ZERO;
 			if (isReversal())
 			{
 				String sql = "SELECT amt * -1 FROM M_CostDetail WHERE M_InventoryLine_ID=?"; // negate costs
