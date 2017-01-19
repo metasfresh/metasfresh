@@ -12,7 +12,7 @@ FROM
 (
 SELECT p.AD_Process_ID from AD_Menu m
 JOIN AD_Process p on m.AD_Process_ID = p.AD_Process_ID
-WHERE m.Action = 'P'
+WHERE m.Action IN ('P', 'R')
 AND m.IsActive = 'Y' AND p.IsActive = 'Y'
 ) x
 WHERE p.AD_Process_ID = x.AD_Process_ID;
