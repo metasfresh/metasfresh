@@ -43,7 +43,7 @@ class DocList extends Component {
     render() {
         const {
             dispatch, windowType, breadcrumb, query, actions, modal, viewId,
-            selected, references, nextState
+            selected, references
         } = this.props;
 
         return (
@@ -53,6 +53,7 @@ class DocList extends Component {
                 windowType={windowType}
                 actions={actions}
                 references={references}
+                query={query}
             >
                 {modal.visible &&
                     <Modal

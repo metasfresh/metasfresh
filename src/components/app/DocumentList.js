@@ -98,7 +98,9 @@ class DocumentList extends Component {
                 // this.setListData(response.data);
                 this.setState(Object.assign({}, this.state, {
                     data: response.data
-                }))
+                }), () => {
+                    dispatch(initDocumentView(response.data.viewId));
+                })
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
                     this.createNewView(windowType, type, filters);

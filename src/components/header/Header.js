@@ -52,12 +52,11 @@ class Header extends Component {
         }
     }
 
-     getChildContext = () => {
+    getChildContext = () => {
         return { shortcuts: shortcutManager }
     }
 
     handleInboxOpen = (state) => {
-
         this.setState(
             Object.assign({}, this.state, {
                 isInboxOpen: !!state
@@ -240,7 +239,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu, selected, entity
+            viewId, inbox, homemenu, selected, entity, query
         } = this.props;
 
         const {
@@ -403,6 +402,7 @@ class Header extends Component {
                     selected={selected}
                     entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
+                    query={query}
                 />}
 
                 {showSidelist && isSideListShow && <SideList
