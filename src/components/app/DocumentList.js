@@ -28,29 +28,26 @@ import {
 class DocumentList extends Component {
     constructor(props){
         super(props);
-        const {type, windowType} = props;
 
         this.state = {
             data: null,
             layout: null
         }
-
-        this.updateData(type, windowType);
+        this.updateData();
     }
 
     componentWillReceiveProps(props) {
-        const {sorting, type, windowType} = props;
+        const {sorting, windowType} = props;
 
         //if we browse list of docs, changing type of Document
         //does not re-construct component, so we need to
         //make it manually while the windowType changes.
         if(windowType !== this.props.windowType) {
-            console.log("HELLO?", windowType)
             this.setState(Object.assign({}, this.state, {
                 data:null,
                 layout:null
             }), () => {
-                this.updateData(type, windowType);
+                this.updateData();
             })
         }
     }
@@ -60,13 +57,14 @@ class DocumentList extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {windowType, type, filters} = this.props;
+        const {filters} = this.props;
 
         const oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
         const newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
 
         if(newFilter !== oldFilter){
-            this.updateData(type, windowType, true);
+
+            this.updateData(true);
         }
     }
 
@@ -81,40 +79,55 @@ class DocumentList extends Component {
         })
     }
 
-    createNewView = (windowType, type, filters, refType, refId) => {
-        const {dispatch} = this.props;
-        dispatch(createViewRequest(windowType, type, 20, filters, refType, refId)).then((response) => {
+    createNewView = () => {
+        const {dispatch, windowType, type, filters, query} = this.props;
+        dispatch(
+            createViewRequest(
+                windowType, type, 20, filters, query && query.refType,
+                query && query.refId
+            )
+        ).then((response) => {
             this.setListData(response.data);
         })
     }
 
-    updateData = (type, windowType, isNewFilter) => {
-        const {dispatch,filters, filtersWindowType, query} = this.props;
+    browseView = () => {
+        const {dispatch, windowType, query, type, filters} = this.props;
+        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters, windowType))
+            .then((response) => {
+                // this.setListData(response.data);
+                this.setState(Object.assign({}, this.state, {
+                    data: response.data
+                }))
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.createNewView(windowType, type, filters);
+                }
+            });
+    }
+
+    updateData = (isNewFilter) => {
+        const {dispatch, windowType, type, filters, filtersWindowType, query, viewId} = this.props;
 
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
-        }else{
-            windowType && dispatch(
-                initLayout('documentView', windowType, null, null, null, null, type, true))
-            .then(response => {
-                this.setState(Object.assign({}, this.state, {
-                    layout: response.data
-                }), () => {
-                    if(query && query.viewId && !isNewFilter){
-                        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters, windowType))
-                            .then((response) => {
-                                this.setListData(response.data);
-                            }).catch((err) => {
-                                if(err.response && err.response.status === 404) {
-                                    this.createNewView(windowType, type, filters);
-                                }
-                            })
-                    }else{
-                        this.createNewView(windowType, type, filters, query && query.refType, query && query.refId);
-                    }
-                })
-            });
         }
+
+        windowType && dispatch(
+            initLayout(
+                'documentView', windowType, null, null, null, null, type, true
+            )
+        ).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                layout: response.data
+            }), () => {
+                if(query && query.viewId && !isNewFilter){
+                    this.browseView();
+                }else{
+                    this.createNewView();
+                }
+            })
+        });
     }
 
     getView = (viewId) => {
@@ -134,9 +147,7 @@ class DocumentList extends Component {
                 urlPage = query.page;
                 dispatch(setPagination(parseInt(query.page), windowType));
             }
-
         }
-
         //
         //  Condition, that ensure wheter windowType
         //  is the same as for saved query params
@@ -157,7 +168,6 @@ class DocumentList extends Component {
     getData = (id, page, pages, sortingQuery) => {
         const {data} = this.state;
         const {dispatch, windowType} = this.props;
-
         dispatch(browseViewRequest(id, page, pages, sortingQuery, windowType)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
@@ -290,7 +300,8 @@ DocumentList.propTypes = {
     sorting: PropTypes.object.isRequired,
     pagination: PropTypes.object.isRequired,
     filters: PropTypes.array.isRequired,
-    filtersWindowType: PropTypes.string
+    filtersWindowType: PropTypes.string,
+    viewId: PropTypes.string
 }
 
 function mapStateToProps(state) {
@@ -300,8 +311,10 @@ function mapStateToProps(state) {
         filters,
         filtersWindowType,
         sorting,
-        pagination
+        pagination,
+        viewId
     } = listHandler || {
+        viewId: "",
         filters: {},
         sorting: {},
         pagination: {},
@@ -312,7 +325,8 @@ function mapStateToProps(state) {
         filters,
         sorting,
         pagination,
-        filtersWindowType
+        filtersWindowType,
+        viewId
     }
 }
 
