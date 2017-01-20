@@ -30,7 +30,6 @@ import org.compiere.model.I_M_Attribute;
 
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 
 public interface IDimensionSpecAttributeDAO extends ISingletonService
 {
@@ -46,11 +45,5 @@ public interface IDimensionSpecAttributeDAO extends ISingletonService
 	 * @return all the Dim_Dimension_Spec_Attribute entries that have DIM_Dimension_Spec_ID of the given dimensionSpec
 	 */
 	List<I_DIM_Dimension_Spec_Attribute> retrieveDimensionSpecAttributes(I_DIM_Dimension_Spec dimensionSpec);
-
-	/**
-	 * @param dimSpecAttr
-	 * @return all the Dim_Dimension_Spec_Attribute_Value entries that have DIM_Dimension_Spec_Attribute_ID of the given dimSpecAttr
-	 */
-	List<I_DIM_Dimension_Spec_AttributeValue> retrieveDimSpecAttrValues(I_DIM_Dimension_Spec_Attribute dimSpecAttr);
 
 }
