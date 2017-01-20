@@ -32,6 +32,7 @@ upcoming Release
   * #806 Fixes in Custom reports
   * #819 fix/refactor CalloutRequest
   * #806 Customs report minor fixes
+  * #782 Focus on the first process parameter
 
 # metasfresh 4.52.51 (2017-03)
 
