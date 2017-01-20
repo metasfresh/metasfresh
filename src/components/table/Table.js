@@ -64,15 +64,9 @@ class Table extends Component {
         }
     }
 
-    changeListenOnTrue = () => {
+    changeListen = (listenOnKeys) => {
         this.setState(Object.assign({}, this.state, {
-            listenOnKeys: true
-        }))
-    }
-
-    changeListenOnFalse = () => {
-        this.setState(Object.assign({}, this.state, {
-            listenOnKeys: false
+            listenOnKeys: !!listenOnKeys
         }))
     }
 
@@ -417,6 +411,7 @@ class Table extends Component {
                 const key = keys[i];
                 const index = keyProperty ? keyProperty : "rowId";
                 const included = item[key].includedDocuments;
+
                 ret.push(
                     <TableItemWrapper
                         included={included}
@@ -432,10 +427,10 @@ class Table extends Component {
                         mainTable={mainTable}
                         isSelected={selected.indexOf(item[key][index]) > -1}
                         onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
-                        onMouseDown={(e) => this.handleClick(e, item[key][index])}
+                        handleClick={(e) => this.handleClick(e, item[key][index])}
                         onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
-                        changeListenOnTrue={() => this.changeListenOnTrue()}
-                        changeListenOnFalse={() => this.changeListenOnFalse()}
+                        changeListenOnTrue={() => this.changeListen(true)}
+                        changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
                     />
                 );

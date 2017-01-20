@@ -127,9 +127,10 @@ class TableItem extends Component {
         const {
             isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
             onMouseDown, onDoubleClick, included, tabid, type, docId,
-            tabIndex, mainTable, entity, readonly
+            tabIndex, mainTable, entity, readonly, indent
         } = this.props;
 
+        const huType = findRowByPropName(fields, "HU_UnitType").value;
 
         return (
             <tr
@@ -140,35 +141,19 @@ class TableItem extends Component {
                     (isSelected ? "row-selected" : "")
                 }
             >
+                <td
+                    className="indent"
+                    style={{paddingLeft: (indent * 10 + 10) + "px"}}
+                >
+                    {huType == "LU" && <i className="meta-icon-palette"/>}
+                    {huType == "TU" && <i className="meta-icon-package"/>}
+                    {huType == "V" && <i className="meta-icon-product"/>}
+                </td>
                 {this.renderCells(cols, fields)}
             </tr>
         );
     }
 }
-
-// {included && included.map((item, index) =>
-//     <TableItem
-//         entity={entity}
-//         fields={item.fields}
-//         key={index + item.rowId}
-//         rowId={item.rowId}
-//         tabId={tabid}
-//         cols={cols}
-//         type={type}
-//         docId={docId}
-//         isSelected={false}
-//         onDoubleClick={null}
-//         onMouseDown={null}
-//         onContextMenu={null}
-//         changeListenOnTrue={null}
-//         changeListenOnFalse={null}
-//         readonly={readonly}
-//         mainTable={mainTable}
-//         newRow={false}
-//         tabIndex={tabIndex}
-//         included={item.includedDocuments}
-//     />
-// )}
 
 TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired

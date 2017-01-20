@@ -252,3 +252,8 @@ th {
 .pagination-link {
     text-decoration: underline;
 }
+
+.table.table-bordered-vertically td.indent {
+    min-width:0;
+    border-right:0;
+}
