@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
 
+import AreaChart from '../components/charts/AreaChartComponent';
 
 export class Dashboard extends Component {
     constructor(props){
@@ -19,6 +20,8 @@ export class Dashboard extends Component {
                 <div className="container-fluid dashboard-wrapper">
                     <DraggableWrapper dashboard={this.props.location.pathname} />
                 </div>
+
+                <AreaChart/>
             </Container>
         );
     }
