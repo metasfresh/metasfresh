@@ -8,6 +8,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -51,11 +54,11 @@ import de.metas.process.ProcessInfo;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -100,14 +103,13 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 		//
 		// Load process definition from database
-		//m_AD_Process_ID = builder.getAD_Process_ID();
+		// m_AD_Process_ID = builder.getAD_Process_ID();
 		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, builder.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
 		if (process == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Process_ID@=" + builder.getAD_Process_ID());
 		}
 		this._adProcessTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class, Env.getAD_Language(ctx));
-
 
 		this.m_WindowNo = builder.getWindowNo();
 		this.m_TabNo = builder.getTabNo();
@@ -140,7 +142,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			return;
 		}
 	}	// ProcessDialog
-	
+
 	private Properties getCtx()
 	{
 		return ctx;
@@ -185,19 +187,35 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 
 	private final CButton bOK = ConfirmPanel.createOKButton(true);
 	private final CButton bBack = ConfirmPanel.createBackButton(true);
-	
-	/*package*/void installTo(final ProcessPanelWindow window)
+
+	/**
+	 * #782: Focus on the first parameter of the process when the process panel is opened, so it can be directly changed from keyboard
+	 */
+	private final WindowListener onWindowOpenFocusFirstParameter = new WindowAdapter()
+	{
+		@Override
+		public void windowOpened(final WindowEvent e)
+		{
+
+			requestFocusInWindow();
+
+		}
+	};
+
+	/* package */void installTo(final ProcessPanelWindow window)
 	{
 		Check.assumeNotNull(window, "Parameter window is not null");
 		Check.assumeNull(_window, "window was not already configured for {}", this);
-		
+
 		window.enableWindowEvents(AWTEvent.WINDOW_EVENT_MASK);
 		window.setTitle(_adProcessTrl.getName());
 		window.setIconImage(Images.getImage2("mProcess"));
 		window.getContentPane().add(mainPanel);
 		window.getRootPane().setDefaultButton(bOK);
+
+		window.addWindowListener(onWindowOpenFocusFirstParameter);
 		this._window = window;
-		
+
 		//
 		// Automatically execute the process (if possible)
 		{
@@ -228,6 +246,24 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		}
 
 		mainPanel.revalidate();
+	}
+
+	/**
+	 * Request focus in the first parameter possible, if any is available.
+	 */
+	protected void requestFocusInWindow()
+	{
+		if (parameterPanel == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		if (CARDNAME_ProcessParameters.equals(getCurrentCardName()))
+		{
+			parameterPanel.focusFirstParameter();
+		}
+
 	}
 
 	private ProcessPanelWindow getWindow()
@@ -407,6 +443,9 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			parametersPanelScroll.setBorder(BorderFactory.createEmptyBorder());
 
 			parametersContainer.add(parametersPanelScroll, BorderLayout.CENTER);
+
+			parameterPanel.setFocusable(true);
+
 		}
 	}
 
@@ -430,7 +469,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			messageText.append(processDescription);
 		}
 		messageText.append("</b>");
-		
+
 		//
 		// Help
 		final String processHelp = _adProcessTrl.getHelp();
@@ -455,19 +494,19 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 				.build();
 		return pi;
 	}
-	
+
 	private final void windowDispose()
 	{
 		final ProcessPanelWindow window = getWindow();
 		window.dispose();
 	}
-	
+
 	private final void setWindowEnabled(final boolean enabled)
 	{
 		final ProcessPanelWindow window = getWindow();
 		window.setEnabled(enabled);
 	}
-	
+
 	private final void windowShow()
 	{
 		final ProcessPanelWindow window = getWindow();
