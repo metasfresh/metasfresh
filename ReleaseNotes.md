@@ -40,10 +40,15 @@ this week's RC
 ## Features
 * metasfresh 
   * #774 show address on all docs so it fits the letter window
+    * Adjust all Documents so that the address fits into the letter window od envelops C5/ C6 according to ISO 269 und DIN 678.
   * #773 show delivery address on sales order
+    * Show the deliverTo location on Sales Order Documents.
   * #507 Copy with Details for PP_Product_BOM
+    * Add a new Functionality to allow copy-with-details on Bill of Materials records.
   * #780 Have logo on jasper report that spans from left to right
+    * Rearranged the logo placing on Documents to allow the upload and usage of large, page-spanning Logos from left to right.
   * #816 Do not show prices on shipment note
+    * Undisplayed the prices on shipment documents.
 
 ## Fixes
 * metasfresh 
