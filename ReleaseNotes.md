@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.53.52 (2017-04)
 
-upcoming
+upcoming Release
 
 ## Features
 * metasfresh
@@ -34,8 +34,6 @@ upcoming
   * #806 Customs report minor fixes
 
 # metasfresh 4.52.51 (2017-03)
-  
-this week's RC
 
 ## Features
 * metasfresh 
