@@ -671,13 +671,9 @@ body {
     }
 }
 
-<<<<<<< Updated upstream
 th {
     position: relative;
 }
-
-=======
->>>>>>> Stashed changes
 .rotate-90 {
     transform: rotate(180deg);
 }
