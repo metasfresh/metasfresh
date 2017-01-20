@@ -14,6 +14,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
@@ -701,19 +703,49 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		return m_pi.getTableNameOrNull();
 	}
 
-	protected final <T> IQueryBuilder<T> retrieveSelectedRecordsQueryBuilder(final Class<T> recordType)
+	/**
+	 * Retrieves the records which where selected and attached to this process execution, i.e.
+	 * <ul>
+	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
+	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used
+	 * <li>else an exception is thrown
+	 * </ul>
+	 * 
+	 * @param modelClass
+	 * @return query builder which will provide selected record(s)
+	 */
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
 	{
-		return retrieveSelectedRecordsQueryBuilder(recordType, getTrxName());
-	}
+		final String tableName = m_pi.getTableNameOrNull();
+		final int singleRecordId = m_pi.getRecord_ID();
 
-	protected final <T> IQueryBuilder<T> retrieveSelectedRecordsQueryBuilder(final Class<T> recordType, final String trxName)
-	{
-		final IQueryFilter<T> selectedRecordsQueryFilter = getProcessInfo().getQueryFilter();
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(recordType, getCtx(), trxName)
-				.filter(selectedRecordsQueryFilter)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient();
+		final IContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(getCtx());
+		final IQueryBuilder<ModelType> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(modelClass, tableName, contextProvider);
+
+		//
+		// Try fetching the selected records from AD_PInstance's WhereClause.
+		final IQueryFilter<ModelType> selectionQueryFilter = m_pi.getQueryFilterOrElse(null);
+		if (selectionQueryFilter != null)
+		{
+			queryBuilder.filter(selectionQueryFilter)
+					.addOnlyActiveRecordsFilter()
+					.addOnlyContextClient();
+		}
+		//
+		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
+		else if (tableName != null && singleRecordId >= 0)
+		{
+			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+			queryBuilder.addEqualsFilter(keyColumnName, singleRecordId);
+			// .addOnlyActiveRecordsFilter() // NOP, return it as is
+			// .addOnlyContextClient(); // NOP, return it as is
+		}
+		else
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		return queryBuilder;
 	}
 
 	/**
