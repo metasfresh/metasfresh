@@ -225,7 +225,7 @@ public class ADProcessDAO implements IADProcessDAO
 
 		return queryBL.createQueryBuilder(I_AD_Process.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayOrAllFilter(I_AD_Process.COLUMN_AD_Process_ID, relatedProcessIds)
+				.addInArrayFilter(I_AD_Process.COLUMN_AD_Process_ID, relatedProcessIds)
 				//
 				.orderBy()
 				.addColumn(I_AD_Process.COLUMNNAME_Name)
