@@ -480,7 +480,7 @@ public abstract class AbstractDLMService implements IDLMService
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final int updated = queryBL.createQueryBuilder(IDLMAware.class, tableName, ctxAware)
-				.addInArrayFilter(keyColumn, batch.toArray())
+				.addInArrayOrAllFilter(keyColumn, batch.toArray())
 				.addNotEqualsFilter(IDLMAware.COLUMNNAME_DLM_Partition_ID, partition.getDLM_Partition_ID()) // only records that are not yet in this partition
 				.create()
 				.updateDirectly()

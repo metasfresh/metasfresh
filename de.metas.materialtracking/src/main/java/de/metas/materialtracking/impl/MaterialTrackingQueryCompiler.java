@@ -113,7 +113,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		//
 		// C_BPartner_ID
 		final int bpartnerId = queryVO.getC_BPartner_ID();
-		queryBuilder.addInArrayFilter(I_M_Material_Tracking.COLUMN_C_BPartner_ID, null, bpartnerId);
+		queryBuilder.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMN_C_BPartner_ID, null, bpartnerId);
 		orderBy.addColumn(I_M_Material_Tracking.COLUMN_C_BPartner_ID, Direction.Descending, Nulls.Last);
 
 		// TODO: ValidFrom, ValidTo

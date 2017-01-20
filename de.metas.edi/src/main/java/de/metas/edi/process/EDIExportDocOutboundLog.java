@@ -131,7 +131,7 @@ public class EDIExportDocOutboundLog extends JavaProcess
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
-				.addInArrayFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
+				.addInArrayOrAllFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID,
 						I_C_Invoice.Table_ID
 				// , I_M_InOut.Table_ID
 				) // currently only export Invoices; InOuts are aggregated into EDI_Desadv records and exported as such

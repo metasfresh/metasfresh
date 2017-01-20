@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -345,7 +344,7 @@ import org.compiere.model.IQuery;
 	}
 
 	@Override
-	public final ICompositeQueryFilter<T>  setDefaultAccept(final boolean defaultAccept)
+	public final ICompositeQueryFilter<T> setDefaultAccept(final boolean defaultAccept)
 	{
 		if (this._defaultAccept == defaultAccept)
 		{
@@ -522,13 +521,13 @@ import org.compiere.model.IQuery;
 		final String columnName = column.getColumnName();
 		return addNotEqualsFilter(columnName, value);
 	}
-	
+
 	@Override
 	public ICompositeQueryFilter<T> addNotNull(final String columnName)
 	{
 		return addNotEqualsFilter(columnName, null);
 	}
-	
+
 	@Override
 	public ICompositeQueryFilter<T> addNotNull(final ModelColumn<T, ?> column)
 	{
@@ -587,31 +586,70 @@ import org.compiere.model.IQuery;
 
 	@Override
 	@SuppressWarnings("unchecked")
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final V... values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(true);
+		return addFilter(filter);
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
 
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(true);
+		return addFilter(filter);
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
 
 	@Override
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final Collection<V> values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(true);
+		return addFilter(filter);
+	}
+	
+	@Override
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final Collection<V> values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(false);
+		return addFilter(filter);
+	}
+
+	@Override
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final Collection<V> values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
 
 	@Override
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final Collection<V> values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
 

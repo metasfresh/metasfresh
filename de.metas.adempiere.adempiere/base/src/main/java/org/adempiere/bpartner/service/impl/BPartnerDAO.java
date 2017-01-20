@@ -704,7 +704,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			partnerLocationId = null;
 		}
-		queryBuilder.addInArrayFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
+		queryBuilder.addInArrayOrAllFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
 		queryBuilder.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true);
 
 		final IQuery<I_C_BP_Relation> query = queryBuilder

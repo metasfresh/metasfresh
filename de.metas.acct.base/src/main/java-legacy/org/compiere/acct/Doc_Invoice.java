@@ -795,7 +795,7 @@ public class Doc_Invoice extends Doc
 
 		final List<I_M_MatchInv> matchInvs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_MatchInv.class, getCtx(), getTrxName())
-				.addInArrayFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineIds)
+				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineIds)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)

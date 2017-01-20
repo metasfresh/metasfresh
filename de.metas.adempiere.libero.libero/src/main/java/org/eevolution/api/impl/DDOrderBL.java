@@ -320,7 +320,7 @@ public class DDOrderBL implements IDDOrderBL
 				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
 				.addEqualsFilter(I_DD_Order.COLUMN_Processed, false) // only not processed DD_Orders
 				.addNotEqualsFilter(I_DD_Order.COLUMN_Processing, true) // only those which are not currently processing
-				.addInArrayFilter(I_DD_Order.COLUMN_DocStatus, DocAction.STATUS_Drafted) // only draft/not processed DD Orders
+				.addInArrayOrAllFilter(I_DD_Order.COLUMN_DocStatus, DocAction.STATUS_Drafted) // only draft/not processed DD Orders
 				.addEqualsFilter(I_DD_Order.COLUMN_PP_Plant_ID, currentPlantId) // same plant, we are not allow to cross plants (08059)
 				//
 				// Create query
