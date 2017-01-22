@@ -24,6 +24,8 @@ upcoming Release
 * webui
   * #817 Request Window in WebUI
   * #831 Default Document Layout for WebUI
+  * #847 Shipment Schedule Window in WebUI
+  * #853 Shipment Schedule Window Subtabs in WebUI
 
 ## Fixes
 * metasfresh 
