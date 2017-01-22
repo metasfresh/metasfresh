@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved.               *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package de.metas.process.ui;
 
@@ -48,13 +48,14 @@ import de.metas.process.ui.ProcessParameterPanelModel;
  *
  * @author Low Heng Sin
  * @author Juan David Arboleda (arboleda), GlobalQSS, [ 1795398 ] Process Parameter: add display and readonly logic
- * @author Teo Sarca, www.arhipac.ro <li>BF [ 2548216 ] Process Param Panel is not showing any parameter if error
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>BF [ 2548216 ] Process Param Panel is not showing any parameter if error
  * @version 2006-12-01
  */
-public class ProcessParametersPanel extends CPanel //implements IProcessParameter
+public class ProcessParametersPanel extends CPanel // implements IProcessParameter
 {
 	private static final long serialVersionUID = -4802635610434891695L;
-	
+
 	private static final Logger log = LogManager.getLogger(ProcessParametersPanel.class);
 
 	// Services
@@ -100,7 +101,7 @@ public class ProcessParametersPanel extends CPanel //implements IProcessParamete
 			dynamicDisplay();
 		}
 	};
-	
+
 	/**
 	 * @param pi process info, used ONLY to get AD_Process_ID, WindowNo and TabNo; no reference is stored to it
 	 */
@@ -425,5 +426,29 @@ public class ProcessParametersPanel extends CPanel //implements IProcessParamete
 		//
 		// Ask the model to create the parameters
 		return model.createProcessInfoParameters();
+	}
+
+	/**
+	 * #782 Request focus on the first process parameter (if possible)
+	 */
+	public void focusFirstParameter()
+	{
+		if (fieldEditors.isEmpty())
+		{
+			// there are no parameters in this process. Nothing to focus
+			return;
+		}
+
+		for (int i = 0; i <= fieldEditors.size(); i++)
+		{
+			final VEditor editor = fieldEditors.get(i);
+			final boolean focusGained = getComponent(editor).requestFocusInWindow();
+			
+			if(focusGained)
+			{
+				return;
+			}
+		}
+
 	}
 }	// ProcessParameterPanel

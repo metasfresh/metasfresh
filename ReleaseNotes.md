@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.53.52 (2017-04)
 
-upcoming
+upcoming Release
 
 ## Features
 * metasfresh
@@ -32,10 +32,9 @@ upcoming
   * #806 Fixes in Custom reports
   * #819 fix/refactor CalloutRequest
   * #806 Customs report minor fixes
+  * #782 Focus on the first process parameter
 
 # metasfresh 4.52.51 (2017-03)
-  
-this week's RC
 
 ## Features
 * metasfresh 
