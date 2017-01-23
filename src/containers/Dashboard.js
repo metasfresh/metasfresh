@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
 
-import AreaChart from '../components/charts/AreaChartComponent';
+import BarChart from '../components/charts/BarChartComponent';
 
 export class Dashboard extends Component {
     constructor(props){
@@ -21,7 +21,9 @@ export class Dashboard extends Component {
                     <DraggableWrapper dashboard={this.props.location.pathname} />
                 </div>
 
-                <AreaChart/>
+                <BarChart chartClass="chartone" responsive={true}/>
+                <BarChart chartClass="charttwo" responsive={false}/>
+                <BarChart chartClass="charthree" responsive={true}/>
             </Container>
         );
     }

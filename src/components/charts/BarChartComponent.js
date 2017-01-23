@@ -7,6 +7,8 @@ class BarChartComponent extends Component {
     }
 
     componentDidMount() {
+        const {chartClass, responsive} = this.props;
+
         var data = [
             {name: "Alice", value: 2},
             {name: "Bob", value: 3},
@@ -27,9 +29,17 @@ class BarChartComponent extends Component {
     }
 
     setDimensions = (mTop=20, mRight=20, mBottom=20, mLeft=20, width=600, height=400) => {
-        var margin = {top: mTop, right: mRight, bottom: mBottom, left: mLeft},
-            width = width - margin.left - margin.right,
-            height = height - margin.top - margin.bottom;
+        const {chartClass, responsive} = this.props;
+        var margin = {top: mTop, right: mRight, bottom: mBottom, left: mLeft};
+        if(responsive) {
+            const width = document.getElementsByClassName(chartClass)[0].offsetWidth;
+            console.log(width);
+        } else {
+            var width = width - margin.left - margin.right;
+            var height = height - margin.top - margin.bottom;
+        }
+        
+       
             return {
                 margin: {
                     top: margin.top, 
@@ -52,7 +62,8 @@ class BarChartComponent extends Component {
     }
 
     drawChart = (dimensions, ranges, data) => {
-        var svg = d3.select(".barchart")
+        const {chartClass} = this.props;
+        var svg = d3.select("." + chartClass)
             .attr("width", dimensions.width + dimensions.margin.left + dimensions.margin.right)
             .attr("height", dimensions.height + dimensions.margin.top + dimensions.margin.bottom)
         .append("g")
@@ -83,16 +94,16 @@ class BarChartComponent extends Component {
     }
 
     clearChart = () => {
-        document.getElementsByClassName('barchart')[0].childNodes[0].remove();
+        document.getElementsByClassName(chartClass)[0].childNodes[0].remove();
     }
     
 
     render() {
-
+        const {chartClass} = this.props;
 
         return (
-            <div>
-                <svg className="barchart"></svg>
+            <div className={chartClass+"-wrapper"}>
+                <svg className={chartClass}></svg>
             </div>
         );
     }
