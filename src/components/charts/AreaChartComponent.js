@@ -17,12 +17,21 @@ class BarChartComponent extends Component {
             {name: 6, value: 12},
             {name: 7, value: 6},
             {name: 8, value: 22},
-            {name: 9, value: 18}
+            {name: 9, value: 18},
+            {name: 10, value: 38},
+            {name: 11, value: 58},
+            {name: 12, value: 48},
+            {name: 13, value: 36},
+            {name: 14, value: 118},
+            {name: 15, value: 108},
+            {name: 16, value: 98},
+            {name: 17, value: 110},
+            {name: 18, value: 56}
         ];
         var dimensions = this.setDimensions();
         var ranges = this.setRanges(dimensions.width, dimensions.height, data);
-        // var svg = this.drawChart(dimensions, ranges, data);
-        // this.addAxis(svg, dimensions, ranges);
+        var svg = this.drawChart(dimensions, ranges, data);
+        this.addAxis(svg, dimensions, ranges);
 
     }
 
@@ -56,10 +65,10 @@ class BarChartComponent extends Component {
     }
 
     drawChart = (dimensions, ranges, data) => {
-        var parseTime = d3.timeParse("%d-%b-%y");
+        // var parseTime = d3.timeParse("%d-%b-%y");
         var data = data;
         data.forEach(function(d) {
-            d.name = parseTime(d.name);
+            d.name = +d.name;
             d.value = +d.value;
         });
         var svg = d3.select(".areachart")
@@ -80,36 +89,28 @@ class BarChartComponent extends Component {
 
         svg.append("path")
             .datum(data)
+            .attr("fill", "steelblue")
             .attr("class", "area")
             .attr("d", area);
 
-        // svg.append("g")
-        //     .attr("class", "x axis")
-        //     .attr("transform", "translate(0," + dimensions.height + ")")
-        //     .call(ranges.xAxis);
-        //
-        // svg.append("g")
-        //     .attr("class", "y axis")
-        //     .call(ranges.yAxis)
-        //     .append("text")
-        //     .attr("transform", "rotate(-90)")
-        //     .attr("y", 6)
-        //     .attr("dy", ".71em")
-        //     .style("text-anchor", "end")
-        //     .text("Price ($)");
-        //
-        //     return svg;
+            return svg;
     }
 
     addAxis = (svg, dimensions, ranges) => {
-        // add the x Axis
         svg.append("g")
+            .attr("class", "x axis")
             .attr("transform", "translate(0," + dimensions.height + ")")
-            .call(d3.axisBottom(ranges.x));
-
-        // add the y Axis
+            .call(ranges.xAxis);
+        
         svg.append("g")
-            .call(d3.axisLeft(ranges.y));
+            .attr("class", "y axis")
+            .call(ranges.yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Price ($)");
     }
 
     clearChart = () => {
@@ -122,7 +123,6 @@ class BarChartComponent extends Component {
 
         return (
             <div>
-                aaaaa
                 <svg className="areachart"></svg>
             </div>
         );
