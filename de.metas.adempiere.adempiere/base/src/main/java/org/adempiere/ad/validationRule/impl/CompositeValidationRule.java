@@ -28,8 +28,8 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
 
 import com.google.common.base.MoreObjects;
@@ -201,7 +201,7 @@ public final class CompositeValidationRule implements IValidationRule
 			if (explodeComposite && rule instanceof CompositeValidationRule)
 			{
 				final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
-				compositeRule.getValidationRules().stream().forEach(includedRule -> add(includedRule, explodeComposite));
+				compositeRule.getValidationRules().forEach(includedRule -> add(includedRule, explodeComposite));
 			}
 			else
 			{
