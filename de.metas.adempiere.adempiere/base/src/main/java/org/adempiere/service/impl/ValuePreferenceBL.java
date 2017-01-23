@@ -43,9 +43,9 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Preference.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addInArrayFilter(I_AD_Preference.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, AD_Client_ID)
-				.addInArrayFilter(I_AD_Preference.COLUMNNAME_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, AD_Org_ID)
-				.addInArrayFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, null, Env.CTXVALUE_AD_User_ID_System, AD_User_ID)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, AD_Client_ID)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, AD_Org_ID)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, null, Env.CTXVALUE_AD_User_ID_System, AD_User_ID)
 				.addOnlyActiveRecordsFilter()
 				.orderBy()
 				.addColumn(I_AD_Preference.COLUMNNAME_AD_Window_ID, Direction.Ascending, Nulls.First)

@@ -126,7 +126,7 @@ public class DDOrderFiltering extends AbstractFiltering
 
 		//
 		// Only those lines which were NOT flagged by user as delivered (when he pressed on CloseLines button)
-		filters.addInArrayFilter(I_DD_OrderLine.COLUMN_IsDelivered_Override,
+		filters.addInArrayOrAllFilter(I_DD_OrderLine.COLUMN_IsDelivered_Override,
 				X_DD_OrderLine.ISDELIVERED_OVERRIDE_No // explicitelly flagged as not delivered
 				, null // accept null value too (which is considered as not flagged by user)
 		);
@@ -139,7 +139,7 @@ public class DDOrderFiltering extends AbstractFiltering
 			final ICompositeQueryFilter<I_DD_Order> ddOrderFilters = ddOrderQueryBuilder.getFilters();
 			ddOrderFilters.addOnlyActiveRecordsFilter();
 			ddOrderFilters.addOnlyContextClient(ctx);
-			ddOrderFilters.addInArrayFilter(I_DD_Order.COLUMN_DocStatus, X_DD_Order.DOCSTATUS_Completed);
+			ddOrderFilters.addInArrayOrAllFilter(I_DD_Order.COLUMN_DocStatus, X_DD_Order.DOCSTATUS_Completed);
 
 			final IQuery<I_DD_Order> ddOrderQuery = ddOrderQueryBuilder.create();
 

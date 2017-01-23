@@ -360,9 +360,23 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final String columnName, final Collection<V> values)
+	{
+		filters.addInArrayOrAllFilter(columnName, values);
+		return this;
+	}
+
+	@Override
 	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final Collection<V> values)
 	{
 		filters.addInArrayFilter(columnName, values);
+		return this;
+	}
+
+	@Override
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final Collection<V> values)
+	{
+		filters.addInArrayOrAllFilter(column, values);
 		return this;
 	}
 
@@ -389,9 +403,25 @@ import com.google.common.collect.ImmutableMap;
 
 	@Override
 	@SuppressWarnings("unchecked")
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final String columnName, final V... values)
+	{
+		filters.addInArrayOrAllFilter(columnName, values);
+		return this;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
 	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final V... values)
 	{
 		filters.addInArrayFilter(columnName, values);
+		return this;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
+	{
+		filters.addInArrayOrAllFilter(column, values);
 		return this;
 	}
 

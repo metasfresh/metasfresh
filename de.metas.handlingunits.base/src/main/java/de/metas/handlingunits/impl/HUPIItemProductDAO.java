@@ -303,7 +303,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			infiniteCapacityFilter.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMN_IsInfiniteCapacity, false);
 
 			// We accept NoPI or VirtualPI configurations because those needs to be filtered out by other options (e.g. setAllowVirtualPI())
-			infiniteCapacityFilter.addInArrayFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
+			infiniteCapacityFilter.addInArrayOrAllFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
 					NO_HU_PI_Item_Product_ID,
 					VIRTUAL_HU_PI_Item_Product_ID);
 

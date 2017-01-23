@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.ModelColumn;
@@ -120,14 +119,27 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	<ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * Add a {@link InArrayQueryFilter} using a list of values as the search array
-	 * 
-	 * @param columnName
-	 * @param values
-	 * @return this
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is accepted.
+	 */
+	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, Collection<V> values);
+
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is rejected.
 	 */
 	<V> ICompositeQueryFilter<T> addInArrayFilter(String columnName, Collection<V> values);
 
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is accepted.
+	 */
+	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
+	
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is rejected.
+	 */
 	<V> ICompositeQueryFilter<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
@@ -149,15 +161,30 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	<V> ICompositeQueryFilter<T> addNotInArrayFilter(String columnName, Collection<V> values);
 
 	/**
-	 * Add a {@link InArrayQueryFilter} using an array of values as the search array
-	 * 
-	 * @param columnName
-	 * @param values
-	 * @return this
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is accepted.
+	 */
+	@SuppressWarnings("unchecked")
+	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, V... values);
+	
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is rejected.
 	 */
 	@SuppressWarnings("unchecked")
 	<V> ICompositeQueryFilter<T> addInArrayFilter(String columnName, V... values);
 
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is accepted.
+	 */
+	@SuppressWarnings("unchecked")
+	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, V... values);
+	
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is rejected.
+	 */
 	@SuppressWarnings("unchecked")
 	<V> ICompositeQueryFilter<T> addInArrayFilter(ModelColumn<T, ?> column, V... values);
 

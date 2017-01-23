@@ -63,7 +63,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		// FRESH-334 only the BP_Products of the given org or of the org 0 are eligible
 
-		queryFilters.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
+		queryFilters.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
 
 		if (Vendor_ID > 0)
 		{
@@ -117,7 +117,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				// FRESH-334 support the case when BP PRoduct is for org 0
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0)
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0)
 				// order by ord_id desc
 				.orderBy()
 				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
@@ -135,7 +135,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		// make sure we only pick from the BP product entries for the product given as parameter
 		final ICompositeQueryFilter<I_C_BPartner_Product> productQueryFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
 
 		final ICompositeQueryFilter<I_C_BPartner_Product> customerQueryFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())

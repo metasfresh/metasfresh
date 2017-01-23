@@ -82,7 +82,7 @@ public class C_BPartner
 								// 08958: for the starts, we only update queue items that reference invoices
 								final IQuery<I_C_DocType> invoicedocTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, ITrx.TRXNAME_ThreadInherited)
 										.addOnlyActiveRecordsFilter()
-										.addInArrayFilter(I_C_DocType.COLUMNNAME_DocBaseType,
+										.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_DocBaseType,
 												X_C_DocType.DOCBASETYPE_APCreditMemo,
 												X_C_DocType.DOCBASETYPE_APInvoice,
 												X_C_DocType.DOCBASETYPE_ARCreditMemo,

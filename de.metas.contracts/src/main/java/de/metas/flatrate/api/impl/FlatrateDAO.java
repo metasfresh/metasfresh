@@ -110,15 +110,15 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addOnlyActiveRecordsFilter();
 		if (m_Product_Category_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
 		}
 		if (m_Product_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
 		}
 		if (c_Charge_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
 		}
 
 		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder

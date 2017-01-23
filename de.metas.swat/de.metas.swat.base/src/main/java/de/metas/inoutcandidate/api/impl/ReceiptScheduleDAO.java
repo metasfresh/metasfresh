@@ -172,7 +172,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		return createRsaForRsQueryBuilder(receiptSchedule, I_M_ReceiptSchedule_Alloc.class)
 				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_InOutLine_ID)
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
 				.create()
 				.list();
 	}

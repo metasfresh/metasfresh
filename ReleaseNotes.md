@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.53.52 (2017-04)
+# metasfresh 4.x.x (2017-05)
 
 upcoming Release
+
+# metasfresh 4.53.52 (2017-04)
+
+this week's RC
 
 ## Features
 * metasfresh
@@ -24,6 +28,10 @@ upcoming Release
 * webui
   * #817 Request Window in WebUI
   * #831 Default Document Layout for WebUI
+  * #847 Shipment Schedule Window in WebUI
+  * #853 Shipment Schedule Window Subtabs in WebUI
+  * #855 Shipment Schedule Advanced Edit Mode	
+  * #108 Create Callout for DocNo in Request
 
 ## Fixes
 * metasfresh 
@@ -33,6 +41,12 @@ upcoming Release
   * #819 fix/refactor CalloutRequest
   * #806 Customs report minor fixes
   * #782 Focus on the first process parameter
+  * #837 Marginal return accounts doubled
+  * #844 Gear from Pricing System and PriceList show wrong processes
+
+* parent
+  * #3 Add repo.metasfresh.com also as plugin repo
+    * thx to @sramazzina
 
 # metasfresh 4.52.51 (2017-03)
 
