@@ -108,7 +108,7 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus
-			inoutQueryBuilder.addInArrayFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			inoutQueryBuilder.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 
 			// IsSOTrx
 			if (p_IsSOTrx != null)

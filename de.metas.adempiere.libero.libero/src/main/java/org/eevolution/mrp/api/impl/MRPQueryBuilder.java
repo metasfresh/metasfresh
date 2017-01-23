@@ -165,7 +165,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Set<Integer> plantIds = getPP_Plant_IDs_ToUse();
 		if (plantIds != null && !plantIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_S_Resource_ID, plantIds);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_S_Resource_ID, plantIds);
 		}
 
 		//
@@ -202,7 +202,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		if (mrpFirmType != null)
 		{
 			final List<String> docStatuses = mrpFirmType.getDocStatuses();
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_DocStatus, docStatuses);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_DocStatus, docStatuses);
 		}
 
 		//
@@ -210,7 +210,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Set<String> orderTypes = getOrderTypes();
 		if (!Check.isEmpty(orderTypes))
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_OrderType, orderTypes);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_OrderType, orderTypes);
 		}
 
 		//
@@ -261,7 +261,7 @@ import org.eevolution.mrp.api.MRPFirmType;
 		final Set<Integer> mrpIds = getOnlyPP_MRP_IDs();
 		if (mrpIds != null && !mrpIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, mrpIds);
+			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, mrpIds);
 		}
 
 		//

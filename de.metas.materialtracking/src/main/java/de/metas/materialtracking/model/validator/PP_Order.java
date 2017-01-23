@@ -126,7 +126,7 @@ public class PP_Order
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMN_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.andCollect(I_C_Invoice_Detail.COLUMN_C_InvoiceLine_ID)
 				.andCollect(I_C_InvoiceLine.COLUMN_C_Invoice_ID)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 				.orderBy().addColumn(I_C_Invoice.COLUMNNAME_DocumentNo).endOrderBy()
 				.create()
 				.list();

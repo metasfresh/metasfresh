@@ -12,38 +12,61 @@ Here come the actual release notes:
 
 # metasfresh 4.53.52 (2017-04)
 
-upcoming
+upcoming Release
 
 ## Features
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
-  
+  * #829 receivedVia entry not translated in Baselanguage de_DE
+  * #810 Propagate Attribute from Issue to Receive in Production
+  * #835 Switch off Process Confirmation Window
+
+* webui
+  * #817 Request Window in WebUI
+  * #831 Default Document Layout for WebUI
+  * #847 Shipment Schedule Window in WebUI
+  * #853 Shipment Schedule Window Subtabs in WebUI
+  * #855 Shipment Schedule Advanced Edit Mode	
+  * #108 Create Callout for DocNo in Request
+
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
   * #808 DocActionBL.retrieveString method is broken
   * #806 Fixes in Custom reports
-  * #819 fix/refactor CalloutRequest 
+  * #819 fix/refactor CalloutRequest
+  * #806 Customs report minor fixes
+  * #782 Focus on the first process parameter
+  * #837 Marginal return accounts doubled
+  * #844 Gear from Pricing System and PriceList show wrong processes
+
+* parent
+  * #3 Add repo.metasfresh.com also as plugin repo
+    * thx to @sramazzina
 
 # metasfresh 4.52.51 (2017-03)
-  
-this week's RC
 
 ## Features
 * metasfresh 
   * #774 show address on all docs so it fits the letter window
+    * Adjust all Documents so that the address fits into the letter window od envelops C5/ C6 according to ISO 269 und DIN 678.
   * #773 show delivery address on sales order
+    * Show the deliverTo location on Sales Order Documents.
   * #507 Copy with Details for PP_Product_BOM
+    * Add a new Functionality to allow copy-with-details on Bill of Materials records.
   * #780 Have logo on jasper report that spans from left to right
+    * Rearranged the logo placing on Documents to allow the upload and usage of large, page-spanning Logos from left to right.
   * #816 Do not show prices on shipment note
+    * Undisplayed the prices on shipment documents.
 
 ## Fixes
 * metasfresh 
   * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
-    * address the possible case of different procurement products that have different attributes and still both match equally well
+    * Addresses the possible case of different procurement products that have different attributes and still both match equally well.
   * #791 Create Nachbelastung from Invoice Cast exception
+    * Fixes a Bug that lead into an exception when creating an adjustment charge to an existing invoice.
   * #761 Reactivating an InOut fails sometimes
-    * now this also works with records that were deleted at the time the async-package is processed
+    * Now the reactivation of InOuts also works with records that were deleted at the time the async-package is processed
     
 # metasfresh 4.51.50 (2017-02)
 

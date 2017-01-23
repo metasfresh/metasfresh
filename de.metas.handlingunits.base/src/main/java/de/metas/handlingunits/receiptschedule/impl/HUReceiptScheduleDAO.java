@@ -106,7 +106,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 		//
 		// Use query builder for RSAs and filter TU-HUs
 		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> rsaQueryBuilder = retrieveHandlingUnitAllocationsQueryBuilder(receiptSchedule, trxName)
-				.addInArrayFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_TU_HU_ID, tuIdsToUnassign);
+				.addInArrayOrAllFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_TU_HU_ID, tuIdsToUnassign);
 
 		//
 		// Fetch RSA entries for TU-HUs

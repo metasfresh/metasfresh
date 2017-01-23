@@ -145,7 +145,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 					.createElementsQueryBuilder(lockedWP,
 							I_M_ShipmentSchedule.class,
 							trxName)
-					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, distinctAggregationKeys)
+					.addInArrayOrAllFilter(I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, distinctAggregationKeys)
 					.create()
 					.match();
 

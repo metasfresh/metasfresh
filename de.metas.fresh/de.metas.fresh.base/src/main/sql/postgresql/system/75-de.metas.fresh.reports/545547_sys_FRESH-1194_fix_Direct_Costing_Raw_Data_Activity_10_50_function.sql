@@ -1,4 +1,4 @@
-
+﻿
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Activity_10_50 (Year Date, AD_Org_ID numeric(10,0));
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Direct_Costing_Raw_Data_Activity_10_50 (Year Date, AD_Org_ID numeric(10,0)) RETURNS TABLE
 	(
