@@ -39,6 +39,10 @@ upcoming Release
   * #837 Marginal return accounts doubled
   * #844 Gear from Pricing System and PriceList show wrong processes
 
+* parent
+  * #3 Add repo.metasfresh.com also as plugin repo
+    * thx to @sramazzina
+
 # metasfresh 4.52.51 (2017-03)
 
 ## Features
