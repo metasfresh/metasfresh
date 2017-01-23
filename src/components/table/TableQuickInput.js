@@ -99,7 +99,8 @@ class TableQuickInput extends Component {
     handlePatch = (prop, value) => {
         const {dispatch, docType, docId, tabId} = this.props;
         const {id} = this.state;
-        value && dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id)).then(response => {
+
+        dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id)).then(response => {
             response.data && response.data[0].fields.map(item => {
                 this.setState(Object.assign({}, this.state, {
                     data: this.state.data.map(field => {

@@ -127,7 +127,6 @@ class Lookup extends Component {
 
         // call for more properties
         if(propertiesCopy.length > 0){
-
             const batchArray = propertiesCopy.map((item) =>
                 dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
