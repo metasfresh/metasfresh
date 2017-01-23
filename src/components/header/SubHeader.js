@@ -193,7 +193,7 @@ class Subheader extends Component {
                                     { references && !!references.length ? references.map((item, key) =>
                                         <div
                                             className="subheader-item js-subheader-item"
-                                            onClick={() => this.handleReferenceClick(item.documentType, item.filter)}
+                                            onClick={() => {this.handleReferenceClick(item.documentType, item.filter); closeSubheader()}}
                                             key={key}
                                             tabIndex={0}
                                         >

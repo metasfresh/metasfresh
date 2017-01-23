@@ -398,7 +398,7 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity
+            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays
         } = this.props;
 
         const {selected} = this.state;
