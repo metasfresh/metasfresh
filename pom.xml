@@ -40,17 +40,26 @@
 		<repository>
 			<id>metasfresh-repo</id>
 			<name>metasfresh maven repository</name>
-       
-         	<!-- URL for nexus 2.14 -->       
-         	<url>https://repo.metasfresh.com/content/groups/mvn-public/</url>
+			<url>https://repo.metasfresh.com/content/groups/mvn-public/</url>
 		</repository>
+
 		<!-- this additional repo's parameters can be set from outside. It usually correesponds to a (task-)branch -->
 		<repository>
 			<id>${deploy-repo-id}</id>
-		    <name>${deploy-repo-name}</name>
-      		<url>${deploy-repo-url}</url>
+			<name>${deploy-repo-name}</name>
+			<url>${deploy-repo-url}</url>
 		</repository>
 	</repositories>
+
+	<pluginRepositories>
+		<!-- our main repo is also our plugin repo; also see https://maven.apache.org/pom.html#Plugin_Repositories -->
+		<!-- see https://github.com/metasfresh/metasfresh-parent/issues/3 -->
+		<pluginRepository>
+			<id>metasfresh-repo</id>
+			<name>metasfresh maven repository</name>
+			<url>https://repo.metasfresh.com/content/groups/mvn-public/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<distributionManagement>
 		<!-- 
@@ -58,9 +67,9 @@
 		Even if you can't deploy to this repo, you can still make your own builds.
 		-->
 		<snapshotRepository>
-     		<id>${deploy-repo-id}</id>
-		    <name>${deploy-repo-name}</name>
-      		<url>${deploy-repo-url}</url>
+			<id>${deploy-repo-id}</id>
+			<name>${deploy-repo-name}</name>
+			<url>${deploy-repo-url}</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -120,7 +129,7 @@
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
-			
+
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
