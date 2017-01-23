@@ -128,8 +128,8 @@ public final class Document
 
 	//
 	// Evaluatee
-	private DocumentEvaluatee _evaluatee; // lazy
-	private transient DocumentEvaluatee _shadowParentEvaluatee;
+	private IDocumentEvaluatee _evaluatee; // lazy
+	private transient IDocumentEvaluatee _shadowParentEvaluatee;
 
 	//
 	// Misc
@@ -671,7 +671,7 @@ public final class Document
 		return _parentDocument;
 	}
 
-	/* package */ DocumentEvaluatee getParentDocumentEvaluateeOrNull()
+	/* package */ IDocumentEvaluatee getParentDocumentEvaluateeOrNull()
 	{
 		if (_shadowParentEvaluatee != null)
 		{
@@ -694,7 +694,7 @@ public final class Document
 	 *
 	 * @param shadowParentDocumentEvaluatee
 	 */
-	public void setShadowParentDocumentEvaluatee(final DocumentEvaluatee shadowParentDocumentEvaluatee)
+	public void setShadowParentDocumentEvaluatee(final IDocumentEvaluatee shadowParentDocumentEvaluatee)
 	{
 		if (getParentDocument() != null)
 		{
@@ -854,7 +854,7 @@ public final class Document
 		return _saveStatus;
 	}
 
-	public DocumentEvaluatee asEvaluatee()
+	public IDocumentEvaluatee asEvaluatee()
 	{
 		if (_evaluatee == null)
 		{
