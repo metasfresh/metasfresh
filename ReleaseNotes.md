@@ -26,7 +26,8 @@ upcoming Release
   * #831 Default Document Layout for WebUI
   * #847 Shipment Schedule Window in WebUI
   * #853 Shipment Schedule Window Subtabs in WebUI
-  * #855 Shipment Schedule Advanced Edit Mode
+  * #855 Shipment Schedule Advanced Edit Mode	
+  * #108 Create Callout for DocNo in Request
 
 ## Fixes
 * metasfresh 
