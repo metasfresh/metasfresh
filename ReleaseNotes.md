@@ -36,6 +36,8 @@ upcoming Release
   * #819 fix/refactor CalloutRequest
   * #806 Customs report minor fixes
   * #782 Focus on the first process parameter
+  * #837 Marginal return accounts doubled
+  * #844 Gear from Pricing System and PriceList show wrong processes
 
 # metasfresh 4.52.51 (2017-03)
 
