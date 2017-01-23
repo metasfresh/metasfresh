@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -64,9 +63,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		final String dimPPOrderAttributesToTransferName = HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer;
 
 		final IContextAware ppOrderCtxAware = InterfaceWrapperHelper.getContextAware(ppOrder);
-		final I_DIM_Dimension_Spec dimPPOrderProductAttributesToTransfer =
-				Services.get(IDimensionspecDAO.class).
-						retrieveForInternalName(dimPPOrderAttributesToTransferName, ppOrderCtxAware);
+		final I_DIM_Dimension_Spec dimPPOrderProductAttributesToTransfer = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimPPOrderAttributesToTransferName, ppOrderCtxAware);
 
 		final List<I_M_Attribute> attributesToBeTransfered = Services.get(IDimensionSpecAttributeDAO.class)
 				.retrieveAttributesForDimensionSpec(dimPPOrderProductAttributesToTransfer);
@@ -97,8 +94,11 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		final List<I_PP_Order_ProductAttribute> ppOrderAttributes = ppOrderProductAttributeDAO.retrieveProductAttributesForPPOrder(ppOrder);
 
 		for (final I_PP_Order_ProductAttribute ppOrderAttribute : ppOrderAttributes)
+
 		{
-			final boolean isAttributeToTransfer = attributesToBeTransfered.contains(ppOrderAttribute.getM_Attribute());
+			final de.metas.handlingunits.model.I_M_Attribute attribute = InterfaceWrapperHelper.create(ppOrderAttribute.getM_Attribute(), de.metas.handlingunits.model.I_M_Attribute.class);
+
+			final boolean isAttributeToTransfer = attributesToBeTransfered.contains(attribute);
 
 			// THe attribute is not to transfer
 			// See DIM_Dimension_Spec with InternalName = 'PP_Order_ProductAttribute_Transfer'
@@ -108,13 +108,13 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			}
 
 			// In case the attribute is coming from the PPOrder's ASI, leave it like it is
-			final boolean isSetInPPOrder = attribvutesSetInPPOrder.contains(ppOrderAttribute.getM_Attribute());
+			final boolean isSetInPPOrder = attribvutesSetInPPOrder.contains(attribute);
 			if (isSetInPPOrder)
 			{
 				continue;
 			}
 
-			final Integer attributeID = ppOrderAttribute.getM_Attribute_ID();
+			final Integer attributeID = attribute.getM_Attribute_ID();
 
 			if (!attributesMap.containsKey(attributeID))
 			{
@@ -122,6 +122,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 				attributeWithValue.setAttributeID(attributeID);
 				attributeWithValue.setValue(ppOrderAttribute.getValue());
 				attributeWithValue.setValueNumber(ppOrderAttribute.getValueNumber());
+				attributeWithValue.setTransferWhenNull(attribute.isTransferWhenNull());
 
 				attributesMap.put(attributeID, attributeWithValue);
 			}
@@ -205,12 +206,16 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	 * @param existingAttribute
 	 * @param ppOrderAttribute
 	 * @return
-	 *         <li>the existingAttribute if it has identical values with the ppOrderAttribute, <li>a new AttributeWithValue with null values otherwise
+	 *         <li>the existingAttribute if it has identical values with the ppOrderAttribute,
+	 *         <li>a new AttributeWithValue with null values otherwise
 	 */
 	private AttributesWithValues computeValidAttributes(
 			final AttributesWithValues existingAttribute,
 			final I_PP_Order_ProductAttribute ppOrderAttribute)
 	{
+		// #810: flag to decide if an attribute value shall be propagated even if there are already HUs without this attribute set
+		final boolean isTransferWhenNull = existingAttribute.isTransferWhenNull;
+
 		final String existingValue = existingAttribute.getValue();
 		final BigDecimal existingValueNumber = existingAttribute.getValueNumber();
 
@@ -220,7 +225,28 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		final String resultingValue;
 		final BigDecimal resultingValueNumber;
 
-		if (existingValue == null)
+		// task #810
+		// In case the attribute has the flag IsTransferWhenNull on true, if there is a value set (new or old), propagate it
+		if (isTransferWhenNull)
+		{
+			if (existingValue == null)
+			{
+				resultingValue = newValue;
+			}
+
+			else if (newValue == null)
+			{
+				resultingValue = existingValue;
+			}
+
+			// In case both values are set but they are different, leave the result null
+			else
+			{
+				resultingValue = null;
+			}
+		}
+
+		else if (existingValue == null)
 		{
 			resultingValue = null; // the existing value is null so the result is null
 		}
@@ -237,7 +263,27 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			resultingValue = null; // the values are different
 		}
 
-		if (existingValueNumber == null)
+		// task #810
+		// Same for value number: In case the attribute has the flag IsTransferWhenValue on true, if there is a value set (new or old), propagate it
+		if (isTransferWhenNull)
+		{
+			if (existingValueNumber == null)
+			{
+				resultingValueNumber = newValueNumber;
+			}
+
+			else if (newValueNumber == null)
+			{
+				resultingValueNumber = existingValueNumber;
+			}
+
+			// In case both values are set but they are different, leave the result null
+			else
+			{
+				resultingValueNumber = null;
+			}
+		}
+		else if (existingValueNumber == null)
 		{
 			resultingValueNumber = null; // the existing valueNumber is null so the result is null
 		}
@@ -275,6 +321,9 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		private Integer attributeID;
 		private String value;
 		private BigDecimal valueNumber;
+
+		// task #810: Introducing IsTransferWhenNull
+		private boolean isTransferWhenNull;
 
 		public Integer getAttributeID()
 		{
@@ -318,6 +367,17 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 			return false;
 		}
+
+		public boolean isTransferWhenNull()
+		{
+			return isTransferWhenNull;
+		}
+
+		public void setTransferWhenNull(boolean isTransferWhenNull)
+		{
+			this.isTransferWhenNull = isTransferWhenNull;
+		}
+
 	}
 
 	@Override
