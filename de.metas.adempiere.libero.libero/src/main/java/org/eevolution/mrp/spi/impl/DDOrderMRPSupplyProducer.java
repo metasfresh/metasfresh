@@ -755,7 +755,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		filters.addEqualsFilter(I_DD_Order.COLUMNNAME_AD_Org_ID, mrpContext.getAD_Org().getAD_Org_ID());
 		//
 		// Only those DD Orders which are from our Plant or does not have a plant at all
-		filters.addInArrayFilter(I_DD_Order.COLUMNNAME_PP_Plant_ID, null, mrpContext.getPlant().getS_Resource_ID());
+		filters.addInArrayOrAllFilter(I_DD_Order.COLUMNNAME_PP_Plant_ID, null, mrpContext.getPlant().getS_Resource_ID());
 
 		//
 		// Only those which have a line with Destination Warehouse same as our warehouse

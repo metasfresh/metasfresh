@@ -80,7 +80,7 @@ public class PaymentRequestDAO implements IPaymentRequestDAO
 		final List<Integer> actualPaymentRequestIdsList = queryBL.createQueryBuilder(I_C_Payment_Request.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter() // NOTE: very important, BL relies on this (i.e. assumes it gets only active requests)
 				.addOnlyContextClient()
-				.addInArrayFilter(I_C_Payment_Request.COLUMN_C_Payment_Request_ID, paymentRequestIds)
+				.addInArrayOrAllFilter(I_C_Payment_Request.COLUMN_C_Payment_Request_ID, paymentRequestIds)
 				.create()
 				.listIds();
 		

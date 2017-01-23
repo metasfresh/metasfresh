@@ -84,19 +84,19 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 		//
 		// Filter by AD_Org_ID: given AD_Org_ID or 0/null
-		filters.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, AD_Org_ID, 0, null);
+		filters.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, AD_Org_ID, 0, null);
 		orderBy.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last);
 
 		//
 		// Filter by Warehouse: given M_Warehouse_ID or 0/null
-		filters.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID, 0, null);
+		filters.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID, 0, null);
 		orderBy.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last);
 
 		//
 		// Filter by Plant: given S_Resource_ID or 0/null
 		if (S_Resource_ID != ANY_S_Resource_ID)
 		{
-			filters.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, S_Resource_ID, 0, null);
+			filters.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, S_Resource_ID, 0, null);
 		}
 		orderBy.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last);
 
@@ -192,7 +192,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMN_AD_Org_ID, adOrgId)
-				.addInArrayFilter(I_M_Warehouse.COLUMN_PP_Plant_ID, null, ppPlantId)
+				.addInArrayOrAllFilter(I_M_Warehouse.COLUMN_PP_Plant_ID, null, ppPlantId)
 				.addEqualsFilter(I_M_Warehouse.COLUMN_IsInTransit, false) // skip in transit warehouses
 				.create()
 				.list();

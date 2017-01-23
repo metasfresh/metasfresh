@@ -39,8 +39,8 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 				//
 				.andCollectChildren(I_AD_ColumnCallout.COLUMN_AD_Column_ID)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_AD_ColumnCallout.COLUMN_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, Env.getAD_Client_ID(ctx))
-				.addInArrayFilter(I_AD_ColumnCallout.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, Env.getAD_Org_ID(ctx))
+				.addInArrayOrAllFilter(I_AD_ColumnCallout.COLUMN_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, Env.getAD_Client_ID(ctx))
+				.addInArrayOrAllFilter(I_AD_ColumnCallout.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, Env.getAD_Org_ID(ctx))
 				//
 				.orderBy()
 				.addColumn(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)

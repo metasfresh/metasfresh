@@ -139,10 +139,12 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * Sets default value to be returned when the "values" list is empty.
 	 *
 	 * @param defaultReturnWhenEmpty
+	 * @return 
 	 */
-	public void setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
+	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
 	{
 		this.defaultReturnWhenEmpty = defaultReturnWhenEmpty;
+		return this;
 	}
 
 	@Override

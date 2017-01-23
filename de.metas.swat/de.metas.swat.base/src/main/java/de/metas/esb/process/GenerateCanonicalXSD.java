@@ -109,7 +109,7 @@ public class GenerateCanonicalXSD extends JavaProcess
 
 		if (p_FilterBy_AD_Client_ID)
 		{
-			queryBuilder.addInArrayFilter(I_EXP_Format.COLUMNNAME_AD_Client_ID, 0, getAD_Client_ID());
+			queryBuilder.addInArrayOrAllFilter(I_EXP_Format.COLUMNNAME_AD_Client_ID, 0, getAD_Client_ID());
 		}
 		if (p_EntityType != null)
 		{
