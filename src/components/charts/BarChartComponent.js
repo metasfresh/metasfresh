@@ -25,21 +25,21 @@ class BarChartComponent extends Component {
         var ranges = this.setRanges(dimensions.width, dimensions.height, data);
         var svg = this.drawChart(dimensions, ranges, data);
         this.addAxis(svg, dimensions, ranges);
+        this.addResponsive();
         
     }
 
     setDimensions = (mTop=20, mRight=20, mBottom=20, mLeft=20, width=600, height=400) => {
         const {chartClass, responsive} = this.props;
-        var margin = {top: mTop, right: mRight, bottom: mBottom, left: mLeft};
+        const margin = {top: mTop, right: mRight, bottom: mBottom, left: mLeft};
+        let chartWidth = width - margin.left - margin.right;
+        let chartHeight = height - margin.top - margin.bottom;
         if(responsive) {
-            const width = document.getElementsByClassName(chartClass)[0].offsetWidth;
-            console.log(width);
-        } else {
-            var width = width - margin.left - margin.right;
-            var height = height - margin.top - margin.bottom;
+            const wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
+            chartWidth = wrapperWidth - margin.left - margin.right;
         }
         
-       
+            console.log(chartWidth);
             return {
                 margin: {
                     top: margin.top, 
@@ -47,8 +47,8 @@ class BarChartComponent extends Component {
                     bottom: margin.bottom,
                     left: margin.left 
                 }, 
-                width: width, 
-                height:height
+                width: chartWidth, 
+                height:chartHeight
             };
     }
     setRanges = (width, height, data) => {
@@ -93,7 +93,36 @@ class BarChartComponent extends Component {
             .call(d3.axisLeft(ranges.y));
     }
 
+    addResponsive = () => {
+        console.log('responsive');
+        const {chartClass} = this.props;
+        const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
+        console.log(chartWrapp.offsetWidth);
+        d3.select(window)
+          .on("resize", () => {
+            chartWrapp.setAttribute("width", chartWrapp.offsetWidth);
+            this.clearChart();
+            var data = [
+                {name: "Alice", value: 2},
+                {name: "Bob", value: 3},
+                {name: "Carol", value: 1},
+                {name: "Dwayne", value: 5},
+                {name: "Anne", value: 8},
+                {name: "Robin", value: 28},
+                {name: "Eve", value: 12},
+                {name: "Karen", value: 6},
+                {name: "Lisa", value: 22},
+                {name: "Tom", value: 18}
+            ];
+            var dimensions = this.setDimensions();
+            var ranges = this.setRanges(dimensions.width, dimensions.height, data);
+            var svg = this.drawChart(dimensions, ranges, data);
+            this.addAxis(svg, dimensions, ranges);
+          });
+    }
+
     clearChart = () => {
+        const {chartClass} = this.props;
         document.getElementsByClassName(chartClass)[0].childNodes[0].remove();
     }
     
