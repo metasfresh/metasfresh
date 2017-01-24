@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 upcoming Release
 
+## Features
+* metasfresh
+  * #858 Adjustments for Shipment Schedule Grid View
+
 # metasfresh 4.53.52 (2017-04)
 
 this week's RC
