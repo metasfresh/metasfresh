@@ -7,8 +7,10 @@ import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPrecondition.PreconditionsContext;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -52,6 +54,7 @@ public final class ProcessDescriptor
 	private final int adProcessId;
 	private final ProcessDescriptorType type;
 	private final Class<? extends IProcessPrecondition> preconditionsClass;
+	private final Class<? extends IProcessDefaultParametersProvider> defaultParametersProviderClass;
 	private final String processClassname;
 
 	private final DocumentEntityDescriptor parametersDescriptor;
@@ -67,6 +70,7 @@ public final class ProcessDescriptor
 
 		processClassname = builder.getProcessClassname();
 		preconditionsClass = builder.getPreconditionsClass();
+		defaultParametersProviderClass = builder.getProcessDefaultParametersProvider();
 
 		parametersDescriptor = builder.getParametersDescriptor();
 
@@ -151,6 +155,23 @@ public final class ProcessDescriptor
 		{
 			logger.warn("Failed to determine if preconditions of {} are appliable on {}. Considering NOT appliable.", this, context, ex);
 			return false;
+		}
+	}
+	
+	public IProcessDefaultParametersProvider getDefaultParametersProvider()
+	{
+		if (defaultParametersProviderClass == null)
+		{
+			return null;
+		}
+		
+		try
+		{
+			return defaultParametersProviderClass.newInstance();
+		}
+		catch (InstantiationException | IllegalAccessException ex)
+		{
+			throw Throwables.propagate(ex);
 		}
 	}
 	
@@ -264,6 +285,26 @@ public final class ProcessDescriptor
 				return null;
 			}
 		}
+		
+		private Class<? extends IProcessDefaultParametersProvider> getProcessDefaultParametersProvider()
+		{
+			final Class<?> processClass = getProcessClassOrNull();
+			if (processClass == null || !IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
+			{
+				return null;
+			}
+
+			try
+			{
+				return processClass.asSubclass(IProcessDefaultParametersProvider.class);
+			}
+			catch (final Exception e)
+			{
+				logger.error(e.getLocalizedMessage(), e);
+				return null;
+			}
+		}
+
 
 		public Builder setParametersDescriptor(final DocumentEntityDescriptor parametersDescriptor)
 		{

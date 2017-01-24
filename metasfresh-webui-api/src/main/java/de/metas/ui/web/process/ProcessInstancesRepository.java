@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,9 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
@@ -65,14 +66,7 @@ public class ProcessInstancesRepository
 					pinstance.destroy();
 				}
 			})
-			.build(new CacheLoader<Integer, ProcessInstance>()
-			{
-				@Override
-				public ProcessInstance load(final Integer pinstanceId)
-				{
-					return retrieveProcessInstance(pinstanceId);
-				}
-			});
+			.build(CacheLoader.from(adPInstanceId -> retrieveProcessInstance(adPInstanceId)));
 
 	public void cacheReset()
 	{
@@ -104,11 +98,48 @@ public class ProcessInstancesRepository
 		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
 		final Document parametersDoc = ProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId);
 
+		// Set parameters's default values
+		ProcessDefaultParametersUpdater.newInstance()
+				.addDefaultParametersProvider(processInfo)
+				.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(parameter.getColumnName(), value, () -> "default parameter value"))
+				.updateDefaultValue(parametersDoc.getFieldViews(), DocumentFieldAsProcessDefaultParameter::of);
+
 		//
 		// Create (webui) process instance and add it to our internal cache.
 		final ProcessInstance pinstance = new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
 		processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
 		return pinstance;
+	}
+
+	private ProcessInstance retrieveProcessInstance(final int adPInstanceId)
+	{
+		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+
+		//
+		// Load process info
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setCreateTemporaryCtx()
+				.setAD_PInstance_ID(adPInstanceId)
+				.build();
+
+		//
+		// Build the parameters document
+		final int adProcessId = processInfo.getAD_Process_ID();
+		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
+
+		//
+		// Build the parameters (as document)
+		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
+		final Document parametersDoc = parametersDescriptor
+				.getDataBinding()
+				.getDocumentsRepository()
+				.retrieveDocumentById(parametersDescriptor, adPInstanceId);
+
+		// TODO: handle the case when the process was already executed
+		// In that case we need to load the result and provide it to ProcessInstance constructor
+
+		return new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
 	}
 
 	public ProcessInstance getProcessInstanceForReading(final int pinstanceId)
@@ -135,26 +166,4 @@ public class ProcessInstancesRepository
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
-
-	private ProcessInstance retrieveProcessInstance(final int adPInstanceId)
-	{
-		//
-		// Get the ProcessDescriptor
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).retrieveAD_PInstance(Env.getCtx(), adPInstanceId);
-		final ProcessDescriptor processDescriptor = getProcessDescriptor(adPInstance.getAD_Process_ID());
-
-		//
-		// Build the parameters (as document)
-		final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-		final Document parametersDoc = parametersDescriptor
-				.getDataBinding()
-				.getDocumentsRepository()
-				.retrieveDocumentById(parametersDescriptor, adPInstanceId);
-		
-		// TODO: handle the case when the process was already executed
-		// In that case we need to load the result and provide it to ProcessInstance constructor
-
-		return new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
-	}
-
 }
