@@ -128,7 +128,6 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
-
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.map((item) =>
@@ -253,7 +252,7 @@ class Lookup extends Component {
     }
 
     handleClear = (e) => {
-        const {onChange, properties, defaultValue} = this.props;
+        const {onChange, properties, defaultValue, subentity} = this.props;
         e && e.preventDefault();
         this.inputSearch.value = "";
 
@@ -268,9 +267,29 @@ class Lookup extends Component {
             model: null,
             property: "",
             loading: false
-        }));
+        }), ()=> {
+                if(subentity) {
+                    this.inputSearch.value = "";
 
-        this.handleBlur();
+                    this.setState(Object.assign({}, this.state, {
+                        isOpen: false
+                    }), () => {
+                        if(subentity) {
+                            this.setState(Object.assign({}, this.state, {
+                                list: [],
+                                isInputEmpty: true,
+                                selected: null,
+                                model: null,
+                                property: "",
+                                loading: false
+                            }));
+                        }
+                    })
+                }
+
+                this.handleBlur();
+        });
+
     }
 
     handleKeyDown = (e) => {
