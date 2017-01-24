@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,7 +58,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	@Override
 	public void updateHUAttributes(final I_PP_Order ppOrder, final I_M_HU hu)
 	{
-		final Map<Integer, AttributesWithValues> attributesMap = new HashMap<Integer, AttributesWithValues>();
+		final Map<Integer, AttributesWithValues> attributesMap = new HashMap<>();
 
 		final String dimPPOrderAttributesToTransferName = HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer;
 
@@ -71,7 +71,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		// Also exclude from transfer the attributes that were already set from the pp_Order's ASI
 		final I_M_AttributeSetInstance ppOrderASI = ppOrder.getM_AttributeSetInstance();
 
-		List<I_M_Attribute> attribvutesSetInPPOrder = new ArrayList<I_M_Attribute>();
+		List<I_M_Attribute> attributesSetInPPOrder = new ArrayList<>();
 
 		if (ppOrderASI != null)
 		{
@@ -79,13 +79,11 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 			for (final I_M_AttributeInstance ppOrderAttributeInstance : ppOrderAttributeInstances)
 			{
-
 				if (ppOrderAttributeInstance.getValue() != null || (ppOrderAttributeInstance.getValueNumber() != null && ppOrderAttributeInstance.getValueNumber().signum() != 0))
 				{
-					attribvutesSetInPPOrder.add(ppOrderAttributeInstance.getM_Attribute());
+					attributesSetInPPOrder.add(ppOrderAttributeInstance.getM_Attribute());
 				}
 			}
-
 		}
 
 		// Services
@@ -100,7 +98,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 			final boolean isAttributeToTransfer = attributesToBeTransfered.contains(attribute);
 
-			// THe attribute is not to transfer
+			// The attribute is not to transfer
 			// See DIM_Dimension_Spec with InternalName = 'PP_Order_ProductAttribute_Transfer'
 			if (!isAttributeToTransfer)
 			{
@@ -108,7 +106,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			}
 
 			// In case the attribute is coming from the PPOrder's ASI, leave it like it is
-			final boolean isSetInPPOrder = attribvutesSetInPPOrder.contains(attribute);
+			final boolean isSetInPPOrder = attributesSetInPPOrder.contains(attribute);
 			if (isSetInPPOrder)
 			{
 				continue;
@@ -152,7 +150,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	/**
 	 * For the HUs of the already existing receipts, update the HUAttributes values with the ones that were updated
-	 * 
+	 *
 	 * @param attributesMap
 	 * @param ppOrder
 	 */
@@ -175,7 +173,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	/**
 	 * Set the correct values in the already existing attributes of the HU
-	 * 
+	 *
 	 * @param attributesMap
 	 * @param hu
 	 */
@@ -301,7 +299,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		}
 
 		final AttributesWithValues resultingAttribute = new AttributesWithValues();
-
+		resultingAttribute.setTransferWhenNull(existingAttribute.isTransferWhenNull);
 		resultingAttribute.setAttributeID(existingAttribute.getAttributeID());
 		resultingAttribute.setValue(resultingValue);
 		resultingAttribute.setValueNumber(resultingValueNumber);
@@ -366,11 +364,6 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			}
 
 			return false;
-		}
-
-		public boolean isTransferWhenNull()
-		{
-			return isTransferWhenNull;
 		}
 
 		public void setTransferWhenNull(boolean isTransferWhenNull)
