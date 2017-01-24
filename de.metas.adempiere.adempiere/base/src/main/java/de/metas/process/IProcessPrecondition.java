@@ -15,10 +15,14 @@ public interface IProcessPrecondition
 		<T> T getModel(final Class<T> modelClass);
 	}
 
+	IProcessPrecondition TRUE = context -> true;
+	IProcessPrecondition FALSE = context -> false;
+
 	/**
 	 * Determines if a process should be displayed in current context.
 	 * <p>
-	 * <b>IMPORTANT:</b> this method will not be invoked on the same instance that shall later execute <code>prepare()</code> {@link JavaProcess#doIt(String, String, Object[])}, so it does not make any
+	 * <b>IMPORTANT:</b> this method will not be invoked on the same instance that shall later execute <code>prepare()</code> {@link JavaProcess#doIt(String, String, Object[])}, so it does not make
+	 * any
 	 * sense to set any values to be used later.
 	 *
 	 * @param context

@@ -3,11 +3,10 @@ package de.metas.dlm.process;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.model.GridField;
-import org.compiere.util.Env;
 
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
@@ -59,18 +58,16 @@ public abstract class AbstractManageDLMTableProcess extends JavaProcess
 	}
 
 	@Override
-	public final Object getParameterDefaultValue(final GridField parameter)
+	public final Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final int windowNo = parameter.getWindowNo();
-
-		final int configLineId = Env.getContextAsInt(getCtx(), windowNo, I_DLM_Partition_Config_Line.COLUMNNAME_DLM_Partition_Config_Line_ID);
+		final int configLineId = parameter.getContextAsInt(I_DLM_Partition_Config_Line.COLUMNNAME_DLM_Partition_Config_Line_ID);
 		if (configLineId > 0)
 		{
 			final I_DLM_Partition_Config_Line configLine = InterfaceWrapperHelper.create(getCtx(), configLineId, I_DLM_Partition_Config_Line.class, ITrx.TRXNAME_None);
 			return configLine.getDLM_Referencing_Table_ID();
 		}
 
-		final int tableId = Env.getContextAsInt(getCtx(), windowNo, org.compiere.model.I_AD_Table.COLUMNNAME_AD_Table_ID);
+		final int tableId = parameter.getContextAsInt(I_AD_Table.COLUMNNAME_AD_Table_ID);
 		if (tableId > 0)
 		{
 			return tableId;

@@ -31,6 +31,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
@@ -66,7 +67,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	private Properties m_ctx;
-	private ProcessInfo m_pi;
+	private ProcessInfo _processInfo;
 
 	/** Logger */
 	protected final Logger log = LogManager.getLogger(getClass());
@@ -91,6 +92,14 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * In case it's returned the process will be rolled back.
 	 */
 	protected static final String MSG_Error = "@Error@";
+	
+	@Override
+	public final String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("processInfo", _processInfo)
+				.toString();
+	}
 
 	/**
 	 * Start the process.
@@ -101,17 +110,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	@Override
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
-		Check.assumeNotNull(pi, "ProcessInfo not null");
-
-		// Preparation
-		// FRESH-314: store #AD_PInstance_ID in a copied context (shall only live as long as this process does).
-		// We might want to access this information (currently in AD_ChangeLog)
-		// Note: using copyCtx because derviveCtx is not safe with Env.switchContext()
-		m_ctx = Env.copyCtx(pi.getCtx());
-
-		Env.setContext(m_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
-
-		m_pi = pi;
+		init(pi);
 
 		// Trx: we are setting it to null to be consistent with running prepare() out-of-transaction
 		// Later we will set the actual transaction or we will start a local transaction.
@@ -122,11 +121,9 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 				final IAutoCloseable contextRestorer = Env.switchContext(m_ctx) // FRESH-314: make sure our derived context will always be used
 		)
 		{
-			lock();
-
 			//
 			// Prepare out of transaction, if needed
-			final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
+			final ProcessClassInfo processClassInfo = getProcessInfo().getProcessClassInfo();
 			boolean prepareExecuted = false;
 			if (processClassInfo.isRunPrepareOutOfTransaction())
 			{
@@ -183,7 +180,6 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 			// NOTE: at this point the thread local loggable was restored
 
 			endTrx(success);
-			unlock();
 		}
 
 		//
@@ -193,11 +189,35 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		// NOTE: we shall check again the result because it might be changed by postProcess()
 		getResult().propagateErrorIfAny();
 	}   // startProcess
+	
+	/**
+	 * Initialize this process.
+	 * 
+	 * NOTE: don't call this method directly. Only the API is allowed to call it.
+	 * 
+	 * @param pi
+	 */
+	public void init(final ProcessInfo pi)
+	{
+		Check.assumeNull(_processInfo, "ProcessInfo not already configured: {}", this);
+		Check.assumeNotNull(pi, "ProcessInfo not null");
+		_processInfo = pi;
+
+		// Preparation
+		// FRESH-314: store #AD_PInstance_ID in a copied context (shall only live as long as this process does).
+		// We might want to access this information (currently in AD_ChangeLog)
+		// Note: using copyCtx because derviveCtx is not safe with Env.switchContext()
+		m_ctx = Env.copyCtx(pi.getCtx());
+
+		Env.setContext(m_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
+		
+	}
 
 	/**
 	 * Asserts we are running out of transaction.
 	 *
 	 * @param trx
+	 * @param stage
 	 */
 	private final void assertOutOfTransaction(final ITrx trx, final String stage)
 	{
@@ -479,7 +499,9 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	protected final void commitEx() throws SQLException
 	{
 		if (m_trx != null)
+		{
 			m_trx.commit(true);
+		}
 	}
 
 	/**
@@ -491,20 +513,26 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	protected final void rollback()
 	{
 		if (m_trx != null)
+		{
 			m_trx.rollback();
+		}
 	}
 
 	/**
-	 * @return Process Info
+	 * @return Process Info; never returns null
 	 */
 	protected final ProcessInfo getProcessInfo()
 	{
-		return m_pi;
+		if(_processInfo == null)
+		{
+			throw new AdempiereException("ProcessInfo not configured for " + this);
+		}
+		return _processInfo;
 	}
 
 	protected final ProcessExecutionResult getResult()
 	{
-		return m_pi.getResult();
+		return getProcessInfo().getResult();
 	}
 
 	/**
@@ -523,7 +551,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final String getName()
 	{
-		return m_pi.getTitle();
+		return getProcessInfo().getTitle();
 	}   // getName
 
 	/**
@@ -533,7 +561,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	public final int getAD_PInstance_ID()
 	{
-		return m_pi.getAD_PInstance_ID();
+		return getProcessInfo().getAD_PInstance_ID();
 	}   // getAD_PInstance_ID
 
 	/**
@@ -543,7 +571,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final int getTable_ID()
 	{
-		return m_pi.getTable_ID();
+		return getProcessInfo().getTable_ID();
 	}   // getRecord_ID
 
 	/**
@@ -553,7 +581,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final int getRecord_ID()
 	{
-		return m_pi.getRecord_ID();
+		return getProcessInfo().getRecord_ID();
 	}   // getRecord_ID
 
 	/**
@@ -575,7 +603,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 			trxName = ITrx.TRXNAME_ThreadInherited;
 		}
 
-		return m_pi.getRecord(modelClass, trxName);
+		return getProcessInfo().getRecord(modelClass, trxName);
 	}
 
 	/**
@@ -583,7 +611,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final int getAD_User_ID()
 	{
-		return m_pi.getAD_User_ID();
+		return getProcessInfo().getAD_User_ID();
 	}
 
 	/**
@@ -591,7 +619,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final int getAD_Client_ID()
 	{
-		return m_pi.getAD_Client_ID();
+		return getProcessInfo().getAD_Client_ID();
 	}
 
 	/**
@@ -601,7 +629,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final List<ProcessInfoParameter> getParameters()
 	{
-		return m_pi.getParameter();
+		return getProcessInfo().getParameter();
 	}
 
 	/**
@@ -613,7 +641,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final ProcessInfoParameter[] getParametersAsArray()
 	{
-		final List<ProcessInfoParameter> parameters = m_pi.getParameter();
+		final List<ProcessInfoParameter> parameters = getProcessInfo().getParameter();
 		return parameters.toArray(new ProcessInfoParameter[parameters.size()]);
 	}
 
@@ -622,7 +650,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final IRangeAwareParams getParameterAsIParams()
 	{
-		return m_pi.getParameterAsIParams();
+		return getProcessInfo().getParameterAsIParams();
 	}
 
 	/**
@@ -663,20 +691,6 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}	// addLog
 
 	/**
-	 * Lock Process Instance
-	 */
-	private final void lock()
-	{
-	}   // lock
-
-	/**
-	 * Unlock Process Instance. Update Process Instance DB and write option return message.
-	 */
-	private final void unlock()
-	{
-	}   // unlock
-
-	/**
 	 * Return the main transaction of the current process.
 	 *
 	 * @return the transaction name
@@ -700,7 +714,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	protected final String getTableName()
 	{
-		return m_pi.getTableNameOrNull();
+		return getProcessInfo().getTableNameOrNull();
 	}
 
 	/**
@@ -716,15 +730,16 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
 	{
-		final String tableName = m_pi.getTableNameOrNull();
-		final int singleRecordId = m_pi.getRecord_ID();
+		final ProcessInfo pi = getProcessInfo();
+		final String tableName = pi.getTableNameOrNull();
+		final int singleRecordId = pi.getRecord_ID();
 
 		final IContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final IQueryBuilder<ModelType> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(modelClass, tableName, contextProvider);
 
 		//
 		// Try fetching the selected records from AD_PInstance's WhereClause.
-		final IQueryFilter<ModelType> selectionQueryFilter = m_pi.getQueryFilterOrElse(null);
+		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
 		if (selectionQueryFilter != null)
 		{
 			queryBuilder.filter(selectionQueryFilter)

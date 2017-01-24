@@ -116,7 +116,7 @@ public final class ProcessInfo implements Serializable
 		result.setAD_PInstance_ID(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
-
+	
 	private final Properties ctx;
 
 	/** Title of the Process/Report */
@@ -164,11 +164,6 @@ public final class ProcessInfo implements Serializable
 	/** Process result */
 	private final ProcessExecutionResult result;
 
-	/**
-	 * String representation
-	 *
-	 * @return String representation
-	 */
 	@Override
 	public String toString()
 	{
@@ -259,7 +254,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return sqlStatement;
 	}
-
+	
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
