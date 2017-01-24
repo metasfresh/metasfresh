@@ -196,7 +196,7 @@ import de.metas.logging.LogManager;
 
 			final String name = attributeValue.getM_Attribute().getValue();
 			final Object value = attributeValue.getValue();
-			keyBuilder.put(name, value == null ? Null.NULL : value);
+			keyBuilder.put(name, Null.box(value));
 			logger.trace("Considered attribute {}={}", name, value);
 		}
 
