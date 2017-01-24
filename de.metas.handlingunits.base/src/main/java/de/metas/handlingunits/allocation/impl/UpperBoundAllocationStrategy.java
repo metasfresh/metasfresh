@@ -119,7 +119,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	protected IAllocationResult allocateOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request)
 	{
 		// Prevent allocating on a included HU item
-		final String itemType = item.getItemType();
+		final String itemType = handlingUnitsBL.getItemType(item);
 		if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 		{
 			if (developerModeBL.isEnabled())

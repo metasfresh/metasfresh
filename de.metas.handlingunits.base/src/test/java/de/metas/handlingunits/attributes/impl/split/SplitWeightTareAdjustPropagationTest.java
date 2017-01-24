@@ -1,8 +1,5 @@
 package de.metas.handlingunits.attributes.impl.split;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.hasXPath;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -25,7 +22,6 @@ import static org.hamcrest.Matchers.hasXPath;
  * #L%
  */
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
@@ -72,19 +68,18 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9/* aggregate VHU and "real" "IFCO */,
 				newHUWeightsExpectation("101"/* gross */, "67"/* net */, "34"/* tare */, "0"/* tareAdjust */), // weights on the LU level
 
-				// the aggregate VHU that represents 80xTomato: net = (80/85)*67kg; tare = number of represented IFCOs times 1kg; gross=net+tare
-				newHUWeightsExpectation("71.059"/* gross */, "63.059"/* net */, "8"/* tare */, "0"/* tareAdj */),
-
 				// the real one IFCO HU with the remaining 6xTomato: net = (80/5)*67kg; tare = 1kg; gross=net+tare
-				newHUWeightsExpectation("4.941"/* gross */, "3.941"/* net */, "1"/* tare */, "0"/* tareAdj */) //
-		);
+				newHUWeightsExpectation("4.941"/* gross */, "3.941"/* net */, "1"/* tare */, "0"/* tareAdj */), //
+
+				// the aggregate VHU that represents 80xTomato: net = (80/85)*67kg; tare = number of represented IFCOs times 1kg; gross=net+tare
+				newHUWeightsExpectation("71.059"/* gross */, "63.059"/* net */, "8"/* tare */, "0"/* tareAdj */));
 
 		setWeightTareAdjust(paletToSplit, BigDecimal.ONE);
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9/* aggregate VHU and "real" "IFCO */,
 				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdjust */),
-				newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */), // the aggregate VHU that represents 80xTomato
-				newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */) // the real HU with the remaining 6xTomato
+				newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */), // the real HU with the remaining 6xTomato
+				newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */) // the aggregate VHU that represents 80xTomato
 		);
 	}
 
@@ -98,9 +93,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		setWeightTareAdjust(paletToSplit, BigDecimal.valueOf(5));
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("105", "66", "34", "5"),
-				newHUWeightsExpectation("70.118", "62.118", "8", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"));
+				newHUWeightsExpectation("105", "66", "34", "5"), newHUWeightsExpectation("4.882", "3.882", "1", "0"), newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitTUs = splitLU(paletToSplit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -112,12 +105,12 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		assertEquals("Invalid amount of TUs were split", 2, splitTUs.size());
 
+		// commitAndDump(paletToSplit);
+
 		//
 		// Assert data integrity on SOURCE LU
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
-				newHUWeightsExpectation("87.470", "50.470", "32", "5"),
-				newHUWeightsExpectation("52.588", "46.588", "6", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"));
+				newHUWeightsExpectation("87.470", "50.470", "32"/* 25+7 */, "5"), newHUWeightsExpectation("4.882", "3.882", "1", "0"), newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -142,9 +135,9 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		setWeightTareAdjust(paletToSplit, BigDecimal.valueOf(3));
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("103", "66", "34", "3"),
-				newHUWeightsExpectation("70.118", "62.118", "8", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"));
+				newHUWeightsExpectation("103", "66", "34", "3"), newHUWeightsExpectation("4.882", "3.882", "1", "0") // CuQty=5
+				, newHUWeightsExpectation("70.118", "62.118", "8", "0") // CuQty=80
+		);
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
@@ -157,11 +150,16 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
 
 		//
-		// Assert data integrity on SOURCE LU
+		// Assert data integrity on SOURCE LU:
+		// * 5 where removed from the partial IFCO and that IFCO is not empty (and doesn't count anymore in this test)
+		// * another 15 were removed from the aggregate HU which temporarily left it with 65, and caused a split
+		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
-				newHUWeightsExpectation("85.470", "50.470", "32", "3"),
-				newHUWeightsExpectation("52.588", "46.588", "6", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"));
+				newHUWeightsExpectation("85.470", "50.470", "32", "3")
+				// one empty newHUWeightsExpectation
+				, newHUWeightsExpectation("4.882", "3.882", "1", "0") // CuQty=5
+				, newHUWeightsExpectation("52.588", "46.588", "6", "0") // CuQty=60
+		);
 
 		//
 		// Assert data integrity on TARGET LU
@@ -169,9 +167,14 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		final I_M_HU splitLU = splitLUs.get(0);
 		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
 
+		// commitAndDump(splitLU);
+
+		// of the 20 we transferred here,
+		// 10 were coming
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 2,
-				newHUWeightsExpectation("42.530", "15.530", "27", "0"),
-				newHUWeightsExpectation("17.530", "15.530", "2", "0"));
+				newHUWeightsExpectation("42.530", "15.530", "27", "0"), newHUWeightsExpectation("8.765", "7.765", "1", "0") // CuQty=10; one "real" IFCO with two VHUs that have 5kg each (5kg from former "real"/partial source IFCO and 5kg from the aggregate VHU)
+				, newHUWeightsExpectation("8.765", "7.765", "1", "0") // CuQty=10; another "real" IFCO with one VHU that has 10kg, coming from the aggregate VHU
+		);
 	}
 
 	/**
@@ -184,9 +187,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		setWeightTareAdjust(paletToSplit, BigDecimal.TEN);
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("110", "66", "34", "10"),
-				newHUWeightsExpectation("70.118", "62.118", "8", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"));
+				newHUWeightsExpectation("110", "66", "34", "10"), newHUWeightsExpectation("4.882", "3.882", "1", "0"), newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
@@ -200,21 +201,19 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		//
 		// Assert data integrity on SOURCE LU
-		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 6,
-				newHUWeightsExpectation("83.705", "42.705", "31", "10"),
-				newHUWeightsExpectation("43.823", "38.823", "5", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"));
+				newHUWeightsExpectation("83.706", "42.706", "31"/* 25+6 */, "10"), newHUWeightsExpectation("4.882", "3.882", "1", "0"), newHUWeightsExpectation("43.823", "38.823", "5", "0"));
 
 		//
-		// Assert data integrity on TARGET LU
-		//
+		// Assert data integrity on destination LU
 		final I_M_HU splitLU = splitLUs.get(0);
 		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 3,
 				newHUWeightsExpectation("51.295", "23.295", "28", "0"),
-				newHUWeightsExpectation("26.295", "23.295", "3", "0"));
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
 	}
 
 	/**
@@ -228,9 +227,8 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		setWeightTareAdjust(paletToSplit, BigDecimal.ONE);
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9/* tuCount=1 because there shall be one aggregated VHU */,
-				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdj */), // 35 + 66 = 101; the 35 are consisting of the palets weight (25), the IFCOs' weights (9) and the tare adjust (1)
-				newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */),
-				newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */));
+				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdj */) // 35 + 66 = 101; the 35 are consisting of the palets weight (25), the IFCOs' weights (9) and the tare adjust (1)
+				, newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */), newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */));
 
 		final List<I_M_HU> splitTUs = splitLU(paletToSplit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -241,20 +239,15 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.ZERO); // TUs are not going on an LU
 
 		assertEquals("Invalid amount of TUs were split", 1, splitTUs.size());
-		Services.get(ITrxManager.class).commit(helper.trxName);
-		//System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("test", splitTUs)));
-		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(paletToSplit)));
+		// commitAndDump(paletToSplit);
 		//
 		// Assert data integrity on SOURCE LU
 		// if 85 is 66kg kg, then 7 is 5.436, so the new net shall be 66 - 5.436 = 60.564
-		// Note that we didn't remove a TU from the source LU
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9/* tuCount=1 because there still shall be one aggregated VHU */,
-				newHUWeightsExpectation("95.564", "60.564", "34", "1"),
-				
-				// TODO verify why we have this outcome
-				newHUWeightsExpectation("61.354", "54.354", "7", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
-				newHUWeightsExpectation("3.329", "2.329", "1", "0"));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 8,
+				newHUWeightsExpectation("94.565", "60.565", "33", "1"),
+
+				newHUWeightsExpectation("7.212", "6.212", "1", "0"),
+				newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
 		//
 		// Assert data integrity on TARGET TU
@@ -278,9 +271,9 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		setWeightTareAdjust(paletToSplit, BigDecimal.ONE);
 
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 1,
-				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdjust */),
-				newHUWeightsExpectation("75"/* gross */, "66"/* net */, "9"/* tare */, "0"/* tareAdj */));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
+				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdj */) // 35 + 66 = 101; the 35 are consisting of the palets weight (25), the IFCOs' weights (9) and the tare adjust (1)
+				, newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */), newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on IFCO
@@ -296,9 +289,11 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// Assert data integrity on SOURCE LU
 		// if 85 is 66kg kg, then 7 is 5.436, so the new net shall be 66 - 5.436 = 60.564
 		// Note that we didn't remove a TU from the source LU
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 1/* tuCount=1 because there still shall be one aggregated VHU */,
-				newHUWeightsExpectation("95.564", "60.564", "34", "1"),
-				newHUWeightsExpectation("69.564", "60.564", "9", "0"));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 8,
+				newHUWeightsExpectation("94.565", "60.565", "33", "1"),
+
+				newHUWeightsExpectation("7.212", "6.212", "1", "0"),
+				newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
 		//
 		// Assert data integrity on TARGET LU
@@ -307,8 +302,8 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
-				newHUWeightsExpectation("31.436", "5.436", "26", "0"),
-				newHUWeightsExpectation("6.436", "5.436", "1", "0"));
+				newHUWeightsExpectation("31.435", "5.435", "26", "0"),
+				newHUWeightsExpectation("6.435", "5.435", "1", "0"));
 	}
 
 	/**
@@ -331,9 +326,8 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		setWeightTareAdjust(paletToSplit, BigDecimal.ONE);
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdj */) // 35 + 66 = 101; the 35 are consisting of the palets weight (25), the IFCOs' weights (9) and the tare adjust (1)
+				, newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */), newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
@@ -347,15 +341,10 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		//
 		// Assert data integrity on SOURCE LU
-		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
-				newHUWeightsExpectation("83.470", "50.470", "32", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
-
+				newHUWeightsExpectation("83.471", "50.471", "32"/* 25+7 */, "1"), newHUWeightsExpectation("4.882", "3.882", "1", "0"), newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 		//
 		// Assert data integrity on TARGET LUs
-		//
 		final I_M_HU splitLU1 = splitLUs.get(0);
 		assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU1.getM_HU_Item_Parent_ID() <= 0);
 
@@ -386,21 +375,12 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		//
 		// do a bunch of guard tests
-		//
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 1/* tuCount=1 because there shall be one aggregated VHU */,
-				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdj */), // 35 + 66 = 101; the 35 are consisting of the palets weight (25), the IFCOs' weights (9) and the tare adjust (1)
-				newHUWeightsExpectation("75"/* gross */, "66"/* net */, "9"/* tare */, "0"/* tareAdj */));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
+				newHUWeightsExpectation("101"/* gross */, "66"/* net */, "34"/* tare */, "1"/* tareAdj */) // 35 + 66 = 101; the 35 are consisting of the palets weight (25), the IFCOs' weights (9) and the tare adjust (1)
+				, newHUWeightsExpectation("4.882"/* gross */, "3.882"/* net */, "1"/* tare */, "0"/* tareAdj */), newHUWeightsExpectation("70.118"/* gross */, "62.118"/* net */, "8"/* tare */, "0"/* tareAdj */));
 
-		assertThat(paletToSplit.getM_HU_LUTU_Configuration().getQtyCU(), comparesEqualTo(BigDecimal.TEN));
+		// commitAndDump(paletToSplit);
 
-		final Node paletToSplitXmlBeforeSplit = HUXmlConverter.toXml(paletToSplit);
-		// the aggregate VHU needs to have the palet's M_HU_LUTU_Configuration
-		assertThat(paletToSplitXmlBeforeSplit, hasXPath("HU-Palet/Item[@ItemType='HA']/HU-VirtualPI[@M_HU_LUTU_Configuration_ID='" + paletToSplit.getM_HU_LUTU_Configuration_ID() + "']"));
-		System.out.println(HUXmlConverter.toString(paletToSplitXmlBeforeSplit));
-
-		// huContext = helper.createMutableHUContextForProcessing(helper.trxName);
-		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(paletToSplit)));
-		// POJOLookupMap.get().dumpStatus("dump");
 		final List<I_M_HU> splitTUs = splitLU(paletToSplit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
 				materialItemTomato_10, // TU item x 10
@@ -410,25 +390,13 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.ZERO); // TUs are not going on an LU
 
 		assertEquals("Invalid amount of LUs were split", 3, splitTUs.size());
-		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(splitTUs.get(0))));
-		// Services.get(ITrxManager.class).commit(InterfaceWrapperHelper.getTrxName(paletToSplit));
-		final Node paletToSplitXml = HUXmlConverter.toXml(paletToSplit);
-		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(paletToSplit)));
-		// assertThat(paletToSplitXml, hasXPath(xPath, valueMatcher))
 
 		//
 		// Assert data integrity on SOURCE LU
 		// Net: if 85 is 66kg, then 15 is 11.647kg, so the new net shall be 66 - 11.647 = 54,353
 		// Tare: each TU on paletToSplit holds 10kg; we removed 15kg, so thats one full TU removed => tare decreases by 1kg
 		// Note that we didn't remove a TU from the source LU
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 1
-		// wrong, because here the PM weights (tare) are unchanged
-		// ,newHUWeightsExpectation("89.353", "54.353", "34", "1")
-		// ,newHUWeightsExpectation("63.353", "54.353", "9", "0")
-		// how it should be
-				, newHUWeightsExpectation("88.353", "54.353", "33", "1"), newHUWeightsExpectation("62.353", "54.353", "8", "0"));
-
-		// tar=6 because there are only 6 remaining IFCOs
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7, newHUWeightsExpectation("87.353", "54.353", "32", "1"), newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -458,18 +426,19 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 	@Test
 	public void testSplitWeightTransfer_LU_On_1LU_7TU_Different_PI_5CU()
 	{
+		// materialItemProductTomato_2: 2 x Tomato Per IFCO
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_2, materialItemProductTomato_2, CU_QTY_46, GROSS_WEIGHT_101); // 85 x Tomato
 		setWeightTareAdjust(paletToSplit, BigDecimal.ONE);
 
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_2, 23,
 				newHUWeightsExpectation("101", "52", "48", "1"),
-				newHUWeightsExpectation("3.261", "2.261", "1", "0"),
-				newHUWeightsExpectation("3.261", "2.261", "1", "0"));
+				newHUWeightsExpectation("75", "52", "23", "0"));
 
+		// split off towards 7 TUs with 5xTomatoes each => i.e. splitt off 35
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_5, // split on LU (TUs which are split will be on an LU)
 				materialItemTomato_5, // TU item x 5
-				CU_QTY_46, // total qty to split
+				CU_QTY_46, // total max qty to split
 				materialItemProductTomato_5.getQty(), // 5, split the 5 CUs of the TU
 				BigDecimal.valueOf(7), // TUs per LU
 				BigDecimal.ONE); // split on ONE additional LU
@@ -478,30 +447,35 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		//
 		// Assert data integrity on SOURCE LU
-		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_2, 6,
-				newHUWeightsExpectation("44.432", "12.432", "31", "1"), // not .43 because of the margin of error range (i.e 2 of the rest can be .27)
+				newHUWeightsExpectation("44.435", "12.435", "31", "1"), // not .43 because of the margin of error range (i.e 2 of the rest can be .27)
 				newHUWeightsExpectation("2.13", "1.13", "1", "0"),
-				newHUWeightsExpectation("3.261", "2.261", "1", "0"),
-				newHUWeightsExpectation("3.261", "2.261", "1", "0"),
-				newHUWeightsExpectation("3.261", "2.261", "1", "0"),
-				newHUWeightsExpectation("3.261", "2.261", "1", "0"),
-				newHUWeightsExpectation("3.258", "2.258", "1", "0"));
+				newHUWeightsExpectation("16.304", "11.304", "5", "0"));
 
 		//
 		// Assert data integrity on TARGET LUs
-		//
+		// 35
+
 		final I_M_HU splitLU = splitLUs.get(0);
 		assertTrue("The target TU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_5, 7,
-				newHUWeightsExpectation("71.568", "39.568", "32", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"));
+				newHUWeightsExpectation("71.565", "39.565", "32", "0"),
+				newHUWeightsExpectation("46.565", "39.565", "7", "0"));
 	}
+	
+	/**
+	 * Commits the current trx and dumps the given {@code hu}'s XML representation.
+	 * The idea is do call this from test methods if you what to know the whole picture.
+	 * Note that the commit might break tests.
+	 * 
+	 * @param palet
+	 */
+	@SuppressWarnings("unused")
+	private void commitAndDump(final I_M_HU palet)
+	{
+		Services.get(ITrxManager.class).commit(helper.trxName);
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(palet)));
+	}
+
 }

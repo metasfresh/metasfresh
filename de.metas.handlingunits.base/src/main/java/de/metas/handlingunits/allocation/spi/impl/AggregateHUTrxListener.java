@@ -52,21 +52,43 @@ import de.metas.handlingunits.storage.IHUItemStorage;
  * #L%
  */
 
-public class PackingMaterialItemTrxListener implements IHUTrxListener
+/**
+ * This listener plays an important role for aggregate HUs.
+ * It's fired after a complete load and does the following (only with aggregate VHUs):
+ * <li>Use the CU-per-TU qty that was computed earlier and was stored in the {@link IHUContext} (see {@link #mkItemCuQtyPropertyKey(I_M_HU_Item)}) and update the HA item's {@code Qty} column.
+ * <li>Update the item storage's <b>tare</b> value using business logic from {@link WeightTareAttributeValueCallout} and pushing up the change
+ * <li>Preserve the original CU-per-TU qty by splitting off partial quantities from the aggregate HU into a "real" HU.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ * @task https://github.com/metasfresh/metasfresh/issues/460
+ */
+public class AggregateHUTrxListener implements IHUTrxListener
 {
-	public static final PackingMaterialItemTrxListener INSTANCE = new PackingMaterialItemTrxListener();
+	public static final AggregateHUTrxListener INSTANCE = new AggregateHUTrxListener();
 
+	/**
+	 * Makes sure the {@link #afterLoad(IHUContext, List)} is not called recurrently.
+	 */
 	private final ThreadLocal<Boolean> withinMethod = new ThreadLocal<>();
 
+	/**
+	 * Creates a key used to put and get the CU quantity per HA item.
+	 * 
+	 * @param haItem
+	 * @return
+	 */
 	public static String mkItemCuQtyPropertyKey(final I_M_HU_Item haItem)
 	{
-		return PackingMaterialItemTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_CU_QTY";
+		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_CU_QTY";
 	}
 
-	private PackingMaterialItemTrxListener()
+	private AggregateHUTrxListener()
 	{
 	}
 
+	/**
+	 * Performs the steps described in that class javadoc.
+	 */
 	@Override
 	public void afterLoad(final IHUContext huContext, final List<IAllocationResult> loadResults)
 	{
@@ -108,7 +130,7 @@ public class PackingMaterialItemTrxListener implements IHUTrxListener
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final BigDecimal cuQty = huContext.getProperty(PackingMaterialItemTrxListener.mkItemCuQtyPropertyKey(item));
+		final BigDecimal cuQty = huContext.getProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(item));
 
 		if (cuQty == null || cuQty.signum() <= 0)
 		{
@@ -124,8 +146,11 @@ public class PackingMaterialItemTrxListener implements IHUTrxListener
 		final IHUTransaction trx = itemId2Trx.get(item.getM_HU_Item_ID());
 		final BigDecimal storageQty = storage.getQty(trx.getProduct(), trx.getQuantity().getUOM());
 
-		final BigDecimal newTuQty = storageQty.divide(cuQty, 
-				trx.getQuantity().getUOM().getStdPrecision() * 3, // it's important to avoid rounding errors, because they would lead to a wrong splitQty value further down
+		// it's important to avoid rounding errors, because they would lead to a wrong splitQty value further down
+		final int scaleForDivision = Math.max(1, trx.getQuantity().getUOM().getStdPrecision()) * 3;
+
+		final BigDecimal newTuQty = storageQty.divide(cuQty,
+				scaleForDivision,
 				RoundingMode.HALF_UP);
 
 		final BigDecimal newTuQtyFloor = newTuQty.setScale(0, RoundingMode.FLOOR);

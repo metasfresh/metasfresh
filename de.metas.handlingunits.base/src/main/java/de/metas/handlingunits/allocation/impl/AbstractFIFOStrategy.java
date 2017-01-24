@@ -82,7 +82,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 			//
 			// Gets ItemType
-			final String itemType= item.getItemType();
+			final String itemType= handlingUnitsBL.getItemType(item);
 
 			//
 			// Allocate to/from material item

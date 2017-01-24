@@ -40,6 +40,7 @@ import org.adempiere.util.Services;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -70,8 +71,10 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
 	 */
 	public static final Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
-			.<I_M_HU_Item, Integer> comparing(item -> ITEM_TYPE_ORDERING.get(item.getItemType()))
-			.thenComparing(queryOrderBy.getComparator(I_M_HU_Item.class));
+			.<I_M_HU_Item, Integer> comparing(
+					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
+			.thenComparing(
+					queryOrderBy.getComparator(I_M_HU_Item.class));
 
 	private static final String DYNATTR_Instance = HUItemsLocalCache.class.getName();
 

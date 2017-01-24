@@ -247,7 +247,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// aggregate material items
 		{
-			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.PackingMaterialItemTrxListener.INSTANCE);
+			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
 		}
 		
 		//

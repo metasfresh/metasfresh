@@ -96,9 +96,10 @@ public class WeightTareAttributeValueCallout
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			final BigDecimal qty = hu.getM_HU_Item_Parent().getQty();
+
 			weightTare = handlingUnitsDAO.retrieveItems(hu).stream()
 					// only packing material items..
-					.filter(item -> Objects.equals(item.getItemType(), X_M_HU_Item.ITEMTYPE_PackingMaterial))
+					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
 					.map(item -> item.getM_HU_PackingMaterial())

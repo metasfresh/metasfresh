@@ -551,8 +551,8 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 				// Notify Storage DAO that a new item was just created
 				huStorageDAO.initHUItemStorages(item);
-
-				if (X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
+				
+				if (X_M_HU_Item.ITEMTYPE_Material.equals(handlingUnitsBL.getItemType(item)))
 				{
 					hasMaterialItem = true;
 				}

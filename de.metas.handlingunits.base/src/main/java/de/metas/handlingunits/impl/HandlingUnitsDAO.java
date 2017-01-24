@@ -66,6 +66,7 @@ import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
@@ -269,8 +270,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		final I_M_HU_Item existingItem = getHUAndItemsDAO().retrieveItem(hu, piItem);
-		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(existingItem.getItemType()))
+		
+		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
 			return ImmutablePair.of(existingItem, false);
 		}
@@ -299,11 +303,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);	
+		
 		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
 		for (final I_M_HU_Item huItem : huItems)
 		{
-			final String itemType = huItem.getItemType();
+			final String itemType = handlingUnitsBL.getItemType(huItem);
 			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
 			{
 				continue;

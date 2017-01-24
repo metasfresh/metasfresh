@@ -96,7 +96,7 @@ public class HUItemStorage implements IHUItemStorage
 		virtualHUItem = handlingUnitsBL.isVirtual(item);
 		pureVirtualHUItem = handlingUnitsBL.isPureVirtual(item);
 
-		final String itemType = item.getItemType();
+		final String itemType = handlingUnitsBL.getItemType(item);
 		allowAddRemoveQty = X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType);
 		allowRequestReleaseIncludedHU = X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType) || X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType);
 	}

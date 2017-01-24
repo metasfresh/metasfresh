@@ -48,7 +48,7 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
-import de.metas.handlingunits.allocation.spi.impl.PackingMaterialItemTrxListener;
+import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -227,7 +227,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 						"cuQty={} needs to be a natural number; storageQty={}, aggregateHUQty={}, haItem={}",
 						cuQty, storageQty, aggregateHUQty, haItem);
 			}
-			request.getHUContext().setProperty(PackingMaterialItemTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);
+			request.getHUContext().setProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);
 		}
 		else
 		{

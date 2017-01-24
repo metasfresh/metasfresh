@@ -18,7 +18,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -192,7 +191,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean destroyIfEmptyStorage(IHUContext huContext, I_M_HU hu);
 
 	/**
-	 * Gets HU Item Type
+	 * Gets HU Item Type.
+	 * <p>
+	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
+	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
 	 * @param huItem
 	 * @return HU Item Type

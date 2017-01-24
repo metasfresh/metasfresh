@@ -461,6 +461,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		}
 	}
 
+	// TODO: remove, it's probably not needed anymore.
 	private final void destroyCurrentHU(final ListCursor<I_M_HU> currentHUCursor)
 	{
 		final I_M_HU hu = currentHUCursor.current();
@@ -680,7 +681,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			_createdHUs.stream()
 					.filter(hu -> handlingUnitsBL.isAggregateHU(hu))
 					.flatMap(hu -> handlingUnitsDAO.retrieveItems(hu).stream())
-					.filter(item -> X_M_HU_Item.ITEMTYPE_PackingMaterial.equals(item.getItemType()))
+					.filter(item -> X_M_HU_Item.ITEMTYPE_PackingMaterial.equals(handlingUnitsBL.getItemType(item)))
 					.forEach(item -> {
 						item.setQty(item.getQty().add(new BigDecimal(aggregatedHUsCountSinceLoadFinished)));
 						InterfaceWrapperHelper.save(item);

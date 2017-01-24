@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -217,9 +218,11 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	 */
 	private LULoaderItemInstance addLUItemIfPossible(final I_M_HU_Item luItem)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		//
 		// Check if it's a handling unit item
-		if (!Check.equals(luItem.getItemType(), X_M_HU_Item.ITEMTYPE_HandlingUnit))
+		if (!Check.equals(handlingUnitsBL.getItemType(luItem), X_M_HU_Item.ITEMTYPE_HandlingUnit))
 		{
 			// Note: we aren't even interested in items with type "HUAggregate" / "HA", because this here is about adding TUs that already exist to an LU.
 			// In the other hand, "HUAggregate" items are all about *not* having to add an actual TU, but sortof cover it in a "bag", together with others.
