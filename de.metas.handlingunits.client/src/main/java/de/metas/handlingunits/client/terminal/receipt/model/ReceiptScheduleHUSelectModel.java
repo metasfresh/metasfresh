@@ -226,10 +226,8 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Create HU generator
-		final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-		huGenerator.setContext(getTerminalContext());
-		final I_M_ReceiptSchedule schedule = service.getReferencedObject(row);
-		huGenerator.addM_ReceiptSchedule(schedule);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(getTerminalContext())
+				.addM_ReceiptSchedule(service.getReferencedObject(row));
 
 		//
 		// Get/Create and Edit LU/TU configuration
