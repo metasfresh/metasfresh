@@ -66,8 +66,6 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	public AbstractHUAttributeStorage(final IAttributeStorageFactory storageFactory)
 	{
 		super(storageFactory);
-
-		Check.errorUnless(storageFactory instanceof HUAttributeStorageFactory, "Parameter 'storageFactory' shall be a HUAttributeStorageFactory; storageFactory={}", storageFactory);
 	}
 
 	/**

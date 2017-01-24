@@ -95,39 +95,20 @@ public class HUTrxBLTests
 				new BigDecimal("86") // qty
 		);
 
-		
 		final List<I_M_HU> huPalets = AbstractHUTest.createHUFromSimplePI(incomingTrxDoc, huDefPalet);
 
 		assertThat(huPalets.size(), is(1));
-		
+
 		final Mutable<I_M_HU> aggregateVHU = new Mutable<>();
 		final Mutable<I_M_HU> realIFCO = new Mutable<>();
 
 		// one IFCO can hold 40 tomatoes, one palet can hold 5 IFCOS
-		// so we expect an aggregate HU that represents 2 IFCOS and one partially filled "real" IFCO 
+		// so we expect an aggregate HU that represents 2 IFCOS and one partially filled "real" IFCO
 		//@formatter:off
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()
 			.newHUExpectation()
 				.huPI(huDefPalet)
-				.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
-					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
-					.huPIItem(huDefPalet_IFCO)
-					.qty("2")
-					.newIncludedHUExpectation()
-					.capture(aggregateVHU)
-						.huPI(helper.huDefVirtual)
-						.newHUItemExpectation()
-							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.newItemStorageExpectation()
-								.qty("80").uom(helper.uomEach).product(helper.pTomato)
-							.endExpectation() // itemStorageExcpectation
-						.endExpectation() // material item
-						.newHUItemExpectation()
-							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-							.packingMaterial(helper.pmIFCO)
-						.endExpectation() // packing-material item
-					.endExpectation() // included "bag" VHU
-				.endExpectation()  // end of the virtual item that shall hold the "bag" VHU
+
 				.newHUItemExpectation() // the "real" item that shall hold the real IFCO with the remaining 6
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.huPIItem(huDefPalet_IFCO)
@@ -148,6 +129,27 @@ public class HUTrxBLTests
 						.endExpectation() // end of the IFCO HU's packing material item
 					.endExpectation() // end of the "IFCO" HU 
 				.endExpectation() // end of the "real" item that shall hold the real IFCO with the remaining 6
+
+				.newHUItemExpectation() // the virtual item that shall hold the "bag" VHU
+					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
+					.huPIItem(huDefPalet_IFCO)
+					.qty("2")
+					.newIncludedHUExpectation()
+					.capture(aggregateVHU)
+						.huPI(helper.huDefVirtual)
+						.newHUItemExpectation()
+							.itemType(X_M_HU_Item.ITEMTYPE_Material)
+							.newItemStorageExpectation()
+								.qty("80").uom(helper.uomEach).product(helper.pTomato)
+							.endExpectation() // itemStorageExcpectation
+						.endExpectation() // material item
+						.newHUItemExpectation()
+							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
+							.packingMaterial(helper.pmIFCO)
+						.endExpectation() // packing-material item
+					.endExpectation() // included "bag" VHU
+				.endExpectation()  // end of the virtual item that shall hold the "bag" VHU
+
 				.newHUItemExpectation() // the packing material item for this LU
 					.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
@@ -156,19 +158,18 @@ public class HUTrxBLTests
 			.endExpectation() // huExpectation
 		;
 		//@formatter:on
-		
+
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("result", huPalets)));
-		
+
 		compressedHUExpectation.assertExpected(huPalets);
-		
-		
+
 		final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
-		
+
 		final List<I_M_HU_Trx_Line> trxLinesForAgrregateVHU = huTrxDAO.retrieveReferencingTrxLinesForHU(aggregateVHU.getValue());
 		assertThat(trxLinesForAgrregateVHU.size(), is(1)); // we expect that there is just one trx line and not 3
 		assertThat(trxLinesForAgrregateVHU.get(0).getQty(), comparesEqualTo(new BigDecimal("80")));
 		assertThat(TableRecordReference.ofReferenced(trxLinesForAgrregateVHU.get(0)), is(TableRecordReference.of(incomingTrxDoc)));
-		
+
 		final List<I_M_HU_Trx_Line> trxLinesForRealIFCO = huTrxDAO.retrieveReferencingTrxLinesForHU(realIFCO.getValue());
 		assertThat(trxLinesForRealIFCO.size(), is(1)); //
 		assertThat(trxLinesForRealIFCO.get(0).getQty(), comparesEqualTo(new BigDecimal("6")));

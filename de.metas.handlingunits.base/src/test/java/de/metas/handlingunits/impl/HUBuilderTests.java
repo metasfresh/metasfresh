@@ -177,11 +177,7 @@ public class HUBuilderTests
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()
 				.newHUExpectation()
 					.huPI(piLU)
-					.newHUItemExpectation()
-						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)	
-						.huPIItem(null)
-						.noIncludedHUs()
-					.endExpectation() // HA - HUItemExpectation()
+
 					.newHUItemExpectation()
 						.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 						// the HU builder does not really recurse, but only creates the HU for the given piVersion, plus the HU's items
@@ -197,10 +193,16 @@ public class HUBuilderTests
 								.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 								.packingMaterial(helper.pmIFCO)
 							.endExpectation() // HUItemExpectation()
-
 						.endExpectation() // includedHUExpectation
 					.endExpectation() // HU - huItemExpectation
-						.newHUItemExpectation()
+
+					.newHUItemExpectation()
+						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)	
+						.huPIItem(null)
+						.noIncludedHUs()
+					.endExpectation() // HA - HUItemExpectation()
+
+					.newHUItemExpectation()
 						.noIncludedHUs()
 						.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
 						.packingMaterial(helper.pmPalet)

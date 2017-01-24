@@ -47,6 +47,8 @@ public class HUItemsLocalCacheTests
 
 	/**
 	 * Verifies that the items retrieved by {@link HUItemsLocalCache#retrieveItems(org.adempiere.model.IContextAware, I_M_HU)} are neatly ordered.
+	 * <p>
+	 * The ordering is important: when we unload thing from a HU, we first want to unload from its included "real" HUs and only afterwards from its "aggregate"/compressed HU. 
 	 */
 	@Test
 	public void testRetrieveItemsOrdered()
@@ -82,8 +84,8 @@ public class HUItemsLocalCacheTests
 		final List<I_M_HU_Item> items = HUItemsLocalCache.getCreate(hu).retrieveItems(InterfaceWrapperHelper.getContextAware(hu), hu);
 		assertThat(items.size(), is(5));
 		assertThat(items.get(0).getItemType(), is(X_M_HU_Item.ITEMTYPE_Material));
-		assertThat(items.get(1).getItemType(), is(X_M_HU_Item.ITEMTYPE_HUAggregate));
-		assertThat(items.get(2).getItemType(), is(X_M_HU_Item.ITEMTYPE_HandlingUnit));
+		assertThat(items.get(1).getItemType(), is(X_M_HU_Item.ITEMTYPE_HandlingUnit));
+		assertThat(items.get(2).getItemType(), is(X_M_HU_Item.ITEMTYPE_HUAggregate));
 
 		assertThat(items.get(3).getItemType(), is(X_M_HU_Item.ITEMTYPE_PackingMaterial));
 		assertThat(items.get(4).getItemType(), is(X_M_HU_Item.ITEMTYPE_PackingMaterial));

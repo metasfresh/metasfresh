@@ -29,10 +29,7 @@ import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.handlingunits.AbstractHUTestWithSampling;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;

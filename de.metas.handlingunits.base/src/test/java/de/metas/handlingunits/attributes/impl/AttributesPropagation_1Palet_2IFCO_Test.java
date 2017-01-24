@@ -143,21 +143,6 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		aggregateHU_Attrs = attributeStorageFactory.getAttributeStorage(huAggregate);
 	}
 
-	@Test
-	public void testPropagateBottomUp()
-	{
-		setupHU_PI_Attribute(attr_Volume,
-				X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
-				NullSplitterStrategy.class,
-				SumAggregationStrategy.class);
-
-		setupData();
-
-		testPropagateBottomUp(attr_Volume, "30", "30"); //
-		testPropagateBottomUp(attr_Volume, "31", "31"); // 11+20
-		testPropagateBottomUp(attr_Volume, null, "13"); // 11+2
-	}
-
 	/**
 	 * Test {@link X_M_HU_PI_Attribute#PROPAGATIONTYPE_TopDown} with {@link CopyAttributeSplitterStrategy}
 	 */

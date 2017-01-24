@@ -58,8 +58,7 @@ public class PrecisionMergeWeightAttributePropagationTest extends AbstractWeight
 	public PrecisionMergeWeightAttributePropagationTest()
 	{
 		super();
-
-		setAcceptableWeightErrorMargin(BigDecimal.ZERO); // ZERO precision allowed
+		setAcceptableWeightErrorMargin(BigDecimal.ZERO);
 	}
 
 	/**

@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,6 +32,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
+import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
@@ -55,10 +56,10 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 {
 	/** Service under test */
 	private HandlingUnitsBL handlingUnitsBL;
-	
+
 	/** Service under test */
 	private HUTrxBL huTrxBL;
-	
+
 	/** other service */
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
@@ -102,7 +103,7 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 	protected void initialize()
 	{
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		
+
 		handlingUnitsBL = (HandlingUnitsBL)Services.get(IHandlingUnitsBL.class);
 		huTrxBL = (HUTrxBL)Services.get(IHUTrxBL.class);
 
@@ -144,7 +145,12 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		//
 		// Get created TU
 		final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
-		Assert.assertEquals("Invalid TUs count", 1, tuHUs.size());
+		assertThat("Invalid TUs count", tuHUs.size(), is(2)); // we expect one "real" HU and one aggregate "stub" HU
+
+		// the ordering shall be such that the first HU is the real one
+		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(0)), is(false));
+		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(1)), is(true));
+
 		final I_M_HU tuHU = tuHUs.get(0);
 
 		//
@@ -153,22 +159,22 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 			final IHUStorage tuHUStorage = huContext.getHUStorageFactory().getStorage(tuHU);
 			final BigDecimal cuQty = tuHUStorage.getQty(cuProduct, cuUOM);
 			tuHUStorage.addQty(cuProduct, cuQty.negate(), cuUOM);
-			Assert.assertTrue("TU's storage shall be empty", tuHUStorage.isEmpty());
+			assertTrue("TU's storage shall be empty", tuHUStorage.isEmpty());
 		}
 
 		//
 		// Destroy the TU
 		// i.e. calling method under test
 		handlingUnitsBL.destroyIfEmptyStorage(huContext, tuHU);
-		Assert.assertEquals("TU shall be destroyed", X_M_HU.HUSTATUS_Destroyed, tuHU.getHUStatus());
-		Assert.assertEquals("TU shall have no parent", null, tuHU.getM_HU_Item_Parent());
+		assertEquals("TU shall be destroyed", X_M_HU.HUSTATUS_Destroyed, tuHU.getHUStatus());
+		assertEquals("TU shall have no parent", null, tuHU.getM_HU_Item_Parent());
 
 		//
 		// Make sure the LU was also destroyed (because this was the only TU on it)
 		// NOTE: because LU is changed in another instace, we need to refresh our instance
 		// FIXME: we need to find a way of doing this somehow auto-magically (without any performance penalty)
 		InterfaceWrapperHelper.refresh(luHU);
-		Assert.assertEquals("LU shall be destroyed", X_M_HU.HUSTATUS_Destroyed, luHU.getHUStatus());
+		assertEquals("LU shall be destroyed", X_M_HU.HUSTATUS_Destroyed, luHU.getHUStatus());
 	}
 
 	@Test
@@ -183,7 +189,12 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		//
 		// Get created TU
 		final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
-		Assert.assertEquals("Invalid TUs count", 1, tuHUs.size());
+		assertThat("Invalid TUs count", tuHUs.size(), is(2)); // we expect one "real" HU and one aggregate "stub" HU
+
+		// the ordering shall be such that the first HU is the real one
+		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(0)), is(false));
+		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(1)), is(true));
+
 		final I_M_HU tuHU = tuHUs.get(0);
 
 		//
@@ -192,15 +203,14 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		handlingUnitsBL.destroyIfEmptyStorage(huContext, tuHU);
 		huTrxBL.setParentHU(huContext,
 				(I_M_HU_Item)null, // parentHUItem=null
-				tuHU
-				);
+				tuHU);
 
 		//
 		// Make sure the LU was also destroyed (because this was the only TU on it)
 		// NOTE: because LU is changed in another instace, we need to refresh our instance
 		// FIXME: we need to find a way of doing this somehow auto-magically (without any performance penalty)
 		InterfaceWrapperHelper.refresh(luHU);
-		Assert.assertEquals("LU shall be destroyed", X_M_HU.HUSTATUS_Destroyed, luHU.getHUStatus());
+		assertThat("LU shall be destroyed", luHU.getHUStatus(), is(X_M_HU.HUSTATUS_Destroyed));
 	}
 
 }
