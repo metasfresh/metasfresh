@@ -59,7 +59,7 @@ class Lookup extends Component {
     handleSelect = (select) => {
         const {
             dispatch, properties, onChange, dataId, fields, filterWidget,
-            parameterName, setSelectedItem, windowType
+            parameterName, setSelectedItem, windowType, subentity
         } = this.props;
 
         const {
@@ -81,17 +81,21 @@ class Lookup extends Component {
                 // handling selection when main is not set or set.
 
                 if(property === "") {
-                    const promise = onChange(mainProperty[0].field, select);
+                    const promise = onChange(mainProperty[0].field, select, this.getAllDropdowns);
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
 
                     // handle case when there is no call to Api
                     // by the cached value
                     if(!promise){
-                        this.getAllDropdowns();
+                        if(!subentity){
+                            this.getAllDropdowns();
+                        }
                     }else{
                         promise.then(() => {
-                            this.getAllDropdowns();
+                            if(!subentity){
+                                this.getAllDropdowns();
+                            }    
                         }
                     )}
                 } else {
@@ -127,7 +131,6 @@ class Lookup extends Component {
 
         // call for more properties
         if(propertiesCopy.length > 0){
-
             const batchArray = propertiesCopy.map((item) =>
                 dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,

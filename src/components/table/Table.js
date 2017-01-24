@@ -428,7 +428,7 @@ class Table extends Component {
                         type={type}
                         docId={docId}
                         isSelected={selected.indexOf(item[key][index]) > -1}
-                        onDoubleClick={() => {onDoubleClick && onDoubleClick(item[key][index]); closeOverlays()}}
+                        onDoubleClick={() => {onDoubleClick && onDoubleClick(item[key][index]); closeOverlays ? closeOverlays():''}}
                         onMouseDown={(e) => this.handleClick(e, item[key][index])}
                         onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
                         changeListenOnTrue={() => this.changeListenOnTrue()}

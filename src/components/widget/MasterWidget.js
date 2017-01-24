@@ -54,6 +54,8 @@ class MasterWidget extends Component {
             rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
+        console.log(onChange);
+
         let currRowId = rowId;
         let ret = null;
 
