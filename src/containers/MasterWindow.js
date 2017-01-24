@@ -47,7 +47,7 @@ class MasterWindow extends Component {
     }
 
     render() {
-        const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
+        const {master, connectionError, modal, breadcrumb, references, actions, docId} = this.props;
         const {newRow} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
         const dataId = findRowByPropName(master.data, "ID").value;
@@ -105,6 +105,7 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     isModal={false}
                     newRow={newRow}
+                    docId={docId}
                 />
             </Container>
         );
