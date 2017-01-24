@@ -89,7 +89,7 @@ import com.google.common.collect.ImmutableMap;
 		this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
 		
 		final IQueryBL factory = Services.get(IQueryBL.class);
-		filters = factory.createCompositeQueryFilter(tableName); // always use the tableName we just fetched because it might be that modelClass is not providing a tableName.
+		filters = factory.createCompositeQueryFilter(this.modelTableName); // always use the tableName we just fetched because it might be that modelClass is not providing a tableName.
 	}
 
 
