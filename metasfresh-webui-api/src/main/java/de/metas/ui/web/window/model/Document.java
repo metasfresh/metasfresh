@@ -599,7 +599,7 @@ public final class Document
 
 	/* package */final void assertWritable()
 	{
-		if (_writable)
+		if (isWritable())
 		{
 			return;
 		}
@@ -610,7 +610,7 @@ public final class Document
 
 		throw new InvalidDocumentStateException(this, "not a writable copy");
 	}
-
+	
 	/* package */final void destroy()
 	{
 		// TODO: mark it as destroyed, fail read/write operations etc

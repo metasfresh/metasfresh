@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Throwables;
 
+import de.metas.ui.web.quickinput.orderline.OrderLineQuickInputProcessor;
+
 /*
  * #%L
  * metasfresh-webui-api
