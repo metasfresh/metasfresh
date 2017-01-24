@@ -44,6 +44,7 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.MTreeNode;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -203,7 +204,7 @@ public class AProcessModel
 		}
 		catch (ClassNotFoundException e)
 		{
-			if(process.isServerProcess())
+			if(process.isServerProcess() && Ini.isClient())
 			{
 				// it might be that the class is available only on server
 				// so, for now, we consider the preconditions are applicable.
