@@ -227,7 +227,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
 		if (_attributesStorageFactory == null)
 		{
-			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory(this);
+			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
 		}
 
 		final IHUStorageFactory huStorageFactory = getHUStorageFactory();

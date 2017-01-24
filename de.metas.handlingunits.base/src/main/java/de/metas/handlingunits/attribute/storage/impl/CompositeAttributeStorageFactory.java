@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -41,20 +40,9 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 	private IHUAttributesDAO huAttributesDAO;
 	private IHUStorageFactory huStorageFactory;
 
-	private final IHUContext huContext;
-
 	private final List<IAttributeStorageFactory> factories = new ArrayList<IAttributeStorageFactory>();
 
 	private final List<IAttributeStorageListener> attributeStorageListeners = new ArrayList<IAttributeStorageListener>();
-
-	/**
-	 * 
-	 * @param huContext might be needed when creating new {@link IAttributeStorage}s.
-	 */
-	public CompositeAttributeStorageFactory(final IHUContext huContext)
-	{
-		this.huContext = huContext;
-	}
 
 	@Override
 	public void addAttributeStorageListener(final IAttributeStorageListener listener)

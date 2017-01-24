@@ -24,26 +24,23 @@ package de.metas.handlingunits.attribute.storage;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 
 public interface IAttributeStorageFactoryService extends ISingletonService
 {
 	/**
-	 * Calls {@link #createHUAttributeStorageFactory(IHUAttributesDAO, IHUContext)} with teh default {@link IHUAttributesDAO} implementation (no decoupled or on-commit saves).
+	 * Calls {@link #createHUAttributeStorageFactory(IHUAttributesDAO)} with the default {@link IHUAttributesDAO} implementation (no decoupled or on-commit saves).
 	 * 
-	 * @param huContext
 	 * @return
 	 */
-	IAttributeStorageFactory createHUAttributeStorageFactory(IHUContext huContext);
+	IAttributeStorageFactory createHUAttributeStorageFactory();
 
 	/**
 	 * 
 	 * @param huAttributesDAO
-	 * @param huContext optional may be {@code null}. Used to get correct initial tare attribute values in aggregate VHUs (gh #460).
 	 * @return
 	 */
-	IAttributeStorageFactory createHUAttributeStorageFactory(IHUAttributesDAO huAttributesDAO, IHUContext huContext);
+	IAttributeStorageFactory createHUAttributeStorageFactory(IHUAttributesDAO huAttributesDAO);
 
 	void addAttributeStorageFactory(Class<? extends IAttributeStorageFactory> attributeStorageFactoryClass);
 

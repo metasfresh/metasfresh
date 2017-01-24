@@ -80,7 +80,7 @@ public class HUContextFactory implements IHUContextFactory
 
 		final SaveOnCommitHUAttributesDAO huAttributesDAO = new SaveOnCommitHUAttributesDAO();
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-		final IAttributeStorageFactory attributesStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(huAttributesDAO, huContext);
+		final IAttributeStorageFactory attributesStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(huAttributesDAO);
 		huContext.setHUAttributeStorageFactory(attributesStorageFactory);
 	}
 

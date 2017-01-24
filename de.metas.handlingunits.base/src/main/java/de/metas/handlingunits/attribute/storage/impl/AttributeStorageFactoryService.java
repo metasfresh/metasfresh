@@ -47,16 +47,16 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 	}
 
 	@Override
-	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUContext huContext)
+	public IAttributeStorageFactory createHUAttributeStorageFactory()
 	{
 		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
-		return createHUAttributeStorageFactory(huAttributesDAO, huContext);
+		return createHUAttributeStorageFactory(huAttributesDAO);
 	}
 
 	@Override
-	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUAttributesDAO huAttributesDAO, final IHUContext huContext)
+	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUAttributesDAO huAttributesDAO)
 	{
-		final CompositeAttributeStorageFactory factory = new CompositeAttributeStorageFactory(huContext);
+		final CompositeAttributeStorageFactory factory = new CompositeAttributeStorageFactory();
 		factory.setHUAttributesDAO(huAttributesDAO);
 		factory.addAttributeStorageFactoryClasses(attributeStorageFactories);
 		return factory;
