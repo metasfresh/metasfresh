@@ -41,7 +41,6 @@ this week's RC
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
   * #808 DocActionBL.retrieveString method is broken
-  * #806 Fixes in Custom reports
   * #819 fix/refactor CalloutRequest
   * #806 Customs report minor fixes
   * #782 Focus on the first process parameter
