@@ -40,7 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
 public interface IHUProducerAllocationDestination extends IAllocationDestination
 {
 	/**
-	 * Gets created HUs.
+	 * Get the created top-level HUs.
 	 *
 	 * NOTE: please keep in mind that the <code>trxName</code> of returned HUs is not guaranteed to be {@link ITrx#TRXNAME_None} so if you want to reuse them you will need to change their transaction name first.
 	 *

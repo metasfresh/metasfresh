@@ -274,7 +274,7 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Method called by API when a child storage was added (e.g. a child HU was included to the HU that owns this storage).
 	 *
-	 * NOTE: don't call it directly, the API will.
+	 * NOTE: don't call it directly, the API will make the call, e.g. if a child HU was added to aparent HU.
 	 *
 	 * @param childAttributeStorage
 	 */
@@ -293,7 +293,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * Push up attributes: force propagating attributes from this storage to its parent's storages. Propagates all <code>this</code> storage's attribute values using
 	 * {@link X_M_HU_PI_Attribute#PROPAGATIONTYPE_BottomUp}.
 	 *
-	 * NOTE: don't call it directly. It's called by API only
+	 * NOTE: don't call it directly. It's called by API ({@link #onChildAttributeStorageAdded(IAttributeStorage)}) only
 	 */
 	void pushUp();
 

@@ -117,6 +117,7 @@ public class HUXmlConverter
 
 	private Node createNode(final Node parentNode, final I_M_HU hu)
 	{
+		InterfaceWrapperHelper.refresh(hu);
 		final String name = "HU-" + hu.getM_HU_PI_Version().getM_HU_PI().getName();
 		final Node node = createNodeFromModel(parentNode, name, hu);
 
@@ -152,6 +153,7 @@ public class HUXmlConverter
 
 	private Node createNodeForItem(final Node parentNode, final I_M_HU_Item item)
 	{
+		InterfaceWrapperHelper.refresh(item);
 		final Node node = createNodeFromModel(parentNode, item);
 
 		//

@@ -1,7 +1,5 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import de.metas.handlingunits.HUContextDateTrxProvider;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -27,16 +25,15 @@ import de.metas.handlingunits.HUContextDateTrxProvider;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTrxListener;
-import de.metas.handlingunits.impl.HUTrxListenerAdapter;
 
 /**
- * This listener is added to a {@link IHUContext} before a split or merge or sth similar is executred. 
+ * This listener is added to a {@link IHUContext} before a split or merge or sth similar is executed. 
  * Its job is to invoke the other listeners' {@link IHUTrxListener#onSplitTransaction(IHUContext, IHUTransaction, IHUTransaction)} method if its own {@link #onUnloadLoadTransaction(IHUContext, IHUTransaction, IHUTransaction)} method is invoked.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/* package */final class HUSplitBuilderTrxListener extends HUTrxListenerAdapter
+/* package */final class HUSplitBuilderTrxListener implements IHUTrxListener
 {
 	public static final transient HUSplitBuilderTrxListener instance = new HUSplitBuilderTrxListener();
 

@@ -69,7 +69,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final ILUTUProducerAllocationDestination luProducerDestination = new LUTUProducerDestination();
+		final LUTUProducerDestination luProducerDestination = new LUTUProducerDestination();
 		luProducerDestination.setM_HU_LUTU_Configuration(lutuConfiguration);
 
 		//

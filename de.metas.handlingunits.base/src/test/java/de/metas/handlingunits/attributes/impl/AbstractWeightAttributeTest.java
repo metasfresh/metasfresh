@@ -29,7 +29,10 @@ import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
+import org.compiere.util.TrxRunnable;
 
 import de.metas.handlingunits.AbstractHUTestWithSampling;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -70,8 +73,17 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 	 */
 	protected final void setWeightTareAdjust(final I_M_HU handlingUnit, final BigDecimal weightTareAdjust)
 	{
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(handlingUnit);
-		attributeStorage.setValue(attr_WeightTareAdjust, weightTareAdjust);
+//		Services.get(ITrxManager.class).run(new TrxRunnable()
+//		{
+//			@Override
+//			public void run(String localTrxName) throws Exception
+//			{
+				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(handlingUnit);
+				attributeStorage.setValue(attr_WeightTareAdjust, weightTareAdjust);
+//				attributeStorage.saveChangesIfNeeded();
+//			}
+//		});
+
 	}
 
 	@OverridingMethodsMustInvokeSuper
@@ -120,13 +132,13 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 	{
 		//@formatter:off
 		newLUWeightsExpectations()
-		.luPIItem(loadingUnitPIItem)
-		.tuCount(tuAmountOnLU)
-		.setLUWeightsExpectation(luExpectation)
-		.tuExpectations()
-			.addTUExpectations(tuExpectations)
-			.endExpectation()
-		.assertExpected(loadingUnit);
+			.luPIItem(loadingUnitPIItem)
+			.tuCount(tuAmountOnLU)
+			.setLUWeightsExpectation(luExpectation)
+			.tuExpectations()
+				.addTUExpectations(tuExpectations)
+				.endExpectation()
+			.assertExpected(loadingUnit);
 		//@formatter:on
 	}
 

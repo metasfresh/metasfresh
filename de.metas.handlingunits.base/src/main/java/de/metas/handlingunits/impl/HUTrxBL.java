@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,27 +15,34 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionProcessor;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHUTrxListener;
@@ -333,5 +342,66 @@ public class HUTrxBL implements IHUTrxBL
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
 		final HUContextProcessorExecutor executor = new HUContextProcessorExecutor(huContext);
 		return executor;
+	}
+
+	@Override
+	public List<IHUTransaction> aggregateTransactions(final List<IHUTransaction> transactions)
+	{
+		final Map<ArrayKey, IHUTransaction> transactionsAggregateMap = new HashMap<>();
+
+		final List<IHUTransaction> notAggregated = new ArrayList<>();
+
+		for (final IHUTransaction trx : transactions)
+		{
+			if (trx.getCounterpart() != null)
+			{
+				// we don't want to aggregate paired trxCandidates because we want to discard the trxCandidates this method was called with.
+				// unless we don't have to, we don't want to delve into those intricacies...
+				notAggregated.add(trx);
+
+			}
+
+			// note that we use the ID if we can, because we don't want this to fail e.g. because of two different versions of the "same" VHU-item
+			final ArrayKey key = Util.mkKey(
+					// trxCandidate.getCounterpart(),
+					trx.getDate(),
+					trx.getHUStatus(),
+					// trxCandidate.getM_HU(), just delegates to HU_Item
+					trx.getM_HU_Item() == null ? -1 : trx.getM_HU_Item().getM_HU_Item_ID(),
+					trx.getM_Locator() == null ? -1 : trx.getM_Locator().getM_Locator_ID(),
+					trx.getProduct() == null ? -1 : trx.getProduct().getM_Product_ID(),
+					// trxCandidate.getQuantity(),
+					trx.getReferencedModel() == null ? -1 : TableRecordReference.of(trx.getReferencedModel()),
+					// trxCandidate.getVHU(), just delegates to VHU_Item
+					trx.getVHU_Item() == null ? -1 : trx.getVHU_Item().getM_HU_Item_ID(),
+					trx.isSkipProcessing());
+
+			transactionsAggregateMap.merge(key,
+					trx,
+					(existingCand, newCand) -> {
+
+						final HUTransaction mergedCandidate = new HUTransaction(existingCand.getReferencedModel(),
+								existingCand.getM_HU_Item(),
+								existingCand.getVHU_Item(),
+								existingCand.getProduct(),
+								existingCand.getQuantity().add(newCand.getQuantity()),
+								existingCand.getDate(),
+								existingCand.getM_Locator(),
+								existingCand.getHUStatus());
+
+						if (existingCand.isSkipProcessing())
+						{
+							mergedCandidate.setSkipProcessing();
+						}
+
+						return mergedCandidate;
+					});
+
+		}
+
+		return ImmutableList.<IHUTransaction> builder()
+				.addAll(notAggregated)
+				.addAll(transactionsAggregateMap.values())
+				.build();
 	}
 }

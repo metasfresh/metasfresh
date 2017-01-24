@@ -290,20 +290,22 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		// Assign HU to Parent
 		huTrxBL.setParentHU(huContext, parentItem, hu);
 
-		//
-		// Generate HU Attributes
-		final IAttributeStorageFactory attributesStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributesStorageFactory.getAttributeStorage(hu);
-		attributeStorage.generateInitialAttributes(getInitialAttributeValueDefaults());
-
 		setStatus(HUIteratorStatus.Running);
 
 		//
+		// Generate HU Attributes
+		// generating HU attributes after the HU was created, because then we already have huItems and those can be used to compute initital weight tare attributes  
+		final IAttributeStorageFactory attributesStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributesStorageFactory.getAttributeStorage(hu);
+
+		attributeStorage.generateInitialAttributes(getInitialAttributeValueDefaults());
+		
+		//
 		// Call HU Builder to create items and other included things (if any).
-		// this is where we actually recurse
+		// this is where we actually create the HU items
 		final AbstractNodeIterator<I_M_HU> huBuilder = getNodeIterator(I_M_HU.class);
 		huBuilder.iterate(hu);
-
+		
 		// Collect the HU (only if physical) in order to be taken from the gebindelager into the current lager
 		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
 		{
@@ -514,6 +516,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 							.filter(pi -> X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(pi.getItemType()))
 							.collect(Collectors.toList());
 
+					// note that here we only create the item. Its Qty is set in a producerDestination's loadFinished() implementation
 					for (final I_M_HU_PI_Item piItem : piItems)
 					{
 						final IPair<I_M_HU_Item, Boolean> item = handlingUnitsDAO.createHUItemIfNotExists(hu, piItem);

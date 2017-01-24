@@ -1,28 +1,5 @@
 package de.metas.handlingunits.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +16,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -66,7 +42,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -752,59 +727,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return lastTU;
 	}
 
-	/**
-	 * Iterates the given <code>piVersion</code>'s active packing material items and sums of the weights of the attached <code>M_Product</code>s (if any).
-	 * <p>
-	 * NOTE: does <b>not</b> descent into sub-HUs, which is good, because this value is used in bottom-up/top-down propagation, i.e. the childrens' tare values are added during propagation.
-	 */
-	@Override
-	public BigDecimal getWeightTare(final I_M_HU_PI_Version piVersion)
-	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		BigDecimal weightTareTotal = BigDecimal.ZERO;
-
-		final I_C_BPartner partner = null; // FIXME: get context C_BPartner
-
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partner))
-		{
-			final String itemType = piItem.getItemType();
-			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
-			{
-				continue;
-			}
-
-			final I_M_HU_PackingMaterial huPackingMaterial = piItem.getM_HU_PackingMaterial();
-			if (huPackingMaterial == null)
-			{
-				continue;
-			}
-
-			final BigDecimal weightTare = getWeightTare(huPackingMaterial);
-			weightTareTotal = weightTareTotal.add(weightTare);
-		}
-
-		return weightTareTotal;
-	}
-
-	private BigDecimal getWeightTare(final I_M_HU_PackingMaterial huPackingMaterial)
-	{
-		if (!huPackingMaterial.isActive())
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final I_M_Product product = huPackingMaterial.getM_Product();
-		if (product == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal weightTare = product.getWeight();
-
-		return weightTare;
-	}
-
 	@Override
 	public boolean isPhysicalHU(final String huStatus)
 	{
@@ -839,13 +761,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return false;
 		}
-		
+
 		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
-		if(parentItem == null)
+		if (parentItem == null)
 		{
 			return false;
 		}
-		
+
 		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
 

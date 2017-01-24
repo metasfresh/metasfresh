@@ -97,6 +97,7 @@ import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
+import de.metas.handlingunits.attribute.impl.WeightableFactory;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -165,10 +166,11 @@ public class HUTestHelper
 	public static final String NAME_Volume_Attribute = "Volume";
 	public static final String NAME_FragileSticker_Attribute = "Fragile";
 
-	public static final String NAME_WeightGross_Attribute = "WeightGross";
-	public static final String NAME_WeightNet_Attribute = "WeightNet";
-	public static final String NAME_WeightTare_Attribute = "WeightTare";
-	public static final String NAME_WeightTareAdjust_Attribute = "WeightTareAdjust";
+	// we reuse the "production" M_Attribute.Values from WeightableFactory
+	public static final String NAME_WeightGross_Attribute = WeightableFactory.ATTR_WeightGross_Value;
+	public static final String NAME_WeightNet_Attribute = WeightableFactory.ATTR_WeightNet_Value;
+	public static final String NAME_WeightTare_Attribute = WeightableFactory.ATTR_WeightTare_Value;
+	public static final String NAME_WeightTareAdjust_Attribute = WeightableFactory.ATTR_WeightTareAdjust_Value;
 
 	public static final String NAME_QualityDiscountPercent_Attribute = "QualityDiscountPercent";
 	public static final String NAME_QualityNotice_Attribute = "QualityNotice";
@@ -451,8 +453,11 @@ public class HUTestHelper
 		//
 		// Handling units model validator
 		new de.metas.handlingunits.model.validator.Main().registerFactories();
+
+		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+
 		// We need to manually register M_Movement interceptor, else we won't get the packing material lines on movements
-		Services.get(IModelInterceptorRegistry.class)
+		modelInterceptorRegistry
 				.addModelInterceptor(de.metas.handlingunits.model.validator.M_Movement.instance);
 	}
 
@@ -1641,6 +1646,7 @@ public class HUTestHelper
 	}
 
 	/**
+	 * Sets up a {@link HUListAllocationSourceDestination} for the given {@code sourceHUs} and loads them to the given {@code lutuProducer}.
 	 * <p>
 	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
 	 * 
@@ -1648,15 +1654,14 @@ public class HUTestHelper
 	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
 	 * @param qty
 	 * @param product
-	 * @param destinationHuPI
+	 * @param uom
 	 * @return
 	 */
 	public void transferMaterialToNewHUs(final List<I_M_HU> sourceHUs,
 			final LUTUProducerDestination lutuProducer,
 			final BigDecimal qty,
 			final I_M_Product product,
-			final I_C_UOM uom,
-			final I_M_HU_PI destinationHuPI)
+			final I_C_UOM uom)
 	{
 		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
 

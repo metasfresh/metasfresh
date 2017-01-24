@@ -85,7 +85,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 			final String itemType= item.getItemType();
 
 			//
-			// Allocate to material item
+			// Allocate to/from material item
 			if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType))
 			{
 				final IAllocationRequest materialItemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
@@ -93,7 +93,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 				AllocationUtils.mergeAllocationResult(allocationResult, itemResult);
 			}
 			//
-			// Allocate to included handling units
+			// Allocate to/from included handling units
 			else if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType)
 					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
 			{
@@ -151,7 +151,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	}
 
 	/**
-	 * If after {@link #allocateOnIncludedHUItem(I_M_HU_Item, IAllocationRequest)} there is more to allocate then this method will be called to allocate remaining qty.
+	 * If after {@link #allocateOnIncludedHUItem(I_M_HU_Item, IAllocationRequest)} there is more to allocate then this method will be called to allocate remaining qty.<br>
 	 *
 	 * @param item
 	 * @param request
@@ -175,7 +175,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		}
 
 		//
-		// If our item is from a Virtual HU, we shall allocate on it directly
+		// If our item is from a Virtual HU, we shall allocate to or from it directly
 		if (handlingUnitsBL.isVirtual(item))
 		{
 			final I_M_HU_Item vhuItem = item;

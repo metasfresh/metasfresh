@@ -32,8 +32,8 @@ import org.compiere.model.I_C_UOM;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.impl.HUTrxListenerAdapter;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -51,7 +51,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
  * @author tsa
  *
  */
-public final class ReceiptScheduleHUTrxListener extends HUTrxListenerAdapter
+public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 {
 	public static final ReceiptScheduleHUTrxListener instance = new ReceiptScheduleHUTrxListener();
 

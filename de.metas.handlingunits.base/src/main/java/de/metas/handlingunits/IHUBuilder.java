@@ -33,6 +33,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /**
@@ -53,6 +54,8 @@ public interface IHUBuilder
 
 	/**
 	 * Create handling unit using the given <code>piVersion</code> and (as parent item) the {@link I_M_HU_Item} that was previously set via {@link #setM_HU_Item_Parent(I_M_HU_Item)}.
+	 * <p>
+	 * Also check out {@link #setM_HU_Item_Parent(I_M_HU_Item)}.
 	 *
 	 * @param piVersion
 	 * @return created handling unit; never return null
@@ -69,6 +72,15 @@ public interface IHUBuilder
 
 	I_M_HU_Item getM_HU_Item_Parent();
 
+	/**
+	 * If the type of the given {@code parentItem} is {@link X_M_HU_Item#ITEMTYPE_HUAggregate}, then {@link #create(I_M_HU_PI_Version)} will create an aggregate VHU
+	 * which will contain packing material {@link I_M_HU_Item} according to the {@link I_M_HU_PI_Version} that was given as parameter to the {@code create} method.
+	 * <p>
+	 * Otherwise, if the item type of the given {@code parentItem} is {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} (or if the given parent item is {@code null}),
+	 * then {@link #create(I_M_HU_PI_Version)} shall create a "normal" HU.
+	 * 
+	 * @param parentItem
+	 */
 	void setM_HU_Item_Parent(I_M_HU_Item parentItem);
 
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();

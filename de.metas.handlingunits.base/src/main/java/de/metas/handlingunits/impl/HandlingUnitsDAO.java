@@ -66,7 +66,6 @@ import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
@@ -77,6 +76,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.logging.LogManager;
 
@@ -270,7 +270,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		final I_M_HU_Item existingItem = getHUAndItemsDAO().retrieveItem(hu, piItem);
-		if (existingItem != null)
+		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(existingItem.getItemType()))
 		{
 			return ImmutablePair.of(existingItem, false);
 		}

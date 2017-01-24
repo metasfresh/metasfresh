@@ -13,27 +13,30 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TrxRunnable;
 import org.junit.Assert;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -98,7 +101,6 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		//
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
-
 		huContext = helper.createMutableHUContextForProcessing(trxName);
 		huStorageFactory = huContext.getHUStorageFactory();
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -199,11 +201,20 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 
 		//
 		// Create and destroy instances only with an I_M_Transaction
-		final List<I_M_HU> loadingUnits = helper.createHUs(huContext, luProducerDestination, cuQty);
+		final List<I_M_HU> loadingUnits = new ArrayList<>();
+//		Services.get(ITrxManager.class).run(new TrxRunnable()
+//		{
+//			@Override
+//			public void run(String localTrxName) throws Exception
+//			{
+				// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+				loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
+//			}
+//		});
 
 		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
 		final I_M_HU loadingUnit = loadingUnits.get(0);
-
+		// HUXmlConverter.toString(HUXmlConverter.toXml(loadingUnit));
 		//
 		// Propagate WeightGross (this will also calculate Net); Net = Gross - Tare - TareAdjust
 		final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(loadingUnit);
@@ -323,6 +334,17 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		throw new AdempiereException("Storage not found with desired qty {} in {}", new Object[] { customerUnitQty, loadingUnit });
 	}
 
+	/**
+	 * 
+	 * @param luToSplit
+	 * @param luPIItem
+	 * @param tuPIItem
+	 * @param cuQty the qty to split, but note that the qty that is actually split is also limited by {@code cuPerTU}, {@code tuPerLU} and {@code maxLUToAllocate}
+	 * @param cuPerTU
+	 * @param tuPerLU
+	 * @param maxLUToAllocate
+	 * @return
+	 */
 	protected final List<I_M_HU> splitLU(final I_M_HU luToSplit,
 			final I_M_HU_PI_Item luPIItem,
 			final I_M_HU_PI_Item tuPIItem,
@@ -334,10 +356,22 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final I_M_Product cuProduct = getCUProduct();
 		final I_C_UOM cuUOM = getCUUOM();
 
-		return helper.splitHUs(huContext,
-				luToSplit,
-				cuProduct, cuQty, cuUOM,
-				cuPerTU, tuPerLU, maxLUToAllocate,
-				tuPIItem, luPIItem);
+		final List<I_M_HU> loadingUnits = new ArrayList<>();
+//		Services.get(ITrxManager.class).run(new TrxRunnable()
+//		{
+//			@Override
+//			public void run(String localTrxName) throws Exception
+//			{
+//				final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+				loadingUnits.addAll(
+						helper.splitHUs(
+								huContext,
+								luToSplit,
+								cuProduct, cuQty, cuUOM,
+								cuPerTU, tuPerLU, maxLUToAllocate,
+								tuPIItem, luPIItem));
+//			}
+//		});
+		return loadingUnits;
 	}
 }

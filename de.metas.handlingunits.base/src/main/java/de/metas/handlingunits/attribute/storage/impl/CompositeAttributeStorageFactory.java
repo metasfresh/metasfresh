@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -41,13 +41,19 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 	private IHUAttributesDAO huAttributesDAO;
 	private IHUStorageFactory huStorageFactory;
 
+	private final IHUContext huContext;
+
 	private final List<IAttributeStorageFactory> factories = new ArrayList<IAttributeStorageFactory>();
 
 	private final List<IAttributeStorageListener> attributeStorageListeners = new ArrayList<IAttributeStorageListener>();
 
-	public CompositeAttributeStorageFactory()
+	/**
+	 * 
+	 * @param huContext might be needed when creating new {@link IAttributeStorage}s.
+	 */
+	public CompositeAttributeStorageFactory(final IHUContext huContext)
 	{
-		super();
+		this.huContext = huContext;
 	}
 
 	@Override

@@ -46,6 +46,10 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
+	/**
+	 * Save the given {@code hu}
+	 * @param hu
+	 */
 	void saveHU(I_M_HU hu);
 
 	void delete(I_M_HU hu);
@@ -107,7 +111,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * Similar to {@link #createHUItem(I_M_HU, I_M_HU_PI_Item)}, but does not use any {@link I_M_HU_PI_Item} as template.<br>
 	 * Instead, the new item is created with {@link X_M_HU_Item#ITEMTYPE_HUAggregate} as its {@link I_M_HU_Item#COLUMN_ItemType}.
 	 * 
-	 * @param hu
+	 * @param hu the HU which the new item shall reference.
 	 * @return
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);

@@ -45,6 +45,11 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 {
 	I_M_HU_PI getTUPI();
 
+	/**
+	 * Set the PI for the TU that shall be build.
+	 * 
+	 * @param tuPI
+	 */
 	void setTUPI(final I_M_HU_PI tuPI);
 
 	/**
@@ -81,10 +86,25 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	I_M_HU_PI getLUPI();
 
+	/**
+	 * Specifies the PI for the loading unit. May be {@code null} for the case that a TU without LU is needed.
+	 * 
+	 * @param luPI
+	 */
 	void setLUPI(final I_M_HU_PI luPI);
 
+	/**
+	 * See {@link #setLUItemPI(I_M_HU_PI_Item)}.
+	 * 
+	 * @return
+	 */
 	I_M_HU_PI_Item getLUItemPI();
 
+	/**
+	 * Sets LU PI's PI Item on which the TU will be included. May be {@code null} for the case that a TU without LU is needed.
+	 *
+	 * @param luItemPI
+	 */
 	void setLUItemPI(final I_M_HU_PI_Item luItemPI);
 
 	/**
@@ -94,7 +114,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	boolean isNoLU();
 
 	/**
-	 * Set's LU PI / Item PI to null. Also set MaxLUs to ZERO.
+	 * Convenience method for the case that a top-level TU is required.
+	 * Call {@link #setTUPI(I_M_HU_PI)}, {@link #setLUItemPI(I_M_HU_PI_Item)}, {@link #setMaxLUs(int)} and {@link #setCreateTUsForRemainingQty(boolean)} accordingly.
 	 */
 	void setNoLU();
 
@@ -197,23 +218,12 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	boolean isCreateTUsForRemainingQty();
 
 	/**
-	 * Sets LU/TU configuration to be set in generated LUs or in top level TUs.
+	 * If this instance was created via {@link ILUTUConfigurationFactory#createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration)} then this getter shall return the config that was passed to the factory.
 	 *
-	 * NOTE: calling this method is not loading the configuration from there, it just set given configuration as reference.
-	 *
-	 * @param lutuConfiguration LU/TU configuration to be set as reference; can be <code>null</code>.
-	 */
-	void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration lutuConfiguration);
-
-	/**
-	 * Gets LU/TU reference configuration.
-	 *
-	 * At this point, this producer won't consider any further changes on this configuration. It is used only to {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
-	 *
-	 * So, please don't relly on values from this configuration when calculating how much it will allocated but better ask methods like {@link #getQtyCUPerTU()} etc.
+	 * When the lutu config is returned by this getter, then this producer won't consider any further changes on this configuration. It is used only for {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
+	 * Also, please don't rely on values from this configuration when calculating how much it will allocate but better ask methods like {@link #getQtyCUPerTU()} etc.
 	 *
 	 * @return LU/TU configuration reference or null
-	 * @see #setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)
 	 */
 	I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
 

@@ -330,12 +330,22 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		final I_M_HU_PI_Item luItemPI = getLUItemPI();
 		Check.assumeNotNull(luItemPI, "Member luItemPI not null");
 
+		// at this point in time, luHU might not even haven an item with itemType=HandingUnit, but is will have one with itemType=HUAggregate,
+		// and in that case, the "HUAggregate" one will be returned. This means that the tuProducer will load to an aggregate VHU that represents a number of TUs 
 		final I_M_HU_Item luItem = handlingUnitsDAO.retrieveItem(luHU, luItemPI);
 		Check.assumeNotNull(luItem, "luItem not null");
 
 		tuProducer = createTUProducerDestination(getMaxTUsPerLU_Effective());
 		tuProducer.setParentItem(luItem);
-
+		
+		// provide not only the item (which might have ItemType=HUAggregate), 
+		// but also the PI-Item that allows the tuProducer to create a "real" item with itemType=HandlingUnit if it needs one.
+		tuProducer.setParentPIItem(luItemPI);
+		
+		// giving the lutu-config to the TU-producer, so it can forward it to the TU-H_HUs it will create
+		// TODO remove
+		//tuProducer.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
+		
 		luId2tuProducer.put(luId, tuProducer);
 
 		return tuProducer;
@@ -365,11 +375,6 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		return luPI;
 	}
 
-	/**
-	 * Sets LU PI Item on which the TU will be included
-	 *
-	 * @param luItemPI
-	 */
 	@Override
 	public void setLUItemPI(final I_M_HU_PI_Item luItemPI)
 	{
@@ -395,6 +400,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		setLUItemPI(null);
 		setLUPI(null);
 		setMaxLUs(0);
+		setCreateTUsForRemainingQty(true);
 	}
 
 	@Override
@@ -597,21 +603,6 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		//
 		// Reset existing HUs to load, to make sure we are not loading them again
 		existingHUs = null;
-	}
-
-	@Override
-	protected final void loadFinished(final IMutableAllocationResult result)
-	{
-		// Check if we enqueued TUs but the producer for remaining TUs was not called (because it was no need)
-		// In this case let's add those enqueued TUs in our main result right now
-		//
-		// UPDATE NOTE: we are not adding it here because it means it was not necessary
-		//
-		// if (tuProducerForRemaining_alreadyCreatedTUs != null && !tuProducerForRemaining_alreadyCreatedTUs.isEmpty())
-		// {
-		// addToCreatedHUs(tuProducerForRemaining_alreadyCreatedTUs);
-		// }
-		// tuProducerForRemaining_alreadyCreatedTUs = null;
 	}
 
 	private TUProducerDestination getCreateTUProducerDestinationForRemaining()

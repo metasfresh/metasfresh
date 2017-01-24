@@ -135,7 +135,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Storage(), client);
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
@@ -242,11 +242,18 @@ public final class Main extends AbstractModuleInterceptor
 		Services.get(IStorageEngineService.class)
 				.registerStorageEngine(de.metas.storage.spi.hu.impl.HUStorageEngine.instance);
 
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		//
+		// aggregate material items
+		{
+			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.PackingMaterialItemTrxListener.INSTANCE);
+		}
+		
 		//
 		// Weights Attributes
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(WeightGenerateHUTrxListener.instance);
+			huTrxBL.addListener(WeightGenerateHUTrxListener.instance);
 		}
 
 		//
@@ -260,15 +267,13 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IHUDocumentFactoryService.class)
 					.registerHUDocumentFactory(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleHUDocumentFactory());
 
-			Services.get(IHUTrxBL.class)
-					.addListener(ReceiptScheduleHUTrxListener.instance);
+			huTrxBL.addListener(ReceiptScheduleHUTrxListener.instance);
 		}
 
 		//
 		// Shipment Schedule
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(ShipmentScheduleHUTrxListener.instance);
+			huTrxBL.addListener(ShipmentScheduleHUTrxListener.instance);
 
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IInOutCandHandlerBL.class)
@@ -278,8 +283,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Manufacturing
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(PPOrderBOMLineHUTrxListener.instance);
+			huTrxBL.addListener(PPOrderBOMLineHUTrxListener.instance);
 		}
 
 		// Order - Fast Input

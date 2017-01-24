@@ -182,7 +182,6 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	{
 		if (huStorageFactory == null)
 		{
-			// FIXME: this one is not OK in case we use this context as an immutable context
 			huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 
 			//
@@ -228,8 +227,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
 		if (_attributesStorageFactory == null)
 		{
-			// FIXME: this one is not OK in case we use this context as an immutable context
-			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
+			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory(this);
 		}
 
 		final IHUStorageFactory huStorageFactory = getHUStorageFactory();

@@ -38,7 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 /**
- * This implemation delegated to either {@link CachedHUAndItemsDAO} or directly to {@link HUAndItemsDAO}.
+ * This implementation delegated to either {@link CachedHUAndItemsDAO} or directly to {@link HUAndItemsDAO}.
  *  
  * @author metas-dev <dev@metasfresh.com>
  *

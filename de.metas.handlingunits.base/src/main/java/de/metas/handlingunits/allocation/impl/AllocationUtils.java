@@ -67,7 +67,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Creates initial {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
+	 * Creates initial/empty {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
 	 *
 	 * @param request
 	 * @return initial mutable result

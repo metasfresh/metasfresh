@@ -217,6 +217,15 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		return expectation;
 	}
 
+	/**
+	 * Convenience method that does
+	 * <pre>
+	 * newIncludedHUExpectation().huPI(virtualPI);
+	 * </pre>
+	 * i.e. creates an new included-HU-expectation and directly expects that HU to have the "virtual" packing instruction.
+	 * 
+	 * @return
+	 */
 	public HUExpectation<HUItemExpectation<ParentExpectationType>> newIncludedVirtualHU()
 	{
 		final I_M_HU_PI virtualPI = handlingUnitsDAO.retrieveVirtualPI(Env.getCtx());

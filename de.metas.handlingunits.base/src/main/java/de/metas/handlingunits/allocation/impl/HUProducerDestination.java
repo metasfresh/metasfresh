@@ -56,6 +56,8 @@ public class HUProducerDestination extends AbstractProducerDestination
 	 */
 	private int maxHUsToCreate = Integer.MAX_VALUE;
 
+	private I_M_HU_Item parentHUItem;
+
 	public HUProducerDestination(final I_M_HU_PI huPI)
 	{
 		Check.assumeNotNull(huPI, "huPI not null");
@@ -105,12 +107,22 @@ public class HUProducerDestination extends AbstractProducerDestination
 	}
 
 	/**
+	 * Then this producer creates a new HU, than i uses the given {@code parentHUItem} for the new HU's {@link I_M_HU#COLUMN_M_HU_Item_Parent_ID}.
+	 * 
+	 * @param parentHUItem
+	 */
+	public void setParent_HU_Item(final I_M_HU_Item parentHUItem)
+	{
+		this.parentHUItem = parentHUItem;
+	}
+
+	/**
 	 *
 	 * @return <code>null</code>.
 	 */
 	@Override
 	protected I_M_HU_Item getParent_HU_Item()
 	{
-		return null;
+		return parentHUItem;
 	}
 }

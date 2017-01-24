@@ -117,6 +117,14 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 */
 	IAllocationRequest requestQtyToAllocate(IAllocationRequest request);
 
+	/**
+	 * Similar to {@link #requestQtyToAllocate(IAllocationRequest)}, but the returned request's quantity does not depend on the capacity of a destination storage, but one the actual contend of a source storage.
+	 * 
+	 * @param request
+	 * @return
+	 * 
+	 * @see #getQty(I_M_Product, I_C_UOM)
+	 */
 	IAllocationRequest requestQtyToDeallocate(IAllocationRequest request);
 
 	/**

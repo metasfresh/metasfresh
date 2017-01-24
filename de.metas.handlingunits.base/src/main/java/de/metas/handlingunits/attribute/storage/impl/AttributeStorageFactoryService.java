@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -46,16 +47,16 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 	}
 
 	@Override
-	public IAttributeStorageFactory createHUAttributeStorageFactory()
+	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUContext huContext)
 	{
 		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
-		return createHUAttributeStorageFactory(huAttributesDAO);
+		return createHUAttributeStorageFactory(huAttributesDAO, huContext);
 	}
 
 	@Override
-	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUAttributesDAO huAttributesDAO)
+	public IAttributeStorageFactory createHUAttributeStorageFactory(final IHUAttributesDAO huAttributesDAO, final IHUContext huContext)
 	{
-		final CompositeAttributeStorageFactory factory = new CompositeAttributeStorageFactory();
+		final CompositeAttributeStorageFactory factory = new CompositeAttributeStorageFactory(huContext);
 		factory.setHUAttributesDAO(huAttributesDAO);
 		factory.addAttributeStorageFactoryClasses(attributeStorageFactories);
 		return factory;

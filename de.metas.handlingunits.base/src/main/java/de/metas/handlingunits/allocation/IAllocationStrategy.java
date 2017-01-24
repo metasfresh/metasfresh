@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation;
 
+import de.metas.handlingunits.IHUTransaction;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -25,7 +27,8 @@ package de.metas.handlingunits.allocation;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
- * Implemetors are responsible to allocate <b>or deallocate</b> from/to a given hu, according to a given request.
+ * Implementors are responsible to allocate <b>or deallocate</b> from/to a given hu, according to a given request.
+ * Actually, in both cases, their job is to create and return an {@link IAllocationResult} that contains a bunch of {@link IHUTransaction}s 
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

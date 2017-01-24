@@ -34,9 +34,17 @@ import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 
+/**
+ * This classe's {@link #getHUItemStorage(I_M_HU_Item, IAllocationRequest)} can return a storage with an
+ * "artificial" uppper bound that is different from the capacity defined in {@link I_M_HU_PI_Item_Product}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 {
 	// services
@@ -71,7 +79,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		{
 			qty = capacity.getCapacity();
 		}
-		
+
 		return Util.same(IHUCapacityDefinition.DEFAULT, qty);
 	}
 

@@ -59,15 +59,16 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 			.addColumn(I_M_HU_Item.COLUMN_M_HU_Item_ID, Direction.Ascending, Nulls.Last)
 			.createQueryOrderBy();;
 
-	/**
-	 * Specifies that material items shall be first, followed by HU-aggregate items, HU-items and finally packing material items.
-	 */
 	private static final Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
 			X_M_HU_Item.ITEMTYPE_Material, 1,
-			X_M_HU_Item.ITEMTYPE_HUAggregate, 2,
-			X_M_HU_Item.ITEMTYPE_HandlingUnit, 3,
+			X_M_HU_Item.ITEMTYPE_HandlingUnit, 2,
+			X_M_HU_Item.ITEMTYPE_HUAggregate, 3,
 			X_M_HU_Item.ITEMTYPE_PackingMaterial, 4);
 
+	/**
+	 * Specifies that material items shall be first, followed by HU-items, HU--aggregate-items and finally packing material items.
+	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
+	 */
 	public static final Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
 			.<I_M_HU_Item, Integer> comparing(item -> ITEM_TYPE_ORDERING.get(item.getItemType()))
 			.thenComparing(queryOrderBy.getComparator(I_M_HU_Item.class));

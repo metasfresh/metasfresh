@@ -25,20 +25,16 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.IHUTrxBL;
 
 /**
  * Allocation result that be created as an empty one and then can be altered by the code which dioes the allocating.
@@ -53,7 +49,7 @@ import de.metas.handlingunits.impl.HUTransaction;
 
 	private final List<IHUTransaction> transactions = new ArrayList<IHUTransaction>();
 	private final List<IHUTransaction> transactionsRO = Collections.unmodifiableList(transactions);
-	
+
 	private final List<IHUTransactionAttribute> attributeTransactions = new ArrayList<IHUTransactionAttribute>();
 	private final List<IHUTransactionAttribute> attributeTransactionsRO = Collections.unmodifiableList(attributeTransactions);
 
@@ -203,60 +199,10 @@ import de.metas.handlingunits.impl.HUTransaction;
 	@Override
 	public void aggregateTransactions()
 	{
-		final Map<ArrayKey, IHUTransaction> transactionsAggregateMap = new HashMap<>();
-
-		final List<IHUTransaction> notAggregated = new ArrayList<>();
-
-		for (final IHUTransaction trx : transactions)
-		{
-			if (trx.getCounterpart() != null)
-			{
-				// we don't want to aggregate paired trxCandidates because we want to discard the trxCandidates this method was called with.
-				// unless we don't have to, we don't want to delve into those intricacies...
-				notAggregated.add(trx);
-
-			}
-
-			// note that we use the ID if we can, because we don't want this to fail e.g. because of two different versions of the "same" VHU-item
-			final ArrayKey key = Util.mkKey(
-					// trxCandidate.getCounterpart(),
-					trx.getDate(),
-					trx.getHUStatus(),
-					// trxCandidate.getM_HU(), just delegates to HU_Item
-					trx.getM_HU_Item() == null ? -1 : trx.getM_HU_Item().getM_HU_Item_ID(),
-					trx.getM_Locator() == null ? -1 : trx.getM_Locator().getM_Locator_ID(),
-					trx.getProduct() == null ? -1 : trx.getProduct().getM_Product_ID(),
-					// trxCandidate.getQuantity(),
-					trx.getReferencedModel() == null ? -1: TableRecordReference.of(trx.getReferencedModel()),
-					// trxCandidate.getVHU(), just delegates to VHU_Item
-					trx.getVHU_Item() == null ? -1 : trx.getVHU_Item().getM_HU_Item_ID(),
-					trx.isSkipProcessing());
-
-			transactionsAggregateMap.merge(key,
-					trx,
-					(existingCand, newCand) -> {
-
-						final HUTransaction mergedCandidate = new HUTransaction(existingCand.getReferencedModel(),
-								existingCand.getM_HU_Item(),
-								existingCand.getVHU_Item(),
-								existingCand.getProduct(),
-								existingCand.getQuantity().add(newCand.getQuantity()),
-								existingCand.getDate(),
-								existingCand.getM_Locator(),
-								existingCand.getHUStatus());
-
-						if (existingCand.isSkipProcessing())
-						{
-							mergedCandidate.setSkipProcessing();
-						}
-
-						return mergedCandidate;
-					});
-
-		}
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final List<IHUTransaction> aggregateTransactions = huTrxBL.aggregateTransactions(transactions);
 
 		transactions.clear();
-		transactions.addAll(notAggregated);
-		transactions.addAll(transactionsAggregateMap.values());
+		transactions.addAll(aggregateTransactions);
 	}
 }

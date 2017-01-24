@@ -46,13 +46,24 @@ public class LUTUProducerDestinationTestSupport
 {
 	public HUTestHelper helper;
 
+	/**
+	 * The PI for the IFCO TU
+	 */
 	public I_M_HU_PI piTU_IFCO;
+	
+	/**
+	 * The PI-item with itemtype "Material" that links from the IFCO to the actual VHU which contains the material.
+	 */
 	public I_M_HU_PI_Item piTU_Item_IFCO;
 
 	public I_M_HU_PI piTU_Bag;
 	public I_M_HU_PI_Item piTU_Item_Bag;
 
 	public I_M_HU_PI piLU;
+	
+	/**
+	 * The PI-Item with itemtype "HandlingUnit" that links from the LU's PI "downwards" to the IFCO's (sub-PI)
+	 */
 	public I_M_HU_PI_Item piLU_Item_IFCO;
 	public I_M_HU_PI_Item piLU_Item_Bag;
 

@@ -226,7 +226,7 @@ public class HUBuilderTests
 
 		final HUBuilder testeeCompressedVHU = new HUBuilder(huContext);
 		testeeCompressedVHU.setM_HU_Item_Parent(parentItem);
-		/* final I_M_HU compHU = */ testeeCompressedVHU.create(piTU_Version);
+		/* final I_M_HU aggregateVHU = */ testeeCompressedVHU.create(piTU_Version);
 
 		//@formatter:off
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()

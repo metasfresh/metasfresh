@@ -55,7 +55,7 @@ public interface IHUSplitBuilder
 
 	/**
 	 *
-	 * @param huToSplit the HU we want to off something. Could be a palette from which we want to take 3 IFCOs.
+	 * @param huToSplit the HU from which we want to split off something. Could be a palette from which we want to take 3 IFCOs.
 	 * @return
 	 */
 	IHUSplitBuilder setHUToSplit(I_M_HU huToSplit);
@@ -70,7 +70,8 @@ public interface IHUSplitBuilder
 	IHUSplitBuilder setCUProduct(I_M_Product product);
 
 	/**
-	 *
+	 * Set the qty which we want to split off. Note that the BL will split less if the capacity of the "splitting target" is less.
+	 * 
 	 * @param qty the quantity of the product which we want to split.
 	 *            If we want to split 3 IFCOs with two of them containing 10 items each and the third IFCO containing 7 items, then this value is 27.
 	 * @return

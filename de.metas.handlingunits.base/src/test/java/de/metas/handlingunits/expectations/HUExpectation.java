@@ -382,6 +382,11 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 				.huPIItem(piItem);
 	}
 
+	/**
+	 * Create and return an expectation for a VHU item. This is usually within a {@link HUItemExpectation#newIncludedVirtualHU()}.
+	 * 
+	 * @return
+	 */
 	public HUItemExpectation<HUExpectation<ParentExpectationType>> newVirtualHUItemExpectation()
 	{
 		final I_M_HU_PI_Item virtualPIItem = handlingUnitsDAO.retrieveVirtualPIItem(Env.getCtx());

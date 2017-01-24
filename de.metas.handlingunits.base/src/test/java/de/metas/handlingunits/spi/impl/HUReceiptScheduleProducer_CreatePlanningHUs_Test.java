@@ -400,6 +400,11 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 				// Validate VHU
 				assertTrue("Invalid VHU's UnitType", handlingUnitsBL.isVirtual(vhu));
 
+				if (handlingUnitsBL.isAggregateHU(vhu) && vhu.getM_HU_Item_Parent().getQty().signum() <= 0)
+				{
+					continue; // we are dealing with an aggregate VHU "stub"
+				}
+
 				// Validate VHU allocation
 				final I_M_ReceiptSchedule_Alloc alloc = removeReceiptScheduleAllocFromList(rsAllocs, luHU, tuHU, vhu);
 				final BigDecimal huQtyAllocatedActual = alloc.getHU_QtyAllocated();

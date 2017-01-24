@@ -27,6 +27,7 @@ import java.util.List;
 
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
+import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IAllocationResult;
 
 /**
@@ -61,8 +62,7 @@ public interface IMutableAllocationResult extends IAllocationResult
 	void addAttributeTransactions(List<IHUTransactionAttribute> attributeTrxs);
 
 	/**
-	 * Iterate the {@link IHUTransaction}s that were added so far and aggregate those that only differ in their quantity.
-	 * In other words, group the them by their properties (besides qty) and store a new list with summed-up qtys. The new candidates have unique properties.
+	 * Invoke {@link IHUTrxBL#aggregateTransactions(List)} on the {@link IHUTransaction}s that were added so far.
 	 */
 	void aggregateTransactions();
 }
