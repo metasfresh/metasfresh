@@ -43,7 +43,7 @@ import de.metas.inout.model.I_M_QualityNote;
 {
 	//
 	// Params
-	private final IHUReceiptLinePartAttributes _attributes;
+	private final HUReceiptLinePartAttributes _attributes;
 
 	//
 	// Aggregated values
@@ -61,7 +61,7 @@ import de.metas.inout.model.I_M_QualityNote;
 	private final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 	private final transient List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocsRO = Collections.unmodifiableList(receiptScheduleAllocs);
 
-	public HUReceiptLinePartCandidate(final IHUReceiptLinePartAttributes attributes)
+	public HUReceiptLinePartCandidate(final HUReceiptLinePartAttributes attributes)
 	{
 		super();
 
@@ -142,7 +142,7 @@ import de.metas.inout.model.I_M_QualityNote;
 			return;
 		}
 
-		final IHUReceiptLinePartAttributes attributes = getAttributes();
+		final HUReceiptLinePartAttributes attributes = getAttributes();
 
 		//
 		// Qty & Quality
@@ -177,7 +177,7 @@ import de.metas.inout.model.I_M_QualityNote;
 	 * @return part attributes; never return null
 	 */
 	// package level access for testing purposes
-	IHUReceiptLinePartAttributes getAttributes()
+	HUReceiptLinePartAttributes getAttributes()
 	{
 		return _attributes;
 	}

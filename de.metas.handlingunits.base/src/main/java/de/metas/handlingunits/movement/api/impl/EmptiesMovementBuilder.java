@@ -79,8 +79,6 @@ public class EmptiesMovementBuilder implements IEmptiesMovementBuilder
 
 		//
 		// Iterate all receipt lines and group them by target warehouse
-
-		// final Map<Integer, List<HUPackingMaterialDocumentLineCandidate>> warehouseId2Candidates = new HashMap<Integer, List<HUPackingMaterialDocumentLineCandidate>>();
 		final Map<WarehouseDirection, List<HUPackingMaterialDocumentLineCandidate>> directionToCandidates = new HashMap<WarehouseDirection, List<HUPackingMaterialDocumentLineCandidate>>();
 
 		for (final HUPackingMaterialDocumentLineCandidate candidate : candidates)

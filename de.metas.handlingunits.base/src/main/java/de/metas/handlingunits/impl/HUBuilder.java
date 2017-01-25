@@ -290,15 +290,14 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		// Assign HU to Parent
 		huTrxBL.setParentHU(huContext, parentItem, hu);
 
-		setStatus(HUIteratorStatus.Running);
-
 		//
 		// Generate HU Attributes
 		// generating HU attributes after the HU was created, because then we already have huItems and those can be used to compute initital weight tare attributes  
 		final IAttributeStorageFactory attributesStorageFactory = huContext.getHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributesStorageFactory.getAttributeStorage(hu);
-
 		attributeStorage.generateInitialAttributes(getInitialAttributeValueDefaults());
+		
+		setStatus(HUIteratorStatus.Running);
 		
 		//
 		// Call HU Builder to create items and other included things (if any).

@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
@@ -25,6 +27,7 @@ import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.interfaces.I_M_Warehouse;
 
 /*
  * #%L

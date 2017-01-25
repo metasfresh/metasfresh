@@ -1,5 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,18 +29,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.codehaus.groovy.runtime.wrappers.PojoWrapper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUXmlConverter;
@@ -129,7 +128,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		allSplitHUs.addAll(splitSS1LUs);
 		allSplitHUs.addAll(splitSS2LUs);
 
-		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
 
 		//
 		// Validate split LU/TU/VHUs
@@ -156,12 +155,9 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 								.product(pTomato).qty("30").uom(productUOM)
 							.endExpectation() // itemStorageExcpectation
 						.endExpectation() // newHUItemExpectation;
-						.newHUItemExpectation()
-							.noIncludedHUs()
-							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-							.qty("1") 
-							.packingMaterial(helper.pmIFCO)
-						.endExpectation()  // HUAggregate item
+					
+						// note: no packing material item because we didn't create a PM PI item
+						
 					.endExpectation() // included aggregate VHU
 				.endExpectation() // HUAggreagate item
 			.endExpectation() // first LU
@@ -171,33 +167,10 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 				.capture(afterAggregation_LU2)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				.newHUItemExpectation()
-					//
-					// aggregate HU of the 2nd LU; it only contains the qty that were split onto the new LU
-					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
-					.newIncludedHUExpectation() // the aggregate VHU
-						.capture(vhu2)
-						.huPI(null)
-						.huStatus(X_M_HU.HUSTATUS_Picked)
-						
-						.newHUItemExpectation()
-							.itemType(X_M_HU_Item.ITEMTYPE_Material)
-							.noIncludedHUs()
-							.newItemStorageExpectation()
-								.product(pSalad).qty("10").uom(productUOM)
-							.endExpectation()
-						.endExpectation()
-						.newHUItemExpectation()
-							.noIncludedHUs()
-							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-							.qty("1") 
-							.packingMaterial(helper.pmIFCO)
-						.endExpectation() // packing material
-					.endExpectation() // the aggregate VHU
-				.endExpectation() // HUAggregate item
 				
 				// now we still have have tuHU3, tuHU4, tuHU5 and tuHU6 that were not destroyed but simply joined to the 2nd LU
 				.newHUItemExpectation(piLU_Item)
+					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.newIncludedHUExpectation()
 						.capture(tu3)
 						.huPI(piTU)
@@ -268,9 +241,30 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 						.endExpectation()
 					.endExpectation()
 
+					.newHUItemExpectation()
+						//
+						// aggregate HU of the 2nd LU; it only contains the qty that were split onto the new LU
+						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
+						.newIncludedHUExpectation() // the aggregate VHU
+							.capture(vhu2)
+							.huPI(null)
+							.huStatus(X_M_HU.HUSTATUS_Picked)
+							
+							.newHUItemExpectation()
+								.itemType(X_M_HU_Item.ITEMTYPE_Material)
+								.noIncludedHUs()
+								.newItemStorageExpectation()
+									.product(pSalad).qty("10").uom(productUOM)
+								.endExpectation()
+							.endExpectation()
+
+							// note: no packing material item because we didn't create a PM PI item
+
+						.endExpectation() // the aggregate VHU
+					.endExpectation() // HUAggregate item
+					
 			.endExpectation() // 2nd LU
-			//
-			.assertExpected("split HUs", allSplitHUs);
+		.assertExpected("split HUs", allSplitHUs);
 		//@formatter:on
 
 		// set instance names to make it easier to understand which HU is "wrong"

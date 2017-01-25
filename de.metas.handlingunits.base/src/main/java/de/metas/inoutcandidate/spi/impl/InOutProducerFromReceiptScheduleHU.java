@@ -566,7 +566,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocs)
 		{
 			final int tuHUId = rsa.getM_TU_HU_ID();
-			Check.assume(tuHUId > 0, "tuHUId > 0 ({})", rsa);
+			Check.assume(tuHUId > 0, "tuHUId > 0 (rsa={})", rsa);
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 
 			//

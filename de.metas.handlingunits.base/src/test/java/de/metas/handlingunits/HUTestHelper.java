@@ -1649,6 +1649,9 @@ public class HUTestHelper
 	 * Sets up a {@link HUListAllocationSourceDestination} for the given {@code sourceHUs} and loads them to the given {@code lutuProducer}.
 	 * <p>
 	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * Note that this method does less than {@link IHUSplitBuilder}. E.g. it does not:
+	 * <li>propagate the source HUs' Locator, Status etc
+	 * <li>destroy empty source HUs
 	 * 
 	 * @param sourceHUs
 	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
@@ -1830,12 +1833,25 @@ public class HUTestHelper
 		return bpl;
 	}
 
+	/**
+	 * Calls {@link #createWarehouse(String, boolean)} with {@code isIssueWarehouse == false}
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public I_M_Warehouse createWarehouse(final String name)
 	{
 		final boolean isIssueWarehouse = false;
 		return createWarehouse(name, isIssueWarehouse);
 	}
 
+	/**
+	 * Creates a warehouse and one (default) locator.
+	 * 
+	 * @param name
+	 * @param isIssueWarehouse
+	 * @return
+	 */
 	public I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
 	{
 		final de.metas.interfaces.I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(de.metas.interfaces.I_M_Warehouse.class, contextProvider);

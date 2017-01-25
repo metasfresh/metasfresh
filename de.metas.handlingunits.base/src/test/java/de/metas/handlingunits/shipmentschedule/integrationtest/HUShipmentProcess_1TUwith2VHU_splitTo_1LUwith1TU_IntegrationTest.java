@@ -37,9 +37,11 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Locator;
 import org.junit.Assert;
 import org.w3c.dom.Node;
 
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -85,6 +87,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		final IMutable<I_M_HU> tu = new Mutable<>();
 		final IMutable<I_M_HU> vhu1 = new Mutable<>();
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
+
 		//@formatter:off
 		afterPick_HUExpectations = new HUsExpectation()
 			//
@@ -95,6 +98,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
+				//.locator(locator)
 				.newHUItemExpectation()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
@@ -184,10 +188,9 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		// Split our TU to an LU/TU with 15items
 		final IMutable<I_M_HU> afterAggregation_LU = new Mutable<>();
 
-		// final IMutable<I_M_HU> splitHU_TU = new Mutable<>(); there is none, because the TU is represented within the aggregate VHU
-		final IMutable<I_M_HU> splitHU_AggregateVHU = new Mutable<>();
-//		final IMutable<I_M_HU> splitHU_vhu1 = new Mutable<>();
-//		final IMutable<I_M_HU> splitHU_vhu2 = new Mutable<>();
+		final IMutable<I_M_HU> splitHU_tu = new Mutable<>();
+		final IMutable<I_M_HU> splitHU_vhu1 = new Mutable<>();
+		final IMutable<I_M_HU> splitHU_vhu2 = new Mutable<>();
 
 		final List<I_M_HU> splitHUs = new HUSplitBuilder(helper.ctx)
 				.setHUToSplit(tu)
@@ -205,7 +208,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				//
 				.split();
 
-		// System.out.println(de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("splitHUs", splitHUs)));
+		System.out.println(de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("splitHUs", splitHUs)));
 
 		//
 		// Validate split LU/TU/VHUs
@@ -217,24 +220,40 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.capture(afterAggregation_LU)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				.newHUItemExpectation()
-					//
-					// aggregate VHU
-					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
-					.newIncludedHUExpectation()
-						.capture(splitHU_AggregateVHU)
+				
+				.newHUItemExpectation() // the real IFCO which contains the 15kg
+					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
+					.newIncludedHUExpectation() // the "real" IFCO inside the LU
+						.capture(splitHU_tu)
+						.huPI(piTU)
 						.newHUItemExpectation()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.newItemStorageExpectation()
 								.product(product).qty("15").uom(productUOM)
-							.endExpectation() // itemStorage
-						.endExpectation() // packing item
-						.newHUItemExpectation()
-							.itemType(X_M_HU_Item.ITEMTYPE_PackingMaterial)
-							.qty("1")
-							.packingMaterial(helper.pmIFCO)
-						.endExpectation() // packing material item
-					.endExpectation() // included aggregate VHU
+							.endExpectation()
+							.newIncludedVirtualHU()
+								.capture(splitHU_vhu1)
+								.newVirtualHUItemExpectation()
+									.newItemStorageExpectation()
+										.product(product).qty("10").uom(productUOM)
+									.endExpectation()
+								.endExpectation()
+							.endExpectation() // end of first VHU
+							.newIncludedVirtualHU()
+								.capture(splitHU_vhu2)
+								.newVirtualHUItemExpectation()
+									.newItemStorageExpectation()
+										.product(product).qty("5").uom(productUOM)
+									.endExpectation()
+								.endExpectation()
+							.endExpectation() // end of second VHU
+						.endExpectation()
+					.endExpectation() // end of the "real" IFCO inside the LU
+				.endExpectation() // end of the real IFCO which contains the 15kg
+				
+				.newHUItemExpectation() // the empty stub aggregate VHU
+					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
+					.noItemStorages()
 				.endExpectation()
 			.endExpectation()
 			//
@@ -247,11 +266,11 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		afterAggregation_ShipmentScheduleQtyPickedExpectations = new ShipmentScheduleQtyPickedExpectations()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule1)
-				.lu(afterAggregation_LU).tu(splitHU_AggregateVHU).vhu(splitHU_AggregateVHU).qtyPicked("10")
+				.lu(afterAggregation_LU).tu(splitHU_tu).vhu(splitHU_vhu1).qtyPicked("10")
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule2)
-				.lu(afterAggregation_LU).tu(splitHU_AggregateVHU).vhu(splitHU_AggregateVHU).qtyPicked("5")
+				.lu(afterAggregation_LU).tu(splitHU_tu).vhu(splitHU_vhu2).qtyPicked("5")
 				.endExpectation()
 			.assertExpected("after split");
 		//@formatter:on

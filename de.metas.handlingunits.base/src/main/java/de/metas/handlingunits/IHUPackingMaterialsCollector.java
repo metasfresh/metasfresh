@@ -95,8 +95,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param hu
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addHU(I_M_HU hu,
-			T source);
+	void addHU(I_M_HU hu, T source);
 
 	List<HUPackingMaterialDocumentLineCandidate> getAndClearCandidates();
 
@@ -115,8 +114,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param tuHU
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addTU(I_M_HU tuHU,
-			T source);
+	void addTU(I_M_HU tuHU, T source);
 
 	/**
 	 * Collect (extract) trading unit packing materials

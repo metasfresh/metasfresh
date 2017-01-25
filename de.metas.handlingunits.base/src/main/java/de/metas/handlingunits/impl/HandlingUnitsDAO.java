@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -271,9 +273,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		final I_M_HU_Item existingItem = getHUAndItemsDAO().retrieveItem(hu, piItem);
-		
+
 		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
 		{
 			return ImmutablePair.of(existingItem, false);
@@ -303,8 +305,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);	
-		
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
 		for (final I_M_HU_Item huItem : huItems)
@@ -315,9 +317,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				continue;
 			}
 
+			// if 'hu'is an aggregate VHU, then it represents not one, but as many HU as its parent item's Qty sais.
+			final BigDecimal multiplier;
+			if (handlingUnitsBL.isAggregateHU(hu))
+			{
+				multiplier = hu.getM_HU_Item_Parent().getQty();
+				if (multiplier.signum() <= 0)
+				{
+					// this is an "empty" or "stub" aggregate HU. no packing material
+					continue;
+				}
+			}
+			else
+			{
+				multiplier = BigDecimal.ONE;
+			}
+
 			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
 
-			final int count = huItem.getQty().intValueExact();
+			final int count = huItem.getQty().multiply(multiplier).intValueExact();
 			if (count <= 0)
 			{
 				logger.warn("Invalid packing materials count for {}. Skip considering it.", huItem);

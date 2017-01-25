@@ -510,9 +510,9 @@ public abstract class AbstractHUIterator implements IHUIterator
 		}
 
 		@Override
-		public final Result afterIterate(final I_M_HU node)
+		public final Result afterIterate(final I_M_HU hu)
 		{
-			return getActiveListener().afterHU(node);
+			return getActiveListener().afterHU(hu);
 		}
 
 		@Override

@@ -260,7 +260,7 @@ public class ReceiptScheduleHUGenerator
 	{
 		// needs to be threadInherited because we run in out own little trx and everything created from the request shall be committed.
 		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHUContext().getTrxName()),
-				"The trxName of the given request's HUContext needs to be {}, but is request.getHUContext().getTrxName()",
+				"The trxName of the given request's HUContext needs to be {}, but is {}",
 				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
 
 		final List<I_M_HU> result = new ArrayList<I_M_HU>();

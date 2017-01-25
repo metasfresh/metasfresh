@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,7 @@ import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -73,6 +74,28 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  */
 public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector<I_M_InOutLine>
 {
+	private static boolean deactivatedForTesting;
+
+	/**
+	 * Non thread-safe method to temporarily disable this collector.
+	 * Background: this collector assumes that the HUs it deals with have a {@code M_Locator} and further, that there is a distribution network in place.
+	 * For many tests above the unit level, this is still overkill.
+	 * 
+	 * @return
+	 */
+	public static IAutoCloseable deactivateForTesting()
+	{
+		deactivatedForTesting = true;
+		return new IAutoCloseable()
+		{
+			@Override
+			public void close()
+			{
+				deactivatedForTesting = false;
+			}
+		};
+	}
+
 	//
 	// Services
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -181,7 +204,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final String huUnitTypeOverride,
 			final I_M_InOutLine source)
 	{
-		//
+		if (deactivatedForTesting)
+		{
+			return false;
+		}
+
 		// Make sure we are dealing with an existing handling unit
 		if (hu == null)
 		{
@@ -219,7 +246,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		//
 		// Iterate all M_HU_PackingMaterials and add their products
-		for (final IPair<I_M_HU_PackingMaterial, Integer> huPackingMaterialAndQty : handlingUnitsDAO.retrievePackingMaterialAndQtys(hu))
+		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterialsAndQtys = handlingUnitsDAO.retrievePackingMaterialAndQtys(hu);
+		for (final IPair<I_M_HU_PackingMaterial, Integer> huPackingMaterialAndQty : packingMaterialsAndQtys)
 		{
 			final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialAndQty.getLeft();
 			final int productId = huPackingMaterial.getM_Product_ID();
@@ -262,7 +290,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		else if (hu.isCompressedVHU())
 		{
 			// gh #640: 'hu' is a "bag" of homogenous HUs. Take into account the number of TUs it represents.
-			if(remove)
+			if (remove)
 			{
 				countTUs -= hu.getCompressed_TUsCount();
 			}
@@ -383,6 +411,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		final I_M_Locator locator = hu == null ? null : hu.getM_Locator();
+		
+		// hu without locator is OK sometimes (e.g. in InOutProducerFromReceiptScheduleHUTest), so we can't assert this here.
+		//Check.errorIf(hu != null && hu.getM_Locator() == null, "The given hu has no locator; hu={}", hu);
+		
 		final HUPackingMaterialDocumentLineCandidate candidate = new HUPackingMaterialDocumentLineCandidate(product, material_Tracking, locator);
 		return candidate;
 	}
@@ -478,8 +510,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addHURecursively(final I_M_HU hu,
-			final I_M_InOutLine source)
+	public void addHURecursively(final I_M_HU hu, final I_M_InOutLine source)
 	{
 		addOrRemoveHURecursively(hu, source, false);
 	}

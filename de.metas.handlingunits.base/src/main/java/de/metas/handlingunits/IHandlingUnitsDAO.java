@@ -48,6 +48,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 {
 	/**
 	 * Save the given {@code hu}
+	 * 
 	 * @param hu
 	 */
 	void saveHU(I_M_HU hu);
@@ -252,11 +253,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	IHUQueryBuilder createHUQueryBuilder();
 
 	/**
-	 * Retrieve the packing materials of a given HU.
+	 * Retrieve the packing materials of the given {@code hu}.<br>
+	 * Also takes into account the case that the given {@code hu} is an aggregate VHU (gh #460).
 	 *
 	 * NOTE
 	 * <ul>
-	 * <li>this method will return packing material(s) of this HU only and not for it's included HUs.</li>
+	 * <li>this method will return packing material(s) of this HU only and not for its included HUs.</li>
 	 * </ul>
 	 *
 	 * @param hu
