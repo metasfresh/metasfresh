@@ -43,21 +43,27 @@ class NavigationTree extends Component {
         dispatch(getWindowBreadcrumb("143"));
     }
 
-    getData = () => {
+    getData = (callback) => {
         const {dispatch} = this.props;
         dispatch(rootRequest()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
-                noResults: ""
-            }))
+                noResults: "",
+                query: ""
+            }), () => {
+                callback();
+            })
         }).catch((err) => {
             if(err.response && err.response.status === 404) {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: [],
                     rootResults: {},
-                    noResults: "There are no results"
-                }))
+                    noResults: "There are no results",
+                    query: ""
+                }), () => {
+                    callback();
+                })
             }
         });
     }
@@ -93,30 +99,18 @@ class NavigationTree extends Component {
                 }
             });
         }else{
-            this.setState(Object.assign({}, this.state, {
-                rootResults: {},
-                query: "",
-                queriedResults: [],
-                noResults: ""
-            }), ()=> {
-                document.getElementById('search-input').value=""
-            });
+            this.getData(this.clearValue);
         }
 
     }
 
+    clearValue = () => {
+        document.getElementById('search-input').value=""
+    }
+
     handleClear = (e) => {
         e.preventDefault();
-        const {rootResults} = this.state;
-
-        this.setState(Object.assign({}, this.state, {
-            rootResults: {},
-            query: "",
-            queriedResults: [],
-            noResults: ""
-        }), ()=> {
-            document.getElementById('search-input').value=""
-        });
+        this.getData(this.clearValue);
     }
 
     renderTree = (res) => {
