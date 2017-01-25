@@ -31,7 +31,6 @@ class NavigationTree extends Component {
             },
             query: "",
             queriedResults: [],
-            noResults: "",
             deepNode: null
         };
     }
@@ -49,7 +48,6 @@ class NavigationTree extends Component {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
-                noResults: "",
                 query: ""
             }), () => {
                 callback();
@@ -59,7 +57,6 @@ class NavigationTree extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: [],
                     rootResults: {},
-                    noResults: "There are no results",
                     query: ""
                 }), () => {
                     callback();
@@ -86,15 +83,13 @@ class NavigationTree extends Component {
             dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
 
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: response.data.children,
-                    noResults: ""
+                    queriedResults: response.data.children
                 }))
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
                     this.setState(Object.assign({}, this.state, {
                         queriedResults: [],
-                        rootResults: {},
-                        noResults: "There are no results"
+                        rootResults: {}
                     }))
                 }
             });
@@ -115,15 +110,21 @@ class NavigationTree extends Component {
 
     renderTree = (res) => {
       const {dispatch} = this.props;
-      const {rootResults, queriedResults, noResults} = this.state;
+      const {rootResults, queriedResults, query} = this.state;
 
       return(
           <div>
               <div className="search-wrapper">
                   <div className="input-flex input-primary">
-                      <i className="input-icon meta-icon-preview"/>
-                          <DebounceInput debounceTimeout={250} type="text" id="search-input" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
-                          {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                    <i className="input-icon meta-icon-preview"/>
+                    <DebounceInput 
+                        debounceTimeout={250} 
+                        type="text" id="search-input" 
+                        className="input-field" 
+                        placeholder="Type phrase here" 
+                        onChange={e => this.handleQuery(e) }
+                    />
+                    {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
                   </div>
               </div>
               <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
@@ -139,8 +140,8 @@ class NavigationTree extends Component {
                             {...subitem}
                         />
                     )}
-                    { queriedResults.length === 0 &&
-                        <span>{noResults}</span>
+                    { queriedResults.length === 0 && query!="" &&
+                        <span>There are no results</span>
                     }
               </div>
           </div>

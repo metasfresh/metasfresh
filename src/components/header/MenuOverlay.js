@@ -22,8 +22,7 @@ class MenuOverlay extends Component {
             deepNode: null,
             deepSubNode: null,
             path: "",
-            subPath: "",
-            noResults: ""
+            subPath: ""
         };
     }
 
@@ -47,14 +46,12 @@ class MenuOverlay extends Component {
             }));
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: flattenLastElem(response.data),
-                    noResults: ""
+                    queriedResults: flattenLastElem(response.data)
                 }))
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
                     this.setState(Object.assign({}, this.state, {
-                        queriedResults: [],
-                        noResults: "There are no results"
+                        queriedResults: []
                     }))
                 }
             });
@@ -62,8 +59,7 @@ class MenuOverlay extends Component {
 
             this.setState(Object.assign({}, this.state, {
                 query: "",
-                queriedResults: [],
-                noResults: ""
+                queriedResults: []
             }), ()=> {
                 document.getElementById('search-input-query').value=""
             });
@@ -74,8 +70,7 @@ class MenuOverlay extends Component {
         e.preventDefault();
         this.setState(Object.assign({}, this.state, {
             query: "",
-            queriedResults: [],
-            noResults: ""
+            queriedResults: []
         }), ()=> {
             document.getElementById('search-input-query').value=""
         });
@@ -270,7 +265,7 @@ class MenuOverlay extends Component {
     }
 
     render() {
-        const {queriedResults, deepNode, deepSubNode, subPath, query, noResults} = this.state;
+        const {queriedResults, deepNode, deepSubNode, subPath, query} = this.state;
         const {
             dispatch, nodeId, node, siteName, index, handleMenuOverlay, openModal
         } = this.props;
@@ -330,8 +325,8 @@ class MenuOverlay extends Component {
                                             {...result}
                                         />
                                     )}
-                                    { queriedResults.length === 0 &&
-                                        <span>{noResults}</span>
+                                    { queriedResults.length === 0 && query!="" &&
+                                        <span>There are no results</span>
                                     }
                                 </div>
                             </div>
