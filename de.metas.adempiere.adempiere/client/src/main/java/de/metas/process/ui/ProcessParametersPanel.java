@@ -439,12 +439,11 @@ public class ProcessParametersPanel extends CPanel // implements IProcessParamet
 			return;
 		}
 
-		for (int i = 0; i <= fieldEditors.size(); i++)
+		for (final VEditor fieldEditor : fieldEditors)
 		{
-			final VEditor editor = fieldEditors.get(i);
-			final boolean focusGained = getComponent(editor).requestFocusInWindow();
-			
-			if(focusGained)
+			final boolean focusGained = getComponent(fieldEditor).requestFocusInWindow();
+
+			if (focusGained)
 			{
 				return;
 			}
