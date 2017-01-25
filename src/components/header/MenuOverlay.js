@@ -22,7 +22,8 @@ class MenuOverlay extends Component {
             deepNode: null,
             deepSubNode: null,
             path: "",
-            subPath: ""
+            subPath: "",
+            noResults: ""
         };
     }
 
@@ -46,18 +47,23 @@ class MenuOverlay extends Component {
             }));
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: flattenLastElem(response.data)
+                    queriedResults: flattenLastElem(response.data),
+                    noResults: ""
                 }))
-            }).catch(err => {
-                this.setState(Object.assign({}, this.state, {
-                    queriedResults: []
-                }))
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.setState(Object.assign({}, this.state, {
+                        queriedResults: [],
+                        noResults: "There are no results"
+                    }))
+                }
             });
         }else{
 
             this.setState(Object.assign({}, this.state, {
                 query: "",
-                queriedResults: []
+                queriedResults: [],
+                noResults: ""
             }), ()=> {
                 document.getElementById('search-input-query').value=""
             });
@@ -68,7 +74,8 @@ class MenuOverlay extends Component {
         e.preventDefault();
         this.setState(Object.assign({}, this.state, {
             query: "",
-            queriedResults: []
+            queriedResults: [],
+            noResults: ""
         }), ()=> {
             document.getElementById('search-input-query').value=""
         });
@@ -263,7 +270,7 @@ class MenuOverlay extends Component {
     }
 
     render() {
-        const {queriedResults, deepNode, deepSubNode, subPath, query} = this.state;
+        const {queriedResults, deepNode, deepSubNode, subPath, query, noResults} = this.state;
         const {
             dispatch, nodeId, node, siteName, index, handleMenuOverlay, openModal
         } = this.props;
@@ -323,6 +330,9 @@ class MenuOverlay extends Component {
                                             {...result}
                                         />
                                     )}
+                                    { queriedResults.length === 0 &&
+                                        <span>{noResults}</span>
+                                    }
                                 </div>
                             </div>
                         </div> :

@@ -26,12 +26,13 @@ class NavigationTree extends Component {
         super(props);
         this.state = {
             rootResults: {
-              caption: "",
-              children: [],
-              query: "",
-              queriedResults: []
-          },
-          deepNode: null
+                caption: "",
+                children: []
+            },
+            query: "",
+            queriedResults: [],
+            noResults: "",
+            deepNode: null
         };
     }
 
@@ -39,7 +40,6 @@ class NavigationTree extends Component {
         const {dispatch, windowType} = this.props;
 
         this.getData();
-        // dispatch(getRootMenu());
         dispatch(getWindowBreadcrumb("143"));
     }
 
@@ -48,11 +48,18 @@ class NavigationTree extends Component {
         dispatch(rootRequest()).then(response => {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
-                queriedResults: response.data.children
+                queriedResults: response.data.children,
+                noResults: ""
             }))
+        }).catch((err) => {
+            if(err.response && err.response.status === 404) {
+                this.setState(Object.assign({}, this.state, {
+                    queriedResults: [],
+                    rootResults: {},
+                    noResults: "There are no results"
+                }))
+            }
         });
-
-
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
@@ -73,13 +80,24 @@ class NavigationTree extends Component {
             dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
 
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: response.data.children
+                    queriedResults: response.data.children,
+                    noResults: ""
                 }))
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.setState(Object.assign({}, this.state, {
+                        queriedResults: [],
+                        rootResults: {},
+                        noResults: "There are no results"
+                    }))
+                }
             });
         }else{
             this.setState(Object.assign({}, this.state, {
+                rootResults: {},
                 query: "",
-                queriedResults: rootResults.children
+                queriedResults: [],
+                noResults: ""
             }), ()=> {
                 document.getElementById('search-input').value=""
             });
@@ -92,8 +110,10 @@ class NavigationTree extends Component {
         const {rootResults} = this.state;
 
         this.setState(Object.assign({}, this.state, {
+            rootResults: {},
             query: "",
-            queriedResults: rootResults.children
+            queriedResults: [],
+            noResults: ""
         }), ()=> {
             document.getElementById('search-input').value=""
         });
@@ -101,7 +121,7 @@ class NavigationTree extends Component {
 
     renderTree = (res) => {
       const {dispatch} = this.props;
-      const {rootResults, queriedResults} = this.state;
+      const {rootResults, queriedResults, noResults} = this.state;
 
       return(
           <div>
@@ -114,17 +134,20 @@ class NavigationTree extends Component {
               </div>
               <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
               <div className="column-wrapper">
-                  {queriedResults && queriedResults.map((subitem, subindex) =>
-                      <MenuOverlayContainer
-                          key={subindex}
-                          printChildren={true}
-                          handleClickOnFolder={this.handleDeeper}
-                          handleRedirect={this.handleRedirect}
-                          handleNewRedirect={this.handleNewRedirect}
-                          openModal={this.openModal}
-                          {...subitem}
-                      />
-                  )}
+                    {queriedResults && queriedResults.map((subitem, subindex) =>
+                        <MenuOverlayContainer
+                            key={subindex}
+                            printChildren={true}
+                            handleClickOnFolder={this.handleDeeper}
+                            handleRedirect={this.handleRedirect}
+                            handleNewRedirect={this.handleNewRedirect}
+                            openModal={this.openModal}
+                            {...subitem}
+                        />
+                    )}
+                    { queriedResults.length === 0 &&
+                        <span>{noResults}</span>
+                    }
               </div>
           </div>
       )
