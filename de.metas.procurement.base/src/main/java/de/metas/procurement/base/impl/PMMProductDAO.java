@@ -106,7 +106,7 @@ public class PMMProductDAO implements IPMMProductDAO
 	public List<I_PMM_Product> retrieveForDateAndProduct(final Date date, final int productId, final int partnerId, final int huPIPId)
 	{
 		return retrievePMMProductsValidOnDateQuery(date)
-				.addInArrayFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) // for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
+				.addInArrayOrAllFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) // for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, productId)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, huPIPId)
 				.orderBy()

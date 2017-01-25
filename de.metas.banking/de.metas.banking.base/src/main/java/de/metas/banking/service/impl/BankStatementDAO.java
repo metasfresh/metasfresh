@@ -149,7 +149,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		return bankStatementQuery.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);

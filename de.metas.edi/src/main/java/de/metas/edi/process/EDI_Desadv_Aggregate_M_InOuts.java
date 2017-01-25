@@ -89,7 +89,7 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 
 		.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx, true)
 
-		.addInArrayFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus,
+		.addInArrayOrAllFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus,
 				DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 
 		.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)

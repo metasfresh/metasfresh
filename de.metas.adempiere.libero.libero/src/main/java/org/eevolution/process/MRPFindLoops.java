@@ -180,7 +180,7 @@ public class MRPFindLoops extends JavaProcess
 	{
 		final I_PP_Product_Planning productPlanning = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class, getCtx(), getTrxName())
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, p_AD_Org_ID, 0, null)
+				.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, p_AD_Org_ID, 0, null)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan, true)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productID)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceID)

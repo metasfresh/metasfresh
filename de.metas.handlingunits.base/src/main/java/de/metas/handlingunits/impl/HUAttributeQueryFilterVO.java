@@ -268,7 +268,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
-				.addInArrayFilter(getHUAttributeValueColumn(), getValuesAndSubstitutes())
+				.addInArrayOrAllFilter(getHUAttributeValueColumn(), getValuesAndSubstitutes())
 				.create();
 
 		huFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
