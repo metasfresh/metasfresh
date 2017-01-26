@@ -58,6 +58,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.product.acct.api.IProductAcctDAO;
 import mockit.Expectations;
@@ -125,6 +126,7 @@ public abstract class ReceiptScheduleTestBase
 
 		// this is already done by HUTestHelper.init()
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
+		ReceiptScheduleValidator.registerRSAggregationKeyDependencies(); // also, for our tests, we just need this, and not the whole MI!
 
 		receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
