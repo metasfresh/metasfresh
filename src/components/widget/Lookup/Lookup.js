@@ -197,10 +197,16 @@ class Lookup extends Component {
         dispatch(openModal("Add new", windowType, "window"));
     }
 
-    handleBlur = () => {
+    handleBlur = (callback) => {
+        
         this.setState(Object.assign({}, this.state, {
             isOpen: false
-        }))
+        }), () => {
+            if(callback) {
+                callback();
+            }
+            
+        })
     }
 
     handleFocus = () => {
@@ -251,6 +257,17 @@ class Lookup extends Component {
         }
     }
 
+    clearState = () => {
+        this.setState(Object.assign({}, this.state, {
+            list: [],
+            isInputEmpty: true,
+            selected: null,
+            model: null,
+            property: "",
+            loading: false
+        }));
+    }
+
     handleClear = (e) => {
         const {onChange, properties, defaultValue, subentity} = this.props;
         e && e.preventDefault();
@@ -259,37 +276,8 @@ class Lookup extends Component {
         properties.map(item => {
             onChange(item.field, "");
         });
-
-        this.setState(Object.assign({}, this.state, {
-            list: [],
-            isInputEmpty: true,
-            selected: null,
-            model: null,
-            property: "",
-            loading: false
-        }), ()=> {
-                if(subentity) {
-                    this.inputSearch.value = "";
-
-                    this.setState(Object.assign({}, this.state, {
-                        isOpen: false
-                    }), () => {
-                        if(subentity) {
-                            this.setState(Object.assign({}, this.state, {
-                                list: [],
-                                isInputEmpty: true,
-                                selected: null,
-                                model: null,
-                                property: "",
-                                loading: false
-                            }));
-                        }
-                    })
-                }
-
-                this.handleBlur();
-        });
-
+        
+        this.handleBlur(this.clearState);
     }
 
     handleKeyDown = (e) => {
