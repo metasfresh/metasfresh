@@ -1007,10 +1007,17 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	{
 		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
 
-		final I_DIM_Dimension_Spec dimBarcodeAttributes = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName, Env.getCtx(), ITrx.TRXNAME_None);
+		final I_DIM_Dimension_Spec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName, Env.getCtx(), ITrx.TRXNAME_None);
 
+		
+		if(barcodeDimSpec == null)
+		{
+			// no barcode dimension spec. Nothing to do
+			return;
+		}
+		
 		final List<I_M_Attribute> barcodeAttributes = Services.get(IDimensionSpecAttributeDAO.class)
-				.retrieveAttributesForDimensionSpec(dimBarcodeAttributes);
+				.retrieveAttributesForDimensionSpec(barcodeDimSpec);
 
 		for (final I_M_Attribute attribute : barcodeAttributes)
 		{
