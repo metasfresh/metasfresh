@@ -108,28 +108,32 @@ class Window extends Component {
                             ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
                         }
                     >
-                        {this.renderElementsLine(elementsLine, tabIndex)}
+                        {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
                     </div>
             )
         })
     }
 
-    renderElementsLine = (elementsLine, tabIndex) => {
+    renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
         return elementsLine.map((elem, id)=> {
             const {elements} = elem;
+            const isFocused = shouldBeFocused && (id === 0);
             return (
                 elements && elements.length > 0 &&
                     <div className="elements-line" key={"line" + id}>
-                        {this.renderElements(elements, tabIndex)}
+                        {this.renderElements(elements, tabIndex, isFocused)}
                     </div>
             )
         })
     }
 
-    renderElements = (elements, tabIndex) => {
+    renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
         const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+
         return elements.map((elem, id)=> {
+            
+            const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, "ID").value;
             return (
@@ -145,6 +149,7 @@ class Window extends Component {
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
+                    autoFocus={autoFocus}
                     {...elem}
                 />
             )

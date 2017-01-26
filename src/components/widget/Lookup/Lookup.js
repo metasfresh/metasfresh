@@ -128,7 +128,6 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
-
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.map((item) =>
@@ -198,10 +197,16 @@ class Lookup extends Component {
         dispatch(openModal("Add new", windowType, "window"));
     }
 
-    handleBlur = () => {
+    handleBlur = (callback) => {
+        
         this.setState(Object.assign({}, this.state, {
             isOpen: false
-        }))
+        }), () => {
+            if(callback) {
+                callback();
+            }
+            
+        })
     }
 
     handleFocus = () => {
@@ -252,15 +257,7 @@ class Lookup extends Component {
         }
     }
 
-    handleClear = (e) => {
-        const {onChange, properties, defaultValue} = this.props;
-        e && e.preventDefault();
-        this.inputSearch.value = "";
-
-        properties.map(item => {
-            onChange(item.field, "");
-        });
-
+    clearState = () => {
         this.setState(Object.assign({}, this.state, {
             list: [],
             isInputEmpty: true,
@@ -269,8 +266,18 @@ class Lookup extends Component {
             property: "",
             loading: false
         }));
+    }
 
-        this.handleBlur();
+    handleClear = (e) => {
+        const {onChange, properties, defaultValue, subentity} = this.props;
+        e && e.preventDefault();
+        this.inputSearch.value = "";
+
+        properties.map(item => {
+            onChange(item.field, "");
+        });
+        
+        this.handleBlur(this.clearState);
     }
 
     handleKeyDown = (e) => {

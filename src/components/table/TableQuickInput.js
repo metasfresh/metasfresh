@@ -101,7 +101,7 @@ class TableQuickInput extends Component {
         const {id} = this.state;
 
         dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id)).then(response => {
-            response.data && response.data[0].fields.map(item => {
+            response.data[0] && response.data[0].fields.map(item => {
                 this.setState(Object.assign({}, this.state, {
                     data: this.state.data.map(field => {
                         if(field.field === item.field){
@@ -142,7 +142,7 @@ class TableQuickInput extends Component {
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
                     type="secondary"
-                    autoFocus={id === editedField}
+                    autoFocus={id === 0}
                 />)
             })
         }
