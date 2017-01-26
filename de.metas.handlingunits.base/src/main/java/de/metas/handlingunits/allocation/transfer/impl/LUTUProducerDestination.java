@@ -54,6 +54,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.util.HUByIdComparator;
 
 public class LUTUProducerDestination extends AbstractProducerDestination implements ILUTUProducerAllocationDestination
@@ -330,22 +331,22 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 		final I_M_HU_PI_Item luItemPI = getLUItemPI();
 		Check.assumeNotNull(luItemPI, "Member luItemPI not null");
 
-		// at this point in time, luHU might not even haven an item with itemType=HandingUnit, but is will have one with itemType=HUAggregate,
-		// and in that case, the "HUAggregate" one will be returned. This means that the tuProducer will load to an aggregate VHU that represents a number of TUs 
+		// at this point in time, luHU might not even have an item with itemType=HandingUnit, but it will have one with itemType=HUAggregate,
+		// and in that case, the "HUAggregate" one will be returned. This means that the tuProducer will load to an aggregate VHU that represents a number of TUs
 		final I_M_HU_Item luItem = handlingUnitsDAO.retrieveItem(luHU, luItemPI);
-		Check.assumeNotNull(luItem, "luItem not null");
+		Check.errorIf(luItem == null, "luItem is null for the current luHU and luItemPI; huHU={}; luItemPI={}", luHU, luItemPI);
 
 		tuProducer = createTUProducerDestination(getMaxTUsPerLU_Effective());
 		tuProducer.setParentItem(luItem);
-		
-		// provide not only the item (which might have ItemType=HUAggregate), 
+
+		// provide not only the item (which might have ItemType=HUAggregate),
 		// but also the PI-Item that allows the tuProducer to create a "real" item with itemType=HandlingUnit if it needs one.
 		tuProducer.setParentPIItem(luItemPI);
-		
+
 		// giving the lutu-config to the TU-producer, so it can forward it to the TU-H_HUs it will create
 		// TODO remove
-		//tuProducer.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
-		
+		// tuProducer.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
+
 		luId2tuProducer.put(luId, tuProducer);
 
 		return tuProducer;
@@ -379,6 +380,10 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	public void setLUItemPI(final I_M_HU_PI_Item luItemPI)
 	{
 		assertConfigurable();
+		
+		Check.errorUnless(luItemPI == null/* just a guear against NPE; right now, idk if null should be OK or not */
+				|| X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(luItemPI.getItemType()), "Param 'luItemPI' has to have type=HU; luItemPI={}", luItemPI);
+		
 		this.luItemPI = luItemPI;
 	}
 

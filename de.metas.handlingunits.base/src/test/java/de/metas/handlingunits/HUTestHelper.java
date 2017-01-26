@@ -1674,7 +1674,11 @@ public class HUTestHelper
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
 
 		final HULoader loader = new HULoader(source, lutuProducer);
-
+		
+		// allowing partial loads and unloads because that's interesting cases to test
+		loader.setAllowPartialUnloads(true); 
+		loader.setAllowPartialLoads(true);
+		
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
 
 		loader.load(request); // use context date for now
@@ -2036,6 +2040,7 @@ public class HUTestHelper
 	/**
 	 * Configure and use {@link ITUMergeBuilder} to move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
 	 *
+	 * @param huContext
 	 * @param sourceHUs
 	 * @param targetHU
 	 * @param cuProduct

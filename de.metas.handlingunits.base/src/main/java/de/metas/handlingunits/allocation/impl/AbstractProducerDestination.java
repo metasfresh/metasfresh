@@ -63,7 +63,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.util.HUByIdComparator;
 
 /**
@@ -123,11 +122,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private int aggregatedHUsCount;
 
-	/**
-	 * Similar to {@link #aggregatedHUsCount}, but this counter is reset on each invocation of {@link #loadFinished(IMutableAllocationResult)}.
-	 * Used to set the correct quantity to the aggregate VHU's PM item.
-	 */
-	private int aggregatedHUsCountSinceLoadFinished;
 
 	public AbstractProducerDestination()
 	{
@@ -415,7 +409,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private void incAggregatedHUsCount()
 	{
 		aggregatedHUsCount++;
-		aggregatedHUsCountSinceLoadFinished++;
 	}
 
 	/**
@@ -522,11 +515,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return _createdNonAggregateHUs.size() + aggregatedHUsCount;
 	}
 
-	public final int getCreatedHUsCountSinceLoadFinished()
-	{
-		return aggregatedHUsCountSinceLoadFinished;
-	}
-
 	/**
 	 * ...also uses {@link IHUBuilder} to create the HU and its child-HUs according to the value returned by {@link #getM_HU_PI()}.
 	 */
@@ -575,7 +563,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				if (!handlingUnitsBL.isAggregateHU(currentHU))
 				{
 					final I_M_HU_PI_Version currentHU_PI_Version = currentHU.getM_HU_PI_Version();
-					
+
 					// if we could not allocate to a new not-aggregate HU, so we surely can not allocate to new ones either
 					// throw exception because shall not happen
 					if (developerModeBL.isEnabled())
@@ -590,21 +578,23 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					// throw a nice user friendly error
 					throw new AdempiereException(MSG_QTY_LOAD_ERROR, new Object[] { currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "" });
 				}
-				//destroyCurrentHU(currentHUCursor);
-				//currentHU = null;
+				// destroyCurrentHU(currentHUCursor);
+				// currentHU = null;
+			}
+
+			if (handlingUnitsBL.isAggregateHU(currentHU))
+			{
+				final boolean somethingWasAllocated = !currentResult.isZeroAllocated();
+				if (somethingWasAllocated)
+				{
+					// we need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
+					// note that in the case of IsEmptyHU=true, the qty was already increased when the HU was created
+					incAggregatedHUsCount();
+				}
 			}
 
 			// Make sure current HU is no longer flagged as a new and empty HU
 			DYNATTR_IsEmptyHU.reset(currentHU);
-
-			if (handlingUnitsBL.isAggregateHU(currentHU))
-			{
-				if (!currentResult.isZeroAllocated())
-				{
-					// we need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
-					incAggregatedHUsCount();
-				}
-			}
 
 			if (currentResult.getQtyToAllocate().signum() != 0) // It seems that current HU is fully loaded and there is still stuff left to allocate
 			{
@@ -614,7 +604,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					{
 						// there is something left to allocate, but the loadHU did not want to allocate onto currentHU which is aggregate.
 						// this only happens if the request's qty is less that a full unit of the TUs (e.g. IFCOs) that the aggregated 'currentHU' represent.
-						// to stay in the IFCO-example, we now need to allocate to a partial IFCO.
+						// to stay in the IFCO-example, we now need to allocate to a partial IFCO. In order to do just that, we need to close the current HU.
 						currentHUCursor.closeCurrent();
 					}
 					else
@@ -628,6 +618,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				}
 
 				currentHU = null;
+			}
+			else
+			{
+				if (handlingUnitsBL.isAggregateHU(currentHU) && !isAllowCreateNewHU())
+				{
+					// we were able to allocate it all, but
+					// if currentHU is an aggregate and it's not allowed to represent another one within the same aggregate, 
+					// then we also need to close it here.
+					// Otherwise there would be another loadHU() invocation with would increase the HA item's qty once again (despite not loading anything further).
+					// Note that there is LUTUProducerDestinationTransferTests.testForCorrectItemQtyOnTwoTrxCandidates() just for this case :-)
+					currentHUCursor.closeCurrent();
+				}
 			}
 		}
 
@@ -668,26 +670,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items.
 	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU.
 	 *
-	 * @param result current result (that will be also returned by {@link #load(IAllocationRequest)} method)
+	 * @param result_IGNORED current result (that will be also returned by {@link #load(IAllocationRequest)} method); won't be changed by this method, but maybe by overriding methods.
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void loadFinished(final IMutableAllocationResult result, final IHUContext huContext)
+	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		if (aggregatedHUsCountSinceLoadFinished > 0)
-		{
-			// iterate the packing material items of all aggregate VHUs we created and make sure their qty reflects the number of actual TUs/packagings (e.g. IFCOs) which we represent in the respective aggregate VHU
-			_createdHUs.stream()
-					.filter(hu -> handlingUnitsBL.isAggregateHU(hu))
-					.flatMap(hu -> handlingUnitsDAO.retrieveItems(hu).stream())
-					.filter(item -> X_M_HU_Item.ITEMTYPE_PackingMaterial.equals(handlingUnitsBL.getItemType(item)))
-					.forEach(item -> {
-						item.setQty(item.getQty().add(new BigDecimal(aggregatedHUsCountSinceLoadFinished)));
-						InterfaceWrapperHelper.save(item);
-					});
-		}
-		aggregatedHUsCountSinceLoadFinished = 0;
 
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
 		_createdHUs.forEach(

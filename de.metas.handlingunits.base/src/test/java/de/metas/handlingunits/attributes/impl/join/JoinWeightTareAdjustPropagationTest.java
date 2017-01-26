@@ -67,8 +67,8 @@ public class JoinWeightTareAdjustPropagationTest extends AbstractWeightAttribute
 
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.117", "62.117", "8", "0"));
 
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -91,8 +91,9 @@ public class JoinWeightTareAdjustPropagationTest extends AbstractWeightAttribute
 		//
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
 				newHUWeightsExpectation("92.235", "58.235", "33", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882","3.882","1","0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the 1x10kg IFCO we joined
+				newHUWeightsExpectation("52.589", "46.589", "6", "0"));
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -113,8 +114,11 @@ public class JoinWeightTareAdjustPropagationTest extends AbstractWeightAttribute
 		//
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882","3.882","1","0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the 1x10kg IFCO we joined
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the second 1x10kg IFCO we joined
+				newHUWeightsExpectation("52.589", "46.589", "6", "0") // that's the remainder of the original HU aggregate
+		);
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -135,8 +139,8 @@ public class JoinWeightTareAdjustPropagationTest extends AbstractWeightAttribute
 
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.117", "62.117", "8", "0"));
 
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -160,9 +164,12 @@ public class JoinWeightTareAdjustPropagationTest extends AbstractWeightAttribute
 		//
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
-
+				newHUWeightsExpectation("4.882","3.882","1","0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the 1x10kg IFCO we joined
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the second 1x10kg IFCO we joined
+				newHUWeightsExpectation("52.589", "46.589", "6", "0") // that's the remainder of the original HU aggregate
+		);
+		
 		//
 		// Assert data integrity on TARGET TUs
 		//

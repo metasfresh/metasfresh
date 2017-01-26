@@ -117,7 +117,7 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 	 * </ul>
 	 *
 	 * @param loadingUnit
-	 * @param tuAmountOnLU
+	 * @param tuAmountOnLU set to 0 if you are verifying a top-level TU
 	 * @param luExpectation
 	 * @param tuExpectations
 	 */

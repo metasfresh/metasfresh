@@ -62,8 +62,8 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)

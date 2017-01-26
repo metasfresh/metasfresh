@@ -117,13 +117,15 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 		loadResults.stream().flatMap(result -> result.getTransactions().stream())
 				.filter(trx -> handlingUnitsBL.isAggregateHU(trx.getVHU()))
+				//.filter(trx -> !trx.getQuantity().isZero())
 
 				.peek(trx -> itemId2Trx.put(trx.getVHU().getM_HU_Item_Parent().getM_HU_Item_ID(), trx))
 
 				.map(trx -> trx.getVHU().getM_HU_Item_Parent())
 				.forEach(item -> itemId2AggregateItem.put(item.getM_HU_Item_ID(), item));
 
-		itemId2AggregateItem.values().forEach(item -> updateItemQtyAndSplitIfNeeded(huContext, itemId2Trx, item));
+		itemId2AggregateItem.values()
+				.forEach(item -> updateItemQtyAndSplitIfNeeded(huContext, itemId2Trx, item));
 	}
 
 	private void updateItemQtyAndSplitIfNeeded(final IHUContext huContext, final Map<Integer, IHUTransaction> itemId2Trx, final I_M_HU_Item item)

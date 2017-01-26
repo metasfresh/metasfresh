@@ -201,22 +201,12 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 			}
 			item.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 
-			if (huIsAggregateHU)
+			final BigDecimal qty = piItem.getQty();
+			if (qty.signum() <= 0)
 			{
-				// gh #460: if the HU is an aggregate, then the packing material item's qty can't be determined by the piItem, 
-				// but will be set by the IHUProducerAllocationDestination's loadFinished() implementation.
-				// the value will depend on how many units were aggregated into the respective HU
-				item.setQty(BigDecimal.ZERO);
+				throw new HUPIInvalidConfigurationException("Invalid packing material quantity defined", piItem);
 			}
-			else
-			{
-				final BigDecimal qty = piItem.getQty();
-				if (qty.signum() <= 0)
-				{
-					throw new HUPIInvalidConfigurationException("Invalid packing material quantity defined", piItem);
-				}
-				item.setQty(qty);
-			}
+			item.setQty(qty);
 		}
 		return item;
 	}

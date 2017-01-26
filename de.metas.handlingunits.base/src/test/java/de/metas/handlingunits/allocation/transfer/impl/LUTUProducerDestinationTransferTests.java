@@ -10,8 +10,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.adempiere.util.Services;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
@@ -24,10 +22,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.interfaces.I_M_Warehouse;
 
 /*
  * #%L
@@ -206,7 +204,7 @@ public class LUTUProducerDestinationTransferTests
 			// Validate the palet HU
 			{
 				final Node huPaletXML = HUXmlConverter.toXml(huPalet);
-				// System.out.println("" + HUXmlConverter.toString(huPaletsXML));
+				System.out.println(HUXmlConverter.toString(huPaletXML));
 
 				// loaded 23kg tomatoes into a LU with TUs that can hold 40kg each => expecting one LU with one TU
 				assertThat(huPaletXML, hasXPath("count(/HU-LU_Palet)", Matchers.equalTo("1")));
@@ -367,10 +365,11 @@ public class LUTUProducerDestinationTransferTests
 	 */
 	private void verifyPaletHasEmptyAggregateVHU(final Node huPaletXML)
 	{
+		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA'])", is("1")));
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)", is("1")));
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 		assertThat(huPaletXML, not(hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI']/Storage")));
-		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='0'])", is("1")));
+		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
 	}
 
 	/**
@@ -487,7 +486,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)", is("1")));
 			assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 			assertThat(splitLuXML, not(hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI']/Storage")));
-			assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='0'])", is("1")));
+			assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 
 			// LU LU also contains the partitally filled "real" IFCO
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO)", is("1")));
@@ -654,24 +653,6 @@ public class LUTUProducerDestinationTransferTests
 					data.helper.uomKg);
 			final List<I_M_HU> splitLUs = lutuProducer.getCreatedHUs();
 
-			// //
-			// // now split off one and a half IFCO
-			// final List<I_M_HU> splitLUs = new HUSplitBuilder(data.helper.ctx)
-			// .setHUToSplit(luPalet)
-			// .setCUQty(new BigDecimal("60"))
-			// .setCUUOM(data.helper.uomKg)
-			// // LU
-			// .setLU_M_HU_PI_Item(data.piLU_Item_IFCO)
-			// .setMaxLUToAllocate(new BigDecimal("1"))
-			// // TU
-			// .setTU_M_HU_PI_Item(data.piTU_Item_IFCO)
-			// .setTUPerLU(new BigDecimal("2"))
-			// // CU
-			// .setCUProduct(data.helper.pTomato)
-			// .setCUPerTU(new BigDecimal("40")) // as of now we must specify this, even though the IFCOs normal capacity is also 40
-			// //
-			// .split();
-
 			//
 			// verify the "split target"
 			{
@@ -805,10 +786,10 @@ public class LUTUProducerDestinationTransferTests
 		// verify the destination
 		verifySingleIFCO(HUXmlConverter.toXml(splitTUs.get(0)), "25.000");
 	}
-	
+
 	/**
 	 * Similar to {@link #testTransferFromLUWithPartialTU()}, but in this case, the qty transfered from the source LU exceeds that qty contained in the source LU's partial IFCO.
-	 * Therefor, the partial IFCO shall be empties <b>and</b> and the remaining amount shall be taken from the aggregate HU, which then also needs to be split.
+	 * Therefore, the partial IFCO shall be empties <b>and</b> and the remaining amount shall be taken from the aggregate HU, which then also needs to be split.
 	 */
 	@Test
 	public void testTransferFromLUWithPartialTU2()
@@ -904,7 +885,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='5.000' and @C_UOM_Name='Kg'])", is("1")));
 		}
 	}
-	
+
 	private void testTransferFromLUWithPartialTUVerifyInitialLU(final Node huPaletXML)
 	{
 		// System.out.println(HUXmlConverter.toString(huPaletXML));
@@ -931,5 +912,54 @@ public class LUTUProducerDestinationTransferTests
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='30.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='30.000' and @C_UOM_Name='Kg'])", is("1")));
+	}
+
+	/**
+	 * Sets up the transfer so that there will be 85 unloaded, but on the target side there is just space for 5.
+	 * Then, from the unloader there will be one {@link IHUTransaction} with 5 which will in consequence completely fill the target.
+	 * Then the second {@link IHUTransaction} with with the remaining 80 that were also unloaded will come in.<br>
+	 * This rest verifies that those 80 won't be loaded <b>and</b> that the destination HU's HA item's qty will be 1 (and not two because of the two incoming transactions).
+	 * 
+	 */
+	@Test
+	public void testForCorrectItemQtyOnTwoTrxCandidates()
+	{
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUPI(data.piLU);
+		lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
+		lutuProducer.setTUPI(data.piTU_IFCO);
+
+		// one IFCO can hold 40kg tomatoes, so we will have one "real" IFCO with 5kg
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("85"), data.helper.uomKg);
+
+		// guard: we did not need lutuConfig.
+
+		// verify the palet's initial state
+		final I_M_HU luPalet = lutuProducer.getCreatedHUs().get(0);
+
+		final LUTUProducerDestination transferLutuProducer = new LUTUProducerDestination();
+
+		transferLutuProducer.setLUPI(data.piLU);
+		transferLutuProducer.setLUItemPI(data.piLU_Item_IFCO);
+		transferLutuProducer.setTUPI(data.piTU_IFCO);
+		transferLutuProducer.setMaxLUs(1);
+		transferLutuProducer.setMaxTUsPerLU(1);
+		transferLutuProducer.setCreateTUsForRemainingQty(false);
+		transferLutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5"), data.helper.uomKg);
+
+		data.helper.transferMaterialToNewHUs(ImmutableList.of(luPalet),
+				transferLutuProducer,
+				new BigDecimal("85"),
+				data.helper.pTomato,
+				data.helper.uomKg);
+		final List<I_M_HU> splitLUs = transferLutuProducer.getCreatedHUs();
+
+		assertThat(splitLUs.size(), is(1));
+
+		final Node splitLUsXML = HUXmlConverter.toXml(splitLUs.get(0));
+		// System.out.println(HUXmlConverter.toString(splitLUsXML));
+
+		assertThat(splitLUsXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1'])", is("1")));
+		assertThat(splitLUsXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1']/Storage[@M_Product_Value='Tomato' and @Qty='5.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 }

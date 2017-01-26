@@ -111,7 +111,7 @@ public interface IHUTransaction
 	 * <li>positive: inbound qty
 	 * </ul>
 	 *
-	 * @return absolute Qty/UOM
+	 * @return absolute Qty/UOM. Never return {@code null}.
 	 */
 	Quantity getQuantity();
 

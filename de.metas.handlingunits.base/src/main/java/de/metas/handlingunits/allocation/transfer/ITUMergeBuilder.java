@@ -33,7 +33,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
- * Implementors perform HU merges. In a merger, we load stuff from source HUs to <b>already existing</b> destination HUs.<br>
+ * Implementors perform HU merges. In a merge, we load stuff from source HUs to <b>already existing</b> destination HUs.<br>
  * That the destination HUs already exist is the main different between merge an split and makes merging "simpler" (i.e. we can internally use a {@link HUListAllocationSourceDestination} instead of a {@link ILUTUProducerAllocationDestination}).
  * 
  * @author metas-dev <dev@metasfresh.com>
@@ -47,6 +47,12 @@ public interface ITUMergeBuilder
 
 	ITUMergeBuilder setCUProduct(I_M_Product product);
 
+	/**
+	 * Set the CU quantity to merge from the source HUs
+	 * 
+	 * @param qty
+	 * @return
+	 */
 	ITUMergeBuilder setCUQty(BigDecimal qty);
 
 	ITUMergeBuilder setCUUOM(I_C_UOM uom);

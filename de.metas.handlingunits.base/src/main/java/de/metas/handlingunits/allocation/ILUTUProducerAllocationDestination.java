@@ -101,7 +101,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	I_M_HU_PI_Item getLUItemPI();
 
 	/**
-	 * Sets LU PI's PI Item on which the TU will be included. May be {@code null} for the case that a TU without LU is needed.
+	 * Sets LU PI's PI Item (with ItemType=HU) on which the TU will be included. May be {@code null} for the case that a TU without LU is needed.
 	 *
 	 * @param luItemPI
 	 */
