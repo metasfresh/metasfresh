@@ -24,11 +24,10 @@ package de.metas.device.adempiere;
 
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Attribute;
 import org.adempiere.util.net.IHostIdentifier;
+
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceResponse;
@@ -44,48 +43,29 @@ import de.metas.device.api.IDeviceResponse;
  */
 public interface IDeviceBL extends ISingletonService
 {
-
-	public static final String CFG_DEVICE_PREFIX = "de.metas.device";
-	public static final String CFG_DEVICE_NAME_PREFIX = CFG_DEVICE_PREFIX + ".Name";
-
 	/**
-	 * Returns all device names from ordered by their <code>AD_SysConfig</code> keys.
+	 * Returns the device names of all devices that are assigned to the given <code>hostName</code> (or to <code>0.0.0.0</code>) and the given attribute code.
 	 * 
-	 * @param ctx we use the <code>AD_Client_ID</code> and <code>AD_Org_ID</code> from this ctx.
-	 * @return the list of values from AD_SysConfig, where <code>AD_SysConfig.Name</code> starts with {@value #CFG_DEVICE_NAME_PREFIX}. The values are ordered lexically be the key
+	 * @param attributeCode
+	 * @param host
+	 * @param adClientId
+	 * @param adOrgId
 	 */
-	List<String> getAllDeviceNames(Properties ctx);
+	List<String> getAllDeviceNamesForAttrAndHost(String attributeCode, IHostIdentifier host, int adClientId, int adOrgId);
 
 	/**
-	 * Returns the device names of all devices that are assigned to the given <code>hostName</code> (or to <code>0.0.0.0</code>) and the given attribute's {@link I_M_Attribute#getValue()}.
+	 * Retrieves metasfresh's configuration parameters for the device identified by <code>deviceId</code> and initializes and configures it.
+	 * If there is already a device for the given <code>deviceId</code>, then that device is returned.
 	 * 
-	 * @param attrib
-	 * @param host the name and IP of the client for which we want to list all devices. Note that the code will look for devices assigned to the given host, IP <b>and also</b> for those that are
-	 *            assigned to the IP <code>0.0.0.0</code>.
-	 * @return
+	 * @param deviceId
 	 */
-	List<String> getAllDeviceNamesForAttrAndHost(I_M_Attribute attrib, IHostIdentifier host);
+	IDevice createAndConfigureDeviceOrReturnExisting(DeviceId deviceId);
 
 	/**
-	 * Retrieves ADempiere's config parameters for the device with the given name and initializes and configures it. If there is already a device for the given <code>AD_Client_ID</code>,
-	 * <code>AD_Org_ID</code> (both fromm <code>ctx</code>), <code>deviceName</code> and <code>hostName</code>, then that device is returned.
+	 * Returns all requests that the given device supports for the given <code>attributeDeviceId</code>.
 	 * 
-	 * @param ctx
-	 * @param deviceName
-	 * @param host the name and IP of the client for which we configure the device. Note that the code will first look for config params for the given host name, then for the IP and then (if there are none) fall back to
-	 *            look for params for the IP <code>0.0.0.0</code>.
-	 * @return
-	 */
-	IDevice createAndConfigureDeviceOrReturnExisting(Properties ctx, String deviceName, IHostIdentifier host);
-
-	/**
-	 * Returns all requests that the given device supports for the given <code>attribute</code>.
-	 * 
-	 * @param deviceName
-	 * @param attribute
+	 * @param attributeDeviceId
 	 * @param responseClazz optional, maybe be <code>null</code>. If set, then the result is filtered and only those requests are returned whose response is assignable from this parameter.
-	 * @return
-	 * @see Class#isAssignableFrom(Class)
 	 */
-	<T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(String deviceName, I_M_Attribute attribute, Class<T> responseClazz);
+	<T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(AttributeDeviceId attributeDeviceId, Class<T> responseClazz);
 }
