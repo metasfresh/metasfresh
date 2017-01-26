@@ -15,10 +15,6 @@ class Window extends Component {
     constructor(props){
         super(props);
 
-        this.state = {
-            docId: ''
-        }
-
         if(props.isModal){
             this.tabIndex = {
                 firstColumn: 0,
@@ -32,16 +28,6 @@ class Window extends Component {
                 secondColumn: 3
             }
         }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {docId} = this.state;
-        if(docId !== 'new') {
-            this.setState(Object.assign({}, this.state, {
-                docId: this.props.docId
-            }));
-        }
-        
     }
 
     renderTabs = (tabs) => {
@@ -144,11 +130,10 @@ class Window extends Component {
     renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
         const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
-        const {docId} = this.state;
 
         return elements.map((elem, id)=> {
             
-            const autoFocus = isFocused && docId === "new" && (id === 0);
+            const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, "ID").value;
             return (
