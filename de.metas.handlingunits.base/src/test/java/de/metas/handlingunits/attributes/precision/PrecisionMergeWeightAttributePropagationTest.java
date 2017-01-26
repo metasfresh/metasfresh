@@ -13,15 +13,14 @@ package de.metas.handlingunits.attributes.precision;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -35,14 +34,18 @@ import org.junit.Test;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
+import de.metas.handlingunits.attributes.impl.split.SplitWeightAttributePropagationTest;
+import de.metas.handlingunits.attributes.impl.split.SplitWeightTareAdjustPropagationTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 
 /**
+ * 
  * <i>Test detailed propagation with ZERO margin of error (without the allowed single 0.01 margin).</i><br>
  * <ul>
  * <li>Tests here are mostly the same ones as for HU Merge at this current time, but are not strictly related to it.</li>
  * <li>Reasoning is that all Merge tests use the other operations too.</li>
+ * <li>Tests usually go by first creating HUs, then splitting off stuff and then merging it again. therefore, if tests fail, it makes sense to first check if {@link SplitWeightTareAdjustPropagationTest} and {@link SplitWeightAttributePropagationTest} are green.</li>
  * </ul>
  * NOTE: Tests propagation WITH TareAdjust CONSTANT ZERO.
  *
@@ -72,8 +75,8 @@ public class PrecisionMergeWeightAttributePropagationTest extends AbstractWeight
 		final I_M_HU loadingUnit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)

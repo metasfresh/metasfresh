@@ -37,12 +37,12 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 /**
  * Instances of this interface can be used to perform HU split. A split means that a HU is distributed on two new HUs.
- * The original HU is destroyed in the process.
+ * The if the source HU is empty after the transfer, it is destroyed in the process.
  *
  * Use the {@link HUSplitBuilder} constructor to get an instance.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
+ * @see ITUMergeBuilder
  */
 public interface IHUSplitBuilder
 {

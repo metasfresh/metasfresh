@@ -2034,7 +2034,7 @@ public class HUTestHelper
 	}
 
 	/**
-	 * Move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
+	 * Configure and use {@link ITUMergeBuilder} to move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
 	 *
 	 * @param sourceHUs
 	 * @param targetHU

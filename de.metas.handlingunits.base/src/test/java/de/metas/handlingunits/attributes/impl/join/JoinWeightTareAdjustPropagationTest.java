@@ -34,10 +34,16 @@ import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
- * NOTE: Tests propagation WITH TareAdjsut VARIABLE.
+ * NOTE: Tests propagation WITH TareAdjust VARIABLE.
  *
  * Test <i>propagation</i> of the <code>Weight</code> attributes (Gross, Net, Tare, Tare Adjust) and their behavior together.<br>
  * Test <i>HU operations</i> (i.e split, join, merge) and how these attributes are handled/re-propagated together.
+ * 
+ * Theses tests generally go as follows:
+ * <li>create HU(s)
+ * <li>splitt of stuff
+ * <li>now do the join which we want to verify here
+ * <li>verify
  *
  * @author al
  */

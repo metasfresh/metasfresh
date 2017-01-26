@@ -37,7 +37,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 
 /**
- * Asserts correct behaviour of NET Weight when adjusting ReceiptSchedule Quantity
+ * Asserts correct behavior of NET Weight when adjusting ReceiptSchedule Quantity
  *
  * @author al
  */

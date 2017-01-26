@@ -59,9 +59,10 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		final I_M_HU loadingUnit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.117", "62.117", "8", "0"));
 
+		// split off 2x10kg IFCOs
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
 				materialItemTomato_10, // TU item x 10
@@ -76,19 +77,19 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		// Simulate - take off one of the TUKeys to bind it to the new LU
 		final I_M_HU tradingUnitToJoin1 = splitTradingUnits.remove(1);
 
+		// join 1x10kg IFCO
 		helper.joinHUs(huContext, loadingUnit, tradingUnitToJoin1);
 
 		//
-		// Assert data integrity on SOURCE LU
-		//
+		// Assert data integrity on loadingUnit after the join
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
 				newHUWeightsExpectation("91.235", "58.235", "33", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882","3.882","1","0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the 1x10kg IFCO we joined
+				newHUWeightsExpectation("52.589", "46.589", "6", "0"));
 
 		//
-		// Assert data integrity on TARGET TUs
-		//
+		// check out the HU which we just joined
 		Assert.assertEquals("Invalid amount of remaining TUs after join", 1, splitTradingUnits.size());
 		final I_M_HU splitTU1 = splitTradingUnits.get(0);
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
@@ -98,15 +99,18 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		// Simulate - take off one of the TUKeys to bind it to the new LU
 		final I_M_HU tradingUnitToJoin2 = splitTradingUnits.remove(0);
 
+		// join another 1x10kg
 		helper.joinHUs(huContext, loadingUnit, tradingUnitToJoin2);
 
 		//
-		// Assert data integrity on SOURCE LU
-		//
+		// Assert data integrity on loadingUnit after the 2nd join
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882","3.882","1","0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the 1x10kg IFCO we joined
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the second 1x10kg IFCO we joined
+				newHUWeightsExpectation("52.589", "46.589", "6", "0") // that's the remainder of the original HU aggregate
+				);
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -125,8 +129,8 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		final I_M_HU loadingUnit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.117", "62.117", "8", "0"));
 
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -146,12 +150,14 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		helper.joinHUs(huContext, loadingUnit, tradingUnitToJoin1, tradingUnitToJoin2);
 
 		//
-		// Assert data integrity on SOURCE LU
-		//
+		// Assert data integrity on loadingUnit after the join
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882","3.882","1","0"),
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the 1x10kg IFCO we joined
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // that's the second 1x10kg IFCO we joined
+				newHUWeightsExpectation("52.589", "46.589", "6", "0") // that's the remainder of the original HU aggregate
+				);
 
 		//
 		// Assert data integrity on TARGET TUs

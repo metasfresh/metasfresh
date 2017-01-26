@@ -30,13 +30,11 @@ import java.util.List;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.TrxRunnable;
 import org.junit.Assert;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -65,20 +63,50 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	protected static final BigDecimal CU_QTY_46 = BigDecimal.valueOf(46);
 
 	protected I_M_HU_PI huDefPalet;
+	
+	/**
+	 * Included-HU item to link {@link #huDefIFCO_10} with {@link #huDefPalet}. 88 of those IFCOs fit on one palet.
+	 */
+
 	protected I_M_HU_PI_Item huItemIFCO_10;
 	protected I_M_HU_PI_Item huItemIFCO_5;
+
+	/**
+	 * Included-HU item to link {@link #huDefIFCO_2} with {@link #huDefPalet}. 88 of those  IFCOs fit on one palet.
+	 */
 	protected I_M_HU_PI_Item huItemIFCO_2;
 
+	/**
+	 * PI for IFCO, one of these IFCOs can hold 10kg tomato
+	 */
 	protected I_M_HU_PI huDefIFCO_10;
 	protected I_M_HU_PI_Item materialItemTomato_10;
+	
+	/**
+	 * HU PI Item that sais that 10kg of tomato fit onto one {@link #huDefIFCO_10}.
+	 */
 	protected I_M_HU_PI_Item_Product materialItemProductTomato_10;
 
+	/**
+	 * PI for IFCO, one of these IFCOs can hold 5kg tomato
+	 */
 	protected I_M_HU_PI huDefIFCO_5;
 	protected I_M_HU_PI_Item materialItemTomato_5;
+	
+	/**
+	 * HU PI Item that sais that 5kg of tomato fit onto one {@link #huDefIFCO_5}.
+	 */
 	protected I_M_HU_PI_Item_Product materialItemProductTomato_5;
 
+	/**
+	 * PI for IFCO, one of these IFCOs can hold 2kg tomato
+	 */
 	protected I_M_HU_PI huDefIFCO_2;
 	protected I_M_HU_PI_Item materialItemTomato_2;
+
+	/**
+	 * HU PI Item that sais that 2kg of tomato fit onto one {@link #huDefIFCO_2}.
+	 */
 	protected I_M_HU_PI_Item_Product materialItemProductTomato_2;
 
 	protected I_M_HU_PI huDefPaloxe_430;
@@ -100,7 +128,8 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	{
 		//
 		// Prepare context
-		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
+		// final String trxName = helper.trxName; // use the helper's thread-inherited trxName
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		huContext = helper.createMutableHUContextForProcessing(trxName);
 		huStorageFactory = huContext.getHUStorageFactory();
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -202,15 +231,15 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		//
 		// Create and destroy instances only with an I_M_Transaction
 		final List<I_M_HU> loadingUnits = new ArrayList<>();
-//		Services.get(ITrxManager.class).run(new TrxRunnable()
-//		{
-//			@Override
-//			public void run(String localTrxName) throws Exception
-//			{
-				// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
-				loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
-//			}
-//		});
+		// Services.get(ITrxManager.class).run(new TrxRunnable()
+		// {
+		// @Override
+		// public void run(String localTrxName) throws Exception
+		// {
+		// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+		loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
+		// }
+		// });
 
 		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
 		final I_M_HU loadingUnit = loadingUnits.get(0);
@@ -357,21 +386,21 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final I_C_UOM cuUOM = getCUUOM();
 
 		final List<I_M_HU> loadingUnits = new ArrayList<>();
-//		Services.get(ITrxManager.class).run(new TrxRunnable()
-//		{
-//			@Override
-//			public void run(String localTrxName) throws Exception
-//			{
-//				final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
-				loadingUnits.addAll(
-						helper.splitHUs(
-								huContext,
-								luToSplit,
-								cuProduct, cuQty, cuUOM,
-								cuPerTU, tuPerLU, maxLUToAllocate,
-								tuPIItem, luPIItem));
-//			}
-//		});
+		// Services.get(ITrxManager.class).run(new TrxRunnable()
+		// {
+		// @Override
+		// public void run(String localTrxName) throws Exception
+		// {
+		// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+		loadingUnits.addAll(
+				helper.splitHUs(
+						huContext,
+						luToSplit,
+						cuProduct, cuQty, cuUOM,
+						cuPerTU, tuPerLU, maxLUToAllocate,
+						tuPIItem, luPIItem));
+		// }
+		// });
 		return loadingUnits;
 	}
 }

@@ -258,7 +258,7 @@ public class ReceiptScheduleHUGenerator
 	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate(final IAllocationRequest request)
 	{
-		// needs to be threadInherited because we run in out own little trx and everything created from the request shall be committed.
+		// needs to be threadInherited because we run in our own little trx and everything created from the request shall be committed.
 		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHUContext().getTrxName()),
 				"The trxName of the given request's HUContext needs to be {}, but is {}",
 				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
