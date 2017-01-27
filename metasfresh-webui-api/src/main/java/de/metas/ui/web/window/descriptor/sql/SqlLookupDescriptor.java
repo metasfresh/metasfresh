@@ -13,6 +13,7 @@ import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
+import org.adempiere.db.DBConstants;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
@@ -86,7 +87,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	private final LookupSource lookupSourceType;
 
 	private final Set<String> dependsOnFieldNames;
-	
+
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 
 	private SqlLookupDescriptor(final Builder builder)
@@ -105,7 +106,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		lookupSourceType = builder.getLookupSourceType();
 
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
-		
+
 		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
 
@@ -167,7 +168,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				// lookupSourceType // not needed because it's computed
 		;
 	}
-	
+
 	@Override
 	public LookupDataSourceFetcher getLookupDataSourceFetcher()
 	{
@@ -444,7 +445,10 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 			// Filter's WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
-			sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(LookupDataSourceContext.PARAM_FilterSql); // #1
+			sqlWhereFinal.append(" /* filter */ ")
+					.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(displayColumnSql).append(", 1)")
+					.append(" ILIKE ")
+					.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(LookupDataSourceContext.PARAM_FilterSql).append(", 1)");
 
 			// IsActive WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
