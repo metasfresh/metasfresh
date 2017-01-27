@@ -25,6 +25,8 @@ package de.metas.ui.web.websocket;
 /**
  * Implementations of this interface are responsible for producing websocket events.
  * 
+ * NOTE: if the implementation is annotated with {@link org.springframework.stereotype.Component} it will be automatically discovered by {@link WebSocketProducersRegistry} on start.
+ * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
