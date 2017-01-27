@@ -88,16 +88,22 @@ class LookupList extends Component {
 
     componentWillReceiveProps(nextProps){
         // no need for updating scroll
-        if (!this.shouldListScrollUpdate || typeof nextProps.selected !== 'number' || nextProps.selected === this.props.selected){
+        if (
+            !this.shouldListScrollUpdate ||
+            typeof nextProps.selected !== 'number' ||
+            nextProps.selected === this.props.selected
+        ){
             return;
         }
 
         const visibleMin = this.listScrollWrap.scrollTop;
-        const visibleMax = this.listScrollWrap.scrollTop + this.listVisibleElements * this.listElementHeight;
+        const visibleMax = this.listScrollWrap.scrollTop +
+            this.listVisibleElements * this.listElementHeight;
 
         //not visible from down
         if ((nextProps.selected + 1) * this.listElementHeight > visibleMax){
-            this.listScrollWrap.scrollTop = (nextProps.selected - this.listVisibleElements) * this.listElementHeight
+            this.listScrollWrap.scrollTop = this.listElementHeight *
+                (nextProps.selected - this.listVisibleElements)
         }
 
         //not visible from above
@@ -112,7 +118,7 @@ class LookupList extends Component {
         } = this.props;
 
         return (
-            <div className="input-dropdown-list" ref={listScrollWrap => this.listScrollWrap = listScrollWrap}>
+            <div className="input-dropdown-list" ref={c => this.listScrollWrap = c}>
                 {(loading && list.length === 0) && this.renderLoader()}
                 {(!loading && list.length === 0) && this.renderEmpty()}
                 <div ref={(c) => this.items = c}>
