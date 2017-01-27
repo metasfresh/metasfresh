@@ -33,9 +33,13 @@ this week's RC
 ## Features
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
+    * Add a new possibility to be able to sort combined search fields by a selected element in the combined Field, e.g. a field combined as Value + Name can now be sorted with Name, and not just Value + Name.
   * #829 receivedVia entry not translated in Baselanguage de_DE
+    * Add the Translation for receivedVia Field in current Baselanguage de_DE.
   * #810 Propagate Attribute from Issue to Receive in Production
+    * New Functionality to propagate selected Attributes vertically though a manufacturing process, from action issue to action receipt.
   * #835 Switch off Process Confirmation Window
+    * Switch off all process confirmation Windows per default. These can be switched on individually per Process where wanted.
 
 * webui
   * #817 Request Window in WebUI
