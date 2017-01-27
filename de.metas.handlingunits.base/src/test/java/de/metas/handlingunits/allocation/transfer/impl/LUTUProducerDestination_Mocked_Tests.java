@@ -36,6 +36,7 @@ import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -85,6 +86,9 @@ public class LUTUProducerDestination_Mocked_Tests
 			Services.get(IHUTransactionBL.class);
 			result = huTransactionBL;
 
+			luItemPI.getItemType(); 
+			result = X_M_HU_PI_Item.ITEMTYPE_HandlingUnit;
+			
 			huTransactionBL.createLUTransactionForAttributeTransfer(luHU, luItemPI, allocationRequest);
 			result = luTransaction;
 

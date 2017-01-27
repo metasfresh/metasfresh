@@ -381,7 +381,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	{
 		assertConfigurable();
 		
-		Check.errorUnless(luItemPI == null/* just a guear against NPE; right now, idk if null should be OK or not */
+		Check.errorUnless(luItemPI == null/* just a guard against NPE; right now, idk if null should be OK or not */
 				|| X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(luItemPI.getItemType()), "Param 'luItemPI' has to have type=HU; luItemPI={}", luItemPI);
 		
 		this.luItemPI = luItemPI;

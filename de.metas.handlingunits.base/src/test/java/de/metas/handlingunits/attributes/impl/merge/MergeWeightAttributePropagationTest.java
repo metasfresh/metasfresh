@@ -170,9 +170,12 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(splitTU);
 		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("7.212", "6.212", "1", "0"));
 
+		commitAndDumpHU(loadingUnit);
+		
 		//
 		// Assert data integrity on TARGET LU
 		//
+		// TODO: figure out why it's now 77 and not 75 anymore
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
 				newHUWeightsExpectation("91.235", "58.235", "33", "0"),
 				newHUWeightsExpectation("6.435", "5.435", "1", "0"), // the merge target which now has 7xCU
