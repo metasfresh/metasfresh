@@ -43,11 +43,18 @@ this week's RC
 
 * webui
   * #817 Request Window in WebUI
+    * Initial setup of Request Window in Web User Interface including default view, advanced edit, grid view and sidelist.
   * #831 Default Document Layout for WebUI
+    * Overhaul of the current general Document Layout for WebUI
   * #847 Shipment Schedule Window in WebUI
+    * Initial setup of the Shipment Schedule Window in Web User Interface.
   * #853 Shipment Schedule Window Subtabs in WebUI
-  * #855 Shipment Schedule Advanced Edit Mode	
+    * Add the Subtabs definition to Shipment Schedule Window in the new metasfresh Web User Interface, including Sidelist.
+  * #855 Shipment Schedule Advanced Edit Mode
+    * Setup for the Advanced Edit Mode of Shipment Scheule in WebUI.
   * #108 Create Callout for DocNo in Request
+    * Adjustment/ Enhancement of the DocumentNo Generation in non Document datastrucures of WebUI
+  
 
 ## Fixes
 * metasfresh 
