@@ -41,7 +41,7 @@ public interface IHUJoinBL extends ISingletonService
 	 *
 	 * @param huContext
 	 * @param loadingUnit
-	 * @param tradingUnit
+	 * @param tradingUnit may <b>not</b> be an aggregate HU
 	 *
 	 * @throws NoCompatibleHUItemParentFoundException if the trading unit is incompatible with the all of the loading unit's item definitions
 	 */

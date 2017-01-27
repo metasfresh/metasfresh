@@ -1674,11 +1674,11 @@ public class HUTestHelper
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
 
 		final HULoader loader = new HULoader(source, lutuProducer);
-		
+
 		// allowing partial loads and unloads because that's interesting cases to test
-		loader.setAllowPartialUnloads(true); 
+		loader.setAllowPartialUnloads(true);
 		loader.setAllowPartialLoads(true);
-		
+
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
 
 		loader.load(request); // use context date for now
@@ -2007,37 +2007,6 @@ public class HUTestHelper
 	}
 
 	/**
-	 * <b>Note: yeah, this method is a duplicate of {@link #joinHUs(I_M_HU, I_M_HU...)}, but it's here to flag exactly that point</b><br>
-	 * <br>
-	 * Merge given <code>tradingUnitsSource</code> on the <code>loadingUnitTarget</code>
-	 *
-	 * @param huContext
-	 *
-	 * @param loadingUnitTarget target LU
-	 * @param tradingUnitsSource source TUs
-	 */
-	public void mergeLUs(final IHUContext huContext, final I_M_HU loadingUnitTarget, final Collection<I_M_HU> tradingUnitsSource)
-	{
-		for (final I_M_HU tradingUnitSource : tradingUnitsSource)
-		{
-			Services.get(IHUJoinBL.class).assignTradingUnitToLoadingUnit(huContext, loadingUnitTarget, tradingUnitSource);
-		}
-	}
-
-	/**
-	 * <b>Note: yeah, this method is a duplicate of {@link #joinHUs(I_M_HU, I_M_HU...)}, but it's here to flag exactly that point</b><br>
-	 * <br>
-	 * Merge given <code>tradingUnitsSource</code> on the <code>loadingUnitTarget</code>
-	 *
-	 * @param loadingUnitTarget
-	 * @param tradingUnitsSource
-	 */
-	public void mergeLUs(final IHUContext huContext, final I_M_HU loadingUnitTarget, final I_M_HU... tradingUnitsSource)
-	{
-		mergeLUs(huContext, loadingUnitTarget, Arrays.asList(tradingUnitsSource));
-	}
-
-	/**
 	 * Configure and use {@link ITUMergeBuilder} to move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
 	 *
 	 * @param huContext
@@ -2066,5 +2035,19 @@ public class HUTestHelper
 	{
 		return new ProductBOMBuilder()
 				.setContext(contextProvider);
+	}
+
+	/**
+	 * Commits {@link #trxName} and writes the given {@code hu} as XML to std-out. The commit might break some tests.
+	 * Please only use this method temporarily to debug tests and comment it out again when the tests are fixed.
+	 * 
+	 * @param hu
+	 * @deprecated please only use temporarily for debugging.
+	 */
+	@Deprecated
+	public void commitAndDumpHU(I_M_HU hu)
+	{
+		Services.get(ITrxManager.class).commit(trxName);
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(hu)));
 	}
 }

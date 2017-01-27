@@ -24,6 +24,7 @@ package de.metas.handlingunits.allocation.transfer.impl;
 
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHUContext;
@@ -48,6 +49,8 @@ public class HUJoinBL implements IHUJoinBL
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		Check.errorIf(handlingUnitsBL.isAggregateHU(tradingUnit), "Param 'tradingUnit' can't be an aggregate HU; tradingUnit={}", tradingUnit);
 
 		boolean availableLUPIFound = false;
 

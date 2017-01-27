@@ -26,11 +26,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -47,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -63,7 +66,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	protected static final BigDecimal CU_QTY_46 = BigDecimal.valueOf(46);
 
 	protected I_M_HU_PI huDefPalet;
-	
+
 	/**
 	 * Included-HU item to link {@link #huDefIFCO_10} with {@link #huDefPalet}. 88 of those IFCOs fit on one palet.
 	 */
@@ -72,7 +75,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	protected I_M_HU_PI_Item huItemIFCO_5;
 
 	/**
-	 * Included-HU item to link {@link #huDefIFCO_2} with {@link #huDefPalet}. 88 of those  IFCOs fit on one palet.
+	 * Included-HU item to link {@link #huDefIFCO_2} with {@link #huDefPalet}. 88 of those IFCOs fit on one palet.
 	 */
 	protected I_M_HU_PI_Item huItemIFCO_2;
 
@@ -81,7 +84,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	 */
 	protected I_M_HU_PI huDefIFCO_10;
 	protected I_M_HU_PI_Item materialItemTomato_10;
-	
+
 	/**
 	 * HU PI Item that sais that 10kg of tomato fit onto one {@link #huDefIFCO_10}.
 	 */
@@ -92,7 +95,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	 */
 	protected I_M_HU_PI huDefIFCO_5;
 	protected I_M_HU_PI_Item materialItemTomato_5;
-	
+
 	/**
 	 * HU PI Item that sais that 5kg of tomato fit onto one {@link #huDefIFCO_5}.
 	 */
@@ -330,20 +333,15 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	protected final I_M_HU findTUInLUWithQty(final I_M_HU loadingUnit, final int customerUnitQty)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
 		// Iterate through the loadingUnit's items
-		final List<I_M_HU_Item> luItems = handlingUnitsDAO.retrieveItems(loadingUnit);
+		final List<I_M_HU_Item> luItems = handlingUnitsDAO.retrieveItems(loadingUnit).stream()
+				.filter(item -> X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(item.getItemType()) || X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
+				.collect(Collectors.toList());
+
 		for (final I_M_HU_Item luItem : luItems)
 		{
-			// We only have one item with handling unit Item Type
-			final String itemType = handlingUnitsBL.getItemType(luItem);
-			if (!X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
-			{
-				continue;
-			}
-
 			//
 			// Iterate through the tradingUnits
 			final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luItem);
@@ -359,8 +357,8 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 				return tuHU;
 			}
 		}
-
-		throw new AdempiereException("Storage not found with desired qty {} in {}", new Object[] { customerUnitQty, loadingUnit });
+		Check.errorIf(true, "Storage not found with desired qty {} in {}", customerUnitQty, loadingUnit);
+		return null;
 	}
 
 	/**
