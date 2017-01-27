@@ -18,6 +18,10 @@ upcoming Release
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
   
+* webUI
+  * #862 Payment Window in WebUI
+  * #873 Customer and Vendor Subtab in BPartner WebUI Window
+  
 ## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
