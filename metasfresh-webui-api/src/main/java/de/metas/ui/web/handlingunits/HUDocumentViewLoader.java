@@ -137,7 +137,8 @@ public class HUDocumentViewLoader
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitType)
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus);
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_PackingInfo, extractPackingInfo(hu));
 
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
 		{
@@ -162,6 +163,11 @@ public class HUDocumentViewLoader
 		}
 
 		return huViewRecord.build();
+	}
+
+	private static final String extractPackingInfo(final I_M_HU hu)
+	{
+		return hu.getM_HU_PI_Version().getName();
 	}
 
 	private IDocumentView createDocumentView(final IHUProductStorage huStorage)
