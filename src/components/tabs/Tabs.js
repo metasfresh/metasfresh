@@ -4,8 +4,8 @@ class Tabs extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: this.props.children[0].key,
-            fullScreen: null
+            selected: this.props.children[0].key
+            // fullScreen: null
         }
     }
 
@@ -16,12 +16,12 @@ class Tabs extends Component {
         }));
     }
 
-    toggleTableFullScreen = (tabId) => {
-        const {fullScreen} = this.state;
-        this.setState(Object.assign({}, this.state, {
-            fullScreen: tabId
-        }));
-    }
+    // toggleTableFullScreen = (tabId) => {
+    //     const {fullScreen} = this.state;
+    //     this.setState(Object.assign({}, this.state, {
+    //         fullScreen: tabId
+    //     }));
+    // }
 
     handlePillKeyDown = (e, key) => {
         if(e.key === "Enter"){
@@ -48,12 +48,12 @@ class Tabs extends Component {
     }
 
     renderTabs = (tabs) => {
-        const {tabIndex} = this.props;
-        const {selected, fullScreen} = this.state;
+        const {tabIndex, toggleTableFullScreen, fullScreen} = this.props;
+        const {selected} = this.state;
         return tabs.map((item) => {
             const itemWithProps = Object.assign({}, item, {
                 props: Object.assign({}, item.props, {
-                    toggleFullScreen: this.toggleTableFullScreen,
+                    toggleFullScreen: toggleTableFullScreen,
                     fullScreen: fullScreen
                 })
             });
@@ -75,8 +75,8 @@ class Tabs extends Component {
     }
 
     render() {
-        const {children, tabIndex} = this.props;
-        const {fullScreen} = this.state;
+        const {children, tabIndex, fullScreen} = this.props;
+        // const {fullScreen} = this.state;
         return (
             <div className={
                 "mb-1 " +

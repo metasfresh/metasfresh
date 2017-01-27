@@ -264,7 +264,8 @@ class Lookup extends Component {
             selected: null,
             model: null,
             property: "",
-            loading: false
+            loading: false,
+            query: ""
         }));
     }
 
@@ -278,6 +279,8 @@ class Lookup extends Component {
         });
         
         this.handleBlur(this.clearState);
+        console.log('---clear state---');
+        console.log(this.state);
     }
 
     handleKeyDown = (e) => {
@@ -343,6 +346,10 @@ class Lookup extends Component {
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
+        console.log('----------------handleValueChanged------------------------');
+        console.log(selected);
+        console.log(defaultValue);
+
         if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
             const init = defaultValue[0].value;
             const inputValue = init[Object.keys(init)[0]];
@@ -361,12 +368,13 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, oldValue, filterWidget, mandatory, rowId, tabIndex
+            updated, oldValue, filterWidget, mandatory, rowId, tabIndex, fullScreen
         } = this.props;
 
         const {
             propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
+
 
         return (
             <div
@@ -399,12 +407,15 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? "" : tabIndex}
                         />
                     </div>
+
                     {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
                             const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;
+                            // console.log(defaultValue);
+                            console.log(objectValue);
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
                     </div>}

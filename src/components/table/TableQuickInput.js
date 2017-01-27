@@ -73,6 +73,10 @@ class TableQuickInput extends Component {
             });
 
             !layout && dispatch(initLayout('window', docType, tabId, 'quickInput', docId)).then(layout => {
+                // console.log('-----------------------------------------------');
+                // console.log(docType + ' ' +  tabId + ' ' + docId);
+                // console.log(layout.data.elements);
+                // console.log('-----------------------------------------------');
                 this.setState(Object.assign({}, this.state, {
                     layout: layout.data.elements
                 }))
@@ -82,6 +86,7 @@ class TableQuickInput extends Component {
 
     handleChange = (field, value) => {
         const {data} = this.state;
+        // console.log(data);
 
         this.setState(Object.assign({}, this.state, {
             data: data.map(item => {
@@ -124,6 +129,7 @@ class TableQuickInput extends Component {
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
+                // console.log(widgetData);
                 return (<RawWidget
                     entity={attributeType}
                     subentity='quickInput'

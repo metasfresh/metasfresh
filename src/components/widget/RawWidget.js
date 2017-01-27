@@ -84,7 +84,7 @@ class RawWidget extends Component {
             handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
             isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
-            dropdownOpenCallback, autoFocus
+            dropdownOpenCallback, autoFocus, fullScreen
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -121,6 +121,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             valueTo={selectedFieldTo}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                          />
                     )
                 }else{
@@ -172,6 +173,7 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -199,6 +201,7 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
@@ -233,6 +236,7 @@ class RawWidget extends Component {
                         tabIndex={tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
+                        fullScreen={fullScreen}
                     />
                 )
             case "List":
@@ -261,6 +265,7 @@ class RawWidget extends Component {
                         tabIndex={tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
+                        fullScreen={fullScreen}
                     />
                 )
             case "Text":
@@ -287,6 +292,7 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
@@ -313,6 +319,7 @@ class RawWidget extends Component {
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
@@ -340,6 +347,7 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {autoFocus && c.focus()}}
                         />
                     </div>
@@ -365,6 +373,7 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
@@ -392,6 +401,7 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
@@ -419,6 +429,7 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
@@ -444,6 +455,7 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={tabIndex}
+                            fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
@@ -456,6 +468,7 @@ class RawWidget extends Component {
                             (widgetData.readonly ? "input-disabled " : "")
                         }
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         ref={c => this.input = c}
                         onKeyDown={e => {
                             if(e.key === " "){
@@ -484,6 +497,7 @@ class RawWidget extends Component {
                             (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
                         }
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         <input
@@ -504,6 +518,7 @@ class RawWidget extends Component {
                             (align ? "text-xs-" + align + " " : "")
                         }
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         {widgetData.value}
@@ -518,6 +533,7 @@ class RawWidget extends Component {
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
@@ -532,6 +548,7 @@ class RawWidget extends Component {
                         dataId={dataId}
                         onChange={(option) => this.handlePatch(fields[1].field, option)}
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         dropdownOpenCallback={dropdownOpenCallback}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     />
@@ -550,6 +567,7 @@ class RawWidget extends Component {
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         autoFocus={autoFocus}
                     />
                 )
@@ -567,6 +585,7 @@ class RawWidget extends Component {
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={tabIndex}
+                        fullScreen={fullScreen}
                         autoFocus={autoFocus}
                     />
                 )
