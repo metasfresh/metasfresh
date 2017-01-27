@@ -1,10 +1,10 @@
 package de.metas.device.adempiere.impl;
 
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
-import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
@@ -35,23 +35,23 @@ import de.metas.device.adempiere.IDevicesHubFactory;
 
 public class DevicesHubFactory implements IDevicesHubFactory
 {
-	private final transient CCache<ArrayKey, AttributesDevicesHub> devicesHubsByKey = CCache.newLRUCache("DevicesHubByKey", 20, 0);
+	private final transient ConcurrentHashMap<ArrayKey, AttributesDevicesHub> devicesHubsByKey = new ConcurrentHashMap<>();
 
 	@Override
 	public AttributesDevicesHub getDefaultAttributesDevicesHub()
 	{
-		final IHostIdentifier host = NetUtils.getLocalHost();
+		final IHostIdentifier clientHost = NetUtils.getLocalHost();
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
-		return getAttributesDevicesHub(host, adClientId, adOrgId);
+		return getAttributesDevicesHub(clientHost, adClientId, adOrgId);
 	}
-	
+
 	@Override
-	public AttributesDevicesHub getAttributesDevicesHub(final IHostIdentifier host, final int adClientId, final int adOrgId)
+	public AttributesDevicesHub getAttributesDevicesHub(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
 	{
-		final ArrayKey devicesHubKey = ArrayKey.of(host, adClientId, adOrgId);
-		return devicesHubsByKey.getOrLoad(devicesHubKey, () -> new AttributesDevicesHub(host, adClientId, adOrgId));
+		final ArrayKey devicesHubKey = ArrayKey.of(clientHost, adClientId, adOrgId);
+		return devicesHubsByKey.computeIfAbsent(devicesHubKey, k -> new AttributesDevicesHub(clientHost, adClientId, adOrgId));
 	}
 
 }

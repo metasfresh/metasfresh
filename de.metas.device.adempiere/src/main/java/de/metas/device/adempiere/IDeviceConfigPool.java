@@ -1,7 +1,7 @@
 package de.metas.device.adempiere;
 
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.net.IHostIdentifier;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -25,9 +25,24 @@ import org.adempiere.util.net.IHostIdentifier;
  * #L%
  */
 
-public interface IDevicesHubFactory extends ISingletonService
+/**
+ * {@link DeviceConfig} pool.
+ * 
+ * To get an instance, please use {@link IDeviceConfigPoolFactory}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface IDeviceConfigPool
 {
-	AttributesDevicesHub getDefaultAttributesDevicesHub();
+	Set<String> getAllAttributeCodes();
 
-	AttributesDevicesHub getAttributesDevicesHub(IHostIdentifier clientHost, int adClientId, int adOrgId);
+	List<DeviceConfig> getDeviceConfigsForAttributeCode(String attributeCode);
+
+	void addListener(IDeviceConfigPoolListener listener);
+
+	interface IDeviceConfigPoolListener
+	{
+		void onConfigurationChanged(IDeviceConfigPool deviceConfigPool);
+	}
 }

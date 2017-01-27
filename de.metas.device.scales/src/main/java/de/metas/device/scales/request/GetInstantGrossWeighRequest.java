@@ -1,5 +1,7 @@
 package de.metas.device.scales.request;
 
+import com.google.common.base.MoreObjects;
+
 /*
  * #%L
  * de.metas.device.scales
@@ -42,6 +44,6 @@ public class GetInstantGrossWeighRequest implements IDeviceRequest<GetWeightResp
 	@Override
 	public String toString()
 	{
-		return String.format("GetInstantGrossWeighRequest []");
+		return MoreObjects.toStringHelper(this).toString();
 	}
 }

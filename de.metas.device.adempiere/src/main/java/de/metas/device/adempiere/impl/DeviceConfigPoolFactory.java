@@ -1,7 +1,12 @@
-package de.metas.device.adempiere;
+package de.metas.device.adempiere.impl;
 
-import org.adempiere.util.ISingletonService;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.adempiere.util.net.IHostIdentifier;
+import org.compiere.util.Util.ArrayKey;
+
+import de.metas.device.adempiere.IDeviceConfigPool;
+import de.metas.device.adempiere.IDeviceConfigPoolFactory;
 
 /*
  * #%L
@@ -25,9 +30,14 @@ import org.adempiere.util.net.IHostIdentifier;
  * #L%
  */
 
-public interface IDevicesHubFactory extends ISingletonService
+public class DeviceConfigPoolFactory implements IDeviceConfigPoolFactory
 {
-	AttributesDevicesHub getDefaultAttributesDevicesHub();
+	private final ConcurrentHashMap<ArrayKey, IDeviceConfigPool> deviceConfigPools = new ConcurrentHashMap<>();
 
-	AttributesDevicesHub getAttributesDevicesHub(IHostIdentifier clientHost, int adClientId, int adOrgId);
+	@Override
+	public IDeviceConfigPool getDeviceConfigPool(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	{
+		final ArrayKey key = ArrayKey.of(clientHost, adClientId, adOrgId);
+		return deviceConfigPools.computeIfAbsent(key, k -> new SysConfigDeviceConfigPool(clientHost, adClientId, adOrgId));
+	}
 }

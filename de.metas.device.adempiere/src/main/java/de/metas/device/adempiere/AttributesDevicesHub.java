@@ -1,6 +1,7 @@
 package de.metas.device.adempiere;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -10,14 +11,16 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
 import org.apache.commons.lang3.StringUtils;
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import de.metas.device.adempiere.IDeviceConfigPool.IDeviceConfigPoolListener;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
@@ -58,64 +61,86 @@ public class AttributesDevicesHub
 	private static final transient Logger logger = LogManager.getLogger(AttributesDevicesHub.class);
 	private final transient IDeviceBL deviceBL = Services.get(IDeviceBL.class);
 
-	private final IHostIdentifier clientHost;
-	private final int adClientId;
-	private final int adOrgId;
+	private final IDeviceConfigPool deviceConfigPool;
 
-	private final transient CCache<String, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = CCache
-			.<String, AttributeDeviceAccessorsList> newCache("DevicesHub_DeviceAccessorsByAttributeCode", 0, 0)
-			.addResetForTableName(I_AD_SysConfig.Table_Name);
+	private final transient ConcurrentHashMap<String, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = new ConcurrentHashMap<>();
 
-	public AttributesDevicesHub(final IHostIdentifier host, final int adClientId, final int adOrgId)
+	private final IDeviceConfigPoolListener deviceConfigPoolListener = new IDeviceConfigPoolListener()
+	{
+		@Override
+		public void onConfigurationChanged(final IDeviceConfigPool deviceConfigPool)
+		{
+			attributeCode2deviceAccessors.clear();
+			logger.info("Reset {} because configuration changed for {}", this, deviceConfigPool);
+		}
+	};
+
+	public AttributesDevicesHub(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
 	{
 		super();
-		clientHost = host;
-		this.adClientId = adClientId >= 0 ? adClientId : 0;
-		this.adOrgId = adOrgId >= 0 ? adOrgId : 0;
+
+		deviceConfigPool = Services.get(IDeviceConfigPoolFactory.class).getDeviceConfigPool(clientHost, adClientId, adOrgId);
+		deviceConfigPool.addListener(deviceConfigPoolListener);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("host", clientHost)
-				.add("AD_Client_ID", adClientId)
-				.add("AD_Org_ID", adOrgId)
+				.add("deviceConfigPool", deviceConfigPool)
 				.toString();
+	}
+
+	public Stream<AttributeDeviceAccessor> streamAllDeviceAccessors()
+	{
+		return deviceConfigPool.getAllAttributeCodes()
+				.stream()
+				.map(attributeCode -> getAttributeDeviceAccessors(attributeCode))
+				.flatMap(deviceAccessorsList -> deviceAccessorsList.stream());
+	}
+
+	public AttributeDeviceAccessor getAttributeDeviceAccessorById(final String id)
+	{
+		return deviceConfigPool.getAllAttributeCodes()
+				.stream()
+				.map(attributeCode -> getAttributeDeviceAccessors(attributeCode))
+				.map(deviceAccessorsList -> deviceAccessorsList.getByIdOrNull(id))
+				.filter(deviceAccessor -> deviceAccessor != null)
+				.findFirst()
+				.orElse(null);
 	}
 
 	public AttributeDeviceAccessorsList getAttributeDeviceAccessors(final String attributeCode)
 	{
-		return attributeCode2deviceAccessors.getOrLoad(attributeCode, () -> createAttributeDeviceAccessor(attributeCode));
+		return attributeCode2deviceAccessors.computeIfAbsent(attributeCode, this::createAttributeDeviceAccessor);
 	}
 
 	@SuppressWarnings("rawtypes")
 	private final AttributeDeviceAccessorsList createAttributeDeviceAccessor(final String attributeCode)
 	{
-		final List<String> deviceNamesForThisAttribute = deviceBL.getAllDeviceNamesForAttrAndHost(attributeCode, clientHost, adClientId, adOrgId);
-		logger.info("Devices for host {} and attributte {}: {}", clientHost, attributeCode, deviceNamesForThisAttribute);
-		if (deviceNamesForThisAttribute.isEmpty())
+		final List<DeviceConfig> deviceConfigsForThisAttribute = deviceConfigPool.getDeviceConfigsForAttributeCode(attributeCode);
+		logger.info("Devices configs for attributte {}: {}", attributeCode, deviceConfigsForThisAttribute);
+		if (deviceConfigsForThisAttribute.isEmpty())
 		{
 			return AttributeDeviceAccessorsList.EMPTY;
 		}
 
-		final String deviceDisplayNameCommonPrefix = extractDeviceDisplayNameCommonPrefix(deviceNamesForThisAttribute);
+		final String deviceDisplayNameCommonPrefix = extractDeviceDisplayNameCommonPrefixForDeviceConfigs(deviceConfigsForThisAttribute);
 
 		final ImmutableList.Builder<AttributeDeviceAccessor> deviceAccessors = ImmutableList.builder();
 		final StringBuilder warningMessage = new StringBuilder();
 
-		for (final String deviceName : deviceNamesForThisAttribute)
+		for (final DeviceConfig deviceConfig : deviceConfigsForThisAttribute)
 		{
-			final DeviceId deviceId = DeviceId.of(deviceName, adClientId, adOrgId, clientHost);
 			// trying to access the device.
 			final IDevice device;
 			try
 			{
-				device = deviceBL.createAndConfigureDeviceOrReturnExisting(deviceId);
+				device = deviceBL.createAndConfigureDevice(deviceConfig);
 			}
 			catch (final Exception e)
 			{
-				final String msg = String.format("Unable to access device identified by %s. Details:\n%s", deviceId, e.getLocalizedMessage());
+				final String msg = String.format("Unable to access device identified by %s. Details:\n%s", deviceConfig, e.getLocalizedMessage());
 				logger.warn(msg + ". Skipped", e);
 
 				if (warningMessage.length() > 0)
@@ -127,19 +152,26 @@ public class AttributesDevicesHub
 				continue;
 			}
 
-			final AttributeDeviceId attributeDeviceId = AttributeDeviceId.of(deviceId, attributeCode);
-			final List<IDeviceRequest<ISingleValueResponse>> allRequestsFor = deviceBL.getAllRequestsFor(attributeDeviceId, ISingleValueResponse.class);
-			logger.info("Found these requests for deviceName {} and attribute {}: {}", deviceName, attributeCode, allRequestsFor);
+			final List<IDeviceRequest<ISingleValueResponse>> allRequestsFor = deviceBL.getAllRequestsFor(deviceConfig, attributeCode, ISingleValueResponse.class);
+			logger.info("Found these requests for {} and attribute {}: {}", deviceConfig, attributeCode, allRequestsFor);
 
+			// NOTE: usually we expect one element (maximum) in allRequestsFor
 			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
 			{
+				final String deviceName = deviceConfig.getDeviceName();
 				final String displayName = createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName);
-				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(attributeDeviceId, displayName, device, request);
+				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, request);
 				deviceAccessors.add(deviceAccessor);
 			}
 		}
 
 		return AttributeDeviceAccessorsList.of(deviceAccessors.build(), warningMessage.toString());
+	}
+
+	private static final String extractDeviceDisplayNameCommonPrefixForDeviceConfigs(final List<DeviceConfig> deviceConfigs)
+	{
+		final List<String> deviceNames = Lists.transform(deviceConfigs, deviceConfig -> deviceConfig.getDeviceName());
+		return extractDeviceDisplayNameCommonPrefix(deviceNames);
 	}
 
 	/**
@@ -186,33 +218,42 @@ public class AttributesDevicesHub
 	@SuppressWarnings("rawtypes")
 	public static final class AttributeDeviceAccessor
 	{
-		private final AttributeDeviceId attributeDeviceId;
 		private final String displayName;
 		private final IDevice device;
 		private final IDeviceRequest<ISingleValueResponse> request;
 
-		private AttributeDeviceAccessor(final AttributeDeviceId attributeDeviceId, final String displayName, final IDevice device, final IDeviceRequest<ISingleValueResponse> request)
+		private final String publicId;
+
+		private AttributeDeviceAccessor(final String displayName, final IDevice device, final String deviceName, final String attributeCode, final IDeviceRequest<ISingleValueResponse> request)
 		{
 			super();
 
-			Check.assumeNotNull(attributeDeviceId, "Parameter attributeDeviceId is not null");
 			Check.assumeNotNull(device, "Parameter device is not null");
+			Check.assumeNotNull(request, "Parameter request is not null");
+			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
+			Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
 
-			this.attributeDeviceId = attributeDeviceId;
 			this.displayName = displayName;
 			this.device = device;
 			this.request = request;
+
+			publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
 		}
 
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("attributeDeviceId", attributeDeviceId)
 					.add("displayName", displayName)
 					.add("request", request)
 					.add("device", device)
+					.add("publicId", publicId)
 					.toString();
+		}
+
+		public String getPublicId()
+		{
+			return publicId;
 		}
 
 		public String getDisplayName()
@@ -255,12 +296,14 @@ public class AttributesDevicesHub
 		private static final AttributeDeviceAccessorsList EMPTY = new AttributeDeviceAccessorsList();
 
 		private final ImmutableList<AttributeDeviceAccessor> attributeDeviceAccessors;
+		private final ImmutableMap<String, AttributeDeviceAccessor> attributeDeviceAccessorsById;
 		private final String warningMessage;
 
 		private AttributeDeviceAccessorsList(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
 		{
 			super();
 			this.attributeDeviceAccessors = ImmutableList.copyOf(attributeDeviceAccessors);
+			attributeDeviceAccessorsById = Maps.uniqueIndex(attributeDeviceAccessors, AttributeDeviceAccessor::getPublicId);
 			this.warningMessage = warningMessage;
 		}
 
@@ -269,6 +312,7 @@ public class AttributesDevicesHub
 		{
 			super();
 			attributeDeviceAccessors = ImmutableList.of();
+			attributeDeviceAccessorsById = ImmutableMap.of();
 			warningMessage = null;
 		}
 
@@ -290,6 +334,11 @@ public class AttributesDevicesHub
 		public Stream<AttributeDeviceAccessor> stream()
 		{
 			return attributeDeviceAccessors.stream();
+		}
+
+		public AttributeDeviceAccessor getByIdOrNull(final String id)
+		{
+			return attributeDeviceAccessorsById.get(id);
 		}
 
 		/**

@@ -22,50 +22,37 @@ package de.metas.device.adempiere;
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.net.IHostIdentifier;
 
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceResponse;
 
 /**
- * Service to find and configure available devices. Currently the implementation uses <code>AD_SysConfig</code> to store the data.
- * <p>
- * Note that currently devices are only accessed in the context of attributes, but that might change and then there will probably be further <code>getAllDeviceNamesFor..()</code> methods, or some
- * sort of lookup query framework.
+ * Service to find and configure available devices
  * 
- * @author ts
- * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public interface IDeviceBL extends ISingletonService
 {
 	/**
-	 * Returns the device names of all devices that are assigned to the given <code>hostName</code> (or to <code>0.0.0.0</code>) and the given attribute code.
+	 * Creates the {@link IDevice} instance for given configuration.
 	 * 
-	 * @param attributeCode
-	 * @param host
-	 * @param adClientId
-	 * @param adOrgId
+	 * @param deviceConfig device configuration
+	 * @return device instance
 	 */
-	List<String> getAllDeviceNamesForAttrAndHost(String attributeCode, IHostIdentifier host, int adClientId, int adOrgId);
+	IDevice createAndConfigureDevice(DeviceConfig deviceConfig);
 
 	/**
-	 * Retrieves metasfresh's configuration parameters for the device identified by <code>deviceId</code> and initializes and configures it.
-	 * If there is already a device for the given <code>deviceId</code>, then that device is returned.
+	 * Returns all requests that the given device configuration and given <code>attributeCode</code>.
 	 * 
-	 * @param deviceId
-	 */
-	IDevice createAndConfigureDeviceOrReturnExisting(DeviceId deviceId);
-
-	/**
-	 * Returns all requests that the given device supports for the given <code>attributeDeviceId</code>.
-	 * 
-	 * @param attributeDeviceId
+	 * @param deviceConfig device configuration
+	 * @param attributeCode attribute code
 	 * @param responseClazz optional, maybe be <code>null</code>. If set, then the result is filtered and only those requests are returned whose response is assignable from this parameter.
 	 */
-	<T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(AttributeDeviceId attributeDeviceId, Class<T> responseClazz);
+	<T extends IDeviceResponse> List<IDeviceRequest<T>> getAllRequestsFor(DeviceConfig deviceConfig, String attributeCode, Class<T> responseClazz);
+
 }
