@@ -20,6 +20,7 @@ upcoming Release
   
 * webUI
   * #862 Payment Window in WebUI
+  * #873 Customer and Vendor Subtab in BPartner WebUI Window
   
 ## Fixes
 * metasfresh 
