@@ -17,6 +17,14 @@ upcoming Release
 ## Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
+  
+* webUI
+  * #862 Payment Window in WebUI
+  * #873 Customer and Vendor Subtab in BPartner WebUI Window
+  
+## Fixes
+* metasfresh 
+  * #782 Focus on the first process parameter
 
 # metasfresh 4.53.52 (2017-04)
 
@@ -41,10 +49,8 @@ this week's RC
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
   * #808 DocActionBL.retrieveString method is broken
-  * #806 Fixes in Custom reports
   * #819 fix/refactor CalloutRequest
   * #806 Customs report minor fixes
-  * #782 Focus on the first process parameter
   * #837 Marginal return accounts doubled
   * #844 Gear from Pricing System and PriceList show wrong processes
 
