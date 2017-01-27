@@ -6,7 +6,8 @@
     <script src="stomp.js"></script>
     <script type="text/javascript">
 	
-        var stompClient = null; 
+        var stompClient = null;
+        var stompSubscription = null;
 
         function setConnected(connected) {
             document.getElementById('connect').disabled = connected;
@@ -16,7 +17,8 @@
             document.getElementById('response').innerHTML = '';
         }
 
-        function connect() {
+        function connect()
+        {
         	var socksjs_url = document.getElementById('socksjs_url').value;
             var topic = document.getElementById('topic').value;
             
@@ -25,15 +27,22 @@
             stompClient.connect({}, function(frame) {
                 setConnected(true);
                 console.log('Connected to ' + socksjs_url + ': ' + frame);
-                stompClient.subscribe(topic, function(result) {
+                stompSubscription = stompClient.subscribe(topic, function(result) {
                 	showResult(result);
                 });
                 
-                console.log('Subscribed to ' + topic);
+                console.log('Subscribed to ' + topic + ': ' + stompSubscription);
             });
         }
 
-        function disconnect() {
+        function disconnect()
+        {
+        	if(stompSubscription != null)
+        	{
+        		stompSubscription.unsubscribe();
+        		stompSubscription = null;
+        	}
+        	
             stompClient.disconnect();
             setConnected(false);
             console.log("Disconnected");
