@@ -120,7 +120,7 @@ class RawWidget extends Component {
                             isHidden={isHidden}
                             value={selectedField}
                             valueTo={selectedFieldTo}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                          />
                     )
@@ -140,7 +140,7 @@ class RawWidget extends Component {
                                 inputProps={{
                                     placeholder: widgetFields.emptyText,
                                     disabled: widgetData.readonly,
-                                    tabIndex: tabIndex
+                                    tabIndex: fullScreen ? -1 : tabIndex
                                 }}
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
@@ -167,12 +167,12 @@ class RawWidget extends Component {
                             inputProps={{
                                 placeholder: widgetFields.emptyText,
                                 disabled: widgetData.readonly,
-                                tabIndex: tabIndex
+                                tabIndex: fullScreen ? -1 : tabIndex
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -195,12 +195,12 @@ class RawWidget extends Component {
                             inputProps={{
                                 placeholder: widgetFields.emptyText,
                                 disabled: widgetData.readonly,
-                                tabIndex: tabIndex
+                                tabIndex: fullScreen ? -1 : tabIndex
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -233,7 +233,7 @@ class RawWidget extends Component {
                         selected={selectedField}
                         tabId={tabId}
                         rowId={rowId}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
                         fullScreen={fullScreen}
@@ -262,7 +262,7 @@ class RawWidget extends Component {
                         parameterName={parameterName}
                         setSelectedItem={setSelectedItem}
                         emptyText={widgetFields.emptyText}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
                         fullScreen={fullScreen}
@@ -291,7 +291,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -318,7 +318,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -346,7 +346,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {autoFocus && c.focus()}}
                         />
@@ -372,7 +372,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -400,7 +400,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -428,7 +428,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -454,7 +454,7 @@ class RawWidget extends Component {
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
-                            tabIndex={tabIndex}
+                            tabIndex={fullScreen ? -1 : tabIndex}
                             fullScreen={fullScreen}
                             ref={c => {(c && autoFocus) && c.focus()}}
                         />
@@ -467,7 +467,7 @@ class RawWidget extends Component {
                             "input-checkbox " +
                             (widgetData.readonly ? "input-disabled " : "")
                         }
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         ref={c => this.input = c}
                         onKeyDown={e => {
@@ -496,7 +496,7 @@ class RawWidget extends Component {
                             (widgetData.readonly ? "input-disabled " : "") +
                             (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
                         }
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
@@ -517,7 +517,7 @@ class RawWidget extends Component {
                             "tag tag-warning " +
                             (align ? "text-xs-" + align + " " : "")
                         }
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
@@ -532,7 +532,7 @@ class RawWidget extends Component {
                             (align ? "text-xs-" + align + " " : "")
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
@@ -547,7 +547,7 @@ class RawWidget extends Component {
                         fields={fields}
                         dataId={dataId}
                         onChange={(option) => this.handlePatch(fields[1].field, option)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         dropdownOpenCallback={dropdownOpenCallback}
                         ref={c => {(c && autoFocus) && c.focus()}}
@@ -566,7 +566,7 @@ class RawWidget extends Component {
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => this.handlePatch(widgetField, option)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         autoFocus={autoFocus}
                     />
@@ -584,7 +584,7 @@ class RawWidget extends Component {
                         fieldName={widgetField}
                         handleBackdropLock={handleBackdropLock}
                         patch={(option) => this.handlePatch(widgetField, option)}
-                        tabIndex={tabIndex}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
                         autoFocus={autoFocus}
                     />
