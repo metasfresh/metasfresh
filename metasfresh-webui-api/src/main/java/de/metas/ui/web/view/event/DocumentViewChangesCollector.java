@@ -20,8 +20,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.config.WebSocketConfig;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.websocket.WebSocketConfig;
 import groovy.transform.Immutable;
 
 /*
