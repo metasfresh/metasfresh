@@ -34,7 +34,7 @@ public final class DBConstants
 	 * <li>numeric - 1 for accented->unaccented ; 2 for unaccented->accented
 	 * </ul>
 	 */
-	private static final String FUNCNAME_unaccent_string = "unaccent_string";
+	public static final String FUNCNAME_unaccent_string = "unaccent_string";
 
 	/**
 	 * 
