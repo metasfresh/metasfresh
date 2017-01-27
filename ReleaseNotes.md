@@ -59,11 +59,17 @@ this week's RC
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+    * Adjust the flag isInvoiceCandidate to be calculated for M_InoutLine records.
   * #808 DocActionBL.retrieveString method is broken
+    * Fixing the method that retrieves the Document Action Name.
   * #819 fix/refactor CalloutRequest
+    * Adopting the Callouts in Request window to also work in Web User Interface.
   * #806 Customs report minor fixes
+    * Minor adjustments and fixes in the Customs report.
   * #837 Marginal return accounts doubled
+    * Minor Bug Fix in marginal return report that doubled the sums on certain accounts.
   * #844 Gear from Pricing System and PriceList show wrong processes
+    * Fixing a Bug that leads into wrong representation of Processes in Gear of Pricing System and Priceliste Window.
 
 * parent
   * #3 Add repo.metasfresh.com also as plugin repo
