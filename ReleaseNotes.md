@@ -18,6 +18,9 @@ upcoming Release
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
   
+* webUI
+  * #862 Payment Window in WebUI
+  
 ## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
