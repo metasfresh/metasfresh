@@ -174,6 +174,12 @@ public final class WebSocketProducersRegistry
 
 	public void onTopicUnsubscribed(final String sessionId, final String topicName)
 	{
+		if(topicName == null)
+		{
+			onSessionDisconnect(sessionId);
+			return;
+		}
+		
 		final WebSocketProducerInstance producer = getExistingWebSocketProducerInstanceOrNull(topicName);
 		if (producer == null)
 		{
