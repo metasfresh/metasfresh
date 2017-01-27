@@ -185,7 +185,7 @@ class TableItem extends Component {
         const {
             isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
             onMouseDown, onDoubleClick, included, tabid, type, docId,
-            tabIndex, mainTable, entity, readonly, indent
+            tabIndex, mainTable, entity, readonly, indent, odd
         } = this.props;
 
         const huType = findRowByPropName(fields, "HU_UnitType").value;
@@ -196,7 +196,9 @@ class TableItem extends Component {
                 onMouseDown ={onMouseDown}
                 onDoubleClick={onDoubleClick}
                 className={
-                    (isSelected ? "row-selected" : "")
+                    (isSelected ? "row-selected " : "") +
+                    (odd ? "tr-odd ": "") +
+                    (!odd ? "tr-even ": "")
                 }
             >
                 <td className="indented">

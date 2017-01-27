@@ -68,7 +68,7 @@ class TableItemWrapper extends Component {
         const {
             item, entity, tabid, cols, type, docId, selected, onDoubleClick,
             handleClick, handleRightClick, changeListenOnTrue, changeListenOnFalse,
-            newRow, tabIndex, readonly, mainTable, handleSelect
+            newRow, tabIndex, readonly, mainTable, handleSelect, odd
         } = this.props;
 
         const {rows} = this.state;
@@ -99,6 +99,7 @@ class TableItemWrapper extends Component {
                         includedDocuments={row.includedDocuments}
                         lastSibling={row.lastChild}
                         handleSelect={handleSelect}
+                        odd={(odd && (rows.length & 1))}
                     />
                 )}
             </tbody>

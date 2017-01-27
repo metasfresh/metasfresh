@@ -414,6 +414,7 @@ class Table extends Component {
                 ret.push(
                     <TableItemWrapper
                         key={i}
+                        odd={i & 1}
                         item={item[key]}
                         entity={entity}
                         tabId={tabid}
