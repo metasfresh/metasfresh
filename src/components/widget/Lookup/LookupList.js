@@ -22,9 +22,11 @@ class LookupList extends Component {
     }
 
     componentWillReceiveProps(nextProps){
+        const {shouldListScrollUpdate, listElementHeight, listVisibleElements} = this.state;
+
         // no need for updating scroll
         if (
-            !this.state.shouldListScrollUpdate ||
+            !shouldListScrollUpdate ||
             typeof nextProps.selected !== 'number' ||
             nextProps.selected === this.props.selected
         ){
@@ -33,17 +35,17 @@ class LookupList extends Component {
 
         const visibleMin = this.listScrollWrap.scrollTop;
         const visibleMax = this.listScrollWrap.scrollTop +
-            this.state.listVisibleElements * this.state.listElementHeight;
+            listVisibleElements * listElementHeight;
 
         //not visible from down
-        if ((nextProps.selected + 1) * this.state.listElementHeight > visibleMax){
-            this.listScrollWrap.scrollTop = this.state.listElementHeight *
-                (nextProps.selected - this.state.listVisibleElements)
+        if ((nextProps.selected + 1) * listElementHeight > visibleMax){
+            this.listScrollWrap.scrollTop = listElementHeight *
+                (nextProps.selected - listVisibleElements)
         }
 
         //not visible from above
-        if (nextProps.selected * this.state.listElementHeight < visibleMin){
-            this.listScrollWrap.scrollTop = nextProps.selected * this.state.listElementHeight
+        if (nextProps.selected * listElementHeight < visibleMin){
+            this.listScrollWrap.scrollTop = nextProps.selected * listElementHeight
         }
     }
 
