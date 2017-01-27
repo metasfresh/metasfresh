@@ -59,6 +59,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
 	private static final String TOPIC_DocumentView = "/view";
+	public static final String TOPIC_Devices = "/devices";
 
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
@@ -90,6 +91,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		config.enableSimpleBroker( //
 				TOPIC_Notifications //
 				, TOPIC_DocumentView //
+				, TOPIC_Devices //
 		);
 
 		// use the /app prefix for others
