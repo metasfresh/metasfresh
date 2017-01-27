@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -65,8 +66,8 @@ public final class JSONDocumentLayoutElement implements Serializable
 		}
 		return new JSONDocumentLayoutElement(element, jsonOpts);
 	}
-	
-	public static JSONDocumentLayoutElement debuggingField(final String fieldName, DocumentFieldWidgetType widgetType)
+
+	public static JSONDocumentLayoutElement debuggingField(final String fieldName, final DocumentFieldWidgetType widgetType)
 	{
 		return new JSONDocumentLayoutElement(fieldName, widgetType);
 	}
@@ -128,21 +129,26 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
 	}
-	
+
 	/** Debugging field constructor */
 	private JSONDocumentLayoutElement(final String fieldName, final DocumentFieldWidgetType widgetType)
 	{
 		super();
-		this.caption = fieldName;
-		this.description = null;
-		
+		caption = fieldName;
+		description = null;
+
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
 		precision = null;
-		
+
 		type = null;
 		gridAlign = JSONLayoutAlign.right;
-		
-		fields = ImmutableSet.of(new JSONDocumentLayoutElementField(fieldName, (JSONFieldType)null, (JSONLookupSource)null, "no "+fieldName));
+
+		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
+				fieldName, (JSONFieldType)null // type
+				, (JSONLookupSource)null // lookupSource
+				, "no " + fieldName // emptyText
+				, (List<JSONDeviceDescriptor>)null // devices
+		));
 	}
 
 	@JsonCreator
@@ -162,7 +168,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 
 		this.widgetType = widgetType;
 		this.precision = precision;
-		
+
 		this.type = type;
 		this.gridAlign = gridAlign;
 
@@ -212,7 +218,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 	{
 		return fields;
 	}
-	
+
 	@JsonAnyGetter
 	public Map<String, Object> getOtherProperties()
 	{
@@ -224,7 +230,7 @@ public final class JSONDocumentLayoutElement implements Serializable
 	{
 		otherProperties.put(name, jsonValue);
 	}
-	
+
 	public JSONDocumentLayoutElement putDebugProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put("debug-" + name, jsonValue);
