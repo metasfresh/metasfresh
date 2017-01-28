@@ -49,6 +49,7 @@ public class WebRestApiApplication
 {
 	public static final String PROFILE_Test = "test";
 	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
+	public static final String PROFILE_Webui = "webui";
 
 	public static void main(String[] args)
 	{
@@ -63,6 +64,7 @@ public class WebRestApiApplication
 		new SpringApplicationBuilder(WebRestApiApplication.class)
 				.headless(false) // FIXME: we need it for initial connection setup popup (if any)
 				.web(true)
+				.profiles(PROFILE_Webui)
 				.run(args);
 
 	}
