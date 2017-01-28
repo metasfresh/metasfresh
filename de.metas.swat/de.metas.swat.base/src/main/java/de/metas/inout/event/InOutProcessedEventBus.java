@@ -30,70 +30,79 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
 
+import de.metas.document.engine.IDocActionBL;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.inout.model.I_M_InOut;
 
 /**
- * {@link IEventBus} wrapper implementation tailored for sending events about generated shipments/receipts.
+ * {@link IEventBus} wrapper implementation tailored for sending events about generated or reversed shipments/receipts.
  *
  * @author tsa
  *
  */
-public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
+public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 {
-	public static final InOutGeneratedEventBus newInstance()
+	public static final InOutProcessedEventBus newInstance()
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new InOutGeneratedEventBus(eventBus);
+		return new InOutProcessedEventBus(eventBus);
 	}
 
-	/** Topic used to send notifications about shipments/receipts that were generated asynchronously */
+	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.inout.InOutGenerated")
+			.setName("de.metas.inout.InOut.ProcessedEvents")
 			.setType(Type.REMOTE)
 			.build();
+	
+	// services
+	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 	private static final String MSG_Event_ShipmentGenerated = "Event_ShipmentGenerated";
 	private static final String MSG_Event_ReceiptGenerated = "Event_ReceiptGenerated";
+	//
+	private static final String MSG_Event_ShipmentReversed = "Event_ShipmentReversed";
+	private static final String MSG_Event_ReceiptReversed = "Event_ReceiptReversed";
 
-	private InOutGeneratedEventBus(final IEventBus delegate)
+	private InOutProcessedEventBus(final IEventBus delegate)
 	{
 		super(delegate);
 	}
 
 	@Override
-	public InOutGeneratedEventBus queueEvents()
+	public InOutProcessedEventBus queueEvents()
 	{
 		super.queueEvents();
 		return this;
 	}
 
 	@Override
-	public InOutGeneratedEventBus queueEventsUntilTrxCommit(final String trxName)
+	public InOutProcessedEventBus queueEventsUntilTrxCommit(final String trxName)
 	{
 		super.queueEventsUntilTrxCommit(trxName);
 		return this;
 	}
 	
 	@Override
-	public InOutGeneratedEventBus queueEventsUntilCurrentTrxCommit()
+	public InOutProcessedEventBus queueEventsUntilCurrentTrxCommit()
 	{
 		super.queueEventsUntilCurrentTrxCommit();
 		return this;
 	}
 
 	/**
-	 * Post events about given inouts that were generated.
+	 * Post events about given shipment/receipts that were processed.
 	 *
 	 * @param inouts
+	 * @see #notify(I_M_InOut)
 	 */
-	public InOutGeneratedEventBus notify(final Collection<? extends I_M_InOut> inouts)
+	public InOutProcessedEventBus notify(final Collection<? extends I_M_InOut> inouts)
 	{
 		if (inouts == null || inouts.isEmpty())
 		{
@@ -109,7 +118,17 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 		return this;
 	}
 
-	public final InOutGeneratedEventBus notify(final I_M_InOut inout)
+	/**
+	 * Post events about given shipment/receipts that were processed, i.e.
+	 * <ul>
+	 * <li>if inout's DocStatus is Completed, a "generated" notification will be sent
+	 * <li>if inout's DocStatus is Voided or Reversed, a "reversed" notification will be sent
+	 * </ul>
+	 * 
+	 * @param inout
+	 * @return
+	 */
+	public final InOutProcessedEventBus notify(final I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, "inout not null");
 		notify(Collections.singleton(inout));
@@ -124,9 +143,8 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 
-		final int recipientUserId = inout.getCreatedBy();
-
-		final String adMessage = inout.isSOTrx() ? MSG_Event_ShipmentGenerated : MSG_Event_ReceiptGenerated;
+		final String adMessage = getNotificationAD_Message(inout);
+		final int recipientUserId = getNotificationRecipientUserId(inout);
 
 		final Event event = Event.builder()
 				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
@@ -134,5 +152,39 @@ public final class InOutGeneratedEventBus extends QueueableForwardingEventBus
 				.setRecord(TableRecordReference.of(inout))
 				.build();
 		return event;
+	}
+	
+	private final String getNotificationAD_Message(final I_M_InOut inout)
+	{
+		if(docActionBL.isStatusReversedOrVoided(inout))
+		{
+			return inout.isSOTrx() ? MSG_Event_ShipmentReversed : MSG_Event_ReceiptReversed;
+		}
+		else
+		{
+			return inout.isSOTrx() ? MSG_Event_ShipmentGenerated : MSG_Event_ReceiptGenerated;
+		}
+	}
+	
+	private final int getNotificationRecipientUserId(final I_M_InOut inout)
+	{
+		//
+		// In case of reversal i think we shall notify the current user too
+		if(docActionBL.isStatusReversedOrVoided(inout))
+		{
+			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
+			if(currentUserId > 0)
+			{
+				return currentUserId;
+			}
+			
+			return inout.getUpdatedBy(); // last updated
+		}
+		//
+		// Fallback: notify only the creator
+		else
+		{
+			return inout.getCreatedBy();
+		}
 	}
 }
