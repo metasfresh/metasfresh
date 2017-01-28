@@ -40,9 +40,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_DiscountSchema;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Discount Calculations
@@ -63,7 +64,7 @@ public class Discount extends PricingRuleAdapter
 	{
 		if (!result.isCalculated())
 		{
-			log.info("Cannot apply discount if the price was not calculated - " + result);
+			log.debug("Cannot apply discount if the price was not calculated - {}", result);
 			return false;
 		}
 
