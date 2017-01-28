@@ -25,6 +25,7 @@ import com.google.common.collect.TreeMultimap;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.util.HUByIdComparator;
@@ -128,8 +129,7 @@ public class ReceiptCorrectHUsProcessor
 	{
 		if (receiptsToReverse.isEmpty())
 		{
-			// TODO: fix exception type
-			throw new TerminalException("@NotFound@ @M_InOut_ID@");
+			throw new HUException("@NotFound@ @M_InOut_ID@");
 		}
 
 		//

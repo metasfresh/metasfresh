@@ -8,6 +8,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
+import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -88,7 +89,14 @@ public class ReceiptCorrectHUEditorModel extends HUEditorModel
 	 */
 	public void reverseReceipts(final List<I_M_InOut> receiptsToReverse)
 	{
-		receiptCorrectProcessor.reverseReceipts(receiptsToReverse);
+		try
+		{
+			receiptCorrectProcessor.reverseReceipts(receiptsToReverse);
+		}
+		catch(Exception e)
+		{
+			throw new TerminalException(e.getLocalizedMessage(), e);
+		}
 	}
 
 	/**
