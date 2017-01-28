@@ -142,8 +142,30 @@ public interface IUserRolePermissions
 	void applyActionAccess(IDocActionOptionsContext optionsCtx);
 
 	boolean canView(TableAccessLevel tableAcessLevel);
+	
+	/**
+	 * Checks if given record can be viewed by this role.
+	 *
+	 * @param AD_Client_ID record's AD_Client_ID
+	 * @param AD_Org_ID record's AD_Org_ID
+	 * @param AD_Table_ID record table
+	 * @param Record_ID record id
+	 * @return true if you can view
+	 **/
+	boolean canView(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID);
 
+	/**
+	 * Checks if given record can be updated by this role.
+	 *
+	 * @param AD_Client_ID record's AD_Client_ID
+	 * @param AD_Org_ID record's AD_Org_ID
+	 * @param AD_Table_ID record table
+	 * @param Record_ID record id
+	 * @param saveWarning true if a warning shall be logged and saved (AccessTableNoUpdate).
+	 * @return true if you can update
+	 **/
 	boolean canUpdate(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID, boolean createError);
+	
 	boolean isRecordAccess(int AD_Table_ID, int Record_ID, boolean ro);
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, boolean ro);
 	boolean isTableAccess(int AD_Table_ID, boolean ro);
