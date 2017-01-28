@@ -52,8 +52,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
@@ -240,20 +238,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		final IMutable<InOutGenerateResult> retValue = new Mutable<>();
-		trxManager.run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final InOutGenerateResult inoutGenerateResult = processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts);
-				retValue.setValue(inoutGenerateResult);
-			}
-		});
 
-		return retValue.getValue();
+		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts));
+		return inoutGenerateResult;
 	}
 
 	/**
@@ -274,12 +262,23 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// assertNoTrxOrIneheritedtrx(selectedHUs);
 
 		//
+		// Validate selectedHUs.
 		// Get M_HU_IDs from selectedHUs
-		final Set<Integer> selectedHUIds = new HashSet<Integer>(selectedHUs.size());
+		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
 		for (final I_M_HU hu : selectedHUs)
 		{
+			if(!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			{
+				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
+			}
+			
 			final int huId = hu.getM_HU_ID();
 			selectedHUIds.add(huId);
+		}
+		//
+		if(selectedHUIds.isEmpty())
+		{
+			throw new HUException("@NoSelection@ @M_HU_ID@");
 		}
 
 		//
