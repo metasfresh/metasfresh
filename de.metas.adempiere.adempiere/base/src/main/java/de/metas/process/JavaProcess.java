@@ -29,6 +29,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -46,6 +47,7 @@ import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
  * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li>{@link Process} annotation if you add more info about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
+ * <li>{@link Profile} annotation if you want want to show/hide this process to/from Gear based on spring profiles
  * </ul>
  *
  *
@@ -92,7 +94,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * In case it's returned the process will be rolled back.
 	 */
 	protected static final String MSG_Error = "@Error@";
-	
+
 	@Override
 	public final String toString()
 	{
@@ -189,7 +191,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		// NOTE: we shall check again the result because it might be changed by postProcess()
 		getResult().propagateErrorIfAny();
 	}   // startProcess
-	
+
 	/**
 	 * Initialize this process.
 	 * 
@@ -210,7 +212,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		m_ctx = Env.copyCtx(pi.getCtx());
 
 		Env.setContext(m_ctx, Env.CTXNAME_AD_PInstance_ID, pi.getAD_PInstance_ID());
-		
+
 	}
 
 	/**
@@ -523,7 +525,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final ProcessInfo getProcessInfo()
 	{
-		if(_processInfo == null)
+		if (_processInfo == null)
 		{
 			throw new AdempiereException("ProcessInfo not configured for " + this);
 		}

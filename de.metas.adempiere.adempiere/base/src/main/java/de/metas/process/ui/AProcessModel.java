@@ -25,7 +25,6 @@ package de.metas.process.ui;
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -40,18 +39,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.MTreeNode;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessPreconditionChecker;
 
 /**
  * @author tsa
@@ -184,72 +181,9 @@ public class AProcessModel
 	@VisibleForTesting
 	boolean isPreconditionApplicable(final I_AD_Process process, final GridTab gridTab)
 	{
-		final String classname = getClassnameOrNull(process);
-		if (classname == null)
-		{
-			// no classname => always display the process (there no one to ask)
-			return true;
-		}
-
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
-		final Class<?> processClass;
-		try
-		{
-			processClass = classLoader.loadClass(classname);
-		}
-		catch (ClassNotFoundException e)
-		{
-			if(process.isServerProcess() && Ini.isClient())
-			{
-				// it might be that the class is available only on server
-				// so, for now, we consider the preconditions are applicable.
-				return true;
-			}
-
-			logger.error("Cannot load class: " + classname, e);
-			return false;
-		}
-
-		if (!IProcessPrecondition.class.isAssignableFrom(processClass))
-		{
-			return true;
-		}
-
-		final IProcessPrecondition processPrecondition;
-		try
-		{
-			processPrecondition = processClass.asSubclass(IProcessPrecondition.class).newInstance();
-			return processPrecondition.isPreconditionApplicable(gridTab);
-		}
-		catch (Exception e)
-		{
-			logger.error(e.getLocalizedMessage(), e);
-			return false;
-		}
-	}
-
-	private final String getClassnameOrNull(final I_AD_Process process)
-	{
-		//
-		// First try: Check process classname
-		if (!Check.isEmpty(process.getClassname(), true))
-		{
-			return process.getClassname();
-		}
-
-		//
-		// Second try: form classname (05089)
-		final I_AD_Form form = process.getAD_Form();
-		if (form != null && !Check.isEmpty(form.getClassname(), true))
-		{
-			return form.getClassname();
-		}
-
-		return null;
+		return ProcessPreconditionChecker.newInstance()
+				.setProcess(process)
+				.setPreconditionsContext(gridTab)
+				.checkApplies();
 	}
 }
