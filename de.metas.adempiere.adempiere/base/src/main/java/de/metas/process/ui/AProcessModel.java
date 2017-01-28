@@ -48,6 +48,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.IProcessPrecondition.PreconditionsContext;
 import de.metas.process.ProcessPreconditionChecker;
 
 /**
@@ -179,11 +180,11 @@ public class AProcessModel
 	}
 
 	@VisibleForTesting
-	boolean isPreconditionApplicable(final I_AD_Process process, final GridTab gridTab)
+	boolean isPreconditionApplicable(final I_AD_Process process, final PreconditionsContext preconditionsContext)
 	{
 		return ProcessPreconditionChecker.newInstance()
 				.setProcess(process)
-				.setPreconditionsContext(gridTab)
+				.setPreconditionsContext(preconditionsContext)
 				.checkApplies();
 	}
 }

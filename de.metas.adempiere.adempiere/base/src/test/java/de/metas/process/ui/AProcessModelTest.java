@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_Form;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPrecondition.PreconditionsContext;
 
 public class AProcessModelTest
 {
@@ -47,16 +48,32 @@ public class AProcessModelTest
 	}
 
 	private AProcessModel model;
-	private GridTab gridTab = null; // nothing
+	private PreconditionsContext preconditionsContext;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		POJOWrapper.setDefaultStrictValues(false); // we will want to return "null"
-		
+
 		model = new AProcessModel();
+
+		preconditionsContext = new PreconditionsContext()
+		{
+
+			@Override
+			public String getTableName()
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public <T> T getModel(final Class<T> modelClass)
+			{
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	@Test
@@ -65,7 +82,7 @@ public class AProcessModelTest
 		final I_AD_Process process = createProcess(null, false);
 		Assert.assertEquals(
 				"When class is not set we shall return true",
-				true, model.isPreconditionApplicable(process, gridTab));
+				true, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
@@ -75,7 +92,7 @@ public class AProcessModelTest
 		process.setClassname("MissingClass");
 		Assert.assertEquals(
 				"When classname is set but not found we shall return false",
-				false, model.isPreconditionApplicable(process, gridTab));
+				false, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
@@ -84,14 +101,14 @@ public class AProcessModelTest
 		final I_AD_Process process = createProcess(String.class, false);
 		Assert.assertEquals(
 				"When class is not implementing our interface we shall return true",
-				true, model.isPreconditionApplicable(process, gridTab));
+				true, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsFalse()
 	{
 		final I_AD_Process process = createProcess(ProcessPreconditionReturnFalse.class, false);
-		Assert.assertEquals(false, model.isPreconditionApplicable(process, gridTab));
+		Assert.assertEquals(false, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
@@ -101,14 +118,14 @@ public class AProcessModelTest
 		process.setClassname(ProcessPreconditionReturnFalse.class.getName());
 		Assert.assertEquals(
 				"If there is a process class defined we shall not look for form class",
-				false, model.isPreconditionApplicable(process, gridTab));
+				false, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsTrue()
 	{
 		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, false);
-		Assert.assertEquals(true, model.isPreconditionApplicable(process, gridTab));
+		Assert.assertEquals(true, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
@@ -117,26 +134,26 @@ public class AProcessModelTest
 		final I_AD_Process process = createProcess(ProcessPreconditionThrowsException.class, false);
 		Assert.assertEquals(
 				"In case preconditions are throwing exceptions we shall not include the process",
-				false, model.isPreconditionApplicable(process, gridTab));
+				false, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_FormClassReturnsFalse()
 	{
 		final I_AD_Process process = createProcess(ProcessPreconditionReturnFalse.class, true);
-		Assert.assertEquals(false, model.isPreconditionApplicable(process, gridTab));
+		Assert.assertEquals(false, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_FormClassReturnsTrue()
 	{
 		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, true);
-		Assert.assertEquals(true, model.isPreconditionApplicable(process, gridTab));
+		Assert.assertEquals(true, model.isPreconditionApplicable(process, preconditionsContext));
 	}
 
 	/**
 	 * Creates a process and a form ready for testing {@link AProcessModel#isPreconditionApplicable(I_AD_Process, GridTab)}.
-	 * 
+	 *
 	 * @param clazz
 	 * @param isForm true if is a form class; in that case a form will be created and linked to process
 	 * @return
