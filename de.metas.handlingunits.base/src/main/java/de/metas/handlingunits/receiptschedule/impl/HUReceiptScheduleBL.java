@@ -3,6 +3,8 @@
  */
 package de.metas.handlingunits.receiptschedule.impl;
 
+import java.awt.image.BufferedImage;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -43,6 +45,8 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,6 +54,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TrxRunnable;
@@ -388,4 +393,28 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final Set<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules = Collections.singleton(receiptSchedule);
 		return setInitialAttributeValueDefaults(request, receiptSchedules);
 	}
+
+	@Override
+	public void attachPhoto(final I_M_ReceiptSchedule receiptSchedule, final String filename, final BufferedImage image)
+	{
+		final byte[] imagePDFBytes = org.adempiere.pdf.Document.toPDFBytes(image);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
+		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
+
+		final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
+		final I_AD_Archive archive = archiveStorage.newArchive(ctx, trxName);
+
+		final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
+		final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
+		archive.setAD_Table_ID(tableID);
+		archive.setRecord_ID(recordID);
+		archive.setC_BPartner_ID(receiptSchedule.getC_BPartner_ID());
+		archive.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
+		archive.setName(filename);
+		archive.setIsReport(false);
+		archiveStorage.setBinaryData(archive, imagePDFBytes);
+		InterfaceWrapperHelper.save(archive);
+	}
+	
 }
