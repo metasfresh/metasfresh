@@ -15,7 +15,9 @@ import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -131,16 +133,16 @@ public class C_Order_CreatePOFromSOs
 	 * @return <code>true</code> if the given gridTab is a completed sales order.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!I_C_Order.Table_Name.equals(context.getTableName()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final I_C_Order order = context.getModel(I_C_Order.class);
-		return order.isSOTrx()
-				&& DocAction.STATUS_Completed.equals(order.getDocStatus());
+		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+		return ProcessPreconditionsResolution.acceptIf(order.isSOTrx()
+				&& DocAction.STATUS_Completed.equals(order.getDocStatus()));
 	}
 
 }

@@ -9,6 +9,7 @@ import de.metas.dlm.model.I_DLM_Partition_Config_Line;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
@@ -40,17 +41,17 @@ public abstract class AbstractManageDLMTableProcess extends JavaProcess
 	@Param(mandatory = true, parameterName = I_AD_Table.COLUMNNAME_AD_Table_ID)
 	protected I_AD_Table table;
 
-	protected final Boolean isDLMTable(final PreconditionsContext context)
+	protected final Boolean isDLMTable(final IProcessPreconditionsContext context)
 	{
 		if (Check.equals(context.getTableName(), I_DLM_Partition_Config_Line.Table_Name))
 		{
-			final I_DLM_Partition_Config_Line configLine = context.getModel(I_DLM_Partition_Config_Line.class);
+			final I_DLM_Partition_Config_Line configLine = context.getSelectedModel(I_DLM_Partition_Config_Line.class);
 			final I_AD_Table table = InterfaceWrapperHelper.create(configLine.getDLM_Referencing_Table(), I_AD_Table.class);
 			return table.isDLM(); // if the table is already DLMed, then return false
 		}
 		else if (Check.equals(context.getTableName(), org.compiere.model.I_AD_Table.Table_Name))
 		{
-			final I_AD_Table table = context.getModel(I_AD_Table.class);
+			final I_AD_Table table = context.getSelectedModel(I_AD_Table.class);
 			return table.isDLM(); // if the table is already DLMed, then return false
 		}
 
