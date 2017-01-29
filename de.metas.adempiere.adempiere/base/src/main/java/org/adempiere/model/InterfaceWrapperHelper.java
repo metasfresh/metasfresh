@@ -52,6 +52,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -64,6 +65,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -333,6 +335,19 @@ public class InterfaceWrapperHelper
 
 		return result;
 	}
+	
+	public static <T, S> List<T> wrapToImmutableList(final List<S> list, final Class<T> clazz)
+	{
+		if (list == null || list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
+		return list.stream()
+				.map(model -> create(model, clazz))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
 
 	public static void refresh(final Object model)
 	{
