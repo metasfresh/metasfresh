@@ -24,8 +24,9 @@ import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.process.DocumentPreconditionsContext;
+import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -439,12 +440,10 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final Document document = documentCollection.getDocument(documentPath);
-		final String tableName = document.getEntityDescriptor().getTableName();
+		final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
 
-		final DocumentPreconditionsContext preconditionsContext = DocumentPreconditionsContext.of(document);
-
-		return processDescriptorFactory.streamDocumentRelatedProcesses(tableName)
-				.filter(relatedProcessWrapper -> relatedProcessWrapper.isPreconditionsApplicable(preconditionsContext))
+		return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext)
+				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled
 				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 	}
 

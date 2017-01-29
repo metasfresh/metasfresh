@@ -232,7 +232,7 @@ public final class JSONDocument implements Serializable
 		//
 		// Included documents if any
 		{
-			final List<IDocumentView> includedDocuments = documentView.getIncludedDocuments();
+			final List<? extends IDocumentView> includedDocuments = documentView.getIncludedDocuments();
 			if (!includedDocuments.isEmpty())
 			{
 				final List<JSONDocument> jsonIncludedDocuments = includedDocuments

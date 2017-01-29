@@ -23,7 +23,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
-import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -96,7 +95,7 @@ public class HUDocumentViewLoader
 		return _attributesProvider;
 	}
 
-	public List<IDocumentView> retrieveDocumentViews()
+	public List<HUDocumentView> retrieveDocumentViews()
 	{
 		return retrieveTopLevelHUs(filterOnlyIds)
 				.stream()
@@ -122,7 +121,7 @@ public class HUDocumentViewLoader
 				.list();
 	}
 
-	private IDocumentView createDocumentView(final I_M_HU hu)
+	private HUDocumentView createDocumentView(final I_M_HU hu)
 	{
 		final String huUnitType = hu.getM_HU_PI_Version().getHU_UnitType();
 
@@ -162,7 +161,7 @@ public class HUDocumentViewLoader
 			throw new IllegalStateException("Unknown HU_UnitType=" + huUnitType + " for " + hu);
 		}
 
-		return huViewRecord.build();
+		return HUDocumentView.of(huViewRecord.build(), HUDocumentView.RecordType.HU);
 	}
 
 	private static final String extractPackingInfo(final I_M_HU hu)
@@ -170,12 +169,12 @@ public class HUDocumentViewLoader
 		return hu.getM_HU_PI_Version().getName();
 	}
 
-	private IDocumentView createDocumentView(final IHUProductStorage huStorage)
+	private HUDocumentView createDocumentView(final IHUProductStorage huStorage)
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final I_M_Product product = huStorage.getM_Product();
 
-		return DocumentView.builder(adWindowId)
+		final DocumentView storageDocument = DocumentView.builder(adWindowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "#" + hu.getM_HU_ID() + "#" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
 				//
@@ -188,6 +187,7 @@ public class HUDocumentViewLoader
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty())
 				//
 				.build();
+		return HUDocumentView.of(storageDocument, HUDocumentView.RecordType.HUStorage);
 	}
 
 	private JSONLookupValue createLookupValue(final I_M_Product product)

@@ -1,10 +1,13 @@
 package de.metas.ui.web.process;
 
+import java.util.List;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.process.IProcessPrecondition.PreconditionsContext;
 import de.metas.ui.web.window.model.Document;
 
 /*
@@ -29,19 +32,20 @@ import de.metas.ui.web.window.model.Document;
  * #L%
  */
 
-public final class DocumentPreconditionsContext implements PreconditionsContext
+public final class DocumentPreconditionsAsContext implements WebuiPreconditionsContext
 {
-	public static final DocumentPreconditionsContext of(final Document document)
+	public static final DocumentPreconditionsAsContext of(final Document document)
 	{
-		return new DocumentPreconditionsContext(document);
+		return new DocumentPreconditionsAsContext(document);
 	}
 
 	private final Document document;
 	private final String tableName;
 
-	private DocumentPreconditionsContext(final Document document)
+	private DocumentPreconditionsAsContext(final Document document)
 	{
 		super();
+		Check.assumeNotNull(document, "Parameter document is not null");
 		this.document = document;
 		tableName = document.getEntityDescriptor().getTableName();
 	}
@@ -61,9 +65,22 @@ public final class DocumentPreconditionsContext implements PreconditionsContext
 	}
 
 	@Override
-	public <T> T getModel(final Class<T> modelClass)
+	public <T> T getSelectedModel(final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(document, modelClass);
+	}
+	
+	@Override
+	public <T> List<T> getSelectedModels(final Class<T> modelClass)
+	{
+		final T model = getSelectedModel(modelClass);
+		return ImmutableList.of(model);
+	}
+	
+	@Override
+	public int getSelectionSize()
+	{
+		return 1;
 	}
 
 }

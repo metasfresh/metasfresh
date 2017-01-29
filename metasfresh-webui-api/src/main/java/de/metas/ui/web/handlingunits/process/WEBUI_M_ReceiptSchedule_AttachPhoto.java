@@ -10,8 +10,11 @@ import org.compiere.model.MImage;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 
 /*
@@ -36,8 +39,24 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
  * #L%
  */
 
-public class WEBUI_M_ReceiptSchedule_AttachPhoto extends JavaProcess
+public class WEBUI_M_ReceiptSchedule_AttachPhoto extends JavaProcess implements IProcessPrecondition
 {
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		// Allow only single selection
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		else if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	@Param(parameterName = "AD_Image_ID", mandatory = true)
 	private int p_AD_Image_ID;
 

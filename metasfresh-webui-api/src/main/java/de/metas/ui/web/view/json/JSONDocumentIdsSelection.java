@@ -1,12 +1,15 @@
-package de.metas.ui.web.view.event;
+package de.metas.ui.web.view.json;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -32,54 +35,29 @@ import com.google.common.base.MoreObjects;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONDocumentViewChanges implements Serializable
+public class JSONDocumentIdsSelection implements Serializable
 {
-	public static JSONDocumentViewChanges of(final DocumentViewChanges changes)
+	@JsonProperty("selection")
+	private final Set<String> selection;
+
+	private JSONDocumentIdsSelection(@JsonProperty("selection") final Set<String> selection)
 	{
-		return new JSONDocumentViewChanges(changes);
-	}
-
-	@JsonProperty("viewId")
-	private final String viewId;
-	@JsonProperty("windowId")
-	private final int windowId;
-
-	@JsonProperty("fullyChanged")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean fullyChanged;
-
-	private JSONDocumentViewChanges(final DocumentViewChanges changes)
-	{
-		super();
-		viewId = changes.getViewId();
-		windowId = changes.getAD_Window_ID();
-
-		fullyChanged = changes.getFullyChanged();
+		this.selection = selection == null ? ImmutableSet.of() : ImmutableSet.copyOf(selection);
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("viewId", viewId)
-				.add("windowId", windowId)
-				.add("fullyChanged", fullyChanged)
-				.toString();
+		return MoreObjects.toStringHelper(this).addValue(selection).toString();
 	}
 
-	public String getViewId()
+	public Set<String> getSelection()
 	{
-		return viewId;
+		return selection;
 	}
 
-	public int getWindowId()
+	public Set<DocumentId> getSelectionDocumentIds()
 	{
-		return windowId;
-	}
-
-	public Boolean getFullyChanged()
-	{
-		return fullyChanged;
+		return DocumentId.ofStringSet(selection);
 	}
 }

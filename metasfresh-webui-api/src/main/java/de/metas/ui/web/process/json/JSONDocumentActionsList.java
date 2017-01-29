@@ -13,7 +13,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -40,22 +40,27 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 public class JSONDocumentActionsList
 {
-	public static final Collector<RelatedProcessDescriptorWrapper, ?, JSONDocumentActionsList> collect(final JSONOptions jsonOpts)
+	public static final Collector<WebuiRelatedProcessDescriptor, ?, JSONDocumentActionsList> collect(final JSONOptions jsonOpts)
 	{
-		final Supplier<List<RelatedProcessDescriptorWrapper>> supplier = ArrayList::new;
-		final BiConsumer<List<RelatedProcessDescriptorWrapper>, RelatedProcessDescriptorWrapper> accumulator = List::add;
-		final BinaryOperator<List<RelatedProcessDescriptorWrapper>> combiner = (l, r) -> {
+		final Supplier<List<WebuiRelatedProcessDescriptor>> supplier = ArrayList::new;
+		final BiConsumer<List<WebuiRelatedProcessDescriptor>, WebuiRelatedProcessDescriptor> accumulator = List::add;
+		final BinaryOperator<List<WebuiRelatedProcessDescriptor>> combiner = (l, r) -> {
 			l.addAll(r);
 			return l;
 		};
-		final Function<List<RelatedProcessDescriptorWrapper>, JSONDocumentActionsList> finisher = processDescriptors -> new JSONDocumentActionsList(processDescriptors, jsonOpts);
+		final Function<List<WebuiRelatedProcessDescriptor>, JSONDocumentActionsList> finisher = processDescriptors -> new JSONDocumentActionsList(processDescriptors, jsonOpts);
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+	
+	public static final JSONDocumentActionsList ofList(final List<WebuiRelatedProcessDescriptor> processDescriptors, final JSONOptions jsonOpts)
+	{
+		return new JSONDocumentActionsList(processDescriptors, jsonOpts);
 	}
 
 	@JsonProperty("actions")
 	private final List<JSONDocumentAction> actions;
 
-	private JSONDocumentActionsList(final List<RelatedProcessDescriptorWrapper> processDescriptors, final JSONOptions jsonOpts)
+	private JSONDocumentActionsList(final List<WebuiRelatedProcessDescriptor> processDescriptors, final JSONOptions jsonOpts)
 	{
 		super();
 		actions = processDescriptors.stream()

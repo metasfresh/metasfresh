@@ -1,12 +1,13 @@
 package de.metas.ui.web.view;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.compiere.util.Evaluatee;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -41,7 +42,7 @@ public interface IDocumentViewSelection
 	int getAD_Window_ID();
 
 	long size();
-	
+
 	void close();
 
 	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
@@ -51,14 +52,13 @@ public interface IDocumentViewSelection
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 		return getPage(firstRow, pageLength, orderBys);
 	}
-	
+
 	IDocumentView getById(DocumentId documentId) throws EntityNotFoundException;
 
 	default IDocumentView getById(final int documentIdInt) throws EntityNotFoundException
 	{
 		return getById(DocumentId.of(documentIdInt));
 	}
-
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
 
@@ -73,10 +73,20 @@ public interface IDocumentViewSelection
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
 
-	String getSqlWhereClause(List<Integer> viewDocumentIds);
+	String getSqlWhereClause(Collection<Integer> viewDocumentIds);
 
-	/** @return stream of actions which can be executed on this view */
-	Stream<RelatedProcessDescriptorWrapper> streamActions();
+	/**
+	 * @return stream of actions which can be executed on this view
+	 */
+	Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds);
+
+	/**
+	 * @return stream of quick actions which can be executed on this view
+	 */
+	default Stream<WebuiRelatedProcessDescriptor> streamQuickActions(final Collection<DocumentId> selectedDocumentIds)
+	{
+		return streamActions(selectedDocumentIds).filter(WebuiRelatedProcessDescriptor::isQuickAction);
+	}
 
 	boolean hasAttributesSupport();
 
@@ -97,4 +107,8 @@ public interface IDocumentViewSelection
 
 		return this;
 	}
+
+	<T> List<T> retrieveModelsByIds(Collection<DocumentId> documentIds, Class<T> modelClass);
+
+	Stream<? extends IDocumentView> streamByIds(Collection<DocumentId> documentIds);
 }

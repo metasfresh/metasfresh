@@ -11,7 +11,8 @@ import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.IProcessPrecondition.PreconditionsContext;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
@@ -127,7 +128,7 @@ public final class ProcessDescriptor
 		return true;
 	}
 
-	public boolean isPreconditionsApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		return ProcessPreconditionChecker.newInstance()
 				.setProcess(getProcessClassname())

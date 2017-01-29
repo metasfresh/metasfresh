@@ -11,8 +11,11 @@ import org.springframework.context.annotation.Profile;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
@@ -31,12 +34,12 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,13 +48,20 @@ import de.metas.ui.web.window.model.DocumentCollection;
 
 /**
  * Reverse the receipts which contain the selected HUs.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Profile(value = WebRestApiApplication.PROFILE_Webui)
-public class WEBUI_M_HU_ReverseReceipt extends JavaProcess
+public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPrecondition
 {
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		// TODO Auto-generated method stub
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
 	@Autowired

@@ -5,12 +5,12 @@ import java.util.Comparator;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ui.web.process.descriptor.ProcessDescriptor;
-import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -55,35 +55,36 @@ public final class JSONDocumentAction implements Serializable
 	@JsonProperty("defaultQuickAction")
 	private final boolean defaultQuickAction;
 
+	@JsonProperty("disabled")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean disabled;
+	@JsonProperty("disabledReason")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String disabledReason;
+
 	private final Map<String, Object> debugProperties;
 
-	JSONDocumentAction(final RelatedProcessDescriptorWrapper relatedProcessDescriptorWrapper, final JSONOptions jsonOpts)
+	JSONDocumentAction(final WebuiRelatedProcessDescriptor relatedProcessDescriptor, final JSONOptions jsonOpts)
 	{
 		super();
 
 		final String adLanguage = jsonOpts.getAD_Language();
 
-		final ProcessDescriptor processDescriptor = relatedProcessDescriptorWrapper.getProcessDescriptor();
-		processId = processDescriptor.getAD_Process_ID();
-		caption = processDescriptor.getCaption(adLanguage);
-		description = processDescriptor.getDescription(adLanguage);
+		processId = relatedProcessDescriptor.getAD_Process_ID();
+		caption = relatedProcessDescriptor.getCaption(adLanguage);
+		description = relatedProcessDescriptor.getDescription(adLanguage);
 
-		quickAction = relatedProcessDescriptorWrapper.isQuickAction();
-		defaultQuickAction = relatedProcessDescriptorWrapper.isDefaultQuickAction();
+		quickAction = relatedProcessDescriptor.isQuickAction();
+		defaultQuickAction = relatedProcessDescriptor.isDefaultQuickAction();
+		
+		disabled = relatedProcessDescriptor.isDisabled() ? Boolean.TRUE : null;
+		disabledReason = relatedProcessDescriptor.getDisabledReason(adLanguage);
 
 		//
 		// Debug properties
 		if (jsonOpts.isProtocolDebugging())
 		{
-			final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.<String, Object> builder();
-
-			final String processClassname = processDescriptor.getProcessClassname();
-			if (processClassname != null)
-			{
-				debugProperties.put("debug-classname", processClassname);
-			}
-
-			this.debugProperties = debugProperties.build();
+			debugProperties = relatedProcessDescriptor.getDebugProperties();
 		}
 		else
 		{

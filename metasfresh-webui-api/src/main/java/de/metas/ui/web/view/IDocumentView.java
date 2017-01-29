@@ -45,5 +45,5 @@ public interface IDocumentView
 	
 	IDocumentViewAttributes getAttributes();
 
-	List<IDocumentView> getIncludedDocuments();
+	List<? extends IDocumentView> getIncludedDocuments();
 }

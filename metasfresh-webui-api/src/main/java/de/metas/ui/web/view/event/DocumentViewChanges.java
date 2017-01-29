@@ -38,6 +38,14 @@ public class DocumentViewChanges
 		this.adWindowId = adWindowId;
 	}
 
+	public void collectFrom(final DocumentViewChanges changes)
+	{
+		if (changes.isFullyChanged())
+		{
+			fullyChanged = true;
+		}
+	}
+
 	@Override
 	public String toString()
 	{
@@ -72,13 +80,5 @@ public class DocumentViewChanges
 	public Boolean getFullyChanged()
 	{
 		return fullyChanged ? Boolean.TRUE : null;
-	}
-
-	public void collectFrom(final DocumentViewChanges changes)
-	{
-		if (changes.isFullyChanged())
-		{
-			fullyChanged = true;
-		}
 	}
 }
