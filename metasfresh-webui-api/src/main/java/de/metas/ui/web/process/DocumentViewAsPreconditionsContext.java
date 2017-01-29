@@ -75,12 +75,7 @@ public class DocumentViewAsPreconditionsContext implements WebuiPreconditionsCon
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
 		this.tableName = tableName;
-		
-		// FIXME: debugging
 		this.selectedDocumentIds = ImmutableSet.copyOf(selectedDocumentIds);
-		//
-		//this.selectedDocumentIds = DocumentId.ofCommaSeparatedString("1000000, 1000001");
-		//this.selectedDocumentIds = DocumentId.ofCommaSeparatedString("1000000");
 	}
 
 	@Override
