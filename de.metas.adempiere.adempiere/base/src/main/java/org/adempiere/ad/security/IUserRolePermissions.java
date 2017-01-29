@@ -128,17 +128,23 @@ public interface IUserRolePermissions
 	 */
 	String addAccessSQL(String SQL, String TableNameIn, boolean fullyQualified, boolean rw);
 
+	Boolean checkWindowAccess(int AD_Window_ID);
+	Boolean getWindowAccess(int AD_Window_ID);
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);
 	Boolean getWorkflowAccess(int AD_Workflow_ID);
 	Boolean checkFormAccess(int AD_Form_ID);
 	Boolean getFormAccess(int AD_Form_ID);
 	Boolean checkTaskAccess(int AD_Task_ID);
 	Boolean getTaskAccess(int AD_Task_ID);
+	
+	//
+	// Process
+	// @formatter:off
 	Boolean checkProcessAccess(int AD_Process_ID);
+	default boolean checkProcessAccessRW(final int AD_Process_ID) { return isReadWriteAccess(checkProcessAccess(AD_Process_ID)); }
 	Boolean getProcessAccess(int AD_Process_ID);
-	Boolean checkWindowAccess(int AD_Window_ID);
-	Boolean getWindowAccess(int AD_Window_ID);
-
+	// @formatter:on
+	
 	void applyActionAccess(IDocActionOptionsContext optionsCtx);
 
 	boolean canView(TableAccessLevel tableAcessLevel);
@@ -221,4 +227,12 @@ public interface IUserRolePermissions
 	boolean isAllow_Info_CashJournal();
 	boolean isAllow_Info_Resource();
 	boolean isAllow_Info_Asset();
+	
+	//
+	// Static Helpers
+	//
+	static boolean isReadWriteAccess(final Boolean access)
+	{
+		return access != null && access.booleanValue();
+	}
 }
