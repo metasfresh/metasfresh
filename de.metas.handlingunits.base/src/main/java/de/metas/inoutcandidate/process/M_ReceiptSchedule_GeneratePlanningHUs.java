@@ -30,6 +30,8 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.IProcessPreconditionsContext;
 
 /*
  * #%L
@@ -55,6 +57,36 @@ import de.metas.process.Param;
 
 public class M_ReceiptSchedule_GeneratePlanningHUs extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+		// Receipt schedule shall not be already closed
+		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
+		if (receiptScheduleBL.isClosed(receiptSchedule))
+		{
+			return ProcessPreconditionsResolution.reject("receipt schedule closed");
+		}
+
+		// Receipt schedule shall not be about packing materials
+		if (receiptSchedule.isPackagingMaterial())
+		{
+			return ProcessPreconditionsResolution.reject("not applying for packing materials");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	//
 	// Parameters
 	private static final String PARAM_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
@@ -80,27 +112,6 @@ public class M_ReceiptSchedule_GeneratePlanningHUs extends JavaProcess implement
 	//
 	// State
 	private I_M_HU_LUTU_Configuration _defaultLUTUConfiguration; // lazy
-
-	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
-	{
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
-		// Receipt schedule shall not be already closed
-		final I_M_ReceiptSchedule receiptSchedule = context.getModel(I_M_ReceiptSchedule.class);
-		if (receiptScheduleBL.isClosed(receiptSchedule))
-		{
-			return false;
-		}
-
-		// Receipt schedule shall not be about packing materials
-		if (receiptSchedule.isPackagingMaterial())
-		{
-			return false;
-		}
-
-		return true;
-	}
 
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
