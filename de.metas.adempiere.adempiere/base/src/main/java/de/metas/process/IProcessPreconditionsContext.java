@@ -1,5 +1,7 @@
 package de.metas.process;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,25 +25,49 @@ package de.metas.process;
  */
 
 /**
- * Let your process implement this interface if you want to:
- * <ul>
- * <li>control when this process will be displayed in related processes toolbar (e.g. Gear in Swing)
- * <li>override displayed process caption
- * </ul>
+ * Preconditions checking context.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface IProcessPrecondition
+public interface IProcessPreconditionsContext
 {
 	/**
-	 * Determines if a process should be displayed in current context.
-	 * <p>
-	 * <b>IMPORTANT:</b> this method will not be invoked on the same instance that shall later execute <code>prepare()</code> {@link JavaProcess#doIt(String, String, Object[])},
-	 * so it does not make any sense to set any values to be used later.
-	 *
-	 * @param context
-	 * @return precondition resolution
+	 * @return underlying table name or <code>null</code>
 	 */
-	ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context);
+	String getTableName();
+
+	/**
+	 * @param modelClass
+	 * @return single selected row's model
+	 */
+	<T> T getSelectedModel(final Class<T> modelClass);
+
+	/**
+	 * @param modelClass
+	 * @return all selected rows's model(s)
+	 */
+	<T> List<T> getSelectedModels(final Class<T> modelClass);
+
+	/**
+	 * @return selection size
+	 */
+	int getSelectionSize();
+
+	/**
+	 * @return true if there is no selection
+	 */
+	default boolean isNoSelection()
+	{
+		return getSelectionSize() <= 0;
+	}
+
+	/**
+	 * @return true if only one row is selected
+	 */
+	default boolean isSingleSelection()
+	{
+		return getSelectionSize() == 1;
+	}
+
 }

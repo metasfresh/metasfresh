@@ -1,10 +1,11 @@
 package de.metas.process.ui;
 
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -13,7 +14,9 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_Form;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPrecondition.PreconditionsContext;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor;
 
 public class AProcessModelTest
 {
@@ -21,9 +24,9 @@ public class AProcessModelTest
 	{
 
 		@Override
-		public boolean isPreconditionApplicable(final PreconditionsContext context)
+		public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 		{
-			return true;
+			return ProcessPreconditionsResolution.accept();
 		}
 	}
 
@@ -31,9 +34,9 @@ public class AProcessModelTest
 	{
 
 		@Override
-		public boolean isPreconditionApplicable(final PreconditionsContext context)
+		public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 	}
 
@@ -41,14 +44,14 @@ public class AProcessModelTest
 	{
 
 		@Override
-		public boolean isPreconditionApplicable(final PreconditionsContext context)
+		public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 		{
 			throw new RuntimeException("Test Exception");
 		}
 	}
 
 	private AProcessModel model;
-	private PreconditionsContext preconditionsContext;
+	private IProcessPreconditionsContext preconditionsContext;
 
 	@Before
 	public void init()
@@ -59,7 +62,7 @@ public class AProcessModelTest
 
 		model = new AProcessModel();
 
-		preconditionsContext = new PreconditionsContext()
+		preconditionsContext = new IProcessPreconditionsContext()
 		{
 
 			@Override
@@ -69,7 +72,19 @@ public class AProcessModelTest
 			}
 
 			@Override
-			public <T> T getModel(final Class<T> modelClass)
+			public <T> T getSelectedModel(final Class<T> modelClass)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public <T> List<T> getSelectedModels(final Class<T> modelClass)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public int getSelectionSize()
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -79,86 +94,75 @@ public class AProcessModelTest
 	@Test
 	public void test_isPreconditionApplicable_NoClass()
 	{
-		final I_AD_Process process = createProcess(null, false);
-		Assert.assertEquals(
-				"When class is not set we shall return true",
-				true, model.isPreconditionApplicable(process, preconditionsContext));
+		final String classname = null;
+		final RelatedProcessDescriptor process = createProcess(classname, false);
+		assertPreconditionsApplicable("When class is not set we shall return true", true, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ClassNotFound()
 	{
-		final I_AD_Process process = createProcess(null, false);
-		process.setClassname("MissingClass");
-		Assert.assertEquals(
-				"When classname is set but not found we shall return false",
-				false, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess("MissingClass", false);
+		assertPreconditionsApplicable("When classname is set but not found we shall return false", false, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassNotImplementingPreconditionsInterface()
 	{
-		final I_AD_Process process = createProcess(String.class, false);
-		Assert.assertEquals(
-				"When class is not implementing our interface we shall return true",
-				true, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess(String.class, false);
+		assertPreconditionsApplicable("When class is not implementing our interface we shall return true", true, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsFalse()
 	{
-		final I_AD_Process process = createProcess(ProcessPreconditionReturnFalse.class, false);
-		Assert.assertEquals(false, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess(ProcessPreconditionReturnFalse.class, false);
+		assertPreconditionsApplicable("Process class returns false", false, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsFalse_But_FormClassReturnsTrue()
 	{
-		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, true);
-		process.setClassname(ProcessPreconditionReturnFalse.class.getName());
-		Assert.assertEquals(
-				"If there is a process class defined we shall not look for form class",
-				false, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcessAndForm(ProcessPreconditionReturnFalse.class.getName(), ProcessPreconditionReturnTrue.class.getName());
+		assertPreconditionsApplicable("If there is a process class defined we shall not look for form class", false, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassReturnsTrue()
 	{
-		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, false);
-		Assert.assertEquals(true, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess(ProcessPreconditionReturnTrue.class, false);
+		assertPreconditionsApplicable("Process class returns true", true, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_ProcessClassThrowsException()
 	{
-		final I_AD_Process process = createProcess(ProcessPreconditionThrowsException.class, false);
-		Assert.assertEquals(
-				"In case preconditions are throwing exceptions we shall not include the process",
-				false, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess(ProcessPreconditionThrowsException.class, false);
+		assertPreconditionsApplicable("In case preconditions are throwing exceptions we shall not include the process", false, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_FormClassReturnsFalse()
 	{
-		final I_AD_Process process = createProcess(ProcessPreconditionReturnFalse.class, true);
-		Assert.assertEquals(false, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess(ProcessPreconditionReturnFalse.class, true);
+		assertPreconditionsApplicable("Form class returns false", false, process);
 	}
 
 	@Test
 	public void test_isPreconditionApplicable_FormClassReturnsTrue()
 	{
-		final I_AD_Process process = createProcess(ProcessPreconditionReturnTrue.class, true);
-		Assert.assertEquals(true, model.isPreconditionApplicable(process, preconditionsContext));
+		final RelatedProcessDescriptor process = createProcess(ProcessPreconditionReturnTrue.class, true);
+		assertPreconditionsApplicable("Form class returns true", true, process);
 	}
 
 	/**
-	 * Creates a process and a form ready for testing {@link AProcessModel#isPreconditionApplicable(I_AD_Process, GridTab)}.
+	 * Creates a process and a form ready for testing.
 	 *
 	 * @param clazz
 	 * @param isForm true if is a form class; in that case a form will be created and linked to process
 	 * @return
 	 */
-	private I_AD_Process createProcess(final Class<?> clazz, final boolean isForm)
+	private RelatedProcessDescriptor createProcess(final Class<?> clazz, final boolean isForm)
 	{
 		final String classname;
 		if (clazz == null)
@@ -170,12 +174,16 @@ public class AProcessModelTest
 			classname = clazz.getName();
 		}
 
+		return createProcess(classname, isForm);
+	}
+
+	private RelatedProcessDescriptor createProcess(final String classname, final boolean isForm)
+	{
 		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_Process.class, ITrx.TRXNAME_None);
 		if (!isForm)
 		{
 			process.setClassname(classname);
 		}
-		InterfaceWrapperHelper.save(process);
 
 		if (isForm)
 		{
@@ -184,9 +192,37 @@ public class AProcessModelTest
 			InterfaceWrapperHelper.save(form);
 
 			process.setAD_Form_ID(form.getAD_Form_ID());
-			InterfaceWrapperHelper.save(process);
 		}
 
-		return process;
+		InterfaceWrapperHelper.save(process);
+
+		return RelatedProcessDescriptor.ofAD_Process_ID(process.getAD_Process_ID());
+	}
+
+	private RelatedProcessDescriptor createProcessAndForm(final String processClassname, final String formClassname)
+	{
+		final I_AD_Process process = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_Process.class, ITrx.TRXNAME_None);
+		process.setClassname(processClassname);
+
+		// Form
+		{
+			final I_AD_Form form = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_Form.class, ITrx.TRXNAME_None);
+			form.setClassname(formClassname);
+			InterfaceWrapperHelper.save(form);
+			process.setAD_Form_ID(form.getAD_Form_ID());
+		}
+
+		InterfaceWrapperHelper.save(process);
+
+		return RelatedProcessDescriptor.ofAD_Process_ID(process.getAD_Process_ID());
+	}
+
+	private void assertPreconditionsApplicable(final String message, final boolean expectAccepted, final RelatedProcessDescriptor relatedProcess)
+	{
+		final ProcessPreconditionsResolution resolution = model.checkPreconditionApplicable(relatedProcess, preconditionsContext);
+		final boolean actualAccepted = resolution.isAccepted();
+
+		final String messageEffective = message + "\n Resolution: " + resolution;
+		Assert.assertEquals(messageEffective, expectAccepted, actualAccepted);
 	}
 }
