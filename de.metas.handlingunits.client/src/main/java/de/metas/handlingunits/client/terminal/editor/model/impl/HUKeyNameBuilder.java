@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Font;
 import java.math.BigDecimal;
@@ -476,14 +475,19 @@ import de.metas.handlingunits.storage.IProductStorage;
 						return VisitResult.CONTINUE;
 					}
 
-					if (!countVHUs && currentHUKey.isVirtualPI())
+					if (currentHUKey.isAggregateHU())
 					{
-						// skip virtual HUs
-						return VisitResult.CONTINUE;
+						counter.getValue().addAndGet(currentHUKey.getAggregatedHUCount());
 					}
-
-					counter.getValue().incrementAndGet();
-
+					else
+					{
+						if (!countVHUs && currentHUKey.isVirtualPI())
+						{
+							// skip virtual HUs; note that also aggregate HUs are "virtual", but that case is handled not here
+							return VisitResult.CONTINUE;
+						}
+						counter.getValue().incrementAndGet();
+					}
 					// we are counting only first level => so skip downstream
 					return VisitResult.SKIP_DOWNSTREAM;
 				}
