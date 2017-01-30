@@ -401,7 +401,7 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
-                            tabIndex={fullScreen ? "" : tabIndex}
+                            tabIndex={tabIndex}
                         />
                     </div>
 
