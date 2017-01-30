@@ -22,9 +22,6 @@ this week's RC
 * metasfresh
   * #868 Weekly Revenue Report
 
-* metasfresh-webui
-  * #878 Purchase Order Window WebUI
- 
 ## Already integrated in RB
 
 ### Features
@@ -35,7 +32,8 @@ this week's RC
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
-  
+  * #878 Purchase Order Window WebUI
+
 ### Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
