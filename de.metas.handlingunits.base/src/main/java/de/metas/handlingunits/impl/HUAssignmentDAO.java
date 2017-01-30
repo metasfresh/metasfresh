@@ -280,7 +280,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		queryBuilder
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
-				.addInArrayFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, huIds)
+				.addInArrayOrAllFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, huIds)
 				.create()
 				.delete();
 	}

@@ -164,7 +164,7 @@ public class UserQueryRepository
 		
 		if(adUserId > 0 || adUserId == Env.CTXVALUE_AD_User_ID_System)
 		{
-			queryBuilder.addInArrayFilter(I_AD_UserQuery.COLUMNNAME_AD_User_ID, Env.CTXVALUE_AD_User_ID_System, adUserId, null);
+			queryBuilder.addInArrayOrAllFilter(I_AD_UserQuery.COLUMNNAME_AD_User_ID, Env.CTXVALUE_AD_User_ID_System, adUserId, null);
 		}
 		
 		

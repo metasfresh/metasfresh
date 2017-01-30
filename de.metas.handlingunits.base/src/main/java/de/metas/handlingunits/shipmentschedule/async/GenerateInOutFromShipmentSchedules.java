@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -45,6 +46,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -258,10 +260,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	{
 		//
 		// Load all QtyPicked records that have no InOutLine yet
-		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 
 		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
-
 		if (qtyPickedRecords.isEmpty())
 		{
 			if (isUseQtyPicked)
@@ -274,7 +275,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				final boolean wereDelivered = shipmentScheduleAllocDAO.retrievePickedAndDeliveredRecordsQuery(schedule).create().match();
 				if (wereDelivered)
 				{
-					Loggables.get().addLog("Skipped shipment schedule because it was already delivered: " + schedule);
+					Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", schedule);
 					return Collections.emptyList();
 				}
 
@@ -293,7 +294,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		createLUs(schedule);
 
 		// retrieve the qty picked entries again, some new ones might have been created on LU creation
-		qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
@@ -302,9 +303,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		{
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
 
-			// guard: Skip inactive records
+			// guard: Skip inactive records.
 			if (!qtyPickedRecordHU.isActive())
 			{
+				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
 				continue;
 			}
 
@@ -315,6 +317,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			{
 				final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
 				logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
+				Loggables.get().addLog("WARN: {} [Skipped]", ex.getLocalizedMessage());
 				continue;
 			}
 
@@ -325,6 +328,23 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		}
 
 		return candidates;
+	}
+
+	/**
+	 * 
+	 * @param schedule
+	 * @return records that are returned by {@link IShipmentScheduleAllocDAO#retrieveAllQtyPickedRecords(de.metas.inoutcandidate.model.I_M_ShipmentSchedule, Class)} and either reference no HUs or reference active (i.e. non-destroyed) HUs.
+	 * @task https://github.com/metasfresh/metasfresh/issues/759
+	 */
+	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final I_M_ShipmentSchedule schedule)
+	{
+		return shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
+				.stream()
+				// for each HU-column, *if* a HU is referenced, then it shall be active.
+				.filter(r -> (r.getVHU_ID() <= 0 || r.getVHU().isActive())
+						&& (r.getM_TU_HU_ID() <= 0 || r.getM_TU_HU().isActive())
+						&& (r.getM_LU_HU_ID() <= 0 || r.getM_LU_HU().isActive()))
+				.collect(Collectors.toList());
 	}
 
 	/**

@@ -62,6 +62,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
+import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
@@ -1620,71 +1621,78 @@ public final class DB
 	 */
 	public static boolean isSOTrx(final String tableName, final String whereClause)
 	{
+		final boolean defaultIsSOTrx = true;
+		
 		if(Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
-			return true;
+			return defaultIsSOTrx;
 		}
 		
 		if(Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
-			return true;
+			return defaultIsSOTrx;
 		}
 		
 		//
-		final String sql = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
+		// Extract the SQL to select the IsSOTrx column
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String sqlSelectIsSOTrx;
+		// Case: tableName has the "IsSOTrx" column
+		if(poInfo != null && poInfo.isPhysicalColumn("IsSOTrx"))
+		{
+			sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
+		}
+		// Case: tableName does NOT have the "IsSOTrx" column but ends with "Line", so we will check the parent table.
+		else if (tableName.endsWith("Line"))
+		{
+			final String parentTableName = tableName.substring(0, tableName.indexOf("Line"));
+			final POInfo parentPOInfo = POInfo.getPOInfo(parentTableName);
+			if (parentPOInfo != null && parentPOInfo.isPhysicalColumn("IsSOTrx"))
+			{
+				// metas: use IN instead of EXISTS as the subquery should be highly selective
+				sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + parentTableName
+						+ " h WHERE h." + parentTableName + "_ID IN (SELECT l." + parentTableName + "_ID FROM " + tableName
+						+ " l WHERE " + whereClause + ")";
+			}
+			else
+			{
+				sqlSelectIsSOTrx = null;
+			}
+		}
+		// Fallback: no IsSOTrx
+		else
+		{
+			return defaultIsSOTrx;
+		}
+		
+		//
+		// Fetch IsSOTrx value if possible
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sqlSelectIsSOTrx, ITrx.TRXNAME_None);
 			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				final boolean isSOTrx = DisplayType.toBoolean(rs.getString(1));
 				return isSOTrx;
-		}
-		}
-		catch (Exception e)
-		{
-			// FIXME: hardcoded
-			if (tableName.endsWith("Line"))
-			{
-				String hdr = tableName.substring(0, tableName.indexOf("Line"));
-				// metas: use IN instead of EXISTS as the subquery should be highly selective
-				final String sqlParent = "SELECT IsSOTrx FROM " + hdr
-						+ " h WHERE h." + hdr + "_ID IN (SELECT l." + hdr + "_ID FROM " + tableName
-						+ " l WHERE " + whereClause + ")";
-				PreparedStatement pstmt2 = null;
-				ResultSet rs2 = null;
-				try
-				{
-					pstmt2 = DB.prepareStatement(sqlParent, ITrx.TRXNAME_None);
-					rs2 = pstmt2.executeQuery();
-					if (rs2.next())
-					{
-						final boolean isSOTrx = DisplayType.toBoolean(rs2.getString(1));
-						return isSOTrx;
-				}
-				}
-				catch (Exception ee)
-				{
-					ee = DBException.extractSQLExceptionOrNull(ee);
-					log.trace("Error while checking isSOTrx (SQL: {})", sqlParent, ee);
-				}
-				finally
-				{
-					close(rs2, pstmt2);
-					rs = null;
-					pstmt = null;
-				}
 			}
 			else
 			{
-				log.trace("Table {} has no IsSOTrx column", tableName, e);
+				log.trace("No records were found to fetch the IsSOTrx from SQL: {}", sqlSelectIsSOTrx);
+				return defaultIsSOTrx;
 			}
+		}
+		catch (final Exception ex)
+		{
+			final SQLException sqlEx = DBException.extractSQLExceptionOrNull(ex);
+			log.trace("Error while checking isSOTrx (SQL: {})", sqlSelectIsSOTrx, sqlEx);
+			
+			return defaultIsSOTrx;
 		}
 		finally
 		{
@@ -1692,10 +1700,6 @@ public final class DB
 			rs = null;
 			pstmt = null;
 		}
-		
-		//
-		// Default fallback: consider IsSOTrx=true
-		return true;
 	}	// isSOTrx
 
 	/**************************************************************************

@@ -1,6 +1,5 @@
 package de.metas.fresh.mrp_productinfo.async.spi.impl;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -9,7 +8,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -43,25 +41,24 @@ import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<IMRPProductInfoSelector> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<IMRPProductInfoSelector>(
-			UpdateMRPProductInfoTableWorkPackageProcessor.class)
+	private static final WorkpackagesOnCommitSchedulerTemplate<IMRPProductInfoSelector> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<IMRPProductInfoSelector>(UpdateMRPProductInfoTableWorkPackageProcessor.class)
 	{
 		@Override
 		protected Properties extractCtxFromItem(final IMRPProductInfoSelector item)
 		{
-			return InterfaceWrapperHelper.getCtx(item.getModel());
+			return InterfaceWrapperHelper.getCtx(item.getModelOrNull());
 		}
 
 		@Override
 		protected String extractTrxNameFromItem(final IMRPProductInfoSelector item)
 		{
-			return InterfaceWrapperHelper.getTrxName(item.getModel());
+			return InterfaceWrapperHelper.getTrxName(item.getModelOrNull());
 		}
 
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final IMRPProductInfoSelector item)
 		{
-			return item.getModel();
+			return item.getModelOrNull();
 		}
 
 		@Override
@@ -75,7 +72,7 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 	{
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = Services.get(IMRPProductInfoSelectorFactory.class);
 
-		final IMRPProductInfoSelector itemToEnqueue = mrpProductInfoSelectorFactory.createOrNull(item);
+		final IMRPProductInfoSelector itemToEnqueue = mrpProductInfoSelectorFactory.createOrNullForModel(item);
 		if (itemToEnqueue == null)
 		{
 			return; // nothing to do
@@ -88,16 +85,15 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 			final I_C_Queue_WorkPackage workpackage,
 			final String localTrxName)
 	{
-
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 		final IMRPProductInfoBL mrpProductInfoBL = Services.get(IMRPProductInfoBL.class);
 		final IParams params = workpackageParamDAO.retrieveWorkpackageParams(workpackage);
 
-		final List<Object> items = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
-		mrpProductInfoBL.updateItems(PlainContextAware.newWithTrxName(ctx, localTrxName), items, params);
+		mrpProductInfoBL.updateItems(
+				PlainContextAware.newWithTrxName(ctx, localTrxName),
+				params);
 
 		return Result.SUCCESS;
 	}

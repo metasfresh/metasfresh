@@ -22,9 +22,6 @@ import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERM;
 import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERMLOCATION;
 import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS;
 import static org.adempiere.util.CustomColNames.C_Order_DESCRIPTION_BOTTOM;
-import static org.adempiere.util.CustomColNames.M_InOut_DESCRIPTION_BOTTOM;
-import static org.adempiere.util.CustomColNames.M_InOut_INCOTERM;
-import static org.adempiere.util.CustomColNames.M_InOut_INCOTERMLOCATION;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -502,9 +499,9 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, M_InOut_INCOTERM);
-		poService.copyValue(ship, this, M_InOut_INCOTERMLOCATION);
-		poService.copyValue(ship, this, M_InOut_DESCRIPTION_BOTTOM);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_IncotermLocation);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
 		poService.copyValue(ship, this, C_Invoice_BPARTNERADDRESS);

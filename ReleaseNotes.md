@@ -10,25 +10,113 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.50.49 (2016-52)
+# metasfresh 4.53.52 (2017-04)
 
-upcoming
+upcoming Release
 
 ## Features
 * metasfresh
+  * #800 Order by product name and partner name in pmm_PurchaseCandidates
+  * #829 receivedVia entry not translated in Baselanguage de_DE
+  * #810 Propagate Attribute from Issue to Receive in Production
+  * #835 Switch off Process Confirmation Window
+
+* webui
+  * #817 Request Window in WebUI
+  * #831 Default Document Layout for WebUI
+  * #847 Shipment Schedule Window in WebUI
+  * #853 Shipment Schedule Window Subtabs in WebUI
+  * #855 Shipment Schedule Advanced Edit Mode	
+  * #108 Create Callout for DocNo in Request
+
+## Fixes
+* metasfresh 
+  * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+  * #808 DocActionBL.retrieveString method is broken
+  * #806 Fixes in Custom reports
+  * #819 fix/refactor CalloutRequest
+  * #806 Customs report minor fixes
+  * #782 Focus on the first process parameter
+  * #837 Marginal return accounts doubled
+  * #844 Gear from Pricing System and PriceList show wrong processes
+
+* parent
+  * #3 Add repo.metasfresh.com also as plugin repo
+    * thx to @sramazzina
+
+# metasfresh 4.52.51 (2017-03)
+
+## Features
+* metasfresh 
+  * #774 show address on all docs so it fits the letter window
+    * Adjust all Documents so that the address fits into the letter window od envelops C5/ C6 according to ISO 269 und DIN 678.
+  * #773 show delivery address on sales order
+    * Show the deliverTo location on Sales Order Documents.
+  * #507 Copy with Details for PP_Product_BOM
+    * Add a new Functionality to allow copy-with-details on Bill of Materials records.
+  * #780 Have logo on jasper report that spans from left to right
+    * Rearranged the logo placing on Documents to allow the upload and usage of large, page-spanning Logos from left to right.
+  * #816 Do not show prices on shipment note
+    * Undisplayed the prices on shipment documents.
+
+## Fixes
+* metasfresh 
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * Addresses the possible case of different procurement products that have different attributes and still both match equally well.
+  * #791 Create Nachbelastung from Invoice Cast exception
+    * Fixes a Bug that lead into an exception when creating an adjustment charge to an existing invoice.
+  * #761 Reactivating an InOut fails sometimes
+    * Now the reactivation of InOuts also works with records that were deleted at the time the async-package is processed
+    
+# metasfresh 4.51.50 (2017-02)
+
+## Features
+* metasfresh
+  * #696 add multi line description per order line
+    * Possibility to now add multiline descriptions. These can be used to add individual Texts to an Orderline.
+  * #755 Automatic upload orders in csv file with COPY into c_olcand
+    * Enhancement to allow the Upload of Sales Orders into Order Candidates via COPY.
+
+## Fixes
+* metasfresh  
+  * #752 request report does not show requests that don't have product or inout
+    * Fix to show request lines in report, which don't have a product included nor a reference to an inout line.
+  * #759 Destroyed HU causes problem with shipment creation
+    * Fix problem when checking for not-yet-delivered M_ShipmentSchedule_QtyPicked records, the system did not check if they reference actually destroyed HUs.
+  * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+    * Fix this error shown on server startup. Making DocumentPA not final anymore.
+  * #770 When extending a procurement contract, null becomes 0.00
+    * Fix an issue that set the price to 0,00 when extending a procurement contract, although the initial price was null which means "not set".
+  
+# metasfresh 4.50.49 (2017-01)
+
+## Features
+* metasfresh
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * Working Increment that works for the current requirement at hand.
   * #653 Calculated DailyLotNo in Material Receipt Candidates
+    * Add a Daily Lot No. thats calculated as Day from year, from a given Date in Purchase Order, Orderline Attributes.
   * #714 Marginal Return report calculation add additional Costcenter
+    * Adjust the marginal return report to show allow more columns with cost center sums on 1 page.
   * #742 R_Request column c_order_id autocomplete too slow
     * Take out the autocomplete of c_order_id to speed up the lookup performance in R_Request.
 
 ## Fixes
 * metasfresh
+  * #757 Automatic contract extension doesn't work anymore
+    * Fix the automatic extension of contracts when flatrate term conditions are met.
   * #681 Automatic filling of BPartner and Location only shows value
+    * Fix the Search Field reference that showed only the value, instead of Name and value, in case of BPartner and BPartner Location.
   * #718 Wrong location in empties vendor return
+    * Close the Gap that allows to record empty returs with BPartner Location that does not belog to the empties BPartner.
   * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
-
+    * Adjust the Purchase Order control report to have the correct locale for time formatting.
+  * #763 material receipt HU label always shown in preview
+    * Migrate the Handling Unit label enabling direct print, without print preview.
+  
 * webui
   * #89 Adjust DocAction Names
+    * Adjust/ migrate DocAction Names for WebUI.
 
 # metasfresh 4.49.48 (2016-51)
  

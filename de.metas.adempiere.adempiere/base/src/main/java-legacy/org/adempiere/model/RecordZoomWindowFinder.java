@@ -76,7 +76,11 @@ public class RecordZoomWindowFinder
 		Check.assumeNotNull(record, "Parameter record is not null");
 		return new RecordZoomWindowFinder(record.getTableName(), record.getRecord_ID());
 	}
-
+	
+	public static final int findAD_Window_ID(final ITableRecordReference record)
+	{
+		return newInstance(record).findAD_Window_ID();
+	}
 
 	public static final RecordZoomWindowFinder newInstance(final MQuery query)
 	{

@@ -219,7 +219,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		// Document(triggering) filter
 		final IQuery<Object> documentsQuery = queryBL.createQueryBuilder(triggeringTableName, PlainContextAware.newWithThreadInheritedTrx())
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter("DocStatus", DocAction.STATUS_Completed, DocAction.STATUS_Closed, DocAction.STATUS_Reversed)
+				.addInArrayOrAllFilter("DocStatus", DocAction.STATUS_Completed, DocAction.STATUS_Closed, DocAction.STATUS_Reversed)
 				.create();
 
 		return queryBL.createCompositeQueryFilter(modelTableName)

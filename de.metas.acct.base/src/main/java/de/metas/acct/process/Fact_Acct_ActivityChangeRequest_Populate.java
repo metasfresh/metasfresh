@@ -157,7 +157,7 @@ public class Fact_Acct_ActivityChangeRequest_Populate extends JavaProcess
 			}
 			Check.assumeNotEmpty(adTableIds, "Some supported tables shall be defined, but there are none"); // shall not happen
 
-			queryBuilder.addInArrayFilter(I_Fact_Acct_ActivityChangeRequest_Source_v.COLUMN_AD_Table_ID, adTableIds);
+			queryBuilder.addInArrayOrAllFilter(I_Fact_Acct_ActivityChangeRequest_Source_v.COLUMN_AD_Table_ID, adTableIds);
 		}
 
 		return queryBuilder;
