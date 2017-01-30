@@ -17,6 +17,7 @@ upcoming Release
 ## Features
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
+  * #196 Grid View 100% height
 
 ## Fixes
 * webui
