@@ -15,6 +15,9 @@ Here come the actual release notes:
 upcoming Release
 
 ## Features
+* metasfresh
+  * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
+
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
   * #196 Grid View 100% height
