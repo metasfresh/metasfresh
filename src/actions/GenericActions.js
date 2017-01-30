@@ -132,13 +132,20 @@ export function deleteRequest(entity, docType, docId, tabId, ids) {
     );
 }
 
-export function actionsRequest(entity, type, id){
+export function actionsRequest(entity, type, id, selected){
+    let query = "";
+    for (let item of selected) {
+       query+=","+item;
+    }
+    query = query.substring(1);
+
     return () => axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
         id +
-        '/actions'
+        '/actions'+
+        (selected.length > 0 && entity=="documentView" ? "?selectedIds="+ query :"")
     );
 }
 

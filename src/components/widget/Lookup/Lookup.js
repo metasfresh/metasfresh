@@ -264,7 +264,8 @@ class Lookup extends Component {
             selected: null,
             model: null,
             property: "",
-            loading: false
+            loading: false,
+            query: ""
         }));
     }
 
@@ -368,6 +369,7 @@ class Lookup extends Component {
             propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
 
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -402,6 +404,7 @@ class Lookup extends Component {
                             tabIndex={tabIndex}
                         />
                     </div>
+
                     {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
                             const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;

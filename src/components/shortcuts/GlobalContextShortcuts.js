@@ -75,6 +75,7 @@ class GlobalContextShortcuts extends Component {
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
+                global = {true}
             />
         )
     }

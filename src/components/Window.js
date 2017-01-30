@@ -15,6 +15,10 @@ class Window extends Component {
     constructor(props){
         super(props);
 
+        this.state = {
+            fullScreen: null
+        }
+
         if(props.isModal){
             this.tabIndex = {
                 firstColumn: 0,
@@ -30,14 +34,24 @@ class Window extends Component {
         }
     }
 
+    toggleTableFullScreen = (tabId) => {
+        const {fullScreen} = this.state;
+        this.setState(Object.assign({}, this.state, {
+            fullScreen: tabId
+        }));
+    }
+
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
         const {data, rowData, newRow} = this.props;
+        const {fullScreen} = this.state;
         const dataId = findRowByPropName(data, "ID").value;
 
         return(
             <Tabs
                 tabIndex={this.tabIndex.tabs}
+                toggleTableFullScreen={this.toggleTableFullScreen}
+                fullScreen={fullScreen}
             >
                 {tabs.map((elem)=> {
                     const {
@@ -130,6 +144,7 @@ class Window extends Component {
     renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
         const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+        const {fullScreen} = this.state;
 
         return elements.map((elem, id)=> {
             
@@ -150,6 +165,7 @@ class Window extends Component {
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
                     autoFocus={autoFocus}
+                    fullScreen={fullScreen}
                     {...elem}
                 />
             )
