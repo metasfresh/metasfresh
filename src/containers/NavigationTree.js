@@ -82,6 +82,7 @@ class NavigationTree extends Component {
                 queriedResults: rootResults.children
             }), ()=> {
                 document.getElementById('search-input').value=""
+
             });
         }
 
@@ -95,7 +96,7 @@ class NavigationTree extends Component {
             query: "",
             queriedResults: rootResults.children
         }), ()=> {
-            document.getElementById('search-input').value=""
+            document.getElementById('search-input').value="";
         });
     }
 

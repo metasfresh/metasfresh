@@ -78,8 +78,8 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
-            selected: this.state.selected.concat([id])
+        this.setState(prevState => Object.assign({}, this.state, {
+            selected: prevState.selected.concat([id])
         }), () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
@@ -410,12 +410,11 @@ class Table extends Component {
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 const index = keyProperty ? keyProperty : "rowId";
-                const included = item[key].includedDocuments;
 
                 ret.push(
                     <TableItemWrapper
-                        included={included}
                         key={i}
+                        odd={i & 1}
                         item={item[key]}
                         entity={entity}
                         tabId={tabid}
@@ -425,13 +424,14 @@ class Table extends Component {
                         tabIndex={tabIndex}
                         readonly={readonly}
                         mainTable={mainTable}
-                        isSelected={selected.indexOf(item[key][index]) > -1}
+                        selected={selected}
                         onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
-                        handleClick={(e) => this.handleClick(e, item[key][index])}
+                        handleClick={this.handleClick}
                         onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
                         changeListenOnTrue={() => this.changeListen(true)}
                         changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
+                        handleSelect={this.selectProduct}
                     />
                 );
             }

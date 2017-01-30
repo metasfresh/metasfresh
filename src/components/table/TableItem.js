@@ -123,11 +123,69 @@ class TableItem extends Component {
         )
     }
 
+    handleIndentSelect = (elem) => {
+        const {handleSelect} = this.props;
+
+        elem && elem.map(item => {
+            handleSelect(item.id);
+            if(item.includedDocuments){
+                this.handleIndentSelect(item.includedDocuments);
+            }
+        })
+    }
+
+    renderTree = (huType) => {
+        const {
+            indent, lastSibling, includedDocuments
+        } = this.props;
+
+        let indentation = [];
+
+        for(let i = 0; i < indent.length; i++){
+            indentation.push(
+                <div
+                    key={i}
+                    className={"indent-item-mid "
+                    }
+                >
+                    {i === indent.length - 1 && <div className="indent-mid"/>}
+                    <div
+                        className={
+                            (indent[i] ? "indent-sign " : "") +
+                            ((lastSibling && i === indent.length - 1) ? "indent-sign-bot " : "")
+                        }
+                    />
+                </div>
+            )
+        }
+
+        return (
+            <div
+                className="indent"
+            >
+                {indentation}
+
+                {(huType == "LU" || huType == "TU") &&
+                    <div className="indent-bot"/>
+                }
+
+                <div
+                    className="indent-icon"
+                    onClick={() => this.handleIndentSelect(includedDocuments)}
+                >
+                    {huType == "LU" && <i className="meta-icon-palette"/>}
+                    {huType == "TU" && <i className="meta-icon-package"/>}
+                    {huType == "V" && <i className="meta-icon-product"/>}
+                </div>
+            </div>
+        )
+    }
+
     render() {
         const {
             isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
             onMouseDown, onDoubleClick, included, tabid, type, docId,
-            tabIndex, mainTable, entity, readonly, indent
+            tabIndex, mainTable, entity, readonly, indent, odd
         } = this.props;
 
         const huType = findRowByPropName(fields, "HU_UnitType").value;
@@ -138,16 +196,13 @@ class TableItem extends Component {
                 onMouseDown ={onMouseDown}
                 onDoubleClick={onDoubleClick}
                 className={
-                    (isSelected ? "row-selected" : "")
+                    (isSelected ? "row-selected " : "") +
+                    (odd ? "tr-odd ": "") +
+                    (!odd ? "tr-even ": "")
                 }
             >
-                <td
-                    className="indent"
-                    style={{paddingLeft: (indent * 10 + 10) + "px"}}
-                >
-                    {huType == "LU" && <i className="meta-icon-palette"/>}
-                    {huType == "TU" && <i className="meta-icon-package"/>}
-                    {huType == "V" && <i className="meta-icon-product"/>}
+                <td className="indented">
+                    {this.renderTree(huType)}
                 </td>
                 {this.renderCells(cols, fields)}
             </tr>

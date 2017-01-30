@@ -15,13 +15,25 @@ class TableItemWrapper extends Component {
 
     componentDidMount(){
         const {item} = this.props;
+
         this.setState(Object.assign({}, this.state, {
             rows: this.mapIncluded(item)
         }))
     }
 
-    mapIncluded = (node, indent) => {
-        let ind = indent ? indent : 0;
+    componentDidUpdate(prevProps, prevState) {
+        if(
+            JSON.stringify(prevProps.item) !=
+            JSON.stringify(this.props.item)
+        ){
+            this.setState(Object.assign({}, this.state, {
+                rows: this.mapIncluded(this.props.item)
+            }))
+        }
+    }
+
+    mapIncluded = (node, indent, isParentLastChild = false) => {
+        let ind = indent ? indent : [];
         let result = [];
 
         const nodeCopy = Object.assign({}, node, {
@@ -30,10 +42,23 @@ class TableItemWrapper extends Component {
 
         result = result.concat([nodeCopy]);
 
+        if(isParentLastChild){
+            ind[ind.length - 2] = false;
+        }
+
         if(node.includedDocuments){
-            node.includedDocuments.map(item => {
-                result = result.concat(this.mapIncluded(item, ind + 1))
-            })
+            for(let i = 0; i < node.includedDocuments.length; i++){
+                let copy = node.includedDocuments[i];
+                if(i === node.includedDocuments.length - 1){
+                    copy = Object.assign({}, copy, {
+                        lastChild: true
+                    });
+                }
+
+                result = result.concat(
+                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
+                )
+            }
         }
 
         return result;
@@ -41,19 +66,19 @@ class TableItemWrapper extends Component {
 
     render() {
         const {
-            included, item, entity, tabid, cols, type, docId, isSelected, onDoubleClick,
+            item, entity, tabid, cols, type, docId, selected, onDoubleClick,
             handleClick, handleRightClick, changeListenOnTrue, changeListenOnFalse,
-            newRow, tabIndex, readonly, mainTable
+            newRow, tabIndex, readonly, mainTable, handleSelect, odd
         } = this.props;
 
         const {rows} = this.state;
 
         return (
             <tbody>
-                {rows.map((item, index) =>
+                {rows.map((row, index) =>
                     <TableItem
                         entity={entity}
-                        fields={item.fields}
+                        fields={row.fields}
                         rowId={item.rowId}
                         tabId={tabid}
                         cols={cols}
@@ -63,14 +88,18 @@ class TableItemWrapper extends Component {
                         readonly={readonly}
                         mainTable={mainTable}
                         onDoubleClick={() => onDoubleClick && onDoubleClick()}
-                        onMouseDown={(e) => handleClick && handleClick(e)}
+                        onMouseDown={(e) => handleClick && handleClick(e, row.id)}
                         onContextMenu={(e) => handleRightClick && handleRightClick(e)}
                         changeListenOnTrue={() => changeListenOnTrue && changeListenOnTrue()}
                         changeListenOnFalse={() => changeListenOnFalse && changeListenOnFalse()}
                         newRow={newRow}
-                        isSelected={isSelected}
+                        isSelected={selected.indexOf(row.id) > -1}
                         key={index}
-                        indent={item.indent}
+                        indent={row.indent}
+                        includedDocuments={row.includedDocuments}
+                        lastSibling={row.lastChild}
+                        handleSelect={handleSelect}
+                        odd={(odd && (rows.length & 1))}
                     />
                 )}
             </tbody>
