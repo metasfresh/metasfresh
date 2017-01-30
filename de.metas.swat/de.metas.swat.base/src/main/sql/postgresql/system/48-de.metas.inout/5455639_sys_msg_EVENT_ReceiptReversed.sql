@@ -1,6 +1,6 @@
 -- 28.01.2017 18:00
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544252,0,TO_TIMESTAMP('2017-01-28 18:00:02','YYYY-MM-DD HH24:MI:SS'),0,'de.metas.fresh.ordercheckup','Y','Event_ReceiptReversed','I',TO_TIMESTAMP('2017-01-28 18:00:02','YYYY-MM-DD HH24:MI:SS'),0,'Event_ReceiptReversed')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544252,0,TO_TIMESTAMP('2017-01-28 18:00:02','YYYY-MM-DD HH24:MI:SS'),0,'U','Y','Event_ReceiptReversed','I',TO_TIMESTAMP('2017-01-28 18:00:02','YYYY-MM-DD HH24:MI:SS'),0,'Event_ReceiptReversed')
 ;
 
 -- 28.01.2017 18:00
