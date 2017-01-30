@@ -100,7 +100,7 @@ public final class ProcessExecutor
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
 	}
-	
+
 	private final String buildThreadName()
 	{
 		return pi.getTitle() + "-" + pi.getAD_PInstance_ID();
@@ -140,10 +140,10 @@ public final class ProcessExecutor
 		else if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
-			final Thread thread = new Thread(()->executeNow());
+			final Thread thread = new Thread(() -> executeNow());
 			thread.setName(buildThreadName());
 			thread.start();
-			
+
 			try
 			{
 				thread.join();
@@ -152,7 +152,7 @@ public final class ProcessExecutor
 			{
 				throw Throwables.propagate(ex);
 			}
-			
+
 			//
 			// Propagate the error if asked
 			if (onErrorThrowException)
@@ -197,7 +197,7 @@ public final class ProcessExecutor
 			unlock(false);
 		}
 	}
-	
+
 	private void executeNow()
 	{
 		logger.debug("running: {}", pi);
@@ -466,7 +466,7 @@ public final class ProcessExecutor
 		{
 			throw new AdempiereException("@ScriptNotFound@: " + ruleValue);
 		}
-		if (! X_AD_Rule.EVENTTYPE_Process.equals(rule.getEventType()))
+		if (!X_AD_Rule.EVENTTYPE_Process.equals(rule.getEventType()))
 		{
 			throw new AdempiereException("@ScriptNotFound@: " + ruleValue + " - eventType must be Process");
 		}
@@ -486,7 +486,7 @@ public final class ProcessExecutor
 				.putArgument("AD_User_ID", pi.getAD_User_ID())
 				.putArgument("AD_Role_ID", pi.getAD_Role_ID())
 				.putArgument("AD_PInstance_ID", pi.getAD_PInstance_ID());
-		
+
 		final List<ProcessInfoParameter> parameters = pi.getParameter();
 		if (parameters != null)
 		{
@@ -674,16 +674,8 @@ public final class ProcessExecutor
 		private void prepareAD_PInstance(final ProcessInfo pi)
 		{
 			//
-			// Create a new AD_PInstance_ID if there is none (task 05978)
-			adPInstanceDAO.saveProcessInfoOnly(pi);
-
-			//
-			// Save Parameters to AD_PInstance_Para, if needed
-			final List<ProcessInfoParameter> parameters = pi.getParametersNoLoad();
-			if (parameters != null && !parameters.isEmpty())
-			{
-				adPInstanceDAO.saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
-			}
+			// Save process info to database, including parameters.
+			adPInstanceDAO.saveProcessInfo(pi);
 
 			//
 			// Execute before call callback
@@ -732,6 +724,9 @@ public final class ProcessExecutor
 
 		/**
 		 * Sets the callback to be executed after AD_PInstance is created but before the actual process is started.
+		 * If the callback fails, the exception is propagated, so the process will not be started.
+		 * 
+		 * A common use case of <code>beforeCallback</code> is to create to selections which are linked to this AD_PInstance_ID.
 		 * 
 		 * @param beforeCallback
 		 */

@@ -339,7 +339,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 			if (!onlyInWarehouseIds.isEmpty())
 			{
-				locatorsQueryBuilder.addInArrayFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
+				locatorsQueryBuilder.addInArrayOrAllFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
 			}
 
 			// Make sure _includeAfterPickingLocator and _excludeAfterPickingLocator are not both selected
@@ -370,13 +370,13 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<Integer> onlyWithBPartnerIds = getOnlyInBPartnerIds();
 		if (!onlyWithBPartnerIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_C_BPartner_ID, onlyWithBPartnerIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_ID, onlyWithBPartnerIds);
 		}
 
 		// Filter by C_BPartner_Location_ID
 		if (!_onlyWithBPartnerLocationIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
 		}
 
 		//
@@ -385,7 +385,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		if (!onlyWithProductIds.isEmpty())
 		{
 			final IQuery<I_M_HU_Storage> huStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
-					.addInArrayFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds)
+					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds)
 					.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO)
 					.addOnlyActiveRecordsFilter()
 					.create();
@@ -450,7 +450,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<String> huStatusesToInclude = getHUStatusesToInclude();
 		if (huStatusesToInclude != null && !huStatusesToInclude.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_HUStatus, huStatusesToInclude);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_HUStatus, huStatusesToInclude);
 		}
 		// exclude
 		final Set<String> huStatusesToExclude = getHUStatusesToExclude();
@@ -482,7 +482,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		// Include only specific HUs
 		if (_onlyHUIds != null && !_onlyHUIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
 		}
 
 		//
@@ -497,7 +497,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<Integer> huPIVersionIdsToInclude = getPIVersionIdsToInclude();
 		if (!huPIVersionIdsToInclude.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
 		}
 
 		//

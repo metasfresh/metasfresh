@@ -837,7 +837,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			}
 			else
 			{
-				queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
+				queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
 			}
 		}
 
@@ -903,7 +903,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Delete only the specified invoice candidate IDs
 		if (!Check.isEmpty(onlyInvoiceCandidateIds))
 		{
-			queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, onlyInvoiceCandidateIds);
+			queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, onlyInvoiceCandidateIds);
 		}
 
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
@@ -1279,7 +1279,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
+				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
 				// Invalidate no matter if Processed or not
 				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 		;
@@ -1331,7 +1331,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Only filter invoice candidates of the organizations this role has access to
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
 
-		return queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
+		return queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
 
 	}
 

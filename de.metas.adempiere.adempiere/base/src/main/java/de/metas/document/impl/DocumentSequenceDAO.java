@@ -74,7 +74,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 
 		//
 		// Only for given organization or organization "*" (fallback).
-		queryBuilder.addInArrayFilter(I_AD_Sequence.COLUMNNAME_AD_Org_ID, adOrgId, 0);
+		queryBuilder.addInArrayOrAllFilter(I_AD_Sequence.COLUMNNAME_AD_Org_ID, adOrgId, 0);
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Sequence.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last); // make sure we get for our particular org first
 
