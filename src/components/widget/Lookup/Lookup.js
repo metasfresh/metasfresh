@@ -274,9 +274,7 @@ class Lookup extends Component {
         e && e.preventDefault();
         this.inputSearch.value = "";
 
-        properties.map(item => {
-            onChange(item.field, "");
-        });
+        onChange(properties, "", false);
         
         this.handleBlur(this.clearState);
     }
