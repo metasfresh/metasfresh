@@ -17,6 +17,12 @@ upcoming Release
 ## Features
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
+  * #196 Grid View 100% height
+
+## Fixes
+* webui
+  * #204 Can not complete Order
+  * #886 GrandTotal missing in Purchase Order Grid view
 
 # metasfresh 4.54.53 (2017-05)
 
@@ -43,6 +49,7 @@ this week's RC
 ### Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
+  * #864 Adjust C_Country Location Print generation DE
 
 # metasfresh 4.53.52 (2017-04)
 
