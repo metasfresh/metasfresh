@@ -47,20 +47,27 @@ export function patchRequest(
     entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
     subentityId, isAdvanced
 ) {
-    let payload = {};
+
+    let payload = [];
 
     if (docId === "NEW") {
         payload = [];
-    } else {
-        if (property && value !== undefined) {
-            payload = [{
+    } else if (Array.isArray(property) && value !== undefined) {
+        property.map(item => {
+            payload.push({
+                'op': 'replace',
+                'path': item.field,
+                'value': value
+            });
+        });
+    } else if(property && value !== undefined) {
+        payload = [{
                 'op': 'replace',
                 'path': property,
                 'value': value
             }];
-        } else {
-            payload = [];
-        }
+    } else {
+        payload = [];
     }
 
     return () => axios.patch(
@@ -132,13 +139,20 @@ export function deleteRequest(entity, docType, docId, tabId, ids) {
     );
 }
 
-export function actionsRequest(entity, type, id){
+export function actionsRequest(entity, type, id, selected){
+    let query = "";
+    for (let item of selected) {
+       query+=","+item;
+    }
+    query = query.substring(1);
+
     return () => axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
         id +
-        '/actions'
+        '/actions'+
+        (selected.length > 0 && entity=="documentView" ? "?selectedIds="+ query :"")
     );
 }
 

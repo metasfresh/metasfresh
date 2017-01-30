@@ -48,10 +48,12 @@ class MenuOverlay extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: flattenLastElem(response.data)
                 }))
-            }).catch(err => {
-                this.setState(Object.assign({}, this.state, {
-                    queriedResults: []
-                }))
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.setState(Object.assign({}, this.state, {
+                        queriedResults: []
+                    }))
+                }
             });
         }else{
 
@@ -323,6 +325,9 @@ class MenuOverlay extends Component {
                                             {...result}
                                         />
                                     )}
+                                    { queriedResults.length === 0 && query!="" &&
+                                        <span>There are no results</span>
+                                    }
                                 </div>
                             </div>
                         </div> :

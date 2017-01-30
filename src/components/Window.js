@@ -15,6 +15,10 @@ class Window extends Component {
     constructor(props){
         super(props);
 
+        this.state = {
+            fullScreen: null
+        }
+
         if(props.isModal){
             this.tabIndex = {
                 firstColumn: 0,
@@ -30,14 +34,24 @@ class Window extends Component {
         }
     }
 
+    toggleTableFullScreen = (tabId) => {
+        const {fullScreen} = this.state;
+        this.setState(Object.assign({}, this.state, {
+            fullScreen: tabId
+        }));
+    }
+
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
         const {data, rowData, newRow} = this.props;
+        const {fullScreen} = this.state;
         const dataId = findRowByPropName(data, "ID").value;
 
         return(
             <Tabs
                 tabIndex={this.tabIndex.tabs}
+                toggleTableFullScreen={this.toggleTableFullScreen}
+                fullScreen={fullScreen}
             >
                 {tabs.map((elem)=> {
                     const {
@@ -108,28 +122,33 @@ class Window extends Component {
                             ((type === "primary") ? "panel-bordered panel-primary" : "panel-secondary")
                         }
                     >
-                        {this.renderElementsLine(elementsLine, tabIndex)}
+                        {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
                     </div>
             )
         })
     }
 
-    renderElementsLine = (elementsLine, tabIndex) => {
+    renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
         return elementsLine.map((elem, id)=> {
             const {elements} = elem;
+            const isFocused = shouldBeFocused && (id === 0);
             return (
                 elements && elements.length > 0 &&
                     <div className="elements-line" key={"line" + id}>
-                        {this.renderElements(elements, tabIndex)}
+                        {this.renderElements(elements, tabIndex, isFocused)}
                     </div>
             )
         })
     }
 
-    renderElements = (elements, tabIndex) => {
+    renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
         const {data, modal, tabId,rowId, dataId, isAdvanced} = this.props;
+        const {fullScreen} = this.state;
+
         return elements.map((elem, id)=> {
+            
+            const autoFocus = isFocused && (id === 0);
             let widgetData = elem.fields.map(item => findRowByPropName(data, item.field));
             let relativeDocId = findRowByPropName(data, "ID").value;
             return (
@@ -145,6 +164,8 @@ class Window extends Component {
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
+                    autoFocus={autoFocus}
+                    fullScreen={fullScreen}
                     {...elem}
                 />
             )

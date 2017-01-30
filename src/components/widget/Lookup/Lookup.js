@@ -128,7 +128,6 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
-
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.map((item) =>
@@ -198,10 +197,16 @@ class Lookup extends Component {
         dispatch(openModal("Add new", windowType, "window"));
     }
 
-    handleBlur = () => {
+    handleBlur = (callback) => {
+        
         this.setState(Object.assign({}, this.state, {
             isOpen: false
-        }))
+        }), () => {
+            if(callback) {
+                callback();
+            }
+            
+        })
     }
 
     handleFocus = () => {
@@ -252,25 +257,26 @@ class Lookup extends Component {
         }
     }
 
-    handleClear = (e) => {
-        const {onChange, properties, defaultValue} = this.props;
-        e && e.preventDefault();
-        this.inputSearch.value = "";
-
-        properties.map(item => {
-            onChange(item.field, "");
-        });
-
+    clearState = () => {
         this.setState(Object.assign({}, this.state, {
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
             property: "",
-            loading: false
+            loading: false,
+            query: ""
         }));
+    }
 
-        this.handleBlur();
+    handleClear = (e) => {
+        const {onChange, properties, defaultValue, subentity} = this.props;
+        e && e.preventDefault();
+        this.inputSearch.value = "";
+
+        onChange(properties, "", false);
+        
+        this.handleBlur(this.clearState);
     }
 
     handleKeyDown = (e) => {
@@ -361,6 +367,7 @@ class Lookup extends Component {
             propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
 
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -395,6 +402,7 @@ class Lookup extends Component {
                             tabIndex={tabIndex}
                         />
                     </div>
+
                     {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
                             const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;

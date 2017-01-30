@@ -40,6 +40,7 @@
     width: 100%;
     height: calc(100% - 55px);
     background-color: #fff;
+    z-index: 100000;
 }
 
 .tabs-fullscreen.container-fluid {
