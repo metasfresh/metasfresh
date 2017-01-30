@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-01-16T15:52:23 -->
+<!-- 2017-01-30T16:05:06 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -19,18 +21,15 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="AD_Table_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[new BigDecimal(0)]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	ol.ad_org_id,
-	ol.C_Order_ID
-FROM
-	C_OrderLine ol
-WHERE
-	ol.C_OrderLine_ID = $P{RECORD_ID} AND ol.isActive = 'Y'
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root($P{RECORD_ID}, $P{AD_Table_ID})]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="c_order_id" class="java.lang.Integer"/>
+	<field name="c_orderline_id" class="java.lang.Integer"/>
 	<background>
 		<band height="842" splitType="Stretch"/>
 	</background>
@@ -40,7 +39,7 @@ WHERE
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-8" x="0" y="116" width="595" height="153" uuid="bf2fe593-7473-486c-b48f-63d419100511"/>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_orderline_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
@@ -64,7 +63,7 @@ WHERE
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_orderline_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
 					<subreportParameterExpression><![CDATA[new String("freshio")]]></subreportParameterExpression>
@@ -99,7 +98,7 @@ WHERE
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-10" x="21" y="116" width="534" height="26" uuid="7e20c567-f3e9-4f06-b9a2-9fa027670478"/>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_orderline_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
