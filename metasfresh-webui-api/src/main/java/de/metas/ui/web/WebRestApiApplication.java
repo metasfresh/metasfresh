@@ -8,6 +8,7 @@ import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -19,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
@@ -50,6 +52,10 @@ public class WebRestApiApplication
 	public static final String PROFILE_Test = "test";
 	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
 	public static final String PROFILE_Webui = "webui";
+	/** Profile activate when running from IDE */
+	public static final String PROFILE_Development = "development";
+	
+	private static final Logger logger = LogManager.getLogger(WebRestApiApplication.class);
 
 	public static void main(String[] args)
 	{
@@ -68,6 +74,26 @@ public class WebRestApiApplication
 				.run(args);
 
 	}
+	
+	/** @return true if {@link #PROFILE_Development} is active (i.e. we are running from IDE) */
+	public static boolean isDevelopmentProfileActive()
+	{
+		return isProfileActive(PROFILE_Development);
+	}
+
+	/** @return true if given profile is active */
+	public static boolean isProfileActive(final String profile)
+	{
+		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		if (context == null)
+		{
+			logger.warn("No application context found to determine if '{}' profile is active", profile);
+			return true;
+		}
+
+		return context.getEnvironment().acceptsProfiles(profile);
+	}
+
 
 	@Autowired
 	private ApplicationContext applicationContext;
