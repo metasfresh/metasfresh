@@ -52,7 +52,7 @@ class Subheader extends Component {
                 });
             }
 
-            dispatch(actionsRequest(entity, windowType, dataId ? dataId : query && query.viewId)).then((response) => {
+            dispatch(actionsRequest(entity, windowType, dataId ? dataId : query && query.viewId, selected)).then((response) => {
                 dispatch(setActions(response.data.actions));
             });
         }
