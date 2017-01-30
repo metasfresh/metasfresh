@@ -30,10 +30,10 @@ export class Process extends Component {
     }
 
     render() {
-        const {data, layout, windowType} = this.props;
+        const {data, layout, type} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                {layout && layout.elements && this.renderElements(layout, data, windowType)}
+                {layout && layout.elements && this.renderElements(layout, data, type)}
             </div>
         );
     }

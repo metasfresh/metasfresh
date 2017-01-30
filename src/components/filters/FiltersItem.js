@@ -11,7 +11,7 @@ class FiltersItem extends Component {
     renderFilterWidget = (item, index) => {
         const {
             filterDataItem, windowType, closeFilterMenu,
-            setSelectedItem, selectedItem, isShown, isHidden
+            setSelectedItem, selectedItem, isShown, isHidden, viewId
         } = this.props;
 
         return(
@@ -27,6 +27,7 @@ class FiltersItem extends Component {
                 selectedItem={selectedItem}
                 isShown={isShown}
                 isHidden={isHidden}
+                viewId={viewId}
                 {...filterDataItem}
             />
         )

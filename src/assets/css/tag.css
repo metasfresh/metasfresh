@@ -1,0 +1,46 @@
+
+.tag {
+    padding: .25rem .6rem;
+    font-size: .65rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+    color: #fff;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.tag-disabled {
+    pointer-events: none;
+}
+
+.tag-block {
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.tag-success {
+    background-color: $brand-success-color;
+}
+
+.tag-primary {
+    background-color: $brand-primary-color;
+}
+
+.tag-default {
+    background-color: $brand-dark-color;
+    color: $brand-font-color;
+}
+
+.tag-warning {
+    background-color: #fd8b0f;
+}
+
+.tag-secondary {
+    background-color: #80909a;
+    color: #fff;
+}
+
+.tag-lg {
+    font-size: .75rem;
+}

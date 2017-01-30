@@ -1,20 +1,20 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import update from 'react-addons-update';
 
 import {
     autocompleteRequest,
-    dropdownRequest,
-    filterAutocompleteRequest
-} from '../../actions/AppActions';
+    dropdownRequest
+} from '../../../actions/GenericActions';
 
 import {
     getItemsByProperty,
     openModal
-} from '../../actions/WindowActions';
+} from '../../../actions/WindowActions';
+
+import LookupList from './LookupList';
 
 class Lookup extends Component {
     constructor(props) {
@@ -31,26 +31,29 @@ class Lookup extends Component {
             loading: false,
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
-            oldValue: ''
+            oldValue: '',
+            isOpen: false
         }
-
     }
 
     componentDidMount() {
-        this.handleValueChanged();
-        const {selected, filterWidget} = this.props;
+        const {selected, filterWidget, autoFocus} = this.props;
 
-        if(filterWidget && selected) {
+        this.handleValueChanged();
+
+        if(selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
+        }else{
+            this.handleClear();
+        }
+
+        if(autoFocus){
+            this.inputSearch.focus();
         }
     }
 
     componentDidUpdate() {
         this.handleValueChanged();
-    }
-
-    handleClickOutside = () => {
-        this.handleBlur();
     }
 
     handleSelect = (select) => {
@@ -95,9 +98,9 @@ class Lookup extends Component {
             } else {
                 onChange(property, select);
 
-                this.setState(update(this.state, {
+                this.setState((prevState) => update(this.state, {
                     properts: {$apply: item => {
-                        delete item[this.state.property];
+                        delete item[prevState.property];
                         return item;
                     }},
                     list: {$set: []},
@@ -111,7 +114,8 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, item, dataId, newProps, select, tabId, rowId
+            dispatch, windowType, item, dataId, newProps, select, tabId, rowId,
+            entity, subentity, subentityId
         } = this.props;
 
         const {
@@ -123,7 +127,10 @@ class Lookup extends Component {
         if(propertiesCopy.length > 0){
 
             const batchArray = propertiesCopy.map((item) =>
-                dispatch(dropdownRequest(windowType, item.field, dataId, tabId, rowId))
+                dispatch(dropdownRequest(
+                    windowType, item.field, dataId, tabId, rowId, entity,
+                    subentity, subentityId
+                ))
             );
 
             Promise.all(batchArray).then(props => {
@@ -187,53 +194,54 @@ class Lookup extends Component {
     }
 
     handleBlur = () => {
-        this.dropdown.classList.remove("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: false
+        }))
     }
 
     handleFocus = () => {
-        this.dropdown.classList.add("input-dropdown-focused");
+        const {isInputEmpty} = this.state;
+        this.setState(Object.assign({}, this.state, {
+            isOpen: true
+        }))
+
+        if(!isInputEmpty){
+            this.handleChange();
+        }
     }
 
     handleChange = () => {
         const {
             dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId, entity
+            filterId, parameterName, tabId, rowId, entity,subentity, subentityId,
+            viewId
         } = this.props;
 
         const {mainProperty} = this.state;
-
-        this.dropdown.classList.add("input-dropdown-focused");
 
         if(this.inputSearch.value != ""){
 
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: false,
                 loading: true,
-                query: this.inputSearch.value
+                query: this.inputSearch.value,
+                isOpen: true
             }));
 
-
-            if(filterWidget){
-                dispatch(filterAutocompleteRequest(windowType, filterId, parameterName,  this.inputSearch.value ))
-                .then((response)=>{
-                    this.setState(Object.assign({}, this.state, {
-                        list: response.data.values,
-                        loading: false
-                    }));
-                })
-            }else {
-                dispatch(autocompleteRequest(windowType, mainProperty[0].field, this.inputSearch.value, dataId, tabId, rowId, entity))
-                .then((response)=>{
-                    this.setState(Object.assign({}, this.state, {
-                        list: response.data.values,
-                        loading: false
-                    }));
-                })
-            }
+            dispatch(autocompleteRequest(
+                windowType, (filterWidget ? parameterName : mainProperty[0].field), this.inputSearch.value,
+                (filterWidget ? viewId : dataId), tabId, rowId, entity, subentity, subentityId
+            )).then((response)=>{
+                this.setState(Object.assign({}, this.state, {
+                    list: response.data.values,
+                    loading: false
+                }));
+            });
 
         }else{
             this.setState(Object.assign({}, this.state, {
                 isInputEmpty: true,
+                query: this.inputSearch.value,
                 list: recent
             }));
         }
@@ -241,12 +249,12 @@ class Lookup extends Component {
 
     handleClear = (e) => {
         const {onChange, properties} = this.props;
-        e.preventDefault();
+        e && e.preventDefault();
         this.inputSearch.value = "";
 
         properties.map(item => {
             onChange(item.field, null);
-        })
+        });
 
         this.setState(Object.assign({}, this.state, {
             list: [],
@@ -261,6 +269,7 @@ class Lookup extends Component {
     }
 
     handleKeyDown = (e) => {
+        const {selected, list, query} = this.state;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
@@ -276,98 +285,86 @@ class Lookup extends Component {
                 break;
             case "Enter":
                 e.preventDefault();
-                if(this.state.selected != null){
-                    this.handleSelect(this.state.list[this.state.selected]);
+                if(selected === "new"){
+                    this.handleAddNew(query);
+                }else if(selected != null){
+                    this.handleSelect(list[selected]);
+
                 }
                 break;
             case "Escape":
                 e.preventDefault();
                 this.handleBlur();
                 break;
+            case "Tab":
+                this.handleBlur();
+                break;
         }
     }
 
     navigate = (reverse) => {
-        if(this.state.selected !== null){
-            const selectTarget = this.state.selected + (reverse ? (-1) : (1));
-            if (typeof this.state.list[selectTarget] != "undefined") {
+        const {selected, list} = this.state;
+
+        if(list.length === 0){
+            // Case of selecting row for creting new instance
+            this.setState(Object.assign({}, this.state, {
+                selected: "new"
+            }));
+        }else{
+            // Case of selecting regular list items
+            if(typeof selected === "number"){
+                const selectTarget = selected + (reverse ? (-1) : (1));
+                if (typeof list[selectTarget] != "undefined") {
+                    this.setState(Object.assign({}, this.state, {
+                        selected: selectTarget
+                    }));
+                }
+            }else if(typeof list[0] != "undefined"){
                 this.setState(Object.assign({}, this.state, {
-                    selected: selectTarget
+                    selected: 0
                 }));
             }
-        }else if(typeof this.state.list[0] != "undefined"){
-            this.setState(Object.assign({}, this.state, {
-                selected: 0
-            }))
         }
-    }
-
-    getDropdownComponent = (index, item) => {
-        const name = item[Object.keys(item)[0]];
-        const key = Object.keys(item)[0];
-        return (
-            <div
-                key={key}
-                className={"input-dropdown-list-option " + (this.state.selected === index ? 'input-dropdown-list-option-key-on' : "") }
-                onClick={() => this.handleSelect(item)}
-            >
-                <p className="input-dropdown-item-title">{name}</p>
-            </div>
-        )
     }
 
     handleValueChanged = () => {
         const {defaultValue, filterWidget, selected} = this.props;
         const {oldValue} = this.state;
 
-        if(!filterWidget) {
-            if(!!defaultValue[0].value && this.inputSearch) {
-                const init = defaultValue[0].value;
-                let inputValue = init[Object.keys(init)[0]];
-                if(inputValue !== oldValue){
-                    this.inputSearch.value = inputValue
-                    this.setState(Object.assign({}, this.state, {
-                        oldValue: inputValue,
-                        isInputEmpty: false
-                    }));
-                }
+        if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
+            const init = defaultValue[0].value;
+            const inputValue = init[Object.keys(init)[0]];
+
+            if(inputValue !== oldValue){
+                this.inputSearch.value = inputValue;
+
+                this.setState(Object.assign({}, this.state, {
+                    oldValue: inputValue,
+                    isInputEmpty: false
+                }));
             }
         }
-    }
-
-    renderLookup = () => {
-        const {list} = this.state;
-        return list.map((item, index) => this.getDropdownComponent(index, item) );
-    }
-
-    renderEmpty = () => {
-        const {query} = this.state;
-        return (
-            <div
-                className="input-dropdown-list-option input-dropdown-list-option-alt"
-                onClick={() => this.handleAddNew(query)}
-            >
-                <p className="input-dropdown-item-title">New {query ? '"' + query + '"' : ""}</p>
-            </div>
-        )
     }
 
     render() {
         const {
             rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, selected, oldValue, filterWidget, mandatory, rowId
+            updated, oldValue, filterWidget, mandatory, rowId, tabIndex
         } = this.props;
 
-        const {propertiesCopy,isInputEmpty, list, query, loading} = this.state;
+        const {
+            propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
+        } = this.state;
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                tabIndex="0"
-                onFocus={()=>this.inputSearch.focus()}
+                onClick={()=> this.inputSearch.focus()}
                 ref={(c) => this.dropdown = c}
                 className={
                     "input-dropdown-container " +
+                    (isOpen ? "input-focused " : "") +
+                    (readonly ? "input-disabled " : "") +
                     (rowId ? "input-dropdown-container-static " : "") +
                     ((rowId && !isModal)? "input-table " : "")
                 }
@@ -390,45 +387,37 @@ class Lookup extends Component {
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
+                            tabIndex={tabIndex}
                         />
                     </div>
-                    <div className="input-rest">
+                    {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
                             const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;
                             return (!!objectValue && <span key={index}>{objectValue[Object.keys(objectValue)[0]]}</span>)
                         })}
-                    </div>
-                    {(isInputEmpty) ?
+                    </div>}
+                    {isInputEmpty ?
                         <div className="input-icon input-icon-lg">
                             <i className="meta-icon-preview" />
                         </div> :
-                        <div className="input-icon input-icon-lg" tabIndex="0">
+                        <div className="input-icon input-icon-lg">
                             {!readonly && <i onClick={this.handleClear} className="meta-icon-close-alt"/>}
                         </div>
                     }
                 </div>
-                <div className="clearfix" />
-                <div className="input-dropdown-list">
-                    <div className="input-dropdown-list-header">
-                        {(list.length > 0 ) ?
-                            (query.length !== 0 ? "Are you looking for..." : "Recent lookups") :
-                            "There's no matching items."
-                        }
-                        {(loading && list.length === 0) && (
-                            <div className="input-dropdown-list-header">
-                                <ReactCSSTransitionGroup transitionName="rotate" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
-                                    <div className="rotate icon-rotate">
-                                        <i className="meta-icon-settings"/>
-                                    </div>
-                                </ReactCSSTransitionGroup>
-                            </div>
-                        )}
-                    </div>
-                    <div ref={(c) => this.items = c}>
-                        {this.renderLookup()}
-                        {list.length === 0 && this.renderEmpty()}
-                    </div>
-                </div>
+                {isOpen && !isInputEmpty &&
+                    <LookupList
+                        selected={selected}
+                        list={list}
+                        loading={loading}
+                        handleSelect={this.handleSelect}
+                        handleAddNew={this.handleAddNew}
+                        isInputEmpty={isInputEmpty}
+                        onClickOutside={this.handleBlur}
+                        disableClickOutside={!isOpen}
+                        query={query}
+                    />
+                }
             </div>
         )
     }
@@ -439,6 +428,6 @@ Lookup.propTypes = {
     dispatch: PropTypes.func.isRequired
 }
 
-Lookup = connect()(onClickOutside(Lookup))
+Lookup = connect()(Lookup)
 
 export default Lookup

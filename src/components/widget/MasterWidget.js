@@ -7,18 +7,13 @@ import {
     findRowByPropName
 } from '../../actions/WindowActions';
 
-import Datetime from 'react-datetime';
-import Lookup from './Lookup';
-import List from './List';
-import ActionButton from './ActionButton';
 import RawWidget from './RawWidget';
 
-class Widget extends Component {
+class MasterWidget extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            cachedValue: null,
             updated: false,
             edited: false
         }
@@ -34,7 +29,7 @@ class Widget extends Component {
                     Object.assign({}, this.state, {
                         updated: true
                     }), () => {
-                        setTimeout(() => {
+                        this.timeout = setTimeout(() => {
                             this.setState(Object.assign({}, this.state, {
                                 updated: false
                             }))
@@ -49,13 +44,16 @@ class Widget extends Component {
         }
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.timeout);
+    }
+
     handlePatch = (property, value) => {
         const {
             isModal, widgetType, widgetData, dataId, windowType, dispatch,
             rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
-        const {cachedValue} = this.state;
         let currRowId = rowId;
         let ret = null;
 
@@ -63,33 +61,17 @@ class Widget extends Component {
             currRowId = relativeDocId;
         }
 
-        let customWindowType = windowType;
-
-        if(isAdvanced){
-            customWindowType += "&advanced=true";
+        if(widgetType !== "Button"){
+            dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
 
-
-        //do patch only when value is not equal state
-        //or cache is set and it is not equal value
-        if( JSON.stringify(widgetData[0].value) !== JSON.stringify(value) || (cachedValue !== null && (JSON.stringify(cachedValue) !== JSON.stringify(value)))){
-            //check if we should update store
-            //except button value
-            if(widgetType !== "Button"){
-                dispatch(updateProperty(property, value, tabId, currRowId, isModal));
-            }
-
-            ret = dispatch(patch(customWindowType, dataId, tabId, currRowId, property, value, isModal, entity));
-        }
-
-        this.setState(Object.assign({}, this.state, {
-            cachedValue: null
-        }));
+        ret = dispatch(patch(entity, windowType, dataId, tabId, currRowId, property, value, isModal, isAdvanced));
 
         //callback
         if(onChange){
             onChange();
         }
+
         return ret;
     }
     //
@@ -128,26 +110,18 @@ class Widget extends Component {
         }));
     }
 
-    handleFocus = (e, value) => {
-        e.preventDefault();
-
-        this.setState(Object.assign({}, this.state, {
-            cachedValue: value
-        }));
-    }
-
     validatePrecision = (value) => {
-        const {widgetType} = this.props;
-        let {precision} = this.props;
+        const {widgetType, precision} = this.props;
+        let precisionProcessed = precision;
 
         if(
             widgetType === "Integer" ||
             widgetType === "Quantity"
         ){
-            precision = 0;
+            precisionProcessed = 0;
         }
 
-        if(precision < (value.split('.')[1] || []).length){
+        if(precisionProcessed < (value.split('.')[1] || []).length){
             return false;
         }else{
             return true;
@@ -159,46 +133,43 @@ class Widget extends Component {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock
+            handleBackdropLock, tabIndex, dropdownOpenCallback
         } = this.props;
 
         const {updated, edited} = this.state;
 
-        if(widgetData[0].displayed && widgetData[0].displayed === true){
-            return (
-                <RawWidget
-                    entity={entity}
-                    widgetType={widgetType}
-                    fields={fields}
-                    windowType={windowType}
-                    dataId={dataId}
-                    widgetData={widgetData}
-                    rowId={rowId}
-                    tabId={tabId}
-                    icon={icon}
-                    gridAlign={gridAlign}
-                    handlePatch={this.handlePatch}
-                    handleChange={this.handleChange}
-                    handleFocus={this.handleFocus}
-                    updated={updated}
-                    isModal={isModal}
-                    setEditedFlag={this.setEditedFlag}
-                    noLabel={noLabel}
-                    type={type}
-                    caption={caption}
-                    handleBackdropLock={handleBackdropLock}
-                />
-            )
-        }else{
-            return false;
-        }
+        return (
+            <RawWidget
+                entity={entity}
+                widgetType={widgetType}
+                fields={fields}
+                windowType={windowType}
+                dataId={dataId}
+                widgetData={widgetData}
+                rowId={rowId}
+                tabId={tabId}
+                icon={icon}
+                gridAlign={gridAlign}
+                handlePatch={this.handlePatch}
+                handleChange={this.handleChange}
+                updated={updated}
+                isModal={isModal}
+                setEditedFlag={this.setEditedFlag}
+                noLabel={noLabel}
+                type={type}
+                caption={caption}
+                handleBackdropLock={handleBackdropLock}
+                tabIndex={tabIndex}
+                dropdownOpenCallback={dropdownOpenCallback}
+            />
+        )
     }
 }
 
-Widget.propTypes = {
+MasterWidget.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-Widget = connect()(Widget)
+MasterWidget = connect()(MasterWidget)
 
-export default Widget
+export default MasterWidget

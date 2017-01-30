@@ -41,14 +41,17 @@ class DocList extends Component {
 
     render() {
         const {
-            dispatch, windowType, breadcrumb, query, actions, modal, viewId, selected
+            dispatch, windowType, breadcrumb, query, actions, modal, viewId,
+            selected, references
         } = this.props;
 
         return (
             <Container
+                entity="documentView"
                 breadcrumb={breadcrumb}
                 windowType={windowType}
                 actions={actions}
+                references={references}
             >
                 {modal.visible &&
                     <Modal
@@ -79,7 +82,8 @@ DocList.propTypes = {
     modal: PropTypes.object.isRequired,
     viewId: PropTypes.string.isRequired,
     selected: PropTypes.array,
-    actions: PropTypes.array.isRequired
+    actions: PropTypes.array.isRequired,
+    references: PropTypes.array.isRequired
 }
 
 function mapStateToProps(state) {
@@ -95,9 +99,11 @@ function mapStateToProps(state) {
 
     const {
         actions,
+        references,
         breadcrumb
     } = menuHandler || {
         actions: [],
+        refereces: [],
         breadcrumb: []
     }
 
@@ -126,7 +132,8 @@ function mapStateToProps(state) {
         pathname,
         actions,
         viewId,
-        selected
+        selected,
+        references
     }
 }
 

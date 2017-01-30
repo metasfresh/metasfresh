@@ -6,10 +6,17 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 class RawList extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            selected: 0,
+            isOpen: false
+        }
     }
 
     handleBlur = (e) => {
-        this.dropdown.classList.remove("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: false
+        }))
     }
 
     handleFocus = (e) => {
@@ -18,7 +25,9 @@ class RawList extends Component {
 
         onFocus && onFocus();
 
-        this.dropdown.classList.add("input-dropdown-focused");
+        this.setState(Object.assign({}, this.state, {
+            isOpen: true
+        }))
     }
 
     handleChange = (e) => {
@@ -30,15 +39,63 @@ class RawList extends Component {
     handleSelect = (option) => {
         const {onSelect} = this.props;
 
-        onSelect(option);
+        if(option){
+            onSelect(option);
+        }else{
+            onSelect(null);
+        }
 
         this.handleBlur();
     }
 
-    getRow = (index, option) => {
-        return (<div key={index} className={"input-dropdown-list-option"} onClick={() => this.handleSelect(option)}>
-            <p className="input-dropdown-item-title">{option[Object.keys(option)[0]]}</p>
-        </div>)
+    navigate = (up) => {
+        const {selected} = this.state;
+        const {list} = this.props;
+
+        const next = up ? selected + 1 : selected - 1;
+
+        this.setState(Object.assign({}, this.state, {
+            selected: (next >= 0 && next <= list.length) ? next : selected
+        }));
+    }
+
+    handleKeyDown = (e) => {
+        const {list} = this.props;
+        const {selected} = this.state;
+
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                this.navigate(true);
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                this.navigate(false);
+                break;
+            case "Enter":
+                e.preventDefault();
+                this.handleSelect(list[Object.keys(list)[selected-1]])
+                break;
+            case "Escape":
+                e.preventDefault();
+                this.handleBlur();
+                break;
+        }
+    }
+
+    getRow = (index, option, label) => {
+        const {selected} = this.state;
+        return (
+            <div
+                key={index}
+                className={"input-dropdown-list-option "  +
+                    (selected === index ? "input-dropdown-list-option-key-on" : "")
+                }
+                onClick={() => this.handleSelect(option)}
+            >
+                <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
+            </div>
+        )
     }
 
     renderOptions = () => {
@@ -47,7 +104,7 @@ class RawList extends Component {
         let ret = [];
 
         if(!mandatory){
-            emptyText && ret.push(this.getRow(0, {0: emptyText}));
+            emptyText && ret.push(this.getRow(0, null, emptyText));
         }
 
         list.map((option, index) => {
@@ -60,17 +117,23 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, mandatory, value
+            rowId, isModal, mandatory, value, tabIndex
         } = this.props;
+
+        const {
+            isOpen
+        } = this.state;
 
         return (
             <div
-                tabIndex="0"
-                onFocus={()=>this.inputSearch.focus()}
+                tabIndex={tabIndex ? tabIndex : 0}
+                onFocus={!readonly && this.handleFocus}
                 ref={(c) => this.dropdown = c}
                 onBlur={this.handleBlur}
+                onKeyDown={this.handleKeyDown}
                 className={
                     "input-dropdown-container " +
+                    (readonly ? "input-disabled " : "") +
                     (rowId ? "input-dropdown-container-static " : "") +
                     ((rowId && !isModal) ? "input-table " : "")
                 }
@@ -88,9 +151,9 @@ class RawList extends Component {
                             type="text"
                             className="input-field js-input-field font-weight-semibold"
                             readOnly
+                            tabIndex={-1}
                             placeholder={defaultValue}
                             value={selected ? selected[Object.keys(selected)[0]] : ""}
-                            onFocus={this.handleFocus}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             disabled={readonly}
@@ -100,7 +163,7 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                <div className="input-dropdown-list">
+                {isOpen && <div className="input-dropdown-list">
                     {(list.length === 0 && loading === false) && (
                         <div className="input-dropdown-list-header">
                             There is no choice available
@@ -116,7 +179,7 @@ class RawList extends Component {
                         </div>
                     )}
                     {this.renderOptions()}
-                </div>
+                </div>}
             </div>
         )
     }

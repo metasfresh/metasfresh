@@ -56,19 +56,37 @@
     overflow: hidden;
 }
 
+.header-breadcrumb-line {
+    color: $brand-font-color-secondary;
+    font-size: 0.875rem;
+    width: auto;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    overflow: hidden;
+
+    position: relative;
+    flex:1;
+}
+
+.header-breadcrumb-sitename {
+    position: absolute;
+}
+
 @media (max-width: $breakpoint){
     .header-breadcrumb{
-        top: 54px;
-        left: 0px;
+        top: 25px;
+        left: -55px;
         position: absolute;
         background-color: #fff;
-        width: 100%;
+        width: calc(100vw);
         border-bottom: 1px solid $brand-border-color;
         border-top: 1px solid $brand-border-color;
         padding:4px 0;
     }
     .header-sticky-distance {
-        margin-top: 83px;
+        margin-top: 130px;
     }
 }
 
@@ -97,6 +115,13 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    flex-shrink:1;
+}
+
+.header-breadcrumb-wrapper {
+    position: relative;
+    flex:1;
 }
 
 .header-breadcrumb > .menu-overlay-expand,
@@ -141,7 +166,7 @@
     display: none;
     width: 100%;
     position: fixed;
-    z-index:200;
+    z-index:201;
     background-color: $brand-bright-color;
 }
 
@@ -153,6 +178,10 @@
     width: 25%;
     border-right: 1px solid #e1e7ec;
 }
+.subheader-column:focus {
+    border-color: #e1e7ec;;
+}
+
 @media (max-width: $breakpoint) {
     .subheader-container {
         top: 55px;
@@ -179,6 +208,16 @@
 }
 
 .subheader-item:not(.subheader-item-disabled):hover {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.subheader-item:focus {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.subheader-item:focus {
     background-color: $brand-color-primary;
     color: #fff;
 }
@@ -377,7 +416,71 @@
     border-bottom: 1px solid $brand-link-color;
 }
 
+.menu-overlay-expanded-link:focus .menu-overlay-expand {
+    border-bottom: 1px dashed $brand-link-color;
+}
+
+.menu-overlay-expanded-link:focus .menu-overlay-link {
+    border-bottom: 1px solid $brand-link-color;
+}
+
 .menu-overlay-expanded-link {
     color: $brand-link-color;
     width: auto;
+}
+
+
+.header-breadcrumb>span:first-of-type>.ico-home {
+    min-width: 24px;
+}
+
+.header-breadcrumb>span:first-child {
+    min-width: 26px;
+}
+
+.header-item {
+    color: $brand-link-color;
+    display: inline-block;
+    position: relative;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    text-align: center;
+}
+
+.header-item-container {
+    min-width: 55px;
+    height: 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    padding-left: .2rem;
+    padding-right: .2rem;
+}
+
+.header-item-container-static {
+    width: 55px;
+}
+
+.header-item-container:hover {
+    background-color: $brand-bright-color;
+    border-bottom: 1px solid $brand-border-color;
+}
+
+.header-item-open {
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    pointer-events: none;
+    z-index: 2;
+    border-bottom: 0 !important;
+}
+
+.header-item-open .header-item {
+    margin-top: -1px;
+}
+
+.header-item-badge.header-item {
+    overflow: visible;
 }

@@ -21,20 +21,21 @@ class FilterWidget extends Component {
         const {
             caption, widgetType, parameters, windowType, type, noLabel, widgetData,
             icon, gridAlign, isModal, filterId, setSelectedItem, selectedItem, id,
-            item, filter, isShown, isHidden
+            item, filter, isShown, isHidden, viewId
         } = this.props;
 
         if(widgetData){
             return (
                 <RawWidget
+                    entity="documentView"
+                    subentity="filter"
+                    subentityId={filterId}
                     handlePatch={this.handlePatch}
                     widgetType={widgetType}
-                    fields={widgetData}
+                    fields={[widgetData]}
                     windowType={windowType}
                     type={type}
-                    widgetData={widgetData}
-                    filterWidget={true}
-                    filterId={filterId}
+                    widgetData={[widgetData]}
                     parameterName={widgetData.parameterName}
                     setSelectedItem={setSelectedItem}
                     selectedItem={filter.parameters.length ? ( filter.parameters[id].value  ? filter.parameters[id].value : '' ) : ''}
@@ -47,6 +48,8 @@ class FilterWidget extends Component {
                     isHidden={isHidden}
                     caption={item.caption}
                     noLabel={false}
+                    filterWidget={true}
+                    viewId={viewId}
                 />
             )
         }else{

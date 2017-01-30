@@ -3,6 +3,13 @@ import { findDOMNode } from 'react-dom';
 import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
+import BarChart4 from '../charts/BarChart4';
+import BarChart5 from '../charts/BarChart5';
+import PieChart from '../charts/PieChart';
+import PieChart2 from '../charts/PieChart2';
+import StackedGroupedBars from '../charts/StackedGroupedBars';
+import StackedGroupedBars2 from '../charts/StackedGroupedBars2';
+
 
 const cardSource = {
     beginDrag(props) {
@@ -111,7 +118,7 @@ export class DraggableWidget extends Component {
     render() {
         const {
             text, url, isDragging, connectDragSource, connectDropTarget,
-            hideWidgets, showWidgets, index, idMaximized
+            hideWidgets, showWidgets, index, idMaximized, id
         } = this.props;
         const { toggleWidgetMenu, isMaximize, refresh } = this.state;
 
@@ -138,11 +145,24 @@ export class DraggableWidget extends Component {
                     }
                 </div>
                 <div className="draggable-widget-body">
-                    <iframe
-                        src={!refresh && url}
-                        scrolling="no"
-                        frameBorder="no"
-                    ></iframe>
+                    {id===1000001 &&
+                        <BarChart5/>
+                    }
+                    {id===1000000 &&
+                        <PieChart/>
+                    }
+                    {id===1000003 &&
+                        <StackedGroupedBars/>
+                    }
+                    {id===1000002 &&
+                        <PieChart2/>
+                    }
+                    {id===1000006 &&
+                        <StackedGroupedBars2/>
+                    }
+                    {id===1000007 &&
+                        <BarChart4/>
+                    }
                 </div>
             </div>
 

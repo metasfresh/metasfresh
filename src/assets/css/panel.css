@@ -1,0 +1,154 @@
+.panel {
+    display: block;
+    width: 100%;
+}
+
+.panel:focus {
+    /*outline:none;*/
+}
+
+.panel-modal {
+    max-width: 90%;
+    height: 90vh;
+}
+
+.panel-modal-primary {
+    background-color: #F8FAFB;
+}
+
+.panel-distance {
+    margin-top: 2.25rem;
+    margin-bottom: 2.25rem;
+}
+
+.panel-distance:last-child {
+    margin-bottom: 0;
+}
+
+.panel-distance.panel-secondary {
+    margin: 0;
+}
+
+.panel-distance.panel-secondary:first-child {
+    margin-top: 2.25rem;
+}
+
+.panel-spaced {
+    padding: 1rem 1.25rem 1.25rem 1.25rem;
+}
+
+.panel-spaced-sm {
+    padding: .75rem .5rem;
+}
+
+.panel-spaced-lg {
+    padding: 2rem 2rem;
+}
+
+.panel-bordered {
+    border: 1px solid;
+    border-radius: 3px;
+}
+
+.panel-shadowed {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+}
+
+.panel-bordered-force {
+    overflow: auto;
+}
+
+.panel-primary {
+    border-color: $brand-border-color;
+    background-color: #FFF;
+}
+
+@media (max-width: $breakpoint) {
+    .panel-distance {
+        margin-top: .5rem;
+        margin-bottom: .5rem;
+    }
+    .panel-spaced {
+        padding: .5rem;
+    }
+}
+
+.panel-modal-header {
+    position: relative;
+    z-index: 500;
+    width: 100%;
+    height: 75px;
+    color: $brand-color-primary;
+    border-bottom: 1px solid $brand-border-color;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.panel-modal-content {
+    position: relative;
+    height: calc(100% - 75px);
+    width: 100%;
+    overflow-y: auto;
+    color: $brand-font-color;
+}
+
+.panel-modal-header-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: $brand-font-color;
+}
+
+.panel-inline>* {
+    display: inline-block;
+}
+
+.panel-title {
+    margin-bottom: .625rem;
+}
+
+.panel-title-spaced {
+    margin-top: 1.5rem;
+}
+
+.panel-prompt {
+    width: 450px;
+    height: 200px;
+    border: solid 0 $brand-border-color;
+}
+
+.panel-prompt-header {
+    box-shadow: none;
+    padding: 0 1rem;
+    height: 50px;
+
+    i {
+        cursor: pointer;
+    }
+}
+
+.panel-prompt-content {
+    height: calc(100% - 100px);
+    padding: 1.1rem;
+}
+
+.panel-prompt-footer {
+    border-top: 1px solid $brand-border-color;
+    border-bottom: none;
+}
+
+.panel-prompt-header-title {
+    font-size: 1.1rem;
+}
+
+.panel-prompt-footer .btn-sm {
+    min-width: 74px;
+}
+
+.prompt-button-wrapper {
+    width: 100%;
+    text-align: right;
+}

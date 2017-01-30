@@ -1,10 +1,12 @@
 @import './variables.css';
 
+
+
 /*
  *  MAIN PROPERTIES
  */
-table td:focus,
-button:focus {
+table td:focus
+ {
     outline-color: $brand-font-color;
     outline-width:1px;
     outline-offset:0px;
@@ -47,6 +49,10 @@ input {
 /*
  *  CUSTOM BUTTONS
  */
+
+ button {
+     position: relative;
+ }
 
  .btn-icon {
      width: 32px;
@@ -189,7 +195,7 @@ input {
 	position: relative;
 	display: inline-block;
     height: 18px;
-	padding-left: 30px;
+	padding-left: 18px;
 	cursor: pointer;
     margin-top: .5rem;
     margin-bottom: 0;
@@ -218,7 +224,7 @@ input {
 
 .input-checkbox input:checked ~ .input-checkbox-tick {
 	background: $brand-success-dark-color;
-    border: 0;
+    border-color: $brand-success-dark-color;
 }
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
@@ -238,8 +244,8 @@ input {
 }
 
 .input-checkbox .input-checkbox-tick:after {
-	top: 3px;
-	left: 6px;
+	top: 2px;
+	left: 5px;
 	width: 6px;
 	height: 10px;
 	transform: rotate(45deg);
@@ -529,12 +535,6 @@ input:checked + .input-slider:before {
 .input-dropdown-container:focus {
     outline-width: 0;
 }
-.input-dropdown-container .input-dropdown-list {
-    display:none;
-}
-.input-dropdown-focused .input-dropdown-list {
-    display:block;
-}
 .input-dropdown-focused .input-toggled {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -548,7 +548,9 @@ input:checked + .input-slider:before {
     width: 100%;
     background-color: #fff;
     z-index:300;
-    border: 1px solid $brand-light-color;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+    border-color: $brand-light-color;
     max-height: 357px;
     height: auto;
     overflow-y: auto;
@@ -568,13 +570,15 @@ input:checked + .input-slider:before {
 }
 .input-dropdown-list-option {
     padding: .25rem .50rem;
-    border-top: 1px solid $brand-light-color;
-    cursor:pointer;
+    cursor: pointer;
     position: relative;
 }
+.input-dropdown-list-option:not(:first-of-type) {
+    border-top: 1px solid $brand-light-color;
+}
 .input-dropdown-list-option-alt {
-    background-color: $brand-super-light-color;
     font-size: .8rem;
+    font-weight:bold;
 }
 .input-dropdown-list-option:hover,
 .input-dropdown-list-option-key-on {
@@ -591,13 +595,18 @@ input:checked + .input-slider:before {
 .input-dropdown-item-subtitle {
     font-size: .75rem;
 }
-
+input[type=checkbox]:disabled, input[type=radio]:disabled {
+    cursor: default;
+}
 
 .form-flex-align {
     display: flex;
     flex-wrap: nowrap;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-bottom: .5rem;
+    align-items: center;
+
+    flex:1;
 }
 .form-flex-align > *:not(:last-child){
     margin-right: .5rem;
@@ -616,7 +625,7 @@ input:checked + .input-slider:before {
     align-items: center;
     justify-content: space-between;
 }
-.product-attributes {
+.attributes {
     position: static;
     padding-top: 4px;
     display: block;
@@ -624,21 +633,169 @@ input:checked + .input-slider:before {
     max-width: 10rem;
 }
 
-.product-attributes-in-table {
+.attributes-in-table {
     padding:0;
 }
 
-.product-attributes-in-table .tag {
+.attributes-in-table .tag {
     padding: .095rem .3rem;
 }
 
-.product-attributes::selection {
+.attributes::selection {
     background-color: none;
     color: inherit;
 }
 
-.product-attributes-dropdown {
+.attributes-dropdown {
     position: absolute;
     z-index: 50;
     margin-top:5px;
+    width: 100%;
+    max-width: 450px;
+}
+
+.quick-input-container {
+    display: flex;
+    align-items: center;
+    flex:1;
+}
+
+.quick-input-container > * {
+    margin:0;
+    width:100%;
+}
+.btn-select {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-active {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn-active:hover {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn i {
+    padding-right: 4px;
+}
+
+
+
+.input-table .input-field {
+    background: white;
+    height: 20px;
+    font-weight: normal;
+}
+
+.input-table .input-secondary {
+    margin: 0;
+    border-bottom: 0;
+}
+
+.input-table .input-secondary,
+.input-table .input-dropdown {
+    padding: 0;
+}
+
+.form-group-table {
+    margin-bottom: 0;
+}
+
+.input-table .input-disabled input,
+.input-table .input-mandatory input {
+    background: transparent;
+}
+
+.input-dropdown-focused input {
+    background-color: transparent;
+}
+
+.cell-mandatory:focus {
+    outline: 1px solid $brand-mandatory-color;
+}
+
+.cell-disabled:focus {
+    outline: 1px dashed #cbcbcb;
+}
+
+.rdtPicker {
+    left: -.75rem;
+    margin-top: 7px;
+}
+
+.rdtPicker table {
+    margin: 0;
+}
+
+.input-table .input-dropdown .input-field {
+    background: transparent;
+    color: $brand-font-color;
+    font-style: italic;
+}
+
+.input-table .input-dropdown {
+    border: none;
+}
+
+table .List .input-dropdown-item-title {
+    font-weight: normal;
+}
+
+.input-disabled .input-field::-webkit-outer-spin-button,
+.input-disabled .input-field::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input-disabled .meta-icon-calendar {
+    display: none;
+}
+
+table .input-secondary .input-icon-right {
+    color: $brand-icon-color;
+}
+
+table .input-icon {
+    color: $brand-icon-color;
+}
+
+.table .rdtPicker thead th {
+    background-color: white;
+    color: #6b7b86;
+}
+
+.table.table-bordered-vertically .rdtPicker td {
+    border-right: 0;
+}
+
+.table-striped tbody .rdtPicker tr:nth-of-type(odd) {
+    background-color: white;
+}
+
+table .rdtPicker tbody {
+    background-color: white;
+}
+
+table .rdtPicker td,
+.rdtPicker th {
+    height: 28px;
+}
+
+table .rdtPicker table td,
+.rdtPicker table th {
+    vertical-align: middle;
+    padding: 0;
+}
+.Lookup .input-icon {
+    height: 16px;
+    bottom: 0;
 }

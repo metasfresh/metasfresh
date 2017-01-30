@@ -1,16 +1,16 @@
 var path = require('path');
 var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     devtool: 'cheap-module-source-map',
     entry: [
         './src/index.jsx',
-        './favicon.png',
-        './index.html'
+        './favicon.png'
     ],
     output: {
         path: './dist',
-        filename: '/bundle.js',
+        filename: 'bundle[hash].js',
         publicPath: '/'
     },
     plugins: [
@@ -18,6 +18,9 @@ module.exports = {
             'process.env': {
                 'NODE_ENV': JSON.stringify('production')
             }
+        }),
+        new HtmlWebpackPlugin({
+            template: './index.html'
         })
     ],
     module: {
@@ -32,8 +35,8 @@ module.exports = {
             test: /\.css$/,
             loaders: ["style-loader","css-loader","postcss-loader"]
         }, {
-            test: /\.html/,
-            loader: 'file?name=[name].[ext]'
+            test: /\.html$/,
+            loader: 'html'
         }
     ]},
     postcss: () => [

@@ -3,9 +3,12 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    getData,
     startProcess
 } from '../actions/WindowActions';
+
+import {
+    getData
+} from '../actions/GenericActions';
 
 import {
     addNotification
@@ -56,10 +59,14 @@ class MasterWindow extends Component {
             "displayed": true
         };
 
-        const docSummaryData =  findRowByPropName(master.data, documentSummaryElement && documentSummaryElement.fields[0].field);
+        const docSummaryData =  findRowByPropName(
+            master.data,
+            documentSummaryElement && documentSummaryElement.fields[0].field
+        );
 
         return (
             <Container
+                entity="window"
                 docActionElem = {docActionElement}
                 docStatusData = {docStatusData}
                 docNoElement = {documentNoElement}
@@ -84,8 +91,11 @@ class MasterWindow extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
+                        isAdvanced={modal.isAdvanced}
                         viewId={null}
-                        closeCallback={(isNew) => this.closeModalCallback(modal.modalType, isNew, modal.layout.pinstanceId)}
+                        closeCallback={(isNew) => this.closeModalCallback(
+                            modal.modalType, isNew, modal.layout.pinstanceId
+                        )}
                      />
                  }
                 <Window

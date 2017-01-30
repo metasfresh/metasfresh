@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
+import { push } from 'react-router-redux';
 
 import Window from '../Window';
 import Process from '../Process';
@@ -8,7 +9,8 @@ import {
     closeModal,
     createWindow,
     createProcess,
-    startProcess
+    startProcess,
+    handleProcessResponse
 } from '../../actions/WindowActions';
 
 import {
@@ -21,18 +23,17 @@ class Modal extends Component {
 
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
-            relativeType
+            relativeType, isAdvanced
         } = this.props;
 
         this.state = {
             scrolled: false,
-            isAdvanced: false,
             isNew: rowId === "NEW",
             init: false
         }
         switch(modalType){
             case "window":
-                dispatch(createWindow(windowType, dataId, tabId, rowId, true)).catch(err => {
+                dispatch(createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)).catch(err => {
                     this.handleClose();
                 });
                 break;
@@ -43,15 +44,6 @@ class Modal extends Component {
                 });
                 break;
         }
-    }
-
-    isAdvancedEdit = () => {
-        const {windowType} = this.props;
-        let isAdvanceMode = (windowType.indexOf("advanced=true") != -1);
-
-        this.setState(Object.assign({}, this.state, {
-            isAdvanced: isAdvanceMode
-        }));
     }
 
     componentDidMount() {
@@ -65,7 +57,6 @@ class Modal extends Component {
         const modalContent = document.querySelector('.js-panel-modal-content')
 
         modalContent && modalContent.addEventListener('scroll', this.handleScroll);
-        this.isAdvancedEdit();
     }
 
     componentWillUnmount() {
@@ -96,17 +87,9 @@ class Modal extends Component {
     }
 
     handleStart = () => {
-        const {dispatch, modalType, layout} = this.props;
-        dispatch(startProcess(layout.pinstanceId)).then(response => {
-            const {data} = response;
-
-            if(data.error){
-                dispatch(addNotification("Process error", data.summary, 5000, "error"));
-                return false;
-            }else{
-                dispatch(addNotification("Process success", data.summary, 5000, "success"));
-                this.removeModal();
-            }
+        const {dispatch, modalType, layout, windowType} = this.props;
+        dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
+            dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
         });
     }
 
@@ -119,28 +102,51 @@ class Modal extends Component {
 
     render() {
         const {
-            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType
+            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType,
+            isAdvanced
         } = this.props;
 
         const {
-            isAdvanced, scrolled
+            scrolled
         } = this.state;
 
         return (
-            data.length > 0 && <div className="screen-freeze js-not-unselect">
+            data.length > 0 && <div
+                className="screen-freeze js-not-unselect"
+            >
                 <div className="panel panel-modal panel-modal-primary">
-                    <div className={"panel-modal-header " + (scrolled ? "header-shadow": "")}>
-                        <span className="panel-modal-header-title">{modalTitle ? modalTitle : "Modal"}</span>
+                    <div
+                        className={
+                            "panel-modal-header " +
+                            (scrolled ? "header-shadow": "")
+                        }
+                    >
+                        <span className="panel-modal-header-title">
+                            {modalTitle ? modalTitle : "Modal"}
+                        </span>
                         <div className="items-row-2">
-                            <span className="btn btn-meta-outline-secondary btn-distance-3 btn-md" onClick={this.handleClose}>
+                            <button
+                                className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+                                onClick={this.handleClose}
+                                tabIndex={0}
+                            >
                                 {modalType === "process" ? "Cancel" : "Done"}
-                            </span>
-                            {modalType === "process" && <span className="btn btn-meta-primary btn-distance-3 btn-md" onClick={this.handleStart}>
-                                Start
-                            </span>}
+                            </button>
+                            {modalType === "process" &&
+                                <button
+                                    className="btn btn-meta-primary btn-distance-3 btn-md"
+                                    onClick={this.handleStart}
+                                    tabIndex={0}
+                                >
+                                    Start
+                                </button>
+                            }
                         </div>
                     </div>
-                    <div className="panel-modal-content js-panel-modal-content container-fluid">
+                    <div
+                        className="panel-modal-content js-panel-modal-content container-fluid"
+                        ref={c => { c && c.focus()}}
+                    >
                         {modalType === "window" ?
                             <Window
                                 data={data}

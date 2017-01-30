@@ -32,23 +32,45 @@ export function setActions(actions){
 
 // THUNK ACTIONS
 export function pathRequest(nodeId) {
-    return () => axios.get(config.API_URL + '/menu/path?nodeId=' + nodeId + '&inclusive=true');
+    return () => axios.get(
+        config.API_URL +
+        '/menu/path?nodeId=' + nodeId +
+        '&inclusive=true'
+    );
 }
 
 export function nodePathsRequest(nodeId, limit) {
-    return () => axios.get(config.API_URL + '/menu/node?nodeId=' + nodeId + '&depth=2' + (limit ? '&childrenLimit=' + limit : ""));
+    return () => axios.get(
+        config.API_URL +
+        '/menu/node?nodeId=' + nodeId +
+        '&depth=2' +
+        (limit ? '&childrenLimit=' + limit : "")
+    );
 }
 
 export function elementPathRequest(pathType, elementId) {
-    return () => axios.get(config.API_URL + '/menu/elementPath?type=' + pathType + '&elementId=' + elementId + '&inclusive=true');
+    return () => axios.get(
+        config.API_URL +
+        '/menu/elementPath?type=' + pathType +
+        '&elementId=' + elementId +
+        '&inclusive=true'
+    );
 }
 
 export function queryPathsRequest(query, limit, child) {
-    return () => axios.get(config.API_URL + '/menu/queryPaths?nameQuery=' + query  + (limit ? '&childrenLimit=' + limit : "") + (child ? '&childrenInclusive=true':''));
+    return () => axios.get(
+        config.API_URL +
+        '/menu/queryPaths?nameQuery=' + query +
+        (limit ? '&childrenLimit=' + limit : "") +
+        (child ? '&childrenInclusive=true':'')
+    );
 }
 
 export function rootRequest(limit) {
-    return () => axios.get(config.API_URL + '/menu/root?depth=10' + (limit ? '&childrenLimit=' + limit : ""));
+    return () => axios.get(
+        config.API_URL +
+        '/menu/root?depth=10' +
+        (limit ? '&childrenLimit=' + limit : ""));
 }
 
 export function getRootBreadcrumb() {
@@ -63,7 +85,7 @@ export function getWindowBreadcrumb(id){
     return dispatch => {
         dispatch(elementPathRequest("window", id)).then(response => {
             let req = 0;
-            let pathData = flatten(response.data);
+            let pathData = flattenOneLine(response.data);
 
             // promise to get all of the breadcrumb menu options
             let breadcrumbProcess = new Promise((resolve) => {
@@ -91,38 +113,42 @@ export function getWindowBreadcrumb(id){
     }
 }
 
-export function getRelatedDocuments(type, id){
-    return () => axios.get(config.API_URL + '/window/documentReferences?type=' + type + '&id=' + id);
-}
-
-export function getDocumentActions(type, id){
-    return () => axios.get(config.API_URL + '/window/documentActions?type=' + type + '&id=' + id);
-}
-
-export function getViewActions(viewId){
-    return () => axios.get(config.API_URL + '/documentView/' + viewId + '/actions');
-}
-
-
 //END OF THUNK ACTIONS
 
 // UTILITIES
 
-export function flatten(node) {
+export function flattenLastElem(node) {
     let result = [];
 
     if(!!node.children){
-        flatten(node.children[0]).map(item => {
+        node.children.map(child => {
+            const flat = flattenLastElem(child);
+
+            if(typeof flat === "object"){
+                result = result.concat(flat);
+            }else{
+                result.push(flattenLastElem(child));
+            }
+        })
+        return result;
+
+    }else{
+        return [node];
+    }
+}
+
+export function flattenOneLine(node) {
+    let result = [];
+    if(!!node.children){
+        flattenOneLine(node.children[0]).map(item => {
             result.push(
                 item
             );
         })
     }
-
     result.push({
         nodeId: node.nodeId,
         caption: node.caption
     });
-
     return result;
 }

@@ -56,65 +56,6 @@ export function getAvailableLang() {
     return () => axios.get(config.API_URL + '/login/availableLanguages');
 }
 
-export function autocompleteRequest(windowType, propertyName, query, id = "NEW", tabId, rowId, entity) {
-    if (entity === 'process'){
-        return () => axios.get(
-    		config.API_URL +
-    		'/process/instance/' + id +
-            '/parameters/' + propertyName +
-            '/typeahead' +
-            '?query=' + query
-    	);
-    } else if (entity === 'asi') {
-        return () => axios.get(
-    		config.API_URL +
-    		'/pattribute/instance/' + id +
-            '/attribute/' + propertyName +
-            '/typeahead' +
-            '?query=' + query
-    	);
-    } else {
-    	return () => {
-    		query = encodeURIComponent(query);
-    		return axios.get(
-                config.API_URL +
-                '/window/typeahead?type=' + windowType +
-                '&id='+id+'&field='+ propertyName +
-                '&query=' + query +
-        		(tabId ? "&tabid=" + tabId : "") +
-        		(rowId ? "&rowId=" + rowId : "")
-            );
-    	}
-    }
-}
-
-export function dropdownRequest(windowType, propertyName, id, tabId, rowId, entity) {
-    if (entity === 'process'){
-        return () => axios.get(
-    		config.API_URL +
-    		'/process/instance/' + id +
-            '/parameters/' + propertyName +
-            '/dropdown'
-    	);
-    } else if (entity === 'asi') {
-        return () => axios.get(
-    		config.API_URL +
-    		'/pattribute/instance/' + id +
-            '/attribute/' + propertyName +
-            '/dropdown'
-    	);
-    } else {
-    	return () => axios.get(
-    		config.API_URL +
-    		'/window/dropdown?type=' + windowType +
-    		'&id=' + id +
-    		'&field=' + propertyName+
-    		(tabId ? "&tabid=" + tabId : "") +
-    		(rowId ? "&rowId=" + rowId : "")
-    	);
-    }
-}
-
 export function getUserDashboardWidgets() {
     return () => axios.get(config.API_URL + '/dashboard/kpis');
 }
@@ -127,17 +68,15 @@ export function getUserDashboardIndicators() {
     return () => axios.get(config.API_URL + '/dashboard/targetIndicators');
 }
 
-export function viewLayoutRequest(windowType, type){
-	return () => axios.get(config.API_URL + '/documentView/layout?type=' + windowType + '&viewType=' + type);
-}
-
-export function browseViewRequest(viewId, page, pageLength, orderBy){
-	return () => axios.get(config.API_URL + '/documentView/' + viewId + '?firstRow=' + pageLength * (page - 1) + '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
+export function browseViewRequest(viewId, page, pageLength, orderBy, windowType){
+	return () => axios.get(
+        config.API_URL + '/documentView/' + windowType +
+        '/' + viewId + '?firstRow=' + pageLength * (page - 1) +
+        '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
-    // TODO: waiting for unification of that enpoint, end than we should remove ending slash
-	return () => axios.post(config.API_URL + '/documentView/', {
+	return () => axios.post(config.API_URL + '/documentView/' + windowType, {
         "documentType": windowType,
         "viewType": viewType,
         "referencing": (refDocType && refDocId) ? {
@@ -200,17 +139,6 @@ export function logoutRequest(){
 	return () => axios.get(config.API_URL + '/login/logout');
 }
 
-export function filterDropdownRequest(type, filterId, parameterName) {
-	return () => axios.get(config.API_URL + '/documentView/filters/parameter/dropdown?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName);
-}
-
-export function filterAutocompleteRequest(type, filterId, parameterName, query) {
-	return () => {
-		query = encodeURIComponent(query);
-		return axios.get(config.API_URL + '/documentView/filters/parameter/typeahead?type=' + type + '&filterId=' + filterId + '&parameterName=' + parameterName +'&query=' + query);
-	}
-}
-
 export function getNotifications() {
     return () => axios.get(config.API_URL + '/notifications/all?limit=20');
 }
@@ -227,16 +155,10 @@ export function markAsRead(id) {
     return () => axios.put(config.API_URL + '/notifications/' + id + '/read');
 }
 
-export function getPattributeLayout(asiDocId) {
-    return () => axios.get(config.API_URL + '/pattribute/instance/' + asiDocId + '/layout');
-}
+// Attribute widget backend
 
-export function pattributeComplete(asiDocId) {
-    return () => axios.get(config.API_URL + '/pattribute/' + asiDocId + '/complete');
-}
-
-export function getPattributeInstance(tmpId, docType, docId, tabId, rowId, fieldName) {
-    return () => axios.post(config.API_URL + '/pattribute/instance/', {
+export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, rowId, fieldName) {
+    return () => axios.post(config.API_URL + '/' + attrType, {
         "templateId": tmpId,
         "source": {
             "documentType": docType,

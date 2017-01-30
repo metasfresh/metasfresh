@@ -4,9 +4,8 @@ import { connect } from 'react-redux';
 import RawList from './RawList';
 
 import {
-    dropdownRequest,
-    filterDropdownRequest
-} from '../../actions/AppActions';
+    dropdownRequest
+} from '../../../actions/GenericActions';
 
 class List extends Component {
     constructor(props) {
@@ -20,28 +19,22 @@ class List extends Component {
     handleFocus = () => {
         const {
             properties, dispatch, dataId, rowId, tabId, windowType, filterWidget,
-            filterId, parameterName, entity
+            filterId, parameterName, entity, subentity, subentityId
         } = this.props;
 
         this.setState(Object.assign({}, this.state, {
             loading: true
         }));
 
-        if (filterWidget) {
-            dispatch(filterDropdownRequest(windowType, filterId, parameterName)).then((res) => {
-                this.setState(Object.assign({}, this.state, {
-                    list: res.data.values,
-                    loading: false
-                }));
-            });
-        } else {
-            dispatch(dropdownRequest(windowType, properties[0].field, dataId, tabId, rowId, entity)).then((res) => {
-                this.setState(Object.assign({}, this.state, {
-                    list: res.data.values,
-                    loading: false
-                }));
-            });
-        }
+        dispatch(dropdownRequest(
+            windowType, properties[0].field, dataId, tabId, rowId, entity,
+            subentity, subentityId
+        )).then((res) => {
+            this.setState(Object.assign({}, this.state, {
+                list: res.data.values,
+                loading: false
+            }));
+        });
     }
 
     handleSelect = (option) => {
@@ -53,7 +46,10 @@ class List extends Component {
     }
 
     render() {
-        const {rank, readonly, defaultValue, selected, align, updated, rowId, emptyText} = this.props;
+        const {
+            rank, readonly, defaultValue, selected, align, updated, rowId,
+            emptyText, tabIndex
+        } = this.props;
         const {list, loading} = this.state;
 
         return (
@@ -70,6 +66,7 @@ class List extends Component {
                 updated={updated}
                 rowId={rowId}
                 emptyText={emptyText}
+                tabIndex={tabIndex}
             />
         )
     }

@@ -16,6 +16,10 @@ import {
     getWindowBreadcrumb
  } from '../actions/MenuActions';
 
+import {
+    openModal
+} from '../actions/WindowActions';
+
 
 class NavigationTree extends Component {
     constructor(props){
@@ -51,6 +55,11 @@ class NavigationTree extends Component {
 
     }
 
+    openModal = (windowType, type, caption, isAdvanced) => {
+        const {dispatch} = this.props;
+        dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
+    }
+
     handleQuery = (e) => {
         const {dispatch} = this.props;
         const {rootResults} = this.state;
@@ -69,9 +78,11 @@ class NavigationTree extends Component {
             });
         }else{
             this.setState(Object.assign({}, this.state, {
-                queriedResults: rootResults.children,
-                query: ""
-            }))
+                query: "",
+                queriedResults: rootResults.children
+            }), ()=> {
+                document.getElementById('search-input').value=""
+            });
         }
 
     }
@@ -83,7 +94,9 @@ class NavigationTree extends Component {
         this.setState(Object.assign({}, this.state, {
             query: "",
             queriedResults: rootResults.children
-        }));
+        }), ()=> {
+            document.getElementById('search-input').value=""
+        });
     }
 
     renderTree = (res) => {
@@ -91,31 +104,32 @@ class NavigationTree extends Component {
       const {rootResults, queriedResults} = this.state;
 
       return(
-      <div>
-        <div className="search-wrapper">
-            <div className="input-flex input-primary">
-                <i className="input-icon meta-icon-preview"/>
-                <DebounceInput debounceTimeout={250} type="text" className="input-field" placeholder="Type phrase here" value={this.state.query} onChange={e => this.handleQuery(e) } />
-                {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
-            </div>
-        </div>
-        <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
-        <div className="column-wrapper">
-            {queriedResults && queriedResults.map((subitem, subindex) =>
-                <MenuOverlayContainer
-                    key={subindex}
-                    printChildren={true}
-                    handleClickOnFolder={this.handleDeeper}
-                    handleRedirect={this.handleRedirect}
-                    handleNewRedirect={this.handleNewRedirect}
-                    {...subitem}
-                />
-            )}
-            </div>
-        </div>
+          <div>
+              <div className="search-wrapper">
+                  <div className="input-flex input-primary">
+                      <i className="input-icon meta-icon-preview"/>
+                          <DebounceInput debounceTimeout={250} type="text" id="search-input" className="input-field" placeholder="Type phrase here" onChange={e => this.handleQuery(e) } />
+                          {this.state.query && <i className="input-icon meta-icon-close-alt pointer" onClick={e => this.handleClear(e) } />}
+                  </div>
+              </div>
+              <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">{rootResults.caption}</p>
+              <div className="column-wrapper">
+                  {queriedResults && queriedResults.map((subitem, subindex) =>
+                      <MenuOverlayContainer
+                          key={subindex}
+                          printChildren={true}
+                          handleClickOnFolder={this.handleDeeper}
+                          handleRedirect={this.handleRedirect}
+                          handleNewRedirect={this.handleNewRedirect}
+                          openModal={this.openModal}
+                          {...subitem}
+                      />
+                  )}
+              </div>
+          </div>
       )
 
-    }
+  }
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
         dispatch(push("/window/" + elementId));

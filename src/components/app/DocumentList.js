@@ -7,7 +7,10 @@ import Table from '../table/Table';
 import Filters from '../filters/Filters';
 
 import {
-    viewLayoutRequest,
+    initLayout
+} from '../../actions/GenericActions';
+
+import {
     createViewRequest,
     browseViewRequest,
     addNotification
@@ -17,6 +20,7 @@ import {
     setPagination,
     setSorting,
     clearListProps,
+    clearListPagination,
     initDocumentView,
     setFilter
 } from '../../actions/ListActions';
@@ -41,7 +45,12 @@ class DocumentList extends Component {
         //does not re-construct component, so we need to
         //make it manually while the windowType changes.
         if(windowType !== this.props.windowType) {
-            this.updateData(type, windowType);
+            this.setState(Object.assign({}, this.state, {
+                data:null,
+                layout:null
+            }), () => {
+                this.updateData(type, windowType);
+            })
         }
     }
 
@@ -50,13 +59,13 @@ class DocumentList extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {windowType, filters} = this.props;
+        const {windowType, type, filters} = this.props;
 
-        let oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
-        let newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
+        const oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
+        const newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
 
         if(newFilter !== oldFilter){
-            this.updateData('grid', windowType, true);
+            this.updateData(type, windowType, true);
         }
     }
 
@@ -73,7 +82,6 @@ class DocumentList extends Component {
 
     createNewView = (windowType, type, filters, refType, refId) => {
         const {dispatch} = this.props;
-
         dispatch(createViewRequest(windowType, type, 20, filters, refType, refId)).then((response) => {
             this.setListData(response.data);
         })
@@ -85,12 +93,14 @@ class DocumentList extends Component {
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
         }else{
-            windowType && dispatch(viewLayoutRequest(windowType, type)).then(response => {
+            windowType && dispatch(
+                initLayout('documentView', windowType, null, null, null, null, type, true))
+            .then(response => {
                 this.setState(Object.assign({}, this.state, {
                     layout: response.data
                 }), () => {
                     if(query && query.viewId && !isNewFilter){
-                        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters))
+                        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters, windowType))
                             .then((response) => {
                                 this.setListData(response.data);
                             }).catch((err) => {
@@ -108,9 +118,9 @@ class DocumentList extends Component {
 
     getView = (viewId) => {
         const {data} = this.state;
-        const {dispatch, page, sorting, windowType, query, updateUri} = this.props;
+        const {dispatch, pagination, sorting, windowType, query, updateUri} = this.props;
         let urlQuery = "";
-        let urlPage = page;
+        let urlPage = pagination.page;
 
         !!updateUri && updateUri("viewId", viewId);
 
@@ -121,7 +131,7 @@ class DocumentList extends Component {
             }
             if(query.page){
                 urlPage = query.page;
-                dispatch(setPagination(parseInt(query.page)));
+                dispatch(setPagination(parseInt(query.page), windowType));
             }
 
         }
@@ -136,15 +146,18 @@ class DocumentList extends Component {
             dispatch(clearListProps());
         }
 
+        if(windowType !== pagination.windowType) {
+            dispatch(clearListPagination());
+        }
 
         this.getData(data.viewId, urlPage, 20, urlQuery);
     }
 
     getData = (id, page, pages, sortingQuery) => {
         const {data} = this.state;
-        const {dispatch} = this.props;
+        const {dispatch, windowType} = this.props;
 
-        dispatch(browseViewRequest(id, page, pages, sortingQuery)).then((response) => {
+        dispatch(browseViewRequest(id, page, pages, sortingQuery, windowType)).then((response) => {
             this.setState(Object.assign({}, this.state, {
                 data: response.data
             }))
@@ -166,22 +179,26 @@ class DocumentList extends Component {
         const {sorting, page, dispatch, windowType, updateUri} = this.props;
         const {data} = this.state;
 
+        let setPage = currPage;
+
         asc && field && !!updateUri && updateUri("sort", (asc?"+":"-")+field);
 
         dispatch(setSorting(field, asc, windowType));
 
         if(startPage){
             dispatch(setPagination(1, windowType));
+            !!updateUri && updateUri("page", 1);
+            setPage = 1;
         }
 
-        this.getData(data.viewId, currPage, 20, this.getSortingQuery(asc, field));
+        this.getData(data.viewId, setPage, 20, this.getSortingQuery(asc, field));
     }
 
     handleChangePage = (index) => {
         const {data} = this.state;
-        const {sorting, page, dispatch, updateUri} = this.props;
+        const {sorting, pagination, dispatch, updateUri, windowType} = this.props;
 
-        let currentPage = page;
+        let currentPage = pagination.page;
 
         switch(index){
             case "up":
@@ -194,26 +211,32 @@ class DocumentList extends Component {
                 currentPage = index;
         }
 
-        if(currentPage !== page){
-            dispatch(setPagination(currentPage));
+        if(currentPage !== pagination.page){
+            dispatch(setPagination(currentPage, windowType));
             !!updateUri && updateUri("page", currentPage);
 
             this.sortData(sorting.dir, sorting.prop, false, currentPage);
         }
     }
 
+    newDocument = () => {
+        const {dispatch, windowType} = this.props;
+
+        dispatch(push('/window/' + windowType + '/new'));
+    }
+
     render() {
         const {layout, data} = this.state;
-        const {dispatch, windowType, type, filters, page} = this.props;
-        if(layout && data) {
+        const {dispatch, windowType, type, filters, pagination, open, closeOverlays} = this.props;
 
+        if(layout && data) {
             return (
                 <div>
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         {type === "grid" &&
                             <button
                                 className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
-                                onClick={() => dispatch(push('/window/' + windowType + '/new'))}
+                                onClick={() => this.newDocument()}
                             >
                                 <i className="meta-icon-add" /> New {layout.caption}
                             </button>
@@ -222,11 +245,13 @@ class DocumentList extends Component {
                             filterData={layout.filters}
                             filtersActive={data.filters}
                             windowType={windowType}
+                            viewId={data.viewId}
                         />
                     </div>
 
                     <div>
                         <Table
+                            entity="documentView"
                             ref={c => this.table = c && c.getWrappedInstance() && c.getWrappedInstance().refs.instance}
                             rowData={{1: data.result}}
                             cols={layout.elements}
@@ -240,11 +265,14 @@ class DocumentList extends Component {
                             size={data.size}
                             pageLength={20}
                             handleChangePage={this.handleChangePage}
-                            page={page}
+                            page={pagination.page}
                             mainTable={true}
                             updateDocList={this.updateData}
                             sort={this.sortData}
                             orderBy={data.orderBy}
+                            tabIndex={0}
+                            open={open}
+                            closeOverlays={closeOverlays}
                         />
                     </div>
                 </div>
@@ -258,8 +286,8 @@ class DocumentList extends Component {
 
 DocumentList.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    page: PropTypes.number.isRequired,
     sorting: PropTypes.object.isRequired,
+    pagination: PropTypes.object.isRequired,
     filters: PropTypes.array.isRequired,
     filtersWindowType: PropTypes.string
 }
@@ -270,19 +298,19 @@ function mapStateToProps(state) {
     const {
         filters,
         filtersWindowType,
-        page,
-        sorting
+        sorting,
+        pagination
     } = listHandler || {
         filters: {},
-        page: 1,
         sorting: {},
+        pagination: {},
         filtersWindowType: ""
     }
 
     return {
         filters,
-        page,
         sorting,
+        pagination,
         filtersWindowType
     }
 }

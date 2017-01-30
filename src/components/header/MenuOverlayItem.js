@@ -11,7 +11,10 @@ class MenuOverlayItem extends Component {
     }
 
     clickedItem = (e, elementId, nodeId, type ) => {
-        const {handleClickOnFolder, handleRedirect, handleNewRedirect} = this.props;
+        const {
+            handleClickOnFolder, handleRedirect, handleNewRedirect, openModal,
+            caption
+        } = this.props;
 
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
@@ -19,6 +22,8 @@ class MenuOverlayItem extends Component {
             this.handleClick(elementId)
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
+        } else if (type === 'report') {
+            openModal(elementId + "", "process", caption)
         }
     }
 
@@ -34,26 +39,86 @@ class MenuOverlayItem extends Component {
         this.renderBreadcrumb(elementId)
     }
 
+    componentDidMount() {
+        const {query} = this.props;
+        if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
+             document.getElementsByClassName('js-menu-overlay')[0].focus();
+        }
+    }
+
+    handleKeyDown = (e) => {
+        const {back, handleMenuOverlay} = this.props;
+
+        switch(e.key){
+            case "ArrowDown":
+                e.preventDefault();
+                this.handleArrowDown();
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                this.handeArrowUp();
+                break;
+            case "Backspace":
+                e.preventDefault();
+                back(e);
+                document.getElementsByClassName('js-menu-overlay')[0].focus();
+                break;
+            case "Enter":
+                e.preventDefault();
+                document.activeElement.childNodes[0].click();
+                document.getElementsByClassName('js-menu-overlay')[0].focus();
+                break;
+            case "Escape":
+                e.preventDefault();
+                handleMenuOverlay("","");
+        }
+    }
+
+    handeArrowUp() {
+        let prevSiblings = document.activeElement.previousSibling;
+        if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
+            document.activeElement.previousSibling.focus();
+        } else {
+            if (document.activeElement.parentElement.previousSibling) {
+                const listChildren = document.activeElement.parentElement.previousSibling.childNodes;
+
+                if(listChildren.length == 1){
+                    document.activeElement.parentElement.previousSibling.childNodes[0].focus();
+                }else{
+                    listChildren[listChildren.length - 1].focus();
+                }
+            }
+        }
+    }
+
+    handleArrowDown() {
+
+        if (document.activeElement.nextSibling) {
+            document.activeElement.nextSibling.focus();
+        } else {
+            if (document.activeElement.parentElement.nextSibling) {
+                const listChildren = document.activeElement.parentElement.nextSibling.childNodes;
+                if(listChildren.length == 1){
+                    listChildren[0].focus();
+                }else{
+                    listChildren[1].focus();
+                }
+            }
+        }
+    }
+
     render() {
         const {
-            dispatch,
-            nodeId,
-            type,
-            elementId,
-            caption,
-            children,
-            handleClickOnFolder,
-            handleRedirect,
-            handleNewRedirect,
-            handlePath,
-            query,
-            printChildren
+            dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder,
+            handleRedirect, handleNewRedirect, handlePath, query, printChildren
         } = this.props;
 
         return (
             <span
+                tabIndex={0}
+                onKeyDown={this.handleKeyDown}
                 className={
-                    "menu-overlay-expanded-link " +
+                    "menu-overlay-expanded-link js-menu-item " +
                     (!printChildren ? "menu-overlay-expanded-link-spaced " : "")
                 }
             >
@@ -63,9 +128,13 @@ class MenuOverlayItem extends Component {
                     className={
                         (children ? "menu-overlay-expand" : "menu-overlay-link")
                     }
-                    onClick={e => children ? handleClickOnFolder(e, nodeId) : (type==='newRecord' ? handleNewRedirect(elementId) : this.handleClick(elementId))}
+                    onClick={e => {
+                        children ?
+                            handleClickOnFolder(e, nodeId) :
+                            this.clickedItem(e, elementId, nodeId, type)
+                    }}
                 >
-                {caption}
+                    {caption}
                 </span>
 
             }
