@@ -25,6 +25,7 @@ this week's RC
 * webUI
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
+  * #883 Sales Purchase Order Window Grid View
   
 ## Fixes
 * metasfresh 
