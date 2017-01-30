@@ -213,6 +213,8 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpSessionId = extractSimpSessionId(event);
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicSubscribed(simpSessionId, simpDestination);
+
+			logger.info("Subscribed to {} [ {} ]", simpDestination, simpSessionId);
 		}
 	}
 
@@ -228,6 +230,8 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpSessionId = extractSimpSessionId(event);
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicUnsubscribed(simpSessionId, simpDestination);
+
+			logger.info("Unsubscribed from {} [ {} ]", simpDestination, simpSessionId);
 		}
 	}
 
