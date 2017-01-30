@@ -605,8 +605,15 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			{
 				closeWindow = true;
 			}
+			
+			// #863
+			// Do not show result window for any process that doesn't allow rerun
+			if(!_allowProcessReRun)
+			{
+				closeWindow = true;
+			}
+			
 		}
-
 		//
 		// Close the window
 		if (closeWindow)
