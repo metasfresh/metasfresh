@@ -23,7 +23,6 @@ this week's RC
   * #868 Weekly Revenue Report
 
 * metasfresh-webui
-  * #883 Purchase and Sales Order Window Grid View adjustments in
   * #878 Purchase Order Window WebUI
  
 ## Already integrated in RB
