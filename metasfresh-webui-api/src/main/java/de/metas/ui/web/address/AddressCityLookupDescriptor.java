@@ -1,5 +1,6 @@
 package de.metas.ui.web.address;
 
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -9,8 +10,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.ILocationDAO;
@@ -64,6 +67,18 @@ public class AddressCityLookupDescriptor implements LookupDescriptor, LookupData
 	public String getCachePrefix()
 	{
 		return CACHE_PREFIX;
+	}
+	
+	@Override
+	public boolean isCached()
+	{
+		return false;
+	}
+	
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override

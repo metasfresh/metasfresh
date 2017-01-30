@@ -3,24 +3,39 @@ package de.metas.ui.web.process;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
+import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest.JSONReferencing;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -49,8 +64,21 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  * #L%
  */
 
+/**
+ * WEBUI Process instance.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class ProcessInstance
 {
+	private static final transient Logger logger = LogManager.getLogger(ProcessInstance.class);
+
+	public static final String PARAM_ViewId = "$WEBUI_ViewId";
+
+	@Autowired
+	@Lazy
+	private IDocumentViewsRepository documentViewsRepo;
 
 	private final ProcessDescriptor processDescriptor;
 	private final int adPInstanceId;
@@ -63,6 +91,8 @@ public final class ProcessInstance
 	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final int adPInstanceId, final Document parameters)
 	{
 		super();
+		Adempiere.autowire(this);
+
 		this.processDescriptor = processDescriptor;
 		this.adPInstanceId = adPInstanceId;
 		this.parameters = parameters;
@@ -75,6 +105,10 @@ public final class ProcessInstance
 	private ProcessInstance(final ProcessInstance from, final CopyMode copyMode)
 	{
 		super();
+
+		// Adempiere.autowire(this);
+		documentViewsRepo = from.documentViewsRepo;
+
 		processDescriptor = from.processDescriptor;
 		adPInstanceId = from.adPInstanceId;
 		parameters = from.parameters.copy(copyMode);
@@ -176,17 +210,17 @@ public final class ProcessInstance
 		// Make sure it's saved in database
 		if (!saveIfValidAndHasChanges(true))
 		{
-			// TODO: improve error message (be more explicit)
+			// shall not happen because the method throws the exception in case of failure
 			throw new ProcessExecutionException("Instance could not be saved because it's not valid");
 		}
 
 		//
-		// Process info
+		// Create the process info and execute the process synchronously
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
 		final ProcessDescriptor processDescriptor = getDescriptor();
 		final String adLanguage = Env.getAD_Language(ctx);
 		final String name = processDescriptor.getCaption(adLanguage);
-		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
+		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
 				.setAD_PInstance_ID(getAD_PInstance_ID())
@@ -196,8 +230,8 @@ public final class ProcessInstance
 				//
 				// Execute the process/report
 				.buildAndPrepareExecution()
-				.executeSync()
-				.getResult();
+				.executeSync();
+		final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
 
 		//
 		// Build and return the execution result
@@ -214,6 +248,11 @@ public final class ProcessInstance
 				resultBuilder.setReportData(processExecutionResult.getReportFilename(), processExecutionResult.getReportContentType(), reportTempFile);
 			}
 
+			//
+			// Result: records to select
+			createViewIfNeeded(resultBuilder, processExecutor.getProcessInfo(), processExecutionResult.getRecordsToSelectAfterExecution());
+
+			//
 			final ProcessInstanceResult result = resultBuilder.build();
 			executionResult = result;
 			if (result.isSuccess())
@@ -256,6 +295,65 @@ public final class ProcessInstance
 		Util.writeBytes(reportFile, reportData);
 
 		return reportFile;
+	}
+
+	/**
+	 * Creates a view from given <code>recordRefs</code>.
+	 * 
+	 * @param resultBuilder
+	 * @param processInfo
+	 * @param recordRefs
+	 */
+	private void createViewIfNeeded(final ProcessInstanceResult.Builder resultBuilder, final ProcessInfo processInfo, final List<TableRecordReference> recordRefs)
+	{
+		// If there are no records, skip creating the view.
+		if (recordRefs.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Create view create request builders from current records
+		final Map<Integer, JSONCreateDocumentViewRequest.Builder> viewRequestBuilders = new HashMap<>();
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			final JSONCreateDocumentViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(adWindowId, key -> JSONCreateDocumentViewRequest.builder(adWindowId, JSONViewDataType.grid));
+
+			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
+		}
+		// If there is no view create request builder there stop here (shall not happen)
+		if (viewRequestBuilders.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Create the view create request from first builder that we have.
+		if (viewRequestBuilders.size() > 1)
+		{
+			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
+		}
+		final JSONCreateDocumentViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
+				.setReferencing(extractJSONReferencing(processInfo))
+				.build();
+
+		//
+		// Create the view and set its ID to our process result.
+		final IDocumentViewSelection view = documentViewsRepo.createView(viewRequest);
+		resultBuilder.setView(view.getAD_Window_ID(), view.getViewId());
+	}
+
+	private static final JSONReferencing extractJSONReferencing(final ProcessInfo processInfo)
+	{
+		final TableRecordReference sourceRecordRef = processInfo.getRecordRefOrNull();
+		if (sourceRecordRef == null)
+		{
+			return null;
+		}
+
+		final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
+		return JSONReferencing.of(adWindowId, sourceRecordRef.getRecord_ID());
 	}
 
 	/**

@@ -297,6 +297,16 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException(documentPath);
 		}
 	}
+	
+	public void deleteAll(final List<DocumentPath> documentPaths)
+	{
+		// FIXME: i think we shall refactor this method and make sure that "deleteAll" is atomic
+		
+		for (final DocumentPath documentPath : documentPaths)
+		{
+			delete(documentPath);
+		}
+	}
 
 	public TableRecordReference getTableRecordReference(final DocumentPath documentPath)
 	{

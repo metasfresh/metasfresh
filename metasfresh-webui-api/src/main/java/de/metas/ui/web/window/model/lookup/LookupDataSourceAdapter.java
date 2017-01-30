@@ -3,12 +3,10 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -35,32 +33,26 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * #L%
  */
 
-class PartitionCachedLookupDataSource implements LookupDataSource
+/**
+ * Wraps an {@link LookupDataSourceFetcher}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+class LookupDataSourceAdapter implements LookupDataSource
 {
-	public static final PartitionCachedLookupDataSource of(final LookupDataSourceFetcher fetcher)
+	public static final LookupDataSourceAdapter of(final LookupDataSourceFetcher fetcher)
 	{
-		return new PartitionCachedLookupDataSource(fetcher);
+		return new LookupDataSourceAdapter(fetcher);
 	}
 
-	private static final String NAME = "PerPartition";
-
-	private final transient CCache<LookupDataSourceContext, LookupValuesList> cacheByPartition;
-	private final transient CCache<LookupDataSourceContext, LookupValue> cacheByKey;
 	private final LookupDataSourceFetcher fetcher;
 
-	private PartitionCachedLookupDataSource(final LookupDataSourceFetcher fetcher)
+	protected LookupDataSourceAdapter(final LookupDataSourceFetcher fetcher)
 	{
 		super();
 		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
-
-		final String cachePrefix = fetcher.getCachePrefix();
-		Check.assumeNotEmpty(cachePrefix, "cachePrefix is not empty");
-		final int maxSize = 100;
-		final int expireAfterMinutes = 60 * 2;
-		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
-		cacheByPartition = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByPartition", maxSize, expireAfterMinutes);
-		cacheByKey = CCache.newLRUCache(cachePrefix + "#" + NAME + "#LookupByKey", maxSize, expireAfterMinutes);
 	}
 
 	@Override
@@ -78,7 +70,7 @@ class PartitionCachedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public final LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		if (!isValidFilter(filter))
 		{
@@ -90,7 +82,8 @@ class PartitionCachedLookupDataSource implements LookupDataSource
 				.putFilter(filter, firstRow, pageLength)
 				.build();
 
-		return cacheByPartition.getOrLoad(evalCtx, () -> fetcher.retrieveEntities(evalCtx));
+		final LookupValuesList lookupValuesList = fetcher.retrieveEntities(evalCtx);
+		return lookupValuesList;
 	}
 
 	@Override
@@ -117,7 +110,7 @@ class PartitionCachedLookupDataSource implements LookupDataSource
 
 		//
 		// Get the lookup value
-		final LookupValue lookupValue = cacheByKey.getOrLoad(evalCtx, () -> fetcher.retrieveLookupValueById(evalCtx));
+		final LookupValue lookupValue = fetcher.retrieveLookupValueById(evalCtx);
 		if (lookupValue == LookupDataSourceFetcher.LOOKUPVALUE_NULL)
 		{
 			return null;
@@ -125,7 +118,7 @@ class PartitionCachedLookupDataSource implements LookupDataSource
 		return lookupValue;
 	}
 
-	private boolean isValidFilter(final String filter)
+	static boolean isValidFilter(final String filter)
 	{
 		if (Check.isEmpty(filter, true))
 		{
@@ -143,6 +136,6 @@ class PartitionCachedLookupDataSource implements LookupDataSource
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
-		return ImmutableList.of(cacheByPartition.stats(), cacheByKey.stats());
+		return fetcher.getCacheStats();
 	}
 }

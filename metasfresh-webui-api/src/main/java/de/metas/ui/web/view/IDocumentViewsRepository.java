@@ -1,8 +1,8 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.view;
 
 import java.util.List;
 
-import de.metas.ui.web.window.model.filters.DocumentFilter;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 
 /*
  * #%L
@@ -26,27 +26,21 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  * #L%
  */
 
-public interface IDocumentViewSelection
+public interface IDocumentViewsRepository
 {
-	String getViewId();
+	IDocumentViewSelection getView(String viewId);
 
-	int getAD_Window_ID();
+	default <T extends IDocumentViewSelection> T getView(final String viewId, final Class<T> type)
+	{
+		@SuppressWarnings("unchecked")
+		final T view = (T)getView(viewId);
+		return view;
+	}
 
-	String getTableName();
+	IDocumentViewSelection createView(JSONCreateDocumentViewRequest jsonRequest);
 
-	long size();
+	void deleteView(String viewId);
 
-	DocumentViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
-
-	List<DocumentFilter> getStickyFilters();
-
-	/**
-	 * @return active filters
-	 */
-	List<DocumentFilter> getFilters();
-
-	List<DocumentQueryOrderBy> getDefaultOrderBys();
-
-	String getSqlWhereClause(List<Integer> viewDocumentIds);
+	List<IDocumentViewSelection> getViews();
 
 }

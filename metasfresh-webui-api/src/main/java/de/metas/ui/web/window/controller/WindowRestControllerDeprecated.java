@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
@@ -152,7 +154,7 @@ public class WindowRestControllerDeprecated
 				.setDetailId(detailIdStr)
 				.setRowIdsList(rowIdsListStr)
 				.build();
-		return windowRestController.deleteDocuments(documentPath);
+		return windowRestController.deleteDocuments(ImmutableList.of(documentPath));
 	}
 
 	@RequestMapping(value = "/typeahead", method = RequestMethod.GET)

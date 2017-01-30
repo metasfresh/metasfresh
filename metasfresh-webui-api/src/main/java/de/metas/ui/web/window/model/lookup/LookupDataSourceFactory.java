@@ -59,13 +59,18 @@ public final class LookupDataSourceFactory
 		final LookupDataSourceFetcher fetcher = lookupDescriptor.getLookupDataSourceFetcher();
 
 		final LookupDataSource lookupDataSource;
-		if (!lookupDescriptor.isHighVolume() && !lookupDescriptor.hasParameters())
+		if(fetcher.isCached())
+		{
+			lookupDataSource = LookupDataSourceAdapter.of(fetcher);
+		}
+		else if (!lookupDescriptor.isHighVolume() && !lookupDescriptor.hasParameters())
 		{
 			lookupDataSource = FullyCachedLookupDataSource.of(fetcher);
 		}
 		else
 		{
-			lookupDataSource = PartitionCachedLookupDataSource.of(fetcher);
+			final CachedLookupDataSourceFetcherAdapter cachedFetcher = CachedLookupDataSourceFetcherAdapter.of(fetcher);
+			lookupDataSource = LookupDataSourceAdapter.of(cachedFetcher);
 		}
 
 		logger.debug("Creating lookup data source for {}: {}", lookupDescriptor, lookupDataSource);

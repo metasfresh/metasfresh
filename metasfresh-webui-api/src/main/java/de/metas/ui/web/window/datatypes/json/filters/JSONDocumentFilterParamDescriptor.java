@@ -75,6 +75,12 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	@JsonProperty("mandatory")
 	private final boolean mandatory;
 
+	@JsonProperty("displayed")
+	private final boolean displayed;
+
+	@JsonProperty("readonly")
+	private final boolean readonly;
+
 	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		super();
@@ -98,6 +104,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());
 
 		mandatory = param.isMandatory();
+		displayed = true;
+		readonly = false;
 	}
 
 	@JsonCreator
@@ -109,6 +117,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 			, @JsonProperty("defaultValue") final Object defaultValue //
 			, @JsonProperty("defaultValueTo") final Object defaultValueTo //
 			, @JsonProperty("mandatory") final boolean mandatory //
+			, @JsonProperty("displayed") final boolean displayed //
+			, @JsonProperty("readonly") final boolean readonly //
 	)
 	{
 		this.caption = caption;
@@ -118,6 +128,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 		this.defaultValue = defaultValue;
 		this.defaultValueTo = defaultValueTo;
 		this.mandatory = mandatory;
+		this.displayed = displayed;
+		this.readonly = readonly;
 	}
 
 	@Override
@@ -132,6 +144,8 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 				.add("defaultValue", defaultValue)
 				.add("defaultValueTo", defaultValueTo)
 				.add("mandatory", mandatory)
+				.add("displayed", displayed)
+				.add("readonly", readonly)
 				.toString();
 	}
 
@@ -168,5 +182,15 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterParamDescriptor;
 	public boolean isMandatory()
 	{
 		return mandatory;
+	}
+
+	public boolean isDisplayed()
+	{
+		return displayed;
+	}
+
+	public boolean isReadonly()
+	{
+		return readonly;
 	}
 }

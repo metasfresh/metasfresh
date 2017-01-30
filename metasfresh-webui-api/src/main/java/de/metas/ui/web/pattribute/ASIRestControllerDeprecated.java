@@ -118,4 +118,13 @@ public class ASIRestControllerDeprecated
 		userSession.assertDeprecatedRestAPIAllowed();
 		return asiRestController.complete(asiDocId);
 	}
+	
+	@RequestMapping(value = "/{asiDocId}/complete", method = RequestMethod.GET)
+	@Deprecated
+	public JSONLookupValue complete_DEPRECATED_2(@PathVariable("asiDocId") final int asiDocId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return asiRestController.complete(asiDocId);
+	}
+
 }

@@ -2,9 +2,11 @@ package de.metas.ui.web.window.descriptor.filters;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -31,17 +33,43 @@ import com.google.common.collect.ImmutableList;
 
 class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
-	public static CompositeDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptorsProvider... providers)
+	public static DocumentFilterDescriptorsProvider compose(final DocumentFilterDescriptorsProvider... providers)
 	{
-		return new CompositeDocumentFilterDescriptorsProvider(providers);
+		if (providers == null || providers.length <= 0)
+		{
+			return NullDocumentFilterDescriptorsProvider.instance;
+		}
+
+		final ImmutableList<DocumentFilterDescriptorsProvider> providersList = Stream.of(providers)
+				.filter(provider -> !NullDocumentFilterDescriptorsProvider.isNull(provider))
+				.collect(GuavaCollectors.toImmutableList());
+
+		if (providersList.isEmpty())
+		{
+			return NullDocumentFilterDescriptorsProvider.instance;
+		}
+		else if (providersList.size() == 1)
+		{
+			return providersList.get(0);
+		}
+
+		return new CompositeDocumentFilterDescriptorsProvider(providersList);
 	}
 
 	private final List<DocumentFilterDescriptorsProvider> providers;
 
-	private CompositeDocumentFilterDescriptorsProvider(final DocumentFilterDescriptorsProvider... providers)
+	private CompositeDocumentFilterDescriptorsProvider(final ImmutableList<DocumentFilterDescriptorsProvider> providersList)
 	{
 		super();
-		this.providers = ImmutableList.copyOf(providers);
+		this.providers = providersList;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper("composite")
+				.addValue(providers)
+				.toString();
 	}
 
 	@Override

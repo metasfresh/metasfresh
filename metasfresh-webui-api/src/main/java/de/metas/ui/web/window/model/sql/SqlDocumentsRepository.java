@@ -298,10 +298,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 
 			final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
+			final boolean isDisplayColumnAvailable = true;
 
 			try
 			{
-				return fieldValueLoader.retrieveFieldValue(rs);
+				return fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable);
 			}
 			catch (final SQLException e)
 			{

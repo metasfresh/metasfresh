@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.apps.search.IUserQuery;
@@ -55,6 +56,9 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 	{
 		super();
 
+		Check.assumeNotEmpty(tableName, "tableName is not empty");
+		Check.assume(adTabId > 0, "adTabId > 0");
+		
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
 		final List<IUserQueryField> searchFields = fields

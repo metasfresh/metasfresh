@@ -19,11 +19,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
-		<springfox-swagger.version>2.5.0</springfox-swagger.version>
+		<springfox-swagger.version>2.6.1</springfox-swagger.version>
 
-		<!-- From spring-boot-dependencies -->
-		<jackson.version>2.6.5</jackson.version>
-		
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->

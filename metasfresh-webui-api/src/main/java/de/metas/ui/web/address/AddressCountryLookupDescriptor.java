@@ -1,5 +1,6 @@
 package de.metas.ui.web.address;
 
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -7,9 +8,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.CCache;
+import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.ICountryDAO;
@@ -21,6 +24,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 
 /*
  * #%L
@@ -55,6 +59,18 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	public String getCachePrefix()
 	{
 		return CACHE_PREFIX;
+	}
+
+	@Override
+	public boolean isCached()
+	{
+		return true;
+	}
+	
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return ImmutableList.of(allCountriesCache.stats());
 	}
 
 	@Override
@@ -129,34 +145,16 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	{
 		//
 		// Determine what we will filter
-		final String filter = evalCtx.getFilter();
-		final boolean matchAll;
-		final String filterUC;
-		final int limit;
+		final LookupValueFilterPredicate filter = evalCtx.getFilterPredicate();
 		final int offset = evalCtx.getOffset(0);
-		if (filter == LookupDataSourceContext.FILTER_Any)
-		{
-			matchAll = true;
-			filterUC = null; // N/A
-			limit = evalCtx.getLimit(Integer.MAX_VALUE);
-		}
-		else if (Check.isEmpty(filter, true))
-		{
-			return LookupValuesList.EMPTY;
-		}
-		else
-		{
-			matchAll = false;
-			filterUC = filter.trim().toUpperCase();
-			limit = evalCtx.getLimit(100);
-		}
+		final int limit = evalCtx.getLimit(filter.isMatchAll() ? Integer.MAX_VALUE : 100);
 
 		//
 		// Get, filter, return
 		return getAllCountriesById(evalCtx.getAD_Language())
 				.getValues()
 				.stream()
-				.filter(country -> matchAll || matchesFilter(country, filterUC))
+				.filter(filter)
 				.skip(offset)
 				.limit(limit)
 				.collect(LookupValuesList.collect());
@@ -188,18 +186,4 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 				.orElse(countryRecord.getName());
 		return IntegerLookupValue.of(countryId, countryName);
 	}
-
-	private final boolean matchesFilter(final LookupValue country, final String filterUC)
-	{
-		final String displayName = country.getDisplayName();
-		if (Check.isEmpty(displayName))
-		{
-			return false;
-		}
-
-		final String displayNameUC = displayName.trim().toUpperCase();
-
-		return displayNameUC.contains(filterUC);
-	}
-
 }

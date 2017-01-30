@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -64,7 +66,7 @@ public final class DocumentPath
 	{
 		if (documentTypeId <= 0)
 		{
-			throw new IllegalArgumentException("adWindowId < 0");
+			throw new IllegalArgumentException("documentTypeId < 0");
 		}
 
 		final DocumentId documentId = DocumentId.of(idStr);
@@ -75,7 +77,45 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
+
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
+	{
+		if (documentTypeId <= 0)
+		{
+			throw new IllegalArgumentException("documentTypeId < 0");
+		}
+
+		if (documentId == null || documentId.isNew())
+		{
+			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
+		}
+
+		return new DocumentPath(documentType, documentTypeId, documentId);
+	}
 	
+	public static final List<DocumentPath> rootDocumentPathsList(final DocumentType documentType, final int documentTypeId, final String documentIdsListStr)
+	{
+		if (documentIdsListStr == null || documentIdsListStr.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<DocumentPath> documentPaths = ImmutableList.builder();
+		for (final String documentIdStr : Builder.SPLITTER_RowIds.splitToList(documentIdsListStr))
+		{
+			final DocumentId documentId = DocumentId.fromNullable(documentIdStr);
+			if (documentId == null)
+			{
+				continue;
+			}
+
+			final DocumentPath documentPath = rootDocumentPath(documentType, documentTypeId, documentId);
+			documentPaths.add(documentPath);
+		}
+		
+		return documentPaths.build();
+	}
+
 	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId, final String rowIdStr)
 	{
 		if(Check.isEmpty(detailId, true))

@@ -3,8 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
-import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptorsProvider;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -48,8 +46,8 @@ public final class DocumentDescriptor
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("layout", layout)
 				.add("entity", entityDescriptor)
+				.add("layout", layout)
 				.toString();
 	}
 
@@ -61,12 +59,6 @@ public final class DocumentDescriptor
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
 		return entityDescriptor;
-	}
-
-	/** @return root entity's filters */
-	public DocumentFilterDescriptorsProvider getDocumentFiltersProvider()
-	{
-		return getEntityDescriptor().getFiltersProvider();
 	}
 
 	public static final class Builder

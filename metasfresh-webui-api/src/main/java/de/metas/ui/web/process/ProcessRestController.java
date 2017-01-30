@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Strings;
+
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
@@ -25,6 +27,8 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -33,9 +37,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentViewsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentViewSelection;
 import io.swagger.annotations.Api;
 
 /*
@@ -77,7 +79,7 @@ public class ProcessRestController
 	private DocumentCollection documentsCollection;
 
 	@Autowired
-	private DocumentViewsRepository documentViewsRepo;
+	private IDocumentViewsRepository documentViewsRepo;
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
@@ -90,7 +92,7 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public JSONProcessLayout getLayout(
-			@PathVariable final int adProcessId //
+			@PathVariable("processId") final int adProcessId //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -115,10 +117,40 @@ public class ProcessRestController
 
 		Check.assume(adProcessId > 0, "adProcessId > 0");
 
+		//
+		// Extract process where clause from view, in case the process was called from a view.
+		final String sqlWhereClause;
+		final String viewId = Strings.emptyToNull(request.getViewId());
+		int view_AD_Window_ID = -1;
+		int view_DocumentId = -1;
+		if (!Check.isEmpty(viewId))
+		{
+			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
+			final List<Integer> viewDocumentIds = request.getViewDocumentIds();
+			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
+
+			if (viewDocumentIds.size() == 1)
+			{
+				view_AD_Window_ID = view.getAD_Window_ID();
+				view_DocumentId = viewDocumentIds.get(0);
+			}
+		}
+		else
+		{
+			sqlWhereClause = null;
+		}
+
+		//
+		// Extract the (single) referenced document
 		final TableRecordReference documentRef;
 		if (request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
 		{
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
+			documentRef = documentsCollection.getTableRecordReference(documentPath);
+		}
+		else if (view_AD_Window_ID > 0 && view_DocumentId >= 0)
+		{
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_DocumentId);
 			documentRef = documentsCollection.getTableRecordReference(documentPath);
 		}
 		else
@@ -126,23 +158,16 @@ public class ProcessRestController
 			documentRef = null;
 		}
 
-		final String whereClause;
-		if (!Check.isEmpty(request.getViewId()))
-		{
-			final IDocumentViewSelection view = documentViewsRepo.getView(request.getViewId());
-			whereClause = view.getSqlWhereClause(request.getViewDocumentIds());
-		}
-		else
-		{
-			whereClause = null;
-		}
-
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(adProcessId)
 				.setRecord(documentRef)
-				.setWhereClause(whereClause)
+				.setWhereClause(sqlWhereClause)
+				//
+				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
+				//
 				.build();
 
 		return Execution.callInNewExecution("pinstance.create", () -> {

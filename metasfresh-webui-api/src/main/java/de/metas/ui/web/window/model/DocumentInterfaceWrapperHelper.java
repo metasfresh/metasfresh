@@ -123,7 +123,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	public String getModelTableNameOrNull(final Object model)
 	{
 		final Document document = DocumentInterfaceWrapper.getDocument(model);
-		return document.getEntityDescriptor().getTableName();
+		return document.getEntityDescriptor().getTableNameOrNull();
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPrecondition.PreconditionsContext;
@@ -69,6 +71,14 @@ public final class ProcessDescriptor
 		parametersDescriptor = builder.getParametersDescriptor();
 
 		layout = builder.getLayout();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("AD_Process_ID", adProcessId)
+				.toString();
 	}
 
 	public int getAD_Process_ID()

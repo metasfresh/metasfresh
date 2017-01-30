@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.view;
 
 import java.util.List;
 
@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentViewResult;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.view.json.JSONDocumentViewResult;
+import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilter;
 import io.swagger.annotations.Api;
@@ -45,7 +46,7 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
 @Deprecated
-public class DocumentViewControllerDeprecated
+public class DocumentViewRestControllerDeprecated
 {
 	private static final String PARAM_WindowId = WebConfig.PARAM_WindowId;
 	private static final String PARAM_ViewId = "viewId";
@@ -60,11 +61,11 @@ public class DocumentViewControllerDeprecated
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentViewRestController documentViewController;
+	private DocumentViewRestControllerDeprecated2 documentViewController;
 
 	@RequestMapping(value = "/viewLayout", method = RequestMethod.GET)
 	@Deprecated
-	public JSONDocumentLayoutTab getViewLayout_DEPRECATED(
+	public JSONDocumentViewLayout getViewLayout_DEPRECATED(
 			@RequestParam(name = PARAM_WindowId, required = true) final int adWindowId //
 			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
 

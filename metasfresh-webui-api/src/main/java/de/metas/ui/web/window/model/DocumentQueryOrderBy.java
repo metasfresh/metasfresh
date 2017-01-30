@@ -1,7 +1,11 @@
 package de.metas.ui.web.window.model;
 
+import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -35,7 +39,8 @@ import com.google.common.collect.ImmutableList;
  */
 
 @Immutable
-public final class DocumentQueryOrderBy
+@SuppressWarnings("serial")
+public final class DocumentQueryOrderBy implements Serializable
 {
 	public static final DocumentQueryOrderBy byFieldName(final String fieldName, final boolean ascending)
 	{
@@ -113,7 +118,7 @@ public final class DocumentQueryOrderBy
 	@Override
 	public boolean equals(final Object obj)
 	{
-		if(this == obj)
+		if (this == obj)
 		{
 			return true;
 		}
@@ -134,5 +139,52 @@ public final class DocumentQueryOrderBy
 	public boolean isAscending()
 	{
 		return ascending;
+	}
+	
+	public <T> Comparator<T> asComparator(final BiFunction<T, String, Object> fieldValueExtractor)
+	{
+		final Function<T, Object> keyExtractor = obj -> fieldValueExtractor.apply(obj, fieldName);
+		Comparator<T> cmp = Comparator.comparing(keyExtractor, ValueComparator.instance);
+
+		if (!ascending)
+		{
+			cmp = cmp.reversed();
+		}
+
+		return cmp;
+	}
+
+	private static final class ValueComparator implements Comparator<Object>
+	{
+		public static final transient ValueComparator instance = new ValueComparator();
+
+		private ValueComparator()
+		{
+			super();
+		}
+
+		@Override
+		public int compare(final Object o1, final Object o2)
+		{
+			if (o1 instanceof Comparable)
+			{
+				@SuppressWarnings("unchecked")
+				final Comparable<Object> o1cmp = (Comparable<Object>)o1;
+				return o1cmp.compareTo(o2);
+			}
+			else if (o1 == null)
+			{
+				return o2 == null ? 0 : -1;
+			}
+			else if (o2 == null)
+			{
+				return +1;
+			}
+			else
+			{
+				return o1.toString().compareTo(o2.toString());
+			}
+		}
+
 	}
 }

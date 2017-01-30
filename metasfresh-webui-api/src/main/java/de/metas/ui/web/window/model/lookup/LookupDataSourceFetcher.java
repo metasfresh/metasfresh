@@ -1,5 +1,9 @@
 package de.metas.ui.web.window.model.lookup;
 
+import java.util.List;
+
+import org.compiere.util.CCache.CCacheStats;
+
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -30,8 +34,6 @@ public interface LookupDataSourceFetcher
 {
 	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.of(-1, "");
 
-	String getCachePrefix();
-
 	boolean isNumericKey();
 
 	LookupDataSourceContext.Builder newContextForFetchingById(Object id);
@@ -41,4 +43,13 @@ public interface LookupDataSourceFetcher
 	LookupDataSourceContext.Builder newContextForFetchingList();
 
 	LookupValuesList retrieveEntities(LookupDataSourceContext evalCtx);
+
+	//
+	// Caching
+	//@formatter:off
+	String getCachePrefix();
+	/** @return true if this fetcher already has caching embedded so on upper levels, caching is not needed */
+	boolean isCached();
+	List<CCacheStats> getCacheStats();
+	//@formatter:on
 }

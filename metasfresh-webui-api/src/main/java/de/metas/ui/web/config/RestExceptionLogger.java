@@ -1,5 +1,7 @@
 package de.metas.ui.web.config;
 
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,7 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.logging.LogManager;
+import de.metas.ui.web.login.exceptions.NotLoggedInException;
 
 /*
  * #%L
@@ -50,6 +55,8 @@ public class RestExceptionLogger implements HandlerExceptionResolver
 
 	@Value("${de.metas.ui.web.config.RestExceptionLogger.enabled:true}")
 	private boolean enabled;
+	
+	private final Set<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
 	public RestExceptionLogger()
 	{
@@ -61,9 +68,29 @@ public class RestExceptionLogger implements HandlerExceptionResolver
 	{
 		if (enabled)
 		{
-			logger.warn("Got REST exception from handler={}", handler, ex);
+			if(isExcludeFromLogging(ex))
+			{
+				logger.debug("Got REST (excluded from logging) exception from handler={}", handler, ex);
+			}
+			else
+			{
+				logger.warn("Got REST exception from handler={}", handler, ex);
+			}
 		}
 
 		return null; // no model => go forward with default processing
+	}
+	
+	private final boolean isExcludeFromLogging(final Exception ex)
+	{
+		for (Class<?> exceptionClass : EXCEPTIONS_ExcludeFromLogging)
+		{
+			if(exceptionClass.isAssignableFrom(ex.getClass()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

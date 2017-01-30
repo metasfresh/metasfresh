@@ -101,7 +101,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		//
 		// FIXME: HARDCODED: C_Order's DocumentSummary
-		if (rootEntity && I_C_Order.Table_Name.equals(_documentEntryBuilder.getTableName()))
+		if (rootEntity && _documentEntryBuilder.isTableName(I_C_Order.Table_Name))
 		{
 			// final IExpression<?> valueProvider = expressionFactory.compile("@DocumentNo@ @DateOrdered@ @GrandTotal@", IStringExpression.class);
 			final IExpression<?> valueProvider = HARDCODED_OrderDocumentSummaryExpression.instance;
@@ -114,11 +114,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			);
 		}
 
-	}
-
-	public String getTableName()
-	{
-		return documentEntity().getTableName();
 	}
 
 	public ILogicExpression getTabDisplayLogic()
@@ -320,7 +315,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		final IStringExpression sqlColumnSql = expressionFactory.compile(gridFieldVO.getColumnSQL(false), IStringExpression.class);
 
-		final SqlDocumentFieldDataBindingDescriptor dataBinding = SqlDocumentFieldDataBindingDescriptor.builder()
+		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
@@ -345,8 +340,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.setWidgetType(widgetType)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
-				.setValueClass(dataBinding.getValueClass())
-				.setVirtualField(dataBinding.isVirtualColumn())
+				.setValueClass(fieldBinding.getValueClass())
+				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setCalculated(gridFieldVO.isCalculated())
 				//
 				.setDefaultValueExpression(defaultValueExpression)
@@ -360,7 +355,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setMandatoryLogic(gridFieldVO.getMandatoryLogic())
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
-				.setDataBinding(dataBinding);
+				.setDataBinding(fieldBinding);
 
 		//
 		// Add Field builder to document entity
@@ -368,7 +363,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		//
 		// Add Field's data binding to entity data binding
-		entityBindings.addField(dataBinding);
+		entityBindings.addField(fieldBinding);
 
 		//
 		// Collect special field
@@ -399,7 +394,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				// Default value: use our expression
 				.setDefaultValueExpression(valueProvider)
 				//
-				// Characteristics: none, it's an internal field
 				.addCharacteristicIfTrue(publicField, Characteristic.PublicField)
 				//
 				// Logics:
@@ -522,7 +516,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 	{
 		// FIXME uber HARDCODED
 		
-		if(!I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableName()))
+		if(!I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableNameOrNull()))
 		{
 			return;
 		}
@@ -535,7 +529,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setDetailId(documentDescriptor.getDetailId())
 				.setAD_Tab_ID(documentDescriptor.getAD_Tab_ID())
 				.setTableName(documentDescriptor.getTableName())
-				.setIsSOTrx(documentDescriptor.isSOTrx())
+				.setIsSOTrx(documentDescriptor.getIsSOTrx())
 				//
 				;
 
@@ -561,7 +555,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
 						.setColumnName("M_HU_PI_Item_Product_ID")
-						.setDisplayType(DisplayType.Search)
+						.setDisplayType(DisplayType.TableDir)
 						.setAD_Val_Rule_ID(540199)
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)

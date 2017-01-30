@@ -31,11 +31,11 @@ import de.metas.printing.esb.base.util.Check;
 
 @Immutable
 @SuppressWarnings("serial")
-public final class DocumentId implements Serializable
+public abstract class DocumentId implements Serializable
 {
-	public static final int NEW_ID = -1;
+	private static final int NEW_ID = -1;
 	public static final String NEW_ID_STRING = "NEW";
-	public static final DocumentId NEW = new DocumentId(NEW_ID);
+	private static final DocumentId NEW = new IntDocumentId(NEW_ID);
 
 	public static final DocumentId of(String idStr)
 	{
@@ -53,7 +53,16 @@ public final class DocumentId implements Serializable
 			throw new NullPointerException("idStr shall not be empty");
 		}
 
-		final int idInt = Integer.parseInt(idStr);
+		final int idInt;
+		try
+		{
+			idInt = Integer.parseInt(idStr);
+		}
+		catch (NumberFormatException e)
+		{
+			return new StringDocumentId(idStr);
+		}
+		
 		return of(idInt);
 	}
 
@@ -64,7 +73,12 @@ public final class DocumentId implements Serializable
 			return NEW;
 		}
 
-		return new DocumentId(idInt);
+		return new IntDocumentId(idInt);
+	}
+	
+	public static DocumentId ofString(final String idStr)
+	{
+		return new StringDocumentId(idStr);
 	}
 
 	public static final DocumentId fromNullable(final String idStr)
@@ -76,28 +90,9 @@ public final class DocumentId implements Serializable
 		return of(idStr.trim());
 	}
 
-	public static final DocumentId fromObject(final Object idObj)
-	{
-		if (idObj instanceof Integer)
-		{
-			return of((Integer)idObj);
-		}
-		else if (idObj instanceof String)
-		{
-			return of((String)idObj);
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot convert " + idObj + " (" + (idObj == null ? null : idObj.getClass()) + ") to " + DocumentId.class);
-		}
-	}
-
-	private final int idInt;
-
-	private DocumentId(final int idInt)
+	private DocumentId()
 	{
 		super();
-		this.idInt = idInt;
 	}
 
 	@Override
@@ -106,45 +101,124 @@ public final class DocumentId implements Serializable
 		return toJson();
 	}
 
-	public String toJson()
-	{
-		if (idInt == NEW_ID)
-		{
-			return NEW_ID_STRING;
-		}
-		return String.valueOf(idInt);
-	}
+	public abstract String toJson();
 
 	@Override
-	public int hashCode()
-	{
-		return Objects.hash(idInt);
-	}
+	public abstract int hashCode();
 
 	@Override
-	public boolean equals(final Object obj)
+	public abstract boolean equals(final Object obj);
+
+	public abstract int toInt();
+
+	public abstract boolean isNew();
+
+	private static final class IntDocumentId extends DocumentId
 	{
-		if (this == obj)
+		private final int idInt;
+
+		private IntDocumentId(final int idInt)
 		{
-			return true;
+			super();
+			this.idInt = idInt;
 		}
 
-		if (!(obj instanceof DocumentId))
+		@Override
+		public String toJson()
+		{
+			if (idInt == NEW_ID)
+			{
+				return NEW_ID_STRING;
+			}
+			return String.valueOf(idInt);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(idInt);
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+
+			if (!(obj instanceof IntDocumentId))
+			{
+				return false;
+			}
+
+			final IntDocumentId other = (IntDocumentId)obj;
+			return idInt == other.idInt;
+		}
+
+		@Override
+		public int toInt()
+		{
+			return idInt;
+		}
+
+		@Override
+		public boolean isNew()
+		{
+			return idInt == NEW_ID;
+		}
+	}
+
+	private static final class StringDocumentId extends DocumentId
+	{
+		private final String idStr;
+
+		private StringDocumentId(final String idStr)
+		{
+			super();
+			Check.assumeNotEmpty(idStr, "idStr is not empty");
+			this.idStr = idStr;
+		}
+
+		@Override
+		public String toJson()
+		{
+			return idStr;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(idStr);
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+
+			if (!(obj instanceof StringDocumentId))
+			{
+				return false;
+			}
+
+			final StringDocumentId other = (StringDocumentId)obj;
+			return idStr == other.idStr;
+		}
+
+		@Override
+		public int toInt()
+		{
+			throw new IllegalStateException("String document IDs cannot be converted to int: " + this);
+		}
+
+		@Override
+		public boolean isNew()
 		{
 			return false;
 		}
-
-		final DocumentId other = (DocumentId)obj;
-		return idInt == other.idInt;
-	}
-
-	public int toInt()
-	{
-		return idInt;
-	}
-
-	public boolean isNew()
-	{
-		return idInt == NEW_ID;
 	}
 }

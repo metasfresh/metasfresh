@@ -89,9 +89,15 @@ public abstract class LookupValue
 
 	public static final LookupValue fromNamePair(final NamePair namePair)
 	{
+		final LookupValue defaultValue = null;
+		return fromNamePair(namePair, defaultValue);
+	}
+	
+	public static final LookupValue fromNamePair(final NamePair namePair, final LookupValue defaultValue)
+	{
 		if (namePair == null)
 		{
-			return null;
+			return defaultValue;
 		}
 		else if (namePair instanceof ValueNamePair)
 		{
