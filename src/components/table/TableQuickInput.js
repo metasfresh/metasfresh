@@ -138,7 +138,7 @@ class TableQuickInput extends Component {
                     key={id}
                     type={item.type}
                     caption={item.caption}
-                    handlePatch={(prop, value, callback, properties) => this.handlePatch(prop,value, callback, properties)}
+                    handlePatch={(prop, value, callback) => this.handlePatch(prop,value, callback)}
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
                     type="secondary"
