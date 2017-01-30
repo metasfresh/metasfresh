@@ -6,13 +6,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.compiere.model.GridField;
-import org.compiere.util.Env;
 
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.model.I_DLM_Partition_Config_Line;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -81,11 +80,9 @@ public class Add_Tables_to_DLM
 	}
 
 	@Override
-	public Object getParameterDefaultValue(GridField parameter)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final int windowNo = parameter.getWindowNo();
-
-		final int configId = Env.getContextAsInt(getCtx(), windowNo, I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID);
+		final int configId = parameter.getContextAsInt(I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID);
 		if (configId > 0)
 		{
 			return configId;

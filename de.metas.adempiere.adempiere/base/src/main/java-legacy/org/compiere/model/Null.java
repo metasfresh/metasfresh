@@ -17,31 +17,52 @@
 package org.compiere.model;
 
 /**
- * 	Database Null Indicator 
- *	
- *  @author Jorg Janke
- *  @version $Id: Null.java,v 1.2 2006/07/30 00:58:04 jjanke Exp $
+ * Database Null Indicator
+ * 
+ * @author Jorg Janke
  */
 public final class Null
 {
-	/** Singleton				*/
+	/** Singleton */
 	public static final Null NULL = new Null();
-	
+
 	/**
-	 * 	NULL Constructor
+	 * @return true if given object is <code>null</code> or {@link #NULL}.
 	 */
-	private Null ()
+	public static final boolean isNull(final Object obj)
 	{
-	}	//	Null
-	
+		return obj == NULL || obj == null;
+	}
+
 	/**
-	 * 	String Representation
-	 *	@return info
+	 * Unbox {@value #NULL} object
+	 * 
+	 * @param obj
+	 * @return <code>obj</code> or <code>null</code>
 	 */
+	public static final Object unbox(final Object obj)
+	{
+		return obj == NULL ? null : obj;
+	}
+
+	/**
+	 * Box <code>null</code> to {@link #NULL}.
+	 * 
+	 * @param obj
+	 * @return <code>obj</code> or {@link #NULL} if the <code>obj</code> was <code>null</code>; this method never returns <code>null</code>.
+	 */
+	public static final Object box(final Object obj)
+	{
+		return obj == null ? NULL : obj;
+	}
+
+	private Null()
+	{
+	}
+
 	@Override
-	public String toString ()
+	public String toString()
 	{
 		return "NULL";
-	} //	toString
-	
-}	//	Null
+	}
+}

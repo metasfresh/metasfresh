@@ -37,11 +37,12 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+
+import de.metas.logging.LogManager;
 
 /**
  * This class uses <code>AD_Sysconfig</code> to obtain priorities for different workpackage-sizes.
@@ -150,7 +151,7 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 			return result;
 		}
 
-		logger.info(
+		logger.debug(
 				"Found no priority for the given position {} (current queue size={}).\nThe {} AD_SysConfig-records which we checked are: {}.\nReturning the preset default prio: {}.",
 				position, size, sortedMap.size(), sortedMap, defaultPrio.retrievePrioName());
 		return defaultPrio;

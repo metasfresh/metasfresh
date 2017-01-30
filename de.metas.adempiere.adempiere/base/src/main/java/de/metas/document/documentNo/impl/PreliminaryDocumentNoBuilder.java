@@ -48,8 +48,6 @@ import de.metas.document.IDocumentSequenceDAO;
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 
 	private static final String DOCSUBTYPE_NONE = "--";
-	private static final String DOCUMENTNO_MARKER_BEGIN = "<";
-	private static final String DOCUMENTNO_MARKER_END = ">";
 
 	//
 	// Parameters
@@ -143,7 +141,7 @@ import de.metas.document.IDocumentSequenceDAO;
 		if (MSequence.isAdempiereSys(adClientId))
 		{
 			final String documentNo = documentSequenceDAO.retrieveDocumentNoSys(docSequence_ID);
-			return withPreliminaryMarkers(documentNo);
+			return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 		}
 		else
 		{
@@ -154,35 +152,14 @@ import de.metas.document.IDocumentSequenceDAO;
 				final String dateColumnName = newDocumentSeqInfo.getDateColumn();
 				final Date date = getDocumentDate(dateColumnName);
 				final String documentNo = documentSequenceDAO.retrieveDocumentNoByYear(docSequence_ID, date);
-				return withPreliminaryMarkers(documentNo);
+				return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 			}
 			else
 			{
 				final String documentNo = documentSequenceDAO.retrieveDocumentNo(docSequence_ID);
-				return withPreliminaryMarkers(documentNo);
+				return IPreliminaryDocumentNoBuilder.withPreliminaryMarkers(documentNo);
 			}
 		}
-	}
-
-	private static final String withPreliminaryMarkers(final String documentNo)
-	{
-		return DOCUMENTNO_MARKER_BEGIN + documentNo + DOCUMENTNO_MARKER_END;
-	}
-
-	private static final boolean hasPreliminaryMarkers(final String documentNo)
-	{
-		if (documentNo == null)
-		{
-			return false;
-		}
-
-		final String documentNoNormalized = documentNo.trim();
-		if (documentNoNormalized.isEmpty())
-		{
-			return false;
-		}
-
-		return documentNoNormalized.startsWith(DOCUMENTNO_MARKER_BEGIN) && documentNoNormalized.endsWith(DOCUMENTNO_MARKER_END);
 	}
 
 	private final void assertNotBuilt()
@@ -327,7 +304,7 @@ import de.metas.document.IDocumentSequenceDAO;
 		{
 			return true;
 		}
-		if (hasPreliminaryMarkers(oldDocumentNo))
+		if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(oldDocumentNo))
 		{
 			return true;
 		}

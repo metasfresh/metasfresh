@@ -13,18 +13,17 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 
@@ -51,6 +50,11 @@ public class WeakListTest
 
 		//
 		// Try again several times to see if our list gets empty
+		waitExpireAll(list);
+	}
+
+	private void waitExpireAll(final WeakList<?> list) throws InterruptedException
+	{
 		int attempt = 0;
 		final int maxAttempts = 10;
 		while (!list.isEmpty())
@@ -64,6 +68,7 @@ public class WeakListTest
 			Thread.sleep(100);
 			System.gc();
 		}
+
 		Assert.assertTrue("List should be empty after " + maxAttempts + " attempts: " + list, list.isEmpty());
 		System.out.println("List expired after " + attempt + " attempts");
 	}
@@ -71,9 +76,9 @@ public class WeakListTest
 	@Test
 	public void testRemove()
 	{
-		DummyTestObject value1 = new DummyTestObject("value1");
-		DummyTestObject value2 = new DummyTestObject("value2");
-		DummyTestObject value3 = new DummyTestObject("value3");
+		final DummyTestObject value1 = new DummyTestObject("value1");
+		final DummyTestObject value2 = new DummyTestObject("value2");
+		final DummyTestObject value3 = new DummyTestObject("value3");
 
 		final WeakList<DummyTestObject> list = new WeakList<>();
 		list.add(value1);
@@ -88,21 +93,40 @@ public class WeakListTest
 		Assert.assertEquals("Invalid weak list content",
 				Arrays.asList(value1, value3),
 				list);
-		
 
 		// Remove by using the an object which equals with an object from our list
 		list.remove(new DummyTestObject("value3"));
 		Assert.assertEquals("Invalid weak list content",
 				Arrays.asList(value1),
 				list);
+	}
 
+	@Test
+	public void test_addIfAbsent() throws Exception
+	{
+		DummyTestObject value1 = new DummyTestObject("value");
+		DummyTestObject value2 = new DummyTestObject("value");
+
+		final WeakList<DummyTestObject> list = new WeakList<>(true);
+		Assert.assertEquals(true, list.addIfAbsent(value1));
+		Assert.assertEquals(false, list.addIfAbsent(value2));
+		Assert.assertEquals("Invalid weak list content",
+				Arrays.asList(value1),
+				list);
+
+		value1 = null;
+		value2 = null;
+		// Trigger garbage collection
+		System.gc();
+
+		waitExpireAll(list);
 	}
 
 	/**
 	 * Dummy test object to be used for testing {@link WeakList}.
-	 * 
+	 *
 	 * NOTE: this object implements {@link #hashCode()} and {@link #equals(Object)} which are checking the underlying name.
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */

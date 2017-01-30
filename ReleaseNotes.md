@@ -10,49 +10,82 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2017-05)
+# metasfresh 4.55.53 (2017-06)
 
 upcoming Release
 
 ## Features
+* webui
+  * #873 Customer & Vendor Subtab in BPartner Window WebUI
+
+# metasfresh 4.54.53 (2017-05)
+
+this week's RC
+
+## not yet integrated in RB
+
+### Features
+* metasfresh
+  * #868 Weekly Revenue Report
+
+## Already integrated in RB
+
+### Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
   
 * webUI
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
-  
-## Fixes
+  * #883 Sales Purchase Order Window Grid View
+  * #878 Purchase Order Window WebUI
+
+### Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
 
 # metasfresh 4.53.52 (2017-04)
 
-this week's RC
-
 ## Features
 * metasfresh
   * #800 Order by product name and partner name in pmm_PurchaseCandidates
+    * Add a new possibility to be able to sort combined search fields by a selected element in the combined Field, e.g. a field combined as Value + Name can now be sorted with Name, and not just Value + Name.
   * #829 receivedVia entry not translated in Baselanguage de_DE
+    * Add the Translation for receivedVia Field in current Baselanguage de_DE.
   * #810 Propagate Attribute from Issue to Receive in Production
+    * New Functionality to propagate selected Attributes vertically though a manufacturing process, from action issue to action receipt.
   * #835 Switch off Process Confirmation Window
+    * Switch off all process confirmation Windows per default. These can be switched on individually per Process where wanted.
 
 * webui
   * #817 Request Window in WebUI
+    * Initial setup of Request Window in Web User Interface including default view, advanced edit, grid view and sidelist.
   * #831 Default Document Layout for WebUI
+    * Overhaul of the current general Document Layout for WebUI
   * #847 Shipment Schedule Window in WebUI
+    * Initial setup of the Shipment Schedule Window in Web User Interface.
   * #853 Shipment Schedule Window Subtabs in WebUI
-  * #855 Shipment Schedule Advanced Edit Mode	
+    * Add the Subtabs definition to Shipment Schedule Window in the new metasfresh Web User Interface, including Sidelist.
+  * #855 Shipment Schedule Advanced Edit Mode
+    * Setup for the Advanced Edit Mode of Shipment Scheule in WebUI.
   * #108 Create Callout for DocNo in Request
+    * Adjustment/ Enhancement of the DocumentNo Generation in non Document datastrucures of WebUI
+  
 
 ## Fixes
 * metasfresh 
   * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+    * Adjust the flag isInvoiceCandidate to be calculated for M_InoutLine records.
   * #808 DocActionBL.retrieveString method is broken
+    * Fixing the method that retrieves the Document Action Name.
   * #819 fix/refactor CalloutRequest
+    * Adopting the Callouts in Request window to also work in Web User Interface.
   * #806 Customs report minor fixes
+    * Minor adjustments and fixes in the Customs report.
   * #837 Marginal return accounts doubled
+    * Minor Bug Fix in marginal return report that doubled the sums on certain accounts.
   * #844 Gear from Pricing System and PriceList show wrong processes
+    * Fixing a Bug that leads into wrong representation of Processes in Gear of Pricing System and Priceliste Window.
 
 * parent
   * #3 Add repo.metasfresh.com also as plugin repo

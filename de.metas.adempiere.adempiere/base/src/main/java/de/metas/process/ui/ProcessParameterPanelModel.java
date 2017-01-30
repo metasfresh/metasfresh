@@ -19,15 +19,15 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.Lookup;
-import org.compiere.model.Null;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 
@@ -52,9 +52,7 @@ public class ProcessParameterPanelModel
 	private final List<GridField> gridFieldsTo = new ArrayList<GridField>();
 	private final List<GridField> gridFieldsAll = new ArrayList<GridField>();
 
-	private static final IProcessDefaultParametersProvider NULL_DefaultPrametersProvider = (parameterName) -> null;
-	/** Default values provider (never null) */
-	private final IProcessDefaultParametersProvider defaultsProvider;
+	private final ProcessDefaultParametersUpdater defaultParametersUpdater;
 
 	/** Display values provider (never null) */
 	private IDisplayValueProvider displayValueProvider = (gridField) -> null;
@@ -76,50 +74,14 @@ public class ProcessParameterPanelModel
 		tabNo = pi.getTabNo();
 		processId = pi.getAD_Process_ID();
 
-		defaultsProvider = createProcessDefaultParametersProvider(pi.getClassName(), pi.isServerProcess());
+		defaultParametersUpdater = ProcessDefaultParametersUpdater.newInstance()
+				.addDefaultParametersProvider(pi)
+				.addDefaultParametersProvider(parameter -> GridField.extractFrom(parameter).getDefault())
+				.onDefaultValue((parameter, value) -> setFieldValue(GridField.extractFrom(parameter), value));
+
 		processClassInfo = pi.getProcessClassInfo();
 
 		createFields();
-	}
-
-	private static final IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final String classname, final boolean isServerProcess)
-	{
-		if (Check.isEmpty(classname, true))
-		{
-			return NULL_DefaultPrametersProvider;
-		}
-
-		try
-		{
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			if (classLoader == null)
-			{
-				classLoader = ProcessParameterPanelModel.class.getClassLoader();
-			}
-
-			final Class<?> processClass = classLoader.loadClass(classname);
-			if (!IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
-			{
-				return NULL_DefaultPrametersProvider;
-			}
-
-			final IProcessDefaultParametersProvider defaultsProvider = (IProcessDefaultParametersProvider)processClass.newInstance();
-			return defaultsProvider;
-
-		}
-		catch (final Throwable e)
-		{
-			if (isServerProcess)
-			{
-				// NOTE: in case of server process, it might be that the class is not present, which could be fine
-				log.debug("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
-			else
-			{
-				log.warn("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
-			return NULL_DefaultPrametersProvider;
-		}
 	}
 
 	public Properties getCtx()
@@ -253,42 +215,22 @@ public class ProcessParameterPanelModel
 	public void setDefaultValues()
 	{
 		final int size = getFieldCount();
-		for (int index = 0; index < size; index++)
+		if (size <= 0)
 		{
-			final GridField field = getField(index);
-			setDefaultValue(field);
-
-			final GridField fieldTo = getFieldTo(index);
-			if (fieldTo != null)
-			{
-				setDefaultValue(fieldTo);
-			}
-		}
-	}
-
-	private void setDefaultValue(final GridField gridField)
-	{
-		Object defaultValue = null;
-		if (defaultsProvider != null)
-		{
-			final String parameterName = gridField.getColumnName();
-			try
-			{
-				defaultValue = defaultsProvider.getParameterDefaultValue(gridField);
-			}
-			catch (final Exception e)
-			{
-				// ignore the error, but log it
-				log.error("Failed retrieving the parameters default value from defaults provider: ParameterName={}, Provider={}", parameterName, defaultsProvider, e);
-			}
+			return;
 		}
 		
-		if (defaultValue == null)
+		for (int index = 0; index < size; index++)
 		{
-			defaultValue = gridField.getDefault();
-		}
+			final IProcessDefaultParameter field = getField(index);
+			defaultParametersUpdater.updateDefaultValue(field);
 
-		setFieldValue(gridField, defaultValue == Null.NULL ? null : defaultValue);
+			final IProcessDefaultParameter fieldTo = getFieldTo(index);
+			if (fieldTo != null)
+			{
+				defaultParametersUpdater.updateDefaultValue(fieldTo);
+			}
+		}
 	}
 
 	public void setDisplayValueProvider(final IDisplayValueProvider displayValueProvider)
@@ -396,7 +338,7 @@ public class ProcessParameterPanelModel
 	/** A list of column names which are notifying in progress */
 	private final Set<String> notifyValueChanged_CurrentColumnNames = new HashSet<String>();
 
-	public void setFieldValue(final GridField gridField, final Object valueNew)
+	/* package */void setFieldValue(final GridField gridField, final Object valueNew)
 	{
 		gridField.setValue(valueNew, true); // inserting=true(always)
 	}
@@ -427,7 +369,7 @@ public class ProcessParameterPanelModel
 				log.debug(changedColumnName + " changed - " + gridField.getColumnName() + " set to null");
 
 				// Invalidate current selection
-				//gridField.validateValue();
+				// gridField.validateValue();
 				setFieldValue(gridField, null);
 				// FIXME instead of reseting the value it would be better to reset only if the value is not valid anymore
 			}
@@ -452,8 +394,8 @@ public class ProcessParameterPanelModel
 			if (gridFieldTo != null && !gridFieldTo.validateValue())
 			{
 				missingMandatoryFields.add(gridField.getHeader());
-			}   // range field
-		}   // field loop
+			}    // range field
+		}    // field loop
 
 		if (!missingMandatoryFields.isEmpty())
 		{
@@ -470,13 +412,13 @@ public class ProcessParameterPanelModel
 		for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)
 		{
 			final ProcessInfoParameter param = createProcessInfoParameter(fieldIndex);
-			if(param == null)
+			if (param == null)
 			{
 				continue;
 			}
 			params.add(param);
-		}	// for every parameter
-		
+		} 	// for every parameter
+
 		return params;
 	}
 
@@ -509,14 +451,14 @@ public class ProcessParameterPanelModel
 		//
 		// FIXME: legacy: convert Boolean to String because some of the JavaProcess implementations are checking boolean parametes as:
 		// boolean value = "Y".equals(ProcessInfoParameter.getParameter());
-		if(value instanceof Boolean)
+		if (value instanceof Boolean)
 		{
 			value = DisplayType.toBooleanString((Boolean)value);
-			}
-		if(valueTo instanceof Boolean)
+		}
+		if (valueTo instanceof Boolean)
 		{
 			valueTo = DisplayType.toBooleanString((Boolean)valueTo);
-			}
+		}
 
 		return new ProcessInfoParameter(columnName, value, valueTo, displayValue, displayValueTo);
 	}

@@ -15,7 +15,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -228,22 +227,14 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Create HU generator
-		final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-		huGenerator.setContext(PlainContextAware.newWithThreadInheritedTrx(getTerminalContext().getCtx()));
-		
-		final I_M_ReceiptSchedule schedule = service.getReferencedObject(row);
-		huGenerator.addM_ReceiptSchedule(schedule);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(getTerminalContext())
+				.addM_ReceiptSchedule(service.getReferencedObject(row));
 
 		//
 		// Get/Create and Edit LU/TU configuration
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
 
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager
-				.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-				{
-					@Override
-					public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-					{
+		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.createAndEdit(lutuConfiguration -> {
 						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
 						//
@@ -267,12 +258,11 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 						}
 
 						return lutuConfiguration;
-					}
 				});
 
 		//
 		// No configuration => user cancelled => don't open editor
-		if (lutuConfiguration == null)
+		if (lutuConfigurationEffective == null)
 		{
 			return null;
 		}
@@ -283,7 +273,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
+			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
 

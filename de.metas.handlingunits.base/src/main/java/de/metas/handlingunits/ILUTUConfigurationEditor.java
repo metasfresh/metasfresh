@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.util.function.Function;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -62,7 +64,7 @@ public interface ILUTUConfigurationEditor
 	 * @param lutuConfigurationEditor
 	 * @return this instance
 	 */
-	ILUTUConfigurationEditor edit(final Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor);
+	ILUTUConfigurationEditor edit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor);
 
 	/**
 	 * Updates this instance's editing-configuration (see {@link #getEditingLUTUConfiguration()}) from the underlying document.

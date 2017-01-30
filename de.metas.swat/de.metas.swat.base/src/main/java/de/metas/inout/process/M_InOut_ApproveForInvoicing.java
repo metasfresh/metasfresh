@@ -8,8 +8,10 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcessPrecondition
 {
@@ -53,7 +55,7 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
@@ -61,11 +63,11 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 
 		if (I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
-			final I_M_InOut inOut = context.getModel(I_M_InOut.class);
-			return docActionBL.isStatusOneOf(inOut.getDocStatus(),
-					DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			final I_M_InOut inOut = context.getSelectedModel(I_M_InOut.class);
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(inOut.getDocStatus(),
+					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 
 }

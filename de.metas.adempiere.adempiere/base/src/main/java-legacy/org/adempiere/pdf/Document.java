@@ -14,6 +14,7 @@
 package org.adempiere.pdf;
 
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Pageable;
 import java.io.ByteArrayOutputStream;
@@ -21,10 +22,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
+import javax.imageio.ImageIO;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.viewer.PDFViewerBean;
 import org.compiere.model.MSysConfig;
 
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -127,4 +132,47 @@ public class Document {
     public static boolean isLicensed() {
     	return true;
     }    
+    
+	/**
+	 * Converts given image to PDF.
+	 *
+	 * @param image
+	 * @return PDF file as bytes array.
+	 */
+	public static byte[] toPDFBytes(final BufferedImage image)
+	{
+		try
+		{
+			//
+			// PDF Image
+			final ByteArrayOutputStream imageBytes = new ByteArrayOutputStream();
+			ImageIO.write(image, "PNG", imageBytes);
+			final Image pdfImage = Image.getInstance(imageBytes.toByteArray());
+
+			//
+			// PDF page size: image size + margins
+			final Rectangle pageSize = new Rectangle(0, 0,
+					pdfImage.getWidth() + 100,
+					pdfImage.getHeight() + 100);
+
+			// PDF document
+			final com.lowagie.text.Document document = new com.lowagie.text.Document(pageSize, 50, 50, 50, 50);
+
+			//
+			// Add image to document
+			final ByteArrayOutputStream pdfBytes = new ByteArrayOutputStream();
+			final PdfWriter writer = PdfWriter.getInstance(document, pdfBytes);
+			writer.open();
+			document.open();
+			document.add(pdfImage);
+			document.close();
+			writer.close();
+
+			return pdfBytes.toByteArray();
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Failed converting the image to PDF", e);
+		}
+	}
 }

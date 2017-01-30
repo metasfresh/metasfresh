@@ -29,9 +29,9 @@ import org.compiere.util.Env;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.logging.LogManager;
 
 /**
  * This pricing discount rule applies if
@@ -56,12 +56,12 @@ public class ContractDiscount extends PricingRuleAdapter
 	{
 		if (!result.isCalculated())
 		{
-			logger.info("Cannot apply discount if the price was not calculated - " + result);
+			logger.debug("Cannot apply discount if the price was not calculated - {}", result);
 			return false;
 		}
 		if (result.isDisallowDiscount())
 		{
-			logger.info("Discounts are not allowed [SKIP]");
+			logger.debug("Discounts are not allowed [SKIP]");
 			return false;
 		}
 

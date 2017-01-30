@@ -43,9 +43,7 @@ public class DLM_Partition_Update_PartitionSize extends JavaProcess
 		retrieveSelectedRecordsQueryBuilder(I_DLM_Partition.class)
 				.create()
 				.list()
-				.forEach(p -> {
-					dlmService.updatePartitionSize(p);
-				});
+				.forEach(p -> dlmService.updatePartitionSize(p));
 		return MSG_OK;
 	}
 }

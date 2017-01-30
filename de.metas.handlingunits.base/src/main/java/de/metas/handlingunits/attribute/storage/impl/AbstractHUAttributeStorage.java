@@ -221,7 +221,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 					}
 					else
 					{
-						throw new UnsupportedOperationException("ValueType not supported: " + valueType);
+						throw new UnsupportedOperationException("ValueType not supported: " + valueType + "(attribute=" + attribute + ", generator=" + generator + ")");
 					}
 					attributeValue.setValue(attributesCtx, valueGenerated);
 				}
