@@ -133,6 +133,7 @@ export function deleteRequest(entity, docType, docId, tabId, ids) {
 }
 
 export function actionsRequest(entity, type, id){
+    console.log(entity);
     return () => axios.get(
         config.API_URL + '/' +
         entity + '/' +

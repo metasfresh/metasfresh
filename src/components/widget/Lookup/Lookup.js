@@ -362,7 +362,7 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, oldValue, filterWidget, mandatory, rowId, tabIndex, fullScreen
+            updated, oldValue, filterWidget, mandatory, rowId, tabIndex
         } = this.props;
 
         const {
