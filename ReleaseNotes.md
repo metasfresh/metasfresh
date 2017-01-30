@@ -10,19 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.x.x (2017-06)
-
-upcoming Release
-
-## Features
-* metasfresh
-  * #868 Weekly Revenue Report
+# upcoming Release
 
 # metasfresh 4.54.53 (2017-05)
 
 this week's RC
 
-## Features
+## not yet integrated in RB
+
+### Features
+* metasfresh
+  * #868 Weekly Revenue Report
+
+* metasfresh-webui
+  * #883 Purchase and Sales Order Window Grid View adjustments in
+  * #878 Purchase Order Window WebUI
+ 
+## Already integrated in RB
+
+### Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
   
@@ -31,7 +37,7 @@ this week's RC
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
   
-## Fixes
+### Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
 
