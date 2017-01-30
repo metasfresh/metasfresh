@@ -29,6 +29,7 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 
 /*
  * #%L
@@ -56,6 +57,8 @@ import de.metas.logging.LogManager;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
+	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
+
 	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
 	private static final String TOPIC_DocumentView = "/view";
@@ -175,14 +178,26 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		@Override
 		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
-			logger.trace("before handshake: {}", wsHandler);
+			final UserSession userSession = UserSession.getCurrentOrNull();
+			if (userSession == null)
+			{
+				// FIXME: No user session running.
+				// Accepted for now, until Frontend it's fixed.
+				// In future we will throw NotLoggedInException
+				logger.info("Skip auth because web socket SESSION_ID is not set");
+			}
+			else
+			{
+				userSession.assertLoggedIn();
+			}
+
 			return true;
 		}
 
 		@Override
 		public void afterHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Exception exception)
 		{
-			logger.trace("after handshake: {}", wsHandler);
+			// nothing
 		}
 	}
 

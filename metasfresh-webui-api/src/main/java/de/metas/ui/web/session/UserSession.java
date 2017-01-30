@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -60,7 +61,39 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @SuppressWarnings("serial")
 public class UserSession implements InitializingBean, Serializable
 {
+	/**
+	 * Gets current {@link UserSession} if any
+	 * 
+	 * @return {@link UserSession} or null
+	 */
+	public static UserSession getCurrentOrNull()
+	{
+		//
+		// Quickly check if the session scoped UserSession bean will be really available
+		// NOTE: it's not about that the object will be null but if it's method calls will be really working
+		if (RequestContextHolder.getRequestAttributes() == null)
+		{
+			return null;
+		}
+
+		//
+		UserSession userSession = _userSession;
+		if (userSession == null)
+		{
+			synchronized (UserSession.class)
+			{
+				if (_userSession == null)
+				{
+					userSession = _userSession = Adempiere.getSpringApplicationContext().getBean(UserSession.class);
+				}
+			}
+		}
+		return userSession;
+	}
+
 	private static final transient Logger logger = LogManager.getLogger(UserSession.class);
+
+	private static UserSession _userSession = null;
 
 	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
 	private String sessionId = null;
@@ -153,7 +186,7 @@ public class UserSession implements InitializingBean, Serializable
 	{
 		return Env.getCtx();
 	}
-	
+
 	public Evaluatee toEvaluatee()
 	{
 		return Evaluatees.ofCtx(getCtx());
@@ -249,6 +282,11 @@ public class UserSession implements InitializingBean, Serializable
 		return Env.getAD_User_ID(getCtx());
 	}
 
+	public String getUserName()
+	{
+		return Env.getContext(getCtx(), Env.CTXNAME_AD_User_Name);
+	}
+
 	public UserRolePermissionsKey getUserRolePermissionsKey()
 	{
 		// TODO: cache the permissions key
@@ -286,11 +324,11 @@ public class UserSession implements InitializingBean, Serializable
 		final Boolean value = getProperty(name);
 		return value != null ? value : defaultValue;
 	}
-	
+
 	public void assertDeprecatedRestAPIAllowed()
 	{
 		final boolean disableDeprecatedRestAI = getPropertyAsBoolean(PARAM_DisableDeprecatedRestAPI, false);
-		if(disableDeprecatedRestAI)
+		if (disableDeprecatedRestAI)
 		{
 			throw new DeprecatedRestAPINotAllowedException();
 		}
