@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -318,11 +319,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 
 			// if 'hu'is an aggregate VHU, then it represents not one, but as many HU as its parent item's Qty sais.
-			final BigDecimal multiplier;
+			final BigDecimal qty;
 			if (handlingUnitsBL.isAggregateHU(hu))
 			{
-				multiplier = hu.getM_HU_Item_Parent().getQty();
-				if (multiplier.signum() <= 0)
+				qty = hu.getM_HU_Item_Parent().getQty();
+				if (qty.signum() <= 0)
 				{
 					// this is an "empty" or "stub" aggregate HU. no packing material
 					continue;
@@ -330,19 +331,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 			else
 			{
-				multiplier = BigDecimal.ONE;
+				qty = BigDecimal.ONE;
 			}
 
 			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
 
-			final int count = huItem.getQty().multiply(multiplier).intValueExact();
-			if (count <= 0)
-			{
-				logger.warn("Invalid packing materials count for {}. Skip considering it.", huItem);
-				continue;
-			}
-
-			packingMaterials.add(ImmutablePair.of(packingMaterial, count));
+			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
 		return packingMaterials;
 	}
@@ -664,7 +658,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			//
 			// Make sure the HU UnitType is matching
 			final String parentUnitType = parentVersion.getHU_UnitType();
-			if (!Check.isEmpty(huUnitType, true) && !Check.equals(parentUnitType, huUnitType))
+			if (!Check.isEmpty(huUnitType, true) && !Objects.equals(parentUnitType, huUnitType))
 			{
 				// required unit type not matched
 				continue;

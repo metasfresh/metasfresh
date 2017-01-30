@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;

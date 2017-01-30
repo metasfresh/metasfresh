@@ -122,7 +122,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private int aggregatedHUsCount;
 
-
 	public AbstractProducerDestination()
 	{
 		super();
@@ -624,7 +623,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				if (handlingUnitsBL.isAggregateHU(currentHU) && !isAllowCreateNewHU())
 				{
 					// we were able to allocate it all, but
-					// if currentHU is an aggregate and it's not allowed to represent another one within the same aggregate, 
+					// if currentHU is an aggregate and it's not allowed to represent another one within the same aggregate,
 					// then we also need to close it here.
 					// Otherwise there would be another loadHU() invocation with would increase the HA item's qty once again (despite not loading anything further).
 					// Note that there is LUTUProducerDestinationTransferTests.testForCorrectItemQtyOnTwoTrxCandidates() just for this case :-)
@@ -675,29 +674,26 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	@OverridingMethodsMustInvokeSuper
 	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
 		_createdHUs.forEach(
 				hu -> {
 					final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
 					final IWeightable weightable = Services.get(IWeightableFactory.class).createWeightableOrNull(attributeStorage);
 					final I_M_Attribute weightTareAttribute = weightable.getWeightTareAttribute();
+					if (attributeStorage.hasAttribute(weightTareAttribute))
+					{
+						final BigDecimal tareOfHU = WeightTareAttributeValueCallout.calculateWeightTare(hu);
 
-					final BigDecimal tareOfHU = WeightTareAttributeValueCallout.calculateWeightTare(hu);
+						final BigDecimal taresOfChildren = attributeStorage
+								.getChildAttributeStorages(false).stream()
+								.filter(s -> s.hasAttribute(weightTareAttribute))
+								.map(s -> s.getValueAsBigDecimal(weightTareAttribute))
+								.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-					final BigDecimal taresOfChildren = attributeStorage
-							.getChildAttributeStorages(false).stream()
-							.map(s -> s.getValueAsBigDecimal(weightTareAttribute))
-							.reduce(BigDecimal.ZERO, BigDecimal::add);
-
-					attributeStorage
-							.setValue(weightTareAttribute, tareOfHU.add(taresOfChildren));
+						attributeStorage
+								.setValue(weightTareAttribute, tareOfHU.add(taresOfChildren));
+					}
 				});
-
-		// now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations that are created per trx-candidate
-		// TODO remove or comment back in
-		// result.aggregateTransactions();
 	}
 
 	/**

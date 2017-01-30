@@ -1,7 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -200,13 +198,6 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 				throw new HUPIInvalidConfigurationException("No packing material defined", piItem);
 			}
 			item.setM_HU_PackingMaterial_ID(huPackingMaterialId);
-
-			final BigDecimal qty = piItem.getQty();
-			if (qty.signum() <= 0)
-			{
-				throw new HUPIInvalidConfigurationException("Invalid packing material quantity defined", piItem);
-			}
-			item.setQty(qty);
 		}
 		return item;
 	}

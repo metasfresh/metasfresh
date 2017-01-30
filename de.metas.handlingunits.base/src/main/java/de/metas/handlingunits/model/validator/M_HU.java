@@ -26,6 +26,8 @@ package de.metas.handlingunits.model.validator;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -218,14 +220,14 @@ public class M_HU
 
 		//
 		// Only create movement transactions on VHU level
-		if (!handlingUnitsBL.isVirtual(vhu))
+		if (!handlingUnitsBL.isVirtual(vhu) || handlingUnitsBL.isAggregateHU(vhu))
 		{
-			return;
+			return; // aggregate HUs are virtual too, but not "really" virtual..
 		}
 
 		//
 		// Load old HU values so that we can identify the previous locator
-		final I_M_HU vhuOld = InterfaceWrapperHelper.create(vhu, I_M_HU.class, true); // useOldValues
+		final I_M_HU vhuOld = InterfaceWrapperHelper.createOld(vhu, I_M_HU.class);
 
 		boolean hasRelevantChanges = false; // true if there are any HU relevant changes and it makes sense to create -/+ M_HU_Trx_Lines
 
@@ -237,7 +239,7 @@ public class M_HU
 		{
 			return;
 		}
-		final boolean huStatusChanged = !Check.equals(huStatusOld, huStatusNew);
+		final boolean huStatusChanged = !Objects.equals(huStatusOld, huStatusNew);
 		if (huStatusChanged)
 		{
 			hasRelevantChanges = true;

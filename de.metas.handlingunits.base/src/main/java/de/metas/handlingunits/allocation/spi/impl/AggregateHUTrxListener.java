@@ -117,7 +117,6 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 		loadResults.stream().flatMap(result -> result.getTransactions().stream())
 				.filter(trx -> handlingUnitsBL.isAggregateHU(trx.getVHU()))
-				//.filter(trx -> !trx.getQuantity().isZero())
 
 				.peek(trx -> itemId2Trx.put(trx.getVHU().getM_HU_Item_Parent().getM_HU_Item_ID(), trx))
 
@@ -187,16 +186,18 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
 		{
-			// update the tare of our aggregate VHU
+			// update the tare of our aggregate VHU (*if* its storage has such a thing)
 			final I_M_HU aggregateVHU = handlingUnitsDAO.retrieveIncludedHUs(item).get(0);
 			final IAttributeStorage aggregateVHUAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(aggregateVHU);
 
 			final IWeightable aggregateVHUWeightable = Services.get(IWeightableFactory.class).createWeightableOrNull(aggregateVHUAttributeStorage);
 			final I_M_Attribute aggregateVHUWeightTareAttribute = aggregateVHUWeightable.getWeightTareAttribute();
-
-			final BigDecimal tareOfAggregateVHU = WeightTareAttributeValueCallout.calculateWeightTare(aggregateVHU);
-			aggregateVHUAttributeStorage.setValue(aggregateVHUWeightTareAttribute, tareOfAggregateVHU);
-			aggregateVHUAttributeStorage.pushUp();
+			if (aggregateVHUAttributeStorage.hasAttribute(aggregateVHUWeightTareAttribute))
+			{
+				final BigDecimal tareOfAggregateVHU = WeightTareAttributeValueCallout.calculateWeightTare(aggregateVHU);
+				aggregateVHUAttributeStorage.setValue(aggregateVHUWeightTareAttribute, tareOfAggregateVHU);
+				aggregateVHUAttributeStorage.pushUp();
+			}
 		}
 	}
 }

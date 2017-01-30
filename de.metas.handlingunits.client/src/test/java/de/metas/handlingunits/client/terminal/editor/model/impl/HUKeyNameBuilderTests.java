@@ -88,7 +88,7 @@ public class HUKeyNameBuilderTests
 		keyFactory.setTerminalContext(terminalCtx);
 
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
-				pTomatoKg, // product
+				pTomatoKg, // product with UOM
 				new BigDecimal("86") // qty
 		);
 
@@ -100,6 +100,10 @@ public class HUKeyNameBuilderTests
 		attributeStorage.saveChangesIfNeeded();
 
 		final HUKey huKey = new HUKey(keyFactory, hu, null);
+		assertThat(huKey.isAggregateHU(), is(true));
+		assertThat(huKey.getAggregatedHUCount(), is(9));
+		assertThat(huKey.isReadonly(), is(false)); // e.g. we want to be able to split from this aggregated HU.
+		
 		final HUKeyNameBuilder huKeyNameBuilder = new HUKeyNameBuilder(huKey);
 		final String huDisplayName = huKeyNameBuilder.build();
 		//
@@ -110,5 +114,6 @@ public class HUKeyNameBuilderTests
 				+ "68,325 Kg</center>" // net weight; tare: 1x25+9x1=34;
 		;
 		assertThat(huDisplayName, is(expecteHUDisplayName));
+	
 	}
 }
