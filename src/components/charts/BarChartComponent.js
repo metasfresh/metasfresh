@@ -7,25 +7,16 @@ class BarChartComponent extends Component {
     }
 
     componentDidMount() {
-        const {chartClass, responsive} = this.props;
+        const {chartClass, responsive, data} = this.props;
 
-        var data = [
-            {name: "Alice", value: 2},
-            {name: "Bob", value: 3},
-            {name: "Carol", value: 1},
-            {name: "Dwayne", value: 5},
-            {name: "Anne", value: 8},
-            {name: "Robin", value: 28},
-            {name: "Eve", value: 12},
-            {name: "Karen", value: 6},
-            {name: "Lisa", value: 22},
-            {name: "Tom", value: 18}
-        ];
         var dimensions = this.setDimensions();
         var ranges = this.setRanges(dimensions.width, dimensions.height, data);
         var svg = this.drawChart(dimensions, ranges, data);
         this.addAxis(svg, dimensions, ranges);
-        this.addResponsive();
+        if(responsive){
+            this.addResponsive(data);
+        }
+        
         
     }
 
@@ -38,8 +29,7 @@ class BarChartComponent extends Component {
             const wrapperWidth = document.getElementsByClassName(chartClass+"-wrapper")[0].offsetWidth;
             chartWidth = wrapperWidth - margin.left - margin.right;
         }
-        
-            console.log(chartWidth);
+         
             return {
                 margin: {
                     top: margin.top, 
@@ -93,27 +83,18 @@ class BarChartComponent extends Component {
             .call(d3.axisLeft(ranges.y));
     }
 
-    addResponsive = () => {
+    addResponsive = (data) => {
         console.log('responsive');
         const {chartClass} = this.props;
         const chartWrapp = document.getElementsByClassName(chartClass+"-wrapper")[0];
         console.log(chartWrapp.offsetWidth);
         d3.select(window)
-          .on("resize", () => {
+          .on("resize."+chartClass, () => {
+            console.log('resizing');
+            console.log(chartClass);
             chartWrapp.setAttribute("width", chartWrapp.offsetWidth);
             this.clearChart();
-            var data = [
-                {name: "Alice", value: 2},
-                {name: "Bob", value: 3},
-                {name: "Carol", value: 1},
-                {name: "Dwayne", value: 5},
-                {name: "Anne", value: 8},
-                {name: "Robin", value: 28},
-                {name: "Eve", value: 12},
-                {name: "Karen", value: 6},
-                {name: "Lisa", value: 22},
-                {name: "Tom", value: 18}
-            ];
+
             var dimensions = this.setDimensions();
             var ranges = this.setRanges(dimensions.width, dimensions.height, data);
             var svg = this.drawChart(dimensions, ranges, data);
