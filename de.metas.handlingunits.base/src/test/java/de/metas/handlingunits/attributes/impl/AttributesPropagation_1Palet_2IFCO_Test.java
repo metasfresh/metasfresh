@@ -124,7 +124,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 				pTomato, // product
 				COUNT_IFCOS_PER_PALET.multiply(COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)) // qty
 				);
-		final List<I_M_HU> huPalets = createHUFromSimplePI(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
 		assertThat(huPalets.size(), is(2));
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets",huPalets)));
 		

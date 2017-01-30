@@ -87,16 +87,6 @@ public interface IHUPackingMaterialsCollector<T>
 	 */
 	void addTUHUsRecursively(IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery);
 
-	/**
-	 * Collects packing material from given HU.
-	 *
-	 * Compared with {@link #addHURecursively(I_M_HU)} this method will <b>NOT</b> iterate included HUs.
-	 *
-	 * @param hu
-	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
-	 */
-	void addHU(I_M_HU hu, T source);
-
 	List<HUPackingMaterialDocumentLineCandidate> getAndClearCandidates();
 
 	/**

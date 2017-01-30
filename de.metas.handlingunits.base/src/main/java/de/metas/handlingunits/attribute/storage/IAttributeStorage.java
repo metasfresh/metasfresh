@@ -50,7 +50,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 
 /**
- * Defines a Attribute Storage pool
+ * Defines a Attribute Storage pool. Use e.g. {@link IAttributeStorageFactory#getAttributeStorage(Object)} do get an instance.
  *
  * @author tsa
  *

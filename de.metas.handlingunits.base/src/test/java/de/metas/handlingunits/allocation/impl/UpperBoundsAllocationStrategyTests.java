@@ -64,7 +64,6 @@ public class UpperBoundsAllocationStrategyTests
 		helper.init();
 
 		vhu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
-		vhu.setIsCompressedVHU(false);
 		InterfaceWrapperHelper.save(vhu);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -78,7 +77,7 @@ public class UpperBoundsAllocationStrategyTests
 	}
 
 	/**
-	 * Verifies that if there is a virtual HU item with type {@link X_M_HU_Item#ITEMTYPE_Material} then the full qty is allocate to that item.
+	 * Verifies that if there is a virtual HU item with type {@link X_M_HU_Item#ITEMTYPE_Material} then the full qty is allocated to that item.
 	 */
 	@Test
 	public void testAllocateAllToVirtualItemWithoutUpperBound()

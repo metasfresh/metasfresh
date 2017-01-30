@@ -29,7 +29,6 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
-import org.junit.Assert;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;

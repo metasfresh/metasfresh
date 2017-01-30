@@ -39,7 +39,6 @@ import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -74,28 +73,6 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  */
 public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector<I_M_InOutLine>
 {
-	private static boolean deactivatedForTesting;
-
-	/**
-	 * Non thread-safe method to temporarily disable this collector.
-	 * Background: this collector assumes that the HUs it deals with have a {@code M_Locator} and further, that there is a distribution network in place.
-	 * For many tests above the unit level, this is still overkill.
-	 * 
-	 * @return
-	 */
-	public static IAutoCloseable deactivateForTesting()
-	{
-		deactivatedForTesting = true;
-		return new IAutoCloseable()
-		{
-			@Override
-			public void close()
-			{
-				deactivatedForTesting = false;
-			}
-		};
-	}
-
 	//
 	// Services
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -180,14 +157,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, source);
 	}
 
-	@Override
-	public void addHU(final I_M_HU hu, final I_M_InOutLine source)
-	{
-		final String huUnitTypeOverride = null; // use HU's actual UnitType
-		final boolean remove = false;
-		addOrRemoveHU(remove, hu, huUnitTypeOverride, source);
-	}
-
 	/**
 	 * Add/Remove HU
 	 * 
@@ -204,11 +173,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final String huUnitTypeOverride,
 			final I_M_InOutLine source)
 	{
-		if (deactivatedForTesting)
-		{
-			return false;
-		}
-
 		// Make sure we are dealing with an existing handling unit
 		if (hu == null)
 		{
@@ -287,16 +251,16 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				countTUs++;
 			}
 		}
-		else if (hu.isCompressedVHU())
+		else if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			// gh #640: 'hu' is a "bag" of homogenous HUs. Take into account the number of TUs it represents.
 			if (remove)
 			{
-				countTUs -= hu.getCompressed_TUsCount();
+				countTUs -= hu.getM_HU_Item_Parent().getQty().intValueExact();
 			}
 			else
 			{
-				countTUs += hu.getCompressed_TUsCount();
+				countTUs += hu.getM_HU_Item_Parent().getQty().intValueExact();
 			}
 		}
 

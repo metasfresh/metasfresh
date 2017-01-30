@@ -38,8 +38,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -67,12 +66,6 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	private boolean _huStatusSet = false;
 	private I_M_Locator _locator;
 	private boolean _locatorSet;
-
-	private boolean _compressedVHU;
-	private boolean _compressedVHUSet;
-
-	private int _compressed_TUsCount;
-	private boolean _compressed_TUsCountSet;
 
 	private I_C_BPartner _bpartner = null;
 	private I_C_BPartner_Location _bpartnerLocation = null;
@@ -108,16 +101,6 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		if (_huStatusSet)
 		{
 			Assert.assertEquals(prefix + "HUStatus", _huStatus, hu.getHUStatus());
-		}
-
-		if (_compressedVHUSet)
-		{
-			assertThat(prefix + "CompressedVHU", hu.isCompressedVHU(), is(_compressedVHU));
-		}
-
-		if (_compressed_TUsCountSet)
-		{
-			assertThat(prefix + "Compressed_TUsCount", hu.getCompressed_TUsCount(), is(_compressed_TUsCount));
 		}
 
 		if (_locatorSet)
@@ -292,24 +275,6 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	{
 		this._huStatus = huStatus;
 		this._huStatusSet = true;
-		return this;
-	}
-
-	/** @deprecated might not be needed */
-	@Deprecated
-	public HUExpectation<ParentExpectationType> compressedVHU(boolean compressedVHU)
-	{
-		this._compressedVHU = compressedVHU;
-		this._compressedVHUSet = true;
-		return this;
-	}
-
-	/** @deprecated might not be needed */
-	@Deprecated
-	public HUExpectation<ParentExpectationType> compressed_TUsCount(int compressed_TUsCount)
-	{
-		this._compressed_TUsCount = compressed_TUsCount;
-		this._compressed_TUsCountSet = true;
 		return this;
 	}
 

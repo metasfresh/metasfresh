@@ -138,7 +138,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
 				pTomato,
 				COUNT_IFCOS_PER_PALET.multiply(COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)));
-		final List<I_M_HU> huPalets = createHUFromSimplePI(incomingTrxDoc, huDefPalet);
+		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
 
 		//
 		// Bind data to be able to access them in our tests

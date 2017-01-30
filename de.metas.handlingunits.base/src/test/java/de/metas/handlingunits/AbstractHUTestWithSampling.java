@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -50,7 +49,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;

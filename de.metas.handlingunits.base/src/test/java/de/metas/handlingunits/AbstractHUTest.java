@@ -1,12 +1,5 @@
 package de.metas.handlingunits;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -31,36 +24,19 @@ import java.util.stream.Collectors;
 // NOPMD by al on 7/25/13 11:56 AM
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.inout.service.IMTransactionBL;
-import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 public abstract class AbstractHUTest
 {
@@ -233,55 +209,5 @@ public abstract class AbstractHUTest
 	protected ErrorMessage newErrorMessage()
 	{
 		return ErrorMessage.newInstance();
-	}
-
-	/**
-	 * Creates LUs with TUs and loads the products from the given {@code mtrx} into them.<br>
-	 * <b>Important:</b> only works if the given {@code huPI} has exactly one HU PI-item for the TU.
-	 * 
-	 * This method contains the code that used to be in {@link IHUTrxBL} {@code transferIncomingToHUs()}.<br>
-	 * When it was there, that method was used only by test cases and also doesn't make a lot of sense for production.
-	 * 
-	 * @param mtrx
-	 * @param huPI a "simple PI that contains
-	 * @return
-	 */
-	public static List<I_M_HU> createHUFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
-	{
-		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
-				"mtrx shall be inbound transaction: {}", mtrx);
-
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
-		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
-
-		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
-		// final HUProducerDestination destination = new HUProducerDestination(huPI);
-
-		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setLUPI(huPI);
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU_PI_Version currentPIVersion = handlingUnitsDAO.retrievePICurrentVersion(huPI);
-		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
-				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
-				.collect(Collectors.toList());
-		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
-		
-		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
-		lutuProducer.setTUPI(piItemsForChildHU.get(0).getIncluded_HU_PI());
-
-		final HULoader loader = new HULoader(source, lutuProducer);
-
-		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(
-				huContext,
-				mtrx.getM_Product(),
-				mtrx.getMovementQty(),
-				uom, mtrx.getMovementDate(),
-				mtrx);
-
-		loader.load(request);
-
-		return lutuProducer.getCreatedHUs();
 	}
 }

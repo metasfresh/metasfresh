@@ -1,5 +1,8 @@
 package de.metas.handlingunits;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -32,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -1645,6 +1649,56 @@ public class HUTestHelper
 		huLoader.load(request);
 	}
 
+	/**
+	 * Creates LUs with TUs and loads the products from the given {@code mtrx} into them.<br>
+	 * <b>Important:</b> only works if the given {@code huPI} has exactly one HU PI-item for the TU.
+	 * 
+	 * This method contains the code that used to be in {@link IHUTrxBL} {@code transferIncomingToHUs()}.<br>
+	 * When it was there, that method was used only by test cases and also doesn't make a lot of sense for production.
+	 * 
+	 * @param mtrx the load's source. Also provides the context.
+	 * @param huPI a "simple" PI that contains one HU-item which links to one child-HU PI
+	 * @return
+	 */
+	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
+	{
+		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
+				"mtrx shall be inbound transaction: {}", mtrx);
+
+		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
+		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+
+		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
+		// final HUProducerDestination destination = new HUProducerDestination(huPI);
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUPI(huPI);
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU_PI_Version currentPIVersion = handlingUnitsDAO.retrievePICurrentVersion(huPI);
+		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
+				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
+				.collect(Collectors.toList());
+		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
+
+		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
+		lutuProducer.setTUPI(piItemsForChildHU.get(0).getIncluded_HU_PI());
+
+		final HULoader loader = new HULoader(source, lutuProducer);
+
+		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(
+				huContext,
+				mtrx.getM_Product(),
+				mtrx.getMovementQty(),
+				uom, mtrx.getMovementDate(),
+				mtrx);
+
+		loader.load(request);
+
+		return lutuProducer.getCreatedHUs();
+	}
+	
 	/**
 	 * Sets up a {@link HUListAllocationSourceDestination} for the given {@code sourceHUs} and loads them to the given {@code lutuProducer}.
 	 * <p>

@@ -1,5 +1,8 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 /*
@@ -28,15 +31,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.hamcrest.Matchers.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -52,47 +52,6 @@ public class LUTUProducerDestinationLoadTests
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
-	}
-
-	@Test
-	@Ignore // FIXME
-	public void test_1LU_With_Tomatoes_and_Salads()
-	{
-		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setLUPI(data.piLU);
-		lutuProducer.setLUItemPI(data.piLU_Item_IFCO);
-		lutuProducer.setTUPI(data.piTU_IFCO);
-
-		// TU capacity
-		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("40"), data.helper.uomKg);
-		lutuProducer.addTUCapacity(data.helper.pSalad, new BigDecimal("7"), data.helper.uomEach);
-
-		{
-			// load 10 salad into HUs
-			data.helper.load(lutuProducer, data.helper.pSalad, new BigDecimal("10"), data.helper.uomEach);
-
-			final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
-			// TraceUtils.dump(createdHUs);
-
-			final I_M_HU luHU = createdHUs.get(0);
-			HUStorageExpectation.newExpectation()
-					.product(data.helper.pSalad).uom(data.helper.uomEach)
-					.qty(10)
-					.assertExpected(luHU);
-		}
-
-		{
-			// load 60kg tomatos into HUs
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("60"), data.helper.uomEach);
-
-			final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
-
-			final I_M_HU luHU = createdHUs.get(1);
-			HUStorageExpectation.newExpectation()
-					.product(data.helper.pTomato).uom(data.helper.uomEach)
-					.qty(6 * 10)
-					.assertExpected(luHU);
-		}
 	}
 
 	/**
