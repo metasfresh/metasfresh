@@ -118,6 +118,13 @@ public final class WebuiRelatedProcessDescriptor
 	{
 		return getPreconditionsResolution().isRejected();
 	}
+	
+	public boolean isEnabledOrNotSilent()
+	{
+		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
+		return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
+	}
+
 
 	public String getDisabledReason(final String adLanguage)
 	{

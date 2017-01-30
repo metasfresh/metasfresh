@@ -202,7 +202,11 @@ public class DocumentViewRestController
 				.assertWindowIdMatches(adWindowId);
 
 		return view.streamActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
+				//
 				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled
+				// TODO: replace the line above with following, after https://github.com/metasfresh/metasfresh-webui-frontend/issues/191#issuecomment-275927950 it's implemented
+				// .filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
+				//
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
