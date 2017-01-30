@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 upcoming Release
 
+## Features
+* metasfresh
+  * #868 Weekly Revenue Report
+
 # metasfresh 4.54.53 (2017-05)
 
 this week's RC
