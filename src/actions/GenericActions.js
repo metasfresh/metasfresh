@@ -47,20 +47,27 @@ export function patchRequest(
     entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
     subentityId, isAdvanced
 ) {
-    let payload = {};
+
+    let payload = [];
 
     if (docId === "NEW") {
         payload = [];
-    } else {
-        if (property && value !== undefined) {
-            payload = [{
+    } else if (Array.isArray(property) && value !== undefined) {
+        property.map(item => {
+            payload.push({
+                'op': 'replace',
+                'path': item.field,
+                'value': value
+            });
+        });
+    } else if(property && value !== undefined) {
+        payload = [{
                 'op': 'replace',
                 'path': property,
                 'value': value
             }];
-        } else {
-            payload = [];
-        }
+    } else {
+        payload = [];
     }
 
     return () => axios.patch(
