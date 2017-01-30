@@ -16,7 +16,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 600957396L;
+	private static final long serialVersionUID = 2102788659L;
 
     /** Standard Constructor */
     public X_M_HU_Item (Properties ctx, int M_HU_Item_ID, String trxName)
@@ -26,7 +26,6 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
         {
 			setM_HU_ID (0);
 			setM_HU_Item_ID (0);
-			setM_HU_PI_Item_ID (0);
         } */
     }
 
@@ -46,19 +45,18 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
     }
 
 	/** 
-	 * ItemType AD_Reference_ID=540395
-	 * Reference name: M_HU_PI_Item_ItemType
+	 * ItemType AD_Reference_ID=1000000
+	 * Reference name: M_HU_Item_ItemType
 	 */
-	public static final int ITEMTYPE_AD_Reference_ID=540395;
+	public static final int ITEMTYPE_AD_Reference_ID=1000000;
+	/** HandlingUnit = HU */
+	public static final String ITEMTYPE_HandlingUnit = "HU";
 	/** Material = MI */
 	public static final String ITEMTYPE_Material = "MI";
 	/** PackingMaterial = PM */
 	public static final String ITEMTYPE_PackingMaterial = "PM";
-	/** HandlingUnit = HU */
-	public static final String ITEMTYPE_HandlingUnit = "HU";
-	
-	public static final String ITEMTYPE_HUAggregate="HA";
-	
+	/** HUAggregate = HA */
+	public static final String ITEMTYPE_HUAggregate = "HA";
 	/** Set Positionsart.
 		@param ItemType Positionsart	  */
 	@Override

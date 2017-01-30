@@ -207,6 +207,29 @@ public interface I_M_HU_Storage_Snapshot
     public static final String COLUMNNAME_M_HU_Storage_ID = "M_HU_Storage_ID";
 
 	/**
+	 * Set Handling Units Storage Snapshot.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_Storage_Snapshot_ID (int M_HU_Storage_Snapshot_ID);
+
+	/**
+	 * Get Handling Units Storage Snapshot.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_Storage_Snapshot_ID();
+
+    /** Column definition for M_HU_Storage_Snapshot_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object> COLUMN_M_HU_Storage_Snapshot_ID = new org.adempiere.model.ModelColumn<I_M_HU_Storage_Snapshot, Object>(I_M_HU_Storage_Snapshot.class, "M_HU_Storage_Snapshot_ID", null);
+    /** Column name M_HU_Storage_Snapshot_ID */
+    public static final String COLUMNNAME_M_HU_Storage_Snapshot_ID = "M_HU_Storage_Snapshot_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *

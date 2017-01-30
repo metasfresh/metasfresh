@@ -226,8 +226,8 @@ public interface I_M_HU_Item
 	/**
 	 * Set Packvorschrift Position.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_PI_Item_ID (int M_HU_PI_Item_ID);
@@ -235,8 +235,8 @@ public interface I_M_HU_Item
 	/**
 	 * Get Packvorschrift Position.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_PI_Item_ID();
