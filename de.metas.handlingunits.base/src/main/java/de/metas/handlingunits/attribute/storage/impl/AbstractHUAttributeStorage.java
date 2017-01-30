@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -218,6 +219,11 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 					{
 						final BigDecimal valueBD = generator.generateNumericValue(ctx, this, attribute);
 						valueGenerated = valueBD;
+					}
+					else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(valueType))
+					{
+						final Date valueDate = generator.generateDateValue(ctx, this, attribute);
+						valueGenerated = valueDate;
 					}
 					else
 					{
