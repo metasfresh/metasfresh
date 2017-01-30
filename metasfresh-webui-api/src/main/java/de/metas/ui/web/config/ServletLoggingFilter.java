@@ -45,7 +45,7 @@ import de.metas.ui.web.session.UserSession;
 
 /**
  * metasfresh-webui logging component.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -54,9 +54,22 @@ public class ServletLoggingFilter implements Filter
 {
 	private static final Logger logger = LogManager.getLogger(ServletLoggingFilter.class);
 
+	//
+	// Core MDC parameters
 	private static final String MDC_Param_RemoteAddr = "RemoteAddr";
+	private static final String MDC_Param_RemoteAddr_DefaultValue = "server";
+
 	private static final String MDC_Param_LoggedUser = "LoggedUser";
+	private static final String MDC_Param_LoggedUser_DefaultValue = "_none";
+
 	private static final String MDC_Param_UserAgent = "UserAgent";
+
+	//
+	// Derivated MDC parameters
+	/**
+	 * mainly this is needed for "de/metas/ui/web/logging/FILE-byLoggedUserAndRemoteAddr.xml"
+	 */
+	private static final String MDC_Param_LoggedUserAndRemoteAddr = "LoggedUserAndRemoteAddr";
 
 	@Override
 	public void init(final FilterConfig filterConfig) throws ServletException
@@ -94,7 +107,36 @@ public class ServletLoggingFilter implements Filter
 		}
 	}
 
-	private String extractRequestInfo(final ServletRequest request)
+	public void updateMDC(final ServletRequest request)
+	{
+		if (!(request instanceof HttpServletRequest))
+		{
+			return;
+		}
+		final HttpServletRequest httpRequest = (HttpServletRequest)request;
+
+		//
+		// Core MDC parameters
+		final String remoteAddr = extractRemoteAddr(httpRequest);
+		final String loggedUser = extractLoggedUser(httpRequest);
+		final String userAgent = extractUserAgent(httpRequest);
+		MDC.put(MDC_Param_RemoteAddr, remoteAddr);
+		MDC.put(MDC_Param_LoggedUser, loggedUser);
+		MDC.put(MDC_Param_UserAgent, userAgent);
+
+		//
+		// Derivated MDC parameters
+		MDC.put(MDC_Param_LoggedUserAndRemoteAddr, extractLoggedUserAndRemoteAddr(loggedUser, remoteAddr));
+	}
+
+	public void cleanupMDC()
+	{
+		MDC.remove(MDC_Param_RemoteAddr);
+		MDC.remove(MDC_Param_LoggedUser);
+		MDC.remove(MDC_Param_UserAgent);
+	}
+
+	private static final String extractRequestInfo(final ServletRequest request)
 	{
 		String requestInfo;
 		if (request instanceof HttpServletRequest)
@@ -133,65 +175,67 @@ public class ServletLoggingFilter implements Filter
 		return requestInfo;
 	}
 
-	public void updateMDC(final ServletRequest request)
+	private static final String extractRemoteAddr(final HttpServletRequest httpRequest)
 	{
-		if (!(request instanceof HttpServletRequest))
-		{
-			return;
-		}
-
-		final HttpServletRequest httpRequest = (HttpServletRequest)request;
-
-		//
-		// Remote address
 		try
 		{
 			final String remoteAddr = httpRequest.getRemoteAddr();
-			MDC.put(MDC_Param_RemoteAddr, remoteAddr);
+			if (remoteAddr == null || remoteAddr.isEmpty())
+			{
+				return MDC_Param_RemoteAddr_DefaultValue;
+			}
+			return remoteAddr;
 		}
 		catch (final Exception e)
 		{
-			e.printStackTrace();
-			MDC.put(MDC_Param_RemoteAddr, "?");
+			return "?";
 		}
+	}
 
-		//
-		// LoggedUser
+	private static final String extractLoggedUser(final HttpServletRequest httpRequest)
+	{
 		try
 		{
 			final UserSession userSession = UserSession.getCurrentOrNull();
-			if (userSession != null)
+			if (userSession == null)
 			{
-				final String userName = userSession.getUserName();
-				MDC.put(MDC_Param_LoggedUser, userName);
+				return MDC_Param_LoggedUser_DefaultValue;
 			}
 
+			final String userName = userSession.getUserName();
+			if (userName == null || userName.isEmpty())
+			{
+				return MDC_Param_LoggedUser_DefaultValue;
+			}
+
+			return userName;
 		}
 		catch (final Exception e)
 		{
 			e.printStackTrace();
-			MDC.put(MDC_Param_LoggedUser, "?");
+			return "?";
 		}
+	}
 
-		//
-		// UserAgent
+	private static final String extractUserAgent(final HttpServletRequest httpRequest)
+	{
 		try
 		{
 			final String userAgent = httpRequest.getHeader("User-Agent");
-			MDC.put(MDC_Param_UserAgent, userAgent);
+			return userAgent;
 		}
 		catch (final Exception e)
 		{
 			e.printStackTrace();
-			MDC.put(MDC_Param_UserAgent, "?");
+			return "?";
 		}
 	}
 
-	public void cleanupMDC()
+	private static final String extractLoggedUserAndRemoteAddr(final String loggedUser, final String remoteAddr)
 	{
-		MDC.remove(MDC_Param_RemoteAddr);
-		MDC.remove(MDC_Param_LoggedUser);
-		MDC.remove(MDC_Param_UserAgent);
+		// NOTE: guard against null parameters, if those at this point they shall not
+		return (loggedUser == null ? "?" : loggedUser)
+				+ "/"
+				+ (remoteAddr == null ? "?" : remoteAddr);
 	}
-
 }
