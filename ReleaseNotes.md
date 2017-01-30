@@ -22,6 +22,7 @@ upcoming Release
 ## Fixes
 * webui
   * #204 Can not complete Order
+  * #886 GrandTotal missing in Purchase Order Grid view
 
 # metasfresh 4.54.53 (2017-05)
 
