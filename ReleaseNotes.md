@@ -10,7 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# upcoming Release
+# metasfresh 4.55.53 (2017-06)
+
+upcoming Release
+
+## Features
+* webui
+  * #873 Customer & Vendor Subtab in BPartner Window WebUI
 
 # metasfresh 4.54.53 (2017-05)
 
