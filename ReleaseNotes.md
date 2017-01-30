@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.54.53 (2017-05)
+# metasfresh 4.x.x (2017-06)
 
 upcoming Release
+
+# metasfresh 4.54.53 (2017-05)
+
+this week's RC
 
 ## Features
 * metasfresh
@@ -27,8 +31,6 @@ upcoming Release
   * #782 Focus on the first process parameter
 
 # metasfresh 4.53.52 (2017-04)
-
-this week's RC
 
 ## Features
 * metasfresh
