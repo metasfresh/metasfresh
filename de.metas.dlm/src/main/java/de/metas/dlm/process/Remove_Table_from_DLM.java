@@ -3,6 +3,8 @@ package de.metas.dlm.process;
 import org.adempiere.util.Services;
 
 import de.metas.dlm.IDLMService;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -36,9 +38,9 @@ public class Remove_Table_from_DLM extends AbstractManageDLMTableProcess
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final Boolean dlmTable = isDLMTable(context);
-		return dlmTable != null && dlmTable;
+		return ProcessPreconditionsResolution.acceptIf(dlmTable != null && dlmTable);
 	}
 }

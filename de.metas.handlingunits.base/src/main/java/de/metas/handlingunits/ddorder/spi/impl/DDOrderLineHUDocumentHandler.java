@@ -26,6 +26,7 @@ package de.metas.handlingunits.ddorder.spi.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -51,16 +52,16 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 	 * </ul>
 	 */
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final I_M_Product product)
 	{
-		final de.metas.handlingunits.model.I_DD_OrderLine ddOrderLine = getDDOrderLine(document);
-		final I_M_HU_PI_Item_Product piip;
-
-		if (ddOrderLine.getM_Product_ID() <= 0)
+		if (product == null || product.getM_Product_ID() <= 0)
 		{
 			// No product selected. Nothing to do.
 			return null;
 		}
+
+		final de.metas.handlingunits.model.I_DD_OrderLine ddOrderLine = getDDOrderLine(document);
+		final I_M_HU_PI_Item_Product piip;
 
 		// the record is new
 		// search for the right combination
@@ -74,7 +75,7 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 			final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
 			final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(ddOrderLine.getM_Product(), ddOrder.getC_BPartner(), ddOrder.getDateOrdered(), huUnitType,
+			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(product, ddOrder.getC_BPartner(), ddOrder.getDateOrdered(), huUnitType,
 					false); // allowInfiniteCapacity = false
 		}
 
@@ -88,7 +89,8 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 	public void applyChangesFor(final Object document)
 	{
 		final de.metas.handlingunits.model.I_DD_OrderLine ddOrderLine = getDDOrderLine(document);
-		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(ddOrderLine);
+		final I_M_Product product = ddOrderLine.getM_Product();
+		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(ddOrderLine, product);
 		ddOrderLine.setM_HU_PI_Item_Product(piip);
 	}
 

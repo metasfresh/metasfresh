@@ -22,13 +22,13 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -57,8 +57,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IHUStorageListener;
 
-public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
-		, IHUStorageListener // TODO: i think we can safely remove this
+public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware, IHUStorageListener // TODO: i think we can safely remove this
 {
 	// Services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -224,7 +223,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 					}
 					else
 					{
-						throw new UnsupportedOperationException("ValueType not supported: " + valueType);
+						throw new UnsupportedOperationException("ValueType not supported: " + valueType + "(attribute=" + attribute + ", generator=" + generator + ")");
 					}
 					attributeValue.setValue(attributesCtx, valueGenerated);
 				}
@@ -234,8 +233,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 				// FIXME: don't control the flow by throwing exceptions
 				logger.info("Skip generating value because is not supported."
 						+ "\nM_HU_Attribute=" + huAttribute
-						+ "\nGenerator=" + generator
-						, e);
+						+ "\nGenerator=" + generator, e);
 			}
 		}
 

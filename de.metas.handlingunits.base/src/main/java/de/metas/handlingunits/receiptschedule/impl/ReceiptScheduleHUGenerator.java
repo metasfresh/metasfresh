@@ -64,15 +64,21 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 
 /**
- * Helper class for masive generation of HUs for a receipt schedule.
+ * Helper class for massive generation of HUs for receipt schedule(s).
  *
  * @author tsa
  *
  */
 public class ReceiptScheduleHUGenerator
 {
+	public static final ReceiptScheduleHUGenerator newInstance(final IContextAware context)
+	{
+		return new ReceiptScheduleHUGenerator()
+				.setContext(context);
+	}
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
@@ -94,6 +100,11 @@ public class ReceiptScheduleHUGenerator
 	private IDocumentLUTUConfigurationManager _lutuConfigurationManager;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration;
 	private ILUTUProducerAllocationDestination _lutuProducer;
+	
+	private ReceiptScheduleHUGenerator()
+	{
+		super();
+	}
 
 	private final void assertConfigurable()
 	{
@@ -116,9 +127,10 @@ public class ReceiptScheduleHUGenerator
 		return _contextInitial;
 	}
 
-	public final void setContext(final IContextAware context)
+	private final ReceiptScheduleHUGenerator setContext(final IContextAware context)
 	{
 		_contextInitial = context;
+		return this;
 	}
 
 	private final Quantity getQtyToAllocateTarget()
@@ -128,9 +140,10 @@ public class ReceiptScheduleHUGenerator
 		return _qtyToAllocateTarget;
 	}
 
-	public void setQtyToAllocateTarget(final Quantity qtyToAllocateTarget)
+	public ReceiptScheduleHUGenerator setQtyToAllocateTarget(final Quantity qtyToAllocateTarget)
 	{
 		_qtyToAllocateTarget = qtyToAllocateTarget;
+		return this;
 	}
 
 	private final I_M_ReceiptSchedule getSingleReceiptSchedule()
@@ -159,25 +172,32 @@ public class ReceiptScheduleHUGenerator
 		return _receiptSchedules;
 	}
 
-	public void addM_ReceiptSchedule(final I_M_ReceiptSchedule receiptSchedule)
+	public ReceiptScheduleHUGenerator addM_ReceiptSchedule(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		assertConfigurable();
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
+		Check.assume(!Services.get(IReceiptScheduleBL.class).isClosed(receiptSchedule), "receipt schedule shall not be closed: {}", receiptSchedule);
 		Check.assume(!receiptSchedule.isPackagingMaterial(), "receipt schedule shall not be about packing materials: {}", receiptSchedule);
+		
 		if (_receiptSchedules.contains(receiptSchedule))
 		{
-			return;
+			return this;
 		}
+		
 		_receiptSchedules.add(receiptSchedule);
+		
+		return this;
 	}
 
-	public void addM_ReceiptSchedules(final Collection<? extends I_M_ReceiptSchedule> receiptSchedules)
+	public ReceiptScheduleHUGenerator addM_ReceiptSchedules(final Collection<? extends I_M_ReceiptSchedule> receiptSchedules)
 	{
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedules not empty");
 		for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
 		{
 			addM_ReceiptSchedule(receiptSchedule);
 		}
+		
+		return this;
 	}
 
 	private I_C_OrderLine getC_OrderLine(final I_M_ReceiptSchedule schedule)
@@ -200,11 +220,12 @@ public class ReceiptScheduleHUGenerator
 		return huAllocations;
 	}
 
-	public void setHUAllocations(final I_M_ReceiptSchedule schedule, final IHUAllocations huAllocations)
+	public ReceiptScheduleHUGenerator setHUAllocations(final I_M_ReceiptSchedule schedule, final IHUAllocations huAllocations)
 	{
 		assertConfigurable();
 		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
 		_receiptSchedule2huAllocations.put(receiptScheduleId, huAllocations);
+		return this;
 	}
 
 	private IProductStorage getProductStorage(final I_M_ReceiptSchedule schedule)
@@ -220,11 +241,12 @@ public class ReceiptScheduleHUGenerator
 		return productStorage;
 	}
 
-	public void setProductStorage(final I_M_ReceiptSchedule schedule, final IProductStorage productStorage)
+	public ReceiptScheduleHUGenerator setProductStorage(final I_M_ReceiptSchedule schedule, final IProductStorage productStorage)
 	{
 		assertConfigurable();
 		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
 		_receiptSchedule2productStorage.put(receiptScheduleId, productStorage);
+		return this;
 	}
 
 	private I_M_Product getM_Product()

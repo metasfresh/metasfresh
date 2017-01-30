@@ -116,7 +116,7 @@ public final class ProcessInfo implements Serializable
 		result.setAD_PInstance_ID(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
-
+	
 	private final Properties ctx;
 
 	/** Title of the Process/Report */
@@ -164,11 +164,6 @@ public final class ProcessInfo implements Serializable
 	/** Process result */
 	private final ProcessExecutionResult result;
 
-	/**
-	 * String representation
-	 *
-	 * @return String representation
-	 */
 	@Override
 	public String toString()
 	{
@@ -259,7 +254,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return sqlStatement;
 	}
-
+	
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
@@ -309,7 +304,7 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
-	 * Retrieve underlying model for AD_Table_ID/Record_ID.
+	 * Retrieve underlying model for AD_Table_ID/Record_ID using ITrx#TRXNAME_ThreadInherited.
 	 *
 	 * @param modelClass
 	 * @return record; never returns null
@@ -342,18 +337,20 @@ public final class ProcessInfo implements Serializable
 		final int recordId = getRecord_ID();
 		if (recordId < 0)
 		{
+			// NOTE: usually the error message will be displayed directly to user, so we shall have one as friendly as possible
 			throw new AdempiereException("@NoSelection@");
 		}
 
 		final ModelType record = InterfaceWrapperHelper.create(getCtx(), tableName, recordId, modelClass, trxName);
 		if (record == null || InterfaceWrapperHelper.isNew(record))
 		{
+			// NOTE: usually the error message will be displayed directly to user, so we shall have one as friendly as possible
 			throw new AdempiereException("@NoSelection@");
 		}
 
 		return record;
 	}
-
+	
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
@@ -389,7 +386,7 @@ public final class ProcessInfo implements Serializable
 
 		return Optional.of(record);
 	}
-
+	
 	/**
 	 * @return process title/name
 	 */
@@ -530,10 +527,20 @@ public final class ProcessInfo implements Serializable
 	 */
 	public <T> IQueryFilter<T> getQueryFilter()
 	{
+		// default: use a "neutral" filter that does not exclude anything
+		final ConstantQueryFilter<T> defaultQueryFilter = ConstantQueryFilter.of(true);
+		return getQueryFilterOrElse(defaultQueryFilter);
+	}
+
+	/**
+	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
+	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
+	 */
+	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
+	{
 		if (Check.isEmpty(whereClause, true))
 		{
-			// no whereClause: return a "neutral" filter that does not exclude anything
-			return ConstantQueryFilter.of(true);
+			return defaultQueryFilter;
 		}
 		return new TypedSqlQueryFilter<>(whereClause);
 	}

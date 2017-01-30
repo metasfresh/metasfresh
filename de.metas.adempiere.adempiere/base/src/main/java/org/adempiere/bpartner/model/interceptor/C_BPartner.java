@@ -1,10 +1,17 @@
-package org.adempiere.db;
+package org.adempiere.bpartner.model.interceptor;
+
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.util.Services;
+
+import de.metas.interfaces.I_C_BPartner;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.client
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,32 +29,13 @@ package org.adempiere.db;
  * #L%
  */
 
-
-public final class DBConstants
+@Interceptor(I_C_BPartner.class)
+public class C_BPartner
 {
-	/**
-	 * Alters text from accented to unaccented or vice-versa
-	 * 
-	 * Params:
-	 * <ul>
-	 * <li>String - text to be altered
-	 * <li>numeric - 1 for accented->unaccented ; 2 for unaccented->accented
-	 * </ul>
-	 */
-	private static final String FUNCNAME_unaccent_string = "unaccent_string";
-
-	/**
-	 * 
-	 * @param sqlString SQL string expression
-	 * @return SQL code for stripping
-	 */
-	public static final String FUNC_unaccent_string(final String sqlString)
+	@Init
+	public void init()
 	{
-		return FUNCNAME_unaccent_string + "(" + sqlString + ", 1)";
-	}
-
-	private DBConstants()
-	{
-		super();
+		Services.get(ITabCalloutFactory.class)
+				.registerTabCalloutForTable(I_C_BPartner.Table_Name, org.adempiere.bpartner.callout.C_BPartner_TabCallout.class);
 	}
 }

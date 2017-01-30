@@ -14,7 +14,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -227,50 +226,42 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Create HU generator
-		final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-		huGenerator.setContext(getTerminalContext());
-		final I_M_ReceiptSchedule schedule = service.getReferencedObject(row);
-		huGenerator.addM_ReceiptSchedule(schedule);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(getTerminalContext())
+				.addM_ReceiptSchedule(service.getReferencedObject(row));
 
 		//
 		// Get/Create and Edit LU/TU configuration
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
 
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager
-				.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
+		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.createAndEdit(lutuConfiguration -> {
+			final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
+
+			//
+			// Ask user to edit the configuration in another dialog
+			try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+			{
+				final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
+
+				if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
 				{
-					@Override
-					public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-					{
-						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
+					return null;// User cancelled => do nothing
+				}
 
-						//
-						// Ask user to edit the configuration in another dialog
-						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
-						{
-							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
+				//
+				// Update the LU/TU configuration on which we are working using what user picked
+				lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
+			}
+			catch (Exception e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 
-							if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
-							{
-								return null;// User cancelled => do nothing
-							}
-
-							//
-							// Update the LU/TU configuration on which we are working using what user picked
-							lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
-						}
-						catch (Exception e)
-						{
-							throw AdempiereException.wrapIfNeeded(e);
-						}
-
-						return lutuConfiguration;
-					}
-				});
+			return lutuConfiguration;
+		});
 
 		//
 		// No configuration => user cancelled => don't open editor
-		if (lutuConfiguration == null)
+		if (lutuConfigurationEffective == null)
 		{
 			return null;
 		}
@@ -281,7 +272,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
+			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
 

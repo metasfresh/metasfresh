@@ -6,10 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -85,6 +89,13 @@ public final class Evaluatees
 	{
 		final boolean onlyWindow = false;
 		return new EvaluateeCtx(ctx, Env.WINDOW_None, onlyWindow);
+	}
+
+	public static final Evaluatee ofTableRecordReference(final ITableRecordReference recordRef)
+	{
+		Check.assumeNotNull(recordRef, "Parameter recordRef is not null");
+		final Object record = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()));
+		return InterfaceWrapperHelper.getEvaluatee(record);
 	}
 
 	public static final Evaluatee2 compose(final Evaluatee... evaluatees)
@@ -260,7 +271,7 @@ public final class Evaluatees
 			return this;
 		}
 
-		public MapEvaluateeBuilder put(CtxName name, final Object value)
+		public MapEvaluateeBuilder put(final CtxName name, final Object value)
 		{
 			put(name.getName(), value);
 			return this;
@@ -357,7 +368,7 @@ public final class Evaluatees
 				if (value != null)
 				{
 					@SuppressWarnings("unchecked")
-					T valueCasted = (T)value;
+					final T valueCasted = (T)value;
 					return valueCasted;
 				}
 			}
@@ -511,7 +522,7 @@ public final class Evaluatees
 			final Object valueObj = supplier.get();
 
 			@SuppressWarnings("unchecked")
-			T valueConv = (T)valueObj;
+			final T valueConv = (T)valueObj;
 			return valueConv;
 		}
 	}
@@ -558,14 +569,14 @@ public final class Evaluatees
 			final Object valueObj = supplier.get();
 
 			@SuppressWarnings("unchecked")
-			T valueConv = (T)valueObj;
+			final T valueConv = (T)valueObj;
 			return valueConv;
 		}
 	}
 
 	/**
 	 * Wraps given <code>evaluatee</code> but it will return <code>null</code> for the <code>excludeVariableName</code>.
-	 * 
+	 *
 	 * @param evaluatee
 	 * @param excludeVariableName
 	 * @return
@@ -614,6 +625,16 @@ public final class Evaluatees
 				return null;
 			}
 			return parent.get_ValueAsString(variableName);
+		}
+
+		@Override
+		public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
+		{
+			if (excludeVariableName.equals(variableName))
+			{
+				return null;
+			}
+			return parent.get_ValueIfExists(variableName, targetType);
 		}
 	};
 

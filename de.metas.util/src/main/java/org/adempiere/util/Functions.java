@@ -3,6 +3,8 @@ package org.adempiere.util;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
 import com.google.common.base.MoreObjects;
 
 /*
@@ -52,37 +54,102 @@ public final class Functions
 	 * <p>
 	 * If {@code delegate} is an instance created by an earlier call to {@code memoizing}, it is returned directly.
 	 */
-	public static final <T, R> Function<T, R> memoizing(final Function<T, R> delegate)
+	public static final <T, R> MemoizingFunction<T, R> memoizing(final Function<T, R> delegate)
 	{
-		if (delegate instanceof MemoizingFunction)
+		if (delegate instanceof SimpleMemoizingFunction)
 		{
-			return delegate;
+			return (SimpleMemoizingFunction<T, R>)delegate;
 		}
-		return new MemoizingFunction<>(delegate);
+		return new SimpleMemoizingFunction<>(delegate);
 	}
 
-	private static final class MemoizingFunction<T, R> implements Function<T, R>
+	/**
+	 * Same as {@link #memoizing(Function)} but the <code>keyFunction</code> will be internally used to index the cached results.
+	 */
+	public static final <T, R, K> MemoizingFunction<T, R> memoizing(final Function<T, R> delegate, final Function<T, K> keyFunction)
+	{
+		return new MemoizingFunctionWithKeyExtractor<>(delegate, keyFunction);
+	}
+
+	/**
+	 * Same as {@link #memoizing(Function)} but the value of the first call will be memorized.
+	 *
+	 * This might look similar to {@link ExtendedMemorizingSupplier} with the difference that in this case,
+	 * on first call the function will be called with <code>input</code> parameter which can be used for some initializations.
+	 */
+	public static final <T, R> MemoizingFunction<T, R> memoizingFirstCall(final Function<T, R> delegate)
+	{
+		final Function<T, Boolean> keyFunction = input -> Boolean.TRUE;
+		return new MemoizingFunctionWithKeyExtractor<>(delegate, keyFunction);
+	}
+
+	/**
+	 * Function which memorize it's calls, so repeated calls with same inputs will be served from it's internal cache.
+	 *
+	 * IMPORTANT: some implementations might use some "key function" internally, which derives the given input and produced a cache. The value will be stored for that key.
+	 * So in this case, the function will serve from it's internal cache if there is already a precalculated result for the key which is derived from given <code>input</code>.
+	 *
+	 * @author metas-dev <dev@metasfresh.com>
+	 *
+	 * @param <T> input type
+	 * @param <R> result type
+	 */
+	public static interface MemoizingFunction<T, R> extends Function<T, R>
+	{
+		@Override
+		R apply(final T input);
+
+		/**
+		 * @param input
+		 * @return memorized value or <code>null</code>
+		 */
+		R peek(final T input);
+	}
+
+	private static class MemoizingFunctionWithKeyExtractor<T, R, K> implements MemoizingFunction<T, R>
 	{
 		private final Function<T, R> delegate;
-		private final transient ConcurrentHashMap<T, R> values = new ConcurrentHashMap<>();
+		private final Function<T, K> keyFunction;
+		private final transient ConcurrentHashMap<K, R> values = new ConcurrentHashMap<>();
 
-		private MemoizingFunction(final Function<T, R> delegate)
+		private MemoizingFunctionWithKeyExtractor(final Function<T, R> delegate, final Function<T, K> keyFunction)
 		{
 			super();
 			Check.assumeNotNull(delegate, "Parameter function is not null");
+			Check.assumeNotNull(keyFunction, "Parameter keyFunction is not null");
 			this.delegate = delegate;
+			this.keyFunction = keyFunction;
 		}
 
 		@Override
 		public String toString()
 		{
-			return MoreObjects.toStringHelper("memoizing").addValue(delegate).toString();
+			return MoreObjects.toStringHelper("memoizing")
+					.addValue(delegate)
+					.add("keyFunction", keyFunction)
+					.toString();
 		}
 
 		@Override
 		public R apply(final T input)
 		{
-			return values.computeIfAbsent(input, delegate);
+			return values.computeIfAbsent(keyFunction.apply(input), k -> delegate.apply(input));
+		}
+
+		@Override
+		public R peek(final T input)
+		{
+			return values.get(keyFunction.apply(input));
 		}
 	}
+
+	private static final class SimpleMemoizingFunction<T, R> extends MemoizingFunctionWithKeyExtractor<T, R, T>
+	{
+		private SimpleMemoizingFunction(final Function<T, R> delegate)
+		{
+			super(delegate, input -> input);
+		}
+
+	}
+
 }

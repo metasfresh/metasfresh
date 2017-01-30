@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -448,15 +447,9 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	{
 		Check.assumeNotNull(lutuConfigurationEditor, "lutuConfigurationEditor not null");
 
-		lutuConfigurationEditor.edit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-		{
-
-			@Override
-			public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-			{
-				save(lutuConfiguration);
-				return lutuConfiguration;
-			}
+		lutuConfigurationEditor.edit(lutuConfiguration -> {
+			save(lutuConfiguration);
+			return lutuConfiguration;
 		});
 	}
 
