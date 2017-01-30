@@ -18,6 +18,10 @@ upcoming Release
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
 
+## Fixes
+* webui
+  * #204 Can not complete Order
+
 # metasfresh 4.54.53 (2017-05)
 
 this week's RC
@@ -43,6 +47,7 @@ this week's RC
 ### Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
+  * #864 Adjust C_Country Location Print generation DE
 
 # metasfresh 4.53.52 (2017-04)
 
