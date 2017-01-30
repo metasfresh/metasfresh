@@ -28,6 +28,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 
 /*
  * #%L
@@ -140,6 +141,16 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public String getFilter()
 	{
 		return get_ValueAsString(PARAM_Filter.getName());
+	}
+	
+	public LookupValueFilterPredicate getFilterPredicate()
+	{
+		final String filterStr = getFilter();
+		if(filterStr == FILTER_Any)
+		{
+			return LookupValueFilterPredicates.MATCH_ALL;
+		}
+		return LookupValueFilterPredicates.of(filterStr);
 	}
 
 	public int getLimit(final int defaultValue)

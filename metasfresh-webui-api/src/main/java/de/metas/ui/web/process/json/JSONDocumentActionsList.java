@@ -11,8 +11,9 @@ import java.util.stream.Collector;
 import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.process.descriptor.ProcessDescriptor;
+import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -39,27 +40,37 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 public class JSONDocumentActionsList
 {
-	public static final Collector<ProcessDescriptor, ?, JSONDocumentActionsList> collect(final JSONOptions jsonOpts)
+	public static final Collector<RelatedProcessDescriptorWrapper, ?, JSONDocumentActionsList> collect(final JSONOptions jsonOpts)
 	{
-		final Supplier<List<ProcessDescriptor>> supplier = ArrayList::new;
-		final BiConsumer<List<ProcessDescriptor>, ProcessDescriptor> accumulator = List::add;
-		final BinaryOperator<List<ProcessDescriptor>> combiner = (l, r) -> {
+		final Supplier<List<RelatedProcessDescriptorWrapper>> supplier = ArrayList::new;
+		final BiConsumer<List<RelatedProcessDescriptorWrapper>, RelatedProcessDescriptorWrapper> accumulator = List::add;
+		final BinaryOperator<List<RelatedProcessDescriptorWrapper>> combiner = (l, r) -> {
 			l.addAll(r);
 			return l;
 		};
-		final Function<List<ProcessDescriptor>, JSONDocumentActionsList> finisher = processDescriptors -> new JSONDocumentActionsList(processDescriptors, jsonOpts);
+		final Function<List<RelatedProcessDescriptorWrapper>, JSONDocumentActionsList> finisher = processDescriptors -> new JSONDocumentActionsList(processDescriptors, jsonOpts);
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	@JsonProperty("actions")
 	private final List<JSONDocumentAction> actions;
 
-	private JSONDocumentActionsList(final List<ProcessDescriptor> processDescriptors, final JSONOptions jsonOpts)
+	private JSONDocumentActionsList(final List<RelatedProcessDescriptorWrapper> processDescriptors, final JSONOptions jsonOpts)
 	{
 		super();
 		actions = processDescriptors.stream()
 				.map(processDescriptor -> new JSONDocumentAction(processDescriptor, jsonOpts))
+				.sorted(JSONDocumentAction.ORDERBY_QuickActionFirst_Caption)
 				.collect(GuavaCollectors.toImmutableList());
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("actions", actions.isEmpty() ? null : actions)
+				.toString();
 	}
 
 	public List<JSONDocumentAction> getActions()

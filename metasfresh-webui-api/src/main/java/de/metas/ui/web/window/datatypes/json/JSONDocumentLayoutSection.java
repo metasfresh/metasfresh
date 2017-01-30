@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -61,12 +60,6 @@ public final class JSONDocumentLayoutSection implements Serializable
 		return ImmutableList.of(section);
 	}
 
-	static List<JSONDocumentLayoutSection> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
-	{
-		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(sideListLayout, jsonOpts);
-		return ImmutableList.of(section);
-	}
-
 	/**
 	 * Build the layout sections for advanced view.
 	 *
@@ -104,18 +97,6 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		super();
 		columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonOpts);
-	}
-
-	/**
-	 * From side-list layout constructor
-	 *
-	 * @param detailLayout
-	 * @param jsonOpts
-	 */
-	private JSONDocumentLayoutSection(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
-	{
-		super();
-		columns = JSONDocumentLayoutColumn.ofSideListLayout(sideListLayout, jsonOpts);
 	}
 
 	@JsonCreator

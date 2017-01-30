@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.json.filters.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -61,15 +60,6 @@ public final class JSONDocumentLayoutTab implements Serializable
 	)
 	{
 		return new JSONDocumentLayoutTab(detail, filters, jsonOpts);
-	}
-
-	public static final JSONDocumentLayoutTab ofSideListLayout(
-			final DocumentLayoutSideListDescriptor sideListLayout //
-			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONOptions jsonOpts //
-	)
-	{
-		return new JSONDocumentLayoutTab(sideListLayout, filters, jsonOpts);
 	}
 
 	/** i.e. AD_Window_ID */
@@ -140,29 +130,6 @@ public final class JSONDocumentLayoutTab implements Serializable
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 		
 		this.quickInput = JSONDocumentLayoutTabQuickInput.fromNullable(detail.getQuickInput().orElse(null), jsonOpts);
-	}
-
-	private JSONDocumentLayoutTab(
-			final DocumentLayoutSideListDescriptor sideListLayout //
-			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONOptions jsonOpts //
-	)
-	{
-		super();
-		type = String.valueOf(sideListLayout.getAD_Window_ID());
-		tabid = null; // n/a
-
-		final String adLanguage = jsonOpts.getAD_Language();
-		caption = null; // n/a
-		description = null; // n/a
-		emptyResultText = sideListLayout.getEmptyResultText(adLanguage);
-		emptyResultHint = sideListLayout.getEmptyResultHint(adLanguage);
-
-		elements = JSONDocumentLayoutElement.ofList(sideListLayout.getElements(), jsonOpts);
-
-		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-		
-		this.quickInput = null;
 	}
 
 	@JsonCreator

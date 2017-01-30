@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -217,7 +218,11 @@ public final class Document
 			// NOTE: these dynamic attributes will be considered by Document.asEvaluatee.
 			if (_parentDocument == null)
 			{
-				setDynAttributeNoCheck("IsSOTrx", entityDescriptor.isSOTrx()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+				final Optional<Boolean> isSOTrx = entityDescriptor.getIsSOTrx();
+				if(isSOTrx.isPresent())
+				{
+					setDynAttributeNoCheck("IsSOTrx", isSOTrx.get()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}
 		}
@@ -624,7 +629,7 @@ public final class Document
 		final Document parentDocument = getParentDocument();
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("tableName", entityDescriptor.getTableName())
+				.add("tableName", entityDescriptor.getTableNameOrNull())
 				.add("parentId", parentDocument == null ? null : parentDocument.getDocumentId())
 				.add("id", getDocumentId())
 				.add("NEW", _new ? Boolean.TRUE : null)

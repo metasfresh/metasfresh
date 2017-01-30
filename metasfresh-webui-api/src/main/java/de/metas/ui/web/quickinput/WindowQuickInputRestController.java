@@ -87,6 +87,8 @@ public class WindowQuickInputRestController
 			, @PathVariable("tabId") final String tabIdStr //
 	)
 	{
+		userSession.assertLoggedIn();
+		
 		final DocumentLayoutDetailQuickInputDescriptor layout = documentsCollection.getDocumentDescriptor(adWindowId)
 				.getLayout()
 				.getDetail(DetailId.fromJson(tabIdStr))
@@ -159,7 +161,7 @@ public class WindowQuickInputRestController
 		});
 	}
 
-	@PatchMapping("{quickInputId}/complete")
+	@PostMapping("{quickInputId}/complete")
 	public JSONDocument complete(@PathVariable("quickInputId") final int quickInputId)
 	{
 		userSession.assertLoggedIn();
@@ -175,6 +177,15 @@ public class WindowQuickInputRestController
 
 		return jsonDocument;
 	}
+	
+	@PatchMapping("{quickInputId}/complete")
+	@Deprecated
+	public JSONDocument complete_DEPRECATED(@PathVariable("quickInputId") final int quickInputId)
+	{
+		userSession.assertDeprecatedRestAPIAllowed();
+		return complete(quickInputId);
+	}
+
 
 	private <RT> RT processQuickInput(final int quickInputId, final Function<QuickInput, RT> processor)
 	{

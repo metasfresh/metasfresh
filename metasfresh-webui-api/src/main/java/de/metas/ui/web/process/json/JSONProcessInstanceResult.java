@@ -33,7 +33,7 @@ import de.metas.ui.web.process.ProcessInstanceResult;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JSONProcessInstanceResult implements Serializable
+public final class JSONProcessInstanceResult implements Serializable
 {
 	public static final JSONProcessInstanceResult of(final ProcessInstanceResult result)
 	{
@@ -42,12 +42,12 @@ public class JSONProcessInstanceResult implements Serializable
 
 	@JsonProperty("pinstanceId")
 	private final int pinstanceId;
-	
+
 	@JsonProperty("summary")
 	private final String summary;
 	@JsonProperty("error")
 	private final boolean error;
-	
+
 	//
 	// Report
 	@JsonProperty("reportFilename")
@@ -57,11 +57,20 @@ public class JSONProcessInstanceResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String reportContentType;
 
+	//
+	// View
+	@JsonProperty("viewWindowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Integer viewWindowId;
+	@JsonProperty("viewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String viewId;
+
 	private JSONProcessInstanceResult(final ProcessInstanceResult result)
 	{
 		super();
 		pinstanceId = result.getAD_PInstance_ID();
-		
+
 		summary = result.getSummary();
 		error = result.isError();
 
@@ -69,13 +78,18 @@ public class JSONProcessInstanceResult implements Serializable
 		// Report
 		reportFilename = result.getReportFilename();
 		reportContentType = result.getReportContentType();
+
+		//
+		// View
+		viewWindowId = result.getViewWindowId() > 0 ? result.getViewWindowId() : null;
+		viewId = result.getViewId();
 	}
-	
+
 	public int getPinstanceId()
 	{
 		return pinstanceId;
 	}
-	
+
 	public String getSummary()
 	{
 		return summary;
@@ -85,7 +99,7 @@ public class JSONProcessInstanceResult implements Serializable
 	{
 		return error;
 	}
-	
+
 	public String getReportFilename()
 	{
 		return reportFilename;
@@ -94,5 +108,15 @@ public class JSONProcessInstanceResult implements Serializable
 	public String getReportContentType()
 	{
 		return reportContentType;
+	}
+
+	public Integer getViewWindowId()
+	{
+		return viewWindowId;
+	}
+
+	public String getViewId()
+	{
+		return viewId;
 	}
 }

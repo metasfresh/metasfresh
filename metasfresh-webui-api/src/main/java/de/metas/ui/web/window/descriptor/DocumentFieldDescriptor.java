@@ -17,6 +17,7 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -110,9 +111,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocAction //
 		, SpecialField_DocumentSummary //
 		;
-
-		public static final List<Characteristic> SPECIALFIELDS = ImmutableList.of(SpecialField_DocumentNo, SpecialField_DocStatus, SpecialField_DocAction, SpecialField_DocumentSummary);
 	};
+
+	private static final List<Characteristic> SPECIALFIELDS_ToExcludeFromLayout = ImmutableList.of(
+			Characteristic.SpecialField_DocumentNo //
+			, Characteristic.SpecialField_DocStatus //
+			, Characteristic.SpecialField_DocAction //
+			// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
+			);
 
 	private final Set<Characteristic> characteristics;
 
@@ -738,9 +744,10 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setLookupDescriptorProvider(final LookupDescriptor lookupDescriptor)
+		public Builder setLookupDescriptorProvider(@Nullable final LookupDescriptor lookupDescriptor)
 		{
-			setLookupDescriptorProvider(LookupDescriptorProvider.singleton(lookupDescriptor));
+			final LookupDescriptorProvider provider = lookupDescriptor != null ? LookupDescriptorProvider.singleton(lookupDescriptor) : LookupDescriptorProvider.NULL;
+			setLookupDescriptorProvider(provider);
 			return this;
 		}
 
@@ -815,9 +822,16 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
+		public Builder removeCharacteristic(final Characteristic c)
+		{
+			assertNotBuilt();
+			characteristics.remove(c);
+			return this;
+		}
+
 		public boolean isSpecialField()
 		{
-			return !Collections.disjoint(characteristics, Characteristic.SPECIALFIELDS);
+			return !Collections.disjoint(characteristics, SPECIALFIELDS_ToExcludeFromLayout);
 		}
 
 		/* package */ void setEntityReadonlyLogic(final ILogicExpression entityReadonlyLogic)
@@ -961,6 +975,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setDisplayLogic(final boolean display)
 		{
 			setDisplayLogic(ConstantLogicExpression.of(display));
+			return this;
+		}
+		
+		public Builder setDisplayLogic(final String displayLogic)
+		{
+			setDisplayLogic(LogicExpressionCompiler.instance.compile(displayLogic));
 			return this;
 		}
 
@@ -1110,6 +1130,14 @@ public final class DocumentFieldDescriptor implements Serializable
 			callouts.add(callout);
 			return this;
 		}
+		
+		public Builder addCallout(final ILambdaDocumentFieldCallout lambdaCallout)
+		{
+			final LambdaDocumentFieldCallout callout = new LambdaDocumentFieldCallout(getFieldName(), lambdaCallout);
+			addCallout(callout);
+			return this;
+		}
+
 
 		/* package */List<IDocumentFieldCallout> getCallouts()
 		{

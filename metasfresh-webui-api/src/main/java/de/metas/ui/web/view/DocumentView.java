@@ -1,15 +1,21 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.view;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 
@@ -35,7 +41,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
  * #L%
  */
 
-public class DocumentView implements IDocumentView
+public final class DocumentView implements IDocumentView
 {
 	public static final Builder builder(final int adWindowId)
 	{
@@ -43,9 +49,14 @@ public class DocumentView implements IDocumentView
 	}
 
 	private final DocumentPath documentPath;
+	private final DocumentId documentId;
+	
 	private final String idFieldName;
-	private final int documentId;
 	private final Map<String, Object> values;
+
+	private final IDocumentViewAttributesProvider attributesProvider;
+
+	private final List<IDocumentView> includedDocuments;
 
 	private DocumentView(final Builder builder)
 	{
@@ -53,16 +64,23 @@ public class DocumentView implements IDocumentView
 		documentPath = builder.getDocumentPath();
 
 		idFieldName = builder.idFieldName;
-		documentId = builder.documentId;
+		documentId = documentPath.getDocumentId();
 		values = ImmutableMap.copyOf(builder.values);
+
+		attributesProvider = builder.getAttributesProviderOrNull();
+
+		includedDocuments = builder.buildIncludedDocuments();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", documentId)
 				.add("values", values)
+				.add("attributesProvider", attributesProvider)
+				.add("includedDocuments.count", includedDocuments.size())
 				.toString();
 	}
 
@@ -79,7 +97,7 @@ public class DocumentView implements IDocumentView
 	}
 
 	@Override
-	public int getDocumentId()
+	public DocumentId getDocumentId()
 	{
 		return documentId;
 	}
@@ -102,12 +120,31 @@ public class DocumentView implements IDocumentView
 		return values;
 	}
 
+	@Override
+	public IDocumentViewAttributes getAttributes()
+	{
+		final IDocumentViewAttributes attributes = attributesProvider == null ? null : attributesProvider.getAttributes(documentId);
+		if (attributes == null)
+		{
+			throw new IllegalStateException("Document does not support attributes");
+		}
+		return attributes;
+	}
+
+	@Override
+	public List<IDocumentView> getIncludedDocuments()
+	{
+		return includedDocuments;
+	}
+
 	public static final class Builder
 	{
 		private final int adWindowId;
 		private String idFieldName;
-		private int documentId;
+		private DocumentId _documentId;
 		private final Map<String, Object> values = new LinkedHashMap<>();
+		private IDocumentViewAttributesProvider attributesProvider;
+		private List<IDocumentView> includedDocuments = null;
 
 		private Builder(final int adWindowId)
 		{
@@ -118,12 +155,34 @@ public class DocumentView implements IDocumentView
 
 		public DocumentView build()
 		{
-			documentId = findId();
 			return new DocumentView(this);
 		}
 
-		private int findId()
+		private DocumentPath getDocumentPath()
 		{
+			final DocumentId documentId = getDocumentId();
+			return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+		}
+
+		public Builder setIdFieldName(final String idFieldName)
+		{
+			this.idFieldName = idFieldName;
+			return this;
+		}
+		
+		public Builder setDocumentId(final DocumentId documentId)
+		{
+			this._documentId = documentId;
+			return this;
+		}
+		
+		private DocumentId getDocumentId()
+		{
+			if(_documentId != null)
+			{
+				return _documentId;
+			}
+			
 			if (idFieldName == null)
 			{
 				throw new IllegalStateException("No idFieldName was specified");
@@ -134,7 +193,7 @@ public class DocumentView implements IDocumentView
 
 			if (idJson instanceof Integer)
 			{
-				return (Integer)idJson;
+				return DocumentId.of((Integer)idJson);
 			}
 			else
 			{
@@ -143,18 +202,8 @@ public class DocumentView implements IDocumentView
 
 		}
 
-		public DocumentPath getDocumentPath()
-		{
-			return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
-		}
 
-		public Builder setIdFieldName(final String idFieldName)
-		{
-			this.idFieldName = idFieldName;
-			return this;
-		}
-
-		public void putFieldValue(final String fieldName, final Object jsonValue)
+		public Builder putFieldValue(final String fieldName, final Object jsonValue)
 		{
 			if (jsonValue == null)
 			{
@@ -164,6 +213,42 @@ public class DocumentView implements IDocumentView
 			{
 				values.put(fieldName, jsonValue);
 			}
+			
+			return this;
 		}
+
+		private IDocumentViewAttributesProvider getAttributesProviderOrNull()
+		{
+			return attributesProvider;
+		}
+
+		public Builder setAttributesProvider(@Nullable final IDocumentViewAttributesProvider attributesProvider)
+		{
+			this.attributesProvider = attributesProvider;
+			return this;
+		}
+		
+		public Builder addIncludedDocument(final IDocumentView includedDocument)
+		{
+			if(includedDocuments == null)
+			{
+				includedDocuments = new ArrayList<>();
+			}
+			
+			includedDocuments.add(includedDocument);
+			
+			return this;
+		}
+
+		private List<IDocumentView> buildIncludedDocuments()
+		{
+			if (includedDocuments == null || includedDocuments.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+			
+			return ImmutableList.copyOf(includedDocuments);
+		}
+
 	}
 }

@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSideListDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -60,12 +59,6 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return ImmutableList.of(elementGroup);
 	}
 
-	static List<JSONDocumentLayoutElementGroup> ofSideListLayout(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
-	{
-		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(sideListLayout, jsonOpts);
-		return ImmutableList.of(elementGroup);
-	}
-
 	/** Element group type (primary aka bordered, transparent etc) */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -101,19 +94,6 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		super();
 		type = null;
 		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(detailLayout.getElements(), jsonOpts);
-	}
-
-	/**
-	 * From side-list layout constructor
-	 *
-	 * @param sideListLayout
-	 * @param jsonOpts
-	 */
-	public JSONDocumentLayoutElementGroup(final DocumentLayoutSideListDescriptor sideListLayout, final JSONOptions jsonOpts)
-	{
-		super();
-		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(sideListLayout.getElements(), jsonOpts);
 	}
 
 	@Override

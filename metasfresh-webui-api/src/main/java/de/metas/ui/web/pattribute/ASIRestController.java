@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -135,7 +136,7 @@ public class ASIRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{asiDocId}/complete", method = RequestMethod.GET)
+	@PostMapping(value = "/{asiDocId}/complete")
 	public JSONLookupValue complete(@PathVariable("asiDocId") final int asiDocId)
 	{
 		userSession.assertLoggedIn();

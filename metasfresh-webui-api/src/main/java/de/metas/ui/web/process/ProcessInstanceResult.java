@@ -9,6 +9,8 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.printing.esb.base.util.Check;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -47,6 +49,9 @@ public class ProcessInstanceResult implements Serializable
 	private final String reportFilename;
 	private final String reportContentType;
 	private final File reportTempFile;
+	
+	private final int viewWindowId;
+	private final String viewId;
 
 	private ProcessInstanceResult(final Builder builder)
 	{
@@ -58,6 +63,9 @@ public class ProcessInstanceResult implements Serializable
 		reportFilename = builder.reportFilename;
 		reportContentType = builder.reportContentType;
 		reportTempFile = builder.reportTempFile;
+
+		viewWindowId = builder.viewWindowId;
+		viewId = builder.viewId;
 	}
 
 	@Override
@@ -68,9 +76,14 @@ public class ProcessInstanceResult implements Serializable
 				.add("adPInstanceId", adPInstanceId)
 				.add("summary", summary)
 				.add("error", error)
+				//
 				.add("reportFilename", reportFilename)
 				.add("reportContentType", reportContentType)
 				.add("reportTempFile", reportTempFile)
+				//
+				.add("viewWindowId", viewWindowId > 0 ? viewWindowId : null)
+				.add("viewId", viewId)
+				//
 				.toString();
 	}
 
@@ -108,6 +121,16 @@ public class ProcessInstanceResult implements Serializable
 	{
 		return Util.readBytes(reportTempFile);
 	}
+	
+	public int getViewWindowId()
+	{
+		return viewWindowId;
+	}
+	
+	public String getViewId()
+	{
+		return viewId;
+	}
 
 	public static final class Builder
 	{
@@ -118,6 +141,9 @@ public class ProcessInstanceResult implements Serializable
 		private String reportFilename;
 		private String reportContentType;
 		private File reportTempFile;
+		
+		private int viewWindowId = -1;
+		private String viewId;
 
 		private Builder()
 		{
@@ -152,6 +178,23 @@ public class ProcessInstanceResult implements Serializable
 			reportFilename = reportFileName;
 			this.reportContentType = reportContentType;
 			this.reportTempFile = reportTempFile;
+			return this;
+		}
+		
+		public Builder setView(final int viewWindowId, final String viewId)
+		{
+			if(viewWindowId > 0)
+			{
+				this.viewWindowId = viewWindowId;
+				
+				Check.assumeNotEmpty(viewId, "viewId is not empty");
+				this.viewId = viewId;
+			}
+			else
+			{
+				this.viewWindowId = -1;
+				this.viewId = null;
+			}
 			return this;
 		}
 	}

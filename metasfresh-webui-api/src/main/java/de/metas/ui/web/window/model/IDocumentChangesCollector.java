@@ -67,6 +67,8 @@ public interface IDocumentChangesCollector
 
 	void collectStaleDetailId(DocumentPath documentPath, DetailId detailId);
 
+	void collectEvent(IDocumentFieldChangedEvent event);
+
 	@FunctionalInterface
 	public interface ReasonSupplier
 	{

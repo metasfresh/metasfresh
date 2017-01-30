@@ -131,7 +131,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutElementField(
+	/*package*/ JSONDocumentLayoutElementField(
 			@JsonProperty("field") final String field //
 			, @JsonProperty("type") final JSONFieldType type //
 			, @JsonProperty("source") final JSONLookupSource source //

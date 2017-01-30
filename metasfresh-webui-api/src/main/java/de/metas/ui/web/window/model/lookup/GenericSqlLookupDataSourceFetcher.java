@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -8,11 +9,13 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
@@ -94,6 +97,18 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	{
 		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
 		return lookupTableName;
+	}
+	
+	@Override
+	public boolean isCached()
+	{
+		return false;
+	}
+	
+	@Override
+	public List<CCacheStats> getCacheStats()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override

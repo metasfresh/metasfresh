@@ -126,26 +126,4 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 				.put(Characteristic.SpecialField_DocAction, fieldDocAction)
 				.build();
 	}
-
-	public void updateCollected()
-	{
-		//
-		// Document summary
-		for (final String fieldName : COLUMNNAMES_DocumentSummary)
-		{
-			final DocumentFieldDescriptor.Builder field = collectedFields.get(fieldName);
-			if (field == null)
-			{
-				continue;
-			}
-
-			field.addCharacteristic(Characteristic.SpecialField_DocumentSummary);
-			break;
-		}
-
-		//
-		// DocStatus/DocAction
-		{
-		}
-	}
 }

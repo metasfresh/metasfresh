@@ -11,6 +11,8 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Language;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -150,6 +152,11 @@ public class UserSession implements InitializingBean, Serializable
 	public Properties getCtx()
 	{
 		return Env.getCtx();
+	}
+	
+	public Evaluatee toEvaluatee()
+	{
+		return Evaluatees.ofCtx(getCtx());
 	}
 
 	public UserPreference getUserPreference()

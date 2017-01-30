@@ -1,11 +1,15 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -13,6 +17,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -58,6 +65,11 @@ public final class JSONDocumentLayoutElement implements Serializable
 		}
 		return new JSONDocumentLayoutElement(element, jsonOpts);
 	}
+	
+	public static JSONDocumentLayoutElement debuggingField(final String fieldName, DocumentFieldWidgetType widgetType)
+	{
+		return new JSONDocumentLayoutElement(fieldName, widgetType);
+	}
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -87,18 +99,23 @@ public final class JSONDocumentLayoutElement implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
+	/** Other properties */
+	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
+
 	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
 	{
 		super();
 		final String adLanguage = jsonOpts.getAD_Language();
 
+		final String caption = element.getCaption(adLanguage);
 		if (jsonOpts.isDebugShowColumnNamesForCaption())
 		{
-			caption = element.getCaptionAsFieldNames();
+			this.caption = element.getCaptionAsFieldNames();
+			putDebugProperty("caption-original", caption);
 		}
 		else
 		{
-			caption = element.getCaption(adLanguage);
+			this.caption = caption;
 		}
 
 		description = element.getDescription(adLanguage);
@@ -110,6 +127,22 @@ public final class JSONDocumentLayoutElement implements Serializable
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
+	}
+	
+	/** Debugging field constructor */
+	private JSONDocumentLayoutElement(final String fieldName, final DocumentFieldWidgetType widgetType)
+	{
+		super();
+		this.caption = fieldName;
+		this.description = null;
+		
+		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
+		precision = null;
+		
+		type = null;
+		gridAlign = JSONLayoutAlign.right;
+		
+		fields = ImmutableSet.of(new JSONDocumentLayoutElementField(fieldName, (JSONFieldType)null, (JSONLookupSource)null, "no "+fieldName));
 	}
 
 	@JsonCreator
@@ -179,4 +212,23 @@ public final class JSONDocumentLayoutElement implements Serializable
 	{
 		return fields;
 	}
+	
+	@JsonAnyGetter
+	public Map<String, Object> getOtherProperties()
+	{
+		return otherProperties;
+	}
+
+	@JsonAnySetter
+	public void putOtherProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put(name, jsonValue);
+	}
+	
+	public JSONDocumentLayoutElement putDebugProperty(final String name, final Object jsonValue)
+	{
+		otherProperties.put("debug-" + name, jsonValue);
+		return this;
+	}
+
 }

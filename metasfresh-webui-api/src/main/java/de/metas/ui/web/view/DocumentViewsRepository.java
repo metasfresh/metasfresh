@@ -1,8 +1,9 @@
-package de.metas.ui.web.window.model.sql;
+package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.cache.Cache;
@@ -11,9 +12,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.window.model.DocumentViewCreateRequest;
-import de.metas.ui.web.window.model.DocumentViewsRepository;
-import de.metas.ui.web.window.model.IDocumentViewSelection;
+import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 
 /*
  * #%L
@@ -38,9 +37,12 @@ import de.metas.ui.web.window.model.IDocumentViewSelection;
  */
 
 @Repository
-public class SqlDocumentViewsRepository implements DocumentViewsRepository
+public class DocumentViewsRepository implements IDocumentViewsRepository
 {
-	private final Cache<String, SqlDocumentViewSelection> views = CacheBuilder.newBuilder()
+	@Autowired
+	private CompositeDocumentViewSelectionFactory documentViewSelectionFactory;
+
+	private final Cache<String, IDocumentViewSelection> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
@@ -52,11 +54,9 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 	}
 
 	@Override
-	public IDocumentViewSelection createView(final DocumentViewCreateRequest request)
+	public IDocumentViewSelection createView(final JSONCreateDocumentViewRequest jsonRequest)
 	{
-		final SqlDocumentViewSelection view = SqlDocumentViewSelection.builder()
-				.setRequest(request)
-				.build();
+		final IDocumentViewSelection view = documentViewSelectionFactory.createView(jsonRequest);
 		views.put(view.getViewId(), view);
 		return view;
 	}
@@ -64,7 +64,7 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 	@Override
 	public IDocumentViewSelection getView(final String viewId)
 	{
-		final SqlDocumentViewSelection view = views.getIfPresent(viewId);
+		final IDocumentViewSelection view = views.getIfPresent(viewId);
 		if (view == null)
 		{
 			throw new EntityNotFoundException("No view found for viewId=" + viewId);
@@ -80,7 +80,7 @@ public class SqlDocumentViewsRepository implements DocumentViewsRepository
 
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
-		final SqlDocumentViewSelection view = (SqlDocumentViewSelection)notification.getValue();
+		final IDocumentViewSelection view = (IDocumentViewSelection)notification.getValue();
 		view.close();
 	}
 }

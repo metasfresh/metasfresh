@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import org.compiere.util.NamePair;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -56,6 +58,12 @@ public final class JSONLookupValue implements Serializable
 	{
 		return of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
 	}
+	
+	public static final JSONLookupValue ofNamePair(final NamePair namePair)
+	{
+		return of(namePair.getID(), namePair.getName());
+	}
+
 
 	public static final IntegerLookupValue integerLookupValueFromJsonMap(final Map<String, String> map)
 	{

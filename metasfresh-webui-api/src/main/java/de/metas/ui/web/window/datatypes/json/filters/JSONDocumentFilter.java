@@ -139,7 +139,6 @@ public class JSONDocumentFilter implements Serializable
 		}
 
 		return filter.build();
-
 	}
 
 	public static final List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters)

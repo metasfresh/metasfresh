@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.view;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.filters.DocumentFilter;
 
 /*

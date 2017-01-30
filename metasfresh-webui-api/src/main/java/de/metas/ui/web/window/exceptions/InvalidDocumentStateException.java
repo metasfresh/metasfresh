@@ -36,6 +36,6 @@ public class InvalidDocumentStateException extends AdempiereException
 
 	private static String buildMsg(final Document document, final String reason)
 	{
-		return "Document " + document + " state is invalid: " + reason;
+		return "Document " + document.getDocumentPath() + " state is invalid: " + reason;
 	}
 }

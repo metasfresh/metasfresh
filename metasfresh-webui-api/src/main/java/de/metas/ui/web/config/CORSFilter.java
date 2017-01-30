@@ -70,7 +70,11 @@ public class CORSFilter implements Filter
 			logger.trace("Set Access-Control-Allow-Origin={} (request's Origin={})", accessControlAllowOrigin, origin);
 			
 			httpResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PATCH, PUT");
-			httpResponse.setHeader("Access-Control-Max-Age", "3600");
+			
+			// NOTE: Access-Control-Max-Age is browser dependent and each browser as a different max value.
+			// e.g. chrome allows max 600sec=10min and it might be that everything above that is ignored.
+			// see http://stackoverflow.com/questions/23543719/cors-access-control-max-age-is-ignored
+			httpResponse.setHeader("Access-Control-Max-Age", "600");
 
 			// adding one more allowed header as requested by @damianprzygodzki to fix the error
 			// "Content-Type is not allowed by Access-Control-Allow-Headers"
