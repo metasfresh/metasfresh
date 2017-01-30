@@ -80,6 +80,9 @@ public class ProcessPreconditionChecker
 				return resolution;
 			}
 		}
+		
+		ProcessPreconditionsResolution resolution = null;
+		
 
 		final Class<? extends IProcessPrecondition> preconditionsClass = getPreconditionsClass();
 		if (preconditionsClass != null)
@@ -87,7 +90,7 @@ public class ProcessPreconditionChecker
 			try
 			{
 				final IProcessPrecondition preconditions = createProcessPreconditions(preconditionsClass);
-				final ProcessPreconditionsResolution resolution = preconditions.checkPreconditionsApplicable(getPreconditionsContext());
+				resolution = preconditions.checkPreconditionsApplicable(getPreconditionsContext());
 				if (resolution.isRejected())
 				{
 					return resolution;
@@ -95,14 +98,14 @@ public class ProcessPreconditionChecker
 			}
 			catch (final Exception ex)
 			{
-				final ProcessPreconditionsResolution resolution = ProcessPreconditionsResolution.rejectWithInternalReason(ex.getLocalizedMessage());
+				resolution = ProcessPreconditionsResolution.rejectWithInternalReason(ex.getLocalizedMessage());
 				logger.warn("checkApplies={}: Failed checking preconditions for {}", resolution, preconditionsClass, ex);
 				return resolution;
 			}
 		}
 
 		//
-		return ProcessPreconditionsResolution.accept();
+		return resolution != null ? resolution : ProcessPreconditionsResolution.accept();
 	}
 
 	private static final IProcessPrecondition createProcessPreconditions(final Class<? extends IProcessPrecondition> preconditionsClass) throws Exception
