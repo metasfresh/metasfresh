@@ -340,7 +340,7 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {autoFocus && c.focus()}}
+                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
