@@ -48,7 +48,13 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
-public class CachedHUAndItemsDAO implements IHUAndItemsDAO
+/**
+ * This service wraps a {@link HUAndItemsDAO} and caches its results.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 {
 	/**
 	 * Enable/Disable debug validations.
@@ -252,7 +258,18 @@ public class CachedHUAndItemsDAO implements IHUAndItemsDAO
 	public I_M_HU_Item createHUItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		final I_M_HU_Item huItem = db.createHUItem(hu, piItem);
-
+		return finalizeAndAddToCache(hu, huItem);
+	}
+	
+	@Override
+	public I_M_HU_Item createAggregateHUItem(I_M_HU hu)
+	{
+		final I_M_HU_Item huItem = db.createAggregateHUItem(hu);
+		return finalizeAndAddToCache(hu, huItem);
+	}
+	
+	private I_M_HU_Item finalizeAndAddToCache(final I_M_HU hu, final I_M_HU_Item huItem)
+	{
 		huItem.setM_HU(hu);
 
 		//
@@ -262,7 +279,9 @@ public class CachedHUAndItemsDAO implements IHUAndItemsDAO
 		if (huItems != null)
 		{
 			huItems.add(huItem);
-			// TODO: sort
+			
+			// sort to make sure that the order we expect is still preserved
+			Collections.sort(huItems, HUItemsLocalCache.HU_ITEMS_COMPARATOR);
 
 			debugValidateHUItems(hu);
 		}
@@ -274,7 +293,7 @@ public class CachedHUAndItemsDAO implements IHUAndItemsDAO
 
 		return huItem;
 	}
-
+	
 	@Override
 	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu)
 	{
@@ -297,25 +316,6 @@ public class CachedHUAndItemsDAO implements IHUAndItemsDAO
 		debugValidateHUItems(hu);
 
 		return new ArrayList<I_M_HU_Item>(huItems);
-	}
-
-	@Override
-	public I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
-	{
-		Check.assumeNotNull(piItem, "piItem not null");
-
-		final List<I_M_HU_Item> huItems = retrieveItems(hu);
-		final int piItemId = piItem.getM_HU_PI_Item_ID();
-		for (final I_M_HU_Item huItem : huItems)
-		{
-			if (huItem.getM_HU_PI_Item_ID() == piItemId)
-			{
-				return huItem;
-			}
-		}
-
-		// not found
-		return null;
 	}
 
 	@Override

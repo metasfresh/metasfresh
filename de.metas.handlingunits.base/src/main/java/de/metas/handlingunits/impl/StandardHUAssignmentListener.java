@@ -33,7 +33,7 @@ import de.metas.handlingunits.exceptions.HUNotAssignableException;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
- * Standard {@link IHUAssignmentListener} which validates common cases.
+ * Standard {@link IHUAssignmentListener} with and {@link #assertAssignable(I_M_HU, Object, String)} method that validates common cases.
  *
  * @author tsa
  * @see IHUAssignmentBL#registerHUAssignmentListener(IHUAssignmentListener)

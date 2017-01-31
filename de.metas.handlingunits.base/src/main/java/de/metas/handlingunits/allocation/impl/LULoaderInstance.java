@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -42,13 +41,13 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 /**
- * Loading Unit(LU) Loader.
+ * Loading Unit(LU) loader instance. It creates and wraps one loading unit {@link I_M_HU} to which it can add TU, if they match. Used by {@link LULoader}.
  *
- * This class is reponsible for adding Transport Units (TUs) to a particular LU handling unit (which will be created in class constructor).
+ * Equally {@code true}: This class is responsible for adding Transport Units (TUs) to a particular LU handling unit (which will be created using {@link HULoader} in class constructor).
  *
  * @author tsa
  *
@@ -58,7 +57,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	//
 	// Services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final IHUContext huContext;
 	private final I_C_BPartner bpartner;
@@ -75,6 +73,12 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	 */
 	private final SortedSet<LULoaderItemInstance> luItemInstances = new TreeSet<LULoaderItemInstance>();
 
+	/**
+	 * The builder used to create the LU wrapped by this instance. We need to keep it around even after the LU was created, because when {@link #addTU(I_M_HU)} is called,
+	 * and only the "aggregate" HU item was created so far, we need to create a matching HU item on the fly.
+	 */
+	private final IHUBuilder huBuilder;
+
 	public LULoaderInstance(final IHUContext huContext,
 			final I_C_BPartner bpartner,
 			final int bpartnerLocationId,
@@ -82,7 +86,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 			final String huStatus,
 			final I_M_HU_PI_Version tuPIVersion)
 	{
-		super();
 		this.huContext = huContext;
 		this.bpartner = bpartner;
 		this.bpartnerLocationId = bpartnerLocationId;
@@ -103,11 +106,12 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 		//
 		// Create LU
-		final IHUBuilder huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
+		huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
 		huBuilder.setC_BPartner(bpartner);
 		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
 		huBuilder.setM_Locator(locator);
 		huBuilder.setHUStatus(huStatus);
+		// set up a little custom anonymous listener so that if the huBuilder created a HU item (*not* an aggregate one), it shall be added to this LULoaderInstance's HU
 		huBuilder.setListener(new HUIteratorListenerAdapter()
 		{
 			@Override
@@ -167,11 +171,39 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 			return false;
 		}
 
+		// in case tuHU can't be added, we'll need to know if it's because there is no matching LULoaderItemInstance.
+		boolean matchingItemInstanceExists = false;
+
 		for (final LULoaderItemInstance luItemInstance : luItemInstances)
 		{
-			if (luItemInstance.addTU(tuHU))
+			if (luItemInstance.isMatchTU(tuHU))
+			{
+				matchingItemInstanceExists = true;
+			}
+
+			if (luItemInstance.addTU(tuHU)) // is still might not be added because luItemInstance is already "full"
 			{
 				return true;
+			}
+		}
+
+		if (!matchingItemInstanceExists)
+		{
+			// #gh 460: the HUBuilder doesn't add just any possible HU item anymore, so chances are big that luHU does not yet have a HU-item to attach tuHU to.
+			// therefore we now need to identify the correct HU PI item and create that item on the fly.
+			final I_M_HU_PI_Item piItemForTU = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU,
+					tuHU.getM_HU_PI_Version().getM_HU_PI(),
+					huContext);
+
+			if (piItemForTU != null)
+			{
+				final I_M_HU_Item newItem = handlingUnitsDAO.createHUItem(luHU, piItemForTU);
+				final LULoaderItemInstance newItemInstace = addLUItemIfPossible(newItem);
+				Check.errorIf(newItemInstace == null,
+						"Unable to create and add a LULoaderItemInstance for newly created item={}; luItemInstances={}; huContext={}",
+						newItem, luItemInstances, huContext);
+
+				return newItemInstace.addTU(tuHU);
 			}
 		}
 
@@ -180,18 +212,21 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	}
 
 	/**
-	 * Adds given LU Item to our index.
+	 * Adds given LU Item to our index, <b>if</b> that item has {@link X_M_HU_Item#ITEMTYPE_HandlingUnit}.
 	 *
 	 * @param luItem
 	 */
-	private void addLUItemIfPossible(final I_M_HU_Item luItem)
+	private LULoaderItemInstance addLUItemIfPossible(final I_M_HU_Item luItem)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		//
 		// Check if it's a handling unit item
-		final String luPIItemType = handlingUnitsBL.getItemType(luItem);
-		if (!Check.equals(luPIItemType, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
+		if (!Check.equals(handlingUnitsBL.getItemType(luItem), X_M_HU_Item.ITEMTYPE_HandlingUnit))
 		{
-			return;
+			// Note: we aren't even interested in items with type "HUAggregate" / "HA", because this here is about adding TUs that already exist to an LU.
+			// In the other hand, "HUAggregate" items are all about *not* having to add an actual TU, but sortof cover it in a "bag", together with others.
+			return null;
 		}
 
 		final LULoaderItemInstance luItemInstance = new LULoaderItemInstance(huContext, luItem);
@@ -199,6 +234,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 		{
 			throw new AdempiereException("InternalError: Item " + luItemInstance + " was not added to instances list");
 		}
+		return luItemInstance;
 	}
 
 	/**

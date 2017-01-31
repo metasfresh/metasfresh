@@ -1,5 +1,8 @@
 package de.metas.handlingunits.allocation.impl;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,22 +16,23 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import de.metas.handlingunits.IHUBuilder;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 
 public class FIFOAllocationStrategy extends AbstractFIFOStrategy
@@ -86,12 +90,20 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 			return null;
 		}
 
-		final I_M_HU_PI includedHUDef = item.getM_HU_PI_Item().getIncluded_HU_PI();
-		if (includedHUDef == null)
+		final I_M_HU_PI includedHUDef;
+		if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
 		{
-			// we cannot create an instance which has no included handling unit definition
-			return null;
+			// if we are to create an HU below an HUAggregate item, then we always create a VHU.
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			includedHUDef = handlingUnitsDAO.retrieveVirtualPI(request.getHUContext().getCtx());
 		}
+		else
+		{
+			includedHUDef = item.getM_HU_PI_Item().getIncluded_HU_PI();
+		}
+
+		// we cannot create an instance which has no included handling unit definition
+		Check.errorIf(includedHUDef == null, "Unable to get a M_HU_PI for the given request and item; request={}; item={}", request, item);
 
 		final IHUBuilder huBuilder = AllocationUtils.createHUBuilder(request);
 		huBuilder.setM_HU_Item_Parent(item);

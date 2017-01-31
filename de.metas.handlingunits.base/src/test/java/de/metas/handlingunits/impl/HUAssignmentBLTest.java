@@ -77,7 +77,7 @@ public class HUAssignmentBLTest
 		// Setup ctx and trxName
 		ctx = Env.getCtx();
 		trxName = ITrx.TRXNAME_None;
-		contextProvider = new PlainContextAware(ctx, trxName);
+		contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
 		//
 		// Create a dummy record

@@ -33,6 +33,7 @@ import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -82,7 +83,7 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(null); // huContext==null
 		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
 
 		final HUIterator iterator = new HUIterator();

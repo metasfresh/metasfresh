@@ -88,8 +88,6 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest
 {
 	// Services
-	// private IHUShipmentScheduleBL huShipmentScheduleBL;
-	// private IHUShipmentScheduleDAO huShipmentScheduleDAO;
 	protected IHUShipperTransportationBL huShipperTransportationBL;
 	protected IHUPackageDAO huPackageDAO;
 
@@ -181,9 +179,16 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Handling Units Definition
 		piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
+			// PM
+			// don't create the PM item, because if we do, the HUPackingPaterialsCollector will try to do its thing.
+			// this won't work, unless we also give each HU a locator and set up a distribution network 
+			// helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO);
+			
+			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
 			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
+			
 		}
 
 		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -211,8 +216,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	@Test
 	public void test()
 	{
-		// Assume.assumeFalse("Skipping this test because fresh_QuickShipment flag is active.", HUConstants.isfresh_QuickShipment());
-
 		//
 		// Create shipment schedules
 		shipmentSchedules = null;

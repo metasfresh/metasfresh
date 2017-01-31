@@ -1,5 +1,7 @@
 package org.adempiere.util.collections;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * de.metas.util
@@ -43,17 +45,11 @@ import org.adempiere.util.lang.ObjectUtils;
  */
 public final class ListCursor<T> implements Iterator<T>
 {
-	private final List<T> list;
+	private final List<T> list= new ArrayList<>();
+	
 	private int currentIndex = -1;
 	private T currentItem = null;
 	private boolean currentItemSet = false;
-
-	public ListCursor(final List<T> list)
-	{
-		super();
-		Check.assumeNotNull(list, "list not null");
-		this.list = list;
-	}
 
 	@Override
 	public String toString()
