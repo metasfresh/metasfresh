@@ -61,6 +61,7 @@ public class AddressRepository
 	private final AtomicInteger nextAddressDocId = new AtomicInteger(1);
 	private final CCache<DocumentId, Document> id2addresssDoc = CCache.newLRUCache("AddressDocuments", 50, 0);
 
+	private static final String VERSION_DEFAULT = "0";
 	private static final ReasonSupplier REASON_ProcessAddressDocumentChanges = () -> "process Address document changes";
 
 	public Document createNewFrom(final int fromC_Location_ID)
@@ -70,8 +71,7 @@ public class AddressRepository
 
 		final Document addressDoc = Document.builder()
 				.setEntityDescriptor(entityDescriptor)
-				.setDocumentIdSupplier(nextAddressDocId::getAndIncrement)
-				.initializeAsNewDocument()
+				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT)
 				.build();
 
 		final I_C_Location fromLocation = fromC_Location_ID <= 0 ? null : InterfaceWrapperHelper.create(Env.getCtx(), fromC_Location_ID, I_C_Location.class, ITrx.TRXNAME_ThreadInherited);

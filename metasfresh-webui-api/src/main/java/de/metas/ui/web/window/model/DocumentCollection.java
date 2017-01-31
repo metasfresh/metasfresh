@@ -112,7 +112,8 @@ public class DocumentCollection
 		final DocumentKey documentKey = DocumentKey.of(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentId);
 		try
 		{
-			return documents.get(documentKey);
+			return documents.get(documentKey)
+					.refreshFromRepositoryIfStaled();
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)
 		{

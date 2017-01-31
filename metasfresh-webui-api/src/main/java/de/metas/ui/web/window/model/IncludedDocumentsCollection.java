@@ -132,7 +132,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	private final boolean isStale(final DocumentId documentId)
 	{
-		return _staleDocumentIds.contains(documentId);
+		if(_staleDocumentIds.contains(documentId))
+		{
+			return true;
+		}
+		
+		return false;
 	}
 
 	private final void markNotStale()
@@ -158,11 +163,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 				.collectStaleDetailId(parentDocument.getDocumentPath(), getDetailId());
 	}
 
-	private DocumentsRepository getDocumentsRepository()
-	{
-		return entityDescriptor.getDataBinding().getDocumentsRepository();
-	}
-
 	public DetailId getDetailId()
 	{
 		return entityDescriptor.getDetailId();
@@ -183,9 +183,14 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 			if (isStale(documentId))
 			{
 				logger.trace("Found stale document with id '{}' in local documents. We need to reload it.");
-				getDocumentsRepository().refresh(documentExisting);
-				markNotStale(documentId);
+				documentExisting.refreshFromRepository();
 			}
+			else
+			{
+				documentExisting.refreshFromRepositoryIfStaled();
+			}
+			markNotStale(documentId);
+			
 
 			return documentExisting;
 		}
@@ -246,7 +251,15 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			loadAll();
 		}
-		return _documents.values();
+		
+		final Collection<Document> documents = getInnerDocuments();
+		
+		for(final Document document : documents)
+		{
+			document.refreshFromRepositoryIfStaled();
+		}
+		
+		return documents;
 	}
 
 	public synchronized Document createNewDocument()

@@ -108,6 +108,7 @@ public final class Document
 	private boolean _initializing = false;
 	private DocumentValidStatus _valid = DocumentValidStatus.inititalInvalid();
 	private DocumentSaveStatus _saveStatus = DocumentSaveStatus.unknown();
+	private final DocumentStaleState _staleStatus;
 
 	//
 	// Callouts
@@ -135,10 +136,13 @@ public final class Document
 	// Misc
 	private Map<String, Object> _dynAttributes = null; // lazy
 
-	@FunctionalInterface
-	public static interface FieldValueSupplier
+	public static interface DocumentValuesSupplier
 	{
 		Object NO_VALUE = new Object();
+
+		int getId();
+
+		String getVersion();
 
 		/**
 		 * @param fieldDescriptor
@@ -156,6 +160,7 @@ public final class Document
 		windowNo = builder.getWindowNo();
 		_writable = builder.isWritable();
 		_new = builder.isNewDocument();
+		_staleStatus = new DocumentStaleState();
 
 		//
 		// Create document fields
@@ -219,7 +224,7 @@ public final class Document
 			if (_parentDocument == null)
 			{
 				final Optional<Boolean> isSOTrx = entityDescriptor.getIsSOTrx();
-				if(isSOTrx.isPresent())
+				if (isSOTrx.isPresent())
 				{
 					setDynAttributeNoCheck("IsSOTrx", isSOTrx.get()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
 				}
@@ -243,6 +248,7 @@ public final class Document
 		_new = from._new;
 		_valid = from._valid;
 		_saveStatus = from._saveStatus;
+		_staleStatus = new DocumentStaleState(from._staleStatus);
 
 		if (from._parentDocument != null)
 		{
@@ -327,7 +333,7 @@ public final class Document
 		return _writable;
 	}
 
-	private final void initializeFields(final FieldInitializationMode mode, final FieldValueSupplier initialValueSupplier)
+	private final void initializeFields(final FieldInitializationMode mode, final DocumentValuesSupplier documentValuesSupplier)
 	{
 		logger.trace("Initializing fields: mode={}", mode);
 
@@ -340,7 +346,7 @@ public final class Document
 		{
 			for (final IDocumentField documentField : getFields())
 			{
-				initializeField(documentField, mode, initialValueSupplier);
+				initializeField(documentField, mode, documentValuesSupplier);
 			}
 
 			//
@@ -359,20 +365,25 @@ public final class Document
 				documentCallout.onNew(asCalloutRecord());
 
 				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector());
-				updateValidIfStaled();
 			}
 			else if (FieldInitializationMode.Load == mode)
 			{
 				updateAllFieldsFlags(NullDocumentChangesCollector.instance);
-				updateValidIfStaled();
 			}
 			else if (FieldInitializationMode.Refresh == mode)
 			{
 				documentCallout.onRefresh(asCalloutRecord());
 
-				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollector());
-				updateValidIfStaled();
+				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollectorOrNull());
 			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown mode: " + mode);
+			}
+
+			//
+			updateValidIfStaled();
+			getStale().markNotStaled(documentValuesSupplier.getVersion());
 
 		}
 		finally
@@ -386,9 +397,9 @@ public final class Document
 	 *
 	 * @param documentField
 	 * @param mode initialization mode
-	 * @param initialValueSupplier initial value supplier
+	 * @param fieldValueSupplier initial value supplier
 	 */
-	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final FieldValueSupplier initialValueSupplier)
+	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final DocumentValuesSupplier fieldValueSupplier)
 	{
 		boolean valueSet = false;
 		Object valueOld = null;
@@ -398,11 +409,11 @@ public final class Document
 
 			//
 			// Get the initialization value
-			final Object initialValue = initialValueSupplier.getValue(fieldDescriptor);
+			final Object initialValue = fieldValueSupplier.getValue(fieldDescriptor);
 
 			//
 			// Update field's initial value
-			if (initialValue != FieldValueSupplier.NO_VALUE)
+			if (initialValue != DocumentValuesSupplier.NO_VALUE)
 			{
 				valueOld = documentField.getValue();
 				documentField.setInitialValue(initialValue, mode);
@@ -415,7 +426,7 @@ public final class Document
 			valueSet = false;
 			if (FieldInitializationMode.NewDocument == mode)
 			{
-				logger.warn("Failed initializing {}, mode={} using {}. Keeping current initial value.", documentField, mode, initialValueSupplier, e);
+				logger.warn("Failed initializing {}, mode={} using {}. Keeping current initial value.", documentField, mode, fieldValueSupplier, e);
 			}
 			else
 			{
@@ -447,26 +458,71 @@ public final class Document
 
 			if (valueSet)
 			{
-				final IDocumentChangesCollector eventsCollector = Execution.getCurrentDocumentChangesCollector();
+				final IDocumentChangesCollector eventsCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 				eventsCollector.collectValueIfChanged(documentField, valueOld, REASON_Value_Refreshing);
 			}
 		}
 	}
 
-	private static final class InitialFieldValueSupplier implements FieldValueSupplier
+	private static final class SimpleDocumentValuesSupplier implements DocumentValuesSupplier
+	{
+		private final IntSupplier documentIdSupplier;
+		private final String version;
+
+		public SimpleDocumentValuesSupplier(final int documentId, final String version)
+		{
+			documentIdSupplier = () -> documentId;
+			this.version = version;
+		}
+
+		public SimpleDocumentValuesSupplier(final IntSupplier documentIdSupplier, final String version)
+		{
+			this.documentIdSupplier = documentIdSupplier;
+			this.version = version;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("documentIdSupplier", documentIdSupplier)
+					.add("version", version)
+					.toString();
+		}
+
+		@Override
+		public int getId()
+		{
+			return documentIdSupplier.getAsInt();
+		}
+
+		@Override
+		public String getVersion()
+		{
+			return version;
+		}
+
+		@Override
+		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
+		{
+			return NO_VALUE;
+		}
+	}
+
+	private static final class InitialFieldValueSupplier implements DocumentValuesSupplier
 	{
 		// Parameters
-		private final IntSupplier documentIdSupplier;
+		private final DocumentValuesSupplier parentSupplier;
 		private final Properties ctx;
 		private final DocumentType documentType;
 		private final int documentTypeId;
 		private final Evaluatee evaluatee;
 		private final DocumentId parentDocumentId;
 
-		private InitialFieldValueSupplier(final Document document, final IntSupplier documentIdSupplier)
+		private InitialFieldValueSupplier(final Document document, final DocumentValuesSupplier parentSupplier)
 		{
 			super();
-			this.documentIdSupplier = documentIdSupplier;
+			this.parentSupplier = parentSupplier;
 
 			ctx = document.getCtx();
 
@@ -491,13 +547,35 @@ public final class Document
 		}
 
 		@Override
+		public int getId()
+		{
+			return parentSupplier.getId();
+		}
+
+		@Override
+		public String getVersion()
+		{
+			return parentSupplier.getVersion();
+		}
+
+		@Override
 		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
 		{
+			//
+			// Ask parent first
+			{
+				final Object value = parentSupplier.getValue(fieldDescriptor);
+				if (value != NO_VALUE)
+				{
+					return value;
+				}
+			}
+
 			//
 			// Primary Key field
 			if (fieldDescriptor.isKey())
 			{
-				final int id = documentIdSupplier.getAsInt();
+				final int id = parentSupplier.getId();
 				return id;
 			}
 
@@ -565,7 +643,7 @@ public final class Document
 
 			//
 			// Fallback
-			return FieldValueSupplier.NO_VALUE;
+			return DocumentValuesSupplier.NO_VALUE;
 		}
 	}
 
@@ -610,15 +688,20 @@ public final class Document
 
 		throw new InvalidDocumentStateException(this, "not a writable copy");
 	}
-	
+
 	/* package */final void destroy()
 	{
 		// TODO: mark it as destroyed, fail read/write operations etc
 	}
 
-	public void refresh(final FieldValueSupplier fieldValuesSupplier)
+	/**
+	 * NOTE: API method, don't call it directly
+	 *
+	 * @param documentValuesSupplier
+	 */
+	public void refreshFromSupplier(final DocumentValuesSupplier documentValuesSupplier)
 	{
-		initializeFields(FieldInitializationMode.Refresh, fieldValuesSupplier);
+		initializeFields(FieldInitializationMode.Refresh, documentValuesSupplier);
 	}
 
 	@Override
@@ -1170,7 +1253,7 @@ public final class Document
 		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments();
 	}
-	
+
 	public void assertNewDocumentAllowed(final DetailId detailId)
 	{
 		getIncludedDocumentsCollection(detailId).assertNewDocumentAllowed();
@@ -1428,7 +1511,7 @@ public final class Document
 	/* package */DocumentSaveStatus saveIfHasChanges() throws RuntimeException
 	{
 		boolean wasNew = isNew();
-		
+
 		//
 		// Save this document
 		if (hasChanges())
@@ -1450,10 +1533,10 @@ public final class Document
 		for (final IncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
 		{
 			includedDocumentsForDetailId.saveIfHasChanges();
-			
+
 			// If document was new we need to invalidate all included documents.
 			// NOTE: Usually this has no real effect besides some corner cases like BPartner window where Vendor and Customer tabs are referencing exactly the same record as the header.
-			if(wasNew)
+			if (wasNew)
 			{
 				includedDocumentsForDetailId.markStaleAll();
 			}
@@ -1472,6 +1555,16 @@ public final class Document
 		getDocumentRepository().refresh(this);
 	}
 
+	/* package */ Document refreshFromRepositoryIfStaled()
+	{
+		if (getStale().checkStaled())
+		{
+			refreshFromRepository();
+		}
+
+		return this;
+	}
+
 	public ICalloutRecord asCalloutRecord()
 	{
 		if (_calloutRecord == null)
@@ -1481,13 +1574,88 @@ public final class Document
 		return _calloutRecord;
 	}
 
+	private DocumentStaleState getStale()
+	{
+		return _staleStatus;
+	}
+	
+	/* package */boolean isStaled()
+	{
+		return _staleStatus.isStaled();
+	}
+
+	private final class DocumentStaleState
+	{
+		private boolean staled;
+		private String version;
+
+		private DocumentStaleState()
+		{
+			staled = false; // initially not staled
+			version = null; // unknown
+		}
+
+		private DocumentStaleState(final DocumentStaleState from)
+		{
+			staled = from.staled;
+			version = from.version;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("staled", staled)
+					.add("version", version)
+					.toString();
+		}
+		
+		public boolean isStaled()
+		{
+			return staled;
+		}
+
+		private boolean checkStaled()
+		{
+			if (staled)
+			{
+				return true;
+			}
+
+			if (isNew())
+			{
+				return false;
+			}
+
+			final String versionNow = getDocumentRepository().retrieveVersion(getEntityDescriptor(), getDocumentIdAsInt());
+			if (Check.equals(version, versionNow))
+			{
+				return false;
+			}
+
+			staled = true;
+			return true;
+		}
+
+		private void markNotStaled(final String version)
+		{
+			staled = false;
+			this.version = version;
+		}
+	}
+
+	//
+	//
+	// Builder
+	//
+	//
+
 	public static final class Builder
 	{
 		private DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private FieldInitializationMode fieldInitializerMode;
-		private FieldValueSupplier fieldInitializer;
-		private IntSupplier documentIdSupplier;
+		private DocumentValuesSupplier documentValuesSupplier;
 
 		private DocumentPath _documentPath;
 
@@ -1506,22 +1674,17 @@ public final class Document
 			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
 
+			DocumentValuesSupplier documentValuesSupplierEffective = documentValuesSupplier;
 			//
 			// Initialize the fields
 			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
-				if (fieldInitializer != null)
-				{
-					// shall never happen
-					throw new IllegalStateException("fieldInitializer shall be null when " + FieldInitializationMode.NewDocument);
-				}
-
-				fieldInitializer = new InitialFieldValueSupplier(document, documentIdSupplier);
+				documentValuesSupplierEffective = new InitialFieldValueSupplier(document, documentValuesSupplier);
 			}
 
-			if (fieldInitializer != null)
+			if (documentValuesSupplierEffective != null)
 			{
-				document.initializeFields(fieldInitializerMode, fieldInitializer);
+				document.initializeFields(fieldInitializerMode, documentValuesSupplierEffective);
 			}
 
 			//
@@ -1554,10 +1717,23 @@ public final class Document
 			return this;
 		}
 
-		public Builder initializeAsNewDocument()
+		public Builder initializeAsNewDocument(final DocumentValuesSupplier documentValuesSupplier)
 		{
+			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
 			fieldInitializerMode = FieldInitializationMode.NewDocument;
-			// NOTE: fieldInitializer will be set by build() method because it's a method of document
+			this.documentValuesSupplier = documentValuesSupplier;
+			return this;
+		}
+
+		public Builder initializeAsNewDocument(final int newDocumentId, final String version)
+		{
+			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentId, version));
+			return this;
+		}
+
+		public Builder initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
+		{
+			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentIdSupplier, version));
 			return this;
 		}
 
@@ -1566,17 +1742,11 @@ public final class Document
 			return fieldInitializerMode == FieldInitializationMode.NewDocument;
 		}
 
-		public Builder initializeAsExistingRecord(final FieldValueSupplier fieldInitializer)
+		public Builder initializeAsExistingRecord(final DocumentValuesSupplier documentValuesSupplier)
 		{
-			Preconditions.checkNotNull(fieldInitializer, "fieldInitializer");
+			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
 			fieldInitializerMode = FieldInitializationMode.Load;
-			this.fieldInitializer = fieldInitializer;
-			return this;
-		}
-
-		public Builder setDocumentIdSupplier(final IntSupplier documentIdSupplier)
-		{
-			this.documentIdSupplier = documentIdSupplier;
+			this.documentValuesSupplier = documentValuesSupplier;
 			return this;
 		}
 
@@ -1589,7 +1759,7 @@ public final class Document
 		{
 			if (_documentPath == null)
 			{
-				final int documentId = documentIdSupplier.getAsInt();
+				final int documentId = documentValuesSupplier.getId();
 				if (parentDocument == null)
 				{
 					_documentPath = DocumentPath.rootDocumentPath(entityDescriptor.getDocumentType(), entityDescriptor.getDocumentTypeId(), documentId);

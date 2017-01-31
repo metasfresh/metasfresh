@@ -58,6 +58,8 @@ public final class QuickInput
 		return quickInput;
 	}
 
+	private static final String VERSION_DEFAULT = "0";
+
 	private final DocumentPath rootDocumentPath;
 	private final DetailId targetDetailId;
 	private final QuickInputProcessorFactory quickInputProcessorFactory;
@@ -276,8 +278,7 @@ public final class QuickInput
 		{
 			return Document.builder()
 					.setEntityDescriptor(getQuickInputDescriptor())
-					.setDocumentIdSupplier(() -> nextQuickInputDocumentId.getAndIncrement())
-					.initializeAsNewDocument()
+					.initializeAsNewDocument(() -> nextQuickInputDocumentId.getAndIncrement(), VERSION_DEFAULT)
 					.build();
 
 		}

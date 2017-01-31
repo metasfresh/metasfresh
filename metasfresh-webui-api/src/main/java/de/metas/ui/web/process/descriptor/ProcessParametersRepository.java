@@ -14,6 +14,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -46,6 +47,8 @@ public class ProcessParametersRepository implements DocumentsRepository
 
 	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
+	private static final String VERSION_DEFAULT = "0";
+
 	private ProcessParametersRepository()
 	{
 		super();
@@ -74,8 +77,7 @@ public class ProcessParametersRepository implements DocumentsRepository
 		// Build the parameters (as document)
 		return Document.builder()
 				.setEntityDescriptor(parametersDescriptor)
-				.setDocumentIdSupplier(() -> adPInstanceId)
-				.initializeAsExistingRecord(parameterDescriptor -> extractParameterValue(processInfoParameters, parameterDescriptor))
+				.initializeAsExistingRecord(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters))
 				.build();
 	}
 
@@ -93,7 +95,7 @@ public class ProcessParametersRepository implements DocumentsRepository
 		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, id -> LookupValue.fromObject(id, parameterDisplay));
 		return parameterValueConv;
 	}
-	
+
 	@Override
 	public Document createNewDocument(final DocumentEntityDescriptor parametersDescriptor, final Document parentProcessParameters)
 	{
@@ -106,16 +108,16 @@ public class ProcessParametersRepository implements DocumentsRepository
 		// Build the parameters (as document)
 		return Document.builder()
 				.setEntityDescriptor(parametersDescriptor)
-				.setDocumentIdSupplier(() -> adPInstanceId)
-				.initializeAsNewDocument()
+				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT)
 				.build();
 	}
 
 	@Override
 	public void refresh(final Document processParameters)
 	{
-		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(processParameters.getDocumentIdAsInt());
-		processParameters.refresh(parameterDescriptor -> extractParameterValue(processInfoParameters, parameterDescriptor));
+		final int adPInstanceId = processParameters.getDocumentIdAsInt();
+		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(adPInstanceId);
+		processParameters.refreshFromSupplier(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters));
 	}
 
 	private final Map<String, ProcessInfoParameter> retrieveProcessInfoParameters(final int adPInstanceId)
@@ -168,4 +170,39 @@ public class ProcessParametersRepository implements DocumentsRepository
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public String retrieveVersion(final DocumentEntityDescriptor entityDescriptor, final int documentIdAsInt)
+	{
+		return VERSION_DEFAULT;
+	}
+
+	private static final class ProcessInfoParameterDocumentValuesSupplier implements DocumentValuesSupplier
+	{
+		private final int adPInstanceId;
+		private final Map<String, ProcessInfoParameter> processInfoParameters;
+
+		public ProcessInfoParameterDocumentValuesSupplier(final int adPInstanceId, final Map<String, ProcessInfoParameter> processInfoParameters)
+		{
+			this.adPInstanceId = adPInstanceId;
+			this.processInfoParameters = processInfoParameters;
+		}
+
+		@Override
+		public int getId()
+		{
+			return adPInstanceId;
+		}
+
+		@Override
+		public String getVersion()
+		{
+			return VERSION_DEFAULT;
+		}
+
+		@Override
+		public Object getValue(final DocumentFieldDescriptor parameterDescriptor)
+		{
+			return extractParameterValue(processInfoParameters, parameterDescriptor);
+		}
+	}
 }

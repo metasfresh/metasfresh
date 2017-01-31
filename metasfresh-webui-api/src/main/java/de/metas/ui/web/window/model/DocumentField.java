@@ -171,7 +171,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		_initialValue = initialValueConv;
 
 		//
-		// Update old value too
+		// Update checkout value too because we consider initialization as first checkout
 		_valueOnCheckout = initialValueConv;
 
 		//
