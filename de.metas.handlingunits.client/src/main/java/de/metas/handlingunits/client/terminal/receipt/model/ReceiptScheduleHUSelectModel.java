@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
@@ -60,6 +61,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String PARA_C_Orderline_ID = " C_Orderline_ID";
+	private static final String PARA_AD_Table_ID = "AD_Table_ID";
 	private static final String PROPERTY_JasperButtonEnabled = "JasperButtonEnabled";
 
 	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasperProcess = "ReceiptScheduleHUPOSJasperProcess";
@@ -456,6 +458,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setReportLanguage(bpartnerLaguage)
 				.addParameter(PARA_C_Orderline_ID, orderLineId)
+				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 				//
 				// Execute report in a new AD_PInstance
 				.buildAndPrepareExecution()
