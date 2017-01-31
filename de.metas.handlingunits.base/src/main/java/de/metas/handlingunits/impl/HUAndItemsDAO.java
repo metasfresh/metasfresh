@@ -225,12 +225,6 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 		InterfaceWrapperHelper.save(item);
 
-		// FIXME: this is making de.metas.customer.picking.service.impl.PackingServiceTest to fail
-		// IncludedHUsLocalCache
-		// .getCreate(item)
-		// .setEmptyNotStaled();
-
-		//
 		// Update HU Items cache
 		HUItemsLocalCache
 				.getCreate(hu)

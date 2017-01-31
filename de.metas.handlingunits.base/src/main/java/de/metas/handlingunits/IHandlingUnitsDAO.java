@@ -109,8 +109,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
-	 * Similar to {@link #createHUItem(I_M_HU, I_M_HU_PI_Item)}, but does not use any {@link I_M_HU_PI_Item} as template.<br>
-	 * Instead, the new item is created with {@link X_M_HU_Item#ITEMTYPE_HUAggregate} as its {@link I_M_HU_Item#COLUMN_ItemType}.
+	 * Similar to {@link #createHUItem(I_M_HU, I_M_HU_PI_Item)}, but do not use any {@link I_M_HU_PI_Item} as template.<br>
+	 * Instead, create new item with {@link X_M_HU_Item#ITEMTYPE_HUAggregate} as its {@link I_M_HU_Item#COLUMN_ItemType}.
 	 * 
 	 * @param hu the HU which the new item shall reference.
 	 * @return
