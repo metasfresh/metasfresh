@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -559,7 +560,9 @@ public final class Check
 	 * If both a and b are Object[], they are compared item-by-item.
 	 *
 	 * NOTE: this is a copy paste from org.zkoss.lang.Objects.equals(Object, Object)
+	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
+	@Deprecated
 	public static final boolean equals(final Object a, final Object b)
 	{
 		if (a == b || a != null && b != null && a.equals(b))

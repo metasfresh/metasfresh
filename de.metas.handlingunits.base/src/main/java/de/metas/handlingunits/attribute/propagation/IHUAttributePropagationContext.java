@@ -53,7 +53,7 @@ public interface IHUAttributePropagationContext extends IAttributeValueContext
 	I_M_Attribute getAttribute();
 
 	/**
-	 * @return true if <code>attribute</code>'s value shall be changed on this storage too
+	 * @return true if <code>attribute</code>'s value shall be changed on this storage too and {@code false} if it shall only be propagated. 
 	 */
 	boolean isUpdateStorageValue();
 

@@ -93,7 +93,7 @@ public class HUContextFactory implements IHUContextFactory
 	@Override
 	public IMutableHUContext createMutableHUContext(final Properties ctx, final String trxName)
 	{
-		final PlainContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return new MutableHUContext(contextProvider);
 	}
 

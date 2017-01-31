@@ -26,15 +26,23 @@ package de.metas.handlingunits.attributes.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -44,6 +52,7 @@ import de.metas.handlingunits.attribute.strategy.impl.CopyAttributeSplitterStrat
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.impl.HUTrxBLTests;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -63,16 +72,10 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 	// Test work data
 	private IAttributeStorageFactory attributeStorageFactory;
 	private IAttributeStorage huPalet_Attrs;
-	private IAttributeStorage huIFCO1_Attrs;
-	private IAttributeStorage huIFCO2_Attrs;
+	private IAttributeStorage aggregateHU_Attrs;
 
 	@Override
 	protected void initialize()
-	{
-		setupHU_PIs();
-	}
-
-	private void setupHU_PIs()
 	{
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
@@ -109,7 +112,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 	}
 
 	/**
-	 * Create initial HUs and attributes
+	 * Create initial HUs and attributes. In case this fails, I recommend to take a look at {@link HUTrxBLTests}.
 	 */
 	private void setupData()
 	{
@@ -118,34 +121,26 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		//
 		// Create inital Palets
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
-				pTomato,
-				AttributesPropagation_1Palet_2IFCO_Test.COUNT_IFCOS_PER_PALET.multiply(AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)));
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
-
+				pTomato, // product
+				COUNT_IFCOS_PER_PALET.multiply(COUNT_TOMATOS_PER_IFCO).multiply(BigDecimal.valueOf(2)) // qty
+				);
+		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
+		assertThat(huPalets.size(), is(2));
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets",huPalets)));
+		
 		//
 		// Bind data to be able to access them in our tests
-		final I_M_HU huPalet = huPalets.get(0);
+		final I_M_HU huPalet = huPalets.get(0); 
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
-		final List<I_M_HU> huIncluded = helper.retrieveIncludedHUs(huPalet);
-		final I_M_HU huIFCO1 = huIncluded.get(0);
-		huIFCO1_Attrs = attributeStorageFactory.getAttributeStorage(huIFCO1);
-		final I_M_HU huIFCO2 = huIncluded.get(1);
-		huIFCO2_Attrs = attributeStorageFactory.getAttributeStorage(huIFCO2);
-	}
-
-	@Test
-	public void testPropagateBottomUp()
-	{
-		setupHU_PI_Attribute(attr_Volume,
-				X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
-				NullSplitterStrategy.class,
-				SumAggregationStrategy.class);
-
-		setupData();
-
-		testPropagateBottomUp(attr_Volume, "10", "20", "30"); // 10+20
-		testPropagateBottomUp(attr_Volume, "11", null, "31"); // 11+20
-		testPropagateBottomUp(attr_Volume, null, "2", "13"); // 11+2
+		
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final List<I_M_HU> huIncluded = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
+		
+		assertThat(huIncluded.size(), is(1));
+				
+		final I_M_HU huAggregate = huIncluded.get(0);
+		assertTrue(Services.get(IHandlingUnitsBL.class).isAggregateHU(huAggregate));
+		aggregateHU_Attrs = attributeStorageFactory.getAttributeStorage(huAggregate);
 	}
 
 	/**
@@ -161,47 +156,37 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 
 		setupData();
 
-		testPropagateTopDown(attr_CountryMadeIn, null, null, null);
-		testPropagateTopDown(attr_CountryMadeIn, "DE", "DE", "DE");
-		testPropagateTopDown(attr_CountryMadeIn, "RO", "RO", "RO");
+		testPropagateTopDown(attr_CountryMadeIn, null, null);
+		testPropagateTopDown(attr_CountryMadeIn, "DE", "DE");
+		testPropagateTopDown(attr_CountryMadeIn, "RO", "RO");
 	}
 
 	/**
 	 * Sets the values on IFCOs and assumes we get <code>qtyPaletStrExpected</code> on pallet level
 	 *
 	 * @param attribute
-	 * @param qtyIFCO1Str
-	 * @param qtyIFCO2Str
+	 * @param qtyAggreagateHUStr
 	 * @param qtyPaletStrExpected
 	 */
 	private void testPropagateBottomUp(final I_M_Attribute attribute,
-			final String qtyIFCO1Str,
-			final String qtyIFCO2Str,
+			final String qtyAggreagateHUStr,
 			final String qtyPaletStrExpected)
 	{
 		final BigDecimal qtyPaletExpected = new BigDecimal(qtyPaletStrExpected);
 
-		final Object qtyIFCO1_old = huIFCO1_Attrs.getValue(attribute);
-		final Object qtyIFCO2_old = huIFCO2_Attrs.getValue(attribute);
+		final Object qtyAggregateHU_old = aggregateHU_Attrs.getValue(attribute);
 		final Object qtyPalet_old = huPalet_Attrs.getValue(attribute);
 
-		if (qtyIFCO1Str != null)
+		if (qtyAggreagateHUStr != null)
 		{
-			final BigDecimal qtyIFCO1 = new BigDecimal(qtyIFCO1Str);
-			huIFCO1_Attrs.setValue(attribute, qtyIFCO1);
-		}
-
-		if (qtyIFCO2Str != null)
-		{
-			final BigDecimal qtyIFCO2 = new BigDecimal(qtyIFCO2Str);
-			huIFCO2_Attrs.setValue(attribute, qtyIFCO2);
+			final BigDecimal qtyAggreagateHU = new BigDecimal(qtyAggreagateHUStr);
+			aggregateHU_Attrs.setValue(attribute, qtyAggreagateHU);
 		}
 
 		//
 		// Build up detailed info
 		final StringBuilder info = new StringBuilder();
-		info.append("IFCO1=" + qtyIFCO1_old + "->" + qtyIFCO1Str + "; ");
-		info.append("IFCO2=" + qtyIFCO2_old + "->" + qtyIFCO2Str + "; ");
+		info.append("AggregateHU=" + qtyAggregateHU_old + "->" + qtyAggreagateHUStr + "; ");
 		info.append("Palet=" + qtyPalet_old + "->" + qtyPaletExpected + "; ");
 
 		final IAttributeValue paletAttributeValue = huPalet_Attrs.getAttributeValue(attribute);
@@ -214,11 +199,9 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 
 	private void testPropagateTopDown(final I_M_Attribute attribute,
 			final Object valuePalet,
-			final Object valueIFCO1Expected,
-			final String valueIFCO2Expected)
+			final Object valueAggregateHUExpected)
 	{
-		final Object valueIFCO1_old = huIFCO1_Attrs.getValue(attribute);
-		final Object valueIFCO2_old = huIFCO2_Attrs.getValue(attribute);
+		final Object valueAggregateHU_old = aggregateHU_Attrs.getValue(attribute);
 		final Object valuePalet_old = huPalet_Attrs.getValue(attribute);
 
 		if (valuePalet != null)
@@ -229,24 +212,15 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		//
 		// Build up detailed info
 		final StringBuilder info = new StringBuilder();
-		info.append("IFCO1=" + valueIFCO1_old + "->" + valueIFCO1Expected + "; ");
-		info.append("IFCO2=" + valueIFCO2_old + "->" + valueIFCO2Expected + "; ");
+		info.append("aggregate HU=" + valueAggregateHU_old + "->" + valueAggregateHUExpected + "; ");
 		info.append("Palet=" + valuePalet_old + "->" + valuePalet + "; ");
 
 		//
-		// Check IFCO1 value
-		final Object valueIFCO1 = huIFCO1_Attrs.getValue(attribute);
+		// Check aggregated HU's value
+		final Object valueIFCO1 = aggregateHU_Attrs.getValue(attribute);
 		Assert.assertEquals(
-				"Invalid propagated " + attribute.getName() + " for IFCO1 (" + info + ")",
-				valueIFCO1Expected,
+				"Invalid propagated " + attribute.getName() + " for aggregate HU (" + info + ")",
+				valueAggregateHUExpected,
 				valueIFCO1);
-
-		//
-		// Check IFCO2 value
-		final Object valueIFCO2 = huIFCO2_Attrs.getValue(attribute);
-		Assert.assertEquals(
-				"Invalid propagated " + attribute.getName() + " for IFCO2 (" + info + ")",
-				valueIFCO2Expected,
-				valueIFCO2);
 	}
 }

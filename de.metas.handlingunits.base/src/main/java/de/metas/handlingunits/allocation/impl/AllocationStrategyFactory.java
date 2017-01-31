@@ -53,8 +53,9 @@ public class AllocationStrategyFactory implements IAllocationStrategyFactory
 		return handlingUnitsDAO;
 	}
 
+	// TODO: check if there is any implementation that does not ignore the hu parameter.
 	@Override
-	public IAllocationStrategy getAllocationStrategy(final I_M_HU hu)
+	public IAllocationStrategy getAllocationStrategy(final I_M_HU IGNORED)
 	{
 		final FIFOAllocationStrategy strategy = new FIFOAllocationStrategy();
 		strategy.setAllocationStrategyFactory(this);

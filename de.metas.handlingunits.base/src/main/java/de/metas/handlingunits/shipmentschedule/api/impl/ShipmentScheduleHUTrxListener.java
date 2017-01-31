@@ -31,9 +31,9 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.impl.HUTrxListenerAdapter;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -49,7 +49,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
  * @author tsa
  *
  */
-public final class ShipmentScheduleHUTrxListener extends HUTrxListenerAdapter
+public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 {
 	public static final ShipmentScheduleHUTrxListener instance = new ShipmentScheduleHUTrxListener();
 

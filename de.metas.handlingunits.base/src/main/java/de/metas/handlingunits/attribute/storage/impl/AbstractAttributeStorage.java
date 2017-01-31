@@ -450,7 +450,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		//
-		// Notify parent that a new child attributes storage was added
+		// Notify parent that a new child attributes storage was added. This might result in child attributes beein gpropagate upwards from the child
 		final IAttributeStorage parentAttributeStorage = getParentAttributeStorage();
 		if (!NullAttributeStorage.instance.equals(parentAttributeStorage))
 		{
