@@ -23,6 +23,9 @@ upcoming Release
   * #196 Grid View 100% height
 
 ## Fixes
+* metasfresh
+  * #863 No Result Window for Prosesses that don't allow rerun
+
 * webui
   * #204 Can not complete Order
   * #886 GrandTotal missing in Purchase Order Grid view
@@ -31,25 +34,19 @@ upcoming Release
 
 this week's RC
 
-## not yet integrated in RB
-
-### Features
-* metasfresh
-  * #868 Weekly Revenue Report
-
-## Already integrated in RB
-
-### Features
+## Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
-  
+  * #868 Weekly Revenue Report
+  * #827 use the barcode field to select HU using attribute value
+
 * webUI
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
   * #878 Purchase Order Window WebUI
 
-### Fixes
+## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
   * #864 Adjust C_Country Location Print generation DE
