@@ -462,32 +462,38 @@ import de.metas.handlingunits.storage.IProductStorage;
 				@Override
 				public VisitResult beforeVisit(final IHUKey currentKey)
 				{
-					if (currentKey == huKey)
-					{
-						// don't count current HU
-						return VisitResult.CONTINUE;
-					}
-
 					final HUKey currentHUKey = HUKey.castIfPossible(currentKey);
 					if (currentHUKey == null)
 					{
 						// we are on an non HUKey node ... keep searching
 						return VisitResult.CONTINUE;
 					}
-
-					if (currentHUKey.isAggregateHU())
+					else if (currentHUKey == huKey)
 					{
+						if (!currentHUKey.isAggregateHU())
+						{
+							// don't count current HU if it's not an aggregate HU
+							return VisitResult.CONTINUE;
+						}
 						counter.getValue().addAndGet(currentHUKey.getAggregatedHUCount());
 					}
 					else
 					{
-						if (!countVHUs && currentHUKey.isVirtualPI())
+						if (currentHUKey.isAggregateHU())
 						{
-							// skip virtual HUs; note that also aggregate HUs are "virtual", but that case is handled not here
-							return VisitResult.CONTINUE;
+							counter.getValue().addAndGet(currentHUKey.getAggregatedHUCount());
 						}
-						counter.getValue().incrementAndGet();
+						else
+						{
+							if (!countVHUs && currentHUKey.isVirtualPI())
+							{
+								// skip virtual HUs; note that also aggregate HUs are "virtual", but that case is handled not here
+								return VisitResult.CONTINUE;
+							}
+							counter.getValue().incrementAndGet();
+						}
 					}
+
 					// we are counting only first level => so skip downstream
 					return VisitResult.SKIP_DOWNSTREAM;
 				}

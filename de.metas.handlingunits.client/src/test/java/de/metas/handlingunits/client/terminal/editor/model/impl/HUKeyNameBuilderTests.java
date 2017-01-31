@@ -4,7 +4,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -16,6 +18,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -46,11 +50,19 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
  * #L%
  */
 
+/**
+ * Verifies the behavior of {@link HUKeyNameBuilder}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class HUKeyNameBuilderTests
 {
 	private HUTestHelper helper;
 	private I_M_HU_PI huDefIFCO;
 	private I_M_Product pTomatoKg;
+
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	/**
 	 * PI for a plalet. Can hold 10 {@link #huDefIFCO}.
@@ -80,7 +92,7 @@ public class HUKeyNameBuilderTests
 	}
 
 	@Test
-	public void testWithHUAggregate()
+	public void testLUWithHUAggregate()
 	{
 		final IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
 		final ITerminalContext terminalCtx = contextAndRefs.getLeft();
@@ -92,28 +104,62 @@ public class HUKeyNameBuilderTests
 				new BigDecimal("86") // qty
 		);
 
-		final I_M_HU hu = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet).get(0);
+		final I_M_HU lu = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet).get(0);
 
 		final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(lu);
 		attributeStorage.setValue(helper.attr_WeightGross, new BigDecimal("102.3248"));
 		attributeStorage.saveChangesIfNeeded();
 
-		final HUKey huKey = new HUKey(keyFactory, hu, null);
-		assertThat(huKey.isAggregateHU(), is(true));
-		assertThat(huKey.getAggregatedHUCount(), is(9));
-		assertThat(huKey.isReadonly(), is(false)); // e.g. we want to be able to split from this aggregated HU.
-		
-		final HUKeyNameBuilder huKeyNameBuilder = new HUKeyNameBuilder(huKey);
-		final String huDisplayName = huKeyNameBuilder.build();
-		//
-		final String expecteHUDisplayName = "<center>"
-				+ hu.getM_HU_ID() + " - 9 TU<br>" // M_HU.Value and the aggregate item's Qty
+		final HUKey luKey = new HUKey(keyFactory, lu, null);
+		assertThat(luKey.isAggregateHU(), is(false));
+		assertThat(luKey.isReadonly(), is(false)); // e.g. we want to be able to split from this aggregated HU.
+
+		final HUKeyNameBuilder huKeyNameBuilder = new HUKeyNameBuilder(luKey);
+		final String luDisplayName = huKeyNameBuilder.build();
+
+		final String expecteLUDisplayName = "<center>"
+				+ lu.getM_HU_ID() + " - 9 TU<br>" // M_HU.Value and the aggregate item's Qty
 				+ "(Palet)<br>" // PI's name
 				+ "Tomato<br>- 86 x Kg -<br>" // product name name CU Qty & UOM
 				+ "68,325 Kg</center>" // net weight; tare: 1x25+9x1=34;
 		;
-		assertThat(huDisplayName, is(expecteHUDisplayName));
-	
+		assertThat(luDisplayName, is(expecteLUDisplayName));
+		assertThat(luKey.getName(), is(expecteLUDisplayName));
+	}
+
+	@Test
+	public void testHUAggregate()
+	{
+		final IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+		final ITerminalContext terminalCtx = contextAndRefs.getLeft();
+		final IHUKeyFactory keyFactory = new HUKeyFactory();
+		keyFactory.setTerminalContext(terminalCtx);
+
+		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
+				pTomatoKg, // product with UOM
+				new BigDecimal("86") // qty
+		);
+
+		final I_M_HU lu = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet).get(0);
+
+		final List<I_M_HU> includedHUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu);
+		assertThat(includedHUs.size(), is(2)); // there shall be one aggregate HU containing the 80xCU and one "real" IFCO containing the remaining 6xCU
+
+		final I_M_HU aggregateHu = includedHUs.get(1); // 2nd one because of the was retrieveIncludedHUs() orders them
+		assertThat(handlingUnitsBL.isAggregateHU(aggregateHu), is(true)); // guard
+
+		final HUKey aggregateHuKey = new HUKey(keyFactory, aggregateHu, null);
+		assertThat(aggregateHuKey.isAggregateHU(), is(true));
+		assertThat(aggregateHuKey.isReadonly(), is(false)); // e.g. we want to be able to split from this aggregated HU.
+
+		final HUKeyNameBuilder aggregateHuKeyNameBuilder = new HUKeyNameBuilder(aggregateHuKey);
+		final String aggregateHuDisplayName = aggregateHuKeyNameBuilder.build();
+
+		final String expecteAggregateHUDisplayName = "<center>"
+				+ aggregateHu.getM_HU_ID() + " - 8 TU<br>" // M_HU.Value and the aggregate item's Qty
+				+ "(IFCO)<br>" // PI's name
+				+ "Tomato<br>- 80 x Kg -</center>";
+		assertThat(aggregateHuDisplayName, is(expecteAggregateHUDisplayName));;
 	}
 }

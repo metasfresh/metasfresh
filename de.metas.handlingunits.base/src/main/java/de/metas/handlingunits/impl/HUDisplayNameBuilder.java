@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -32,17 +31,23 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.logging.LogManager;
 
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
 	// services
+	private static final transient Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -197,22 +202,56 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return huValue;
 	}
 
+	/**
+	 * Return either the name of this instance's {@link #getM_HU()}'s {@code M_HU_PI_Version}
+	 * or - if it's an aggregate HU - the name of the PI that is represented.
+	 * 
+	 * @return
+	 */
 	protected String getPIName()
 	{
 		final I_M_HU hu = getM_HU();
 
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
-		final String piName;
-		if (piVersion == null || piVersion.getM_HU_PI_Version_ID() <= 0)
+		final String piNameRaw;
+		if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			piName = escape("?");
+			piNameRaw = getAggregateHuPiName(hu);
 		}
 		else
 		{
-			piName = escape(piVersion.getM_HU_PI().getName());
+			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+			if (piVersion == null || piVersion.getM_HU_PI_Version_ID() <= 0)
+			{
+				piNameRaw = "?";
+			}
+			else
+			{
+				piNameRaw = piVersion.getM_HU_PI().getName();
+			}
 		}
 
+		String piName = escape(piNameRaw);
 		return piName;
+	}
+
+	private String getAggregateHuPiName(final I_M_HU hu)
+	{
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
+			return "?";
+		}
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+		if (included_HU_PI == null)
+		{
+			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
+			return "?";
+		}
+
+		return included_HU_PI.getName();
 	}
 
 	/**
