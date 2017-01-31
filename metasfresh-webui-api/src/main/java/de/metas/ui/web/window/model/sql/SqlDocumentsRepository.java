@@ -22,7 +22,6 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -30,6 +29,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -81,9 +81,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 public final class SqlDocumentsRepository implements DocumentsRepository
 {
 	public static final transient SqlDocumentsRepository instance = new SqlDocumentsRepository();
-	
-	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
 
+	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
+	
 	private static final String VERSION_DEFAULT = "0";
 
 	private int loadLimitWarn = 100;
@@ -120,10 +120,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitMaxOld, this.loadLimitMax);
 	}
 
-	private static int getNextId(final DocumentEntityDescriptor entityDescriptor)
+	private static int retrieveNextId(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
 		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+
+		final int adClientId = UserSession.getCurrent().getAD_Client_ID();
 		final String tableName = dataBinding.getTableName();
 		final int nextId = DB.getNextID(adClientId, tableName, ITrx.TRXNAME_ThreadInherited);
 		if (nextId <= 0)
@@ -242,7 +243,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		assertThisRepository(entityDescriptor);
 
-		final int documentId = getNextId(entityDescriptor);
+		final int documentId = retrieveNextId(entityDescriptor);
 
 		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
