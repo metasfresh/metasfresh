@@ -17,6 +17,7 @@ upcoming Release
 ## Features
 * metasfresh
   * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
+  * #460 Provide aggregate HUs
 
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
