@@ -172,7 +172,7 @@ public class LUTUProducerDestinationTransferTests
 		assertThat(sourceXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM'])", is("1")));
 
 		// the "real" partially filled IFCO
-		assertThat(sourceXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+		assertThat(sourceXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 		assertThat(sourceXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='" + storageQty + "' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(sourceXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI'])", is("1")));
 		assertThat(sourceXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='" + storageQty + "' and @C_UOM_Name='Kg'])", is("1")));
@@ -213,7 +213,7 @@ public class LUTUProducerDestinationTransferTests
 				verifyPaletHasEmptyAggregateVHU(huPaletXML);
 
 				// the "real" partially filled IFCO
-				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='23.000' and @C_UOM_Name='Kg'])", is("1")));
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI'])", is("1")));
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='23.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -254,7 +254,7 @@ public class LUTUProducerDestinationTransferTests
 			verifyPaletHasEmptyAggregateVHU(huPaletXML);
 
 			// the "real" partially filled IFCO
-			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI'])", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='6.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -369,7 +369,7 @@ public class LUTUProducerDestinationTransferTests
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)", is("1")));
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 		assertThat(huPaletXML, not(hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI']/Storage")));
-		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 	}
 
 	/**
@@ -491,7 +491,7 @@ public class LUTUProducerDestinationTransferTests
 			// LU LU also contains the partitally filled "real" IFCO
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO)", is("1")));
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
-			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI'])", is("1")));
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI)", is("1")));
@@ -584,7 +584,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(splitLUsXML, not(hasXPath("/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/Storage"))); // a HU item does not have an item storage
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO)", is("1")));
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='15.000' and @C_UOM_Name='Kg'])", is("1")));
-			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='15.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI)", is("1")));
 			assertThat(splitLUsXML, hasXPath("count(/SplitLUs/HU-LU_Palet[1]/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='15.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -623,7 +623,7 @@ public class LUTUProducerDestinationTransferTests
 
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet[@M_HU_LUTU_Configuration_ID='" + lutu_Configuration_ID + "'])", is("1")));
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='120.000' and @C_UOM_Name='Kg'])", is("1")));
-				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet' and @Qty='1'])", is("1")));
+				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
 
 				// the aggregate HU that represents three IFCO with 120kg tomatoes
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='3'])", is("1")));
@@ -661,12 +661,12 @@ public class LUTUProducerDestinationTransferTests
 				// System.out.println(HUXmlConverter.toString(splitLuXML));
 
 				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='60.000' and @C_UOM_Name='Kg'])", is("1")));
-				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet' and @Qty='1'])", is("1")));
+				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
 
 				// the aggregate HU that represents one IFCO with 40kg tomatoes
 				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1'])", is("1")));
 				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
-				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
 				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
 
@@ -687,7 +687,7 @@ public class LUTUProducerDestinationTransferTests
 				System.out.println(HUXmlConverter.toString(huPaletXML));
 
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='60.000' and @C_UOM_Name='Kg'])", is("1")));
-				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet' and @Qty='1'])", is("1")));
+				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
 
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item)", is("3"))); // three items (one HU, one HA, one PM)
 
@@ -761,7 +761,7 @@ public class LUTUProducerDestinationTransferTests
 
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet)", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='85.000' and @C_UOM_Name='Kg'])", is("1")));
-			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet' and @Qty='1'])", is("1")));
+			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
 
 			// the aggregate HU that *still* represents two IFCOs with 80kg tomatoes
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2'])", is("1")));
@@ -834,7 +834,7 @@ public class LUTUProducerDestinationTransferTests
 
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet)", is("1")));
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='75.000' and @C_UOM_Name='Kg'])", is("1")));
-			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet' and @Qty='1'])", is("1")));
+			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
 
 			// the aggregate HU that *still* represents two IFCOs with 80kg tomatoes
 			assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1'])", is("1")));
@@ -875,7 +875,7 @@ public class LUTUProducerDestinationTransferTests
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM'])", is("1")));
 
 			// the "real" partially filled IFCO
-			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO' and @Qty='1'])", is("1")));
+			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI'])", is("1")));
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -892,7 +892,7 @@ public class LUTUProducerDestinationTransferTests
 
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet)", is("1")));
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='110.000' and @C_UOM_Name='Kg'])", is("1")));
-		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet' and @Qty='1'])", is("1")));
+		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
 
 		// the aggregate HU that represents two IFCOs with 80kg tomatoes
 		assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2'])", is("1")));
