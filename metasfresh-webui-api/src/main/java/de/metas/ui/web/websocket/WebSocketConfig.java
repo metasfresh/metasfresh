@@ -178,19 +178,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		@Override
 		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
-			final UserSession userSession = UserSession.getCurrentOrNull();
-			if (userSession == null)
-			{
-				// FIXME: No user session running.
-				// Accepted for now, until Frontend it's fixed.
-				// In future we will throw NotLoggedInException
-				logger.info("Skip auth because web socket SESSION_ID is not set");
-			}
-			else
-			{
-				userSession.assertLoggedIn();
-			}
-
+			UserSession.getCurrent().assertLoggedIn();
 			return true;
 		}
 
