@@ -22,13 +22,13 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -326,28 +326,24 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 
-		final List<T> result = new ArrayList<>(list.size());
-		for (final S model : list)
-		{
-			final T modelConv = create(model, clazz);
-			result.add(modelConv);
-		}
+		final List<T> result = list.stream()
+				.map(item -> create(item, clazz))
+				.collect(Collectors.toList());
 
 		return result;
 	}
-	
+
 	public static <T, S> List<T> wrapToImmutableList(final List<S> list, final Class<T> clazz)
 	{
 		if (list == null || list.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
 		return list.stream()
 				.map(model -> create(model, clazz))
 				.collect(GuavaCollectors.toImmutableList());
 	}
-
 
 	public static void refresh(final Object model)
 	{
@@ -707,12 +703,12 @@ public class InterfaceWrapperHelper
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
 		}
-		
+
 		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
 		}
-		
+
 		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
 		{
 			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
@@ -783,13 +779,13 @@ public class InterfaceWrapperHelper
 
 		// Case: there is no expected/default table name
 		// => fail if modelClass has no table name either.
-		if(expectedTableName == null)
+		if (expectedTableName == null)
 		{
 			if (modelClassTableName == null)
 			{
 				throw MissingTableNameException.notFound(modelClass, expectedTableName);
 			}
-			
+
 			return modelClassTableName;
 		}
 		// Case: there is an expected/default table name
