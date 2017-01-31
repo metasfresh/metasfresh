@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.messaging.Message;
@@ -44,11 +45,11 @@ import de.metas.ui.web.session.UserSession;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -83,8 +84,8 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 				.setAllowedOrigins("*") // FIXME: for now we allow any origin
 				.addInterceptors(new WebSocketHandshakeInterceptor())
 				.withSockJS()
-				//
-				;
+		//
+		;
 	}
 
 	@Override
@@ -178,7 +179,23 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		@Override
 		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
-			UserSession.getCurrent().assertLoggedIn();
+			// UserSession.getCurrent().assertLoggedIn();
+			// return true;
+
+			final UserSession userSession = UserSession.getCurrentOrNull();
+			if (userSession == null)
+			{
+				logger.warn("Not allowed (missing session)");
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				return false;
+			}
+
+			if (!userSession.isLoggedIn())
+			{
+				logger.warn("Not allowed (not logged in) - {}", userSession);
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+			}
+			
 			return true;
 		}
 
