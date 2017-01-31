@@ -1628,7 +1628,7 @@ public final class Document
 			}
 
 			final String versionNow = getDocumentRepository().retrieveVersion(getEntityDescriptor(), getDocumentIdAsInt());
-			if (Check.equals(version, versionNow))
+			if (Objects.equals(version, versionNow))
 			{
 				return false;
 			}
