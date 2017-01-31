@@ -185,15 +185,16 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final UserSession userSession = UserSession.getCurrentOrNull();
 			if (userSession == null)
 			{
-				logger.warn("Not allowed (missing session)");
+				logger.warn("Websocket connection not allowed (missing session)");
 				response.setStatusCode(HttpStatus.UNAUTHORIZED);
 				return false;
 			}
 
 			if (!userSession.isLoggedIn())
 			{
-				logger.warn("Not allowed (not logged in) - {}", userSession);
+				logger.warn("Websocket connection not allowed (not logged in) - {}", userSession);
 				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				return false;
 			}
 			
 			return true;
