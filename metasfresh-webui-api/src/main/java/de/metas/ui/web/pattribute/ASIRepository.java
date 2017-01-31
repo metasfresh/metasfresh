@@ -123,8 +123,7 @@ public class ASIRepository
 
 		//
 		// Create the new ASI document
-		final Document asiDoc = Document.builder()
-				.setEntityDescriptor(entityDescriptor)
+		final Document asiDoc = Document.builder(entityDescriptor)
 				.initializeAsNewDocument(nextASIDocId::getAndIncrement, VERSION_DEFAULT)
 				.build();
 

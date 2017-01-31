@@ -69,8 +69,7 @@ public class AddressRepository
 		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getAddressDescriptor()
 				.getEntityDescriptor();
 
-		final Document addressDoc = Document.builder()
-				.setEntityDescriptor(entityDescriptor)
+		final Document addressDoc = Document.builder(entityDescriptor)
 				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT)
 				.build();
 

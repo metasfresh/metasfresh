@@ -276,8 +276,7 @@ public final class QuickInput
 
 		private Document buildQuickInputDocument()
 		{
-			return Document.builder()
-					.setEntityDescriptor(getQuickInputDescriptor())
+			return Document.builder(getQuickInputDescriptor())
 					.initializeAsNewDocument(() -> nextQuickInputDocumentId.getAndIncrement(), VERSION_DEFAULT)
 					.build();
 

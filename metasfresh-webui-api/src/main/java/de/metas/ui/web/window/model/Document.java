@@ -81,9 +81,9 @@ import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
 
 public final class Document
 {
-	public static final Builder builder()
+	public static final Builder builder(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return new Builder();
+		return new Builder(entityDescriptor);
 	}
 
 	private static final Logger logger = LogManager.getLogger(Document.class);
@@ -1652,7 +1652,7 @@ public final class Document
 
 	public static final class Builder
 	{
-		private DocumentEntityDescriptor entityDescriptor;
+		private final DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
 		private FieldInitializationMode fieldInitializerMode;
 		private DocumentValuesSupplier documentValuesSupplier;
@@ -1662,9 +1662,11 @@ public final class Document
 		private Integer _windowNo;
 		private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 
-		private Builder()
+		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
 			super();
+			Preconditions.checkNotNull(entityDescriptor, "entityDescriptor");
+			this.entityDescriptor = entityDescriptor;
 		}
 
 		public Document build()
@@ -1699,15 +1701,8 @@ public final class Document
 			return new DocumentField(descriptor, document);
 		}
 
-		public Builder setEntityDescriptor(final DocumentEntityDescriptor entityDescriptor)
-		{
-			this.entityDescriptor = entityDescriptor;
-			return this;
-		}
-
 		private DocumentEntityDescriptor getEntityDescriptor()
 		{
-			Preconditions.checkNotNull(entityDescriptor, "entityDescriptor");
 			return entityDescriptor;
 		}
 
@@ -1717,18 +1712,18 @@ public final class Document
 			return this;
 		}
 
-		public Builder initializeAsNewDocument(final DocumentValuesSupplier documentValuesSupplier)
+		public Document initializeAsNewDocument(final DocumentValuesSupplier documentValuesSupplier)
 		{
 			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
 			fieldInitializerMode = FieldInitializationMode.NewDocument;
 			this.documentValuesSupplier = documentValuesSupplier;
-			return this;
+			return build();
 		}
 
-		public Builder initializeAsNewDocument(final int newDocumentId, final String version)
+		public Document initializeAsNewDocument(final int newDocumentId, final String version)
 		{
 			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentId, version));
-			return this;
+			return build();
 		}
 
 		public Builder initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
@@ -1742,12 +1737,13 @@ public final class Document
 			return fieldInitializerMode == FieldInitializationMode.NewDocument;
 		}
 
-		public Builder initializeAsExistingRecord(final DocumentValuesSupplier documentValuesSupplier)
+		public Document initializeAsExistingRecord(final DocumentValuesSupplier documentValuesSupplier)
 		{
 			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
 			fieldInitializerMode = FieldInitializationMode.Load;
 			this.documentValuesSupplier = documentValuesSupplier;
-			return this;
+			
+			return build();
 		}
 
 		private Document getParentDocument()

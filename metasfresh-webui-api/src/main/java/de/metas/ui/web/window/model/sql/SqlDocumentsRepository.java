@@ -81,7 +81,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 public final class SqlDocumentsRepository implements DocumentsRepository
 {
 	public static final transient SqlDocumentsRepository instance = new SqlDocumentsRepository();
-
+	
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
 
 	private static final String VERSION_DEFAULT = "0";
@@ -244,20 +244,16 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		final int documentId = getNextId(entityDescriptor);
 
-		return Document.builder()
-				.setEntityDescriptor(entityDescriptor)
+		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.initializeAsNewDocument(new InitialDocumentValuesSupplier(documentId))
-				.build();
+				.initializeAsNewDocument(documentId, VERSION_DEFAULT);
 	}
 
 	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final ResultSet rs)
 	{
-		return Document.builder()
-				.setEntityDescriptor(entityDescriptor)
+		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.initializeAsExistingRecord(new ResultSetDocumentValuesSupplier(entityDescriptor, rs))
-				.build();
+				.initializeAsExistingRecord(new ResultSetDocumentValuesSupplier(entityDescriptor, rs));
 	}
 
 	@FunctionalInterface

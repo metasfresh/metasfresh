@@ -75,10 +75,8 @@ public class ProcessParametersRepository implements DocumentsRepository
 
 		//
 		// Build the parameters (as document)
-		return Document.builder()
-				.setEntityDescriptor(parametersDescriptor)
-				.initializeAsExistingRecord(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters))
-				.build();
+		return Document.builder(parametersDescriptor)
+				.initializeAsExistingRecord(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters));
 	}
 
 	private static Object extractParameterValue(final Map<String, ProcessInfoParameter> processInfoParameters, final DocumentFieldDescriptor parameterDescriptor)
@@ -106,10 +104,8 @@ public class ProcessParametersRepository implements DocumentsRepository
 	{
 		//
 		// Build the parameters (as document)
-		return Document.builder()
-				.setEntityDescriptor(parametersDescriptor)
-				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT)
-				.build();
+		return Document.builder(parametersDescriptor)
+				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 
 	@Override
