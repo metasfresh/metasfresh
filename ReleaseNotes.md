@@ -31,25 +31,18 @@ upcoming Release
 
 this week's RC
 
-## not yet integrated in RB
-
-### Features
-* metasfresh
-  * #868 Weekly Revenue Report
-
-## Already integrated in RB
-
-### Features
+## Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
-  
+  * #868 Weekly Revenue Report
+
 * webUI
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
   * #878 Purchase Order Window WebUI
 
-### Fixes
+## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
   * #864 Adjust C_Country Location Print generation DE
