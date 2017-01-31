@@ -67,6 +67,7 @@ import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
@@ -148,11 +149,11 @@ import de.metas.notification.INotificationBL;
 			if (workPackageProcessorWrapped.isRunInTransaction())
 			{
 				final ITrxManager trxManager = Services.get(ITrxManager.class);
-				
+
 				final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
 						.setTrxPropagation(TrxPropagation.REQUIRES_NEW).setOnRunnableSuccess(OnRunnableSuccess.COMMIT).setOnRunnableFail(OnRunnableFail.ROLLBACK)
 						.build();
-				
+
 				trxManager.run(
 						trxNamePrefix,
 						trxRunConfig,
@@ -414,8 +415,17 @@ import de.metas.notification.INotificationBL;
 
 		queueDAO.saveInLocalTrx(workPackage);
 
-		final I_C_Queue_PackageProcessor packageProcessor = workPackage.getC_Queue_Block().getC_Queue_PackageProcessor();
-		final String processorName = Util.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
+		final String processorName;
+		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
+		if (queueBlock == null)
+		{
+			processorName = "<null>"; // might happen in unit tests.
+		}
+		else
+		{
+			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
+			processorName = Util.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
+		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error to console (for later audit):
@@ -453,7 +463,7 @@ import de.metas.notification.INotificationBL;
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
 		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: " + workPackage, ex);
-		
+
 		Loggables.get().addLog("Error while processing workpackage: {0}", workPackage);
 
 		// 09700: notify the user in charge, if one was set
