@@ -277,6 +277,11 @@ public class UserSession implements InitializingBean, Serializable
 		return adLanguageOld;
 	}
 
+	public int getAD_Client_ID()
+	{
+		return Env.getAD_Client_ID(getCtx());
+	}
+
 	public String getAD_Language()
 	{
 		return Env.getAD_Language(getCtx());
