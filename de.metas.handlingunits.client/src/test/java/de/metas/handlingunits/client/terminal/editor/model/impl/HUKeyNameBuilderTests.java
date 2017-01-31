@@ -22,6 +22,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -160,6 +161,33 @@ public class HUKeyNameBuilderTests
 				+ aggregateHu.getM_HU_ID() + " - 8 TU<br>" // M_HU.Value and the aggregate item's Qty
 				+ "(IFCO)<br>" // PI's name
 				+ "Tomato<br>- 80 x Kg -</center>";
-		assertThat(aggregateHuDisplayName, is(expecteAggregateHUDisplayName));;
+		assertThat(aggregateHuDisplayName, is(expecteAggregateHUDisplayName));
+	}
+	
+	
+	/**
+	 * Creates an LU with an just empty aggregate HU <i>stub</i> and verifies that this "stub" is ignored HU-key wise. 
+	 */
+	@Test
+	public void testHUAggregateStub()
+	{
+		final IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+		final ITerminalContext terminalCtx = contextAndRefs.getLeft();
+		final IHUKeyFactory keyFactory = new HUKeyFactory();
+		keyFactory.setTerminalContext(terminalCtx);
+
+		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
+				pTomatoKg, // product with UOM
+				new BigDecimal("6") // qty
+		);
+
+		final I_M_HU lu = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet).get(0);
+
+		final HUKey luKey = new HUKey(keyFactory, lu, null);
+		assertThat(luKey.isAggregateHU(), is(false));		
+		
+		final List<IHUKey> children = luKey.getChildren(); // create the children without problems and..
+		assertThat(children.size(), is(1)); // ignore the stub
+		assertThat(HUKey.cast(children.get(0)).isAggregateHU(), is(false));
 	}
 }

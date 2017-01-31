@@ -1157,7 +1157,7 @@ public class HUTestHelper
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
 		itemDefinition.setC_BPartner(bPartner);
-		if (!Check.equals(qty, QTY_NA))
+		if (!Objects.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);
 		}
