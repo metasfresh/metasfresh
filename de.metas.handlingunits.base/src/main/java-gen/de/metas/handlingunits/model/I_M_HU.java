@@ -236,7 +236,9 @@ public interface I_M_HU
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsChildHU (boolean IsChildHU);
 
 	/**
@@ -444,7 +446,9 @@ public interface I_M_HU
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
@@ -459,6 +463,7 @@ public interface I_M_HU
 
 	public org.compiere.model.I_M_Product_Category getM_Product_Category();
 
+	@Deprecated
 	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
 
     /** Column definition for M_Product_Category_ID */

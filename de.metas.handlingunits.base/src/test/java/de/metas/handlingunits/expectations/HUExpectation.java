@@ -13,20 +13,18 @@ package de.metas.handlingunits.expectations;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,6 +46,13 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
+/**
+ * Used to specify expectations related to a single HU. Hint: use within the greater framework of {@link HUsExpectation}
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ * @param <ParentExpectationType>
+ */
 public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
 	public static final HUExpectation<Object> newExpectation()
@@ -76,7 +81,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	public HUExpectation()
 	{
 		this(null);
-		setContext(new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None));
+		setContext(PlainContextAware.newOutOfTrx(Env.getCtx()));
 	}
 
 	public HUExpectation(final ParentExpectationType parentExpectation)
@@ -131,8 +136,8 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		{
 			_huToSetRef.setValue(hu);
 		}
-		
-		if(attributesExpectations != null)
+
+		if (attributesExpectations != null)
 		{
 			attributesExpectations.assertExpected(prefix + " Attributes", hu);
 		}
@@ -216,7 +221,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		{
 			locator = null;
 		}
-		
+
 		//
 		// Create and save HU
 		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, getContext());
@@ -228,7 +233,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		hu.setHUStatus(huStatus);
 		hu.setM_Locator(locator);
 		InterfaceWrapperHelper.save(hu);
-		
+
 		//
 		// Create HU Attributes
 		if (attributesExpectations != null)
@@ -291,7 +296,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		this._bpartnerLocation = bpartnerLocation;
 		return this;
 	}
-	
+
 	public String getHUStatus()
 	{
 		return _huStatus;
@@ -302,6 +307,12 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		return _huStatusSet;
 	}
 
+	/**
+	 * Expects the HU to have a {@link I_M_HU_PI_Version} that references the given <code>huPI</code>.
+	 * 
+	 * @param huPI
+	 * @return
+	 */
 	public HUExpectation<ParentExpectationType> huPI(final I_M_HU_PI huPI)
 	{
 		this._huPI = huPI;
@@ -336,6 +347,11 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 				.huPIItem(piItem);
 	}
 
+	/**
+	 * Create and return an expectation for a VHU item. This is usually within a {@link HUItemExpectation#newIncludedVirtualHU()}.
+	 * 
+	 * @return
+	 */
 	public HUItemExpectation<HUExpectation<ParentExpectationType>> newVirtualHUItemExpectation()
 	{
 		final I_M_HU_PI_Item virtualPIItem = handlingUnitsDAO.retrieveVirtualPIItem(Env.getCtx());
@@ -385,10 +401,10 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 	}
 
 	/**
-	 * Capture the {@link I_M_HU} while we are:
+	 * Capture the given referenced {@link I_M_HU}. While we are:
 	 * <ul>
-	 * <li>testing: {@link #assertExpected(String, I_M_HU)}.
-	 * <li>creating the HU: {@link #createHU(I_M_HU_Item)}
+	 * <li>creating the HU: invoke {@link #createHU(I_M_HU_Item)} to generate it
+	 * <li>testing: invoke {@link #assertExpected(String, I_M_HU)} to verify that the HU is as expected
 	 * </ul>
 	 *
 	 * @param huToSetRef
@@ -405,10 +421,10 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		Check.assumeNotNull(_huToSetRef, "Expectation {} was not configured to capture HU", this);
 		return _huToSetRef.getValue();
 	}
-	
+
 	public HUAttributeExpectations<HUExpectation<ParentExpectationType>> attributesExpectations()
 	{
-		if(attributesExpectations == null)
+		if (attributesExpectations == null)
 		{
 			attributesExpectations = new HUAttributeExpectations<>(this);
 		}

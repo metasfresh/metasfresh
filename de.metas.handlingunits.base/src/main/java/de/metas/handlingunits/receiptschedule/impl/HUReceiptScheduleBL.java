@@ -253,9 +253,13 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * @param receiptSchedules
 	 * @param selectedHUs
 	 * @param storeReceipts
-	 * @return inout generate result
+	 * 
+	 * @return inout generated result
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
+	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, 
+			final List<I_M_ReceiptSchedule> receiptSchedules, 
+			final Set<I_M_HU> selectedHUs, 
+			final boolean storeReceipts)
 	{
 		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
 		// assertNoTrxOrIneheritedtrx(receiptSchedules);

@@ -74,10 +74,8 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 	@Override
 	protected void step029_CreateRawMaterialHUs_On_RawMaterialsWarehouse()
 	{
-		final List<I_M_HU> luHUs = generateLUs(piTU_Item_Product_Tomato, mrpMasterData.warehouse_rawMaterials01_locator, 1);
-
-		System.out.println("Generated LUs:");
-		TraceUtils.dump(luHUs);
+		/* final List<I_M_HU> luHUs = */ generateLUs(piTU_Item_Product_Tomato, mrpMasterData.warehouse_rawMaterials01_locator, 1);
+		//luHUs.forEach(hu -> helper.commitAndDumpHU(hu));
 	}
 
 	@Override
