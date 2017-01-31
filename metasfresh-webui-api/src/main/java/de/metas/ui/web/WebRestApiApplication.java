@@ -37,16 +37,19 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackageClasses = {
+		WebRestApiApplication.class // this one
+		, org.adempiere.ad.dao.IQueryStatisticsLogger.class // FIXME: hardcoded because else SQL tracing is not working and atm i am not confident to scan the whole de.metas/org.compiere/org.adempiere trees.
+})
 public class WebRestApiApplication
 {
 	public static final String PROFILE_Test = "test";
@@ -54,7 +57,7 @@ public class WebRestApiApplication
 	public static final String PROFILE_Webui = "webui";
 	/** Profile activate when running from IDE */
 	public static final String PROFILE_Development = "development";
-	
+
 	private static final Logger logger = LogManager.getLogger(WebRestApiApplication.class);
 
 	public static void main(String[] args)
@@ -74,7 +77,7 @@ public class WebRestApiApplication
 				.run(args);
 
 	}
-	
+
 	/** @return true if {@link #PROFILE_Development} is active (i.e. we are running from IDE) */
 	public static boolean isDevelopmentProfileActive()
 	{
@@ -93,7 +96,6 @@ public class WebRestApiApplication
 
 		return context.getEnvironment().acceptsProfiles(profile);
 	}
-
 
 	@Autowired
 	private ApplicationContext applicationContext;
