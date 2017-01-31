@@ -23,6 +23,9 @@ upcoming Release
   * #196 Grid View 100% height
 
 ## Fixes
+* metasfresh
+  * #863 No Result Window for Prosesses that don't allow rerun
+
 * webui
   * #204 Can not complete Order
   * #886 GrandTotal missing in Purchase Order Grid view
