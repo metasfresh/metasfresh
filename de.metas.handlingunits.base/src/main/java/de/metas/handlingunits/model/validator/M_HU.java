@@ -220,7 +220,11 @@ public class M_HU
 
 		//
 		// Only create movement transactions on VHU level
-		if (!handlingUnitsBL.isVirtual(vhu) || handlingUnitsBL.isAggregateHU(vhu))
+		if (!handlingUnitsBL.isVirtual(vhu))
+		{
+			return;
+		}
+		if (handlingUnitsBL.isAggregateHU(vhu))
 		{
 			return; // aggregate HUs are virtual too, but not "really" virtual..
 		}
