@@ -90,6 +90,16 @@ public class UserSession implements InitializingBean, Serializable
 		}
 		return userSession;
 	}
+	
+	public static UserSession getCurrent() throws NotLoggedInException
+	{
+		final UserSession userSession = getCurrentOrNull();
+		if (userSession == null)
+		{
+			throw new NotLoggedInException("no session found");
+		}
+		return userSession;
+	}
 
 	private static final transient Logger logger = LogManager.getLogger(UserSession.class);
 
