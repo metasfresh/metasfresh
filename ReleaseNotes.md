@@ -17,7 +17,6 @@ upcoming Release
 ## Features
 * metasfresh
   * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
-  * #827 use the barcode field to select HU using attribute value
 
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
@@ -36,6 +35,7 @@ this week's RC
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
   * #868 Weekly Revenue Report
+  * #827 use the barcode field to select HU using attribute value
 
 * webUI
   * #862 Payment Window in WebUI
