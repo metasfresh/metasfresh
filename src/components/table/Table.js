@@ -427,7 +427,7 @@ class Table extends Component {
                         selected={selected}
                         onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
                         handleClick={this.handleClick}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
+                        handleRightClick={this.handleRightClick}
                         changeListenOnTrue={() => this.changeListen(true)}
                         changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}

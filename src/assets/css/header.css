@@ -449,6 +449,10 @@
     text-align: center;
 }
 
+.header-item.icon-sm {
+    font-size: .875rem;
+}
+
 .header-item-container {
     min-width: 55px;
     height: 55px;
