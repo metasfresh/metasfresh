@@ -34,11 +34,11 @@
 	END AS postal
 FROM
 	ad_org o
-	INNER JOIN C_BPArtner bp	   	ON o.ad_org_id = bp.AD_OrgBP_ID
-	INNER JOIN C_BPartner_Location bpl 	ON bp.C_BPartner_ID = bpl.C_BPartner_ID
-	INNER JOIN C_location l 	   	ON bpl.c_location_id = l.c_location_id
+	INNER JOIN C_BPArtner bp	   	ON o.ad_org_id = bp.AD_OrgBP_ID AND bp.isActive = 'Y'
+	INNER JOIN C_BPartner_Location bpl 	ON bp.C_BPartner_ID = bpl.C_BPartner_ID AND bpl.isActive = 'Y'
+	INNER JOIN C_location l 	   	ON bpl.c_location_id = l.c_location_id AND l.isActive = 'Y'
 WHERE
-	o.ad_org_id = COALESCE($P{AD_Org_ID}, 1000000)
+	o.ad_org_id = COALESCE($P{AD_Org_ID}, 1000000) o.isActive = 'Y'
 ORDER BY
 	IsBillTo DESC,
 	IsBillToDefault DESC,
