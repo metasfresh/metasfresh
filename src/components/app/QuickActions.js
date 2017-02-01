@@ -70,7 +70,7 @@ class QuickActions extends Component {
                     <div className="quick-actions-wrapper">
                         <div
                             className={"tag tag-success tag-xlg spacer-right " +
-                                (actions[0].disabled ? "tag-default " : "")
+                                (actions[0].disabled ? "tag-default " : "pointer ")
                             }
                             onClick={() => this.handleClick(actions[0])}
                         >
