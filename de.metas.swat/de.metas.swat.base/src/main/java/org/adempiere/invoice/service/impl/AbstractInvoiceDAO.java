@@ -194,7 +194,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed); // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed); // DocStatus in ('CO', 'CL')
 
 		// Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_Invoice> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_Invoice.class).setJoinOr()

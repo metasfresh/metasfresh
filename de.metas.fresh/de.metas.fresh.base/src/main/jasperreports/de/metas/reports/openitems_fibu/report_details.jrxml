@@ -43,7 +43,7 @@ FROM
 		i.C_BPartner_ID,
 		i.IsSOTrx,
 		i.DateInvoiced,
-		EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID) AS PassForPayment,
+		EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y') AS PassForPayment,
 		COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
 		p.DiscountDays,
 		COALESCE( PaymentTermDueDate( p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ), ips.DueDate ) AS DueDate,
@@ -67,20 +67,21 @@ FROM
 
 	FROM
 		fact_acct fa
-		INNER JOIN C_Invoice_v i ON fa.Record_ID = i.C_Invoice_ID
-		LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
-		LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
-		LEFT OUTER JOIN C_ElementValue ev on ev.C_ElementValue_ID = fa.Account_ID
+		INNER JOIN C_Invoice_v i ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+		LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID AND p.isActive = 'Y'
+		LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y' AND ips.isActive = 'Y'
+		LEFT OUTER JOIN C_ElementValue ev on ev.C_ElementValue_ID = fa.Account_ID AND ev.isActive = 'Y'
 
-		LEFT OUTER JOIN C_BP_Vendor_Acct va ON va.C_BPartner_ID = i.C_BPartner_ID
-		LEFT OUTER JOIN C_BP_Customer_Acct ca ON ca.C_BPartner_ID = i.C_BPartner_ID
+		LEFT OUTER JOIN C_BP_Vendor_Acct va ON va.C_BPartner_ID = i.C_BPartner_ID AND va.isActive = 'Y'
+		LEFT OUTER JOIN C_BP_Customer_Acct ca ON ca.C_BPartner_ID = i.C_BPartner_ID AND ca.isActive = 'Y'
 		INNER JOIN C_ValidCombination vcom ON vcom.Account_id = fa.account_id AND CASE WHEN $P{IsSOTrx} = 'N' THEN vcom.C_ValidCombination_ID = va.V_Liability_Acct ELSE vcom.C_ValidCombination_ID = ca.C_Receivable_Acct END
-
+												 AND vcom.isActive = 'Y'
 	WHERE
 		invoiceopentodate( i.C_Invoice_ID, COALESCE( ips.C_InvoicePaySchedule_ID, 0::numeric ), $P{Reference_Date}  ) <> 0::numeric
 		AND i.DocStatus IN ('CO','CL','RE')
 		AND fa.AD_Table_ID = Get_Table_ID('C_Invoice')
-
+		AND fa.isActive = 'Y'
+		
 	ORDER BY
 		 i.DocumentNo
 	)as oi

@@ -13,18 +13,18 @@ package org.adempiere.ad.dao;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
 
 public interface IQueryBL extends ISingletonService
@@ -38,6 +38,16 @@ public interface IQueryBL extends ISingletonService
 	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
 
 	/**
+	 * Create a query builder to query for a class like <code>IProductAware</code> (but also regular model interfaces like I_C_Order are supported), for which the framework can't deduct the table name.
+	 *
+	 * @param modelClass
+	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>. In case this is null, the tableName will be fetched from <code>modelClass</code>.
+	 * @param contextProvider
+	 * @return query builder
+	 */
+	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider);
+
+	/**
 	 *
 	 * @return
 	 * @deprecated Please use {@link #createQueryOrderByBuilder(Class)}
@@ -49,9 +59,19 @@ public interface IQueryBL extends ISingletonService
 
 	IQueryOrderBy createSqlQueryOrderBy(String orderBy);
 
+	/**
+	 *
+	 * @param modelClass the model class. Assumes that the table name can be obtained from the model class via {@link InterfaceWrapperHelper#getTableName(Class)}.
+	 * @return
+	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(Class<T> modelClass);
-	
-	ICompositeQueryFilter<Object> createCompositeQueryFilter(String modelTableName);
+
+	/**
+	 *
+	 * @param tableName name of the table in question.
+	 * @return
+	 */
+	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(String tableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);
 

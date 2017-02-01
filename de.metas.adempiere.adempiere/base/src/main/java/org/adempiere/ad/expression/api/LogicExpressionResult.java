@@ -165,6 +165,16 @@ public class LogicExpressionResult
 	{
 		return value;
 	}
+	
+	public boolean isTrue()
+	{
+		return value;
+	}
+
+	public boolean isFalse()
+	{
+		return !value;
+	}
 
 	/**
 	 * @return which parameters were used while evaluating and which was their value

@@ -36,7 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
@@ -153,6 +153,7 @@ public class ShipmentScheduleEnqueuer
 
 		if (!shipmentSchedules.hasNext())
 		{
+			// TODO: the the query which was used to understand why there were no results
 			throw new AdempiereException("@NoSelection@");
 		}
 
@@ -244,7 +245,7 @@ public class ShipmentScheduleEnqueuer
 		}
 		else
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog(Services.get(IMsgBL.class).parseTranslation(
+			Loggables.get().addLog(Services.get(IMsgBL.class).parseTranslation(
 					_ctx,
 					"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
 							+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));

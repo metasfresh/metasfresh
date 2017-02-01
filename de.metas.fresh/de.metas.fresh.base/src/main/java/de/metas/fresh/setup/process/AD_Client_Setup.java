@@ -5,9 +5,10 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Process used to quick setup the metas Fresh installation.
@@ -40,8 +41,10 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 	private ClientSetup _clientSetup;
 
 	@Override
-	public Object getParameterDefaultValue(final String name)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter field)
 	{
+		final String name = field.getColumnName();
+
 		final ClientSetup clientSetup = getClientSetup();
 		if (PARAM_CompanyName.equalsIgnoreCase(name))
 		{
@@ -225,7 +228,7 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 			return MSG_OK;
 		}
 	}
-	
+
 	@Override
 	protected void postProcess(final boolean success)
 	{
@@ -233,7 +236,7 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 		{
 			return;
 		}
-		
+
 		// Fully reset the cache
 		CacheMgt.get().reset();
 	}

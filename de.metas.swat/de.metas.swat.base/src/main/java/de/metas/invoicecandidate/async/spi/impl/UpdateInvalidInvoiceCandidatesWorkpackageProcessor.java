@@ -6,6 +6,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -128,7 +129,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName);
 				schedule(request);
 
-				getLoggable().addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);
+				Loggables.get().addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);
 			}
 		}
 		return Result.SUCCESS;

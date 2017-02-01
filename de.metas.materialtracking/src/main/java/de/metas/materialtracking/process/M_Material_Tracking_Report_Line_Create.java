@@ -11,7 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -31,7 +31,9 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -162,7 +164,7 @@ public class M_Material_Tracking_Report_Line_Create
 				|| materialTracking.getM_Material_Tracking_ID() != materialTrackingAware.getM_Material_Tracking_ID())
 		{
 			// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
-			ILoggable.THREADLOCAL.getLoggable().addLog(
+			Loggables.get().addLog(
 					"Skipping {} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {}",
 					materialTrackingAware, materialTracking);
 			return false;
@@ -227,12 +229,12 @@ public class M_Material_Tracking_Report_Line_Create
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		// This process is just for unprocessed reports
-		final I_M_Material_Tracking_Report report = context.getModel(I_M_Material_Tracking_Report.class);
+		final I_M_Material_Tracking_Report report = context.getSelectedModel(I_M_Material_Tracking_Report.class);
 
-		return !report.isProcessed();
+		return ProcessPreconditionsResolution.acceptIf(!report.isProcessed());
 	}
 
 }

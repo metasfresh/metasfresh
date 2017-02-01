@@ -18,11 +18,12 @@ package org.adempiere.inout.form;
 
 /**
  * Manual Shipment Selection
- * 
+ *
  * @author Jorg Janke
  * @version $Id: VInOutGen.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 @Deprecated
 public class VInOutGen {
 	// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
+
 } // VInOutGen

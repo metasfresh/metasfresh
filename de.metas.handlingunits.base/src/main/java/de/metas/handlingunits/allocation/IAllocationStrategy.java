@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation;
 
+import de.metas.handlingunits.IHUTransaction;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,29 +15,26 @@ package de.metas.handlingunits.allocation;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import de.metas.handlingunits.model.I_M_HU;
 
+/**
+ * Implementors are responsible to allocate <b>or deallocate</b> from/to a given hu, according to a given request.
+ * Actually, in both cases, their job is to create and return an {@link IAllocationResult} that contains a bunch of {@link IHUTransaction}s 
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IAllocationStrategy
 {
-	/**
-	 * Called by API when a new {@link IAllocationStrategy} instance is created from a factory.
-	 *
-	 * NOTE: don't call it directly.
-	 *
-	 * @param factory
-	 */
-	void setAllocationStrategyFactory(IAllocationStrategyFactory factory);
-
 	/**
 	 * Execute the <code>request</code> on given HU.
 	 *

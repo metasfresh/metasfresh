@@ -65,18 +65,19 @@ FROM (
 			FROM 
 				c_invoiceline il
 			WHERE
-				ad_org_id = $P{AD_Org_ID}
+
+				ad_org_id = $P{AD_Org_ID} AND il.isActive = 'Y'
 			GROUP BY
 				il.c_invoice_id,
 				il.m_product_id
 			ORDER BY
 				il.m_product_id	
 		) as invoiceline
-		JOIN m_product p		ON invoiceline.m_product_id = p.m_product_id
-		JOIN m_product_category pc 	ON p.m_product_category_id = pc.m_product_category_id
-		JOIN c_invoice i		ON invoiceline.c_invoice_id = i.c_invoice_id
-		JOIN c_bpartner bp		ON i.c_bpartner_id = bp.c_bpartner_id
-		JOIN c_currency cur		ON i.c_currency_id = cur.c_currency_id
+		JOIN m_product p		ON invoiceline.m_product_id = p.m_product_id AND p.isActive = 'Y'
+		JOIN m_product_category pc 	ON p.m_product_category_id = pc.m_product_category_id AND pc.isActive = 'Y'
+		JOIN c_invoice i		ON invoiceline.c_invoice_id = i.c_invoice_id AND i.isActive = 'Y'
+		JOIN c_bpartner bp		ON i.c_bpartner_id = bp.c_bpartner_id AND bp.isActive = 'Y'
+		JOIN c_currency cur		ON i.c_currency_id = cur.c_currency_id AND cur.isActive = 'Y'
 	)as produktumsatz
 )as kundenumsatz
 WHERE
@@ -110,6 +111,7 @@ ORDER BY
 	<field name="priceactual_last" class="java.math.BigDecimal"/>
 	<field name="priceactual_before_last" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	
 	<variable name="gesamt_summe1" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{priceactual_now}]]></variableExpression>
 	</variable>

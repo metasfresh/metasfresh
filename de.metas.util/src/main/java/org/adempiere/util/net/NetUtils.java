@@ -24,6 +24,9 @@ package org.adempiere.util.net;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Objects;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
 
@@ -44,7 +47,7 @@ public final class NetUtils
 		{
 			localHostAddress = InetAddress.getLocalHost();
 		}
-		catch (UnknownHostException e)
+		catch (final UnknownHostException e)
 		{
 			// fallback
 			localHostAddress = InetAddress.getLoopbackAddress();
@@ -65,27 +68,78 @@ public final class NetUtils
 		Check.assumeNotNull(inetAddress, "inetAddress not null");
 		final String hostAddress = inetAddress.getHostAddress();
 		final String hostName = inetAddress.getHostName();
-
-		return new IHostIdentifier()
-		{
-			@Override
-			public String getIP()
-			{
-				return hostAddress;
-			}
-
-			@Override
-			public String getHostName()
-			{
-				return hostName;
-			}
-
-			@Override
-			public String toString()
-			{
-				return ((hostName != null) ? hostName : "") + "/" + hostAddress;
-			};
-		};
+		
+		return new HostIdentifier(hostName, hostAddress);
 	}
+
+	@Immutable
+	@SuppressWarnings("serial")
+	private static final class HostIdentifier implements IHostIdentifier
+	{
+		private final String hostName;
+		private final String hostAddress;
+
+		private transient String _toString;
+		private transient Integer _hashcode;
+
+		private HostIdentifier(final String hostName, final String hostAddress)
+		{
+			super();
+			this.hostAddress = hostAddress;
+			this.hostName = hostName;
+		}
+
+		@Override
+		public String toString()
+		{
+			if (_toString == null)
+			{
+				_toString = (hostName != null ? hostName : "") + "/" + hostAddress;
+			}
+			return _toString;
+		};
+
+		@Override
+		public int hashCode()
+		{
+			if (_hashcode == null)
+			{
+				_hashcode = Objects.hash(hostName, hostAddress);
+			}
+			return _hashcode;
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+
+			if (obj instanceof HostIdentifier)
+			{
+				final HostIdentifier other = (HostIdentifier)obj;
+				return Objects.equals(hostName, other.hostName)
+						&& Objects.equals(hostAddress, other.hostAddress);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		@Override
+		public String getIP()
+		{
+			return hostAddress;
+		}
+
+		@Override
+		public String getHostName()
+		{
+			return hostName;
+		}
+	};
 
 }

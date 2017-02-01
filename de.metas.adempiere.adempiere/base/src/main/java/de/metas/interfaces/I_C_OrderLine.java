@@ -108,12 +108,6 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	// @formatter:on
 
 	// @formatter:off
-	public static final String COLUMNNAME_IsIndividualPOSchedule="IsIndividualPOSchedule";
-	public boolean isIndividualPOSchedule();
-	public void setIsIndividualPOSchedule(boolean IsIndividualPOSchedule);
-	// @formatter:on
-
-	// @formatter:off
 	public static final String COLUMNNAME_SinglePriceTag = "SinglePriceTag";
 	public I_C_OrderLine getSinglePriceTag();
 	public int getSinglePriceTag_ID();

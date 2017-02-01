@@ -347,6 +347,7 @@ public class HUEditorPanel
 					@Override
 					public void propertyChange(final PropertyChangeEvent evt)
 					{
+
 						doBarcodeScan();
 					}
 				});
@@ -820,7 +821,7 @@ public class HUEditorPanel
 			return;
 		}
 
-		final HUKeysByBarcodeCollector huKeysCollector = new HUKeysByBarcodeCollector(barcode);
+		final HUKeysByBarcodeCollector huKeysCollector = new HUKeysByBarcodeCollector(getTerminalContext().getCtx(), barcode);
 		model.getRootHUKey().iterate(huKeysCollector);
 
 		final List<IHUKey> collectedHUKeys = huKeysCollector.getCollectedHUKeys();
@@ -834,7 +835,11 @@ public class HUEditorPanel
 		{
 			for (final IHUKey huKey : collectedHUKeys)
 			{
-				model.setSelected(huKey);
+				// task #827 Do not try to select a huKey if it was already selected or it has selected ancestors
+				if (!model.isSelectedOrParentSelected(huKey))
+				{
+					model.setSelected(huKey);
+				}
 			}
 
 			load();

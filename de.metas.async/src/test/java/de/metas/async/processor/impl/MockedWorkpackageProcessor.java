@@ -10,18 +10,17 @@ package de.metas.async.processor.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -38,38 +37,40 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.logging.LogManager;
 
 /**
  * An {@link IWorkpackageProcessor} implementation whom behavior can be configured (e.g. return {@link Result#SUCCESS} for some packages, throw exception for others etc).
- * 
+ *
  * @author tsa
- * 
+ *
  */
 @Ignore
 public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 {
 	private static final Logger logger = LogManager.getLogger(MockedWorkpackageProcessor.class);
 
-	private final Map<Integer, Result> results = new HashMap<Integer, Result>();
-	private final Map<Integer, String> exceptions = new HashMap<Integer, String>();
-	private final Map<Integer, Integer> skipRequests = new HashMap<Integer, Integer>();
+	private final Map<Integer, Result> results = new HashMap<>();
+	private final Map<Integer, String> exceptions = new HashMap<>();
+	private final Map<Integer, Integer> skipRequests = new HashMap<>();
 	private Result defaultResult = Result.SUCCESS;
 
 	private int processedCount = 0;
 	private final List<I_C_Queue_WorkPackage> processedWorkpackages = Collections.synchronizedList(new ArrayList<I_C_Queue_WorkPackage>());
 	private final List<Integer> processedWorkpackageIds = Collections.synchronizedList(new ArrayList<Integer>());
-	private final Map<String, Integer> usedThreadNames = new ConcurrentHashMap<String, Integer>();
+	private final Map<String, Integer> usedThreadNames = new ConcurrentHashMap<>();
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
 
-		Assert.assertFalse("Workpackage " + workpackage + " already processed", processedWorkpackageIds.contains(workpackageId));
+		Assert.assertFalse("Workpackage with ID " + workpackageId + " may not yet be processed! workkpackage=" + workpackageId,
+				processedWorkpackageIds.contains(workpackageId));
 		synchronized (processedWorkpackages)
 		{
 			processedWorkpackages.add(workpackage);
@@ -126,7 +127,7 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 
 	/**
 	 * Sets which result shall be returned by this processor in case no specific package results was set
-	 * 
+	 *
 	 * @param defaultResult
 	 * @return this
 	 */
@@ -138,7 +139,7 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 
 	/**
 	 * Configure processor to return given result when workpackage will be processed
-	 * 
+	 *
 	 * @param workpackage
 	 * @param result
 	 * @return this
@@ -152,7 +153,7 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 
 	/**
 	 * Configure processor to throw an exception when given workpackage will be processed
-	 * 
+	 *
 	 * @param workpackage
 	 * @param message exception message
 	 * @return
@@ -196,7 +197,7 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 		out.println("Processed workpackages: " + processedCount);
 		synchronized (usedThreadNames)
 		{
-			final List<String> names = new ArrayList<String>(usedThreadNames.keySet());
+			final List<String> names = new ArrayList<>(usedThreadNames.keySet());
 			Collections.sort(names, new Comparator<String>()
 			{
 
@@ -228,7 +229,7 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 
 	/**
 	 * Remove given workpackage ID from processed list.
-	 * 
+	 *
 	 * @param workpackageId
 	 */
 	public void removeProcessedWorkpackageId(final int workpackageId)

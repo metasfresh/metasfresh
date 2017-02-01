@@ -34,15 +34,12 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
 public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E>
 {
-
+	private static final String EMPTY_MARKER = "-";
+	
 	private String logDir = LoggingConstants.DEFAULT_LogDir;
-
 	private String logFilePrefix = LoggingConstants.DEFAULT_LogFilePrefix;
-
 	private String logFileDatePattern = LoggingConstants.DEFAULT_LogFileDatePattern;
-
 	private final String logFileSuffix = ".log";
-
 
 	private final FilenameFilter logFileNameFilter = new FilenameFilter()
 	{
@@ -69,7 +66,8 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 
 	public void setLogDir(final String logDir)
 	{
-		if (Check.equals(this.logDir, logDir))
+		final String logDirNorm = normalizeFilename(logDir);
+		if (Check.equals(this.logDir, logDirNorm))
 		{
 			return;
 		}
@@ -78,8 +76,32 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 			addError("Skip setting LogDir to null");
 		}
 
-		this.logDir = logDir;
+		this.logDir = logDirNorm;
 		updateFileNamePattern();
+	}
+
+	private static final String normalizeLogDirPrefix(final String logFilePrefix)
+	{
+		if (Check.isEmpty(logFilePrefix, true))
+		{
+			return "";
+		}
+
+		final String logFilePrefixNorm = logFilePrefix.trim();
+
+		// Special "no prefix" marker.
+		// NOTE: we do this because if the LogDirPrefix is empty in logback.xml, the setLogFilePrefix setter won't be called ?!
+		if (EMPTY_MARKER.equals(logFilePrefixNorm))
+		{
+			return "";
+		}
+
+		return logFilePrefixNorm;
+	}
+
+	private static final String normalizeFilename(final String filename)
+	{
+		return filename.replaceAll("[^a-zA-Z0-9.-/\\\\]", "_");
 	}
 
 	public String getLogDir()
@@ -89,17 +111,13 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 
 	public void setLogFilePrefix(final String logFilePrefix)
 	{
-		if (Check.equals(this.logFilePrefix, logFilePrefix))
+		final String logFilePrefixNorm = normalizeLogDirPrefix(logFilePrefix);
+		if (Check.equals(this.logFilePrefix, logFilePrefixNorm))
 		{
-			return;
-		}
-		if (Check.isEmpty(logFilePrefix, true))
-		{
-			addError("Skip setting LogFilePrefix to null");
 			return;
 		}
 
-		this.logFilePrefix = logFilePrefix;
+		this.logFilePrefix = logFilePrefixNorm;
 		updateFileNamePattern();
 	}
 
@@ -132,6 +150,8 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 	private final void updateFileNamePattern()
 	{
 		final StringBuilder fileNamePatternBuilder = new StringBuilder();
+
+		final String logDir = getLogDir();
 		if (!Check.isEmpty(logDir, true))
 		{
 			fileNamePatternBuilder.append(logDir);
@@ -141,9 +161,15 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 			}
 		}
 
+		final String logFilePrefix = getLogFilePrefix();
 		fileNamePatternBuilder.append(logFilePrefix);
-		fileNamePatternBuilder.append(".");
-		fileNamePatternBuilder.append(logFileDatePattern);
+
+		if (!Check.isEmpty(logFilePrefix))
+		{
+			fileNamePatternBuilder.append(".");
+		}
+		fileNamePatternBuilder.append(getLogFileDatePattern());
+
 		fileNamePatternBuilder.append(logFileSuffix);
 
 		final String fileNamePattern = fileNamePatternBuilder.toString();

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -52,6 +51,8 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
@@ -89,7 +90,7 @@ public class AttributeDAO implements IAttributeDAO
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
 		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
-		return new ArrayList<I_M_AttributeValue>(map.values());
+		return new ArrayList<>(map.values());
 	}
 
 	@Override
@@ -275,17 +276,17 @@ public class AttributeDAO implements IAttributeDAO
 
 		if (list.isEmpty())
 		{
-			return Collections.emptyMap();
+			return ImmutableMap.of();
 		}
 
-		final Map<String, I_M_AttributeValue> value2attributeValues = new LinkedHashMap<String, I_M_AttributeValue>(list.size());
+		final ImmutableMap.Builder<String, I_M_AttributeValue> value2attributeValues = ImmutableMap.builder();
 		for (final I_M_AttributeValue av : list)
 		{
 			final String value = av.getValue();
 			value2attributeValues.put(value, av);
 		}
 
-		return Collections.unmodifiableMap(value2attributeValues);
+		return value2attributeValues.build();
 	}
 
 	@Override

@@ -30,18 +30,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -50,6 +48,7 @@ import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -61,8 +60,9 @@ import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.MinMaxNumericFieldConstraint;
+import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDeviceBL;
-import de.metas.device.api.IDevice;
+import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -229,93 +229,15 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * @see #getAdditionalInputMethods(int)
 	 *
 	 */
-	@SuppressWarnings("rawtypes")
 	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
-		final List<IInputMethod<?>> inputMethods = new ArrayList<>();
-
-		final IHostIdentifier myHost = NetUtils.getLocalHost();
-
-		final IDeviceBL deviceBL = Services.get(IDeviceBL.class);
-		final List<String> devicesForThisAttribute = deviceBL.getAllDeviceNamesForAttrAndHost(
-				attribute,
-				myHost);
-
-		if (logger.isInfoEnabled())
-			logger.info(String.format("Devices for host %s and attributte %s: ", myHost, attribute.getValue()) + devicesForThisAttribute);
-
-		// If there are more than one device for this attribute, we use the device names' first characters for the button texts.
-		// How many chars we need depends of how log the common prefix is.
-		final String commonPrefix;
-		if (devicesForThisAttribute.size() == 1)
-		{
-			commonPrefix = ""; // only one dev => we will do with the dev name's first character
-		}
-		else
-		{
-			commonPrefix = StringUtils.getCommonPrefix(devicesForThisAttribute.toArray(new String[0]));
-		}
-		for (final String deviceName : devicesForThisAttribute)
-		{
-			// trying to access the device.
-			final IDevice device;
-			try
-			{
-				device = deviceBL.createAndConfigureDeviceOrReturnExisting(ctx, deviceName, myHost);
-			}
-			catch (final Exception e)
-			{
-				final String msg = String.format("Unable to access device %s from host %s. Details:\n%s", deviceName, myHost, e.getLocalizedMessage());
-				logger.warn(msg, e);
-				Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, msg);
-				continue;
-			}
-
-			// OK, we were able to access it. Now add a button for each sort of request to our panel
-			final IDevice deviceToAddInputMethodFor = device;
-
-			final List<IDeviceRequest<ISingleValueResponse>> allRequestsFor = deviceBL.getAllRequestsFor(deviceName, attribute, ISingleValueResponse.class);
-
-			if (logger.isInfoEnabled())
-				logger.info(String.format("Found these requests for deviceName %s and attribute %s: ", deviceName, attribute.getValue()) + allRequestsFor);
-
-			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
-			{
-				final IInputMethod<?> method = new IInputMethod<Object>()
-				{
-					final private String buttonText = commonPrefix + deviceName.charAt(commonPrefix.length());
-
-					@Override
-					public AppsAction getAppsAction()
-					{
-						// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
-						return AppsAction.builder()
-								.setAction(buttonText)
-								.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.
-								.setToolTipText(buttonText)
-								.build();
-					}
-
-					@Override
-					public Object invoke()
-					{
-						logger.debug("This: {}, Device: {}; Request: {}", this, deviceToAddInputMethodFor, request);
-
-						final ISingleValueResponse response = deviceToAddInputMethodFor.accessDevice(request);
-						logger.debug("Device {}; Response: {}", deviceToAddInputMethodFor, response);
-
-						return response.getSingleValue();
-					}
-
-					// @formatter:off
-					@Override public String toString() { return "IInputMethod[buttonText=" + buttonText + "]"; }
-					// @formatter:on
-				};
-				inputMethods.add(method);
-			}
-		}
-		return ImmutableList.copyOf(inputMethods);
+		return Services.get(IDevicesHubFactory.class)
+				.getDefaultAttributesDevicesHub()
+				.getAttributeDeviceAccessors(attribute.getValue())
+				.consumeWarningMessageIfAny(warningMessage -> Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, warningMessage))
+				.stream()
+				.map(DeviceAccessorAsInputMethod::new)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@Override
@@ -744,6 +666,42 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		public final boolean isVirtualHU()
 		{
 			return virtualHU;
+		}
+	}
+	
+	
+	private static final class DeviceAccessorAsInputMethod implements IInputMethod<Object>
+	{
+		private final AttributeDeviceAccessor deviceAccessor;
+
+		private DeviceAccessorAsInputMethod(final AttributeDeviceAccessor deviceAccessor)
+		{
+			super();
+			this.deviceAccessor = deviceAccessor;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this).addValue(deviceAccessor).toString();
+		}
+
+		@Override
+		public AppsAction getAppsAction()
+		{
+			// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
+			final String buttonText = deviceAccessor.getDisplayName();
+			return AppsAction.builder()
+					.setAction(buttonText)
+					.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.
+					.setToolTipText(buttonText)
+					.build();
+		}
+
+		@Override
+		public Object invoke()
+		{
+			return deviceAccessor.acquireValue();
 		}
 	}
 }

@@ -29,30 +29,20 @@ package de.metas.handlingunits.client.terminal.misc.model;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
-import java.util.Properties;
 import java.util.UUID;
 
-import javax.imageio.ImageIO;
-
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.compiere.model.I_AD_Archive;
 
 import com.github.sarxos.webcam.Webcam;
-import com.lowagie.text.Document;
-import com.lowagie.text.Image;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfWriter;
 
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 
 /**
  *
@@ -132,69 +122,10 @@ public class WebCamReceiptScheduleModel implements IDisposable
 	public void savePicture()
 	{
 		webcam.open();
-		final BufferedImage image = webcam.getImage();
-		final byte[] imagePDFBytes = toPDFBytes(image);
-
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.create(getReferencedModel(), I_M_ReceiptSchedule.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
-		final String trxName = InterfaceWrapperHelper.getTrxName(receiptSchedule);
-
-		final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
-		final I_AD_Archive archive = archiveStorage.newArchive(ctx, trxName);
-
-		final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
-		final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
-		archive.setAD_Table_ID(tableID);
-		archive.setRecord_ID(recordID);
-		archive.setC_BPartner_ID(receiptSchedule.getC_BPartner_ID());
-		archive.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
-		archive.setName("Photo_" + UUID.randomUUID() + ".pdf");
-		archive.setIsReport(false);
-		archiveStorage.setBinaryData(archive, imagePDFBytes);
-		InterfaceWrapperHelper.save(archive);
-	}
-
-	/**
-	 * Converts given image to PDF.
-	 *
-	 * @param image
-	 * @return PDF file as bytes array.
-	 */
-	private static final byte[] toPDFBytes(final BufferedImage image)
-	{
-		try
-		{
-			//
-			// PDF Image
-			final ByteArrayOutputStream imageBytes = new ByteArrayOutputStream();
-			ImageIO.write(image, "PNG", imageBytes);
-			final Image pdfImage = Image.getInstance(imageBytes.toByteArray());
-
-			//
-			// PDF page size: image size + margins
-			final Rectangle pageSize = new Rectangle(0, 0,
-					pdfImage.getWidth() + 100,
-					pdfImage.getHeight() + 100);
-
-			// PDF document
-			final Document document = new Document(pageSize, 50, 50, 50, 50);
-
-			//
-			// Add image to document
-			final ByteArrayOutputStream pdfBytes = new ByteArrayOutputStream();
-			final PdfWriter writer = PdfWriter.getInstance(document, pdfBytes);
-			writer.open();
-			document.open();
-			document.add(pdfImage);
-			document.close();
-			writer.close();
-
-			return pdfBytes.toByteArray();
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException("Failed converting the image to PDF", e);
-		}
+		final String filename = "Photo_" + UUID.randomUUID() + ".pdf";
+		final BufferedImage image = webcam.getImage();
+		Services.get(IHUReceiptScheduleBL.class).attachPhoto(receiptSchedule, filename, image);
 	}
 
 	@Override

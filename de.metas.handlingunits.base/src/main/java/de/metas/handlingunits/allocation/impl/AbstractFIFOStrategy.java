@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -34,6 +33,7 @@ import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 /**
@@ -49,59 +49,66 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		super(outTrx);
 	}
 
+	/**
+	 * Retrieves the given <code>hu</code>'s {@link I_M_HU_Item} and processes if their type is either {@link X_M_HU_PI_Item#ITEMTYPE_Material} or {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit}, it allocates the request's (remaining) qty to them or to their child-elements.
+	 * Items with type {@link X_M_HU_PI_Item#ITEMTYPE_PackingMaterial} are ignored.
+	 *
+	 */
 	@Override
 	public final IAllocationResult execute(final I_M_HU hu, final IAllocationRequest request)
 	{
-		Check.assumeNotNull(hu, "'hu' is not null");
+		Check.assumeNotNull(hu, "Param 'hu' is not null");
 
 		//
 		// Create Initial Result
-		final IMutableAllocationResult status = AllocationUtils.createMutableAllocationResult(request);
-		if (status.isCompleted())
+		final IMutableAllocationResult allocationResult = AllocationUtils.createMutableAllocationResult(request);
+		if (allocationResult.isCompleted())
 		{
-			return status;
+			return allocationResult; // happens if the request's qty is zero
 		}
 
 		// TODO: Check if request is about to deallocate the whole HU. If that's the case, don't create allocation requests for storages but consider moving the whole HU
 
 		//
 		// Iterate HU Items and try to allocate on them
-		for (final I_M_HU_Item item : getHandlingUnitsDAO().retrieveItems(hu))
+		final List<I_M_HU_Item> huItems = getHandlingUnitsDAO().retrieveItems(hu);
+		for (final I_M_HU_Item item : huItems)
 		{
-			//
 			// Check: is allocation is completed, stop it here.
-			if (status.isCompleted())
+			if (allocationResult.isCompleted())
 			{
-				return status;
+				return allocationResult;
 			}
 
 			//
 			// Gets ItemType
-			final String itemType = handlingUnitsBL.getItemType(item);
+			final String itemType= handlingUnitsBL.getItemType(item);
 
 			//
-			// Allocate to material item
-			if (X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType))
+			// Allocate to/from material item
+			if (X_M_HU_Item.ITEMTYPE_Material.equals(itemType))
 			{
-				final IAllocationRequest itemRequest = AllocationUtils.createQtyRequestForRemaining(request, status);
-				final IAllocationResult itemResult = allocateOnMaterialItem(item, itemRequest);
-				AllocationUtils.mergeAllocationResult(status, itemResult);
+				final IAllocationRequest materialItemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
+				final IAllocationResult itemResult = allocateOnMaterialItem(item, materialItemRequest);
+				AllocationUtils.mergeAllocationResult(allocationResult, itemResult);
 			}
 			//
-			// Allocate to included handling units
-			else if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
+			// Allocate to/from included handling units
+			else if (X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType)
+					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
 			{
-				final IAllocationRequest itemRequest = AllocationUtils.createQtyRequestForRemaining(request, status);
+				final IAllocationRequest itemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
+				
+				// this doesn't do anything, unless there is a child HU attached to the item.
 				final IAllocationResult itemResult = allocateOnIncludedHUItem(item, itemRequest);
-				AllocationUtils.mergeAllocationResult(status, itemResult);
+				AllocationUtils.mergeAllocationResult(allocationResult, itemResult);
 
-				//
 				// Try to allocate in newly created included HUs
-				if (!status.isCompleted())
+				if (!allocationResult.isCompleted())
 				{
-					final IAllocationRequest requestRemaining = AllocationUtils.createQtyRequestForRemaining(request, status);
+					final IAllocationRequest requestRemaining = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
 					final IAllocationResult resultRemaining = allocateRemainingOnIncludedHUItem(item, requestRemaining);
-					AllocationUtils.mergeAllocationResult(status, resultRemaining);
+					AllocationUtils.mergeAllocationResult(allocationResult, resultRemaining);
 				}
 			}
 			else
@@ -110,7 +117,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 			}
 		}
 
-		return status;
+		return allocationResult;
 	}
 
 	/**
@@ -144,7 +151,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	}
 
 	/**
-	 * If after {@link #allocateOnIncludedHUItem(I_M_HU_Item, IAllocationRequest)} there is more to allocate then this method will be called to allocate remaining qty.
+	 * If after {@link #allocateOnIncludedHUItem(I_M_HU_Item, IAllocationRequest)} there is more to allocate then this method will be called to allocate remaining qty.<br>
 	 *
 	 * @param item
 	 * @param request
@@ -168,7 +175,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		}
 
 		//
-		// If our item is from a Virtual HU, we shall allocate on it directly
+		// If our item is from a Virtual HU, we shall allocate to or from it directly
 		if (handlingUnitsBL.isVirtual(item))
 		{
 			final I_M_HU_Item vhuItem = item;
@@ -202,7 +209,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		final IAllocationRequest requestActual = createActualRequest(parentItem, request);
 		if (requestActual.isZeroQty())
 		{
-			return AllocationUtils.nullResult();
+			return AllocationUtils.nullResult(); // might be that the actual request has zero qty because the parent item's storage is already "full"
 		}
 
 		final IHUContext huContext = request.getHUContext();

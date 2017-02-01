@@ -1,34 +1,8 @@
 package org.adempiere.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +13,11 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.logging.LogManager;
 
 /**
  * SysConfig Service. Most of the code is copy-paste from MSysConfig
@@ -426,7 +405,7 @@ public class SysConfigBL implements ISysConfigBL
 	public Map<String, String> getValuesForPrefix(final String prefix, final boolean removePrefix, final int adClientId, final int adOrgId)
 	{
 		final List<String> paramNames = getNamesForPrefix(prefix, adClientId, adOrgId);
-		final Map<String, String> result = new HashMap<String, String>(paramNames.size());
+		final ImmutableMap.Builder<String, String> result = ImmutableMap.builder();
 		for (final String paramName : paramNames)
 		{
 			final String defaultValue = null;
@@ -449,7 +428,7 @@ public class SysConfigBL implements ISysConfigBL
 			result.put(name, value);
 		}
 
-		return result;
+		return result.build();
 	}
 
 }

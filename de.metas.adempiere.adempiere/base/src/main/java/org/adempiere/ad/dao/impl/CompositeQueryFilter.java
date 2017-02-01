@@ -10,18 +10,17 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +41,8 @@ import org.compiere.model.IQuery;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
+ * <p>
+ * <b>Hint:</b> use {@link org.adempiere.ad.dao.IQueryBL#createCompositeQueryFilter(Class)} to obtain an instance.
  *
  * @author tsa
  *
@@ -111,12 +112,12 @@ import org.compiere.model.IQuery;
 			return CompositeQueryFilter.this.accept(model, nonSqlFilters, defaultAccept);
 		}
 	};
-	
+
 	public CompositeQueryFilter(final Class<T> modelClass)
 	{
 		this(InterfaceWrapperHelper.getTableName(modelClass));
 	}
-	
+
 	CompositeQueryFilter(final String tableName)
 	{
 		super();
@@ -343,7 +344,7 @@ import org.compiere.model.IQuery;
 	}
 
 	@Override
-	public final ICompositeQueryFilter<T>  setDefaultAccept(final boolean defaultAccept)
+	public final ICompositeQueryFilter<T> setDefaultAccept(final boolean defaultAccept)
 	{
 		if (this._defaultAccept == defaultAccept)
 		{
@@ -354,7 +355,7 @@ import org.compiere.model.IQuery;
 
 		// recompile needed
 		this._compiled = false;
-		
+
 		return this;
 	}
 
@@ -520,13 +521,13 @@ import org.compiere.model.IQuery;
 		final String columnName = column.getColumnName();
 		return addNotEqualsFilter(columnName, value);
 	}
-	
+
 	@Override
 	public ICompositeQueryFilter<T> addNotNull(final String columnName)
 	{
 		return addNotEqualsFilter(columnName, null);
 	}
-	
+
 	@Override
 	public ICompositeQueryFilter<T> addNotNull(final ModelColumn<T, ?> column)
 	{
@@ -585,31 +586,70 @@ import org.compiere.model.IQuery;
 
 	@Override
 	@SuppressWarnings("unchecked")
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final V... values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(true);
+		return addFilter(filter);
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
 
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(true);
+		return addFilter(filter);
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
 
 	@Override
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final Collection<V> values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(true);
+		return addFilter(filter);
+	}
+	
+	@Override
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final Collection<V> values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+				.setDefaultReturnWhenEmpty(false);
+		return addFilter(filter);
+	}
+
+	@Override
+	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final Collection<V> values)
+	{
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
 
 	@Override
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final Collection<V> values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values);
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
 
@@ -671,7 +711,7 @@ import org.compiere.model.IQuery;
 		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, column.getColumnName(), subQueryColumn.getColumnName(), subQuery);
 		return addFilter(filter);
 	}
-	
+
 	@Override
 	public ICompositeQueryFilter<T> addEndsWithQueryFilter(final String columnName, final String endsWithString)
 	{

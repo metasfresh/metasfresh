@@ -13,11 +13,11 @@ package de.metas.async.processor.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +30,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
@@ -38,7 +39,9 @@ import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -50,6 +53,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
@@ -63,6 +67,8 @@ import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkpackageSkipRequest;
@@ -132,7 +138,7 @@ import de.metas.notification.INotificationBL;
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
-				final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(loggable))
+				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 
@@ -143,9 +149,14 @@ import de.metas.notification.INotificationBL;
 			if (workPackageProcessorWrapped.isRunInTransaction())
 			{
 				final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+				final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
+						.setTrxPropagation(TrxPropagation.REQUIRES_NEW).setOnRunnableSuccess(OnRunnableSuccess.COMMIT).setOnRunnableFail(OnRunnableFail.ROLLBACK)
+						.build();
+
 				trxManager.run(
 						trxNamePrefix,
-						trxManager.createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ROLLBACK),
+						trxRunConfig,
 						new TrxRunnable()
 						{
 							@Override
@@ -198,11 +209,11 @@ import de.metas.notification.INotificationBL;
 
 				final WorkpackageSkipRequestException skipRequest = WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
 				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
-				markSkipped(workPackage, skipRequest, loggable);
+				markSkipped(workPackage, skipRequest);
 			}
 			else
 			{
-				markError(workPackage, e, loggable);
+				markError(workPackage, e);
 			}
 		}
 		catch (final Exception e)
@@ -211,16 +222,16 @@ import de.metas.notification.INotificationBL;
 			if (skipRequest != null)
 			{
 				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
-				markSkipped(workPackage, skipRequest, loggable);
+				markSkipped(workPackage, skipRequest);
 			}
 			else
 			{
-				markError(workPackage, e, loggable);
+				markError(workPackage, e);
 			}
 		}
 		finally
 		{
-			afterWorkpackageProcessed(finallyReleaseElementLockIfAny, loggable);
+			afterWorkpackageProcessed(finallyReleaseElementLockIfAny);
 		}
 	}
 
@@ -260,8 +271,8 @@ import de.metas.notification.INotificationBL;
 		{
 			final IQueryBuilder<I_C_Queue_WorkPackage> queryBuilder = Services.get(ILockManager.class)
 					.getLockedRecordsQueryBuilder(I_C_Queue_WorkPackage.class, workPackage)
-					// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
-					// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
+			// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
+			// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
 			;
 			workPackageProcessorWrapped
 					.getLatchStrategy()
@@ -281,8 +292,7 @@ import de.metas.notification.INotificationBL;
 	 *
 	 * @param releaseElementLockIfAny if <code>true</code> (which is usually the case) and there is a lock on the work package elements, that lock is released in this method.
 	 */
-	protected void afterWorkpackageProcessed(final boolean releaseElementLockIfAny,
-			final ILoggable loggable)
+	protected void afterWorkpackageProcessed(final boolean releaseElementLockIfAny)
 	{
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
@@ -307,7 +317,7 @@ import de.metas.notification.INotificationBL;
 		}
 		catch (final Exception e)
 		{
-			markError(workPackage, e, loggable);
+			markError(workPackage, e);
 		}
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
@@ -376,8 +386,7 @@ import de.metas.notification.INotificationBL;
 	 * @param workPackage
 	 */
 	private void markSkipped(final I_C_Queue_WorkPackage workPackage,
-			final IWorkpackageSkipRequest skipRequest,
-			final ILoggable loggable)
+			final IWorkpackageSkipRequest skipRequest)
 	{
 		Check.assumeNotNull(workPackage, "Param 'workPackage' not null");
 		Check.assumeNotNull(skipRequest, "Param 'skipRequest' not null");
@@ -406,14 +415,26 @@ import de.metas.notification.INotificationBL;
 
 		queueDAO.saveInLocalTrx(workPackage);
 
+		final String processorName;
+		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
+		if (queueBlock == null)
+		{
+			processorName = "<null>"; // might happen in unit tests.
+		}
+		else
+		{
+			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
+			processorName = Util.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
+		}
+		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
+
 		// log error to console (for later audit):
-		logger.info("Skipped while processing workpackage: " + workPackage, skipException);
-		loggable.addLog("Skipped while processing workpackage: {0}", workPackage);
+		logger.info(msg, skipException);
+		Loggables.get().addLog(msg);
 	}
 
 	private void markError(final I_C_Queue_WorkPackage workPackage,
-			final Exception ex,
-			final ILoggable loggable)
+			final Exception ex)
 	{
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, ex);
 
@@ -442,7 +463,8 @@ import de.metas.notification.INotificationBL;
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
 		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: " + workPackage, ex);
-		loggable.addLog("Error while processing workpackage: {0}", workPackage);
+
+		Loggables.get().addLog("Error while processing workpackage: {0}", workPackage);
 
 		// 09700: notify the user in charge, if one was set
 		if (workPackage.getAD_User_InCharge_ID() > 0)

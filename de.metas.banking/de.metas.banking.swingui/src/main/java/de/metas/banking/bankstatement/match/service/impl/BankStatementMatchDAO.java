@@ -130,7 +130,7 @@ public class BankStatementMatchDAO implements IBankStatementMatchDAO
 				//
 				// Collect bank statements
 				.andCollect(I_C_BankStatementLine.COLUMN_C_BankStatement_ID)
-				.addInArrayFilter(I_C_BankStatement.COLUMN_DocStatus, X_C_BankStatement.DOCSTATUS_Completed)
+				.addInArrayOrAllFilter(I_C_BankStatement.COLUMN_DocStatus, X_C_BankStatement.DOCSTATUS_Completed)
 				//
 				// Order by
 				.orderBy()
@@ -225,7 +225,7 @@ public class BankStatementMatchDAO implements IBankStatementMatchDAO
 				.createQueryBuilder(I_C_Payment.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, false)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true)
-				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, X_C_Payment.DOCSTATUS_Completed, X_C_Payment.DOCSTATUS_Closed);
+				.addInArrayOrAllFilter(I_C_Payment.COLUMNNAME_DocStatus, X_C_Payment.DOCSTATUS_Completed, X_C_Payment.DOCSTATUS_Closed);
 
 		// Bank Account
 		if (query.getC_BP_BankAccount_ID() > 0)

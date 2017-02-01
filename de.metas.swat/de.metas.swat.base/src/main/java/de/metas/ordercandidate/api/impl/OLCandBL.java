@@ -44,9 +44,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.I_AD_RelationType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelationType;
 import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -54,11 +52,14 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrder;
@@ -77,6 +78,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderLineBL;
@@ -102,6 +104,7 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;
 import de.metas.pricing.attributebased.ProductPriceAttributeAware;
 import de.metas.product.IProductPA;
+import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 
@@ -123,6 +126,8 @@ public class OLCandBL implements IOLCandBL
 			final ILoggable process,
 			final String trxName)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
+		
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
 		// but I'm afraid that grouping by time - granularity is not really portable. Also there might be other
 		// granularity levels, that can't be put into an sql later on.
@@ -132,10 +137,18 @@ public class OLCandBL implements IOLCandBL
 		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
 		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
+		
+		if (allCandidates.isEmpty())
+		{
+			loggable.addLog("Found no order candidates for relationTypeInternalName={}; nothing to do", relationTypeInternalName);
+			return;
+		}
+		
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
+				
 		if (orderCandidates.isEmpty())
 		{
-			logProcess(process, "Found no Orders candidates; nothing to do");
+			loggable.addLog("Found no order candidates that are valid for processing; nothing to do");
 			return;
 		}
 
@@ -143,11 +156,11 @@ public class OLCandBL implements IOLCandBL
 
 		if (candidates.isEmpty())
 		{
-			logProcess(process, "Found no unprocessed candidates; nothing to do");
+			loggable.addLog("Found no unprocessed candidates; nothing to do");
 			return;
 		}
 
-		logProcess(process, "Processing " + candidates.size() + " order line candidates");
+		loggable.addLog("Processing " + candidates.size() + " order line candidates");
 
 		//
 		// 2. Order the candidates
@@ -233,6 +246,10 @@ public class OLCandBL implements IOLCandBL
 				}
 				catch (final AdempiereException e)
 				{
+					final String msg = "Caught exception while processing {}; message={}; exception={}";
+					Loggables.get().addLog(msg, candOfGroup, e.getLocalizedMessage(), e);
+					logger.warn(StringUtils.formatMessage(msg, candOfGroup, e.getLocalizedMessage(), e), e);
+					
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 					// storing the error-info out of trx, i hope this solves the bug that the info just wasn't there
@@ -293,6 +310,10 @@ public class OLCandBL implements IOLCandBL
 			}
 			catch (final AdempiereException e)
 			{
+				final String msg = "Caught exception while completing {}; message={}; exception={}";
+				Loggables.get().addLog(msg, order, e.getLocalizedMessage(), e);
+				logger.warn(StringUtils.formatMessage(msg, order, e.getLocalizedMessage(), e), e);
+				
 				final StringBuilder sb = new StringBuilder();
 				boolean first = true;
 				int counter = 0;
@@ -448,7 +469,7 @@ public class OLCandBL implements IOLCandBL
 		if (order.processIt(X_C_Order.DOCACTION_Complete))
 		{
 			order.saveEx();
-			logProcess(process, "@Created@ @C_Order_ID@ " + order.getDocumentNo());
+			Loggables.get().withLogger(logger, Level.INFO).addLog("@Created@ @C_Order_ID@ " + order.getDocumentNo());
 		}
 		else
 		{
@@ -870,14 +891,6 @@ public class OLCandBL implements IOLCandBL
 		return value;
 	}
 
-	private void logProcess(final ILoggable process, final String msg)
-	{
-		if (process != null)
-		{
-			process.addLog(msg);
-		}
-	}
-
 	@Override
 	public String mkRelationTypeInternalName(final I_C_OLCandProcessor processor)
 	{
@@ -1011,7 +1024,7 @@ public class OLCandBL implements IOLCandBL
 
 		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
 
-		final I_AD_RelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), ITrx.TRXNAME_None);
+		final I_AD_RelationType retrievedRelType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, model.getRelationTypeInternalName());
 
 		final I_AD_RelationType relType;
 
@@ -1025,7 +1038,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (retrievedRelType == null)
 		{
-			relType = new MRelationType(ctx, 0, trxName);
+			relType = InterfaceWrapperHelper.create(ctx, I_AD_RelationType.class, trxName);
 			relType.setInternalName(model.getRelationTypeInternalName());
 
 			refSource = new MReference(ctx, 0, trxName);
@@ -1064,7 +1077,6 @@ public class OLCandBL implements IOLCandBL
 			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.getAD_Reference_ID(), trxName);
 
 		}
-		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
 		InterfaceWrapperHelper.save(relType);

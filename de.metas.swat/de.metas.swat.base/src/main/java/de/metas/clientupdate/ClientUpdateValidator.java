@@ -55,7 +55,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	/**
 	 * The "raw" unsubstituted version string from /de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties
 	 */
-	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_NUMBER}";
+	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_VERSION}";
 
 	public static final String PROP_adempiereJNLP = "adempiereJNLP";
 

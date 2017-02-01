@@ -33,7 +33,9 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements IProcessPrecondition
 {
@@ -62,29 +64,29 @@ public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_Order order = context.getModel(I_C_Order.class);
+		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
 
 		// Make sure this feature is enabled (sysconfig)
 		if (!sysConfigBL.getBooleanValue(SYSCONFIG_EnableProcessGear, false, order.getAD_Client_ID(), order.getAD_Org_ID()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not enabled");
 		}
 
 		// Only completed/closed orders
 		if (!docActionBL.isStatusCompletedOrClosed(order))
 		{
 			logger.debug("{} has DocStatus={}; nothing to do", new Object[] { order, order.getDocStatus() });
-			return false; // nothing to do
+			return ProcessPreconditionsResolution.reject("only completed/closed orders are allowed");
 		}
 
 		// Only eligible orders
 		if (!orderCheckupBL.isEligibleForReporting(order))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("not eligible for reporting");
 		}
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 }

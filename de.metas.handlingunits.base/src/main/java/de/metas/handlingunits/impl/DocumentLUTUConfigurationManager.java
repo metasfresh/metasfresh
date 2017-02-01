@@ -24,9 +24,9 @@ package de.metas.handlingunits.impl;
 
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.Converter;
 
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
@@ -50,7 +50,7 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 	}
 
 	@Override
-	public I_M_HU_LUTU_Configuration createAndEdit(final Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor)
+	public I_M_HU_LUTU_Configuration createAndEdit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> lutuConfigurationEditor)
 	{
 		final ILUTUConfigurationEditor editor = startEditing();
 		editor.updateFromModel();

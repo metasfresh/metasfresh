@@ -617,11 +617,11 @@ public class GridFieldVO implements Serializable
 	/**	Mandatory (in database/model) */
 	private boolean IsMandatoryDB = false;
 	/**	Read Only		*/
-	public boolean      IsReadOnly = false;
+	private boolean      IsReadOnly = false;
 	/**	Updateable		*/
-	public boolean      IsUpdateable = false;
+	private boolean      IsUpdateable = false;
 	/**	Always Updateable	*/
-	public boolean      IsAlwaysUpdateable = false;
+	private boolean      IsAlwaysUpdateable = false;
 	/**	Heading Only	*/
 	private boolean      IsHeading = false;
 	/**	Field Only		*/
@@ -1333,6 +1333,11 @@ public class GridFieldVO implements Serializable
 	public boolean isUpdateable()
 	{
 		return IsUpdateable;
+	}
+	
+	public void setIsUpdateable(boolean updateable)
+	{
+		IsUpdateable = updateable;
 	}
 	
 	public boolean isAlwaysUpdateable()

@@ -27,12 +27,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
-
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -49,6 +47,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -62,6 +61,8 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.product.acct.api.IProductAcctDAO;
+import mockit.Expectations;
+import mockit.Mocked;
 
 public abstract class ReceiptScheduleTestBase
 {
@@ -113,18 +114,19 @@ public abstract class ReceiptScheduleTestBase
 
 	protected I_C_UOM productUOM = null;
 	protected I_C_UOM priceUOM; // 07090
+	
+	// #653
+	public I_M_Attribute attr_LotNumberDate;
+	public I_M_Attribute attr_LotNumber;
 
 	@Before
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
+		AdempiereTestHelper.get().init(); // need to init this now
 
-		//
-		// Register model interceptors
-		{
-			Services.get(IModelInterceptorRegistry.class)
-					.addModelInterceptor(ReceiptScheduleValidator.instance);
-		}
+		// this is already done by HUTestHelper.init()
+		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
+		ReceiptScheduleValidator.registerRSAggregationKeyDependencies(); // also, for our tests, we just need this, and not the whole MI!
 
 		receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
@@ -163,11 +165,16 @@ public abstract class ReceiptScheduleTestBase
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		//@formatter:off
-		new NonStrictExpectations()
+		new Expectations()
 		{{
-			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); result = activity;
+			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); minTimes=0; result = activity;
 		}};
 		//@formatter:on
+		
+		//#653
+		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.LotNumberDateAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		
+		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		setup();
 	}
@@ -334,6 +341,28 @@ public abstract class ReceiptScheduleTestBase
 		// Save & return
 		InterfaceWrapperHelper.save(orderLine);
 		return orderLine;
+	}
+	
+	public I_M_Attribute createM_Attribute(final String name,
+			final String valueType,
+			final boolean isInstanceAttribute)
+	{
+		final I_M_Attribute attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, getCtx());
+		attr.setValue(name);
+		attr.setName(name);
+		attr.setAttributeValueType(valueType);
+
+		//
+		// Assume all attributes active and non-mandatory
+		attr.setIsActive(true);
+		attr.setIsMandatory(false);
+
+		//
+		// Configure ASI usage
+		attr.setIsInstanceAttribute(isInstanceAttribute);
+
+		InterfaceWrapperHelper.save(attr);
+		return attr;
 	}
 
 }

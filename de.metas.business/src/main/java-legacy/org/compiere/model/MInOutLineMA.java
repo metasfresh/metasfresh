@@ -25,14 +25,14 @@ import org.compiere.util.DB;
 
 /**
  *	Shipment Material Allocation
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MInOutLineMA.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
 public class MInOutLineMA extends X_M_InOutLineMA
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3229418883339488380L;
 
@@ -53,7 +53,7 @@ public class MInOutLineMA extends X_M_InOutLineMA
 		list.toArray (retValue);
 		return retValue;
 	}	//	get
-	
+
 	/**
 	 * Delete all Material Allocation for InOut
 	 * @param M_InOut_ID shipment
@@ -67,7 +67,7 @@ public class MInOutLineMA extends X_M_InOutLineMA
 			+ " AND M_InOut_ID=" + M_InOut_ID + ")";
 		return DB.executeUpdate(sql, trxName);
 	}	//	deleteInOutMA
-	
+
 	/**
 	 * 	Delete all Material Allocation for InOutLine
 	 *	@param M_InOutLine_ID Shipment Line
@@ -79,11 +79,11 @@ public class MInOutLineMA extends X_M_InOutLineMA
 		String sql = "DELETE FROM M_InOutLineMA ma WHERE ma.M_InOutLine_ID=?";
 		return DB.executeUpdate(sql, M_InOutLine_ID, trxName);
 	}	//	deleteInOutLineMA
-		
-	
+
+
 //	/**	Logger	*/
 //	private static Logger	s_log	= CLogMgt.getLogger(MInOutLineMA.class);
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -93,8 +93,6 @@ public class MInOutLineMA extends X_M_InOutLineMA
 	public MInOutLineMA (Properties ctx, int M_InOutLineMA_ID, String trxName)
 	{
 		super (ctx, M_InOutLineMA_ID, trxName);
-		if (M_InOutLineMA_ID != 0)
-			throw new IllegalArgumentException("Multi-Key");
 	}	//	MInOutLineMA
 
 	/**
@@ -107,7 +105,7 @@ public class MInOutLineMA extends X_M_InOutLineMA
 	{
 		super (ctx, rs, trxName);
 	}	//	MInOutLineMA
-	
+
 	/**
 	 * 	Parent Constructor
 	 *	@param parent parent
@@ -123,11 +121,12 @@ public class MInOutLineMA extends X_M_InOutLineMA
 		setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 		setMovementQty(MovementQty);
 	}	//	MInOutLineMA
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MInOutLineMA[");
@@ -137,5 +136,5 @@ public class MInOutLineMA extends X_M_InOutLineMA
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 }	//	MInOutLineMA

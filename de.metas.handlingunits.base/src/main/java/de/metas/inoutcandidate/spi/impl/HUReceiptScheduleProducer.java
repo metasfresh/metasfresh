@@ -63,7 +63,7 @@ public class HUReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 	}
 
 	/**
-	 * Copy HU releavant informations from Order Line to given <code>receiptSchedule</code>.
+	 * Copy HU relevant informations from Order Line to given <code>receiptSchedule</code>.
 	 *
 	 * This method it is also creating standard planning HUs (see {@link #generatePlanningHUs(de.metas.handlingunits.model.I_M_ReceiptSchedule)}).
 	 *

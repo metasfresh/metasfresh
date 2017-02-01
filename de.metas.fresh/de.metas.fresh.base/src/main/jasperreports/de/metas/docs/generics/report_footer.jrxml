@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-01-19T13:16:48 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_footer" pageWidth="534" pageHeight="842" columnWidth="534" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="031a7c7f-2ab0-4b59-bb5d-0429c875b53e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="3.0"/>
 	<property name="ireport.x" value="258"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -34,15 +38,15 @@ org_bp.description as description
 FROM
 --org info
      ad_org ad_org
-     JOIN c_bpartner org_bp		ON ad_org.ad_org_id	   = org_bp.ad_orgbp_id
-     JOIN c_bpartner_location org_bpl 	ON org_bp.c_bpartner_id    = org_bpl.c_bpartner_id
-LEFT JOIN c_location c_location 	ON org_bpl.c_location_id   = c_location.c_location_id
-LEFT JOIN c_country c_country 		ON c_location.c_country_id = c_country.c_country_id
+     JOIN c_bpartner org_bp		ON ad_org.ad_org_id	   = org_bp.ad_orgbp_id AND org_bp.isActive = 'Y'
+     JOIN c_bpartner_location org_bpl 	ON org_bp.c_bpartner_id    = org_bpl.c_bpartner_id AND org_bpl.isActive = 'Y'
+LEFT JOIN c_location c_location 	ON org_bpl.c_location_id   = c_location.c_location_id AND c_location.isActive = 'Y'
+LEFT JOIN c_country c_country 		ON c_location.c_country_id = c_country.c_country_id AND c_country.isActive = 'Y'
 LEFT JOIN c_bp_bankaccount bpb		ON org_bp.c_bpartner_id	   = bpb.c_bpartner_id  and bpb.isActive='Y'
-LEFT JOIN c_bank bank			ON bpb.c_bank_id	   = bank.c_bank_id
+LEFT JOIN c_bank bank			ON bpb.c_bank_id	   = bank.c_bank_id AND bank.isActive = 'Y'
 
 WHERE
-ad_org.ad_org_id = $P{org_id}
+ad_org.ad_org_id = $P{org_id} AND ad_org.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String"/>
@@ -66,10 +70,10 @@ ad_org.ad_org_id = $P{org_id}
 	<title>
 		<band height="54" splitType="Stretch">
 			<line>
-				<reportElement uuid="810cf2ef-38ec-4fbf-8c6f-3791cc38a16f" key="line-1" x="13" y="13" width="508" height="1" forecolor="#277575"/>
+				<reportElement key="line-1" x="13" y="13" width="508" height="1" forecolor="#A9A9A9" uuid="810cf2ef-38ec-4fbf-8c6f-3791cc38a16f"/>
 			</line>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="c46ae439-a6f1-43ee-9f29-3e0867d48262" key="textField-5" x="97" y="23" width="344" height="9"/>
+				<reportElement key="textField-5" x="97" y="23" width="344" height="9" uuid="c46ae439-a6f1-43ee-9f29-3e0867d48262"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -82,7 +86,7 @@ ad_org.ad_org_id = $P{org_id}
 				<textFieldExpression><![CDATA[$R{placeofbusiness} + " " + $F{org_address1} + " | " + $F{org_postal} + " " + $F{org_city}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="de404e34-2884-4c60-88a7-ccdb6046dff1" key="textField-6" x="97" y="16" width="344" height="9"/>
+				<reportElement key="textField-6" x="97" y="16" width="344" height="9" uuid="de404e34-2884-4c60-88a7-ccdb6046dff1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -95,24 +99,24 @@ ad_org.ad_org_id = $P{org_id}
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0" key="textField-7" x="182" y="38" width="66" height="9">
-					<printWhenExpression><![CDATA[!$F{org_bank_name}.equals("") && !$F{org_bank_blz}.equals("")
-	?new Boolean(true)
-	:new Boolean(false)]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="textField-7" x="97" y="38" width="344" height="9" uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right">
+				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{org_bank_name} + " | "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[//$F{org_bank_name} + " | " +$R{routingno} + $F{org_bank_blz} + " | " + $R{swift} + $F{org_bank_swift}
+
+$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_blz}==null || $F{org_bank_blz}.equals("")) ? "" + ($F{org_bank_swift}.equals("") ? "" : $R{swift} + " " + $F{org_bank_swift}) : $R{routingno} + " " + $F{org_bank_blz}) + ($F{org_bank_swift}.equals("") ? "" : " | " + $R{swift} + " " + $F{org_bank_swift}) )
+
+: ($F{org_bank_name} + (($F{org_bank_blz}==null || $F{org_bank_blz}.equals("")) ? "" + ($F{org_bank_swift}.equals("") ? "" : " | " + $R{swift} + " " + $F{org_bank_swift}) : " | " + $R{routingno} + " " + $F{org_bank_blz} + ($F{org_bank_swift}.equals("") ? "" : " | " + $R{swift} + " " + $F{org_bank_swift})))]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="2acced95-3851-4712-9669-aa6cefe5ee40" key="textField-8" x="122" y="1" width="293" height="12"/>
+				<reportElement key="textField-8" x="97" y="1" width="344" height="12" uuid="2acced95-3851-4712-9669-aa6cefe5ee40"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -122,99 +126,29 @@ ad_org.ad_org_id = $P{org_id}
 				<textElement textAlignment="Center">
 					<font size="8" isBold="false" pdfFontName="Helvetica"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{conditions}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{conditions}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="2ab5f606-c793-4c17-a3f4-35165013b1fa" key="textField-7" x="97" y="45" width="127" height="9">
-					<printWhenExpression><![CDATA[$F{org_bank_acct}.equals("")
-	?new Boolean(false)
-	:new Boolean(true)]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="textField-7" x="97" y="45" width="344" height="9" uuid="2ab5f606-c793-4c17-a3f4-35165013b1fa"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right">
+				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{account} + $F{org_bank_acct} + " | "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[// $R{account} + $F{org_bank_acct} + " | " + $R{iban} + $F{org_bank_iban}
+$F{org_bank_acct}.equals("") ? ($F{org_bank_iban}.equals("") ? "" : $R{iban} +" "+ $F{org_bank_iban} ) : 
+$R{account} +" "+ $F{org_bank_acct} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} +" "+ $F{org_bank_iban})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="2697a4df-45de-408d-ac7d-c04709a7df84" x="97" y="30" width="344" height="10"/>
+				<reportElement x="97" y="30" width="344" height="10" uuid="2697a4df-45de-408d-ac7d-c04709a7df84"/>
 				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0" key="textField-7" x="247" y="38" width="30" height="9">
-					<printWhenExpression><![CDATA[$F{org_bank_blz}.equals("")
-	?new Boolean(false)
-	:new Boolean(true)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{routingno} + $F{org_bank_blz} + " | "]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0" key="textField-7" x="276" y="38" width="107" height="9">
-					<printWhenExpression><![CDATA[$F{org_bank_name}.equals("")
-	?new Boolean(false)
-	:new Boolean(true)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{swift} + $F{org_bank_swift}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement uuid="2ab5f606-c793-4c17-a3f4-35165013b1fa" key="textField-7" x="223" y="45" width="160" height="9">
-					<printWhenExpression><![CDATA[$F{org_bank_iban}.equals("")
-	?new Boolean(false)
-	:new Boolean(true)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{iban} + $F{org_bank_iban}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0" key="textField-7" x="210" y="38" width="66" height="9">
-					<printWhenExpression><![CDATA[!$F{org_bank_blz}.equals("")
-	?new Boolean(false)
-	:new Boolean(true)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{org_bank_name} + " | "]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

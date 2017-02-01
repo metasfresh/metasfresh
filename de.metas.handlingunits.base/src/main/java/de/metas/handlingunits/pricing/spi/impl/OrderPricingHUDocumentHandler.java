@@ -29,6 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
@@ -43,19 +44,21 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 	 * Suggests the {@link I_M_HU_PI_Item_Product} for Order Quick Input
 	 */
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object orderObj, final I_M_Product product)
 	{
-		Check.assumeInstanceOf(document, I_C_Order.class, "param 'document'");
+		Check.assumeInstanceOf(orderObj, I_C_Order.class, "orderObj not null");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(document);
-		final String trxName = InterfaceWrapperHelper.getTrxName(document);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(orderObj);
+		final String trxName = InterfaceWrapperHelper.getTrxName(orderObj);
 
-		final I_C_Order order = InterfaceWrapperHelper.create(document, I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.create(orderObj, I_C_Order.class);
 
 		final I_M_PriceList_Version plv = Services.get(IOrderBL.class).getPriceListVersion(order);
+		
+		final int productId = product == null ? -1 : product.getM_Product_ID();
 
 		final I_M_ProductPrice_Attribute productPriceAttribute = Services.get(IAttributePricingBL.class).getDefaultAttributePriceOrNull(order,
-				order.getM_Product_ID(),
+				productId,
 				plv,
 				false); // strictDefault
 

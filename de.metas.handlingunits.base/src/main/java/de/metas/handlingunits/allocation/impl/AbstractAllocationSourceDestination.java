@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -140,7 +139,9 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 			final IAllocationRequest requestActual,
 			final boolean outTrx)
 	{
+		
 		final IHUTransaction trx = createHUTransaction(requestActual, outTrx);
+		
 		return AllocationUtils.createQtyAllocationResult(
 				request.getQty(), // qtyToAllocate
 				requestActual.getQty(), // qtyAllocated
@@ -188,7 +189,7 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 				storage.getQty(), // qty
 				storage.getC_UOM(), // uom
 				huContext.getDate() // date
-				);
+		);
 
 		final IAllocationResult result = unload(request);
 

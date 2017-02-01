@@ -13,22 +13,21 @@ package org.adempiere.ad.trx.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -55,16 +54,20 @@ import de.metas.logging.LogManager;
 public abstract class AbstractTrx implements ITrx
 {
 	/** Logger */
-	private final Logger log = LogManager.getLogger(getClass());
+	private static final transient Logger log = LogManager.getLogger(AbstractTrx.class);
 
 	private final ITrxManager trxManager;
 	private final String m_trxName;
 
+	/**
+	 * set to <code>true</code> by {@link #start()}.
+	 */
 	private boolean m_active = false;
 	private long m_startTime;
 
-	private Map<String, Object> properties = null;
-	private ReentrantLock propertiesLock = new ReentrantLock();
+	private final boolean autoCommit;
+
+	private volatile ConcurrentHashMap<String, Object> _properties = null;
 
 	//
 	// Debug info
@@ -77,13 +80,14 @@ public abstract class AbstractTrx implements ITrx
 	 *
 	 * @param trxName unique name
 	 */
-	public AbstractTrx(final ITrxManager trxManager, final String trxName)
+	public AbstractTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super();
 		// log.info(trxName);
 
 		Check.assumeNotNull(trxManager, "trxManager not null");
 		this.trxManager = trxManager;
+
+		this.autoCommit = autoCommit;
 
 		if (!trxManager.isValidTrxName(trxName))
 		{
@@ -97,13 +101,13 @@ public abstract class AbstractTrx implements ITrx
 		{
 			debugCreateStacktrace = new Exception("Create stacktrace");
 		}
-	}	// Trx
+	}
 
 	@Override
-	public String getTrxName()
+	public final String getTrxName()
 	{
 		return m_trxName;
-	}	// getName
+	}
 
 	private final void validateTrxSavepoint(final ITrxSavepoint savepoint)
 	{
@@ -141,6 +145,12 @@ public abstract class AbstractTrx implements ITrx
 	{
 		return m_active;
 	}	// isActive
+
+	@Override
+	public boolean isAutoCommit()
+	{
+		return autoCommit;
+	}
 
 	/**
 	 * Returns true if the transaction was just started but no actual actions were performed on this transaction.
@@ -286,6 +296,11 @@ public abstract class AbstractTrx implements ITrx
 		return savepoint;
 	}
 
+	/**
+	 * @param name
+	 * @return savepoint or return <code>null</code> if no connection could be obtained of if we have an autoCommit connection.
+	 * @throws Exception
+	 */
 	protected abstract ITrxSavepoint createTrxSavepointNative(String name) throws Exception;
 
 	@Override
@@ -378,7 +393,7 @@ public abstract class AbstractTrx implements ITrx
 
 			getTrxListenerManager(false).fireAfterClose(this);
 
-			log.debug(getTrxName());
+			log.debug("Closed: {}", getTrxName());
 		}
 	}
 
@@ -469,75 +484,80 @@ public abstract class AbstractTrx implements ITrx
 	{
 		return trxManager;
 	}
+	
+	private final Map<String, Object> getPropertiesMap()
+	{
+		if(_properties == null)
+		{
+			synchronized (this)
+			{
+				if(_properties == null)
+				{
+					_properties = new ConcurrentHashMap<>();
+				}
+			}
+		}
+		return _properties;
+	}
+	
+	private final Map<String, Object> getPropertiesMapOrNull()
+	{
+		synchronized (this)
+		{
+			return _properties;
+		}
+	}
 
 	@Override
 	public final <T> T setProperty(final String name, final Object value)
 	{
-		propertiesLock.lock();
-		try
+		Check.assumeNotEmpty(name, "name is not empty");
+		
+		// Handle null value case
+		if(value == null)
 		{
-			if (properties == null)
+			final Map<String, Object> properties = getPropertiesMapOrNull();
+			if(properties == null)
 			{
-				properties = new HashMap<String, Object>();
+				return null;
 			}
-
+			
 			@SuppressWarnings("unchecked")
-			final T valueOld = (T)properties.put(name, value);
+			final T valueOld = (T)properties.remove(name);
 			return valueOld;
 		}
-		finally
+		else
 		{
-			propertiesLock.unlock();
+			@SuppressWarnings("unchecked")
+			final T valueOld = (T)getPropertiesMap().put(name, value);
+			return valueOld;
 		}
 	}
 
 	@Override
 	public final <T> T getProperty(final String name)
 	{
-		propertiesLock.lock();
-		try
-		{
-			if (properties == null)
-			{
-				return null;
-			}
-
-			@SuppressWarnings("unchecked")
-			final T value = (T)properties.get(name);
-			return value;
-		}
-		finally
-		{
-			propertiesLock.unlock();
-		}
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().get(name);
+		return value;
 	}
 
 	@Override
 	public <T> T getProperty(final String name, final Supplier<T> valueInitializer)
 	{
-		propertiesLock.lock();
-		try
-		{
-			if (properties == null)
-			{
-				properties = new HashMap<String, Object>();
-			}
-
-			@SuppressWarnings("unchecked")
-			T value = (T)properties.get(name);
-			if (value == null)
-			{
-				value = valueInitializer.get();
-				properties.put(name, value);
-			}
-			return value;
-		}
-		finally
-		{
-			propertiesLock.unlock();
-		}
-
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.get());
+		return value;
 	}
+	
+	@Override
+	public <T> T getProperty(final String name, final Function<ITrx, T> valueInitializer)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
+		return value;
+	}
+
 
 	protected final void setDebugConnectionBackendId(final String debugConnectionBackendId)
 	{
