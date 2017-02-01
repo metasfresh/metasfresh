@@ -25,6 +25,7 @@ upcoming Release
 
 ## Fixes
 * metasfresh
+  * #857 Fix String Attributes Save in POS
   * #863 No Result Window for Prosesses that don't allow rerun
   * #879 Fix "ValueType not supported: D" when HU attributes are generated
   * #781 ESR scan processing returns improper bpartner
