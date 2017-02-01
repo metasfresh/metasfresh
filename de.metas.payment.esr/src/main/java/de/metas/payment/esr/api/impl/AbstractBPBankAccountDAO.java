@@ -1,5 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -13,15 +15,14 @@ package de.metas.payment.esr.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -38,7 +39,7 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 {
 	@Override
-	public I_C_BP_BankAccount retrieveESRBPBankAccountOrNull(final String postAccountNo, final String innerAccountNo)
+	public List<I_C_BP_BankAccount> retrieveESRBPBankAccounts(final String postAccountNo, final String innerAccountNo)
 	{
 		Check.assumeNotEmpty(postAccountNo, "postAccountNo not null");
 		Check.assumeNotEmpty(innerAccountNo, "innerAccountNo not null");
@@ -46,7 +47,9 @@ public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_None;
 
-		final IQueryBuilder<I_C_BP_BankAccount> qb = Services.get(IQueryBL.class).createQueryBuilder(I_C_BP_BankAccount.class, ctx, trxName)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL.createQueryBuilder(I_C_BP_BankAccount.class, ctx, trxName)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, postAccountNo)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true);
 
@@ -58,8 +61,10 @@ public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 		qb
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
-		return qb.create()
-				.firstOnly(I_C_BP_BankAccount.class);
+
+		return qb
+				.create()
+				.list();
 	}
 
 }
