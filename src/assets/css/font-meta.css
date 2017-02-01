@@ -188,3 +188,9 @@
 .meta-icon-product:before {
   content: "\58";
 }
+.meta-icon-photo:before {
+  content: "\59";
+}
+.meta-icon-upload:before {
+  content: "\5a";
+}
