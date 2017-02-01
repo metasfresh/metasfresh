@@ -89,7 +89,7 @@ class TableItemWrapper extends Component {
                         mainTable={mainTable}
                         onDoubleClick={() => onDoubleClick && onDoubleClick()}
                         onMouseDown={(e) => handleClick && handleClick(e, row.id)}
-                        onContextMenu={(e) => handleRightClick && handleRightClick(e)}
+                        handleRightClick={(e) => handleRightClick(e, row.id)}
                         changeListenOnTrue={() => changeListenOnTrue && changeListenOnTrue()}
                         changeListenOnFalse={() => changeListenOnFalse && changeListenOnFalse()}
                         newRow={newRow}

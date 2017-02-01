@@ -183,18 +183,19 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, selectedProducts, onContextMenu, rowId, cols,
+            isSelected, fields, selectedProducts, rowId, cols,
             onMouseDown, onDoubleClick, included, tabid, type, docId,
-            tabIndex, mainTable, entity, readonly, indent, odd
+            tabIndex, mainTable, entity, readonly, indent, odd,
+            handleRightClick
         } = this.props;
 
         const huType = findRowByPropName(fields, "HU_UnitType").value;
 
         return (
             <tr
-                onContextMenu = {onContextMenu}
-                onMouseDown ={onMouseDown}
+                onMouseDown={onMouseDown}
                 onDoubleClick={onDoubleClick}
+                onContextMenu={handleRightClick}
                 className={
                     (isSelected ? "row-selected " : "") +
                     (odd ? "tr-odd ": "") +
