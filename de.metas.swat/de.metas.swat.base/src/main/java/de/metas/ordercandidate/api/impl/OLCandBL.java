@@ -138,22 +138,21 @@ public class OLCandBL implements IOLCandBL
 		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance
 				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
-		
+
 		if (allCandidates.isEmpty())
 		{
 			loggable.addLog("Found no order candidates for relationTypeInternalName={}; nothing to do", relationTypeInternalName);
 			return;
 		}
-		
+
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
-				
+
 		if (orderCandidates.isEmpty())
 		{
 			loggable.addLog("Found no candidates for relation type with internalName={}; nothing to do", relationTypeInternalName);
 			return;
 		}
 
-		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
 		final List<I_C_OLCand> candidates = filterProcessedAndError(orderCandidates);
 
 		if (candidates.isEmpty())
@@ -948,7 +947,7 @@ public class OLCandBL implements IOLCandBL
 			if (!isValidDataDestination(processorDataDestinationId, cand.getAD_DataDestination_ID())
 					|| isImportedWithIssues(cand))
 			{
-				logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} and IsImportedWithIssues={}; cand={}", 
+				logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} and IsImportedWithIssues={}; cand={}",
 						processorDataDestinationId, cand.getAD_DataDestination_ID(), cand);
 				continue;
 			}
