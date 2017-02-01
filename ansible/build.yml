@@ -8,7 +8,3 @@
       shell: "webpack --config {{ ci.build_dir }}/webpack.prod.js --bail --display-error-details"
       args:
         chdir: "{{ ci.build_dir }}"
-    - name: Create config.js
-      copy:
-        content: "{{ ci.files.configjs }}"
-        dest: "{{ ci.build_dir }}/dist/config.js"

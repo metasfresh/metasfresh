@@ -14,3 +14,7 @@
         owner: "{{ ci.deploy_owner }}"
         group: "{{ ci.deploy_owner_group }}"
         mode: "u+rwx,g+rx,o+rx,a+s"
+    - name: Create config.js
+      copy:
+        content: "{{ ci.files.configjs }}"
+        dest: "{{ ci.deploy_dir }}/config.js"
