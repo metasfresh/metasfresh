@@ -62,11 +62,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -83,7 +83,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	public static final transient SqlDocumentsRepository instance = new SqlDocumentsRepository();
 
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
-	
+
 	private static final String VERSION_DEFAULT = "0";
 
 	private int loadLimitWarn = 100;
@@ -764,11 +764,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		final SqlDocumentEntityDataBindingDescriptor binding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 
-		final String sql = binding.getSqlSelectVersionById().orElse(null);
-		if (sql == null)
-		{
-			return VERSION_DEFAULT;
-		}
+		final String sql = binding.getSqlSelectVersionById()
+				.orElseThrow(() -> new AdempiereException("Versioning is not supported for " + entityDescriptor));
 
 		final Timestamp version = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, sql, documentIdAsInt);
 		return version == null ? VERSION_DEFAULT : String.valueOf(version.getTime());

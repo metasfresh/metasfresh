@@ -267,6 +267,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return sqlSelectVersionById;
 	}
+	
+	@Override
+	public boolean isVersioningSupported()
+	{
+		return sqlSelectVersionById.isPresent();
+	}
 
 	public static final class Builder implements DocumentEntityDataBindingDescriptorBuilder
 	{

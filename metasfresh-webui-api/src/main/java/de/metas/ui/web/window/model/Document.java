@@ -1557,9 +1557,12 @@ public final class Document
 
 	/* package */ Document refreshFromRepositoryIfStaled()
 	{
-		if (getStale().checkStaled())
+		if (getEntityDescriptor().getDataBinding().isVersioningSupported())
 		{
-			refreshFromRepository();
+			if (getStale().checkStaled())
+			{
+				refreshFromRepository();
+			}
 		}
 
 		return this;
@@ -1607,6 +1610,7 @@ public final class Document
 			return MoreObjects.toStringHelper(this)
 					.add("staled", staled)
 					.add("version", version)
+					.add("document", Document.this)
 					.toString();
 		}
 		
