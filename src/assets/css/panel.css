@@ -93,7 +93,7 @@
 
 .panel-modal-content {
     position: relative;
-    height: calc(100% - 75px);
+    max-height: calc(100% - 75px);
     width: 100%;
     overflow-y: auto;
     color: $brand-font-color;
