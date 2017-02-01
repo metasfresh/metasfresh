@@ -22,6 +22,7 @@ upcoming Release
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
   * #196 Grid View 100% height
+  * #896 Dunning Window WebUI
 
 ## Fixes
 * metasfresh
