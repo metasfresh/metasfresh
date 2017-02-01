@@ -84,6 +84,17 @@ import de.metas.logging.LogManager;
 	private IContainer panel;
 	private final ITerminalScrollPane scroll;
 
+	/**
+	 * Keeps the last modified text field that was not yet saved
+	 * task #857
+	 */
+	private ITerminalTextField textField;
+	/**
+	 * Keeps the property name of the last modified text field that was not yet saved
+	 * task #857
+	 */
+	private String propertyName;
+
 	private final Map<String, ITerminalField<?>> propertyName2editors = new HashMap<>();
 
 	private String constraintsLabel = DEFAULT_LABEL_CONSTRAINTS;
@@ -147,6 +158,13 @@ import de.metas.logging.LogManager;
 		}
 		else if (IPropertiesPanelModel.PROPERTY_ValidateUIRequest.equals(eventName))
 		{
+			// task #857
+			// validate the last changed text field in case it was not saved
+			if (textField != null)
+			{
+				setValueFromUI(propertyName, textField.getText(), textField);
+			}
+
 			validate();
 		}
 	}
@@ -425,7 +443,7 @@ import de.metas.logging.LogManager;
 					true,       // withButtons,
 					false,       // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
-				editor.addListener(new PropertyChangeListener()
+			editor.addListener(new PropertyChangeListener()
 			{
 				@Override
 				public void propertyChange(final PropertyChangeEvent evt)
@@ -436,6 +454,7 @@ import de.metas.logging.LogManager;
 						setValueFromUI(propertyName, value, editor);
 					}
 				}
+
 				// @formatter:off
 				@Override public String toString() { return "SwingPropertiesPanel[<anonymous propertyChangeListener for property=" + propertyName + " and editor=" + editor+">]"; }
 				// @formatter:on
@@ -547,8 +566,21 @@ import de.metas.logging.LogManager;
 							|| fireValueChangedOnFocusLost && isValueChanged
 							|| isFocusLost)
 					{
+						// task #857
+						// in case the text field was already saved ( updated from UI) we have no reason to keep the text field for further updating
+						setTextField(null);
+						setPropertyName(null);
 						final Object value = editor.getText();
 						setValueFromUI(propertyName, value, editor);
+					}
+					else
+					{
+						// task #857
+						// in case there were modifications on a text field and they were not saved (updated from UI) make sure the text field is kept
+						// together with it's property name.
+						// In case the OK button will be pressed before the update from UI is triggered again for this field, it will be saved during validation.
+						setPropertyName(propertyName);
+						setTextField(editor);
 					}
 				}
 			});
@@ -663,4 +695,25 @@ import de.metas.logging.LogManager;
 	{
 		scroll.setVerticalScrollBarPolicy(scrollPolicy);
 	}
+
+	public ITerminalTextField getTextField()
+	{
+		return textField;
+	}
+
+	public void setTextField(ITerminalTextField textField)
+	{
+		this.textField = textField;
+	}
+
+	public String getPropertyName()
+	{
+		return propertyName;
+	}
+
+	public void setPropertyName(String valueField)
+	{
+		this.propertyName = valueField;
+	}
+
 }
