@@ -39,9 +39,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
@@ -56,7 +56,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
+import org.compiere.model.X_M_Attribute;
 
 import de.metas.dimension.IDimensionSpecAttributeDAO;
 import de.metas.dimension.IDimensionspecDAO;
@@ -882,7 +882,8 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	}
 
 	/**
-	 * Kepp the attribute propagation as before.
+	 * Retrieves an existing or new de.metas.handlingunits.impl.HUAttributeQueryFilterVO entry for the given attribute and type.
+	 * Note: The entry will be included in the onlyAttributeId2values and not in the barcode attributes list
 	 * 
 	 * @param attribute
 	 * @param attributeValueType
@@ -1007,20 +1008,27 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	{
 		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
 
-		final I_DIM_Dimension_Spec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName, Env.getCtx(), ITrx.TRXNAME_None);
+		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(getContextProvider());
 
-		
-		if(barcodeDimSpec == null)
+		final I_DIM_Dimension_Spec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName, contextAware);
+
+		if (barcodeDimSpec == null)
 		{
 			// no barcode dimension spec. Nothing to do
 			return;
 		}
-		
+
 		final List<I_M_Attribute> barcodeAttributes = Services.get(IDimensionSpecAttributeDAO.class)
 				.retrieveAttributesForDimensionSpec(barcodeDimSpec);
 
 		for (final I_M_Attribute attribute : barcodeAttributes)
 		{
+			// Barcode must be a String attribute. In the database, this is forced by a validation rule
+			if (!attribute.getAttributeValueType().equals(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40))
+			{
+				continue;
+			}
+
 			final HUAttributeQueryFilterVO barcodeAttributeFilterVO = getAttributeFilterVO(_barcodeAttributesIds2Value, attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown);
 			barcodeAttributeFilterVO.addValue(barcode);
 		}
