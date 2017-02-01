@@ -121,7 +121,6 @@ public interface IQueryBuilder<T>
 
 	IQueryBuilder<T> addNotNull(String columnName);
 
-
 	IQueryBuilder<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 
 	IQueryBuilder<T> addEqualsFilter(String columnName, Object value, IQueryFilterModifier modifier);
@@ -169,14 +168,56 @@ public interface IQueryBuilder<T>
 
 	IQueryBuilder<T> addOnlyActiveRecordsFilter();
 
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is accepted.
+	 */
+	@SuppressWarnings("unchecked")
+	<V> IQueryBuilder<T> addInArrayOrAllFilter(String columnName, V... values);
+
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is rejected.
+	 */
 	@SuppressWarnings("unchecked")
 	<V> IQueryBuilder<T> addInArrayFilter(String columnName, V... values);
 
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is accepted.
+	 */
+	@SuppressWarnings("unchecked")
+	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, V... values);
+
+	/**
+	 * Filters those rows for whom the columnName's value is in given array.
+	 * If no values were provided the record is rejected.
+	 */
 	@SuppressWarnings("unchecked")
 	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, V... values);
 
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is accepted.
+	 */
+	<V> IQueryBuilder<T> addInArrayOrAllFilter(String columnName, Collection<V> values);
+
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is rejected.
+	 */
 	<V> IQueryBuilder<T> addInArrayFilter(String columnName, Collection<V> values);
 
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is accepted.
+	 */
+	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
+
+	/**
+	 * Filters those rows for whom the columnName's value is in given collection.
+	 * If no values were provided the record is rejected.
+	 */
 	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**

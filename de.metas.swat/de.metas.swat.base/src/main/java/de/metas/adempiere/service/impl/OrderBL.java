@@ -122,7 +122,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystem)
 	{
-		if (overridePricingSystem || order.getM_PricingSystem_ID() <= 0)
+		final int previousPricingSystemId = order.getM_PricingSystem_ID();
+		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
 			final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 			final int bPartnerId = bpartnerAndLocation.getC_BPartner_ID();
@@ -140,7 +141,16 @@ public class OrderBL implements IOrderBL
 			order.setM_PricingSystem_ID(pricingSysId);
 		}
 
-		setPriceList(order);
+		//
+		// Update the M_PriceList_ID only if:
+		// * overridePricingSystem is true => this is also covering the case when pricing system was not changed but for some reason the price list could be a different one (Date changed etc)
+		// * pricing system really changed => we need to set to correct price list
+		// Cases we want to avoid:
+		// * overridePriceSystem is false and M_PricingSystem_ID was not changed: in this case we shall NOT update the price list because it might be that we were called for a completed Order and we don't want to change the data. 
+		if(overridePricingSystem || previousPricingSystemId != order.getM_PricingSystem_ID())
+		{
+			setPriceList(order);
+		}
 	}
 
 	@Override

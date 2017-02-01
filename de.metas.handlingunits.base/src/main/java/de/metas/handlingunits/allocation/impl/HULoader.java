@@ -187,7 +187,7 @@ public class HULoader
 	 * <ul>
 	 * <li>managing database transaction</li>
 	 * <li>collecting and automatically processing {@link IHUTransactionAttribute}s</li>
-	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getDestroyedHUPackingMaterialsCollector()})</li>
+	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
 	 *
 	 * @param huContext
@@ -234,8 +234,12 @@ public class HULoader
 
 	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>.
+	 * <p>
+	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransaction}s are created).<br>
+	 * If not all from the given {@code unloadRequest} is unloaded, then the it will only try to load the lesser qtys which were unloaded.<br>
+	 * However, in the end, only the stuff that will be "accepted" by the {@link IAllocationDestination} will really be moved.<br>
 	 *
-	 * NOTE:
+	 * NOTEs:
 	 * <ul>
 	 * <li>that transactions from result will be already processed.
 	 * <li>context's trxName will be used, no transaction management will be performed (see {@link #load(IAllocationRequest)} which is doing the magic)
@@ -280,7 +284,7 @@ public class HULoader
 
 		//
 		// Notify listeners that load was completed
-		huContext.getTrxListeners().afterLoad(huContext, Collections.<IAllocationResult> singletonList(finalResult));
+		huContext.getTrxListeners().afterLoad(huContext, Collections.singletonList(finalResult));
 
 		//
 		// Notify our source that the unload was completed
@@ -290,7 +294,9 @@ public class HULoader
 	}
 
 	/**
-	 * Loads everything from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s.
+	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s trx candidates.
+	 * For each trx candidates, the code will attempts to loadto the {@link IAllocationDestination}.
+	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransaction}s will be created based of what was actually loaded to the destination.
 	 *
 	 * After running this method:
 	 * <ul>
@@ -361,10 +367,11 @@ public class HULoader
 			// Iterate each load transaction:
 			// * create it's counterpart unload transaction (taking properties from unloadTrx)
 			// * transfer attributes
-			final List<IHUTransaction> loadTransactions = loadResult.getTransactions();
+			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
+			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
 
 			BigDecimal qtyUnloaded = BigDecimal.ZERO;
-			for (final IHUTransaction loadTrx : loadTransactions)
+			for (final IHUTransaction loadTrx : aggregatedLoadTransactions)
 			{
 				final IHUTransaction unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
 				unloadTrxPartial.pair(loadTrx);
@@ -407,9 +414,10 @@ public class HULoader
 			final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
 					loadResult.getQtyToAllocate(),   // qtyToAllocate
 					loadResult.getQtyAllocated(),   // qtyAllocated
-					trxs,   // transactions
+					trxs, //
 					attributeTrxs // attribute transactions
 			);
+
 			huTrxBL.createTrx(huContext, result);
 
 			//

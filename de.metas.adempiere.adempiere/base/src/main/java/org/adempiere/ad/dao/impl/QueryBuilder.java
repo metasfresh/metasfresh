@@ -82,26 +82,21 @@ import com.google.common.collect.ImmutableMap;
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
+		super();
 		this.modelClass = modelClass;
 		this.modelKeyColumnName = null; // lazy
 
+		this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
+		
 		final IQueryBL factory = Services.get(IQueryBL.class);
-		if (Check.isEmpty(tableName, true))
-		{
-			filters = factory.createCompositeQueryFilter(modelClass);
-			this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
-		}
-		else
-		{
-			filters = factory.createCompositeQueryFilter(tableName);
-			this.modelTableName = tableName; // when the table's name is required, don't use the modelClass to obtain it but go with the given table name.
-		}
+		filters = factory.createCompositeQueryFilter(this.modelTableName); // always use the tableName we just fetched because it might be that modelClass is not providing a tableName.
 	}
 
 
 
 	private QueryBuilder(final QueryBuilder<T> from)
 	{
+		super();
 		this.modelClass = from.modelClass;
 		this.modelTableName = from.modelTableName;
 		this.modelKeyColumnName = from.modelKeyColumnName;
@@ -365,9 +360,23 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final String columnName, final Collection<V> values)
+	{
+		filters.addInArrayOrAllFilter(columnName, values);
+		return this;
+	}
+
+	@Override
 	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final Collection<V> values)
 	{
 		filters.addInArrayFilter(columnName, values);
+		return this;
+	}
+
+	@Override
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final Collection<V> values)
+	{
+		filters.addInArrayOrAllFilter(column, values);
 		return this;
 	}
 
@@ -394,9 +403,25 @@ import com.google.common.collect.ImmutableMap;
 
 	@Override
 	@SuppressWarnings("unchecked")
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final String columnName, final V... values)
+	{
+		filters.addInArrayOrAllFilter(columnName, values);
+		return this;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
 	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final V... values)
 	{
 		filters.addInArrayFilter(columnName, values);
+		return this;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
+	{
+		filters.addInArrayOrAllFilter(column, values);
 		return this;
 	}
 

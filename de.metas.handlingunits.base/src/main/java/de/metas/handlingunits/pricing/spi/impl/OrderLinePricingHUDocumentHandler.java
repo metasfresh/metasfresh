@@ -10,18 +10,17 @@ package de.metas.handlingunits.pricing.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -32,6 +31,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Optional;
 
@@ -45,7 +45,7 @@ import de.metas.pricing.attributebased.I_M_ProductPrice_Attribute;
 
 /**
  * Note: currently this implementation is used to update a given record's ASI when its {@link I_M_HU_PI_Item_Product} changes.
- * 
+ *
  *
  */
 public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
@@ -54,7 +54,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 * Does nothing and returns <code>null</code>.
 	 */
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final I_M_Product product)
 	{
 		// Not needed.
 		return null;
@@ -71,7 +71,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 * <li>there is no default <code>M_ProductPrice_Attribute</code> to be found, or
 	 * <li>the default <code>M_ProductPrice_Attribute</code> has a M_HU_PI_Item_Product_ID which differs from the order line's M_HU_PI_Item_Product_ID
 	 * </ul>
-	 * 
+	 *
 	 *
 	 * @see InterfaceWrapperHelper#isValueChanged(Object, String)
 	 * @see IOrderLineBL#getPriceListVersion(de.metas.interfaces.I_C_OrderLine)

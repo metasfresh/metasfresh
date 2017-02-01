@@ -107,7 +107,7 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends 
 	}
 
 	/**
-	 * Generate it's LU-TU structure automatically
+	 * Generate it's LU-TU structure automatically, but don't do any transaction commits
 	 *
 	 * @param schedule
 	 */
@@ -129,10 +129,9 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor extends 
 
 		try
 		{
-			final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-			huGenerator.setContext(InterfaceWrapperHelper.getContextAware(schedule));
-			huGenerator.addM_ReceiptSchedule(schedule);
-			huGenerator.generateAllPlanningHUs_InChunks();
+			ReceiptScheduleHUGenerator.newInstance(InterfaceWrapperHelper.getContextAware(schedule))
+					.addM_ReceiptSchedule(schedule)
+					.generateAllPlanningHUs_InChunks();
 		}
 		catch (final DBForeignKeyConstraintException e)
 		{

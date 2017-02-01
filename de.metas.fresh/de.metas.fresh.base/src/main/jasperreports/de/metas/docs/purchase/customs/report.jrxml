@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-12-07T15:32:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/customs/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -22,31 +20,18 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM 
+		<![CDATA[SELECT * FROM
 de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID});]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="c_orderline_id" class="java.math.BigDecimal"/>
 	<field name="c_order_id" class="java.math.BigDecimal"/>
 	<field name="hasweightsnapshot" class="java.lang.Boolean"/>
-	<background>
-		<band height="461">
-			<textField>
-				<reportElement x="97" y="398" width="400" height="63" forecolor="#CCCCCC" uuid="48ff7c6b-a05f-46de-a70b-ab50ece90cd9">
-					<printWhenExpression><![CDATA[!$F{hasweightsnapshot}]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Center">
-					<font size="48" isBold="true" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Aus Bestand"]]></textFieldExpression>
-			</textField>
-		</band>
-	</background>
 	<title>
 		<band height="269" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="116" width="595" height="153" uuid="bf2fe593-7473-486c-b48f-63d419100511"/>
+				<reportElement uuid="bf2fe593-7473-486c-b48f-63d419100511" key="subreport-8" x="0" y="116" width="595" height="153"/>
 				<subreportParameter name="C_Order_ID">
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -57,7 +42,7 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID
 				<subreportExpression><![CDATA["de/metas/docs/purchase/customs/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="f0dba1f8-f917-47ea-9696-72b5c74d1757"/>
+				<reportElement uuid="f0dba1f8-f917-47ea-9696-72b5c74d1757" key="subreport-4" x="0" y="31" width="595" height="85"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -65,7 +50,7 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="100" width="225" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
+				<reportElement uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c" key="subreport-8" x="0" y="100" width="225" height="100"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -76,7 +61,7 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 			</subreport>
 			<textField>
-				<reportElement x="364" y="165" width="188" height="79" uuid="6622332f-b31d-40fc-add3-777b8f875905"/>
+				<reportElement uuid="6622332f-b31d-40fc-add3-777b8f875905" x="364" y="165" width="188" height="79"/>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -90,7 +75,7 @@ $R{addressline3} + "\n"]]></textFieldExpression>
 		<band height="142">
 			<printWhenExpression><![CDATA[new Boolean( $V{PAGE_NUMBER}.intValue() > 1 )]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="0" y="31" width="595" height="85" uuid="33aa081f-33c9-46b8-83ec-1eb82afda15f"/>
+				<reportElement uuid="33aa081f-33c9-46b8-83ec-1eb82afda15f" key="subreport-7" x="0" y="31" width="595" height="85"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -98,7 +83,7 @@ $R{addressline3} + "\n"]]></textFieldExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-10" x="21" y="116" width="534" height="26" uuid="7e20c567-f3e9-4f06-b9a2-9fa027670478"/>
+				<reportElement uuid="7e20c567-f3e9-4f06-b9a2-9fa027670478" key="subreport-10" x="21" y="116" width="534" height="26"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -113,7 +98,7 @@ $R{addressline3} + "\n"]]></textFieldExpression>
 	<detail>
 		<band height="12">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735"/>
+				<reportElement uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735" key="subreport-3" x="0" y="0" width="595" height="12"/>
 				<subreportParameter name="C_Order_ID">
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -128,7 +113,7 @@ $R{addressline3} + "\n"]]></textFieldExpression>
 	<pageFooter>
 		<band height="75">
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-62" x="529" y="21" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913"/>
+				<reportElement uuid="85172f8d-b93e-4eda-9c02-1a7cddd32913" key="textField-62" x="529" y="21" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -141,7 +126,7 @@ $R{addressline3} + "\n"]]></textFieldExpression>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-63" x="508" y="21" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2b34c661-46f4-425a-8790-fe45f9153ba1"/>
+				<reportElement uuid="2b34c661-46f4-425a-8790-fe45f9153ba1" key="textField-63" x="508" y="21" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -154,7 +139,7 @@ $R{addressline3} + "\n"]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="textField-64" x="445" y="21" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="0bf18c2a-8e0a-4551-afde-8454f1922051"/>
+				<reportElement uuid="0bf18c2a-8e0a-4551-afde-8454f1922051" key="textField-64" x="445" y="21" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9"/>
 				</textElement>

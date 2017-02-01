@@ -148,7 +148,8 @@ public class HUCapacityBL implements IHUCapacityBL
 	}
 
 	private IHUCapacityDefinition getAvailableCapacity(
-			final BigDecimal qtyUsed, final I_C_UOM qtyUsedUOM,
+			final BigDecimal qtyUsed, 
+			final I_C_UOM qtyUsedUOM,
 			final IHUCapacityDefinition capacityDefinition,
 			final boolean allowNegativeCapacityThisTime)
 	{

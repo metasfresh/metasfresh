@@ -30,10 +30,10 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.IDocumentCollector;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
+import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.impl.HUTrxListenerAdapter;
 
-public final class PPOrderBOMLineHUTrxListener extends HUTrxListenerAdapter
+public final class PPOrderBOMLineHUTrxListener implements IHUTrxListener
 {
 	public static final PPOrderBOMLineHUTrxListener instance = new PPOrderBOMLineHUTrxListener();
 

@@ -563,6 +563,21 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		saveProcessInfoLogs(adPInstanceId, result.getCurrentLogs());
 	}
+	
+	@Override
+	public void saveProcessInfo(final ProcessInfo pi)
+	{
+		saveProcessInfoOnly(pi);
+		
+		//
+		// Save Parameters to AD_PInstance_Para, if needed
+		final List<ProcessInfoParameter> parameters = pi.getParametersNoLoad();
+		if (parameters != null && !parameters.isEmpty())
+		{
+			saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
+		}
+
+	}
 
 	@Override
 	public void saveProcessInfoOnly(final ProcessInfo pi)

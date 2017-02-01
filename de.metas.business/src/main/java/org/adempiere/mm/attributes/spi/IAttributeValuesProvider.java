@@ -28,6 +28,8 @@ import java.util.List;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.CCache.CCacheStats;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
 /**
@@ -44,13 +46,15 @@ public interface IAttributeValuesProvider
 	String getAttributeValueType();
 
 	/**
-	 * Checks if any value is allowed for given <code>attributeSet</code> and <code>attribute</code>.
+	 * Checks if any value is allowed.
 	 * 
 	 * In case any value is allowed, system won't try to check if a given value is found in {@link #getAvailableValues(IAttributeSet, I_M_Attribute)}.
 	 * 
 	 * @return true if any value is allowed
 	 */
-	boolean isAllowAnyValue(final IAttributeSet attributeSet, final I_M_Attribute attribute);
+	boolean isAllowAnyValue();
+	
+	Evaluatee prepareContext(final IAttributeSet attributeSet);
 
 	/**
 	 * List of available values.
@@ -59,32 +63,37 @@ public interface IAttributeValuesProvider
 	 * 
 	 * @return fixed list of attribute values that are accepted
 	 */
-	List<? extends NamePair> getAvailableValues(IAttributeSet attributeSet, final I_M_Attribute attribute);
+	List<? extends NamePair> getAvailableValues(Evaluatee evalCtx);
 
 	/**
 	 * Gets the value {@link NamePair} for given "value" ID.
 	 * 
 	 * NOTE: if we are dealing with a high-volume attribute values list and if attribute is not found in loaded list, it will be loaded directly from database.
 	 * 
-	 * @param attributeSet
-	 * @param attribute
-	 * @param value
+	 * @param evalCtx
+	 * @param valueKey
 	 * @return attribute value or null
 	 */
-	NamePair getAttributeValueOrNull(IAttributeSet attributeSet, I_M_Attribute attribute, String value);
+	NamePair getAttributeValueOrNull(final Evaluatee evalCtx, String valueKey);
+	
+	int getM_AttributeValue_ID(final String valueKey);
 
 	/**
 	 * Value to be used for "nulls".
 	 * 
 	 * In case the list has defined a particular value for Nulls, that one will be returned. If not, actual <code>null</code> will be returned.
 	 * 
-	 * @param attribute
 	 * @return {@link NamePair} for null or <code>null</code>
 	 */
-	NamePair getNullValue(final I_M_Attribute attribute);
+	NamePair getNullValue();
 
 	/**
 	 * @return true if he have a high volume values list
 	 */
 	public boolean isHighVolume();
+
+	//
+	// Caching
+	String getCachePrefix();
+	List<CCacheStats> getCacheStats();
 }

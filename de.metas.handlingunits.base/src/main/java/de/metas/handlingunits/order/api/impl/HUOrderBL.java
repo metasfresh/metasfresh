@@ -25,6 +25,7 @@ package de.metas.handlingunits.order.api.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,6 +36,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUDocumentHandler;
+import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
@@ -442,6 +445,69 @@ public class HUOrderBL implements IHUOrderBL
 		queryVO.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		return piItemProductDAO.matches(ctx, queryVO, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public void findM_HU_PI_Item_Product(final org.compiere.model.I_C_Order order, final I_M_Product product, final Consumer<I_M_HU_PI_Item_Product> pipConsumer)
+	{
+		//
+		// services
+		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+
+		Check.assumeNotNull(order, "Order cannot be null");
+
+		if (order.getC_BPartner() == null || order.getDateOrdered() == null)
+		{
+			// in case order's C_BPartner_ID or DateOrdered are null
+			// (i.e. when we just hit New to create a new order), there is no point to search for M_HU_PI_Item_Product record.
+			// Please assume M_HU_PI_Item_Product is null immediately
+
+			return;
+		}
+
+		//
+		// Try fetching the PIP from pricing
+		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_C_Order.Table_Name);
+		if (null != handler && product != null && product.getM_Product_ID() > 0)
+		{
+			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(order, product);
+			// If we have a default price and it has an M_HU_PI_Item_Product, suggest it in quick entry.
+			if (null != overridePip && overridePip.getM_HU_PI_Item_Product_ID() > 0)
+			{
+				if (overridePip.isAllowAnyProduct())
+				{
+					pipConsumer.accept(null);
+				}
+				else
+				{
+					pipConsumer.accept(overridePip);
+				}
+				return;
+			}
+		}
+
+		//
+		// Try fetching best matching PIP
+		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(product, order.getC_BPartner(), order.getDateOrdered(),
+				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
+				true); // allowInfiniteCapacity = true
+
+		if (pip == null)
+		{
+			// nothing to do, product is not included in any Transport Units
+			return;
+		}
+
+		else if (pip.isAllowAnyProduct())
+		{
+			return;
+		}
+		else
+		{
+			pipConsumer.accept(pip);
+		}
 	}
 
 }

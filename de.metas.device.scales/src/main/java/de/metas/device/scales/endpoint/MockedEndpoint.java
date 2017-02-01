@@ -67,7 +67,7 @@ public class MockedEndpoint extends TcpConnectionEndPoint
 	@Override
 	public String sendCmd(final String cmd)
 	{
-		System.out.println("Waiting " + delayMillis + "ms before returning the " + this + " result for command '" + cmd + "'");
+		// System.out.println("Waiting " + delayMillis + "ms before returning the " + this + " result for command '" + cmd + "'");
 		try
 		{
 			if (delayMillis > 0)

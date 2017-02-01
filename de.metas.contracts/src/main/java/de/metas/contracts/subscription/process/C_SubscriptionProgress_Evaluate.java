@@ -70,7 +70,7 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 				.addOnlyContextClient(localCtx)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement)
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
+				.addInArrayOrAllFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate).addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
 				.create()

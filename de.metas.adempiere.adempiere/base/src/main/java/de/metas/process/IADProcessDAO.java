@@ -25,7 +25,9 @@ import java.util.Collection;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
@@ -49,7 +51,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * @return list of AD_Process_IDs
 	 * @see #retrieveProcessesForTable(Properties, int)
 	 */
-	List<Integer> retrieveProcessesIdsForTable(Properties ctx, int adTableId);
+	Set<Integer> retrieveProcessesIdsForTable(Properties ctx, int adTableId);
 
 	/**
 	 * Retrieves {@link I_AD_Process}es which are assigned to given <code>tableName</code> and have <code>IsReport=true</code>
@@ -59,6 +61,15 @@ public interface IADProcessDAO extends ISingletonService
 	 * @return assigned report-processes
 	 */
 	List<I_AD_Process> retrieveReportProcessesForTable(Properties ctx, String tableName);
+
+	/**
+	 * Retrieves {@link RelatedProcessDescriptor} indexed by AD_Process_ID.
+	 * 
+	 * @param ctx
+	 * @param adTableId
+	 * @return AD_Process_ID to {@link RelatedProcessDescriptor}
+	 */
+	Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(Properties ctx, int adTableId);
 
 	/**
 	 * Retrieves the {@link I_AD_Process} which references the given <code>AD_Form_ID</code>. If there is no such process, the method returns <code>null</code>. If there are multiple such records,
@@ -97,7 +108,7 @@ public interface IADProcessDAO extends ISingletonService
 	int retriveProcessIdByClassIfUnique(Properties ctx, Class<?> processClass);
 
 	/**
-	 * @see #retriveProcessIdByClassIfUnique(Properties, Class) 
+	 * @see #retriveProcessIdByClassIfUnique(Properties, Class)
 	 */
 	int retriveProcessIdByClassIfUnique(Properties ctx, String processClassname);
 

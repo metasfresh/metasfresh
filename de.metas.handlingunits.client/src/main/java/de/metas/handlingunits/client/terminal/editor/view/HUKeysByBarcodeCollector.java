@@ -13,20 +13,21 @@ package de.metas.handlingunits.client.terminal.editor.view;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
@@ -48,12 +49,11 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 {
 	private static final transient Logger logger = LogManager.getLogger(HUKeysByBarcodeCollector.class);
 
-
 	private final IQueryFilter<I_M_HU> barcodeFilter;
 
 	private final List<IHUKey> collectedHUKeys = new ArrayList<IHUKey>();
 
-	public HUKeysByBarcodeCollector(final String barcode)
+	public HUKeysByBarcodeCollector(final Properties ctx, final String barcode)
 	{
 		super();
 
@@ -63,6 +63,7 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 		// Barcode matcher
 		barcodeFilter = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
+				.setContext(ctx, ITrx.TRXNAME_None)
 				// Match by our barcode
 				.setOnlyWithBarcode(barcode)
 				// Match any HU, even if is top level or not

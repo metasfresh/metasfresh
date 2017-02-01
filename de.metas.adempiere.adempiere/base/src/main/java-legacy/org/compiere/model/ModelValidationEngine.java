@@ -149,6 +149,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			"A" // Applications
 	);
 
+	private static Boolean _failOnMissingModelInteceptors = null;
 	/** List of errors that we encounted while initializing the model interceptors */
 	private static final List<ModelInterceptorInitException> _modelInterceptorInitErrors = new ArrayList<>();
 
@@ -284,9 +285,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private final boolean isFailOnMissingModelInteceptors()
 	{
+		final Boolean failOnMissingModelInteceptorsOverride = _failOnMissingModelInteceptors;
+		if(failOnMissingModelInteceptorsOverride != null)
+		{
+			return failOnMissingModelInteceptorsOverride;
+		}
+		
 		final I_AD_System system = MSystem.get(Env.getCtx());
 		final boolean isFail = system.isFailOnMissingModelValidator();
 		return isFail;
+	}
+	
+	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
+	{
+		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
 	}
 
 	private List<I_AD_ModelValidator> retrieveModelValidators(final Properties ctx)
