@@ -66,7 +66,7 @@ class TableItemWrapper extends Component {
 
     render() {
         const {
-            item, entity, tabid, cols, type, docId, selected, onDoubleClick,
+            item, entity, tabId, cols, type, docId, selected, onDoubleClick,
             handleClick, handleRightClick, changeListenOnTrue, changeListenOnFalse,
             newRow, tabIndex, readonly, mainTable, handleSelect, odd, keyProperty
         } = this.props;
@@ -80,7 +80,7 @@ class TableItemWrapper extends Component {
                         entity={entity}
                         fields={row.fields}
                         rowId={item.rowId}
-                        tabId={tabid}
+                        tabId={tabId}
                         cols={cols}
                         type={type}
                         docId={docId}
