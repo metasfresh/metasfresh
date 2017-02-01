@@ -40,24 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
  */
 public interface IHUStorage extends IGenericHUStorage
 {
-	@Override
-	IHUStorageFactory getHUStorageFactory();
-
-	@Override
-	IGenericHUStorage getParentStorage();
-
-	void addHUStorageListener(IHUStorageListener listener);
-
 	I_M_HU getM_HU();
-
-	@Override
-	void addQty(I_M_Product product, BigDecimal qty, I_C_UOM uom);
-
-	@Override
-	BigDecimal getQty(I_M_Product product, I_C_UOM uom);
-
-	@Override
-	boolean isEmpty();
 
 	List<IHUProductStorage> getProductStorages();
 
@@ -82,9 +65,6 @@ public interface IHUStorage extends IGenericHUStorage
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}
 	 */
 	BigDecimal getQtyForProductStorages();
-
-	@Override
-	boolean isEmpty(I_M_Product product);
 
 	/**
 	 * Propagate ALL storage products & quantities - UOM-based - to parent (incremental)

@@ -88,7 +88,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	 *
 	 * @param product packing material product
 	 */
-	public HUPackingMaterialDocumentLineCandidate(final I_M_Product product, final I_M_Material_Tracking materialTracking, final I_M_Locator locator)
+	/* package */ HUPackingMaterialDocumentLineCandidate(final I_M_Product product, final I_M_Material_Tracking materialTracking, final I_M_Locator locator)
 	{
 		super();
 		Check.assumeNotNull(product, "product not null");
@@ -173,25 +173,14 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return getQty(uomTo);
 	}
 
-	/**
-	 * Increment current packing materials amount (see {@link #getQty()}) by ONE.
-	 */
-	protected void incrementQty()
-	{
-		qty = qty.add(BigDecimal.ONE);
-	}
-
-	/**
-	 * Decrement current packing materials amount (see {@link #getQty()}) by ONE.
-	 */
-	protected void decrementQty()
-	{
-		qty = qty.subtract(BigDecimal.ONE);
-	}
-
 	protected void addQty(final int qtyToAdd)
 	{
 		qty = qty.add(BigDecimal.valueOf(qtyToAdd));
+	}
+
+	protected void subtractQty(final int qtyToSubtract)
+	{
+		qty = qty.add(BigDecimal.valueOf(qtyToSubtract));
 	}
 
 	/**

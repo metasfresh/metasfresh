@@ -67,7 +67,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Creates initial {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
+	 * Creates initial/empty {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
 	 *
 	 * @param request
 	 * @return initial mutable result
@@ -212,6 +212,13 @@ public final class AllocationUtils
 				.create();
 	}
 
+	/**
+	 * This method creates a new request that represents the portion of the given {@code request} that is not yet covered by the given {@code result}.
+	 * 
+	 * @param request
+	 * @param status
+	 * @return
+	 */
 	public static IAllocationRequest createQtyRequestForRemaining(final IAllocationRequest request, final IMutableAllocationResult status)
 	{
 		return deriveAsQtyRequestForRemaining(request, status)
@@ -259,7 +266,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * For cross-package use.
+	 * Creates an immutable allocation result. For cross-package use.
 	 *
 	 * @param qtyToAllocate
 	 * @param qtyAllocated
@@ -345,7 +352,7 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Creates and configures an {@link IHUBuilder} based on given <code>request</code>
+	 * Creates and configures an {@link IHUBuilder} based on the given <code>request</code> (bPartner and date).
 	 *
 	 * @param request
 	 * @return HU builder

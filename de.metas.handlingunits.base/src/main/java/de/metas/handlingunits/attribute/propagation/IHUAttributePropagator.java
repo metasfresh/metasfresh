@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.propagation;
 
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -29,7 +31,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 
 /**
  * Implementors are responsible to propagate the values of {@link IAttributeValue} instances through a HU hierarchy.
- *
+ * Note: {@link IAttributeValueCallout} on the contrary are in charge of dealing with changes of different attributes of the same HU.
  *
  */
 public interface IHUAttributePropagator
@@ -62,7 +64,8 @@ public interface IHUAttributePropagator
 	String getReversalPropagationType();
 
 	/**
-	 * Set and propagate attribute value.
+	 * Set and propagate attribute value. 
+	 * Note that propagation only happens if the respective attribute exists in the propagation target. If it doesn't exists, it is <b>not</b> created on the fly
 	 *
 	 * @param propagationContext
 	 * @param attributeSet the attributeset to which the given <code>value</code> shall be set.

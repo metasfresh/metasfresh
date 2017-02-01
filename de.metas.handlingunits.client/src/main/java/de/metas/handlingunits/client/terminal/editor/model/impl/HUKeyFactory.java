@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -122,7 +121,7 @@ public class HUKeyFactory implements IHUKeyFactory
 	@Override
 	public boolean isDisposed()
 	{
-		return disposed ;
+		return disposed;
 	}
 
 	@Override
@@ -360,6 +359,10 @@ public class HUKeyFactory implements IHUKeyFactory
 		final List<IHUKey> keys = new ArrayList<IHUKey>(hus.size());
 		for (final I_M_HU hu : hus)
 		{
+			if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu) && hu.getM_HU_Item_Parent().getQty().signum() <= 0)
+			{
+				continue;
+			}
 			final IHUKey huKey = createKey(hu, documentLineFinder);
 			keys.add(huKey);
 		}

@@ -35,7 +35,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.allocation.join.IHUJoinBL;
+import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinBL;

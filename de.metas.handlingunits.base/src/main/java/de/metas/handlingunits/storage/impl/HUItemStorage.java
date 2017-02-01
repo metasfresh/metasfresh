@@ -13,15 +13,14 @@ package de.metas.handlingunits.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -46,6 +46,7 @@ import de.metas.handlingunits.exceptions.HUInfiniteQtyAllocationException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IGenericHUStorage;
 import de.metas.handlingunits.storage.IHUItemStorage;
@@ -68,10 +69,19 @@ public class HUItemStorage implements IHUItemStorage
 	private final boolean virtualHUItem;
 	private final boolean pureVirtualHUItem;
 	private final boolean allowAddRemoveQty;
+
+	/**
+	 * Tells if invocations to this instance's {@link #requestNewHU()} and {@link #releaseHU(I_M_HU)} should be legal. This depends on the type of the wrapped {@link I_M_HU_Item}.
+	 */
 	private final boolean allowRequestReleaseIncludedHU;
 
 	private final Map<Integer, IHUCapacityDefinition> productId2customCapacity = new HashMap<Integer, IHUCapacityDefinition>();
 
+	/**
+	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
+	 * @param storageFactory
+	 * @param item
+	 */
 	public HUItemStorage(final IHUStorageFactory storageFactory, final I_M_HU_Item item)
 	{
 		Check.assumeNotNull(storageFactory, "storageFactory not null");
@@ -88,7 +98,7 @@ public class HUItemStorage implements IHUItemStorage
 
 		final String itemType = handlingUnitsBL.getItemType(item);
 		allowAddRemoveQty = X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemType);
-		allowRequestReleaseIncludedHU = X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType);
+		allowRequestReleaseIncludedHU = X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(itemType) || X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType);
 	}
 
 	@Override
@@ -123,7 +133,7 @@ public class HUItemStorage implements IHUItemStorage
 			storage.setQty(BigDecimal.ZERO);
 			storage.setC_UOM(uom);
 
-			// don't save it; it will be saved after Qty update
+			// don't save it; it will be saved after qty update
 			// dao.saveStorageLine(storage);
 		}
 		return storage;
@@ -415,7 +425,14 @@ public class HUItemStorage implements IHUItemStorage
 	public boolean requestNewHU()
 	{
 		Check.assume(allowRequestReleaseIncludedHU, "Requesting/Releasing new HU shall be allowed for {}", this);
-
+		
+		if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
+		{
+			// a "HUAggregate" item can have one (virtual) child HU
+			return getHUCount() < 1;
+		}
+		
+		// for other items, check out the available capacity to decide
 		final int count = getHUCount();
 		final int max = getHUCapacity();
 
@@ -470,6 +487,10 @@ public class HUItemStorage implements IHUItemStorage
 	@Override
 	public int getHUCapacity()
 	{
+		if(X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
+		{
+			return Quantity.QTY_INFINITE.intValue();
+		}
 		return item.getM_HU_PI_Item().getQty().intValueExact();
 	}
 
