@@ -67,6 +67,17 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 				, CacheMapType.LRU //
 		);
 	}
+	
+	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
+	{
+		final String tableName = extractTableNameForCacheName(cacheName);
+		return new CCache<>(cacheName //
+				, tableName //
+				, initialCapacity
+				, expireAfterMinutes //
+				, CacheMapType.HashMap //
+		);
+	}
 
 	public static enum CacheMapType
 	{

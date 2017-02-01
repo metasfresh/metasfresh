@@ -214,7 +214,7 @@ public class MRPSegmentBL implements IMRPSegmentBL
 					// Only PP_MRP records for our segment
 					.addEqualsFilter(I_PP_MRP.COLUMN_AD_Client_ID, mrpSegment.getAD_Client_ID())
 					.addEqualsFilter(I_PP_MRP.COLUMN_AD_Org_ID, mrpSegment.getAD_Org_ID())
-					.addInArrayFilter(I_PP_MRP.COLUMN_S_Resource_ID, null, mrpSegment.getPlant_ID())
+					.addInArrayOrAllFilter(I_PP_MRP.COLUMN_S_Resource_ID, null, mrpSegment.getPlant_ID())
 					// Collect warehouses
 					.andCollect(I_PP_MRP.COLUMN_M_Warehouse_ID)
 					// Exclude warehouses which we already fetched

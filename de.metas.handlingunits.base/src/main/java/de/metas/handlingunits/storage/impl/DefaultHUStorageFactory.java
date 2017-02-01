@@ -42,8 +42,6 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 {
 	private final IHUStorageDAO storageDAO;
 
-	// private final CompositeHUStorageListener listeners = new CompositeHUStorageListener();
-
 	public DefaultHUStorageFactory()
 	{
 		this(new HUStorageDAO());
@@ -56,12 +54,6 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 		Check.assumeNotNull(storageDAO, "storageDAO not null");
 		this.storageDAO = storageDAO;
 	}
-
-	// @Override
-	// public void addHUStorageListener(final IHUStorageListener listener)
-	// {
-	// listeners.addHUStorageListener(listener);
-	// }
 
 	@Override
 	public IHUStorage getStorage(final I_M_HU hu)

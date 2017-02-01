@@ -10,7 +10,9 @@ import org.compiere.model.I_C_BankStatement;
 import de.metas.banking.bankstatement.match.model.BankStatement;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -84,11 +86,11 @@ public class BankStatementMatchForm
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		// TODO Auto-generated method stub
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 }

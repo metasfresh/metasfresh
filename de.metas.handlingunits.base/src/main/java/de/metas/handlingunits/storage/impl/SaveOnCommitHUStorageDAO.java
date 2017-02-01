@@ -49,7 +49,7 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	private final HUStorageDAO dbStorageDAO;
 
 	/**
-	 * Before commiting the transaction, this listner makes sure we are also saving all storages
+	 * Before commiting the transaction, this listener makes sure we are also saving all storages
 	 */
 	private static final transient ITrxListener SaveOnCommitHUStorageDAOTrxListener = new TrxListenerAdapter()
 	{
@@ -74,6 +74,12 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 		dbStorageDAO = new HUStorageDAO();
 	}
 
+	/**
+	 * For the current (inherited) trx, this method gets the {@link SaveDecoupledHUStorageDAO} that is added to the trx using {@link #TRX_PROPERTY_SaveDecoupledHUStorageDAO}.
+	 * If there isn't one added yet, it add one and also registers a {@link ITrxListener} that will invoke {@link SaveDecoupledHUStorageDAO#flush()} when the current trx is committed.
+	 * @param contextProvider
+	 * @return
+	 */
 	private final SaveDecoupledHUStorageDAO getDelegate(final Object contextProvider)
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();

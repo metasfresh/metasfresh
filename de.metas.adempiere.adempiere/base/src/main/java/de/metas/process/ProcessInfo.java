@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -95,14 +97,26 @@ public final class ProcessInfo implements Serializable
 		reportApplySecuritySettings = builder.isReportApplySecuritySettings();
 		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
+		if (builder.isLoadParametersFromDB())
+		{
+			this.parameters = null; // to be loaded on demand
+
+			final List<ProcessInfoParameter> parametersOverride = builder.getParametersOrNull();
+			this.parametersOverride = parametersOverride == null ? null : ImmutableList.copyOf(parametersOverride);
+		}
+		else
+		{
 		final List<ProcessInfoParameter> parameters = builder.getParametersOrNull();
 		this.parameters = parameters == null ? null : ImmutableList.copyOf(parameters);
+
+			this.parametersOverride = null;
+		}
 
 		result = new ProcessExecutionResult();
 		result.setAD_PInstance_ID(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
-
+	
 	private final Properties ctx;
 
 	/** Title of the Process/Report */
@@ -136,6 +150,7 @@ public final class ProcessInfo implements Serializable
 
 	/** Parameters */
 	private List<ProcessInfoParameter> parameters = null; // lazy loaded
+	private final List<ProcessInfoParameter> parametersOverride;
 
 	//
 	// Reporting related
@@ -149,11 +164,6 @@ public final class ProcessInfo implements Serializable
 	/** Process result */
 	private final ProcessExecutionResult result;
 
-	/**
-	 * String representation
-	 *
-	 * @return String representation
-	 */
 	@Override
 	public String toString()
 	{
@@ -244,7 +254,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return sqlStatement;
 	}
-
+	
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
@@ -279,13 +289,22 @@ public final class ProcessInfo implements Serializable
 		return recordId;
 	}
 
+	public TableRecordReference getRecordRefOrNull()
+	{
+		if (adTableId <= 0 || recordId < 0)
+		{
+			return null;
+		}
+		return TableRecordReference.of(adTableId, recordId);
+	}
+
 	public boolean isRecordSet()
 	{
 		return getTable_ID() > 0 && getRecord_ID() > 0;
 	}
 
 	/**
-	 * Retrieve underlying model for AD_Table_ID/Record_ID.
+	 * Retrieve underlying model for AD_Table_ID/Record_ID using ITrx#TRXNAME_ThreadInherited.
 	 *
 	 * @param modelClass
 	 * @return record; never returns null
@@ -311,24 +330,27 @@ public final class ProcessInfo implements Serializable
 		final String tableName = getTableNameOrNull();
 		if (Check.isEmpty(tableName, true))
 		{
-			throw new AdempiereException("@NotFound@ @AD_Table_ID@");
+			// NOTE: usually the error message will be displayed directly to user, so we shall have one as friendly as possible
+			throw new AdempiereException("@NoSelection@");
 		}
 
 		final int recordId = getRecord_ID();
 		if (recordId < 0)
 		{
-			throw new AdempiereException("@NotFound@ @Record_ID@");
+			// NOTE: usually the error message will be displayed directly to user, so we shall have one as friendly as possible
+			throw new AdempiereException("@NoSelection@");
 		}
 
 		final ModelType record = InterfaceWrapperHelper.create(getCtx(), tableName, recordId, modelClass, trxName);
 		if (record == null || InterfaceWrapperHelper.isNew(record))
 		{
-			throw new AdempiereException("@NotFound@ @Record_ID@ (@TableName@:" + tableName + ", @Record_ID@:" + recordId + ")");
+			// NOTE: usually the error message will be displayed directly to user, so we shall have one as friendly as possible
+			throw new AdempiereException("@NoSelection@");
 		}
 
 		return record;
 	}
-
+	
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
@@ -364,7 +386,7 @@ public final class ProcessInfo implements Serializable
 
 		return Optional.of(record);
 	}
-
+	
 	/**
 	 * @return process title/name
 	 */
@@ -388,25 +410,45 @@ public final class ProcessInfo implements Serializable
 		return adRoleId;
 	}
 
+	private static final List<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
+	{
+		if (parametersOverride == null || parametersOverride.isEmpty())
+		{
+			return parameters == null ? ImmutableList.of() : parameters;
+		}
+
+		if (parameters == null || parameters.isEmpty())
+		{
+			return parametersOverride == null ? ImmutableList.of() : parametersOverride;
+		}
+
+		final Map<String, ProcessInfoParameter> parametersEffective = new HashMap<>();
+		parameters.forEach(pip -> parametersEffective.put(pip.getParameterName(), pip));
+		parametersOverride.forEach(pip -> parametersEffective.put(pip.getParameterName(), pip));
+
+		return ImmutableList.copyOf(parametersEffective.values());
+	}
+
 	/**
 	 * Get Process Parameters.
 	 *
 	 * If they were not already set, they will be loaded from database.
 	 *
-	 * @return Parameter Array
+	 * @return parameters; never returns null
 	 */
 	public final List<ProcessInfoParameter> getParameter()
 	{
 		if (parameters == null)
 		{
-			parameters = Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(getCtx(), getAD_PInstance_ID());
+			final List<ProcessInfoParameter> parametersFromDB = Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(getCtx(), getAD_PInstance_ID());
+			parameters = mergeParameters(parametersFromDB, parametersOverride);
 		}
 		return parameters;
 	}	// getParameter
 
 	public final List<ProcessInfoParameter> getParametersNoLoad()
 	{
-		return parameters;
+		return mergeParameters(parameters, parametersOverride);
 	}
 
 	/**
@@ -486,10 +528,20 @@ public final class ProcessInfo implements Serializable
 	 */
 	public <T> IQueryFilter<T> getQueryFilter()
 	{
+		// default: use a "neutral" filter that does not exclude anything
+		final ConstantQueryFilter<T> defaultQueryFilter = ConstantQueryFilter.of(true);
+		return getQueryFilterOrElse(defaultQueryFilter);
+	}
+
+	/**
+	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
+	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
+	 */
+	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
+	{
 		if (Check.isEmpty(whereClause, true))
 		{
-			// no whereClause: return a "neutral" filter that does not exclude anything
-			return ConstantQueryFilter.of(true);
+			return defaultQueryFilter;
 		}
 		return new TypedSqlQueryFilter<>(whereClause);
 	}
@@ -576,6 +628,7 @@ public final class ProcessInfo implements Serializable
 		private OutputType jrDesiredOutputType = null;
 
 		private List<ProcessInfoParameter> parameters = null;
+		private boolean loadParametersFromDB = false; // backward compatibility
 
 		private ProcessInfoBuilder()
 		{
@@ -1249,6 +1302,27 @@ public final class ProcessInfo implements Serializable
 			return adProcess != null ? adProcess.isReport() : false;
 		}
 
+		/**
+		 * Advises the builder to also try loading the parameters from database.
+		 * 
+		 * @param loadParametersFromDB
+		 *            <ul>
+		 *            <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
+		 *            <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
+		 *            be loaded from database but only those added here will be used.
+		 *            </ul>
+		 */
+		public ProcessInfoBuilder setLoadParametersFromDB(boolean loadParametersFromDB)
+		{
+			this.loadParametersFromDB = loadParametersFromDB;
+			return this;
+		}
+
+		private boolean isLoadParametersFromDB()
+		{
+			return loadParametersFromDB || parameters == null;
+		}
+
 		private List<ProcessInfoParameter> getParametersOrNull()
 		{
 			return parameters;
@@ -1309,7 +1383,7 @@ public final class ProcessInfo implements Serializable
 
 		/**
 		 * Extracts reporting language.
-		 *
+		 * 
 		 * @param pi
 		 * @return Language; never returns null
 		 */

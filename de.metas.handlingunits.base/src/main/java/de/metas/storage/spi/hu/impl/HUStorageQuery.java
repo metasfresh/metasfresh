@@ -226,7 +226,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 		// Filter by in scope M_Product_IDs
 		if (!_productIds.isEmpty())
 		{
-			huStorageQueryBuilder.addInArrayFilter(I_M_HU_Storage.COLUMN_M_Product_ID, _productIds);
+			huStorageQueryBuilder.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, _productIds);
 		}
 
 		huStorageQueryBuilder.orderBy()

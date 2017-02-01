@@ -115,21 +115,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 */
 	protected TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String tableName, final String whereClause, final String trxName)
 	{
+		super();
 		Check.assumeNotNull(ctx, "ctx not null");
 
 		this.modelClass = modelClass;
-
-		if (Check.isEmpty(tableName, true))
-		{
-			this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
-			Check.errorIf(Check.isEmpty(this.tableName, true),
-					"Parameter 'tableName' is empty, and tableName can not be deducted from modelClass={}; trxName={}; whereClause={}; ctx={}",
-					modelClass, trxName, whereClause, ctx);
-		}
-		else
-		{
-			this.tableName = tableName;
-		}
+		this.tableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
 
 		this.ctx = ctx;
 
@@ -141,7 +131,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		this(ctx,
 				modelClass,
-				InterfaceWrapperHelper.getTableName(modelClass),
+				(String)null, // tableName
 				whereClause,
 				trxName);
 	}

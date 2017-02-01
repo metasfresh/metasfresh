@@ -22,7 +22,6 @@ package de.metas.document.documentNo.impl;
  * #L%
  */
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -39,7 +38,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
-import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.Env;
@@ -74,11 +72,12 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	private Integer _adClientId;
 	private Boolean _isAdempiereSys;
-	private PO _po;
+	private Object _documentModel;
 	private Supplier<DocumentSequenceInfo> _documentSeqInfoSupplier;
 
 	private Integer _sequenceNo = null;
 	private boolean _failOnError = false; // default=false, for backward compatibility
+	private boolean _usePreliminaryDocumentNo = false; // default=false, for backward compatibility
 
 	DocumentNoBuilder()
 	{
@@ -129,10 +128,15 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		// Build DocumentNo
 		final StringBuilder documentNo = new StringBuilder();
 
+		//
 		// DocumentNo - Prefix
 		final String prefix = docSeqInfo.getPrefix();
-		documentNo.append(parseVariables(prefix));
+		if (!Check.isEmpty(prefix, true))
+		{
+			documentNo.append(prefix);
+		}
 
+		//
 		// DocumentNo - SequenceNo
 		final String decimalPattern = docSeqInfo.getDecimalPattern();
 		final String sequenceNoStr;
@@ -153,39 +157,31 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 		documentNo.append(sequenceNoStr);
 
+		//
 		// DocumentNo - Suffix
 		final String suffix = docSeqInfo.getSuffix();
-		documentNo.append(parseVariables(suffix));
-
-		return documentNo.toString();
-	}
-
-	/**
-	 * Parse context variables from given string.
-	 *
-	 * @param string
-	 * @return parsed string
-	 */
-	private final String parseVariables(final String string)
-	{
-		if (string == null || string.isEmpty())
+		if (!Check.isEmpty(suffix, true))
 		{
-			return "";
+			documentNo.append(suffix);
 		}
 
-		final PO po = getPO_OrNull();
-		final String trxName = getTrxName();
-		final boolean keepUnparseable = false;
-		final String stringParsed = Env.parseVariable(string, po, trxName, keepUnparseable);
-		return stringParsed;
+		//
+		// Append preliminary markers if needed
+		if (isUsePreliminaryDocumentNo())
+		{
+			documentNo.insert(0, IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_BEGIN).append(IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_END);
+		}
+
+		//
+		return documentNo.toString();
 	}
 
 	private String getCalendarYear(final String dateColumn)
 	{
-		final PO po = getPO_OrNull();
-		if (po != null && !Check.isEmpty(dateColumn, true))
+		final Object documentModel = getDocumentModelOrNull();
+		if (documentModel != null && !Check.isEmpty(dateColumn, true))
 		{
-			final Date docDate = (Date)po.get_Value(dateColumn);
+			final java.util.Date docDate = InterfaceWrapperHelper.getValueOrNull(documentModel, dateColumn);
 			if (docDate != null)
 			{
 				final String calendarYear = DATEFORMAT_CalendarYear.format(docDate);
@@ -220,6 +216,18 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		//
 		// Get and increment sequence number from database
+		if (isUsePreliminaryDocumentNo())
+		{
+			return retrieveSequenceCurrentNext(docSeqInfo);
+		}
+		else
+		{
+			return retrieveAndIncrementSequenceCurrentNext(docSeqInfo);
+		}
+	}
+
+	private int retrieveAndIncrementSequenceCurrentNext(final DocumentSequenceInfo docSeqInfo)
+	{
 		final String trxName = getTrxName();
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql;
@@ -267,6 +275,30 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return currentSeq.getValue();
 	}
 
+	private int retrieveSequenceCurrentNext(final DocumentSequenceInfo docSeqInfo)
+	{
+		final int adSequenceId = docSeqInfo.getAD_Sequence_ID();
+		final String trxName = getTrxName();
+
+		if (isAdempiereSys())
+		{
+			final String sql = "SELECT CurrentNextSys FROM AD_Sequence WHERE AD_Sequence_ID=?";
+			return DB.getSQLValueEx(trxName, sql, adSequenceId);
+		}
+		else if (docSeqInfo.isStartNewYear())
+		{
+			final String calendarYear = getCalendarYear(docSeqInfo.getDateColumn());
+
+			final String sql = "SELECT CurrentNext AD_Sequence_No WHERE AD_Sequence_ID = ? AND CalendarYear = ?";
+			return DB.getSQLValueEx(trxName, sql, adSequenceId, calendarYear);
+		}
+		else
+		{
+			final String sql = "SELECT CurrentNext FROM AD_Sequence WHERE AD_Sequence_ID=?";
+			return DB.getSQLValueEx(trxName, sql, adSequenceId);
+		}
+	}
+
 	@Override
 	public DocumentNoBuilder setTrxName(final String trxName)
 	{
@@ -308,22 +340,30 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			return _adClientId;
 		}
 
-		final PO po = getPO_OrNull();
-		if (po != null)
+		final Object documentModel = getDocumentModelOrNull();
+		if (documentModel != null)
 		{
-			_adClientId = po.getAD_Client_ID();
-			return _adClientId;
+			final Integer adClientId = InterfaceWrapperHelper.getValueOrNull(documentModel, "AD_Client_ID");
+			if (adClientId != null)
+			{
+				_adClientId = adClientId;
+				return adClientId;
+			}
 		}
 
 		throw new DocumentNoBuilderException("Cannot find AD_Client_ID");
 	}
-	
+
 	private final int getAD_Org_ID()
 	{
-		final PO po = getPO_OrNull();
-		if (po != null)
+		final Object documentModel = getDocumentModelOrNull();
+		if (documentModel != null)
 		{
-			return po.getAD_Org_ID();
+			final Integer adOrgId = InterfaceWrapperHelper.getValueOrNull(documentModel, "AD_Org_ID");
+			if (adOrgId != null)
+			{
+				return adOrgId;
+			}
 		}
 
 		return Env.CTXVALUE_AD_Org_ID_Any;
@@ -337,8 +377,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return documentSeqInfo;
 	}
 
-	@Override
-	public DocumentNoBuilder setDocumentSequenceInfo(final Supplier<DocumentSequenceInfo> documentSeqInfoSupplier)
+	private DocumentNoBuilder setDocumentSequenceInfo(final Supplier<DocumentSequenceInfo> documentSeqInfoSupplier)
 	{
 		_documentSeqInfoSupplier = Suppliers.memoize(documentSeqInfoSupplier);
 		return this;
@@ -356,35 +395,17 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	{
 		Check.assumeNotEmpty(tableName, DocumentNoBuilderException.class, "tableName not empty");
 		final String sequenceName = PREFIX_DOCSEQ + tableName;
-		setDocumentSequenceInfo(new Supplier<DocumentSequenceInfo>()
-		{
-
-			@Override
-			public DocumentSequenceInfo get()
-			{
-				final DocumentSequenceInfo documentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
-				return documentSeqInfo;
-			}
-		});
-
+		setDocumentSequenceInfo(() -> documentSequenceDAO.retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId));
 		return this;
 	}
 
 	@Override
-	public DocumentNoBuilder setSequenceByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
+	public DocumentNoBuilder setDocumentSequenceByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
 	{
-		setDocumentSequenceInfo(new Supplier<DocumentSequenceInfo>()
-		{
-			@Override
-			public DocumentSequenceInfo get()
-			{
-				return retrieveDocumentSequenceInfoByDocTypeId(C_DocType_ID, useDefiniteSequence);
-			}
-		});
-
+		setDocumentSequenceInfo(() -> retrieveDocumentSequenceInfoByDocTypeId(C_DocType_ID, useDefiniteSequence));
 		return this;
 	}
-	
+
 	private DocumentSequenceInfo retrieveDocumentSequenceInfoByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
 	{
 		Check.assume(C_DocType_ID > 0, DocumentNoBuilderException.class, "C_DocType_ID > 0");
@@ -426,21 +447,20 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 		final DocumentSequenceInfo documentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
 		return documentSeqInfo;
-		
+
 	}
 
-	private PO getPO_OrNull()
+	private Object getDocumentModelOrNull()
 	{
-		return _po;
+		return _documentModel;
 	}
 
 	@Override
-	public DocumentNoBuilder setPO(final PO po)
+	public DocumentNoBuilder setDocumentModel(final Object documentModel)
 	{
-		_po = po;
+		_documentModel = documentModel;
 		return this;
 	}
-
 
 	@Override
 	public DocumentNoBuilder setSequenceNo(final int sequenceNo)
@@ -460,5 +480,17 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private final boolean isFailOnError()
 	{
 		return _failOnError;
+	}
+
+	@Override
+	public DocumentNoBuilder setUsePreliminaryDocumentNo(final boolean usePreliminaryDocumentNo)
+	{
+		this._usePreliminaryDocumentNo = usePreliminaryDocumentNo;
+		return this;
+	}
+
+	private boolean isUsePreliminaryDocumentNo()
+	{
+		return _usePreliminaryDocumentNo;
 	}
 }

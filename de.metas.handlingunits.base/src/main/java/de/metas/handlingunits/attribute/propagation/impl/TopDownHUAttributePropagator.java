@@ -118,6 +118,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 		// Check which of our child attributes are aware of propagation and build a list with them
 		final List<IAttributeStorage> childrenAttributeSets = new ArrayList<IAttributeStorage>(childrenAttributeSetsAll.size());
 		final List<IHUAttributePropagator> childrenAttributeSetPropagators = new ArrayList<IHUAttributePropagator>(childrenAttributeSetsAll.size());
+		
 		for (final IAttributeStorage childAttributeSet : childrenAttributeSetsAll)
 		{
 			IHUAttributePropagator childPropagator = propagationContext.getPropagator();

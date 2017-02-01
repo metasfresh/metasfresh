@@ -106,7 +106,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 		{
 			final IQuery<I_C_Invoice> invoiceQuery = queryBL.createQueryBuilder(I_C_Invoice.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+					.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 					.create();
 
 			queryBuilder.addInSubQueryFilter(I_C_InvoiceLine.COLUMN_C_Invoice_ID,

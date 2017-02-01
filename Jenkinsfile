@@ -677,8 +677,9 @@ stage('Deployment')
 				}
 				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
 				
-				echo "Building and installing the latest metasfresh-webui-frontend"
-				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh");
+				// FIXME: commented out because it's not working
+				//echo "Building and installing the latest metasfresh-webui-frontend"
+				//invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh");
 				
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
 				step([$class: 'WsCleanup', cleanWhenFailure: false])

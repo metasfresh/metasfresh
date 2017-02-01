@@ -1,5 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -35,11 +39,13 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
@@ -47,7 +53,7 @@ import de.metas.shipping.interfaces.I_M_Package;
 /**
  * Test case:
  * <ul>
- * <li>split each TU fully to an LU in Verdichtung
+ * <li>split each TU <i>fully</i> to an LU in Verdichtung
  * <li>assume: both TUs end up on a single shipment, on different lines (one per line per shipment schedule)
  * </ul>
  */
@@ -91,11 +97,11 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		//
 		// Assign TUs to palettes
 		final IMutable<I_M_HU> afterAggregation_LU1 = new Mutable<>();
-		final IMutable<I_M_HU> tu1 = new Mutable<>();
+		// final IMutable<I_M_HU> tu1 = new Mutable<>(); there won't be any tu1 because the result of tuHU1's split will be a LU with an aggregate VHU
 		final IMutable<I_M_HU> vhu1 = new Mutable<>();
 
 		final IMutable<I_M_HU> afterAggregation_LU2 = new Mutable<>();
-		final IMutable<I_M_HU> tu2 = new Mutable<>();
+		// final IMutable<I_M_HU> tu2 = new Mutable<>(); there won't be any tu2 because the result of tuHU2's split will be a LU with an aggregate VHU
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
 		final IMutable<I_M_HU> tu3 = new Mutable<>();
 		final IMutable<I_M_HU> vhu3 = new Mutable<>();
@@ -106,71 +112,65 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		final IMutable<I_M_HU> tu6 = new Mutable<>();
 		final IMutable<I_M_HU> vhu6 = new Mutable<>();
 
+		// split everything from tuHU1 and tuHU2 onto one respective LU each
 		final List<I_M_HU> splitSS1LUs = splitOnLU(tuHU1, pTomato, new BigDecimal("30"));
+		assertThat(splitSS1LUs.size(), is(1));
+
 		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSalad, new BigDecimal("10"));
+		assertThat(splitSS2LUs.size(), is(1));
+
 		final I_M_HU splitSS2LU = splitSS2LUs.get(0); // we split full qty on a palette
+
+		// also add tuHU3 to tuHU6 onto the 2nd LU
 		helper.joinHUs(huContext, splitSS2LU, tuHU3, tuHU4, tuHU5, tuHU6);
 
 		final List<I_M_HU> allSplitHUs = new ArrayList<>();
 		allSplitHUs.addAll(splitSS1LUs);
 		allSplitHUs.addAll(splitSS2LUs);
 
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
+
 		//
 		// Validate split LU/TU/VHUs
 		//@formatter:off
 		afterAggregation_HUExpectations = new HUsExpectation()
 			//
-			// LU
+			// first LU
 			.newHUExpectation()
 				.capture(afterAggregation_LU1)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				.newHUItemExpectation(piLU_Item)
+				.newHUItemExpectation()
 					//
-					// TUs
+					// aggregate HU
+					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.newIncludedHUExpectation()
-						.capture(tu1)
-						.huPI(piTU)
+						.capture(vhu1)
+						.huPI(null)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newHUItemExpectation(piTU_Item)
-							//
-							// VHUs
-							.newIncludedVirtualHU()
-								.capture(vhu1)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
-										.product(pTomato).qty("30").uom(productUOM)
-										.endExpectation()
-									.endExpectation()
-								.endExpectation()
-							.endExpectation()
-						.endExpectation()
-					.endExpectation()
-				.endExpectation()
+						.newHUItemExpectation()
+							.noIncludedHUs()
+							.itemType(X_M_HU_Item.ITEMTYPE_Material)
+							.newItemStorageExpectation()
+								.product(pTomato).qty("30").uom(productUOM)
+							.endExpectation() // itemStorageExcpectation
+						.endExpectation() // newHUItemExpectation;
+					
+						// note: no packing material item because we didn't create a PM PI item
+						
+					.endExpectation() // included aggregate VHU
+				.endExpectation() // HUAggreagate item
+			.endExpectation() // first LU
+
+			// second LU
 			.newHUExpectation()
 				.capture(afterAggregation_LU2)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
+				
+				// now we still have have tuHU3, tuHU4, tuHU5 and tuHU6 that were not destroyed but simply joined to the 2nd LU
 				.newHUItemExpectation(piLU_Item)
-					//
-					// TUs
-					.newIncludedHUExpectation()
-						.capture(tu2)
-						.huPI(piTU)
-						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newHUItemExpectation(piTU_Item)
-							//
-							// VHUs
-							.newIncludedVirtualHU()
-								.capture(vhu2)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
-										.product(pSalad).qty("10").uom(productUOM)
-										.endExpectation()
-									.endExpectation()
-								.endExpectation()
-							.endExpectation()
-					.endExpectation()
+					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.newIncludedHUExpectation()
 						.capture(tu3)
 						.huPI(piTU)
@@ -240,22 +240,56 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 							.endExpectation()
 						.endExpectation()
 					.endExpectation()
-				.endExpectation()
-			//
-			.assertExpected("split HUs", allSplitHUs);
+
+					.newHUItemExpectation()
+						//
+						// aggregate HU of the 2nd LU; it only contains the qty that were split onto the new LU
+						.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
+						.newIncludedHUExpectation() // the aggregate VHU
+							.capture(vhu2)
+							.huPI(null)
+							.huStatus(X_M_HU.HUSTATUS_Picked)
+							
+							.newHUItemExpectation()
+								.itemType(X_M_HU_Item.ITEMTYPE_Material)
+								.noIncludedHUs()
+								.newItemStorageExpectation()
+									.product(pSalad).qty("10").uom(productUOM)
+								.endExpectation()
+							.endExpectation()
+
+							// note: no packing material item because we didn't create a PM PI item
+
+						.endExpectation() // the aggregate VHU
+					.endExpectation() // HUAggregate item
+					
+			.endExpectation() // 2nd LU
+		.assertExpected("split HUs", allSplitHUs);
 		//@formatter:on
 
+		// set instance names to make it easier to understand which HU is "wrong"
+		POJOWrapper.setInstanceName(afterAggregation_LU1.getValue(), "afterAggregation_LU1");
+		POJOWrapper.setInstanceName(vhu1.getValue(), "vhu1");
+		POJOWrapper.setInstanceName(afterAggregation_LU2.getValue(), "afterAggregation_LU2");
+		POJOWrapper.setInstanceName(vhu2.getValue(), "vhu2");
+		POJOWrapper.setInstanceName(tu3.getValue(), "tu3");
+		POJOWrapper.setInstanceName(vhu3.getValue(), "vhu3");
+		POJOWrapper.setInstanceName(tu4.getValue(), "tu4");
+		POJOWrapper.setInstanceName(vhu4.getValue(), "vhu4");
+		POJOWrapper.setInstanceName(tu5.getValue(), "tu5");
+		POJOWrapper.setInstanceName(vhu5.getValue(), "vhu5");
+		POJOWrapper.setInstanceName(tu6.getValue(), "tu6");
+		POJOWrapper.setInstanceName(vhu6.getValue(), "vhu6");
+		
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
+		
 		//
 		// Validate Shipment Schedule assignments for splitHU's VHUs
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations = new ShipmentScheduleQtyPickedExpectations()
 			.newShipmentScheduleQtyPickedExpectation() // 0 - Tomato
 				.shipmentSchedule(shipmentSchedule1)
-				.lu(afterAggregation_LU1).tu(tu1).vhu(vhu1).qtyPicked("30")
-				.endExpectation()
-			.newShipmentScheduleQtyPickedExpectation() // 1 - Salad
-				.shipmentSchedule(shipmentSchedule2)
-				.lu(afterAggregation_LU2).tu(tu2).vhu(vhu2).qtyPicked("10")
+				.lu(afterAggregation_LU1).tu(vhu1).vhu(vhu1).qtyPicked("30")
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation() // 2 - Salad
 				.shipmentSchedule(shipmentSchedule2)
@@ -272,6 +306,12 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 			.newShipmentScheduleQtyPickedExpectation() // 5 - Salad
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu6).vhu(vhu6).qtyPicked("10")
+				.endExpectation()
+			
+			// this is the expectation which covers the aggregate VHU of the 2nd LU.
+			.newShipmentScheduleQtyPickedExpectation() // 1 - Salad
+				.shipmentSchedule(shipmentSchedule2)
+				.lu(afterAggregation_LU2).tu(vhu2).vhu(vhu2).qtyPicked("10")
 				.endExpectation()
 			.assertExpected("after loading on palette(s)");
 		//@formatter:on

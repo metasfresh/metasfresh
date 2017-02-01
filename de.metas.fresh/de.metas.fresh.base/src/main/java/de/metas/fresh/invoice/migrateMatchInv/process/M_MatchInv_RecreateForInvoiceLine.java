@@ -110,7 +110,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus
-			invoiceQueryBuilder.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			invoiceQueryBuilder.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
 
 			// IsSOTrx
 			if (p_IsSOTrx != null)

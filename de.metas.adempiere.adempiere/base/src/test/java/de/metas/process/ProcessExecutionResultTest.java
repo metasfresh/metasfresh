@@ -1,5 +1,7 @@
 package de.metas.process;
 
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -10,9 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.process.ProcessExecutionResult;
 
 /*
  * #%L
@@ -50,15 +52,13 @@ public class ProcessExecutionResultTest
 	@Test
 	public void testJsonSerializeDeserialize() throws Exception
 	{
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
-		InterfaceWrapperHelper.save(invoice);
-		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
+		final List<TableRecordReference> invoiceRefs = ImmutableList.of(createDummyTableRecordReference(), createDummyTableRecordReference());
 
 		ProcessExecutionResult result = new ProcessExecutionResult();
 		result.setAD_PInstance_ID(12345);
-		result.setRecordToSelectAfterExecution(invoiceRef);
+		result.setRecordsToSelectAfterExecution(invoiceRefs);
 		result.markAsError("error summary1");
-		result.setReportData(new byte[]{1, 2,  3}, "report.pdf", "application/pdf");
+		result.setReportData(new byte[] { 1, 2, 3 }, "report.pdf", "application/pdf");
 		System.out.println("result: " + result);
 
 		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
@@ -80,7 +80,18 @@ public class ProcessExecutionResultTest
 		Assert.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
 		Assert.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
 		//
+		Assert.assertEquals(result.getRecordsToSelectAfterExecution(), resultFromJson.getRecordsToSelectAfterExecution());
+		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
+		//
 		// Assert.assertEquals(result.get, resultFromJson.get);
+	}
+
+	private static final TableRecordReference createDummyTableRecordReference()
+	{
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
+		InterfaceWrapperHelper.save(invoice);
+		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
+		return invoiceRef;
 	}
 
 }

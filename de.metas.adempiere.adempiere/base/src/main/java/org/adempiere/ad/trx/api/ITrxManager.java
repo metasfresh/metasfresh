@@ -70,9 +70,6 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Creates a builder for a transaction runnable configuration.
 	 *
-	 * @param trxMode
-	 * @param onRunnableSuccess
-	 * @param onRunnableFail
 	 * @return
 	 */
 	ITrxRunConfigBuilder newTrxRunConfigBuilder();
@@ -82,14 +79,23 @@ public interface ITrxManager extends ISingletonService
 		/**
 		 * Decide if the connection should perform an auto-commit after each statement.
 		 * Makes e.g. sense with long-running transactions that only do selects (yes, also a select acquires a lock).
+		 * <p>
 		 * The default is <code>false</code>.
 		 */
 		ITrxRunConfigBuilder setAutoCommit(boolean autoCommit);
 
+		/**
+		 * The default is {@link TrxPropagation#REQUIRES_NEW}.
+		 * 
+		 * @param trxPropagation
+		 * @return
+		 */
 		ITrxRunConfigBuilder setTrxPropagation(TrxPropagation trxPropagation);
 
 		/**
 		 * What to do if a runnable succeeds. Ignored if autoCommit is <code>true</code>.
+		 * <p>
+		 * The default is {@link OnRunnableSuccess#COMMIT}
 		 *
 		 * @param onRunnableSuccess
 		 * @return
@@ -97,7 +103,9 @@ public interface ITrxManager extends ISingletonService
 		ITrxRunConfigBuilder setOnRunnableSuccess(OnRunnableSuccess onRunnableSuccess);
 
 		/**
-		 * Specify what to do if a runnable fails. Ignored if autoCommit is <code>true</code>,
+		 * Specify what to do if a runnable fails. Ignored if autoCommit is <code>true</code>.
+		 * <p>
+		 * the default is {@link OnRunnableFail#ASK_RUNNABLE}.
 		 *
 		 * @param onRunnableFail
 		 * @return

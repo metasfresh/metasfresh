@@ -51,7 +51,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.interfaces.I_M_Warehouse;
 
-@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class HUIssueTestHelper extends HUTestHelper
 {
 
