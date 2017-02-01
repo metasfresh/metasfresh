@@ -27,8 +27,9 @@ class RawWidget extends Component {
     }
 
     componentDidMount(){
-        if(this.component && this.props.autoFocus){
-            this.component.focus();
+        const {autoFocus} = this.props
+        if(this.rawWidget && autoFocus){
+            this.rawWidget.focus();
         }
     }
 
@@ -140,7 +141,7 @@ class RawWidget extends Component {
                             (rowId && !isModal ? "input-table " : "")
                         }>
                             <DatePicker
-                                ref={c => this.component = c}
+                                ref={c => this.rawWidget = c}
                                 timeFormat={false}
                                 dateFormat={true}
                                 inputProps={{
@@ -167,7 +168,7 @@ class RawWidget extends Component {
                         (((rowId && !isModal)) ? "input-table " : "")
                     }>
                         <DatePicker
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             timeFormat={true}
                             dateFormat={true}
                             inputProps={{
@@ -194,7 +195,7 @@ class RawWidget extends Component {
                         ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <DatePicker
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{
@@ -284,7 +285,7 @@ class RawWidget extends Component {
                     >
                         <input
                             type="text"
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
                             value={selectedField}
                             placeholder={widgetFields.emptyText}
@@ -310,7 +311,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <textarea
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
                             value={filterWidget ? textValue : selectedField}
                             disabled={widgetData.readonly}
@@ -335,7 +336,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
@@ -362,7 +363,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             value={selectedField}
@@ -387,7 +388,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
@@ -414,7 +415,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
@@ -441,7 +442,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
                             value={selectedField}
@@ -461,7 +462,7 @@ class RawWidget extends Component {
                             (widgetData.readonly ? "input-disabled " : "")
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => this.component = c}
+                        ref={c => this.rawWidget = c}
                         onKeyDown={e => {
                             if(e.key === " "){
                                 e.preventDefault();
@@ -470,7 +471,7 @@ class RawWidget extends Component {
                         }}
                     >
                         <input
-                            ref={c => this.component = c}
+                            ref={c => this.rawWidget = c}
                             type="checkbox"
                             checked={selectedField}
                             disabled={widgetData.readonly}
@@ -524,7 +525,7 @@ class RawWidget extends Component {
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
-                        ref={c => this.component = c}
+                        ref={c => this.rawWidget = c}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
                     </button>
@@ -539,7 +540,7 @@ class RawWidget extends Component {
                         onChange={(option) => this.handlePatch(fields[1].field, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         dropdownOpenCallback={dropdownOpenCallback}
-                        ref={c => this.component = c}
+                        ref={c => this.rawWidget = c}
                     />
                 )
             case "ProductAttributes":
