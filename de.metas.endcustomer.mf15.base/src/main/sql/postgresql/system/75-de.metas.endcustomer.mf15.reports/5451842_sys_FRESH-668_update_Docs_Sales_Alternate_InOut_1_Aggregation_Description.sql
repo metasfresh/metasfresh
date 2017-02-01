@@ -33,8 +33,6 @@ WHERE
 		FROM	M_InOut 
 		WHERE 	DocStatus = 'CO' 
 			AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 )
-			AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-			AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1 )
 			AND isActive = 'Y'
 	)
 $$

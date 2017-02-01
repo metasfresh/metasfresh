@@ -31,11 +31,7 @@ FROM
 	-- Begin from a prefiltered InOut Table so InOutLines can be joined using the Index
 	(	
 		SELECT * FROM M_InOut io 
-		WHERE io.DocStatus = 'CO' 	
-				AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 )
-				AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-				AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1 ) 
-				AND io.isActive = 'Y' 
+		WHERE io.DocStatus = 'CO' AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 AND isActive = 'Y') AND io.isActive = 'Y' 
 	) io
 	INNER JOIN M_InOutLine iol			ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner bp			ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'

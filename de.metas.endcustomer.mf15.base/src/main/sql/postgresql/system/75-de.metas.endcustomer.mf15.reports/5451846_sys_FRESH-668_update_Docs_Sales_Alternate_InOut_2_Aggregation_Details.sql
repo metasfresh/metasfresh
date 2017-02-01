@@ -40,10 +40,7 @@ FROM
 		SELECT	*, rank() OVER ( PARTITION BY '' ORDER BY MovementDate, M_InOut_ID ) as transp
 		FROM	M_InOut io 
 		WHERE 	io.DocStatus = 'CO' 
-			AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1)
-			AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1)
-			AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1) 
-			AND io.isActive = 'Y' 
+			AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 AND isActive = 'Y') AND io.isActive = 'Y' 
 	) io
 	LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
@@ -52,11 +49,7 @@ FROM
 			AVG(ic.PriceActual_Override) AS PriceActual_Override, AVG(ic.PriceActual) AS PriceActual,
 			AVG(ic.Discount_Override) AS Discount_Override, AVG(ic.Discount) AS Discount, ic.Price_UOM_ID, iol.M_InOutLine_ID
 		FROM 	
-			(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' 
-										AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 )  
-										AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-										AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-										AND io.isActive = 'Y') io
+			(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1  AND isActive = 'Y')  AND io.isActive = 'Y') io
 			LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 			INNER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
 			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
@@ -77,11 +70,7 @@ FROM
 					COALESCE ( pifb.name, pi.name ) AS name,
 					iol.M_InOutLine_ID
 				FROM
-					(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' 
-													AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND io.isActive = 'Y') io
+					(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 AND isActive = 'Y')  AND io.isActive = 'Y') io
 					LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 					-- Get PI directly from InOutLine (1 to 1) 
 					LEFT OUTER JOIN M_HU_PI_Item_Product pi ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
