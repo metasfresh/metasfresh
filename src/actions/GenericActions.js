@@ -98,7 +98,9 @@ export function completeRequest(
     );
 }
 
-export function autocompleteRequest(docType, propertyName, query, docId, tabId, rowId, entity, subentity, subentityId) {
+export function autocompleteRequest(
+    docType, propertyName, query, docId, tabId, rowId, entity, subentity, subentityId
+) {
     return () => axios.get(
         config.API_URL +
         '/' + entity +
@@ -113,7 +115,9 @@ export function autocompleteRequest(docType, propertyName, query, docId, tabId, 
     );
 }
 
-export function dropdownRequest(docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId) {
+export function dropdownRequest(
+    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId
+) {
     return () => axios.get(
         config.API_URL +
         '/' + entity +

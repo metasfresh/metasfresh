@@ -159,26 +159,30 @@ class TableItem extends Component {
             )
         }
 
-        return (
-            <div
-                className="indent"
-            >
-                {indentation}
-
-                {(huType == "LU" || huType == "TU") &&
-                    <div className="indent-bot"/>
-                }
-
+        if(indentation.length > 0){
+            return (
                 <div
-                    className="indent-icon"
-                    onClick={() => this.handleIndentSelect(includedDocuments)}
+                    className="indent"
                 >
-                    {huType == "LU" && <i className="meta-icon-palette"/>}
-                    {huType == "TU" && <i className="meta-icon-package"/>}
-                    {huType == "V" && <i className="meta-icon-product"/>}
+                    {indentation}
+
+                    {(huType == "LU" || huType == "TU") &&
+                        <div className="indent-bot"/>
+                    }
+
+                    <div
+                        className="indent-icon"
+                        onClick={() => this.handleIndentSelect(includedDocuments)}
+                    >
+                        {huType == "LU" && <i className="meta-icon-palette"/>}
+                        {huType == "TU" && <i className="meta-icon-package"/>}
+                        {huType == "V" && <i className="meta-icon-product"/>}
+                    </div>
                 </div>
-            </div>
-        )
+            );
+        }else{
+            return false;
+        }
     }
 
     render() {
