@@ -27,6 +27,7 @@ upcoming Release
 * metasfresh
   * #863 No Result Window for Prosesses that don't allow rerun
   * #879 Fix "ValueType not supported: D" when HU attributes are generated
+  * #781 ESR scan processing returns improper bpartner
 
 * webui
   * #204 Can not complete Order
