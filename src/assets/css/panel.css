@@ -17,8 +17,11 @@
 }
 
 .panel-distance {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.row:first-child .panel-distance:first-child {
     margin-top: 2.25rem;
-    margin-bottom: 2.25rem;
 }
 
 .panel-distance:last-child {
@@ -29,7 +32,7 @@
     margin: 0;
 }
 
-.panel-distance.panel-secondary:first-child {
+.row:first-child .panel-distance.panel-secondary:first-child {
     margin-top: 2.25rem;
 }
 

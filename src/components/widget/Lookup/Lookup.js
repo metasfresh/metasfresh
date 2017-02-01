@@ -59,7 +59,7 @@ class Lookup extends Component {
     handleSelect = (select) => {
         const {
             dispatch, properties, onChange, dataId, fields, filterWidget,
-            parameterName, setSelectedItem, windowType
+            parameterName, setSelectedItem, windowType, subentity
         } = this.props;
 
         const {
@@ -81,17 +81,21 @@ class Lookup extends Component {
                 // handling selection when main is not set or set.
 
                 if(property === "") {
-                    const promise = onChange(mainProperty[0].field, select);
+                    const promise = onChange(mainProperty[0].field, select, this.getAllDropdowns);
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
 
                     // handle case when there is no call to Api
                     // by the cached value
                     if(!promise){
-                        this.getAllDropdowns();
+                        if(!subentity){
+                            this.getAllDropdowns();
+                        }
                     }else{
                         promise.then(() => {
-                            this.getAllDropdowns();
+                            if(!subentity){
+                                this.getAllDropdowns();
+                            }    
                         }
                     )}
                 } else {
@@ -124,10 +128,8 @@ class Lookup extends Component {
             propertiesCopy
         } = this.state;
 
-
         // call for more properties
         if(propertiesCopy.length > 0){
-
             const batchArray = propertiesCopy.map((item) =>
                 dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
@@ -195,10 +197,16 @@ class Lookup extends Component {
         dispatch(openModal("Add new", windowType, "window"));
     }
 
-    handleBlur = () => {
+    handleBlur = (callback) => {
+        
         this.setState(Object.assign({}, this.state, {
             isOpen: false
-        }))
+        }), () => {
+            if(callback) {
+                callback();
+            }
+            
+        })
     }
 
     handleFocus = () => {
@@ -249,25 +257,26 @@ class Lookup extends Component {
         }
     }
 
-    handleClear = (e) => {
-        const {onChange, properties, defaultValue} = this.props;
-        e && e.preventDefault();
-        this.inputSearch.value = "";
-
-        properties.map(item => {
-            onChange(item.field, "");
-        });
-
+    clearState = () => {
         this.setState(Object.assign({}, this.state, {
             list: [],
             isInputEmpty: true,
             selected: null,
             model: null,
             property: "",
-            loading: false
+            loading: false,
+            query: ""
         }));
+    }
 
-        this.handleBlur();
+    handleClear = (e) => {
+        const {onChange, properties, defaultValue, subentity} = this.props;
+        e && e.preventDefault();
+        this.inputSearch.value = "";
+
+        onChange(properties, "", false);
+        
+        this.handleBlur(this.clearState);
     }
 
     handleKeyDown = (e) => {
@@ -358,6 +367,7 @@ class Lookup extends Component {
             propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
 
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
@@ -392,6 +402,7 @@ class Lookup extends Component {
                             tabIndex={tabIndex}
                         />
                     </div>
+
                     {(propertiesCopy.length > 0) && <div className="input-rest">
                         {propertiesCopy.map((item, index) => {
                             const objectValue = getItemsByProperty(defaultValue, "field", item.field)[0].value;
