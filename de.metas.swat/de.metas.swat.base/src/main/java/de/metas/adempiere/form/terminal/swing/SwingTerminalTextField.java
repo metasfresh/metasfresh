@@ -365,6 +365,11 @@ import net.miginfocom.swing.MigLayout;
 	@Override
 	public String getText()
 	{
+		// task #857
+		// TODO: why not calling getFieldValue ... or move the code from field value here and call getText() from getFieldValue() ?!
+		// Not suitable at the moment because of the Date fields, which are JFormattedTextField, with defined formatter but have nothing
+		// in the Value, only in the Text.
+		// See implementation of de.metas.adempiere.form.terminal.swing.SwingTerminalTextField.getFieldValue()
 		return textComponent.getText();
 	}
 
