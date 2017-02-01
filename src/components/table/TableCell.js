@@ -41,28 +41,35 @@ class TableCell extends Component {
         }
     }
 
+    createDate = (field) => {
+        if(field){
+            let d = new Date(field);
+            let date = Moment(d).format('DD.MM.YYYY');
+            return date;
+        } else {
+            // specified case to avoid parsing "error" text
+            return "";
+        }
+    }
+
     fieldToString = (field, type) => {
         if(field === null){
             return "";
         }else{
             switch(typeof field){
                 case "object":
-                    return field[Object.keys(field)[0]];
+                    if(type === "Date" || type === "DateTime" || type === "Time"){
+                        return this.createDate(field);
+                    } else {
+                        return field[Object.keys(field)[0]];
+                    }
                     break;
                 case "boolean":
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
                     break;
                 case "string":
                     if(type === "Date" || type === "DateTime" || type === "Time"){
-                        if(field){
-                            let d = new Date(field);
-                            let date = Moment(d).format('DD.MM.YYYY');
-                            return date;
-                        } else {
-                            // specified case to avoid parsing "error" text
-                            return "";
-                        }
-                        
+                        return this.createDate(field);
                     } else {
                         return field;
                     }
@@ -71,6 +78,7 @@ class TableCell extends Component {
                     return field;
             }
         }
+        
     }
 
     render() {
