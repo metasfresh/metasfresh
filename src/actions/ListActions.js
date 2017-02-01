@@ -68,3 +68,11 @@ export function initDocumentView(viewId) {
         viewId: viewId
     }
 }
+
+export function quickActionsRequest(windowId, viewId) {
+    return () => axios.get(
+        config.API_URL + 'documentView/' + 
+        windowId + viewId +
+        '/quickActions'
+    );
+}
