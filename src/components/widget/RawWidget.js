@@ -26,6 +26,12 @@ class RawWidget extends Component {
         }
     }
 
+    componentDidMount(){
+        if(this.component && this.props.autoFocus){
+            this.component.focus();
+        }
+    }
+
     handleSelectedValue = (item) => {
         const {setSelectedItem} = this.props
         this.setState(Object.assign({}, this.state, {
@@ -134,6 +140,7 @@ class RawWidget extends Component {
                             (rowId && !isModal ? "input-table " : "")
                         }>
                             <DatePicker
+                                ref={c => this.component = c}
                                 timeFormat={false}
                                 dateFormat={true}
                                 inputProps={{
@@ -144,7 +151,6 @@ class RawWidget extends Component {
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
-                                ref={c => {(c && autoFocus) && c.focus()}}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -161,6 +167,7 @@ class RawWidget extends Component {
                         (((rowId && !isModal)) ? "input-table " : "")
                     }>
                         <DatePicker
+                            ref={c => this.component = c}
                             timeFormat={true}
                             dateFormat={true}
                             inputProps={{
@@ -172,7 +179,6 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -188,6 +194,7 @@ class RawWidget extends Component {
                         ((rowId && !isModal) ? "input-table " : "")
                     }>
                         <DatePicker
+                            ref={c => this.component = c}
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{
@@ -199,7 +206,6 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -278,7 +284,7 @@ class RawWidget extends Component {
                     >
                         <input
                             type="text"
-                            ref={c => this.input = c}
+                            ref={c => this.component = c}
                             className="input-field js-input-field"
                             value={selectedField}
                             placeholder={widgetFields.emptyText}
@@ -287,7 +293,6 @@ class RawWidget extends Component {
                             onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
@@ -305,6 +310,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <textarea
+                            ref={c => this.component = c}
                             className="input-field js-input-field"
                             value={filterWidget ? textValue : selectedField}
                             disabled={widgetData.readonly}
@@ -313,7 +319,6 @@ class RawWidget extends Component {
                             onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -330,6 +335,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
+                            ref={c => this.component = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
@@ -340,7 +346,6 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -357,6 +362,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
+                            ref={c => this.component = c}
                             type="number"
                             className="input-field js-input-field"
                             value={selectedField}
@@ -365,7 +371,6 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -382,6 +387,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
+                            ref={c => this.component = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
@@ -392,7 +398,6 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -409,6 +414,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
+                            ref={c => this.component = c}
                             type="number"
                             className="input-field js-input-field"
                             min="0"
@@ -419,7 +425,6 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -436,6 +441,7 @@ class RawWidget extends Component {
                         (isEdited ? "input-focused " : "")
                     }>
                         <input
+                            ref={c => this.component = c}
                             type="number"
                             className="input-field js-input-field"
                             value={selectedField}
@@ -444,7 +450,6 @@ class RawWidget extends Component {
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                     </div>
                 )
@@ -456,7 +461,7 @@ class RawWidget extends Component {
                             (widgetData.readonly ? "input-disabled " : "")
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => this.input = c}
+                        ref={c => this.component = c}
                         onKeyDown={e => {
                             if(e.key === " "){
                                 e.preventDefault();
@@ -465,12 +470,12 @@ class RawWidget extends Component {
                         }}
                     >
                         <input
+                            ref={c => this.component = c}
                             type="checkbox"
                             checked={selectedField}
                             disabled={widgetData.readonly}
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
-                            ref={c => {(c && autoFocus) && c.focus()}}
                         />
                         <div className={"input-checkbox-tick"}/>
                     </label>
@@ -519,7 +524,7 @@ class RawWidget extends Component {
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         fullScreen={fullScreen}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.component = c}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
                     </button>
@@ -534,7 +539,7 @@ class RawWidget extends Component {
                         onChange={(option) => this.handlePatch(fields[1].field, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         dropdownOpenCallback={dropdownOpenCallback}
-                        ref={c => {(c && autoFocus) && c.focus()}}
+                        ref={c => this.component = c}
                     />
                 )
             case "ProductAttributes":
