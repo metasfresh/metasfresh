@@ -74,6 +74,6 @@ export function quickActionsRequest(windowId, viewId, selectedIds) {
         config.API_URL + '/documentView/' +
         windowId + '/' + viewId +
         '/quickActions' +
-        (selectedIds ? "selectedIds=" + selectedIds : "")
+        (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
     );
 }

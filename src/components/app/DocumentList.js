@@ -3,6 +3,7 @@ import {push, replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import DatetimeRange from '../widget/DatetimeRange';
+import QuickActions from './QuickActions';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
 
@@ -240,25 +241,34 @@ class DocumentList extends Component {
 
     render() {
         const {layout, data} = this.state;
-        const {dispatch, windowType, type, filters, pagination, open, closeOverlays} = this.props;
+        const {
+            dispatch, windowType, type, filters, pagination, open, closeOverlays, selected
+        } = this.props;
 
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
-                        {type === "grid" &&
-                            <button
-                                className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
-                                onClick={() => this.newDocument()}
-                            >
-                                <i className="meta-icon-add" /> New {layout.caption}
-                            </button>
-                        }
-                        <Filters
-                            filterData={layout.filters}
-                            filtersActive={data.filters}
+                        <div>
+                            {type === "grid" &&
+                                <button
+                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
+                                    onClick={() => this.newDocument()}
+                                >
+                                    <i className="meta-icon-add" /> New {layout.caption}
+                                </button>
+                            }
+                            <Filters
+                                filterData={layout.filters}
+                                filtersActive={data.filters}
+                                windowType={windowType}
+                                viewId={data.viewId}
+                            />
+                        </div>
+                        <QuickActions
                             windowType={windowType}
                             viewId={data.viewId}
+                            selected={selected}
                         />
                     </div>
 
