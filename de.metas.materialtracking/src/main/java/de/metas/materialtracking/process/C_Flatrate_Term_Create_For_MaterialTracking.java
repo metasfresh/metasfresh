@@ -7,7 +7,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.flatrate.model.I_C_Flatrate_Term;
@@ -16,6 +15,8 @@ import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -46,16 +47,16 @@ public class C_Flatrate_Term_Create_For_MaterialTracking extends C_Flatrate_Term
 	private int p_flatrateconditionsID;
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if(I_M_Material_Tracking.Table_Name.equals(context.getTableName()))
 		{
-			final I_M_Material_Tracking materialTracking = context.getModel(I_M_Material_Tracking.class);
+			final I_M_Material_Tracking materialTracking = context.getSelectedModel(I_M_Material_Tracking.class);
 
 			// no need to create a new flatrate term if it is already set
 			if (materialTracking.getC_Flatrate_Term_ID() > 0)
 			{
-				return false;
+				return ProcessPreconditionsResolution.reject("contract already set");
 			}
 
 			final List<I_C_Flatrate_Term> existingTerm = Services.get(IMaterialTrackingDAO.class).retrieveC_Flatrate_Terms_For_MaterialTracking(materialTracking);
@@ -63,14 +64,14 @@ public class C_Flatrate_Term_Create_For_MaterialTracking extends C_Flatrate_Term
 			// the term exists. It just has to be set
 			if (!existingTerm.isEmpty())
 			{
-				return false;
+				return ProcessPreconditionsResolution.reject("contract already exists");
 			}
 
 			// create the flatrate term only if it doesn't exist
-			return true;
+			return ProcessPreconditionsResolution.accept();
 
 		}
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 
 	@Override

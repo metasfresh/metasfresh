@@ -75,7 +75,7 @@ public class MailDAO implements IMailDAO
 
 			if (!Check.isEmpty(docSubType, true))
 			{
-				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
+				queryBuilder.addInArrayOrAllFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
 			}
 
 		}

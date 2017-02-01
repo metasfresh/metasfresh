@@ -14,7 +14,7 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -456608863L;
+	private static final long serialVersionUID = -129873402L;
 
     /** Standard Constructor */
     public X_M_HU_Snapshot (Properties ctx, int M_HU_Snapshot_ID, String trxName)
@@ -29,6 +29,7 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 			setM_HU_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
 			setM_HU_PI_Version_ID (0);
+			setM_HU_Snapshot_ID (0);
 			setSnapshot_UUID (null);
 			setValue (null);
         } */
@@ -369,6 +370,28 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 	public int getM_HU_PI_Version_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Version_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Handling Units (snapshot).
+		@param M_HU_Snapshot_ID Handling Units (snapshot)	  */
+	@Override
+	public void setM_HU_Snapshot_ID (int M_HU_Snapshot_ID)
+	{
+		if (M_HU_Snapshot_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Snapshot_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Snapshot_ID, Integer.valueOf(M_HU_Snapshot_ID));
+	}
+
+	/** Get Handling Units (snapshot).
+		@return Handling Units (snapshot)	  */
+	@Override
+	public int getM_HU_Snapshot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Snapshot_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

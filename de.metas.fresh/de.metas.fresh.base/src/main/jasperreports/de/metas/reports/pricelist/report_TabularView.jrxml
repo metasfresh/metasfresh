@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-14T14:59:06 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_TabularView" pageWidth="2000" pageHeight="842" columnWidth="2000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/pricelist/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.241842646118328"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -22,11 +26,11 @@
 	<queryString>
 		<![CDATA[SELECT
 	*,
-	(SELECT validfrom FROM M_Pricelist_Version WHERE M_Pricelist_Version_ID = $P{M_PriceList_Version_ID}) AS validfrom,
-	(SELECT name FROM C_BPartner_Location WHERE C_BPartner_Location_ID = $P{C_BPartner_Location_ID}) AS bpl_Name
+	(SELECT validfrom FROM M_Pricelist_Version WHERE M_Pricelist_Version_ID = $P{M_PriceList_Version_ID}	AND isActive = 'Y') AS validfrom,
+	(SELECT name FROM C_BPartner_Location WHERE C_BPartner_Location_ID = $P{C_BPartner_Location_ID}	AND isActive = 'Y') AS bpl_Name
 FROM
 	report.fresh_PriceList_Details_Report( $P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language})
-	JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report (null,'Y', (SELECT AD_Org_ID FROM C_BPartner WHERE C_BPartner_ID = $P{C_BPartner_ID} )) ON true
+	JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report (null,'Y', (SELECT AD_Org_ID FROM C_BPartner WHERE C_BPartner_ID = $P{C_BPartner_ID}  AND isActive = 'Y')) ON true
 ;]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String"/>
@@ -72,7 +76,7 @@ FROM
 		<groupHeader>
 			<band height="12">
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-					<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="220" y="0" width="358" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement key="textField-24" mode="Transparent" x="220" y="0" width="358" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 					<box rightPadding="3">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -93,98 +97,98 @@ FROM
 	<title>
 		<band height="230">
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="24" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="24" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="60" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="60" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["CH-" + $F{postal} + " " + $F{city}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="48" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="48" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Postfach 220"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="36" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="36" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="72" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="72" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Tel " + $F{phone}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="96" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="96" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[( ("").equals($R{mail}) ? $F{email} : $R{mail} )]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="84" width="183" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="84" width="183" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Fax " + $F{fax}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="108" width="183" height="14" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="108" width="183" height="14" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["UID Nr. " + $F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="578" y="108" width="190" height="14" forecolor="#000000"/>
+				<reportElement key="textField-16" x="578" y="108" width="190" height="14" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{order}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="134" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="134" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="146" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="146" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{delivery}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="170" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="170" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{OrderNo}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="194" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="194" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{deliveryDay}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="0" y="170" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-24" mode="Transparent" x="0" y="170" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<box rightPadding="3">
@@ -199,7 +203,7 @@ FROM
 				<textFieldExpression><![CDATA["V"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="0" y="194" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="0" y="194" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -212,14 +216,14 @@ FROM
 				<textFieldExpression><![CDATA["V"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="140" y="134" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="140" y="134" width="80" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="140" y="170" width="80" height="12" forecolor="#000000">
+				<reportElement key="textField-16" x="140" y="170" width="80" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf">
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
@@ -227,7 +231,7 @@ FROM
 				</textElement>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="140" y="194" width="80" height="12" forecolor="#000000">
+				<reportElement key="textField-16" x="140" y="194" width="80" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf">
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
@@ -236,14 +240,14 @@ FROM
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="220" y="134" width="358" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="220" y="134" width="358" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="RetainShape" hAlign="Right">
-				<reportElement uuid="8a7336c5-5f63-41d5-8edd-dfc316734e2b" key="image-1" x="578" y="24" width="190" height="60"/>
+				<reportElement key="image-1" x="578" y="24" width="190" height="60" uuid="8a7336c5-5f63-41d5-8edd-dfc316734e2b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -253,7 +257,7 @@ FROM
 				<imageExpression><![CDATA["de/metas/generics/logo.png"]]></imageExpression>
 			</image>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="578" y="206" width="140" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="578" y="206" width="140" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -266,91 +270,91 @@ FROM
 				<textFieldExpression><![CDATA[$R{price_validity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0945443b-def7-4253-a6e1-6a6d932f115c" key="textField-20" x="718" y="206" width="50" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="718" y="206" width="50" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{validfrom}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="140" y="146" width="438" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="140" y="146" width="438" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpl_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="158" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="158" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="122" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="122" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="182" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="182" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="0" width="103" height="24" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="103" height="24" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="37" y="206" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="206" width="103" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="220" y="218" width="177" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="220" y="218" width="177" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{P_Name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="4ef95306-20b2-4f43-ba5f-5961c590703f" key="textField-16" x="37" y="218" width="103" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="218" width="103" height="12" forecolor="#000000" uuid="4ef95306-20b2-4f43-ba5f-5961c590703f"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="4ef95306-20b2-4f43-ba5f-5961c590703f" key="textField-16" x="0" y="218" width="37" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="0" y="218" width="37" height="12" forecolor="#000000" uuid="4ef95306-20b2-4f43-ba5f-5961c590703f"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["H"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9a577c3e-9c95-4400-8830-18891deb0757" key="textField-13" x="397" y="218" width="74" height="12" forecolor="#000000"/>
+				<reportElement key="textField-13" x="397" y="218" width="74" height="12" forecolor="#000000" uuid="9a577c3e-9c95-4400-8830-18891deb0757"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0945443b-def7-4253-a6e1-6a6d932f115c" key="textField-20" x="718" y="218" width="50" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="718" y="218" width="50" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{newprice} : $R{Price})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9b101d13-736e-434d-b805-18dee75b988e" x="1438" y="218" width="125" height="12">
+				<reportElement x="1438" y="218" width="125" height="12" uuid="9b101d13-736e-434d-b805-18dee75b988e">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<textElement markup="none">
@@ -359,14 +363,14 @@ FROM
 				<textFieldExpression><![CDATA["C_BPartner_Location_ID"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="70fa6b18-edb1-4cc9-9e5c-30b428399a6d" key="textField-17" x="471" y="218" width="107" height="12" forecolor="#000000"/>
+				<reportElement key="textField-17" x="471" y="218" width="107" height="12" forecolor="#000000" uuid="70fa6b18-edb1-4cc9-9e5c-30b428399a6d"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="968" y="218" width="145" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
+				<reportElement key="textField-20" x="968" y="218" width="145" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<box>
@@ -381,7 +385,7 @@ FROM
 				<textFieldExpression><![CDATA["m_productprice_attribute_id"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="2f19b10a-f825-486c-8c90-c251103d441c" x="1198" y="218" width="135" height="12">
+				<reportElement x="1198" y="218" width="135" height="12" uuid="2f19b10a-f825-486c-8c90-c251103d441c">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<textElement markup="none">
@@ -390,7 +394,7 @@ FROM
 				<textFieldExpression><![CDATA["m_hu_pi_item_product_id"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="4c083df7-cff6-46fd-bf00-38d59eeb25be" x="1673" y="218" width="110" height="12">
+				<reportElement x="1673" y="218" width="110" height="12" uuid="4c083df7-cff6-46fd-bf00-38d59eeb25be">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<textElement markup="none">
@@ -399,7 +403,7 @@ FROM
 				<textFieldExpression><![CDATA["M_Product_ID"]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="868" y="218" width="100" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
+				<reportElement key="textField-20" x="868" y="218" width="100" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<box>
@@ -414,7 +418,7 @@ FROM
 				<textFieldExpression><![CDATA["m_productprice_id"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c32f2b9d-0ea3-4a29-9367-8ee98c407dff" x="1333" y="218" width="105" height="12">
+				<reportElement x="1333" y="218" width="105" height="12" uuid="c32f2b9d-0ea3-4a29-9367-8ee98c407dff">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<textElement markup="none">
@@ -423,14 +427,14 @@ FROM
 				<textFieldExpression><![CDATA["uom_x12de355"]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
-				<reportElement uuid="86d0530e-7c8f-4a84-bdce-b462307bd1bc" key="textField-20" x="578" y="218" width="75" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="578" y="218" width="75" height="12" forecolor="#000000" uuid="86d0530e-7c8f-4a84-bdce-b462307bd1bc"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="4c083df7-cff6-46fd-bf00-38d59eeb25be" x="1563" y="218" width="110" height="12">
+				<reportElement x="1563" y="218" width="110" height="12" uuid="4c083df7-cff6-46fd-bf00-38d59eeb25be">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<textElement markup="none">
@@ -439,14 +443,14 @@ FROM
 				<textFieldExpression><![CDATA["QtyCUsPerTU"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0945443b-def7-4253-a6e1-6a6d932f115c" key="textField-20" x="653" y="218" width="65" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="653" y="218" width="65" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="1113" y="218" width="85" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000">
+				<reportElement key="textField-20" x="1113" y="218" width="85" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<box>
@@ -461,14 +465,14 @@ FROM
 				<textFieldExpression><![CDATA["C_BPartner_ID"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="140" y="218" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="140" y="218" width="80" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPProdNo}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0945443b-def7-4253-a6e1-6a6d932f115c" key="textField-20" x="768" y="218" width="50" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="768" y="218" width="50" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="false"/>
 				</reportElement>
 				<textElement markup="none">
@@ -477,7 +481,7 @@ FROM
 				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{oldprice} : "")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0945443b-def7-4253-a6e1-6a6d932f115c" key="textField-20" x="818" y="218" width="50" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="818" y="218" width="50" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c">
 					<property name="net.sf.jasperreports.export.xls.column.hidden" value="true"/>
 				</reportElement>
 				<textElement markup="none">
@@ -493,7 +497,7 @@ FROM
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="220" y="0" width="177" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="220" y="0" width="177" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -506,7 +510,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1" key="textField-31" mode="Transparent" x="471" y="0" width="107" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-31" mode="Transparent" x="471" y="0" width="107" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -519,7 +523,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{itemproductname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01" key="textField-13" x="397" y="0" width="74" height="12" forecolor="#000000"/>
+				<reportElement key="textField-13" x="397" y="0" width="74" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -532,7 +536,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="653" y="0" width="65" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="653" y="0" width="65" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -545,7 +549,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="718" y="0" width="50" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="718" y="0" width="50" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -558,7 +562,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{pricestd}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="578" y="0" width="75" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="578" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<box>
@@ -573,7 +577,7 @@ FROM
 				<textFieldExpression><![CDATA[]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="868" y="0" width="100" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+				<reportElement key="textField-20" x="868" y="0" width="100" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -586,7 +590,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{m_productprice_id}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="968" y="0" width="145" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+				<reportElement key="textField-20" x="968" y="0" width="145" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -599,7 +603,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{m_productprice_attribute_id}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="1113" y="0" width="85" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000"/>
+				<reportElement key="textField-20" x="1113" y="0" width="85" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -612,42 +616,42 @@ FROM
 				<textFieldExpression><![CDATA[$P{C_BPartner_ID}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="d18c1d30-9fec-4164-844d-706d91ce6c52" x="1198" y="0" width="135" height="12"/>
+				<reportElement x="1198" y="0" width="135" height="12" uuid="d18c1d30-9fec-4164-844d-706d91ce6c52"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{m_hu_pi_item_product_id}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e1ada75a-b48f-4504-9051-64d143711f64" x="1333" y="0" width="105" height="12"/>
+				<reportElement x="1333" y="0" width="105" height="12" uuid="e1ada75a-b48f-4504-9051-64d143711f64"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom_x12de355}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="8eee619c-d3d4-473c-9d40-526000381b05" x="1438" y="0" width="125" height="12"/>
+				<reportElement x="1438" y="0" width="125" height="12" uuid="8eee619c-d3d4-473c-9d40-526000381b05"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{C_BPartner_Location_ID}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="8eee619c-d3d4-473c-9d40-526000381b05" x="1563" y="0" width="110" height="12"/>
+				<reportElement x="1563" y="0" width="110" height="12" uuid="8eee619c-d3d4-473c-9d40-526000381b05"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtycuspertu}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="8eee619c-d3d4-473c-9d40-526000381b05" x="1673" y="0" width="110" height="12"/>
+				<reportElement x="1673" y="0" width="110" height="12" uuid="8eee619c-d3d4-473c-9d40-526000381b05"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{m_product_id}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="37" y="0" width="103" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="103" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -660,7 +664,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="0" y="0" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="0" y="0" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -673,14 +677,14 @@ FROM
 				<textFieldExpression><![CDATA["R"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf" key="textField-16" x="140" y="0" width="80" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="140" y="0" width="80" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
 					<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customerproductnumber}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="768" y="0" width="50" height="12" forecolor="#000000">
+				<reportElement key="textField-20" x="768" y="0" width="50" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<printWhenExpression><![CDATA[new Boolean( $P{Alt_PriceList_Version_ID} != null
     && $F{altpricestd}.floatValue() != 0)]]></printWhenExpression>
 				</reportElement>
@@ -696,7 +700,7 @@ FROM
 				<textFieldExpression><![CDATA[$F{altpricestd}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="818" y="0" width="50" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="818" y="0" width="50" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

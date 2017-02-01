@@ -6,7 +6,9 @@ import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Deletes and Recreates an inout's packing material lines. Supposed to be called via gear.
@@ -34,15 +36,15 @@ public class M_InOut_ResetPackingLines extends JavaProcess implements IProcessPr
 	 * Returns <code>true</code> for unprocessed shipments only.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final I_M_InOut inout = context.getModel(I_M_InOut.class);
-		return inout.isSOTrx() && !inout.isProcessed();
+		final I_M_InOut inout = context.getSelectedModel(I_M_InOut.class);
+		return ProcessPreconditionsResolution.acceptIf(inout.isSOTrx() && !inout.isProcessed());
 	}
 
 }

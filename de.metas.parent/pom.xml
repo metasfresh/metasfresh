@@ -141,7 +141,7 @@
 			<dependency>
 				<groupId>org.jmockit</groupId>
 				<artifactId>jmockit</artifactId>
-				<version>1.20</version>
+				<version>1.30</version>
 			</dependency>
 
 			<dependency>
@@ -292,6 +292,11 @@
 			<dependency>
 				<artifactId>de.metas.dimension</artifactId>
 				<groupId>de.metas.dimension</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.metas.dlm</groupId>
+				<artifactId>metasfresh-dlm</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -1390,7 +1395,7 @@
 		
 		<!--this profile is analog to "build-number-env-missing" -->
 		<profile>
-			<id>build-versiov-env-missing</id>
+			<id>build-version-env-missing</id>
 			<activation>
 				<property>
 					<name>!env.BUILD_VERSION</name>

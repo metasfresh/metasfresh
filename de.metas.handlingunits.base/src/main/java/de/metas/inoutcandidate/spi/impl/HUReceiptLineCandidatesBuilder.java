@@ -90,7 +90,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 	}
 
 	/**
-	 * Aggregates and adds given {@link I_M_ReceiptSchedule_Alloc}.
+	 * Aggregates and adds given {@link I_M_ReceiptSchedule_Alloc} with its {@link I_M_ReceiptSchedule_Alloc#COLUMNNAME_M_TU_HU_ID M_TU_HU}
 	 *
 	 * @param rsa
 	 */
@@ -100,7 +100,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 		// Create HUReceiptLineCandidate Part
 		final IHUContext huContext = getHUContext();
 		final I_M_HU tuHU = rsa.getM_TU_HU();
-		final IHUReceiptLinePartAttributes partAttributes = new HUReceiptLinePartAttributes(huContext, tuHU);
+		final HUReceiptLinePartAttributes partAttributes = HUReceiptLinePartAttributes.newInstance(huContext, tuHU);
 		final HUReceiptLinePartCandidate receiptLinePartToAdd = new HUReceiptLinePartCandidate(partAttributes);
 		receiptLinePartToAdd.add(rsa);
 

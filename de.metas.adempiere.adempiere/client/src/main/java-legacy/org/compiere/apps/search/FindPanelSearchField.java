@@ -108,8 +108,8 @@ final class FindPanelSearchField implements IUserQueryField
 
 		final GridFieldVO vo = gridField.getVO().copy();
 		vo.setMandatory(false);
-		vo.IsReadOnly = false;
-		vo.IsUpdateable = true;
+		vo.setIsReadOnly(false);
+		vo.setIsUpdateable(true);
 
 		// Make sure the field is flagged as displayed. Else, the lookup will not be loaded.
 		vo.setIsDisplayed(true);

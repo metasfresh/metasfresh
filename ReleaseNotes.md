@@ -10,30 +10,254 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.47.46 (2016-49)
+# metasfresh 4.55.53 (2017-06)
 
-this week's release
+upcoming Release
+
+## Features
+* metasfresh
+  * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
+  * #460 Provide aggregate HUs
+
+* webui
+  * #873 Customer & Vendor Subtab in BPartner Window WebUI
+  * #196 Grid View 100% height
+
+## Fixes
+* metasfresh
+  * #863 No Result Window for Prosesses that don't allow rerun
+  * #879 Fix "ValueType not supported: D" when HU attributes are generated
+  * #781 ESR scan processing returns improper bpartner
+
+* webui
+  * #204 Can not complete Order
+  * #886 GrandTotal missing in Purchase Order Grid view
+
+# metasfresh 4.54.53 (2017-05)
+
+this week's RC
+
+## Features
+* metasfresh
+  * #858 Adjustments for Shipment Schedule Grid View
+  * #868 Weekly Revenue Report
+  * #827 use the barcode field to select HU using attribute value
+
+* webUI
+  * #862 Payment Window in WebUI
+  * #873 Customer and Vendor Subtab in BPartner WebUI Window
+  * #883 Sales Purchase Order Window Grid View
+  * #878 Purchase Order Window WebUI
+
+## Fixes
+* metasfresh 
+  * #782 Focus on the first process parameter
+  * #864 Adjust C_Country Location Print generation DE
+
+# metasfresh 4.53.52 (2017-04)
+
+## Features
+* metasfresh
+  * #800 Order by product name and partner name in pmm_PurchaseCandidates
+    * Add a new possibility to be able to sort combined search fields by a selected element in the combined Field, e.g. a field combined as Value + Name can now be sorted with Name, and not just Value + Name.
+  * #829 receivedVia entry not translated in Baselanguage de_DE
+    * Add the Translation for receivedVia Field in current Baselanguage de_DE.
+  * #810 Propagate Attribute from Issue to Receive in Production
+    * New Functionality to propagate selected Attributes vertically though a manufacturing process, from action issue to action receipt.
+  * #835 Switch off Process Confirmation Window
+    * Switch off all process confirmation Windows per default. These can be switched on individually per Process where wanted.
+
+* webui
+  * #817 Request Window in WebUI
+    * Initial setup of Request Window in Web User Interface including default view, advanced edit, grid view and sidelist.
+  * #831 Default Document Layout for WebUI
+    * Overhaul of the current general Document Layout for WebUI
+  * #847 Shipment Schedule Window in WebUI
+    * Initial setup of the Shipment Schedule Window in Web User Interface.
+  * #853 Shipment Schedule Window Subtabs in WebUI
+    * Add the Subtabs definition to Shipment Schedule Window in the new metasfresh Web User Interface, including Sidelist.
+  * #855 Shipment Schedule Advanced Edit Mode
+    * Setup for the Advanced Edit Mode of Shipment Scheule in WebUI.
+  * #108 Create Callout for DocNo in Request
+    * Adjustment/ Enhancement of the DocumentNo Generation in non Document datastrucures of WebUI
+  
+
+## Fixes
+* metasfresh 
+  * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+    * Adjust the flag isInvoiceCandidate to be calculated for M_InoutLine records.
+  * #808 DocActionBL.retrieveString method is broken
+    * Fixing the method that retrieves the Document Action Name.
+  * #819 fix/refactor CalloutRequest
+    * Adopting the Callouts in Request window to also work in Web User Interface.
+  * #806 Customs report minor fixes
+    * Minor adjustments and fixes in the Customs report.
+  * #837 Marginal return accounts doubled
+    * Minor Bug Fix in marginal return report that doubled the sums on certain accounts.
+  * #844 Gear from Pricing System and PriceList show wrong processes
+    * Fixing a Bug that leads into wrong representation of Processes in Gear of Pricing System and Priceliste Window.
+
+* parent
+  * #3 Add repo.metasfresh.com also as plugin repo
+    * thx to @sramazzina
+
+# metasfresh 4.52.51 (2017-03)
+
+## Features
+* metasfresh 
+  * #774 show address on all docs so it fits the letter window
+    * Adjust all Documents so that the address fits into the letter window od envelops C5/ C6 according to ISO 269 und DIN 678.
+  * #773 show delivery address on sales order
+    * Show the deliverTo location on Sales Order Documents.
+  * #507 Copy with Details for PP_Product_BOM
+    * Add a new Functionality to allow copy-with-details on Bill of Materials records.
+  * #780 Have logo on jasper report that spans from left to right
+    * Rearranged the logo placing on Documents to allow the upload and usage of large, page-spanning Logos from left to right.
+  * #816 Do not show prices on shipment note
+    * Undisplayed the prices on shipment documents.
+
+## Fixes
+* metasfresh 
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * Addresses the possible case of different procurement products that have different attributes and still both match equally well.
+  * #791 Create Nachbelastung from Invoice Cast exception
+    * Fixes a Bug that lead into an exception when creating an adjustment charge to an existing invoice.
+  * #761 Reactivating an InOut fails sometimes
+    * Now the reactivation of InOuts also works with records that were deleted at the time the async-package is processed
+    
+# metasfresh 4.51.50 (2017-02)
+
+## Features
+* metasfresh
+  * #696 add multi line description per order line
+    * Possibility to now add multiline descriptions. These can be used to add individual Texts to an Orderline.
+  * #755 Automatic upload orders in csv file with COPY into c_olcand
+    * Enhancement to allow the Upload of Sales Orders into Order Candidates via COPY.
+
+## Fixes
+* metasfresh  
+  * #752 request report does not show requests that don't have product or inout
+    * Fix to show request lines in report, which don't have a product included nor a reference to an inout line.
+  * #759 Destroyed HU causes problem with shipment creation
+    * Fix problem when checking for not-yet-delivered M_ShipmentSchedule_QtyPicked records, the system did not check if they reference actually destroyed HUs.
+  * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+    * Fix this error shown on server startup. Making DocumentPA not final anymore.
+  * #770 When extending a procurement contract, null becomes 0.00
+    * Fix an issue that set the price to 0,00 when extending a procurement contract, although the initial price was null which means "not set".
+  
+# metasfresh 4.50.49 (2017-01)
+
+## Features
+* metasfresh
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * Working Increment that works for the current requirement at hand.
+  * #653 Calculated DailyLotNo in Material Receipt Candidates
+    * Add a Daily Lot No. thats calculated as Day from year, from a given Date in Purchase Order, Orderline Attributes.
+  * #714 Marginal Return report calculation add additional Costcenter
+    * Adjust the marginal return report to show allow more columns with cost center sums on 1 page.
+  * #742 R_Request column c_order_id autocomplete too slow
+    * Take out the autocomplete of c_order_id to speed up the lookup performance in R_Request.
+
+## Fixes
+* metasfresh
+  * #757 Automatic contract extension doesn't work anymore
+    * Fix the automatic extension of contracts when flatrate term conditions are met.
+  * #681 Automatic filling of BPartner and Location only shows value
+    * Fix the Search Field reference that showed only the value, instead of Name and value, in case of BPartner and BPartner Location.
+  * #718 Wrong location in empties vendor return
+    * Close the Gap that allows to record empty returs with BPartner Location that does not belog to the empties BPartner.
+  * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
+    * Adjust the Purchase Order control report to have the correct locale for time formatting.
+  * #763 material receipt HU label always shown in preview
+    * Migrate the Handling Unit label enabling direct print, without print preview.
+  
+* webui
+  * #89 Adjust DocAction Names
+    * Adjust/ migrate DocAction Names for WebUI.
+
+# metasfresh 4.49.48 (2016-51)
+ 
+## Features
+* metasfresh
+  * #489 Implement DLM within single logical tables
+    * Data Life-cycle Management Implementation to enable archiving of non-operational data to separate partitions.
+  * #682 Translation in window Vendor Returns
+    * Add german translation of additional Fields in Window Vendor Returns.
+
+* webui
+  * #698 Pipeline - add webui deployment
+    * Add a new Pipeline into Continuous Integration/ Deployment for metasfresh WebUI.
+
+## Fixes
+* metasfresh
+  * #380 duplicate lines in inout
+    * Worked over each jasper report in order not to display materdata records that were deactivated.
+  * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
+    * Fix a Bug that prevented Handling Units Storage to be adjusted when adding raw material to manufacturing order via action issue.
+  * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
+    * Extend the where clause for matching of PO References in Aggregation inout documents. Additional Aggregation matching criteria now are ad_org_id, c_bpartner_id.
+  * #713 Marginal Return Report (short version) doubled sums for accounting group
+    * Fix a partially double summed up accounting group in marginal return Report.
+  
+# metasfresh 4.48.47 (2016-50)
+
+## Features
+* metasfresh
+  * #677 make customs report faster
+    * Significant improvement of the customs report performance.
+  * #541 Remove PiPo from metasfresh removing code and data
+    * Remove the legacy code from Pack-In and Pack-out from metasfresh. The underlying concept is flawed and does not scale.
+
+* webui
+  * #625 Shipment Schedule Window WebUI
+    * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
+  * #687 webUI bundle
+    * Add different Layout changes in a fair amount of windows for Web User Interface.
+    
+## Fixes
+* metasfresh
+  * #679 Bug in ClientUpdateValidator
+    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build. 
+  * #721 Wrong error message displayed when user enters wrong password on login
+    * Fix for Bug when entering wrong password in Login. Said "locked" but was just wrong credentials/ password.
+
+# metasfresh 4.47.46 (2016-49)
 
 ## Features 
 * metasfresh
   * #639 Marginal Return report calculation does not check ad_org_id
-  * #658 make Ini more robust: throw ex if file can't be read
+    * Extend the marginal return report with ad_org_id parm to allow to seperate user for other organisations.
   * #585 Adjust the remaining Property names
+    * Change properties to metasfresh namespace.
   * #661 Cultivation Planning report adjustments
+    * Adjustments made to the cultivation planning report in procurement.
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Avoid automatic completion of flatrate term contracts when triffered manually from process gear. This allows the user to record further adjustments after creation.
 
 * webui
   * #48 Add initial setup of kibana kpi for new webUI dashboard
+    * Setup an initial set of 10 key perfroamnce indicators for the new metasfresh webui.
   * #59 User friendly URL for Print Endpoint
+    * Add a user frindly/ comprehensive endpoint for document printing tab in webUI.
   * #45 Dashboard Target area backend support
+    * Add support for Target widgets and target widget area in webUI dashboard
   * #567 WebUI - Material Receipt Schedule
+    * Initial set of windows, grid views, sidelist and elements and fields for material receipt schedule window.
 
 ## Fixes
 * metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+    * Fix error with long loading of ini file in Tomcat.
   * #664 R_Request Performance Issue
+    * Swap Table direct references against search in all R_Request table/ subtable fields to reduce current performance issues.
+  * #674 Filter operator "between" broken
+    * Fix the operator "between" which is used in filtering/ search criteria.
   
 * webui
   * #67 Error when introducing parameters to report
+    * Fix parameters support for report usage in webui.
   * #70 Add BPLocation Error
+    * Fix Errors that prevented the creation of new Business Partner Location lines in webUI.
 
 # metasfresh 4.46.45 (2016-48)
 

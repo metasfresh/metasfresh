@@ -67,6 +67,17 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 				, CacheMapType.LRU //
 		);
 	}
+	
+	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
+	{
+		final String tableName = extractTableNameForCacheName(cacheName);
+		return new CCache<>(cacheName //
+				, tableName //
+				, initialCapacity
+				, expireAfterMinutes //
+				, CacheMapType.HashMap //
+		);
+	}
 
 	public static enum CacheMapType
 	{
@@ -483,6 +494,24 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
 		return get(key, valueLoader);
+	}
+
+	/**
+     * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
+     * 
+	 * @param key
+	 * @param exceptionSupplier
+	 * @return value; not null
+	 * @throws E
+	 */
+	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<? extends E> exceptionSupplier) throws E
+	{
+		final V value = get(key);
+		if(value == null)
+		{
+			throw exceptionSupplier.get();
+		}
+		return value;
 	}
 
 	/**

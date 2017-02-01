@@ -21,24 +21,25 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 
 /**
  *	Inventory Material Allocation
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MInventoryLineMA.java,v 1.3 2006/07/30 00:51:04 jjanke Exp $
  */
 public class MInventoryLineMA extends X_M_InventoryLineMA
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 811710371747854597L;
 
@@ -73,12 +74,12 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		
+
 		MInventoryLineMA[] retValue = new MInventoryLineMA[list.size ()];
 		list.toArray (retValue);
 		return retValue;
 	}	//	get
-	
+
 	/**
 	 * 	Delete all Material Allocation for Inventory
 	 *	@param M_Inventory_ID inventory
@@ -106,11 +107,11 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 			+ " AND M_InventoryLine_ID=" + M_InventoryLine_ID + ")";
 		return DB.executeUpdate(sql, trxName);
 	}	//	deleteInventoryMA
-	
+
 	/**	Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MInventoryLineMA.class);
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -120,8 +121,6 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 	public MInventoryLineMA (Properties ctx, int M_InventoryLineMA_ID, String trxName)
 	{
 		super (ctx, M_InventoryLineMA_ID, trxName);
-		if (M_InventoryLineMA_ID != 0)
-			throw new IllegalArgumentException("Multi-Key");
 	}	//	MInventoryLineMA
 
 	/**
@@ -134,7 +133,7 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 	{
 		super (ctx, rs, trxName);
 	}	//	MInventoryLineMA
-	
+
 	/**
 	 * 	Parent Constructor
 	 *	@param parent parent
@@ -150,11 +149,12 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 		setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 		setMovementQty(MovementQty);
 	}	//	MInventoryLineMA
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MInventoryLineMA[");
@@ -164,5 +164,5 @@ public class MInventoryLineMA extends X_M_InventoryLineMA
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 }	//	MInventoryLineMA

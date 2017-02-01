@@ -149,6 +149,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			"A" // Applications
 	);
 
+	private static Boolean _failOnMissingModelInteceptors = null;
 	/** List of errors that we encounted while initializing the model interceptors */
 	private static final List<ModelInterceptorInitException> _modelInterceptorInitErrors = new ArrayList<>();
 
@@ -284,9 +285,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private final boolean isFailOnMissingModelInteceptors()
 	{
+		final Boolean failOnMissingModelInteceptorsOverride = _failOnMissingModelInteceptors;
+		if(failOnMissingModelInteceptorsOverride != null)
+		{
+			return failOnMissingModelInteceptorsOverride;
+		}
+		
 		final I_AD_System system = MSystem.get(Env.getCtx());
 		final boolean isFail = system.isFailOnMissingModelValidator();
 		return isFail;
+	}
+	
+	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
+	{
+		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
 	}
 
 	private List<I_AD_ModelValidator> retrieveModelValidators(final Properties ctx)
@@ -401,15 +413,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	// private VetoableChangeSupport m_changeSupport = new VetoableChangeSupport(this);
 
 	/** Validators */
-	private ArrayList<ModelValidator> m_validators = new ArrayList<ModelValidator>();
+	private ArrayList<ModelValidator> m_validators = new ArrayList<>();
 	/** Model Change Listeners */
-	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<String, ArrayList<ModelValidator>>();
+	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<>();
 	/** Document Validation Listeners */
-	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<String, ArrayList<ModelValidator>>();
+	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<>();
 	/** Data Import Validation Listeners */
-	private Hashtable<String, ArrayList<IImportValidator>> m_impValidateListeners = new Hashtable<String, ArrayList<IImportValidator>>();
+	private Hashtable<String, ArrayList<IImportValidator>> m_impValidateListeners = new Hashtable<>();
 
-	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<ModelValidator>();
+	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
 
 	/**
 	 * Contains model validators for subsequent processing. The boolean value tells if the subsequent processing takes place directly when fireModelChange() is invoked with this type (
@@ -509,7 +521,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private List<IUserLoginListener> getUserLoginListener(final int adClientId)
 	{
-		final List<IUserLoginListener> listeners = new ArrayList<IUserLoginListener>();
+		final List<IUserLoginListener> listeners = new ArrayList<>();
 		for (int i = 0; i < m_validators.size(); i++)
 		{
 			final ModelValidator validator = m_validators.get(i);
@@ -581,7 +593,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
 		{
-			list = new ArrayList<ModelValidator>();
+			list = new ArrayList<>();
 			list.add(listener);
 			m_modelChangeListeners.put(propertyName, list);
 		}
@@ -629,6 +641,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 		if (list.size() == 0)
 			m_modelChangeListeners.remove(propertyName);
 	}	// removeModelValidator
+
+	@Override
+	public void removeModelChange(String tableName, IModelInterceptor interceptor)
+	{
+		if (interceptor == null)
+		{
+			return;
+		}
+
+		final ModelValidator modelValidator = ModelInterceptor2ModelValidatorWrapper.wrapIfNeeded(interceptor);
+		this.removeModelChange(tableName, modelValidator);
+	}
 
 	/**
 	 * Fire Model Change. Call modelChange method of added validators
@@ -720,15 +744,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			// NOTE: we are wrapping it to a transaction (savepoint) because we also want to make sure Thread TrxName is set
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
-			final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
-					TrxPropagation.NESTED, // we expect to run into a transaction at this point
-					OnRunnableSuccess.DONT_COMMIT,
-					// OnRunnableFail: don't rollback => no savepoint shall be created (avoid HUGE performance issues)
-					OnRunnableFail.DONT_ROLLBACK
-					);
+
+			final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
+					.setTrxPropagation(TrxPropagation.NESTED) // we expect to run into a transaction at this point
+					.setOnRunnableSuccess(OnRunnableSuccess.DONT_COMMIT)
+					.setOnRunnableFail(OnRunnableFail.DONT_ROLLBACK) // OnRunnableFail: don't rollback => no savepoint shall be created (avoid HUGE performance issues)
+					.build();
 			trxManager.run(trxName, trxRunConfig, new TrxRunnableAdapter()
 			{
-
 				@Override
 				public void run(String localTrxName) throws Exception
 				{
@@ -922,7 +945,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
 		{
-			list = new ArrayList<ModelValidator>();
+			list = new ArrayList<>();
 			list.add(listener);
 			m_docValidateListeners.put(propertyName, list);
 		}
@@ -1113,7 +1136,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		ArrayList<IImportValidator> list = m_impValidateListeners.get(propertyName);
 		if (list == null)
 		{
-			list = new ArrayList<IImportValidator>();
+			list = new ArrayList<>();
 			list.add(listener);
 			m_impValidateListeners.put(propertyName, list);
 		}

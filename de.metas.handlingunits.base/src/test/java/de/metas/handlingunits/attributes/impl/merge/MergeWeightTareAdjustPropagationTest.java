@@ -1,5 +1,8 @@
 package de.metas.handlingunits.attributes.impl.merge;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +16,14 @@ package de.metas.handlingunits.attributes.impl.merge;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -33,6 +35,7 @@ import org.junit.Test;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 
 /**
  * NOTE: Tests propagation WITH TareAdjsut VARIABLE.
@@ -62,8 +65,8 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -91,14 +94,9 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
 				newHUWeightsExpectation("92.235", "58.235", "33", "1"),
-				newHUWeightsExpectation("7.212", "6.212", "1", "0"), // SOURCE
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("6.433", "5.433", "1", "0"), // TARGET
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("6.435", "5.435", "1", "0"), // the merge target which now has 7xCU
+				newHUWeightsExpectation("7.212", "6.212", "1", "0"), // the merge source which now has 8xCU
+				newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 	}
 
 	/**
@@ -111,12 +109,13 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// First split the palette
 		final I_M_HU loadingUnit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_101); // 85 x Tomato
 		setWeightTareAdjust(loadingUnit, BigDecimal.ONE);
-
+		
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
+		// split off 2x10kg
 		final List<I_M_HU> splitTradingUnits = splitLU(loadingUnit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
 				materialItemTomato_10, // TU item x 10
@@ -126,85 +125,52 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.ZERO); // TUs are not going on an LU
 
 		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		// verify the split source
+		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 7,
+				newHUWeightsExpectation("83.471", "50.471", "32", "1"),
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 
 		//
 		// Simulate - take off one of the TUKeys to bind it to the new LU
+		// i.e. rejoin one of the 10kg IFOCs we split
 		final I_M_HU tradingUnitToJoin = splitTradingUnits.remove(1);
 		helper.joinHUs(huContext, loadingUnit, tradingUnitToJoin);
+		// verify the join target
+		// commitAndDumpHU(loadingUnit);
+		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
+				newHUWeightsExpectation("92.235", "58.235", "33", "1"), // 75xCU
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"), // 5xCU
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // 10xCU that was first split and is now joined back
+				newHUWeightsExpectation("52.588", "46.588", "6", "0") // 60xCU
+		);
 
+		// merge 2xCU onto the existing IFCO that has 5xCU
+		// note that splitTradingUnits only contains one IFCO (we removed the other one before we joned it)
+		final I_M_HU sourceTUFromOutside = splitTradingUnits.get(0);
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
-		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(2), getCUUOM());
+
+		// we "offer" both TUs to the merge method, but expect it not to touch the second TU since only 2 CU shall be transferred
+		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProduct(),
+				BigDecimal.valueOf(2),
+				getCUUOM());
 
 		//
 		// Assert data integrity on SOURCE TUs
-		//
-		Assert.assertEquals("Invalid amount of remaining TUs after merge", 1, splitTradingUnits.size());
-		final I_M_HU splitTU = splitTradingUnits.get(0);
-		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(splitTU);
+		// sourceTUFromOutside is the one we merged from, i.e. it now contains not 10 but 8xCU
+		assertThat("After we merged 2, there shall still be something left on the source IFCO", splitTradingUnits.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(sourceTUFromOutside);
 		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("7.212", "6.212", "1", "0"));
 
 		//
 		// Assert data integrity on TARGET LU
 		//
+		// commitAndDumpHU(loadingUnit);
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
-				newHUWeightsExpectation("93.788", "59.788", "33", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("6.433", "5.433", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("93.788", "59.788", "33", "1"), // 77xCU
+				newHUWeightsExpectation("6.435", "5.435", "1", "0"), // the merge target which now has 7xCU
+				newHUWeightsExpectation("8.765", "7.765", "1", "0"), // 10xCU that was first split and was later joined back
+				newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 	}
 
-	/**
-	 * M030: Split - start from S020, then Merge TU on an LU with another TU from ANOTHER LU
-	 */
-	@Test
-	public void testMergeWeightTransfer_LUs()
-	{
-		//
-		// Target LU
-		final I_M_HU targetLU = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_101); // 85 x Tomato
-		setWeightTareAdjust(targetLU, BigDecimal.ONE);
-
-		assertLoadingUnitStorageWeights(targetLU, huItemIFCO_10, 9,
-				newHUWeightsExpectation("101", "66", "34", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
-
-		final List<I_M_HU> splitLUs = splitLU(targetLU,
-				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
-				materialItemTomato_10, // TU item x 10
-				CU_QTY_85, // total qty to split
-				materialItemProductTomato_10.getQty(), // 10, split the full TU off the source LU
-				BigDecimal.valueOf(2), // TUs Per LU
-				BigDecimal.ONE); // split on ONE additional LU
-
-		Assert.assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
-
-		//
-		// Source LU
-		final I_M_HU sourceLU = splitLUs.get(0);
-		Assert.assertTrue("The target LU we just split to shall be a top-level handling unit", sourceLU.getM_HU_Item_Parent_ID() <= 0);
-
-		final I_M_HU sourceTradingUnitWith10 = findTUInLUWithQty(sourceLU, 10); // find a TU with 10 x CU
-		helper.mergeLUs(huContext, targetLU, sourceTradingUnitWith10);
-
-		//
-		// Assert data integrity on SOURCE LU
-		//
-		assertLoadingUnitStorageWeights(sourceLU, huItemIFCO_10, 1,
-				newHUWeightsExpectation("33.765", "7.765", "26", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
-
-		//
-		// Assert data integrity on TARGET LU
-		//
-		assertLoadingUnitStorageWeights(targetLU, huItemIFCO_10, 8,
-				newHUWeightsExpectation("92.235", "58.235", "33", "1"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
-	}
 }

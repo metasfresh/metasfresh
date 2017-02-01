@@ -13,32 +13,40 @@ package org.adempiere.mm.attributes.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
-public class WeightTareAttributeValueCallout extends AbstractWeightAttributeValueCallout
+public class WeightTareAttributeValueCallout
+		extends AbstractWeightAttributeValueCallout
 {
 	/**
 	 * Fires WeightGross recalculation based on existing WeightNet & the new WeightTare value
@@ -71,13 +79,102 @@ public class WeightTareAttributeValueCallout extends AbstractWeightAttributeValu
 		return weightTare;
 	}
 
-	private BigDecimal calculateWeightTare(final I_M_HU hu)
+	/**
+	 * Calculates Weight Tare for given HU.
+	 *
+	 * NOTE: this method calculates PI's tare weight without considering included HUs because we don't know how many are.
+	 *
+	 * @param piVersion
+	 * @return weight tare
+	 */
+	public static BigDecimal calculateWeightTare(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		// NOTE: at this moment M_HU_Items are not available so we calculate based on PI
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
-		return handlingUnitsBL.getWeightTare(piVersion);
+		final BigDecimal weightTare;
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			final BigDecimal qty = hu.getM_HU_Item_Parent().getQty();
+
+			weightTare = handlingUnitsDAO.retrieveItems(hu).stream()
+					// only packing material items..
+					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
+
+					// .. get their M_HU_PackingMaterial and Qty, if they have both
+					.map(item -> item.getM_HU_PackingMaterial())
+					.filter(packingmaterial -> packingmaterial != null)
+
+					// multiply their M_HU_PackingMaterial's weight
+					.map(packingmaterial -> getWeightTare(packingmaterial).multiply(qty))
+
+					// sum it up, in case the HU has multiple packagings, such as abox with a lid
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+		}
+		else
+		{
+			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+			weightTare = getWeightTare(piVersion);
+		}
+
+		return weightTare;
+	}
+
+	/**
+	 * Iterates the given <code>piVersion</code>'s active packing material items and sums of the weights of the attached <code>M_Product</code>s (if any).
+	 * <p>
+	 * NOTE: does <b>not</b> descent into sub-HUs, which is good, because this value is used in bottom-up/top-down propagation, i.e. the childrens' tare values are added during propagation.
+	 */
+	public static BigDecimal getWeightTare(final I_M_HU_PI_Version piVersion)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		BigDecimal weightTareTotal = BigDecimal.ZERO;
+
+		final I_C_BPartner partner = null; // FIXME: get context C_BPartner
+
+		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partner))
+		{
+			final String itemType = piItem.getItemType();
+			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
+			{
+				continue;
+			}
+
+			final I_M_HU_PackingMaterial huPackingMaterial = piItem.getM_HU_PackingMaterial();
+			if (huPackingMaterial == null)
+			{
+				continue;
+			}
+
+			final BigDecimal weightTare = getWeightTare(huPackingMaterial);
+			weightTareTotal = weightTareTotal.add(weightTare);
+		}
+
+		return weightTareTotal;
+	}
+
+	/**
+	 * 
+	 * @param huPackingMaterial
+	 * @return never returns {@code null}.
+	 */
+	private static BigDecimal getWeightTare(final I_M_HU_PackingMaterial huPackingMaterial)
+	{
+		if (!huPackingMaterial.isActive())
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final I_M_Product product = huPackingMaterial.getM_Product();
+		if (product == null)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final BigDecimal weightTare = product.getWeight();
+
+		return weightTare;
 	}
 
 	@Override

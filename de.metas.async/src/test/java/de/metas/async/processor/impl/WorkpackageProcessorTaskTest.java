@@ -34,7 +34,6 @@ import static org.junit.Assert.assertThat;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,7 +60,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		}
 
 		@Override
-		protected void afterWorkpackageProcessed(boolean IGNORED, ILoggable loggable_IGNORED)
+		protected void afterWorkpackageProcessed(boolean IGNORED)
 		{
 			afterWorkpackageProcessedInvoked = true;
 		}

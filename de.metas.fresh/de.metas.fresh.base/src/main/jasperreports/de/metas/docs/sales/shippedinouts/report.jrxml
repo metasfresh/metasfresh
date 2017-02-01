@@ -7,6 +7,8 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -23,7 +25,7 @@
 FROM
 	C_BPartner
 WHERE
-	C_BPartner_ID = $P{C_BPartner_ID}
+	C_BPartner_ID = $P{C_BPartner_ID} AND isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>

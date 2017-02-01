@@ -71,13 +71,6 @@ public interface IHUKey extends ITerminalKey, IDisposable
 	 */
 	List<IHUKey> getChildrenNoLoad();
 
-	// /**
-	// * Gets unfiltered children. If they were not loaded, this method will load them first.
-	// *
-	// * @return filtered children
-	// */
-	// List<IHUKey> getChildrenUnfiltered();
-
 	/**
 	 * @return <code>true</code> if has at least one child
 	 */

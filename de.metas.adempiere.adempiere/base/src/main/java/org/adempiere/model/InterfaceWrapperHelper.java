@@ -22,14 +22,17 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -49,6 +52,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -61,6 +65,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -123,7 +128,10 @@ public class InterfaceWrapperHelper
 	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
 	 * @param cl
-	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)
+	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
+	 *            <p>
+	 *            IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
+	 *            <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
 	 * @param useClientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
 	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
@@ -132,7 +140,6 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
-
 		//
 		// Get transaction name from contextProvider.
 		// If contextProvider's transaction name is NULL and we have a thread inherited transaction, then let's use that one
@@ -140,13 +147,16 @@ public class InterfaceWrapperHelper
 		String trxName = getTrxName(contextProvider);
 		if (trxManager.isNull(trxName))
 		{
-			final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
-			if (trxThreadInherited != null)
+			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(contextProvider);
+			if (ctxAware.isAllowThreadInherited())  // it's ok to check and if there is a thread inherited trx, use that.
 			{
-				trxName = ITrx.TRXNAME_ThreadInherited;
+				final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
+				if (trxThreadInherited != null)
+				{
+					trxName = ITrx.TRXNAME_ThreadInherited;
+				}
 			}
 		}
-
 		return create(ctx, cl, trxName);
 	}
 
@@ -280,7 +290,9 @@ public class InterfaceWrapperHelper
 	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
 	 * <p>
-	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
+	 * Notes:
+	 * <li>this method might or might not benefit from caching, depending on how {@link IModelCacheService} was configured.
+	 * <li>if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
 	 *
 	 * @param ctx
@@ -314,14 +326,23 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 
-		final List<T> result = new ArrayList<T>(list.size());
-		for (final S model : list)
-		{
-			final T modelConv = create(model, clazz);
-			result.add(modelConv);
-		}
+		final List<T> result = list.stream()
+				.map(item -> create(item, clazz))
+				.collect(Collectors.toList());
 
 		return result;
+	}
+
+	public static <T, S> List<T> wrapToImmutableList(final List<S> list, final Class<T> clazz)
+	{
+		if (list == null || list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return list.stream()
+				.map(model -> create(model, clazz))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public static void refresh(final Object model)
@@ -648,7 +669,7 @@ public class InterfaceWrapperHelper
 		final boolean strict = false;
 		return helpers.getPO(model, strict);
 	}
-	
+
 	public static <T extends PO> T getStrictPO(final Object model)
 	{
 		final boolean strict = true;
@@ -675,13 +696,30 @@ public class InterfaceWrapperHelper
 	 * Introducing this exception to be thrown instead of ADempiereException. Reason: It's a pain if you have a breakpoint on "AdempiereException" and the debugger stops every 2 seconds because
 	 * InterfaceWrapperHelper throws it.
 	 */
-	/* package */static class MissingTableNameException extends AdempiereException
+	/* package */@SuppressWarnings("serial")
+	static class MissingTableNameException extends AdempiereException
 	{
-		private static final long serialVersionUID = 6469196469943285793L;
-
-		private MissingTableNameException(final Class<?> clazz)
+		private static final MissingTableNameException notFound(final Class<?> modelClass)
 		{
-			super("@NotFound@ @TableName@ (class=" + clazz + ")");
+			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
+		}
+
+		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
+		{
+			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
+		}
+
+		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
+		{
+			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
+					+ "\n modelClass=" + modelClass
+					+ "\n modelClassTableName=" + modelClassTableName
+					+ "\n expectedTableName=" + expectedTableName);
+		}
+
+		private MissingTableNameException(final String message)
+		{
+			super(message);
 		}
 	}
 
@@ -699,14 +737,14 @@ public class InterfaceWrapperHelper
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
-	public static String getTableName(final Class<?> clazz) throws AdempiereException
+	public static String getTableName(final Class<?> modelClass) throws AdempiereException
 	{
-		final String tableName = getTableNameOrNull(clazz);
-		if (tableName == null)
+		final String modelClassTableName = getTableNameOrNull(modelClass);
+		if (modelClassTableName == null)
 		{
-			throw new MissingTableNameException(clazz);
+			throw MissingTableNameException.notFound(modelClass);
 		}
-		return tableName;
+		return modelClassTableName;
 	}
 
 	/**
@@ -723,6 +761,52 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 		return modelClassInfo.getTableName();
+	}
+
+	/**
+	 * Extracts the table name from given modelClass.
+	 * If the modelClass does not have a table name it will return <code>expectedTableName</code> if that's not null.
+	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
+	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
+	 * 
+	 * @param modelClass
+	 * @param expectedTableName
+	 * @return model table name; never returns null
+	 */
+	public static String getTableName(final Class<?> modelClass, @Nullable final String expectedTableName)
+	{
+		final String modelClassTableName = getTableNameOrNull(modelClass);
+
+		// Case: there is no expected/default table name
+		// => fail if modelClass has no table name either.
+		if (expectedTableName == null)
+		{
+			if (modelClassTableName == null)
+			{
+				throw MissingTableNameException.notFound(modelClass, expectedTableName);
+			}
+
+			return modelClassTableName;
+		}
+		// Case: there is an expected/default table name
+		else
+		{
+			// Sub-case: no model class table name => return the default/expected one
+			if (modelClassTableName == null)
+			{
+				return expectedTableName;
+			}
+			// Sub-case: model class table name matches the expected one => perfect, return it
+			else if (modelClassTableName.equals(expectedTableName))
+			{
+				return modelClassTableName;
+			}
+			// Sub-case: model class table name DOES NOT match the expected one => fail
+			else
+			{
+				throw MissingTableNameException.notMatching(modelClass, modelClassTableName, expectedTableName);
+			}
+		}
 	}
 
 	public static final boolean isModelInterface(final Class<?> modelClass)
@@ -767,19 +851,26 @@ public class InterfaceWrapperHelper
 		return getKeyColumnName(tableName);
 	}
 
+	/**
+	 * Returns <code>tableName + "_ID"</code>.
+	 * <p>
+	 * Hint: if you need a method that does not just assume, but actually verifies the key column name, use {@link de.metas.adempiere.service.IColumnBL#getSingleKeyColumn(String)}.
+	 *
+	 * @param tableName
+	 * @return
+	 */
 	public static final String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
 		return keyColumnName;
 	}
-	
+
 	public static final String getModelKeyColumnName(final Object model)
 	{
 		final String tableName = getModelTableName(model);
 		return getKeyColumnName(tableName);
 	}
-
 
 	/**
 	 * Get Table_ID of wrapped model. If model is null, an exception will be thrown
@@ -1078,7 +1169,7 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
-		
+
 		return helpers.setValue(model, columnName, value, throwExIfColumnNotFound);
 	}
 
@@ -1327,7 +1418,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * @param model
 	 * @param columnNames
-	 * @return true if any of given column names where changed
+	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
@@ -1338,11 +1429,11 @@ public class InterfaceWrapperHelper
 	public static boolean isPOValueChanged(final Object model, final String columnName)
 	{
 		final PO po = POWrapper.getStrictPO(model);
-		if(po == null)
+		if (po == null)
 		{
 			return false;
 		}
-		
+
 		return POWrapper.isValueChanged(po, columnName);
 	}
 
@@ -1516,7 +1607,7 @@ public class InterfaceWrapperHelper
 	{
 		return POWrapper.getFirstValidIdByColumnName(columnName);
 	}
-	
+
 	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
 	public static final Object checkZeroIdValue(final String columnName, final Object value)
 	{

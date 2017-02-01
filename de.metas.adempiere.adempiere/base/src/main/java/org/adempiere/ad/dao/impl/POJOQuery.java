@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -72,10 +71,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Deprecated
 	public POJOQuery(final Class<T> modelClass)
 	{
-		this(Env.getCtx(), modelClass, ITrx.TRXNAME_None);
+		this(Env.getCtx(), modelClass, null, ITrx.TRXNAME_None);
 	}
 
-	public POJOQuery(final Properties ctx, final Class<T> modelClass, final String trxName)
+	public POJOQuery(final Properties ctx, final Class<T> modelClass, final String tablename, final String trxName)
 	{
 		super();
 
@@ -84,12 +83,19 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		this.ctx = ctx;
 		this.trxName = trxName;
 
-		// make sure early if modelClass is valid
-		this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
-
 		final IQueryBL factory = Services.get(IQueryBL.class);
 
-		filters = factory.createCompositeQueryFilter(modelClass);
+		if (Check.isEmpty(tablename, true))
+		{
+			// make sure early if modelClass is valid
+			this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
+			filters = factory.createCompositeQueryFilter(modelClass);
+		}
+		else
+		{
+			this.tableName = tablename;
+			filters = factory.createCompositeQueryFilter(tableName);
+		}
 	}
 
 	@Override
@@ -457,7 +463,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-
 	@Override
 	public POJOQuery<T> setOptions(final Map<String, Object> options)
 	{
@@ -477,7 +482,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return this;
 	}
-
 
 	@Override
 	public <OT> OT getOption(final String name)
@@ -549,8 +553,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 
 			Check.assume(BigDecimal.class.equals(returnType)
-					|| Integer.class.equals(returnType)
-					, "Return type shall be {}, {} and not {}", BigDecimal.class, Integer.class, returnType);
+					|| Integer.class.equals(returnType), "Return type shall be {}, {} and not {}", BigDecimal.class, Integer.class, returnType);
 
 			// Setup initial result
 			result = null;
@@ -769,7 +772,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return new ArrayList<>(result);
 	}
-	
+
 	@Override
 	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
@@ -780,15 +783,15 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		for (final T record : records)
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
-			
+
 			@SuppressWarnings("unchecked")
 			final AT value = (AT)valueObj;
-			
-			if(result.contains(value))
+
+			if (result.contains(value))
 			{
 				continue;
 			}
-			
+
 			result.add(value);
 		}
 
@@ -808,7 +811,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 	/* package */ List<SqlQueryUnion<T>> getUnions()
 	{
-		if(unions == null)
+		if (unions == null)
 		{
 			return ImmutableList.of();
 		}

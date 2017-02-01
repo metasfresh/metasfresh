@@ -1,29 +1,5 @@
 package de.metas.handlingunits;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -42,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Status;
@@ -151,7 +128,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 *
 	 * @param huItem
-	 * @return true if this is a virtual HU Item
+	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
 	 */
 	boolean isVirtual(I_M_HU_Item huItem);
 
@@ -214,7 +191,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean destroyIfEmptyStorage(IHUContext huContext, I_M_HU hu);
 
 	/**
-	 * Gets HU Item Type
+	 * Gets HU Item Type.
+	 * <p>
+	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
+	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
 	 * @param huItem
 	 * @return HU Item Type
@@ -250,16 +230,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *         </ul>
 	 */
 	ILUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
-
-	/**
-	 * Calculates Weight Tare for given HU PI.
-	 *
-	 * NOTE: this method calculates PI's tare weight without considering included HUs because we don't know how many are.
-	 *
-	 * @param piVersion
-	 * @return weight tare
-	 */
-	BigDecimal getWeightTare(I_M_HU_PI_Version piVersion);
 
 	/**
 	 * Determines if the handling unit is a loading unit (type {@link X_M_HU_PI_Version#HU_UNITTYPE_LoadLogistiqueUnit} )
@@ -423,4 +393,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	IEmptiesMovementBuilder createEmptiesMovementBuilder();
+
+	/**
+	 * Checks if the given {@code hu} is a "bag".
+	 * 
+	 * @param hu optional, may be {@code null}.
+	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
+	 */
+	boolean isAggregateHU(I_M_HU hu);
 }

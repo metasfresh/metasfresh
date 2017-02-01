@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -89,10 +88,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			return;
 		}
 
-		for (final I_M_HU hu : huList)
-		{
-			assignHU(model, hu, trxName);
-		}
+		huList.forEach(hu -> assignHU(model, hu, trxName));
 	}
 
 	@Override
@@ -128,25 +124,16 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		final I_M_HU_Assignment assignment = huAssignmentDAO.retrieveHUAssignmentOrNull(ctx, huId, adTableId, recordId, trxName);
 		if (assignment == null)
 		{
-			builder.initializeAssignment(ctx, trxName);
+			builder.initializeAssignment(ctx, trxName); // create a new I_M_HU_Assignment
 		}
 		else
 		{
-			builder.initializeAssignment(assignment);
+			builder.initializeAssignment(assignment); // update the existing I_M_HU_Assignment
 		}
 
 		updateHUAssignment(builder, hu, model, isTransferPackingMaterials, trxName);
 
 		return builder.build();
-	}
-
-	@Override
-	public void createTradingUnitDerivedAssignment(final Properties ctx, final Object model, final I_M_HU topLevelHU, final I_M_HU luHU, final I_M_HU tuHU, final String trxName)
-	{
-		final IHUAssignmentBuilder builder = createTradingUnitDerivedAssignmentBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName);
-
-		// Create and save the assignment
-		builder.build();
 	}
 
 	@Override
@@ -184,7 +171,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		updateHUAssignmentAndSave(builder, model, hu, isTransferPackingMaterials);
 
 		//
-		// Check if this update was an assignemnt or an un-assignment and fire listeners
+		// Check if this update was an assignment or an unassignment and fire listeners accordingly
 		final boolean isActiveNew = builder.isActive();
 		final Boolean isAssignment;
 		if (isNewAssignment)
@@ -222,11 +209,11 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	/**
 	 * @param builder
 	 * @param model
-	 * @param hu
+	 * @param topLevelHU
 	 * @param isTransferPackingMaterials
 	 * @return assignment which was built / saved
 	 */
-	private I_M_HU_Assignment updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU hu, final Boolean isTransferPackingMaterials)
+	private I_M_HU_Assignment updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, final Boolean isTransferPackingMaterials)
 	{
 		builder.setModel(model);
 		builder.setIsActive(true);
@@ -235,20 +222,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			builder.setIsTransferPackingMaterials(isTransferPackingMaterials);
 		}
 
-		builder.setTopLevelHU(hu);
-
-		// NOTE: because of the logic from de.metas.handlingunits.impl.HUAssignmentDAO.applyCommonFilters(IQueryBuilder<I_M_HU_Assignment>, int)
-		// FIXME: we shall fix this somehow...
-		//
-		// If we are setting here the LU/TU we will get duplicate HU Assignments
-		// final I_M_HU_Assignment huAssignment = builder.getM_HU_Assignment();
-		// if (huAssignment.getM_LU_HU_ID() <= 0 && huAssignment.getM_TU_HU_ID() <= 0)
-		// {
-		// final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		// final ILUTUCUPair ltc = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu);
-		// builder.setM_LU_HU(ltc.getM_LU_HU());
-		// builder.setM_TU_HU(ltc.getM_TU_HU());
-		// }
+		builder.setTopLevelHU(topLevelHU);
 
 		return builder.build();
 	}

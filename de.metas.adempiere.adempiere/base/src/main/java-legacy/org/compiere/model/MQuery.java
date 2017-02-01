@@ -478,6 +478,11 @@ public final class MQuery implements Serializable
 			return code;
 		}
 		
+		public String getSql()
+		{
+			return code;
+		}
+		
 		public String getCaption()
 		{
 			return caption;
@@ -1494,7 +1499,7 @@ public final class MQuery implements Serializable
 			}
 			else
 			{
-				sqlWhereClause.append(operatorToUse);
+				sqlWhereClause.append(operatorToUse.getSql());
 			}
 
 			if (code_ToUse instanceof String)

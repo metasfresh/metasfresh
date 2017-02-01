@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,25 +40,25 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * In Array Query filter: Checks if given columnName is in a list of values.
- * 
+ *
  * The built SQL where clause will look something like:
- * 
+ *
  * <pre>
  * ColumnName IN (Value1, Value2 ...) - for non null values. If there are no non-null values, this part will be skipped
  * OR ColumnName IS NULL - for null values. If there are no NULL values, this part will be skipped
  * </pre>
- * 
+ *
  * In case your values list is empty then {@link #isDefaultReturnWhenEmpty()} constant will be used to evaluate the expression.
- * 
+ *
  * NOTES:
  * <ul>
  * <li>NULL case is covered (i.e. if one of your values is NULL, the built SQL will contain an "ColumnName IS NULL" check
  * <li>maximum values list length is not checked and we rely on database. However in PostgreSQL there is no limit (see
  * http://stackoverflow.com/questions/1009706/postgresql-max-number-of-parameters-in-in-clause)
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <T>
  */
 public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -72,7 +72,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
-	 * 
+	 *
 	 * @param columnName
 	 * @param values
 	 */
@@ -99,7 +99,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
-	 * 
+	 *
 	 * @param columnName
 	 * @param values
 	 */
@@ -125,8 +125,8 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	{
 		return "InArrayQueryFilter ["
 				+ (columnName != null ? "columnName=" + columnName + ", " : "")
-				+ (values != null ? "values=" + values + ", " : "")
 				+ "defaultReturnWhenEmpty=" + defaultReturnWhenEmpty
+				+ (values != null ? "values=" + values + ", " : "") // values last, to make this more readbale in case of *many* values
 				+ "]";
 	}
 
@@ -137,12 +137,14 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	/**
 	 * Sets default value to be returned when the "values" list is empty.
-	 * 
+	 *
 	 * @param defaultReturnWhenEmpty
+	 * @return 
 	 */
-	public void setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
+	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
 	{
 		this.defaultReturnWhenEmpty = defaultReturnWhenEmpty;
+		return this;
 	}
 
 	@Override

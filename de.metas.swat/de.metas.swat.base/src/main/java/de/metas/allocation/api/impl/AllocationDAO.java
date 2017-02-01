@@ -329,7 +329,7 @@ public class AllocationDAO implements IAllocationDAO
 		return allocationHdrQuery
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
-				.addInArrayFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
 				.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery) // has no accounting
 				.create()
 				.list(I_C_AllocationHdr.class);

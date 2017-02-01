@@ -125,7 +125,11 @@ public class PMMContractBuilder
 	//
 	// Parameters for the dataEntries
 	private BigDecimal _flatrateAmtPerUOM;
-	private final Map<Date, BigDecimal> _flatrateAmtPerUOMByDay = new HashMap<>();
+
+	/**
+	 * This map needs to support {@code null} values.
+	 */
+	private final HashMap<Date, BigDecimal> _flatrateAmtPerUOMByDay = new HashMap<>();
 
 	private final Map<Date, DailyFlatrateDataEntry> _flatrateDataEntriesByDay = new HashMap<>();
 
@@ -261,7 +265,7 @@ public class PMMContractBuilder
 	{
 		final IContextAware context = getContext();
 		final I_C_Flatrate_DataEntry newDataEntry = InterfaceWrapperHelper.newInstance(I_C_Flatrate_DataEntry.class, context);
-		
+
 		newDataEntry.setAD_Org_ID(term.getAD_Org_ID());
 		newDataEntry.setC_Flatrate_Term(term);
 		newDataEntry.setC_Period(period);
@@ -283,7 +287,7 @@ public class PMMContractBuilder
 
 		if (flatrateAmtPerUOMForMinDate.isPresent())
 		{
-			newDataEntry.setFlatrateAmtPerUOM(flatrateAmtPerUOMForMinDate.get().getValue());
+			newDataEntry.setFlatrateAmtPerUOM(flatrateAmtPerUOMForMinDate.get().getValue()); // might also be null
 		}
 		else
 		{
@@ -310,7 +314,7 @@ public class PMMContractBuilder
 	}
 
 	/**
-	 * Sets the context to be used within the {@link #build()} method. Giving a ctx to this builder is mandatory, 
+	 * Sets the context to be used within the {@link #build()} method. Giving a ctx to this builder is mandatory,
 	 * unless the builder was created with {@link #newBuilder(I_C_Flatrate_Term)}.
 	 * If that case, if this method was omitted, then the given <code>term</code>'s ctx is used instead.
 	 *
@@ -320,7 +324,7 @@ public class PMMContractBuilder
 	public PMMContractBuilder setCtx(final Properties ctx)
 	{
 		assertNotProcessed();
-		_context = PlainContextAware.createUsingThreadInheritedTransaction(ctx);
+		_context = PlainContextAware.newWithThreadInheritedTrx(ctx);
 		return this;
 	}
 
@@ -459,7 +463,7 @@ public class PMMContractBuilder
 	}
 
 	/**
-	 * Sets if we shall complete the contract. 
+	 * Sets if we shall complete the contract.
 	 * This method is relevant also if this builder was created with {@link #newBuilder(I_C_Flatrate_Term)}.
 	 */
 	public PMMContractBuilder setComplete(final boolean complete)

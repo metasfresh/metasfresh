@@ -18,6 +18,7 @@ package org.compiere.util;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import de.metas.logging.LogManager;
 
@@ -32,7 +33,7 @@ import de.metas.logging.LogManager;
 public interface Evaluatee
 {
 	@SuppressWarnings("unchecked")
-	default <T> T get_ValueAsObject(String variableName)
+	default <T> T get_ValueAsObject(final String variableName)
 	{
 		return (T)get_ValueAsString(variableName);
 	}
@@ -165,6 +166,37 @@ public interface Evaluatee
 			return defaultValue;
 		}
 	}
+	
+	default Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
+	{
+		if (Integer.class.equals(targetType)
+				|| int.class.equals(variableName))
+		{
+			final Integer valueInt = get_ValueAsInt(variableName, null);
+			return Optional.ofNullable(valueInt);
+		}
+		else if (java.util.Date.class.equals(targetType))
+		{
+			final java.util.Date valueDate = get_ValueAsDate(variableName, null);
+			return Optional.ofNullable(valueDate);
+		}
+		else if (Timestamp.class.equals(targetType))
+		{
+			final Timestamp valueDate = TimeUtil.asTimestamp(get_ValueAsDate(variableName, null));
+			return Optional.ofNullable(valueDate);
+		}
+		else if (Boolean.class.equals(variableName))
+		{
+			final Boolean valueBoolean = get_ValueAsBoolean(variableName, null);
+			return Optional.ofNullable(valueBoolean);
+		}
+		else
+		{
+			final Object valueObj = get_ValueAsObject(variableName);
+			return Optional.ofNullable(valueObj);
+		}
+	}
+
 
 	default Evaluatee andComposeWith(final Evaluatee other)
 	{

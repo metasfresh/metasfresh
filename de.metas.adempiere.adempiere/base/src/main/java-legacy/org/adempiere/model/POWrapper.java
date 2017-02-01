@@ -256,9 +256,9 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	/**
 	 * Method strictly gets the underlying PO if the wrapper supports it.
-	 * 
+	 *
 	 * Compared with {@link #getPO()}, this method will NOT try to load the PO from other wrappers.
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
@@ -754,7 +754,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		if (poCacheLocals == null)
 		{
-			poCacheLocals = new HashMap<String, POWrapperCacheLocal>();
+			poCacheLocals = new HashMap<>();
 		}
 
 		final String refTableName = InterfaceWrapperHelper.getTableName(refModelClass);

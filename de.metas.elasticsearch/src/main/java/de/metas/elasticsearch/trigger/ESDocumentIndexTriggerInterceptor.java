@@ -203,7 +203,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		Services.get(IESSystem.class)
 				.scheduler()
 				.addToIndex(modelIndexerId, modelTableName, modelIdsToIndex);
-	}
+		}
 
 	private final void removeFromIndexes(final Object triggeringModelObj)
 	{
@@ -211,15 +211,15 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		Services.get(IESSystem.class)
 				.scheduler()
 				.removeToIndex(modelIndexerId, modelTableName, modelIdsToRemove);
-	}
+		}
 
 	@Override
 	public IQueryFilter<Object> getMatchingModelsFilter()
 	{
 		// Document(triggering) filter
-		final IQuery<Object> documentsQuery = queryBL.createQueryBuilder(triggeringTableName, PlainContextAware.createUsingThreadInheritedTransaction())
+		final IQuery<Object> documentsQuery = queryBL.createQueryBuilder(triggeringTableName, PlainContextAware.newWithThreadInheritedTrx())
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter("DocStatus", DocAction.STATUS_Completed, DocAction.STATUS_Closed, DocAction.STATUS_Reversed)
+				.addInArrayOrAllFilter("DocStatus", DocAction.STATUS_Completed, DocAction.STATUS_Closed, DocAction.STATUS_Reversed)
 				.create();
 
 		return queryBL.createCompositeQueryFilter(modelTableName)

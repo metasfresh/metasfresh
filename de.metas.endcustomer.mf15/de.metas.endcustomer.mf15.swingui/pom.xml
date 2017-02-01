@@ -20,7 +20,7 @@
 		<start-class>de.metas.SwingUIApplication</start-class>
 		<spring.jarLauncherClass>org.springframework.boot.loader.JarLauncher</spring.jarLauncherClass>
 		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>4.47.46.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.versionInfo>4.54.53.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
 		<launch4j.preCp></launch4j.preCp>
 
 		<!-- NOTE: -Djava.util.Arrays.useLegacyMergeSort=true is related to task "07072 Comparison method violates its general contract (100965620270)" -->
@@ -30,6 +30,11 @@
 		
 		<runner.bat.classpath>%ADEMPIERE_HOME%\lib\${mainJar}</runner.bat.classpath>
 		<runner.sh.classpath>$ADEMPIERE_HOME/lib/${mainJar}</runner.sh.classpath>
+		
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>1.0.0</metasfresh.version>
 	</properties>
 
 	<dependencyManagement>
@@ -103,7 +108,7 @@
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
 			<artifactId>de.metas.fresh.swingui</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
@@ -112,7 +117,7 @@
 		<dependency>
 			<groupId>de.metas.report.jasper.server</groupId>
 			<artifactId>de.metas.report.jasper.server.base</artifactId>
-			<version>1.0.0</version>
+			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 

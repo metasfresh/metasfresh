@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
@@ -90,10 +90,10 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				.setM_AttributeSetInstance_ID(event.getM_AttributeSetInstance_ID())
 				.setC_Flatrate_DataEntry_ID(event.getC_Flatrate_DataEntry_ID())
 				.build();
-		
+
 		final Timestamp datePromised = event.getDatePromised();
 		I_PMM_PurchaseCandidate candidate;
-		
+
 		//
 		// Weekly planning
 		if (event.isPlanning())
@@ -258,7 +258,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		event.setProcessed(false);
 		InterfaceWrapperHelper.save(event);
 
-		getLoggable().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
+		Loggables.get().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
 
 		countErrors.incrementAndGet();
 	}
@@ -270,7 +270,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 		if (errorMsg != null)
 		{
-			getLoggable().addLog("Event " + event + " skipped: " + errorMsg);
+			Loggables.get().addLog("Event " + event + " skipped: " + errorMsg);
 		}
 		countSkipped.incrementAndGet();
 
@@ -290,11 +290,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		}
 
 		return false;
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
 	}
 
 	public String getProcessSummary()
@@ -322,7 +317,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				//
 				.build();
 		logger.trace("Created event {} from {}", event, qtyReportEvent);
-		
+
 		return event;
 	}
 }

@@ -164,7 +164,7 @@ public final class UserPreference implements Serializable
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Org_ID, Env.getAD_Org_ID(ctx))
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, adUserId)
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Window_ID, null)
-				.addInArrayFilter(I_AD_Preference.COLUMNNAME_Attribute, PROPERTIES)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_Attribute, PROPERTIES)
 				//
 				.orderBy()
 				.addColumn(I_AD_Preference.COLUMNNAME_Attribute)

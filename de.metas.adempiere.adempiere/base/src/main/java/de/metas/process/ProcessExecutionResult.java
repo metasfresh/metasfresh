@@ -99,7 +99,7 @@ public class ProcessExecutionResult
 	private boolean refreshAllAfterExecution = false;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private TableRecordReference recordToSelectAfterExecution = null;
+	private List<TableRecordReference> recordsToSelectAfterExecution = null;
 
 	public ProcessExecutionResult()
 	{
@@ -140,18 +140,6 @@ public class ProcessExecutionResult
 		this.summary = summary;
 	}
 
-//	/**
-//	 * Sets summary and error flag.
-//	 *
-//	 * @param translatedSummary String
-//	 * @param error boolean
-//	 */
-//	public void setSummary(final String translatedSummary, final boolean error)
-//	{
-//		setSummary(translatedSummary);
-//		setError(error);
-//	}
-
 	public void addSummary(final String additionalSummary)
 	{
 		if (summary == null)
@@ -164,7 +152,7 @@ public class ProcessExecutionResult
 		}
 
 	}
-	
+
 	public void markAsSuccess(final String summary)
 	{
 		this.summary = summary;
@@ -193,14 +181,6 @@ public class ProcessExecutionResult
 	}
 
 
-//	/**
-//	 * @param error true if the process execution failed
-//	 */
-//	public void setError(final boolean error)
-//	{
-//		this.error = error;
-//	}
-
 	/**
 	 * @return true if the process execution failed
 	 */
@@ -208,11 +188,6 @@ public class ProcessExecutionResult
 	{
 		return error;
 	}
-
-//	public void setThrowable(final Throwable throwable)
-//	{
-//		this.throwable = throwable;
-//	}
 
 	public void setThrowableIfNotSet(final Throwable throwable)
 	{
@@ -302,11 +277,38 @@ public class ProcessExecutionResult
 	}
 
 	/**
+	 * @return the records to be selected in window, after this process is executed
+	 */
+	public List<TableRecordReference> getRecordsToSelectAfterExecution()
+	{
+		if(recordsToSelectAfterExecution == null)
+		{
+			return ImmutableList.of();
+		}
+		return recordsToSelectAfterExecution;
+	}
+	
+	/**
 	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
 	 */
 	public TableRecordReference getRecordToSelectAfterExecution()
 	{
-		return recordToSelectAfterExecution;
+		if(recordsToSelectAfterExecution == null || recordsToSelectAfterExecution.isEmpty())
+		{
+			return null;
+		}
+		
+		return recordsToSelectAfterExecution.get(0);
+	}
+
+	/**
+	 * Sets the records to be selected in window, after this process is executed.
+	 *
+	 * @param recordsToSelectAfterExecution
+	 */
+	public void setRecordsToSelectAfterExecution(final List<TableRecordReference> recordsToSelectAfterExecution)
+	{
+		this.recordsToSelectAfterExecution = recordsToSelectAfterExecution == null ? null : ImmutableList.copyOf(recordsToSelectAfterExecution);
 	}
 
 	/**
@@ -316,7 +318,7 @@ public class ProcessExecutionResult
 	 */
 	public void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
 	{
-		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
+		this.recordsToSelectAfterExecution = recordToSelectAfterExecution == null ? null : ImmutableList.of(recordToSelectAfterExecution);
 	}
 
 	public void setPrintFormat(final MPrintFormat printFormat)
@@ -479,9 +481,9 @@ public class ProcessExecutionResult
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
-	public void addLog(final int Log_ID, final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_ID, P_Date, P_Number, P_Msg));
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
 	}	// addLog
 
 	/**
@@ -492,11 +494,11 @@ public class ProcessExecutionResult
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
 	 */
-	public void addLog(final int P_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public void addLog(final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
 
-		addLog(new ProcessInfoLog(P_ID, timestampToUse, P_Number, P_Msg));
+		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg));
 	}	// addLog
 
 	/**
@@ -565,6 +567,6 @@ public class ProcessExecutionResult
 
 		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
 
-		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
+		recordsToSelectAfterExecution = otherResult.recordsToSelectAfterExecution;
 	}
 }

@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
@@ -46,6 +47,14 @@ public interface IAttributesBL extends ISingletonService
 	 * @return
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
+
+	/**
+	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
+	 *
+	 * @param attribute
+	 * @return {@link IAttributeValuesProvider} or null
+	 */
+	IAttributeValuesProvider createAttributeValuesProvider(org.compiere.model.I_M_Attribute attribute);
 
 	/**
 	 * Gets product attribute by ID.

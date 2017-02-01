@@ -30,7 +30,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.ModelValidator;
@@ -126,7 +126,7 @@ public class PP_Order
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMN_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.andCollect(I_C_Invoice_Detail.COLUMN_C_InvoiceLine_ID)
 				.andCollect(I_C_InvoiceLine.COLUMN_C_Invoice_ID)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
 				.orderBy().addColumn(I_C_Invoice.COLUMNNAME_DocumentNo).endOrderBy()
 				.create()
 				.list();
@@ -147,7 +147,7 @@ public class PP_Order
 		}
 
 		final String msg = msgBL.translate(InterfaceWrapperHelper.getCtx(ppOrder), sb.toString());
-		ILoggable.THREADLOCAL.getLoggable().addLog(msg);
+		Loggables.get().addLog(msg);
 		throw new AdempiereException(msg);
 	}
 

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-08-19T13:39:25 -->
+<!-- 2016-10-05T17:50:46 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.210000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -27,14 +29,14 @@
 FROM
 	C_InvoiceLine il
 	-- Withhold Product
-	LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice')
+	LEFT OUTER JOIN M_Material_Tracking_Ref mtr_i ON mtr_i.AD_Table_ID = Get_Table_ID('C_Invoice') AND mtr_i.isActive = 'Y'
 		AND mtr_i.Record_ID = il.C_Invoice_ID
-	LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID
-	LEFT OUTER JOIN M_QualityInsp_LagerKonf_Version qilkv ON mt.M_QualityInsp_LagerKonf_Version_ID = qilkv.M_QualityInsp_LagerKonf_Version_ID
+	LEFT OUTER JOIN M_Material_Tracking mt ON mtr_i.M_Material_Tracking_ID = mt.M_Material_Tracking_ID AND mt.isActive = 'Y'
+	LEFT OUTER JOIN M_QualityInsp_LagerKonf_Version qilkv ON mt.M_QualityInsp_LagerKonf_Version_ID = qilkv.M_QualityInsp_LagerKonf_Version_ID AND qilkv.isActive = 'Y'
 
-	LEFT OUTER JOIN C_Invoice_Detail id ON il.C_InvoiceLine_ID = id.C_InvoiceLine_ID AND id.isPrinted = 'Y'
+	LEFT OUTER JOIN C_Invoice_Detail id ON il.C_InvoiceLine_ID = id.C_InvoiceLine_ID AND id.isPrinted = 'Y' AND id.isActive = 'Y'
 WHERE
-	il.C_Invoice_ID = $P{c_invoice_id}
+	il.C_Invoice_ID = $P{c_invoice_id} AND il.isActive = 'Y'
 	AND il.M_Product_ID = M_Product_Witholding_ID
 ;]]>
 	</queryString>

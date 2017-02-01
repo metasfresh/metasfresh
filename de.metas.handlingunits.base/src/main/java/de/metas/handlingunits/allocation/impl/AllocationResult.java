@@ -28,9 +28,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.concurrent.Immutable;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHUTransactionAttribute;
 
+@Immutable
 /* package */class AllocationResult extends AbstractAllocationResult
 {
 	private final BigDecimal qtyToAllocate;
@@ -44,12 +49,11 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 			final List<IHUTransaction> trxs,
 			final List<IHUTransactionAttribute> attributeTrxs)
 	{
-		super();
 		this.qtyToAllocate = qtyToAllocate;
 		this.qtyAllocated = qtyAllocated;
-		completed = qtyToAllocate.compareTo(qtyAllocated) == 0;
-		attributeTransactions = Collections.unmodifiableList(new ArrayList<IHUTransactionAttribute>(attributeTrxs));
-		transactions = Collections.unmodifiableList(new ArrayList<IHUTransaction>(trxs));
+		this.completed = qtyToAllocate.compareTo(qtyAllocated) == 0;
+		this.attributeTransactions = Collections.unmodifiableList(new ArrayList<IHUTransactionAttribute>(attributeTrxs));
+		this.transactions = Collections.unmodifiableList(new ArrayList<IHUTransaction>(trxs));
 	}
 
 	@Override
@@ -85,13 +89,12 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 	@Override
 	public List<IHUTransaction> getTransactions()
 	{
-		return transactions;
+		return ImmutableList.copyOf(transactions);
 	}
 
 	@Override
 	public List<IHUTransactionAttribute> getAttributeTransactions()
 	{
-		return attributeTransactions;
+		return ImmutableList.copyOf(attributeTransactions);
 	}
-
 }
