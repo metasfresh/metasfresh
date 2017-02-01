@@ -402,6 +402,7 @@ class Table extends Component {
         } = this.props;
 
         const {selected} = this.state;
+        const keyProp = keyProperty ? keyProperty : "rowId";
 
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -409,8 +410,6 @@ class Table extends Component {
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
-                const index = keyProperty ? keyProperty : "rowId";
-
                 ret.push(
                     <TableItemWrapper
                         key={i}
@@ -425,7 +424,8 @@ class Table extends Component {
                         readonly={readonly}
                         mainTable={mainTable}
                         selected={selected}
-                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
+                        keyProperty={keyProp}
+                        onDoubleClick={onDoubleClick}
                         handleClick={this.handleClick}
                         handleRightClick={this.handleRightClick}
                         changeListenOnTrue={() => this.changeListen(true)}

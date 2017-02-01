@@ -265,7 +265,10 @@ class DocumentList extends Component {
                     <div className="document-list-body">
                         <Table
                             entity="documentView"
-                            ref={c => this.table = c && c.getWrappedInstance() && c.getWrappedInstance().refs.instance}
+                            ref={c => this.table =
+                                c && c.getWrappedInstance()
+                                && c.getWrappedInstance().refs.instance
+                            }
                             rowData={{1: data.result}}
                             cols={layout.elements}
                             tabid={1}
@@ -274,7 +277,9 @@ class DocumentList extends Component {
                             emptyHint={layout.emptyResultHint}
                             readonly={true}
                             keyProperty="id"
-                            onDoubleClick={(id) => {dispatch(push("/window/" + windowType + "/" + id))}}
+                            onDoubleClick={(id) => {
+                                dispatch(push("/window/" + windowType + "/" + id))
+                            }}
                             size={data.size}
                             pageLength={20}
                             handleChangePage={this.handleChangePage}

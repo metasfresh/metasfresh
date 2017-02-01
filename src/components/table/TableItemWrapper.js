@@ -68,7 +68,7 @@ class TableItemWrapper extends Component {
         const {
             item, entity, tabid, cols, type, docId, selected, onDoubleClick,
             handleClick, handleRightClick, changeListenOnTrue, changeListenOnFalse,
-            newRow, tabIndex, readonly, mainTable, handleSelect, odd
+            newRow, tabIndex, readonly, mainTable, handleSelect, odd, keyProperty
         } = this.props;
 
         const {rows} = this.state;
@@ -87,13 +87,13 @@ class TableItemWrapper extends Component {
                         tabIndex={tabIndex}
                         readonly={readonly}
                         mainTable={mainTable}
-                        onDoubleClick={() => onDoubleClick && onDoubleClick()}
-                        onMouseDown={(e) => handleClick && handleClick(e, row.id)}
-                        handleRightClick={(e) => handleRightClick(e, row.id)}
+                        onDoubleClick={() => onDoubleClick && onDoubleClick(row[keyProperty])}
+                        onMouseDown={(e) => handleClick && handleClick(e, row[keyProperty])}
+                        handleRightClick={(e) => handleRightClick(e, row[keyProperty])}
                         changeListenOnTrue={() => changeListenOnTrue && changeListenOnTrue()}
                         changeListenOnFalse={() => changeListenOnFalse && changeListenOnFalse()}
                         newRow={newRow}
-                        isSelected={selected.indexOf(row.id) > -1}
+                        isSelected={selected.indexOf(row[keyProperty]) > -1}
                         key={index}
                         indent={row.indent}
                         includedDocuments={row.includedDocuments}
