@@ -59,6 +59,7 @@ class TableCell extends Component {
                             let date = Moment(d).format('DD.MM.YYYY');
                             return date;
                         } else {
+                            // specified case to avoid parsing "error" text
                             return "";
                         }
                         
