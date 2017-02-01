@@ -55,6 +55,9 @@ class TableHeader extends Component {
         const {cols, mainTable} = this.props;
         return (
             <tr>
+                <th
+                    className="indent"
+                />
                 {this.renderCols(cols, mainTable)}
             </tr>
         )

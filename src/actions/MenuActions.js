@@ -117,11 +117,11 @@ export function getWindowBreadcrumb(id){
 
 // UTILITIES
 
-export function flattenLastElem(node) {
+export function flattenLastElem(node, prop = "children") {
     let result = [];
 
-    if(!!node.children){
-        node.children.map(child => {
+    if(!!node[prop]){
+        node[prop].map(child => {
             const flat = flattenLastElem(child);
 
             if(typeof flat === "object"){

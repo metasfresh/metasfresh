@@ -16,10 +16,10 @@ import {
 import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
+import TableItemWrapper from './TableItemWrapper';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
-import TableItem from './TableItem';
 import MasterWidget from '../widget/MasterWidget';
 
 import keymap from '../../keymap.js';
@@ -64,15 +64,9 @@ class Table extends Component {
         }
     }
 
-    changeListenOnTrue = () => {
+    changeListen = (listenOnKeys) => {
         this.setState(Object.assign({}, this.state, {
-            listenOnKeys: true
-        }))
-    }
-
-    changeListenOnFalse = () => {
-        this.setState(Object.assign({}, this.state, {
-            listenOnKeys: false
+            listenOnKeys: !!listenOnKeys
         }))
     }
 
@@ -84,8 +78,8 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
-            selected: this.state.selected.concat([id])
+        this.setState(prevState => Object.assign({}, this.state, {
+            selected: prevState.selected.concat([id])
         }), () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
@@ -416,27 +410,28 @@ class Table extends Component {
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 const index = keyProperty ? keyProperty : "rowId";
+
                 ret.push(
-                    <TableItem
-                        entity={entity}
-                        fields={item[key].fields}
-                        includedDocuments={item[key].includedDocuments}
+                    <TableItemWrapper
                         key={i}
-                        rowId={item[key].rowId}
+                        odd={i & 1}
+                        item={item[key]}
+                        entity={entity}
                         tabId={tabid}
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selected.indexOf(item[key][index]) > -1}
-                        onDoubleClick={() => {onDoubleClick && onDoubleClick(item[key][index]); closeOverlays ? closeOverlays():''}}
-                        onMouseDown={(e) => this.handleClick(e, item[key][index])}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
-                        changeListenOnTrue={() => this.changeListenOnTrue()}
-                        changeListenOnFalse={() => this.changeListenOnFalse()}
+                        tabIndex={tabIndex}
                         readonly={readonly}
                         mainTable={mainTable}
+                        selected={selected}
+                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
+                        handleClick={this.handleClick}
+                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
+                        changeListenOnTrue={() => this.changeListen(true)}
+                        changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
-                        tabIndex={tabIndex}
+                        handleSelect={this.selectProduct}
                     />
                 );
             }
@@ -593,11 +588,7 @@ class Table extends Component {
                                     page={page}
                                 />
                             </thead>
-                            <tbody
-                                ref={c => this.tbody = c}
-                            >
-                                {this.renderTableBody()}
-                            </tbody>
+                            {this.renderTableBody()}
                             <tfoot
                                 ref={c => this.tfoot = c}
                                 tabIndex={tabIndex}
@@ -607,20 +598,22 @@ class Table extends Component {
                         {this.renderEmptyInfo(rowData, tabid)}
                     </div>
                 </div>
-                {page && pageLength && <div className="row">
-                    <div className="col-xs-12">
-                        <TablePagination
-                            handleChangePage={handleChangePage}
-                            handleSelectAll={this.selectAll}
-                            pageLength={pageLength}
-                            size={size}
-                            selected={selected}
-                            page={page}
-                            orderBy={orderBy}
-                            deselect={this.deselectAllProducts}
-                        />
+                {page && pageLength &&
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <TablePagination
+                                handleChangePage={handleChangePage}
+                                handleSelectAll={this.selectAll}
+                                pageLength={pageLength}
+                                size={size}
+                                selected={selected}
+                                page={page}
+                                orderBy={orderBy}
+                                deselect={this.deselectAllProducts}
+                            />
+                        </div>
                     </div>
-                </div>}
+                }
                 {
                     promptOpen &&
                     <Prompt
@@ -637,12 +630,12 @@ class Table extends Component {
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
                 />
 
-            {!readonly &&
-                <TableContextShortcuts
-                    handleToggleQuickInput={this.handleBatchEntryToggle}
-                    handleToggleExpand={() => toggleFullScreen(!fullScreen)}
-                />
-            }
+                {!readonly &&
+                    <TableContextShortcuts
+                        handleToggleQuickInput={this.handleBatchEntryToggle}
+                        handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+                    />
+                }
             </div>
         )
     }

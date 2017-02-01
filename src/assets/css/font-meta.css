@@ -179,3 +179,12 @@
 .meta-icon-collapse:before {
   content: "\55";
 }
+.meta-icon-package:before {
+  content: "\56";
+}
+.meta-icon-palette:before {
+  content: "\57";
+}
+.meta-icon-product:before {
+  content: "\58";
+}

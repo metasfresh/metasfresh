@@ -77,7 +77,7 @@ class TableCell extends Component {
             isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
             onKeyDown, readonly, updatedRow, tabIndex, entity
         } = this.props;
-        
+
         return (
             <td
                 tabIndex={tabIndex}
