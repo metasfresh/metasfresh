@@ -71,6 +71,7 @@ Since we now work with a range, we now declare the dependencies here where range
 			<classifier>client</classifier>
 			<type>zip</type>
 		</dependency>
+
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
