@@ -131,29 +131,34 @@ public final class CacheMgt
 			return false;
 		}
 
+		//
+		// Extract cache instance's tableName (if any)
+		final String tableName = getTableNameOrNull(instance);
+		
+		//
+		// Determine if we shall register the cache instance weakly or not.
+		final boolean registerWeakEffective;
+		if (tableName != null)
+		{
+			registerWeakEffective = registerWeak == null ? true : registerWeak;
+		}
+		else
+		{
+			// NOTE: if the cache is not providing an TableName, we register them with a hard-reference because probably is a cache listener
+			registerWeakEffective = registerWeak == null ? false : registerWeak;
+		}
+
+
 		cacheInstancesLock.lock();
 		try
 		{
-			final String tableName = getTableNameOrNull(instance);
-			final boolean registerWeakEffective;
 			if (tableName != null)
 			{
 				//
-				// Add to TableName count
-				AtomicInteger count = tableNames.get(tableName);
-				if (count == null)
-				{
-					count = new AtomicInteger(0);
-					tableNames.put(tableName, count);
-				}
-				count.incrementAndGet();
-
-				registerWeakEffective = registerWeak == null ? true : registerWeak;
-			}
-			else
-			{
-				// NOTE: if the cache is not providing an TableName, we register them with a hard-reference because probably is a cache listener
-				registerWeakEffective = registerWeak == null ? false : registerWeak;
+				// Increment tableName counter
+				tableNames
+					.computeIfAbsent(tableName, k -> new AtomicInteger(0))
+					.incrementAndGet();
 			}
 
 			return cacheInstances.add(instance, registerWeakEffective);

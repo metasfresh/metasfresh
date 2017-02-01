@@ -382,7 +382,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)

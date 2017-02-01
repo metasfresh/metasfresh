@@ -10,11 +10,11 @@ import java.util.List;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -61,6 +61,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String PARA_C_Orderline_ID = " C_Orderline_ID";
+	private static final String PARA_AD_Table_ID = "AD_Table_ID";
 	private static final String PROPERTY_JasperButtonEnabled = "JasperButtonEnabled";
 
 	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasperProcess = "ReceiptScheduleHUPOSJasperProcess";
@@ -227,21 +228,14 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Create HU generator
-		final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-		huGenerator.setContext(getTerminalContext());
-		final I_M_ReceiptSchedule schedule = service.getReferencedObject(row);
-		huGenerator.addM_ReceiptSchedule(schedule);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(getTerminalContext())
+				.addM_ReceiptSchedule(service.getReferencedObject(row));
 
 		//
 		// Get/Create and Edit LU/TU configuration
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
 
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager
-				.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-				{
-					@Override
-					public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-					{
+		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.createAndEdit(lutuConfiguration -> {
 						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
 						//
@@ -265,12 +259,11 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 						}
 
 						return lutuConfiguration;
-					}
 				});
 
 		//
 		// No configuration => user cancelled => don't open editor
-		if (lutuConfiguration == null)
+		if (lutuConfigurationEffective == null)
 		{
 			return null;
 		}
@@ -281,7 +274,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
+			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
 
@@ -465,6 +458,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 				.setWindowNo(getTerminalContext().getWindowNo())
 				.setReportLanguage(bpartnerLaguage)
 				.addParameter(PARA_C_Orderline_ID, orderLineId)
+				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 				//
 				// Execute report in a new AD_PInstance
 				.buildAndPrepareExecution()

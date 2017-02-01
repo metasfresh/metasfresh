@@ -161,7 +161,7 @@ public class PackingMaterialsExpectation<ParentExpectationType> extends Abstract
 		return e;
 	}
 
-	public PackingMaterialsExpectation<ParentExpectationType> addProductAndQty(final I_M_Product product, final BigDecimal qty)
+	private PackingMaterialsExpectation<ParentExpectationType> addProductAndQty(final I_M_Product product, final BigDecimal qty)
 	{
 		newPackingMaterialExpectation()
 				.product(product)

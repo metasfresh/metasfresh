@@ -101,7 +101,7 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	 * @return
 	 * @task 07617
 	 */
-	IHUPackingMaterialsCollector<I_M_InOutLine> getDestroyedHUPackingMaterialsCollector();
+	IHUPackingMaterialsCollector<I_M_InOutLine> getHUPackingMaterialsCollector();
 
 	/** @return transaction listeners */
 	IHUTrxListener getTrxListeners();

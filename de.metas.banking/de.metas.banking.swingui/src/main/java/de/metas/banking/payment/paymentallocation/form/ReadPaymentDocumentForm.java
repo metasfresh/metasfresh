@@ -39,7 +39,9 @@ import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Custom Form to read the payment string and create the {@link I_C_Payment_Request}.
@@ -104,6 +106,10 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	private ReadPaymentDocumentPanel createAndBindPanel(final int windowNo, final Frame frame, final int adOrgId)
 	{
 		final ReadPaymentDocumentPanel readPaymentPanel = new ReadPaymentDocumentPanel(windowNo, frame, adOrgId);
+		
+		// gh #897: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		readPaymentPanel.setContextBPartner(invoice == null ? null : invoice.getC_BPartner());
+		
 		frame.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentPanel)
 		{
 			@Override
@@ -117,21 +123,21 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_Invoice invoice = context.getModel(I_C_Invoice.class);
+		final I_C_Invoice invoice = context.getSelectedModel(I_C_Invoice.class);
 		if (invoice == null)
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("no invoice selected");
 		}
 
 		// only completed invoiced
 		if (!invoiceBL.isComplete(invoice))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("invoice is not completed");
 		}
 
-		return !invoice.isSOTrx(); // only PO Invoices (Eingangsrechnung)
+		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx()); // only PO Invoices (Eingangsrechnung)
 	}
 
 	private void createPaymentRequest(final ReadPaymentPanelResult result)

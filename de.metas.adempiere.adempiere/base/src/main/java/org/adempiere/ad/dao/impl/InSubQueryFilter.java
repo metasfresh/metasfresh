@@ -25,8 +25,6 @@ package org.adempiere.ad.dao.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
@@ -38,6 +36,11 @@ import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
+import de.metas.logging.LogManager;
 
 /**
  * Filters out only records which are present in sub-query.
@@ -91,17 +94,19 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	@Override
 	public String toString()
 	{
-		return "InSubQueryFilter [" + (columnName != null ? "columnName=" + columnName + ", " : "")
-				+ (subQueryColumnName != null ? "subQueryColumnName=" + subQueryColumnName + ", " : "")
-				+ (modifier != null ? "modifier=" + modifier + ", " : "")
-				+ (subQuery != null ? "subQuery=" + subQuery + ", " : "")
-				+ "sqlBuilt=" + sqlBuilt + ", "
-				+ (sqlWhereClause != null ? "sqlWhereClause=" + sqlWhereClause + ", " : "")
-				+ (sqlParams != null ? "sqlParams=" + sqlParams + ", " : "")
-				+ (_subQueryValues != null ? "_subQueryValues=" + _subQueryValues : "")
-				+ "]";
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("tableName", tableName)
+				.add("columnName", columnName)
+				.add("subQueryColumnName", subQueryColumnName)
+				.add("modifier", modifier)
+				.add("subQuery", subQuery)
+				.add("sqlBuilt", sqlBuilt)
+				.add("sqlWhereClause", sqlWhereClause)
+				.add("sqlParams", sqlParams)
+				.add("_subQueryValues", _subQueryValues)
+				.toString();
 	}
-
 	@Override
 	public String getSql()
 	{

@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -46,7 +45,9 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.junit.Ignore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -55,11 +56,14 @@ import org.w3c.dom.Node;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
+import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
@@ -78,6 +82,7 @@ public class HUXmlConverter
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Item.Table_Name, "Item");
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Storage.Table_Name, "Storage");
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Item_Storage.Table_Name, "Storage");
+		HUXmlConverter.tableName2tagName.put(I_M_HU_Trx_Line.Table_Name, "TrxLine");
 	}
 
 	public static Node toXml(final I_M_HU hu)
@@ -112,11 +117,12 @@ public class HUXmlConverter
 
 	private Node createNode(final Node parentNode, final I_M_HU hu)
 	{
+		InterfaceWrapperHelper.refresh(hu);
 		final String name = "HU-" + hu.getM_HU_PI_Version().getM_HU_PI().getName();
 		final Node node = createNodeFromModel(parentNode, name, hu);
 
 		//
-		// HU Attributes
+		// HU Attribute
 		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
 		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu);
 		for (final I_M_HU_Attribute attr : attrs)
@@ -125,11 +131,11 @@ public class HUXmlConverter
 		}
 
 		//
-		// HU Items
+		// HU Item
 		final List<I_M_HU_Item> items = Services.get(IHandlingUnitsDAO.class).retrieveItems(hu);
 		for (final I_M_HU_Item item : items)
 		{
-			createNode(node, item);
+			createNodeForItem(node, item);
 		}
 
 		//
@@ -145,26 +151,29 @@ public class HUXmlConverter
 		return node;
 	}
 
-	private Node createNode(final Node parentNode, final I_M_HU_Item item)
+	private Node createNodeForItem(final Node parentNode, final I_M_HU_Item item)
 	{
+		InterfaceWrapperHelper.refresh(item);
 		final Node node = createNodeFromModel(parentNode, item);
 
 		//
 		// Item level storage
 		final IHUStorageDAO dao = Services.get(IHandlingUnitsBL.class).getStorageFactory().getHUStorageDAO();
-		final List<I_M_HU_Item_Storage> itemStorages = dao.retrieveItemStorages(item);
-		for (final I_M_HU_Item_Storage itemStorage : itemStorages)
-		{
-			createNodeFromModel(node, itemStorage);
-		}
+		dao
+				.retrieveItemStorages(item)
+				.forEach(itemStorage -> createNodeFromModel(node, itemStorage));
 
 		//
 		// Included HUs
-		final List<I_M_HU> includedHUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(item);
-		for (final I_M_HU includedHU : includedHUs)
-		{
-			createNode(node, includedHU);
-		}
+		Services.get(IHandlingUnitsDAO.class)
+				.retrieveIncludedHUs(item)
+				.forEach(includedHU -> createNode(node, includedHU));
+
+		//
+		// HU Transaction
+		Services.get(IHUTrxDAO.class)
+				.retrieveTrxLines(item)
+				.forEach(trxLine -> createNodeFromModel(node, trxLine));
 
 		return node;
 	}
@@ -194,6 +203,11 @@ public class HUXmlConverter
 			final Object value = e.getValue();
 			final String valueStr;
 
+			if(!Check.isEmpty(POJOWrapper.getInstanceName(model),true))
+			{
+				node.setAttribute("InstanceName", POJOWrapper.getInstanceName(model));
+			}
+			
 			if (POJOWrapper.isHandled(value))
 			{
 				// skip included beans; only IDs are sufficient
@@ -216,6 +230,36 @@ public class HUXmlConverter
 				node.setAttribute("M_Product_Value", productValue);
 			}
 
+			//
+			// UOM
+			if ("C_UOM_ID".equals(name) && value != null)
+			{
+				final int id = (Integer)value;
+				final I_C_UOM uom = POJOLookupMap.get().lookup(I_C_UOM.class, id);
+				final String uomName = uom == null ? "" : uom.getName();
+				node.setAttribute("C_UOM_Name", uomName);
+			}
+
+			//
+			// Product
+			if ("M_HU_PackingMaterial_ID".equals(name) && value != null)
+			{
+				final int id = (Integer)value;
+				final I_M_HU_PackingMaterial packingMaterial = POJOLookupMap.get().lookup(I_M_HU_PackingMaterial.class, id);
+				final String packingMaterialProductValue = packingMaterial == null ? "" : packingMaterial.getM_Product().getName();
+				node.setAttribute("M_HU_PackingMaterial_Product_Value", packingMaterialProductValue);
+			}
+
+			//
+			// Attribute
+			if ("M_Attribute_ID".equals(name) && value != null)
+			{
+				final int id = (Integer)value;
+				final I_M_Attribute attribute = POJOLookupMap.get().lookup(I_M_Attribute.class, id);
+				final String attributeName = attribute == null ? "" : attribute.getName();
+				node.setAttribute("M_Attribute_Name", attributeName);
+			}
+			
 		}
 
 		if (parentNode != null)

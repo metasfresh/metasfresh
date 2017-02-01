@@ -22,8 +22,10 @@ import org.compiere.model.MColumn;
 import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  *	Synchronize Column with Database
@@ -85,30 +87,28 @@ public class ColumnSync extends JavaProcess implements IProcessPrecondition
 	}	//	doIt
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_AD_Column column = context.getModel(I_AD_Column.class);
+		final I_AD_Column column = context.getSelectedModel(I_AD_Column.class);
 		if(column == null)
 		{
-			return false;
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 		
 		final String columnSQL = column.getColumnSQL();
 
 		if (!Check.isEmpty(columnSQL, true))
 		{
-			// virtual columns are not allowed
-			return false;
+			return ProcessPreconditionsResolution.reject("virtual columns are not supported");
 		}
 		
 		if(column.getAD_Table().isView())
 		{
-			// columns from views not allowed
-			return false;
+			return ProcessPreconditionsResolution.reject("views are not supported");
 		}
 		
 		
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 }	//	ColumnSync

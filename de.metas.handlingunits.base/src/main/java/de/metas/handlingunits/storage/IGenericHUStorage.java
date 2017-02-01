@@ -51,10 +51,10 @@ public interface IGenericHUStorage
 	IGenericHUStorage getParentStorage();
 
 	/**
-	 * Add given <code>qty</code> to storage
+	 * Add or removed given <code>qty</code> to storage.
 	 *
 	 * @param product
-	 * @param qty
+	 * @param qty the qty to add (or to remove, if negative)
 	 * @param uom qty's UOM
 	 */
 	void addQty(I_M_Product product, BigDecimal qty, I_C_UOM uom);

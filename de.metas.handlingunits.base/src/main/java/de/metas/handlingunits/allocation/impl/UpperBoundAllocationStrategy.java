@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -35,9 +34,17 @@ import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 
+/**
+ * This classe's {@link #getHUItemStorage(I_M_HU_Item, IAllocationRequest)} can return a storage with an
+ * "artificial" uppper bound that is different from the capacity defined in {@link I_M_HU_PI_Item_Product}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 {
 	// services
@@ -45,6 +52,10 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 	private final IHUCapacityDefinition _capacityOverride;
 
+	/**
+	 * 
+	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
+	 */
 	public UpperBoundAllocationStrategy(final IHUCapacityDefinition capacityOverride)
 	{
 		super(false); // outTrx=false
@@ -59,7 +70,16 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 			return true;
 		}
 
-		final BigDecimal qty = capacity.getCapacity();
+		final BigDecimal qty;
+		if (capacity.isInfiniteCapacity())
+		{
+			qty = IHUCapacityDefinition.INFINITY;
+		}
+		else
+		{
+			qty = capacity.getCapacity();
+		}
+
 		return Util.same(IHUCapacityDefinition.DEFAULT, qty);
 	}
 
@@ -69,6 +89,11 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		return ObjectUtils.toString(this);
 	}
 
+	/**
+	 * Invokes the {@link AbstractAllocationStrategy#getHUItemStorage(I_M_HU_Item, IAllocationRequest)},<br>
+	 * but if an upper bound is set in <code>this</code> instance,<br>
+	 * then it invokes {@link IHUItemStorage#setCustomCapacity(IHUCapacityDefinition)} accordingly.
+	 */
 	@Override
 	protected IHUItemStorage getHUItemStorage(final I_M_HU_Item item, final IAllocationRequest request)
 	{
@@ -76,7 +101,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 		// make sure that the capacity is forced by the user, not the system
 		// If capacityOverride is null it means that we were asked to take the defaults
-		final IHUCapacityDefinition capacityOverride = getCapacityOverride(request);
+		final IHUCapacityDefinition capacityOverride = getCapacityOverride();
 		if (capacityOverride != null && !storage.isPureVirtual())
 		{
 			storage.setCustomCapacity(capacityOverride);
@@ -85,7 +110,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		return storage;
 	}
 
-	private final IHUCapacityDefinition getCapacityOverride(final IAllocationRequest request)
+	private final IHUCapacityDefinition getCapacityOverride()
 	{
 		return _capacityOverride;
 	}
@@ -109,10 +134,13 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 		//
 		// We are about to allocate to Virtual HUs linked to given "item" (which shall be of type Material).
-		// In this case we relly on standard logic.
+		// In this case we rely on the standard logic.
 		return super.allocateOnIncludedHUItem(item, request);
 	}
 
+	/**
+	 * Does nothing, returns null result.
+	 */
 	@Override
 	protected IAllocationResult allocateRemainingOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request)
 	{

@@ -33,7 +33,9 @@ import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Recreates {@link I_PP_MRP} records for selected document/record
@@ -53,10 +55,10 @@ public class PP_MRP_RecreateForDocument extends JavaProcess implements IProcessP
 	private Object model;
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final String tableName = context.getTableName();
-		return mrpSupplyProducerFactory.getAllSupplyProducers().isRecreatedMRPRecordsSupported(tableName);
+		return ProcessPreconditionsResolution.acceptIf(mrpSupplyProducerFactory.getAllSupplyProducers().isRecreatedMRPRecordsSupported(tableName));
 	}
 
 	@Override

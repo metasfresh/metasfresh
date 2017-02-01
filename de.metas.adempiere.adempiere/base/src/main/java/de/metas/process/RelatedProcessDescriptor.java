@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.security.IUserRolePermissions;
+
 import com.google.common.base.MoreObjects;
 
 /*
@@ -117,6 +119,12 @@ public final class RelatedProcessDescriptor
 	{
 		return webuiDefaultQuickAction;
 	}
+	
+	public boolean isExecutionGranted(final IUserRolePermissions permissions)
+	{
+		return permissions.checkProcessAccessRW(adProcessId);
+	}
+
 
 	public static final class Builder
 	{

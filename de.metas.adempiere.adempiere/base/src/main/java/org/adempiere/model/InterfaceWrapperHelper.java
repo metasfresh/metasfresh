@@ -22,13 +22,15 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.model.util.IModelCopyHelper;
@@ -50,6 +52,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -62,6 +65,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -322,14 +326,23 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 
-		final List<T> result = new ArrayList<>(list.size());
-		for (final S model : list)
-		{
-			final T modelConv = create(model, clazz);
-			result.add(modelConv);
-		}
+		final List<T> result = list.stream()
+				.map(item -> create(item, clazz))
+				.collect(Collectors.toList());
 
 		return result;
+	}
+
+	public static <T, S> List<T> wrapToImmutableList(final List<S> list, final Class<T> clazz)
+	{
+		if (list == null || list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return list.stream()
+				.map(model -> create(model, clazz))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public static void refresh(final Object model)
@@ -683,13 +696,30 @@ public class InterfaceWrapperHelper
 	 * Introducing this exception to be thrown instead of ADempiereException. Reason: It's a pain if you have a breakpoint on "AdempiereException" and the debugger stops every 2 seconds because
 	 * InterfaceWrapperHelper throws it.
 	 */
-	/* package */static class MissingTableNameException extends AdempiereException
+	/* package */@SuppressWarnings("serial")
+	static class MissingTableNameException extends AdempiereException
 	{
-		private static final long serialVersionUID = 6469196469943285793L;
-
-		private MissingTableNameException(final Class<?> clazz)
+		private static final MissingTableNameException notFound(final Class<?> modelClass)
 		{
-			super("@NotFound@ @TableName@ (class=" + clazz + ")");
+			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
+		}
+
+		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
+		{
+			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
+		}
+
+		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
+		{
+			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
+					+ "\n modelClass=" + modelClass
+					+ "\n modelClassTableName=" + modelClassTableName
+					+ "\n expectedTableName=" + expectedTableName);
+		}
+
+		private MissingTableNameException(final String message)
+		{
+			super(message);
 		}
 	}
 
@@ -707,14 +737,14 @@ public class InterfaceWrapperHelper
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
-	public static String getTableName(final Class<?> clazz) throws AdempiereException
+	public static String getTableName(final Class<?> modelClass) throws AdempiereException
 	{
-		final String tableName = getTableNameOrNull(clazz);
-		if (tableName == null)
+		final String modelClassTableName = getTableNameOrNull(modelClass);
+		if (modelClassTableName == null)
 		{
-			throw new MissingTableNameException(clazz);
+			throw MissingTableNameException.notFound(modelClass);
 		}
-		return tableName;
+		return modelClassTableName;
 	}
 
 	/**
@@ -731,6 +761,52 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 		return modelClassInfo.getTableName();
+	}
+
+	/**
+	 * Extracts the table name from given modelClass.
+	 * If the modelClass does not have a table name it will return <code>expectedTableName</code> if that's not null.
+	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
+	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
+	 * 
+	 * @param modelClass
+	 * @param expectedTableName
+	 * @return model table name; never returns null
+	 */
+	public static String getTableName(final Class<?> modelClass, @Nullable final String expectedTableName)
+	{
+		final String modelClassTableName = getTableNameOrNull(modelClass);
+
+		// Case: there is no expected/default table name
+		// => fail if modelClass has no table name either.
+		if (expectedTableName == null)
+		{
+			if (modelClassTableName == null)
+			{
+				throw MissingTableNameException.notFound(modelClass, expectedTableName);
+			}
+
+			return modelClassTableName;
+		}
+		// Case: there is an expected/default table name
+		else
+		{
+			// Sub-case: no model class table name => return the default/expected one
+			if (modelClassTableName == null)
+			{
+				return expectedTableName;
+			}
+			// Sub-case: model class table name matches the expected one => perfect, return it
+			else if (modelClassTableName.equals(expectedTableName))
+			{
+				return modelClassTableName;
+			}
+			// Sub-case: model class table name DOES NOT match the expected one => fail
+			else
+			{
+				throw MissingTableNameException.notMatching(modelClass, modelClassTableName, expectedTableName);
+			}
+		}
 	}
 
 	public static final boolean isModelInterface(final Class<?> modelClass)

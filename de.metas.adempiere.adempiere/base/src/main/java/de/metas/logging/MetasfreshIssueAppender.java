@@ -3,7 +3,6 @@ package de.metas.logging;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
