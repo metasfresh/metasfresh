@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.Immutable;
 import javax.mail.internet.MimeUtility;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -1027,6 +1028,7 @@ public class Util
 	 * @author ts
 	 *
 	 */
+	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
 		public static final ArrayKey of(final Object...input)

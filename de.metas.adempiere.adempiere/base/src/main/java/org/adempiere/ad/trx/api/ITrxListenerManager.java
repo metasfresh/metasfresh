@@ -26,6 +26,8 @@ import org.adempiere.ad.trx.spi.ITrxListener;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * Transactions Listeners Mananger.<br>
  * Use {@link ITrxManager#getTrxListenerManager(String)} or {@link ITrxManager#getTrxListenerManagerOrAutoCommit(String)} to get your instance.
@@ -60,6 +62,12 @@ public interface ITrxListenerManager
 		Check.assumeNotNull(runnable, "Parameter runnable is not null");
 		registerListener(new TrxListenerAdapter()
 		{
+			@Override
+			public String toString()
+			{
+				return MoreObjects.toStringHelper("runOnAfterCommit").addValue(runnable).toString();
+			}
+			
 			@Override
 			public void afterCommit(final ITrx trx)
 			{

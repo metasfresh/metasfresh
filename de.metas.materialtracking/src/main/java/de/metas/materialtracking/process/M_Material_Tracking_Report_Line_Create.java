@@ -31,7 +31,9 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -227,12 +229,12 @@ public class M_Material_Tracking_Report_Line_Create
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		// This process is just for unprocessed reports
-		final I_M_Material_Tracking_Report report = context.getModel(I_M_Material_Tracking_Report.class);
+		final I_M_Material_Tracking_Report report = context.getSelectedModel(I_M_Material_Tracking_Report.class);
 
-		return !report.isProcessed();
+		return ProcessPreconditionsResolution.acceptIf(!report.isProcessed());
 	}
 
 }

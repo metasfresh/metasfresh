@@ -3,6 +3,7 @@ package de.metas.process.ui;
 import java.awt.Container;
 import java.awt.Image;
 import java.awt.Window;
+import java.awt.event.WindowListener;
 
 import javax.swing.JRootPane;
 
@@ -19,11 +20,11 @@ import javax.swing.JRootPane;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,6 +44,13 @@ public interface ProcessPanelWindow
 	void enableWindowEvents(long eventsToEnable);
 
 	void setIconImage(Image image);
+
+	/**
+	 * Add window listener
+	 * 
+	 * @param windowListener
+	 */
+	void addWindowListener(WindowListener windowListener);
 
 	Container getContentPane();
 

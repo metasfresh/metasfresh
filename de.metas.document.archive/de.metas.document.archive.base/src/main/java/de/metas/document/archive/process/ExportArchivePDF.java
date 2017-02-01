@@ -9,29 +9,31 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.document.archive.model.IArchiveAware;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 public class ExportArchivePDF extends JavaProcess implements IProcessPrecondition
 {
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final Object model = context.getModel(Object.class);
+		final Object model = context.getSelectedModel(Object.class);
 		final IArchiveAware archiveAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IArchiveAware.class);
 		if(archiveAware == null)
 		{
 			log.debug("No AD_Archive field found for {}", context);
-			return false;
+			return ProcessPreconditionsResolution.reject("no archive found");
 		}
 
 		final int archiveId = archiveAware.getAD_Archive_ID();
 		if (archiveId <= 0)
 		{
 			log.debug("No AD_Archive_ID found for {}", archiveAware);
-			return false;
+			return ProcessPreconditionsResolution.reject("no archive found");
 		}
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override

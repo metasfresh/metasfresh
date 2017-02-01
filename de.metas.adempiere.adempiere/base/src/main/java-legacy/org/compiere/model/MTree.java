@@ -119,7 +119,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultAD_Tree_ID(final int AD_Client_ID, final String keyColumnName)
 	{
-		s_log.info(keyColumnName);
+		s_log.trace("Getting default AD_Tree_ID for AD_Client_ID={}, keyColumnName={}", AD_Client_ID, keyColumnName);
 		if (keyColumnName == null || keyColumnName.length() == 0)
 		{
 			return 0;
@@ -708,7 +708,7 @@ public class MTree extends MTree_Base
 		{
 			AD_User_ID = getUserRolePermissions().getAD_User_ID();
 		}
-		log.info("AD_User_ID={}", AD_User_ID);
+		log.trace("Reloaded tree for AD_User_ID={}", AD_User_ID);
 		loadNodes(AD_User_ID);
 	}
 

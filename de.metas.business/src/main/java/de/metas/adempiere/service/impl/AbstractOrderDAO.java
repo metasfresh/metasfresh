@@ -93,7 +93,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, X_C_Order.DOCSTATUS_Completed, X_C_Order.DOCSTATUS_Closed)
+				.addInArrayOrAllFilter(I_C_Order.COLUMNNAME_DocStatus, X_C_Order.DOCSTATUS_Completed, X_C_Order.DOCSTATUS_Closed)
 				.create()
 				.match();
 	}

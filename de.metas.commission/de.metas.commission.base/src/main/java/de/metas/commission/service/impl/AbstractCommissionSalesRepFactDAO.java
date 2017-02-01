@@ -373,7 +373,7 @@ public abstract class AbstractCommissionSalesRepFactDAO implements ICommissionSa
 				.addEqualsFilter(I_C_AdvComSalesRepFact.COLUMNNAME_Name, factName)
 				.addEqualsFilter(I_C_AdvComSalesRepFact.COLUMNNAME_C_AdvComSystem_ID, comSystem.getC_AdvComSystem_ID())
 				.addCompareFilter(I_C_AdvComSalesRepFact.COLUMNNAME_DateAcct, Operator.LESS_OR_EQUAL, date)
-				.addInArrayFilter(I_C_AdvComSalesRepFact.COLUMNNAME_Status, status)
+				.addInArrayOrAllFilter(I_C_AdvComSalesRepFact.COLUMNNAME_Status, status)
 				.addOnlyActiveRecordsFilter();
 
 		final IQueryBuilder<I_C_AdvComSalesRepFact> queryBuilder = queryBL.createQueryBuilder(I_C_AdvComSalesRepFact.class, ctx, trxName)

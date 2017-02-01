@@ -37,6 +37,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
+/**
+ * This implementation delegated to either {@link CachedHUAndItemsDAO} or directly to {@link HUAndItemsDAO}.
+ *  
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 {
 	private static final String TRX_PROPERTY_CachedHUAndItemsDAO = CachedHUAndItemsDAO.class.getName();
@@ -151,5 +157,10 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	{
 		return getDelegate(hu).createHUItem(hu, piItem);
 	}
-
+	
+	@Override
+	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	{
+		return getDelegate(hu).createAggregateHUItem(hu);
+	}
 }

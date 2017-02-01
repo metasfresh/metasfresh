@@ -153,6 +153,7 @@ public class ShipmentScheduleEnqueuer
 
 		if (!shipmentSchedules.hasNext())
 		{
+			// TODO: the the query which was used to understand why there were no results
 			throw new AdempiereException("@NoSelection@");
 		}
 

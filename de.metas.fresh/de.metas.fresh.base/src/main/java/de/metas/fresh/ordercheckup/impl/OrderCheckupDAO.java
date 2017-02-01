@@ -55,7 +55,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 		final I_PP_Product_Planning productPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, orderLine.getM_Product_ID())
-				.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
+				.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
 				.filter(manufacturedOrTraded)
 				.orderBy()
 				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last) // specific org first

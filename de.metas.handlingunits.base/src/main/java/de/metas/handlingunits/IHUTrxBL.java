@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -70,17 +69,6 @@ public interface IHUTrxBL extends ISingletonService
 	void transfer(IHUContext huContext, IAllocationSource source, IAllocationDestination destination, IAllocationRequest request);
 
 	/**
-	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
-	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc. The trx-hdr has a one line for every
-	 * {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc and one line for every created {@link de.metas.handlingunits.model.I_M_HU_Item}.
-	 *
-	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
-	 * @param huPI
-	 * @return the newly created HUs that were created from the transaction doc.
-	 */
-	List<I_M_HU> transferIncomingToHUs(I_M_Transaction incomingTrxDoc, I_M_HU_PI huPI);
-
-	/**
 	 * Extracts (or maybe "detaches", makes into "stand-alone" HUs) the given qty of HU items that match the given definition form the given source HU(s). One or more source HUs are modified in the
 	 * process. The method also creates a {@link I_M_HU_Trx_Hdr} to document from source items (of <code>sourceHU</code>) were extracted into "standalone" HUs. That trx-hdr has one line for every
 	 * {@link de.metas.handlingunits.model.I_M_HU_Item} that was extracted from the source HU(s) and one line for every {@link I_M_HU} that is now a "stand-alone" HU.
@@ -93,7 +81,7 @@ public interface IHUTrxBL extends ISingletonService
 	List<I_M_HU> extractIncludedHUs(List<I_M_HU> sourceHUs, int huQty, I_M_HU_PI destinationHuPI);
 
 	/**
-	 * Create and <b>process</b> transaction lines for the candidates included in the given {@code result}.
+	 * Create and <b>process</b> transaction lines for the candidates (i.e. {@link IHUTransaction}s) included in the given {@code result}.
 	 *
 	 * @param huContext
 	 * @param result
@@ -160,4 +148,10 @@ public interface IHUTrxBL extends ISingletonService
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IHUContext huContext);
 
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IContextAware context);
+
+	/**
+	 * Iterate the {@link IHUTransaction}s that were added so far and aggregate those that only differ in their quantity.
+	 * In other words, group the them by their properties (besides qty) and store a new list with summed-up qtys. The new candidates have unique properties.
+	 */
+	List<IHUTransaction> aggregateTransactions(List<IHUTransaction> transactions);
 }

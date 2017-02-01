@@ -70,7 +70,6 @@ import de.metas.logging.LogManager;
 
 	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
 	{
-		super();
 		this.huContext = huContext;
 
 		Check.assumeNotNull(shipmentScheduleAlloc, "shipmentScheduleAlloc not null");
@@ -96,7 +95,6 @@ import de.metas.logging.LogManager;
 	 */
 	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule shipmentSchedule, final BigDecimal qtyPicked)
 	{
-		super();
 		this.huContext = huContext;
 
 		shipmentScheduleAlloc = null; // no allocation, will be created on fly when needed
@@ -196,7 +194,7 @@ import de.metas.logging.LogManager;
 
 			final String name = attributeValue.getM_Attribute().getValue();
 			final Object value = attributeValue.getValue();
-			keyBuilder.put(name, value == null ? Null.NULL : value);
+			keyBuilder.put(name, Null.box(value));
 			logger.trace("Considered attribute {}={}", name, value);
 		}
 

@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.view;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -73,20 +72,20 @@ public class HUKeysByBarcodeCollectorTest
 	public void init_Error_NullBarcode()
 	{
 		// shall throw exception because null barcode is not allowed
-		new HUKeysByBarcodeCollector(null);
+		new HUKeysByBarcodeCollector(ctx, null);
 	}
 
 	@Test(expected = AdempiereException.class)
 	public void init_Error_EmptyBarcode()
 	{
 		// shall throw exception because empty barcode is not allowed
-		new HUKeysByBarcodeCollector("   ");
+		new HUKeysByBarcodeCollector(ctx, "   ");
 	}
 
 	@Test
 	public void matcher_Matched()
 	{
-		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector("12345");
+		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector(ctx, "12345");
 		final I_M_HU hu = createHU("12345");
 
 		assertBarcodeMatches(true, barcodeMatcher, hu);
@@ -95,7 +94,7 @@ public class HUKeysByBarcodeCollectorTest
 	@Test
 	public void matcher_Matched_BarcodeWithWhitespaces()
 	{
-		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector("12345     ");
+		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector(ctx, "12345     ");
 		final I_M_HU hu = createHU("12345");
 
 		assertBarcodeMatches(true, barcodeMatcher, hu);
@@ -104,7 +103,7 @@ public class HUKeysByBarcodeCollectorTest
 	@Test
 	public void matcher_Matched_NotTopLevelHU()
 	{
-		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector("12345");
+		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector(ctx, "12345");
 		final I_M_HU hu = createHU("12345");
 
 		// Make our HU to be a not top level HU
@@ -118,7 +117,7 @@ public class HUKeysByBarcodeCollectorTest
 	@Test
 	public void matcher_NotMatched_InactiveHU()
 	{
-		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector("12345");
+		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector(ctx, "12345");
 		final I_M_HU hu = createHU("12345");
 
 		// Inactivate our HU
@@ -133,7 +132,7 @@ public class HUKeysByBarcodeCollectorTest
 	@Test
 	public void matcher_NotMatched()
 	{
-		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector("12345");
+		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector(ctx, "12345");
 		final I_M_HU hu = createHU("11111");
 
 		assertBarcodeMatches(false, barcodeMatcher, hu);
@@ -142,7 +141,7 @@ public class HUKeysByBarcodeCollectorTest
 	@Test
 	public void matcher_NotMatched_NullHUBarcode()
 	{
-		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector("12345");
+		final HUKeysByBarcodeCollector barcodeMatcher = new HUKeysByBarcodeCollector(ctx, "12345");
 		final I_M_HU hu = createHU(null);
 
 		assertBarcodeMatches(false, barcodeMatcher, hu);

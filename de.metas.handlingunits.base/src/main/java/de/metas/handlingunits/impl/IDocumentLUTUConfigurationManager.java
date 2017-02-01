@@ -24,8 +24,7 @@ package de.metas.handlingunits.impl;
 
 
 import java.util.List;
-
-import org.adempiere.util.collections.Converter;
+import java.util.function.Function;
 
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
@@ -49,7 +48,7 @@ public interface IDocumentLUTUConfigurationManager
 	 * @param lutuConfigurationEditor
 	 * @return
 	 */
-	I_M_HU_LUTU_Configuration createAndEdit(final Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> converter);
+	I_M_HU_LUTU_Configuration createAndEdit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> converter);
 
 	/**
 	 * Gets current LU/TU configuration if exists. If not, a new one is created but is not set back to underlying document line.

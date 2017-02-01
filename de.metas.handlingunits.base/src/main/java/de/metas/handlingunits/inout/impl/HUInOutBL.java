@@ -179,7 +179,7 @@ public class HUInOutBL implements IHUInOutBL
 		// If we deal with a receipt, we shall collect (and move back to Gebinde lager), only those packing materials that we own.
 		if (!inout.isSOTrx())
 		{
-			huContext.getDestroyedHUPackingMaterialsCollector().setCollectIfOwnPackingMaterialsOnly(true);
+			huContext.getHUPackingMaterialsCollector().setCollectIfOwnPackingMaterialsOnly(true);
 		}
 
 		//

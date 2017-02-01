@@ -46,7 +46,7 @@ public class M_HU_Attribute_SnapshotHandler extends AbstractSnapshotHandler<I_M_
 		Check.assumeNotEmpty(huIds, "huIds not empty");
 
 		query(I_M_HU_Attribute.class)
-				.addInArrayFilter(I_M_HU_Attribute.COLUMN_M_HU_ID, huIds)
+				.addInArrayOrAllFilter(I_M_HU_Attribute.COLUMN_M_HU_ID, huIds)
 				.create()
 				.insertDirectlyInto(I_M_HU_Attribute_Snapshot.class)
 				.mapCommonColumns()

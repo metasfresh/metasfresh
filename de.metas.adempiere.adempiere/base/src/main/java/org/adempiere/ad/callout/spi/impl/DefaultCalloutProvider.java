@@ -37,6 +37,12 @@ class DefaultCalloutProvider implements IDefaultCalloutProvider
 	@Override
 	public TableCalloutsMap getCallouts(final Properties ctx, final String tableName)
 	{
+		// 
+		if(tableName == ANY_TABLE)
+		{
+			return TableCalloutsMap.EMPTY;
+		}
+		
 		final TableCalloutsMap.Builder tableCalloutsBuilder = TableCalloutsMap.builder();
 		for (final Entry<String, Supplier<ICalloutInstance>> entry : supplyCallouts(ctx, tableName).entries())
 		{

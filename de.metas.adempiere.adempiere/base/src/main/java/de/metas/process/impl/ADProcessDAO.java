@@ -1,39 +1,14 @@
 package de.metas.process.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,14 +22,21 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Table_Process;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 
 public class ADProcessDAO implements IADProcessDAO
 {
@@ -63,7 +45,7 @@ public class ADProcessDAO implements IADProcessDAO
 	/**
 	 * Map: AD_Table_ID to list of AD_Process_ID
 	 */
-	private final Map<Integer, List<Integer>> staticRegisteredProcesses = new HashMap<Integer, List<Integer>>();
+	private final SetMultimap<Integer, Integer> staticRegisteredProcesses = HashMultimap.create();
 
 	@Override
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
@@ -134,16 +116,11 @@ public class ADProcessDAO implements IADProcessDAO
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		Check.assume(adProcessId > 0, "adProcessId > 0");
-
-		List<Integer> processIds = staticRegisteredProcesses.get(adTableId);
-		if (processIds == null)
+		final boolean added = staticRegisteredProcesses.put(adTableId, adProcessId);
+		if (added)
 		{
-			processIds = new ArrayList<Integer>();
-			staticRegisteredProcesses.put(adTableId, processIds);
-		}
-		if (!processIds.contains(adProcessId))
-		{
-			processIds.add(adProcessId);
+			logger.info("Registered table process: AD_Table_ID={}, AD_Process_ID={}", adTableId, adProcessId);
+			CacheMgt.get().reset(I_AD_Table_Process.Table_Name);
 		}
 	}
 
@@ -162,17 +139,17 @@ public class ADProcessDAO implements IADProcessDAO
 	 * Gets a list of AD_Process_IDs which were statically registered for given table ID.
 	 * 
 	 * @param adTableId
-	 * @return list of AD_Process_IDs
+	 * @return set of AD_Process_IDs
 	 */
-	protected List<Integer> getStaticRegisteredProcessIds(final int adTableId)
+	private Set<Integer> getStaticRegisteredProcessIds(final int adTableId)
 	{
-		final List<Integer> processIds = staticRegisteredProcesses.get(adTableId);
+		final Set<Integer> processIds = staticRegisteredProcesses.get(adTableId);
 		if (processIds == null || processIds.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableSet.of();
 		}
 
-		return new ArrayList<>(processIds);
+		return ImmutableSet.copyOf(processIds);
 	}
 
 	// @Cached
@@ -186,75 +163,83 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	// @Cached(cacheName = I_AD_Process.Table_Name + "#by#AD_Table_ID") // NOTE: before considering caching it, pls make sure the cache is reset when a new process is programatically registered
-	public final List<Integer> retrieveProcessesIdsForTable(@CacheCtx final Properties ctx, final int adTableId)
+	public final Set<Integer> retrieveProcessesIdsForTable(final Properties ctx, final int adTableId)
 	{
-		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.listIds();
+		final Map<Integer, RelatedProcessDescriptor> relatedProcesses = retrieveRelatedProcessesForTableIndexedByProcessId(ctx, adTableId);
+		return relatedProcesses.keySet();
 	}
 
 	@Override
 	public final List<I_AD_Process> retrieveReportProcessesForTable(final Properties ctx, final String tableName)
 	{
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		final IQueryBuilder<I_AD_Process> queryBuilder = retrieveProcessesForTableQueryBuilder(ctx, adTableId);
-		queryBuilder.filter(new EqualsQueryFilter<I_AD_Process>(I_AD_Process.COLUMNNAME_IsReport, true));
-		return queryBuilder.create()
-				.setOnlyActiveRecords(true)
+		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
+				.addEqualsFilter(I_AD_Process.COLUMN_IsReport, true)
+				.create()
 				.list(I_AD_Process.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_AD_Table_Process.Table_Name + "#RelatedProcessDescriptors")
+	public Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(@CacheCtx final Properties ctx, final int adTableId)
+	{
+		//
+		// Fetch related processes from database
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final Map<Integer, RelatedProcessDescriptor> relatedProcessesMap = queryBL.createQueryBuilder(I_AD_Table_Process.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_Table_Process.COLUMNNAME_AD_Table_ID, adTableId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(tableProcess -> createRelatedProcessDescriptor(tableProcess))
+				.collect(Collectors.toMap(RelatedProcessDescriptor::getAD_Process_ID, value -> value));
+
+		//
+		// Collect also those programmatically registered
+		getStaticRegisteredProcessIds(adTableId)
+				.stream()
+				.filter(adProcessId -> !relatedProcessesMap.containsKey(adProcessId)) // only those which were not already added
+				.map(adProcessId -> RelatedProcessDescriptor.ofAD_Process_ID(adProcessId))
+				.forEach(relatedProcess -> relatedProcessesMap.put(relatedProcess.getAD_Process_ID(), relatedProcess));
+
+		return ImmutableMap.copyOf(relatedProcessesMap);
+	}
+
+	private static final RelatedProcessDescriptor createRelatedProcessDescriptor(final I_AD_Table_Process tableProcess)
+	{
+		return RelatedProcessDescriptor.builder()
+				.setAD_Process_ID(tableProcess.getAD_Process_ID())
+				.setWebuiQuickAction(tableProcess.isWEBUI_QuickAction())
+				.setWebuiDefaultQuickAction(tableProcess.isWEBUI_QuickAction_Default())
+				.build();
 	}
 
 	private IQueryBuilder<I_AD_Process> retrieveProcessesForTableQueryBuilder(final Properties ctx, final int adTableId)
 	{
 		final String trxName = ITrx.TRXNAME_NoneNotNull;
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		
+		final Map<Integer, RelatedProcessDescriptor> relatedProcesses = retrieveRelatedProcessesForTableIndexedByProcessId(ctx, adTableId);
+		final Set<Integer> relatedProcessIds = relatedProcesses.keySet();
 
-		final ICompositeQueryFilter<I_AD_Process> filters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_AD_Process.class);
-		filters.setJoinOr();
-
-		//
-		// Filter by assigned table processes
-		{
-			final IQuery<I_AD_Table_Process> queryTableProcessForTable = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_Table_Process.class, ctx, trxName)
-					.filter(new EqualsQueryFilter<I_AD_Table_Process>(I_AD_Table_Process.COLUMNNAME_AD_Table_ID, adTableId))
-					.create()
-					.setOnlyActiveRecords(true);
-			filters.addInSubQueryFilter(I_AD_Process.COLUMNNAME_AD_Process_ID, I_AD_Table_Process.COLUMNNAME_AD_Process_ID, queryTableProcessForTable);
-		}
-
-		//
-		// Or Filter by programatically registered processes
-		{
-			final List<Integer> processIds = getStaticRegisteredProcessIds(adTableId);
-			if (!processIds.isEmpty())
-			{
-				// NOTE: we are adding only if is not empty because InArrayFilter on an empty array will always return true
-				filters.addInArrayFilter(I_AD_Process.COLUMNNAME_AD_Process_ID, processIds);
-			}
-		}
-
-		final IQueryBuilder<I_AD_Process> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class, ctx, trxName)
-				.filter(filters);
-
-		queryBuilder.orderBy()
-				.addColumn(I_AD_Process.COLUMNNAME_Name);
-		return queryBuilder;
+		return queryBL.createQueryBuilder(I_AD_Process.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_Process.COLUMN_AD_Process_ID, relatedProcessIds)
+				//
+				.orderBy()
+				.addColumn(I_AD_Process.COLUMNNAME_Name)
+				.endOrderBy();
 	}
 
 	@Override
 	public I_AD_Process retrieveProcessByForm(final Properties ctx, final int AD_Form_ID)
 	{
-		final String trxName = ITrx.TRXNAME_NoneNotNull;
-
-		final IQueryBuilder<I_AD_Process> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process.class, ctx, trxName)
-				.filter(new EqualsQueryFilter<I_AD_Process>(I_AD_Process.COLUMNNAME_AD_Form_ID, AD_Form_ID));
-
-		return queryBuilder.create()
-				.setOnlyActiveRecords(true)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process.COLUMNNAME_AD_Form_ID, AD_Form_ID)
+				.create()
 				.firstOnly(I_AD_Process.class);
 	}
 

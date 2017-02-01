@@ -25,12 +25,13 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 
 /**
  * Generic readonly parameters. Use {@link IParamsBL#createParams(java.util.Map)} to get yours.
  * 
- * @author ts
- * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public interface IParams
 {
@@ -72,5 +73,8 @@ public interface IParams
 	 */
 	BigDecimal getParameterAsBigDecimal(String parameterName);
 
-
+	/**
+	 * @return the names of all included parameters.
+	 */
+	Collection<String> getParameterNames();
 }

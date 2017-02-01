@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -22,14 +6,15 @@ import java.util.Properties;
 
 /** Generated Model for AD_Table_Process
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Table_Process extends org.compiere.model.PO implements I_AD_Table_Process, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20110324L;
+	private static final long serialVersionUID = -458683545L;
 
     /** Standard Constructor */
     public X_AD_Table_Process (Properties ctx, int AD_Table_Process_ID, String trxName)
@@ -40,6 +25,10 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
 			setAD_Process_ID (0);
 			setAD_Table_ID (0);
 			setEntityType (null);
+			setWEBUI_QuickAction (false);
+// N
+			setWEBUI_QuickAction_Default (false);
+// N
         } */
     }
 
@@ -49,37 +38,32 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Table_Process[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
+	}
 
-	public I_AD_Process getAD_Process() throws RuntimeException
-    {
-		return (I_AD_Process)MTable.get(getCtx(), I_AD_Process.Table_Name)
-			.getPO(getAD_Process_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
+	}
 
 	/** Set Prozess.
 		@param AD_Process_ID 
 		Prozess oder Bericht
 	  */
+	@Override
 	public void setAD_Process_ID (int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
@@ -91,6 +75,7 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
 	/** Get Prozess.
 		@return Prozess oder Bericht
 	  */
+	@Override
 	public int getAD_Process_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
@@ -99,15 +84,23 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
 		return ii.intValue();
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
+
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -119,6 +112,7 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
 	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -127,13 +121,17 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
 		return ii.intValue();
 	}
 
-	/** EntityType AD_Reference_ID=389 */
+	/** 
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
 	/** Set Entitäts-Art.
 		@param EntityType 
 		Dictionary Entity Type; Determines ownership and synchronization
 	  */
-	public void setEntityType (String EntityType)
+	@Override
+	public void setEntityType (java.lang.String EntityType)
 	{
 
 		set_Value (COLUMNNAME_EntityType, EntityType);
@@ -142,8 +140,55 @@ public class X_AD_Table_Process extends PO implements I_AD_Table_Process, I_Pers
 	/** Get Entitäts-Art.
 		@return Dictionary Entity Type; Determines ownership and synchronization
 	  */
-	public String getEntityType () 
+	@Override
+	public java.lang.String getEntityType () 
 	{
-		return (String)get_Value(COLUMNNAME_EntityType);
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+	}
+
+	/** Set Quick action.
+		@param WEBUI_QuickAction Quick action	  */
+	@Override
+	public void setWEBUI_QuickAction (boolean WEBUI_QuickAction)
+	{
+		set_Value (COLUMNNAME_WEBUI_QuickAction, Boolean.valueOf(WEBUI_QuickAction));
+	}
+
+	/** Get Quick action.
+		@return Quick action	  */
+	@Override
+	public boolean isWEBUI_QuickAction () 
+	{
+		Object oo = get_Value(COLUMNNAME_WEBUI_QuickAction);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Default quick action.
+		@param WEBUI_QuickAction_Default Default quick action	  */
+	@Override
+	public void setWEBUI_QuickAction_Default (boolean WEBUI_QuickAction_Default)
+	{
+		set_Value (COLUMNNAME_WEBUI_QuickAction_Default, Boolean.valueOf(WEBUI_QuickAction_Default));
+	}
+
+	/** Get Default quick action.
+		@return Default quick action	  */
+	@Override
+	public boolean isWEBUI_QuickAction_Default () 
+	{
+		Object oo = get_Value(COLUMNNAME_WEBUI_QuickAction_Default);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,47 +41,60 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
-@SuppressWarnings("unused")
+/**
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class LULoaderTest extends AbstractHUTest
 {
 	private final I_C_BPartner bpartner_NULL = null;
 	private I_C_BPartner bpartner1;
 	private I_C_BPartner bpartner2;
-	private I_C_BPartner bpartner3;
-	private final I_M_HU_PI tuPI_NULL = null;
+
 	private I_M_HU_PI tuPI1;
 	private I_M_HU_PI tuPI2;
-	private I_M_HU_PI tuPI3;
+
 	private I_M_HU_PI luPI1;
-	private I_M_HU_PI luPI2;
-	private I_M_HU_PI luPI3;
 
 	private LULoader luLoader;
 
+	/**
+	 * Creates a bunch of packing instructions and stuff, to give the code under test a change to choose the right ones.
+	 */
 	@Override
 	protected void initialize()
 	{
 		bpartner1 = helper.createBPartner("BPartner1");
 		bpartner2 = helper.createBPartner("BPartner2");
-		bpartner3 = helper.createBPartner("BPartner3");
+		helper.createBPartner("BPartner3");
 
 		tuPI1 = helper.createHUDefinition("TU1", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		tuPI2 = helper.createHUDefinition("TU2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		tuPI3 = helper.createHUDefinition("TU3", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		helper.createHUDefinition("TU3", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		luPI1 = helper.createHUDefinition("LU1", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		luPI2 = helper.createHUDefinition("LU2", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		luPI3 = helper.createHUDefinition("LU3", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		helper.createHUDefinition("LU2", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		helper.createHUDefinition("LU3", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 
 		luLoader = new LULoader(helper.getHUContext());
 	}
 
+	/**
+	 * Creates four TUs and one-by-one adds them to the {@link LULoader} under test.<br>
+	 * Uses an {@link I_M_HU_PI_Item} with a capacity of {@code 2}, so adding the third TU is expected to result in a second LU being created.
+	 * Also, the fourth TU is created with a different BPartner, so adding in is expected to result in a third LU being created.
+	 */
 	@Test
 	public void test()
 	{
-		final I_M_HU_PI_Item luPI1_item1 = helper.createHU_PI_Item_IncludedHU(luPI1, tuPI1, new BigDecimal("2"), bpartner1);
+		final BigDecimal luCapacity = new BigDecimal("2");
+		final I_M_HU_PI_Item luPI1_item1 = helper.createHU_PI_Item_IncludedHU(luPI1, tuPI1, luCapacity, bpartner1);
+		final I_M_HU_PI_Item luPI1_item2 = helper.createHU_PI_Item_IncludedHU(luPI1, tuPI1, luCapacity, null);
+
 		helper.createHU_PI_Item_IncludedHU(luPI1, tuPI2, new BigDecimal("10"), bpartner_NULL); // dummy
 
+		// add the first and second TU
 		{
 			final I_M_HU tu1 = createHU(tuPI1, bpartner1);
 			luLoader.addTU(tu1);
@@ -97,6 +109,7 @@ public class LULoaderTest extends AbstractHUTest
 			assertLUTURelation(0, luPI1_item1, tu2);
 		}
 
+		// add the third TU. because of luCapacity=2, there shall be a new LU.
 		{
 			final I_M_HU tu3 = createHU(tuPI1, bpartner1);
 			luLoader.addTU(tu3);
@@ -104,8 +117,23 @@ public class LULoaderTest extends AbstractHUTest
 			assertLUTURelation(1, luPI1_item1, tu3);
 		}
 
+		// add the fourth TU. Because of the different bPartner, it shall be yet another lu, and because luPI1_item1 was specific to bpartner1, it shall use luPI1_item2
+		{
+			final I_M_HU tu4 = createHU(tuPI1, bpartner2);
+			luLoader.addTU(tu4);
+			assertLUsCount(3);
+			assertLUTURelation(2, luPI1_item2, tu4);
+		}
+
 	}
 
+	/**
+	 * Simply creates an {@link I_M_HU} manually.
+	 * 
+	 * @param huPI
+	 * @param bpartner
+	 * @return
+	 */
 	private final I_M_HU createHU(final I_M_HU_PI huPI, final I_C_BPartner bpartner)
 	{
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huPI);

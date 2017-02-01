@@ -196,7 +196,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 	{
 		final IQuery<I_C_ElementValue> expenseAndRevenueAccountsQuery = queryBL.createQueryBuilder(I_C_ElementValue.class, this)
 				.addOnlyContextClient()
-				.addInArrayFilter(I_C_ElementValue.COLUMN_AccountType, X_C_ElementValue.ACCOUNTTYPE_Expense, X_C_ElementValue.ACCOUNTTYPE_Revenue)
+				.addInArrayOrAllFilter(I_C_ElementValue.COLUMN_AccountType, X_C_ElementValue.ACCOUNTTYPE_Expense, X_C_ElementValue.ACCOUNTTYPE_Revenue)
 				.create();
 
 		final IQueryAggregateBuilder<I_Fact_Acct, I_C_ElementValue> aggregateOnAccountBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, this)

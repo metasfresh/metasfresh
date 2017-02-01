@@ -4,17 +4,17 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.GridField;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.Process;
-import de.metas.process.JavaProcess;
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -111,7 +111,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	 * then the method returns the user set in <code>AD_SysConfig</code> {@value #SYSCONFIG_AD_USER_IN_CHARGE}.
 	 */
 	@Override
-	public Object getParameterDefaultValue(final GridField parameter)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		final String parameterName = parameter.getColumnName();
 

@@ -25,7 +25,6 @@ package de.metas.tourplanning.process;
 
 import java.util.Iterator;
 
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.IContextAware;
@@ -34,8 +33,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.tourplanning.api.ITourInstanceBL;
 import de.metas.tourplanning.api.ITourInstanceDAO;
@@ -247,12 +246,14 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 
 	private Iterator<I_M_DeliveryDay> retrieveSelectedDeliveryDays()
 	{
-		final IQueryBuilder<I_M_DeliveryDay> queryBuilder = retrieveSelectedRecordsQueryBuilder(I_M_DeliveryDay.class);
-		queryBuilder.orderBy()
+		return retrieveSelectedRecordsQueryBuilder(I_M_DeliveryDay.class)
+				//
+				.orderBy()
 				.clear()
-				.addColumn(I_M_DeliveryDay.COLUMN_SeqNo);
-
-		return queryBuilder.create()
+				.addColumn(I_M_DeliveryDay.COLUMN_SeqNo)
+				.endOrderBy()
+				//
+				.create()
 				.iterate(I_M_DeliveryDay.class);
 	}
 }

@@ -314,7 +314,7 @@ public class ZoomInfoFactory implements IZoomProvider
 	@Override
 	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
-		logger.info("source={}", source);
+		logger.debug("source={}", source);
 
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
 		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
