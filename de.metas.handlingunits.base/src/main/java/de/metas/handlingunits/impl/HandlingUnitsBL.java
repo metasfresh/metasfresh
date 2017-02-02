@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -820,7 +821,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// gebindelager is done only when needed
 		final String initialHUStatus = hu.getHUStatus();
 
-		if (Check.equals(huStatus, initialHUStatus))
+		if (Objects.equals(huStatus, initialHUStatus))
 		{
 			// do nothing
 			return;
