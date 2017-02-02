@@ -57,6 +57,7 @@ class MenuOverlayItem extends Component {
             case "ArrowUp":
                 e.preventDefault();
                 this.handeArrowUp();
+                
                 break;
             case "Backspace":
                 e.preventDefault();
@@ -76,6 +77,9 @@ class MenuOverlayItem extends Component {
 
     handeArrowUp() {
         let prevSiblings = document.activeElement.previousSibling;
+        if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
+            document.getElementById('search-input-query').focus();
+        }
         if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
             document.activeElement.previousSibling.focus();
         } else {

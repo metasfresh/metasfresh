@@ -421,10 +421,17 @@
     border-bottom: 1px dashed $brand-link-color;
 }
 
+.menu-overlay-expanded-link:focus .query-clickable-group {
+    border-bottom: 1px dashed $brand-link-color;
+}
+
 .menu-overlay-expanded-link:focus .menu-overlay-link {
     border-bottom: 1px solid $brand-link-color;
 }
 
+.menu-overlay-expanded-link:focus .query-clickable-link {
+    border-bottom: 1px solid $brand-link-color;
+}
 .menu-overlay-expanded-link {
     color: $brand-link-color;
     width: auto;

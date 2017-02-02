@@ -524,7 +524,6 @@ class RawWidget extends Component {
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        fullScreen={fullScreen}
                         ref={c => this.rawWidget = c}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}

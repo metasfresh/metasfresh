@@ -250,14 +250,37 @@ class MenuOverlay extends Component {
 
     handleKeyDown = (e) => {
         const {handleMenuOverlay} = this.props;
+        const input = document.getElementById('search-input-query');
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
                 if (document.activeElement.classList.contains('js-menu-overlay')) {
                     document.getElementsByClassName('js-menu-item')[0].focus();
+                } else if (document.activeElement.classList.contains('input-field')) {
+                    
+                    
+                    if(document.activeElement.parentElement.nextSibling){
+                        document.activeElement.parentElement.nextSibling.focus();
+                    }
+                    
                 }
                 break;
-
+            case "ArrowUp":
+                e.preventDefault();
+                
+                break;
+            case "Tab":
+                e.preventDefault();
+                
+                if(document.activeElement === input) {
+                    
+                    document.getElementsByClassName('js-menu-item')[0].focus();
+                } else {
+                    
+                    input.focus();
+                }
+                
+                break;
             case "Escape":
                 e.preventDefault();
                 handleMenuOverlay("","");
@@ -305,6 +328,7 @@ class MenuOverlay extends Component {
                                             className="input-field"
                                             placeholder="Type phrase here"
                                             onChange={e => this.handleQuery(e) }
+                                            onKeyDown={(e) => this.handleKeyDown(e)}
                                         />
                                         {this.state.query && <i
                                             className="input-icon meta-icon-close-alt pointer"
