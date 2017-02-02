@@ -57,7 +57,12 @@ class MenuOverlayItem extends Component {
             case "ArrowUp":
                 e.preventDefault();
                 this.handeArrowUp();
+                break;
+            case "Tab":
+                e.preventDefault();
                 
+                console.log('tab');
+                document.getElementsByClassName('js-menu-item')[0].focus();
                 break;
             case "Backspace":
                 e.preventDefault();

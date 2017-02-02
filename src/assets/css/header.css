@@ -437,6 +437,10 @@
     width: auto;
 }
 
+.menu-overlay-header:focus {
+    border-bottom: 1px solid $brand-font-color-secondary;
+}
+
 
 .header-breadcrumb>span:first-of-type>.ico-home {
     min-width: 24px;

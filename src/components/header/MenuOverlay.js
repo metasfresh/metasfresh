@@ -256,6 +256,7 @@ class MenuOverlay extends Component {
                 e.preventDefault();
                 if (document.activeElement.classList.contains('js-menu-overlay')) {
                     document.getElementsByClassName('js-menu-item')[0].focus();
+                    // document.getElementsByClassName('menu-overlay-header')[0].focus();
                 } else if (document.activeElement.classList.contains('input-field')) {
                     
                     
