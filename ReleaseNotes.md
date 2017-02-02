@@ -19,6 +19,8 @@ upcoming Release
   * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
   * #460 Provide aggregate HUs
   * #815 Jasper Footer: Show bank account in one line 
+  * #904 New Field "Zulieferant" in R_Request Window
+
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
   * #196 Grid View 100% height
