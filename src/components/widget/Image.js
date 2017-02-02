@@ -7,7 +7,10 @@ export default class Image extends React.Component{
         super(props);
 
         this.state = {
-            imageSrc: ''
+            imageSrc: '',
+            usingCamera: false,
+            isLoading: false,
+            stream: {}
         };
     }
 
@@ -21,59 +24,22 @@ export default class Image extends React.Component{
         return this.updateImagePreview(data.value);
     }
 
-    takeSnapshot(stream) {
-        let img = document.createElement('img');
-        const width = this.camera.offsetWidth;
-        const height = this.camera.offsetHeight;
-
-        let canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-
-        let context = canvas.getContext('2d');
-        context.drawImage(this.camera, 0, 0, width, height);
-
-        // upload the picture taken
-        canvas.toBlob(blob => {
-            this.uploadBlob(blob)
-                .then(() => {
-                    this.setState({
-                        usingCamera: false
-                    }, () => {
-                        // stop using camera
-                        stream.getVideoTracks()[0].stop();
-                    })
-                })
-        })
-    }
-
-    handleCamera(){
-        this.setState({
-            usingCamera: true
-        }, () => {
-            navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: "user",
-                    width: 400,
-                    height: 300
-                }
-            })
-                .then(stream => {
-                    this.camera.src = window.URL.createObjectURL(stream);
-                    this.camera.onloadedmetadata = (e) => {
-                        this.camera.play();
-                    };
-
-                    this.camera.addEventListener('click', () => this.takeSnapshot(stream));
-                })
-        });
-    }
-
-    handleUploadFile(e){
-        this.uploadBlob(this.imageInput.files[0]);
+    isCameraAvailable(){
+        return (
+                !~location.protocol.indexOf('https') ||
+                !~location.href.indexOf('localhost') ||
+                !~location.href.indexOf('127')
+            ) &&
+            navigator.mediaDevices &&
+            navigator.mediaDevices.getUserMedia
     }
 
     uploadBlob(blob){
+        const {data, processId, pinstanceId} = this.props;
+
+        let fd = new FormData();
+        fd.append('file', blob);
+
         return new Promise(resolve => {
             this.setState({
                 isLoading: true
@@ -82,33 +48,28 @@ export default class Image extends React.Component{
             });
         })
             .then(() => {
-                const {data, processId, pinstanceId} = this.props;
-
-                let fd = new FormData();
-                fd.append('file', blob);
-
                 return postImageAction(fd)
-                    .then(imageId => {
-                        return this.updateImagePreview(imageId)
+            })
+            .then(imageId => {
+                return this.updateImagePreview(imageId)
+            })
+            .then(imageId => {
+                return updateProcess(processId, pinstanceId, [
+                    {
+                        "op": "replace",
+                        "path": data.field,
+                        "value": imageId
+                    }
+                ])
+            })
+            .then(() => {
+                return new Promise(resolve => {
+                    this.setState({
+                        isLoading: false
+                    }, () => {
+                        resolve();
                     })
-                    .then(imageId => {
-                        return updateProcess(processId, pinstanceId, [
-                            {
-                                "op": "replace",
-                                "path": data.field,
-                                "value": imageId
-                            }
-                        ])
-                    })
-                    .then(() => {
-                        return new Promise(resolve => {
-                            this.setState({
-                                isLoading: false
-                            }, () => {
-                                resolve();
-                            })
-                        })
-                    })
+                })
             })
 
     }
@@ -133,6 +94,68 @@ export default class Image extends React.Component{
             });
     }
 
+    takeSnapshot() {
+        let img = document.createElement('img');
+        const width = this.camera.offsetWidth;
+        const height = this.camera.offsetHeight;
+
+        let canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        let context = canvas.getContext('2d');
+        context.drawImage(this.camera, 0, 0, width, height);
+
+        // upload the picture taken
+        canvas.toBlob(blob => {
+            this.uploadBlob(blob)
+                .then(() => {
+                    return this.stopUsingCamera()
+                })
+        })
+    }
+
+    stopUsingCamera(){
+        return new Promise(resolve => {
+            this.setState({
+                usingCamera: false
+            }, () => {
+                // stop using camera
+                this.state.stream.getVideoTracks()[0].stop();
+                resolve();
+            })
+        })
+    }
+
+    handleCamera(){
+        this.setState({
+            usingCamera: true
+        }, () => {
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "user",
+                    width: 400,
+                    height: 300
+                }
+            })
+                .then(stream => {
+                    this.camera.src = window.URL.createObjectURL(stream);
+                    this.camera.onloadedmetadata = (e) => {
+                        this.camera.play();
+                    };
+
+                    this.camera.addEventListener('click', () => this.takeSnapshot());
+                    this.setState({
+                        stream: stream
+                    });
+                })
+        });
+    }
+
+    handleUploadFile(e){
+        this.uploadBlob(this.imageInput.files[0]);
+    }
+
     renderImagePreview(src){
         return <img src={src} alt="image" className="img-fluid" />
     }
@@ -148,6 +171,30 @@ export default class Image extends React.Component{
     renderImagePlaceholder(text){
         return <div className="image-placeholder">
             <div className="placeholder-value">{text}</div>
+        </div>
+    }
+
+    renderUsingCameraControls(){
+        return <div>
+            <div className="col-sm-12">
+                <div className="btn btn-meta-outline-secondary btn-sm btn-distance-3" onClick={(e) => this.takeSnapshot()}>
+                    <i className="meta-icon-photo"/>
+                    Capture
+                </div>
+                <div className="btn btn-meta-outline-secondary btn-sm" onClick={(e) => this.stopUsingCamera()}>
+                    <i className="meta-icon-close-alt"/>
+                    Cancel
+                </div>
+            </div>
+        </div>
+    }
+
+    renderRegularCameraControl(){
+        return <div className="col-sm-12">
+            <div className="btn btn-meta-outline-secondary btn-sm" onClick={(e) => this.handleCamera()}>
+                <i className="meta-icon-photo"/>
+                Take from camera
+            </div>
         </div>
     }
 
@@ -174,13 +221,8 @@ export default class Image extends React.Component{
                         </label>
                     </div>
                     {
-                        navigator.mediaDevices &&
-                        <div className="col-sm-12">
-                            <div className="btn btn-meta-outline-secondary btn-sm" onClick={(e) => this.handleCamera()}>
-                                <i className="meta-icon-photo"/>
-                                Take from camera
-                            </div>
-                        </div>
+                        this.isCameraAvailable() &&
+                        (usingCamera ? this.renderUsingCameraControls() : this.renderRegularCameraControl())
                     }
                 </div>
             </div>
