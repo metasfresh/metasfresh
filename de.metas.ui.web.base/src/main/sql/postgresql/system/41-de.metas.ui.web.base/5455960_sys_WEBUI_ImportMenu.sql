@@ -13,6 +13,17 @@ create table backup.AD_Menu_Trk_BKP_BeforeImportWebUI as select * from AD_Menu_T
 -- backup.WEBUI_AD_Menu_Trl
 
 --
+-- Make sure we have the webui's AD_Tree entry
+drop table if exists TMP_AD_Tree_ToImport;
+create temporary table TMP_AD_Tree_ToImport as select ad_tree_id, ad_client_id, ad_org_id, created, createdby, updated, updatedby, isactive, name, description, treetype, isallnodes, processing, isdefault, ad_table_id from AD_Tree where 1=2;
+INSERT INTO TMP_AD_Tree_ToImport (ad_tree_id, ad_client_id, ad_org_id, created, createdby, updated, updatedby, isactive, name, description, treetype, isallnodes, processing, isdefault, ad_table_id) VALUES (1000039, 0, 0, '2016-09-21 18:06:52+02', 100, '2016-09-22 14:15:19+02', 100, 'Y', 'Menu', 'webUI Menu', 'MM', 'N', 'N', 'N', 116);
+--
+insert into AD_Tree (ad_tree_id, ad_client_id, ad_org_id, created, createdby, updated, updatedby, isactive, name, description, treetype, isallnodes, processing, isdefault, ad_table_id)
+select ad_tree_id, ad_client_id, ad_org_id, created, createdby, updated, updatedby, isactive, name, description, treetype, isallnodes, processing, isdefault, ad_table_id
+from TMP_AD_Tree_ToImport t
+where not exists (select 1 from AD_Tree z where z.AD_Tree_ID=t.AD_Tree_ID);
+
+--
 -- Import AD_TreeNodeMM webui menu
 delete from AD_TreeNodeMM where AD_Tree_ID=1000039;
 insert into AD_TreeNodeMM
