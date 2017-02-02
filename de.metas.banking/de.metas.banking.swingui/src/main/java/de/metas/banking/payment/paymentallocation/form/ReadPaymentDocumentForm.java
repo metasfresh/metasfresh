@@ -106,8 +106,8 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	{
 		final ReadPaymentDocumentPanel readPaymentPanel = new ReadPaymentDocumentPanel(windowNo, frame, adOrgId);
 		
-		// gh #897: provide the invoice's bPartner so the panel can filter matching accounts by relevance
-		readPaymentPanel.setContextBPartner(invoice == null ? null : invoice.getC_BPartner());
+		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		readPaymentPanel.setContextBPartner_ID(invoice == null ? -1 : invoice.getC_BPartner_ID());
 		
 		frame.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentPanel)
 		{
