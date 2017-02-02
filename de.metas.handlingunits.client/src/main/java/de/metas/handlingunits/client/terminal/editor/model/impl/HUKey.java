@@ -258,10 +258,13 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		return documentLine;
 	}
 
+	/**
+	 * @return {@code true} if the wrapped HU is a virtual <b>and not</b> aggregate HU.
+	 */
 	@Override
 	public boolean isVirtualPI()
 	{
-		return virtualPI;
+		return virtualPI && !aggregateHU;
 	}
 
 	@Override
