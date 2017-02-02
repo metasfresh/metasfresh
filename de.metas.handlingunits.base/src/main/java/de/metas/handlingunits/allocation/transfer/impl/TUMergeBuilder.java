@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -60,7 +61,7 @@ public class TUMergeBuilder implements ITUMergeBuilder
 	private I_M_HU targetHU;
 
 	private I_M_Product cuProduct;
-	private BigDecimal cuQty;
+	private BigDecimal cuQty = Quantity.QTY_INFINITE;
 	private I_C_UOM cuUOM;
 	private Object cuTrxReferencedModel;
 
