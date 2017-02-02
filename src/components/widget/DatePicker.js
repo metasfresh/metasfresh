@@ -32,7 +32,7 @@ class DatePicker extends Component {
         this.handleClose();
 
         handleBackdropLock && handleBackdropLock(false);
-        onClickOutsideTableCell();
+        onClickOutsideTableCell && onClickOutsideTableCell();
     }
 
     handleFocus = () => {

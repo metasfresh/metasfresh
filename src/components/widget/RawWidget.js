@@ -151,7 +151,7 @@ class RawWidget extends Component {
                                 }}
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                                patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                                 handleBackdropLock={handleBackdropLock}
                                 onClickOutsideTableCell={onClickOutsideTableCell}
                             />
@@ -209,8 +209,10 @@ class RawWidget extends Component {
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
+                            onClickOutsideTableCell={onClickOutsideTableCell}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
