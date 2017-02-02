@@ -13,15 +13,14 @@ package de.metas.handlingunits.receiptschedule.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,9 +31,13 @@ import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
+import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -44,6 +47,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -55,43 +59,61 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.GenericListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 
 /**
  * Helper class for massive generation of HUs for receipt schedule(s).
+ * <p>
+ * Note:The respective {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s are created via {@link ReceiptScheduleHUTrxListener}.
  *
  * @author tsa
  *
  */
 public class ReceiptScheduleHUGenerator
 {
+	/**
+	 * 
+	 * @param context: the context to be used when creating the HUs. This context will also be used for the {@link IHUContext} the HU processing will have place with. <br>
+	 *            If its {@code trxName} is not {@link ITrx#TRXNAME_ThreadInherited}, then this method will create a new context that only has the given context's {@link IContextAware#getCtx()} but not trxName.<br>
+	 *            Because the {@link #generate()} method depends on the {@code trxName} being thread-inherited.
+	 */
 	public static final ReceiptScheduleHUGenerator newInstance(final IContextAware context)
 	{
+		final IContextAware contextToUse;
+		if (ITrx.TRXNAME_ThreadInherited.equals(context.getTrxName()))
+		{
+			contextToUse = context;
+		}
+		else
+		{
+			contextToUse = PlainContextAware.newWithThreadInheritedTrx(context.getCtx());
+		}
 		return new ReceiptScheduleHUGenerator()
-				.setContext(context);
+				.setContext(contextToUse);
 	}
+
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	// private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	//
 	// Parameters
 	private IContextAware _contextInitial;
 	private final List<I_M_ReceiptSchedule> _receiptSchedules = new ArrayList<>();
 	private final Map<Integer, IProductStorage> _receiptSchedule2productStorage = new HashMap<>();
-	private final Map<Integer, IHUAllocations> _receiptSchedule2huAllocations = new HashMap<>();
+
 	private Quantity _qtyToAllocateTarget = null;
 
 	//
@@ -99,8 +121,7 @@ public class ReceiptScheduleHUGenerator
 	private boolean _configurable = true;
 	private IDocumentLUTUConfigurationManager _lutuConfigurationManager;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration;
-	private ILUTUProducerAllocationDestination _lutuProducer;
-	
+
 	private ReceiptScheduleHUGenerator()
 	{
 		super();
@@ -129,6 +150,11 @@ public class ReceiptScheduleHUGenerator
 
 	private final ReceiptScheduleHUGenerator setContext(final IContextAware context)
 	{
+		// needs to be threadInherited because we run in our own little TrxRunnable and everything created from the request shall be committed when we commit that runnable's local transaction.
+		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(context.getTrxName()),
+				"The trxName of the given request's HUContext needs to be {} or 'null', but is {}",
+				ITrx.TRXNAME_ThreadInherited, context.getTrxName());
+
 		_contextInitial = context;
 		return this;
 	}
@@ -178,14 +204,14 @@ public class ReceiptScheduleHUGenerator
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
 		Check.assume(!Services.get(IReceiptScheduleBL.class).isClosed(receiptSchedule), "receipt schedule shall not be closed: {}", receiptSchedule);
 		Check.assume(!receiptSchedule.isPackagingMaterial(), "receipt schedule shall not be about packing materials: {}", receiptSchedule);
-		
+
 		if (_receiptSchedules.contains(receiptSchedule))
 		{
 			return this;
 		}
-		
+
 		_receiptSchedules.add(receiptSchedule);
-		
+
 		return this;
 	}
 
@@ -196,7 +222,7 @@ public class ReceiptScheduleHUGenerator
 		{
 			addM_ReceiptSchedule(receiptSchedule);
 		}
-		
+
 		return this;
 	}
 
@@ -205,27 +231,6 @@ public class ReceiptScheduleHUGenerator
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(schedule.getC_OrderLine(), I_C_OrderLine.class);
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		return orderLine;
-	}
-
-	private IHUAllocations getHUAllocations(final I_M_ReceiptSchedule schedule)
-	{
-		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
-		IHUAllocations huAllocations = _receiptSchedule2huAllocations.get(receiptScheduleId);
-		if (huAllocations == null)
-		{
-			final IProductStorage productStorage = getProductStorage(schedule);
-			huAllocations = new ReceiptScheduleHUAllocations(schedule, productStorage);
-			_receiptSchedule2huAllocations.put(receiptScheduleId, huAllocations);
-		}
-		return huAllocations;
-	}
-
-	public ReceiptScheduleHUGenerator setHUAllocations(final I_M_ReceiptSchedule schedule, final IHUAllocations huAllocations)
-	{
-		assertConfigurable();
-		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
-		_receiptSchedule2huAllocations.put(receiptScheduleId, huAllocations);
-		return this;
 	}
 
 	private IProductStorage getProductStorage(final I_M_ReceiptSchedule schedule)
@@ -275,6 +280,11 @@ public class ReceiptScheduleHUGenerator
 		}
 	}
 
+	/**
+	 * Create the HUs. This will take place in a dedicated {@link TrxRunnable} which will be committed (or rolled back) withing this method.
+	 * 
+	 * @return
+	 */
 	public List<I_M_HU> generate()
 	{
 		final Quantity qtyCUsTotal = getQtyToAllocateTarget();
@@ -284,26 +294,40 @@ public class ReceiptScheduleHUGenerator
 		return generateLUTUHandlingUnitsForQtyToAllocate(request);
 	}
 
+	/**
+	 * Runs within a {@link TrxRunnable} with its own local transaction and commits on success.
+	 * 
+	 * @param request
+	 * @return
+	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate(final IAllocationRequest request)
 	{
+		// needs to be threadInherited because we run in our own little TrxRunnable and everything created from the request shall be committed when we commit that runnable's local transaction.
+		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHUContext().getTrxName()),
+				"The trxName of the given request's HUContext needs to be {} or 'null', but is {}",
+				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
+
 		final List<I_M_HU> result = new ArrayList<I_M_HU>();
 
-		final String trxName = request.getHUContext().getTrxName();
-		trxManager.run(trxName, new TrxRunnableAdapter()
+		final String trxNamePrefix = getClass().getSimpleName();
+
+		final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
+				.setTrxPropagation(TrxPropagation.REQUIRES_NEW)
+				.setOnRunnableSuccess(OnRunnableSuccess.COMMIT)
+				.build();
+
+		trxManager.run(trxNamePrefix, trxRunConfig, new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
 			{
-				final List<I_M_HU> handlingUnits = createHUForQtyToAllocate0(request);
-
-				// Make sure we are returning them out-of-transaction
-				for (final I_M_HU hu : handlingUnits)
-				{
-					InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None);
-				}
+				final List<I_M_HU> handlingUnits = generateLUTUHandlingUnitsForQtyToAllocate0(request);
 				result.addAll(handlingUnits);
 			}
 		});
+
+		// Make sure we are returning them out-of-transaction
+		result.forEach(hu -> InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_None));
 
 		return result;
 	}
@@ -316,7 +340,7 @@ public class ReceiptScheduleHUGenerator
 	 * @param trxName
 	 * @return generated HUs
 	 */
-	private List<I_M_HU> createHUForQtyToAllocate0(final IAllocationRequest request)
+	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate0(final IAllocationRequest request)
 	{
 		Check.assumeNotNull(request, "request not null");
 
@@ -354,16 +378,6 @@ public class ReceiptScheduleHUGenerator
 		// Get the newly created HUs
 		final List<I_M_HU> handlingUnits = destination.getCreatedHUs();
 
-		//
-		// Assign newly created HUs
-		// FIXME: handle the case of multi receipt schedules
-		final I_M_ReceiptSchedule singleReceiptSchedule = getSingleReceiptScheduleOrNull();
-		if (singleReceiptSchedule != null)
-		{
-			final IHUAllocations huAllocations = getHUAllocations(singleReceiptSchedule);
-			huAllocations.addAssignedHUs(handlingUnits);
-		}
-
 		return handlingUnits;
 	}
 
@@ -390,6 +404,7 @@ public class ReceiptScheduleHUGenerator
 
 	/**
 	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
+	 * 
 	 * @param qty
 	 * @return
 	 */
@@ -413,8 +428,7 @@ public class ReceiptScheduleHUGenerator
 				qty,
 				SystemTime.asDate(),
 				receiptSchedule, // referencedModel,
-				forceQtyAllocation
-				);
+				forceQtyAllocation);
 
 		//
 		// Setup initial attribute value defaults
@@ -493,27 +507,10 @@ public class ReceiptScheduleHUGenerator
 
 	public ILUTUProducerAllocationDestination getLUTUProducerAllocationDestination()
 	{
-		if (_lutuProducer != null)
-		{
-			return _lutuProducer;
-		}
-
 		final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
-		_lutuProducer = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
-
-		//
-		// Ask the "lutuProducer" to consider currently created HUs that are linked to our receipt schedule
-		// In case they are suitable, they will be used, else they will be destroyed.
-		// NOTE: we do this only if we have only one M_ReceiptSchedule
-		final I_M_ReceiptSchedule receiptSchedule = getSingleReceiptScheduleOrNull();
-		if (receiptSchedule != null)
-		{
-			final IHUAllocations huAllocations = getHUAllocations(receiptSchedule);
-			_lutuProducer.setExistingHUs(huAllocations);
-		}
 
 		markNotConfigurable();
-		return _lutuProducer;
+		return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
 	}
 
 	/**
@@ -528,6 +525,7 @@ public class ReceiptScheduleHUGenerator
 	private void updateLUTUConfigurationFromActualValues()
 	{
 		assertNotConfigurable();
+
 		final ILUTUProducerAllocationDestination lutuProducer = getLUTUProducerAllocationDestination();
 
 		//
@@ -597,8 +595,11 @@ public class ReceiptScheduleHUGenerator
 
 		//
 		// Prepare for chunk processing
+		// change the trxName because in the trxRunner of generateLUTUHandlingUnitsForQtyToAllocate() we will create plenty of records using this schedule's trxName.
+		// those new records shall be committed as soon as the trxRunner finishes.
 		InterfaceWrapperHelper.setTrxName(schedule, ITrx.TRXNAME_ThreadInherited);
-		InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, true); // make sure we are not updating it
+
+		InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, true); // make sure we are not changing 'schedule'
 
 		//
 		// Make sure LU/TU configuration is adjusted to CUs/TUs to order quantity
@@ -626,7 +627,6 @@ public class ReceiptScheduleHUGenerator
 		// Adjust the LU/TU configuration if needed and push it back to receipt schedule (for later use)
 		trxManager.run(new TrxRunnable()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
@@ -649,12 +649,25 @@ public class ReceiptScheduleHUGenerator
 		{
 			return qtyToOrderCUs;
 		}
+
 		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
 		if (qtyCUsPerTU.signum() <= 0)
 		{
 			return qtyToOrderCUs;
 		}
 
-		return qtyCUsPerTU;
+		if (lutuConfiguration.isInfiniteQtyTU())
+		{
+			return qtyToOrderCUs;
+		}
+
+		final BigDecimal qtyTUsPerLU = lutuConfiguration.getQtyTU();
+		if (qtyTUsPerLU.signum() <= 0)
+		{
+			return qtyToOrderCUs;
+		}
+
+		final BigDecimal qtyCUsPerLU = qtyCUsPerTU.multiply(qtyTUsPerLU);
+		return qtyCUsPerLU;
 	}
 }

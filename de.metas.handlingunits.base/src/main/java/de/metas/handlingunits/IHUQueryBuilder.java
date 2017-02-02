@@ -363,9 +363,10 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
 
 	/**
-	 * Filter only those HUs which have given internal barcode. Actually, just filter by <code>M_HU_Value</code>.
-	 *
-	 * NOTE: i.e. search for M_HU.Value and <b>NOT</b> by SSCC18 or any other barcode.
+	 * Filter the HUs by barcode.
+	 * HU identification by barcode can be either of the 2 below: 
+	 * <li>the M_HU.Value equals the inserted barcode (like before)</li>
+	 * <li>the HU has a linked M_HU_Attribute entry with M_Attribute of type Barcode (defined in the DIM_Barcode_Attributes dimension spec) and with the value that equals the inserted barcode</li> 
 	 *
 	 * @param barcode
 	 * @return this

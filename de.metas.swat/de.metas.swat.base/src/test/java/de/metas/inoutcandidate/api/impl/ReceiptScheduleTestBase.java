@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
@@ -123,14 +122,11 @@ public abstract class ReceiptScheduleTestBase
 	@Before
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
+		AdempiereTestHelper.get().init(); // need to init this now
 
-		//
-		// Register model interceptors
-		{
-			Services.get(IModelInterceptorRegistry.class)
-					.addModelInterceptor(ReceiptScheduleValidator.instance);
-		}
+		// this is already done by HUTestHelper.init()
+		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
+		ReceiptScheduleValidator.registerRSAggregationKeyDependencies(); // also, for our tests, we just need this, and not the whole MI!
 
 		receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);

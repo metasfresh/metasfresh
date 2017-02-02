@@ -38,11 +38,11 @@ public class WeightTareAdjustAttributeValueCallout extends AbstractWeightAttribu
 	 * Fires WeightGross recalculation based on existing WeightNet & the new WeightTare value
 	 */
 	@Override
-	public void onValueChanged0(final IAttributeValueContext attributeValueContext,
+	public void onValueChanged0(final IAttributeValueContext attributeValueContext_IGNORED,
 			final IAttributeSet attributeSet,
-			final I_M_Attribute attribute,
-			final Object valueOld,
-			final Object valueNew)
+			final I_M_Attribute attribute_IGNORED,
+			final Object valueOld_IGNORED,
+			final Object valueNew_IGNORED)
 	{
 		recalculateWeightNet(attributeSet);
 	}

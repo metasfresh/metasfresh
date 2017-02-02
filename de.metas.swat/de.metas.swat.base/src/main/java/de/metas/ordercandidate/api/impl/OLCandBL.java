@@ -13,11 +13,11 @@ package de.metas.ordercandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -127,7 +127,7 @@ public class OLCandBL implements IOLCandBL
 			final String trxName)
 	{
 		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
-		
+
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
 		// but I'm afraid that grouping by time - granularity is not really portable. Also there might be other
 		// granularity levels, that can't be put into an sql later on.
@@ -135,13 +135,21 @@ public class OLCandBL implements IOLCandBL
 		//
 		// 1. Get the ol-candidates to process (using relation)
 		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
-		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance
+				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
+
+		if (allCandidates.isEmpty())
+		{
+			loggable.addLog("Found no order candidates for relationTypeInternalName={}; nothing to do", relationTypeInternalName);
+			return;
+		}
+
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
-				
+
 		if (orderCandidates.isEmpty())
 		{
-			loggable.addLog("Found no Orders candidates; nothing to do");
+			loggable.addLog("Found no candidates for relation type with internalName={}; nothing to do", relationTypeInternalName);
 			return;
 		}
 
@@ -149,11 +157,11 @@ public class OLCandBL implements IOLCandBL
 
 		if (candidates.isEmpty())
 		{
-			loggable.addLog("Found no unprocessed candidates; nothing to do");
+			loggable.addLog("Found no unprocessed and valid candidates; nothing to do");
 			return;
 		}
 
-		loggable.addLog("Processing " + candidates.size() + " order line candidates");
+		loggable.addLog("Processing {} order line candidates", candidates.size());
 
 		//
 		// 2. Order the candidates
@@ -242,7 +250,7 @@ public class OLCandBL implements IOLCandBL
 					final String msg = "Caught exception while processing {}; message={}; exception={}";
 					Loggables.get().addLog(msg, candOfGroup, e.getLocalizedMessage(), e);
 					logger.warn(StringUtils.formatMessage(msg, candOfGroup, e.getLocalizedMessage(), e), e);
-					
+
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 					// storing the error-info out of trx, i hope this solves the bug that the info just wasn't there
@@ -306,7 +314,7 @@ public class OLCandBL implements IOLCandBL
 				final String msg = "Caught exception while completing {}; message={}; exception={}";
 				Loggables.get().addLog(msg, order, e.getLocalizedMessage(), e);
 				logger.warn(StringUtils.formatMessage(msg, order, e.getLocalizedMessage(), e), e);
-				
+
 				final StringBuilder sb = new StringBuilder();
 				boolean first = true;
 				int counter = 0;
@@ -890,7 +898,6 @@ public class OLCandBL implements IOLCandBL
 		return I_C_OLCandProcessor.Table_Name + "_" + processor.getC_OLCandProcessor_ID() + "<=>" + I_C_OLCand.Table_Name;
 	}
 
-
 	/**
 	 * Returns a list containing only those input candidates which have Processed='N' and Error='N'.
 	 *
@@ -905,6 +912,7 @@ public class OLCandBL implements IOLCandBL
 		{
 			if (cand.isProcessed() || cand.isError())
 			{
+				logger.debug("Skipping C_OLCand with Processed={} and IsError={}; cand={}", cand.isProcessed(), cand.isError(), cand);
 				continue;
 			}
 			result.add(cand);
@@ -913,7 +921,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	/**
-	 * Returns a list containing only those input candidates which have destination Orders
+	 * Returns a list containing only those input candidates which have no error and {@link I_C_OLCand#COLUMNNAME_AD_DataDestination_ID} pointing to {@link OrderCandidate_Constants#DATA_DESTINATION_INTERNAL_NAME}.
 	 *
 	 * @param ctx
 	 * @param cands
@@ -924,12 +932,11 @@ public class OLCandBL implements IOLCandBL
 	{
 		final List<I_C_OLCand> result = new ArrayList<I_C_OLCand>();
 
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
-						ctx,
-						OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
-						true, // throwEx
-						ITrx.TRXNAME_None);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
+				ctx,
+				OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
+				true, // throwEx
+				ITrx.TRXNAME_None);
 
 		final int processorDataDestinationId = dataDest.getAD_InputDataSource_ID();
 
@@ -940,6 +947,8 @@ public class OLCandBL implements IOLCandBL
 			if (!isValidDataDestination(processorDataDestinationId, cand.getAD_DataDestination_ID())
 					|| isImportedWithIssues(cand))
 			{
+				logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} and IsImportedWithIssues={}; cand={}",
+						processorDataDestinationId, cand.getAD_DataDestination_ID(), cand);
 				continue;
 			}
 			result.add(cand);
@@ -975,8 +984,7 @@ public class OLCandBL implements IOLCandBL
 		model.setRecordSourceId(processor.getC_OLCandProcessor_ID());
 
 		// filter by AD_DataDestination_ID
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
 
 		if (!Check.isEmpty(whereClause, true))
 		{
@@ -999,8 +1007,7 @@ public class OLCandBL implements IOLCandBL
 				(sourceTabName == null ? "" : sourceTabName + " ")
 						+ processor.getName()
 						+ "<=>"
-						+ olCandTable.getName()
-				);
+						+ olCandTable.getName());
 
 		return model;
 	}
@@ -1260,10 +1267,9 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl =
-					InterfaceWrapperHelper.create(
-							productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName),
-							I_M_PriceList.class);
+			final I_M_PriceList pl = InterfaceWrapperHelper.create(
+					productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName),
+					I_M_PriceList.class);
 
 			if (pl == null)
 			{

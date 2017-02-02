@@ -29,7 +29,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.interfaces.I_M_Movement;
 
 /**
- * Create movements based on the data collected within {@link IHUContext#getDestroyedHUPackingMaterialsCollector()}.
+ * Create movements based on the data collected within {@link IHUContext#getHUPackingMaterialsCollector()}.
  * <p>
  * Use {@link de.metas.handlingunits.IHandlingUnitsBL#createEmptiesMovementBuilder()} to get your instance.
  * <p>

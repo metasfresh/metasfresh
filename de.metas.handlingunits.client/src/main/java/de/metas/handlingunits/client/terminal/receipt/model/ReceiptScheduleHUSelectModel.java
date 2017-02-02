@@ -236,30 +236,30 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
 
 		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.createAndEdit(lutuConfiguration -> {
-			final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
+						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
-			//
-			// Ask user to edit the configuration in another dialog
-			try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
-			{
-				final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
+						//
+						// Ask user to edit the configuration in another dialog
+						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+						{
+							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
 
-				if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
-				{
-					return null;// User cancelled => do nothing
-				}
+							if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
+							{
+								return null;// User cancelled => do nothing
+							}
 
-				//
-				// Update the LU/TU configuration on which we are working using what user picked
-				lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
-			}
-			catch (Exception e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
+							//
+							// Update the LU/TU configuration on which we are working using what user picked
+							lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
+						}
+						catch (Exception e)
+						{
+							throw AdempiereException.wrapIfNeeded(e);
+						}
 
-			return lutuConfiguration;
-		});
+						return lutuConfiguration;
+				});
 
 		//
 		// No configuration => user cancelled => don't open editor

@@ -59,9 +59,10 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.117", "62.117", "8", "0"));
 
+		// split off 2x10
 		final List<I_M_HU> splitTUs = splitLU(paletToSplit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
 				materialItemTomato_10, // TU item x 10
@@ -77,8 +78,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
 				newHUWeightsExpectation("82.470", "50.470", "32", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -102,8 +103,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
@@ -120,9 +121,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
 				newHUWeightsExpectation("82.470", "50.470", "32", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
-
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 		//
 		// Assert data integrity on TARGET LU
 		//
@@ -144,8 +144,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
@@ -161,9 +161,9 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		// Assert data integrity on SOURCE LU
 		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 6,
-				newHUWeightsExpectation("73.705", "42.705", "31", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("73.706", "42.706", "31", "0"),
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("43.824", "38.824", "5", "0"));
 
 		//
 		// Assert data integrity on TARGET LU
@@ -187,8 +187,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitTUs = splitLU(paletToSplit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -202,12 +202,10 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		//
 		// Assert data integrity on SOURCE LU
-		//
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("94.564", "60.564", "34", "0"),
-				newHUWeightsExpectation("3.329", "2.329", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 8, // #490 the original pre-aggregate test had "9", but imho 8 is better :-)
+				newHUWeightsExpectation("93.565", "60.565", "33", "0"),
+				newHUWeightsExpectation("7.212", "6.212", "1", "0"),
+				newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
 		//
 		// Assert data integrity on TARGET TU
@@ -216,7 +214,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		Assert.assertTrue("The target TU we just split to shall be a top-level handling unit", splitTU.getM_HU_Item_Parent_ID() <= 0);
 
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(splitTU);
-		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("6.436", "5.436", "1", "0"));
+		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("6.435", "5.435", "1", "0"));
 	}
 
 	/**
@@ -228,8 +226,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on NoPI (TUs which are split will not be on an LU)
@@ -243,12 +241,10 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		//
 		// Assert data integrity on SOURCE LU
-		//
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
-				newHUWeightsExpectation("94.564", "60.564", "34", "0"),
-				newHUWeightsExpectation("3.329", "2.329", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 8, // #490 the original pre-aggregate test had "9", but imho 8 is better :-)
+				newHUWeightsExpectation("93.565", "60.565", "33", "0"),
+				newHUWeightsExpectation("7.212", "6.212", "1", "0"),
+				newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
 		//
 		// Assert data integrity on TARGET LU
@@ -279,8 +275,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on LU (TUs which are split will be on an LU)
@@ -297,8 +293,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
 				newHUWeightsExpectation("82.470", "50.470", "32", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 
 		//
 		// Assert data integrity on TARGET LUs
@@ -327,8 +323,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100", "66", "34", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
+				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
+				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
 
 		final List<I_M_HU> splitTUs = splitLU(paletToSplit,
 				helper.huDefItemNone, // split on NoPI (TUs which are split will not be on an LU)
@@ -343,16 +339,9 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on SOURCE LU
 		//
-		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 8,
-				newHUWeightsExpectation("87.352", "54.352", "33", "0"),
-				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("8.765", "7.765", "1", "0"),
-				newHUWeightsExpectation("4.880", "3.880", "1", "0"));
+		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 7,
+				newHUWeightsExpectation("86.353", "54.353", "32", "0"),
+				newHUWeightsExpectation("61.353", "54.353", "7", "0"));
 
 		//
 		// Assert data integrity on TARGET TUs
@@ -382,12 +371,13 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 	@Test
 	public void testSplitWeightTransfer_LU_On_1LU_7TU_Different_PI_5CU()
 	{
+		//46 tomato: 2 per IFCO => 23 IFCOs;  
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_2, materialItemProductTomato_2, CU_QTY_46, INPUT_GROSS_100); // 46 x Tomato
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_2, 23,
-				newHUWeightsExpectation("100", "52", "48", "0"),
-				newHUWeightsExpectation("3.26", "2.26", "1", "0"),
-				newHUWeightsExpectation("3.26", "2.26", "1", "0"));
+				newHUWeightsExpectation("100", "52"/*net*/, "48"/*tare:1x25+23x1*/, "0"),
+				newHUWeightsExpectation("75", "52", "23", "0"));
 
+		// split onto 7xIFCOs with 5kg each => 35kg
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_5, // split on LU (TUs which are split will be on an LU)
 				materialItemTomato_5, // TU item x 5
@@ -402,13 +392,9 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		// Assert data integrity on SOURCE LU
 		//
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_2, 6,
-				newHUWeightsExpectation("43.432", "12.432", "31", "0"),
-				newHUWeightsExpectation("2.13", "1.13", "1", "0"),
-				newHUWeightsExpectation("3.26", "2.26", "1", "0"),
-				newHUWeightsExpectation("3.26", "2.26", "1", "0"),
-				newHUWeightsExpectation("3.26", "2.26", "1", "0"),
-				newHUWeightsExpectation("3.26", "2.26", "1", "0"),
-				newHUWeightsExpectation("3.258", "2.258", "1", "0"));
+				newHUWeightsExpectation("43.434", "12.434", "31", "0"),
+				newHUWeightsExpectation("2.130", "1.130", "1", "0"),
+				newHUWeightsExpectation("16.304", "11.304", "5", "0"));
 
 		//
 		// Assert data integrity on TARGET LUs
@@ -417,10 +403,8 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		Assert.assertTrue("The target TU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_5, 7,
-				newHUWeightsExpectation("71.568", "39.568", "32", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"),
-				newHUWeightsExpectation("6.653", "5.653", "1", "0"));
+				newHUWeightsExpectation("71.565", "39.565", "32", "0"),
+				newHUWeightsExpectation("46.565", "39.565", "7", "0"));
 	}
 
 	/**

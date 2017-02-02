@@ -106,7 +106,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 		//
 		// Make sure that we're using a saved parent HU item
-		Check.assume(parentItem.getM_HU_PI_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
+		Check.assume(parentItem.getM_HU_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
 		final I_M_HU parentHU = parentItem.getM_HU();
 
 		//

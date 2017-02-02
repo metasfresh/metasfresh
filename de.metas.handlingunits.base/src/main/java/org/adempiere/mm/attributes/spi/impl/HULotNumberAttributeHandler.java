@@ -118,10 +118,13 @@ public class HULotNumberAttributeHandler
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_Date;
 	}
 
+	/**
+	 * @return {@code false} because none of the {@code generate*Value()} methods is implemented.
+	 */
 	@Override
 	public boolean canGenerateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
 	{
-		return true;
+		return false;
 	}
 
 	@Override

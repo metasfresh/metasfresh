@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +15,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +32,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,12 +45,13 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.FilterUtils;
 import org.adempiere.util.collections.IteratorUtils;
-import org.adempiere.util.collections.Predicate;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
@@ -65,6 +69,7 @@ import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
@@ -75,6 +80,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.logging.LogManager;
 
@@ -265,6 +271,27 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final I_M_HU_Item existingItem = getHUAndItemsDAO().retrieveItem(hu, piItem);
+
+		if (existingItem != null && X_M_HU_Item.ITEMTYPE_HandlingUnit.equals(handlingUnitsBL.getItemType(existingItem)))
+		{
+			return ImmutablePair.of(existingItem, false);
+		}
+
+		return ImmutablePair.of(createHUItem(hu, piItem), true);
+	}
+
+	@Override
+	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	{
+		return getHUAndItemsDAO().createAggregateHUItem(hu);
+	}
+
+	@Override
 	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveItems(hu);
@@ -277,27 +304,41 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PackingMaterial> retrievePackingMaterials(final I_M_HU hu)
+	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
-		final List<I_M_HU_PackingMaterial> packingMaterials = new ArrayList<I_M_HU_PackingMaterial>();
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
 		for (final I_M_HU_Item huItem : huItems)
 		{
-			final I_M_HU_PI_Item huPIItem = huItem.getM_HU_PI_Item();
-			final String itemType = huPIItem.getItemType();
-			if (X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
+			final String itemType = handlingUnitsBL.getItemType(huItem);
+			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
 			{
-				final I_M_HU_PackingMaterial packingMaterial = huPIItem.getM_HU_PackingMaterial();
-				packingMaterials.add(packingMaterial);
+				continue;
 			}
+
+			// if 'hu'is an aggregate VHU, then it represents not one, but as many HU as its parent item's Qty sais.
+			final BigDecimal qty;
+			if (handlingUnitsBL.isAggregateHU(hu))
+			{
+				qty = hu.getM_HU_Item_Parent().getQty();
+				if (qty.signum() <= 0)
+				{
+					// this is an "empty" or "stub" aggregate HU. no packing material
+					continue;
+				}
+			}
+			else
+			{
+				qty = BigDecimal.ONE;
+			}
+
+			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
+
+			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
 		return packingMaterials;
-	}
-
-	@Override
-	public I_M_HU_PI retrievePIHandlingUnit(final Properties ctx, final int handlingUnitId, final String trxName)
-	{
-		return InterfaceWrapperHelper.create(ctx, handlingUnitId, I_M_HU_PI.class, trxName);
 	}
 
 	@Override
@@ -311,6 +352,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner)
 	{
 		Check.assumeNotNull(version, "version not null");
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
 		final int huPIVersionId = version.getM_HU_PI_Version_ID();
@@ -490,7 +532,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.list(I_M_HU_PI.class);
 	}
-	
+
 	@Override
 	public List<I_M_HU_PI> retrieveAvailablePIsForOrg(final Properties ctx, final int adOrgId)
 	{
@@ -504,10 +546,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 			huPIsForOrg.add(huPI);
 		}
-		
+
 		return huPIsForOrg.build();
 	}
-
 
 	@Override
 	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator)
@@ -551,6 +592,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final int huPIId = huPI.getM_HU_PI_ID();
 		final int bpartnerId = bpartner == null ? -1 : bpartner.getC_BPartner_ID();
+
 		return retrieveParentPIItemsForParentPI(ctx, huPIId, huUnitType, bpartnerId, trxName);
 	}
 
@@ -581,7 +623,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, bpartnerId);
 		piItemsQueryBuilder.orderBy()
 				.addColumn(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
-				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictible order
+				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
 
 		//
@@ -616,7 +658,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			//
 			// Make sure the HU UnitType is matching
 			final String parentUnitType = parentVersion.getHU_UnitType();
-			if (!Check.isEmpty(huUnitType, true) && !Check.equals(parentUnitType, huUnitType))
+			if (!Check.isEmpty(huUnitType, true) && !Objects.equals(parentUnitType, huUnitType))
 			{
 				// required unit type not matched
 				continue;
@@ -628,6 +670,32 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 
 		return parentPIItems;
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(final I_M_HU parentHU, final I_M_HU_PI piOfChildHU, final IContextAware ctx)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_M_HU_PI_Item piItemForChild = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx)
+				.addOnlyActiveRecordsFilter()
+
+				// it's an PI-item of the the parent's PI
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
+
+				// it includes the childs's HU PI as one of its "child" PI
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
+
+				// it either has no C_BPartner_ID or a matching one
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
+
+				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
+				.orderBy().addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, false).endOrderBy()
+
+				.create()
+				.first(); // get the first one (favoring the one with C_BPartner_ID = parentHU.getC_BPartner_ID() if it exists)
+
+		return piItemForChild;
 	}
 
 	@Override
@@ -763,14 +831,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		else
 		{
 			// Get those PI Items which are about Default LUs
-			final List<I_M_HU_PI_Item> defaultLUPIItems = FilterUtils.filter(parentPIItems, new Predicate<I_M_HU_PI_Item>()
-			{
-				@Override
-				public boolean evaluate(final I_M_HU_PI_Item parentPIItem)
-				{
-					return parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU();
-				}
-			});
+			final List<I_M_HU_PI_Item> defaultLUPIItems = parentPIItems
+					.stream()
+					.filter(parentPIItem -> parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU())
+					.collect(Collectors.toList());
 
 			// If we found only one default, we can return it directly
 			if (defaultLUPIItems.size() == 1)
@@ -816,7 +880,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return retrieveEmptiesDistributionNetwork(ctx, trxName);
 	}
-	
+
 	@Cached(cacheName = I_DD_NetworkDistribution.Table_Name
 			+ "#by"
 			+ "#" + I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed)
@@ -830,7 +894,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.firstOnly(I_DD_NetworkDistribution.class);
 	}
-
 
 	@Override
 	public I_M_HU_Status retrieveHUStatus(final Properties ctx, final String huStatus)

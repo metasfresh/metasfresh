@@ -13,11 +13,11 @@ package de.metas.handlingunits.attribute.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -51,13 +52,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.storage.HUStorageChangeEvent;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.handlingunits.storage.IHUStorageListener;
 
-public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware, IHUStorageListener // TODO: i think we can safely remove this
+public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
 {
 	// Services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -221,6 +220,11 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 						final BigDecimal valueBD = generator.generateNumericValue(ctx, this, attribute);
 						valueGenerated = valueBD;
 					}
+					else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(valueType))
+					{
+						final Date valueDate = generator.generateDateValue(ctx, this, attribute);
+						valueGenerated = valueDate;
+					}
 					else
 					{
 						throw new UnsupportedOperationException("ValueType not supported: " + valueType + "(attribute=" + attribute + ", generator=" + generator + ")");
@@ -344,37 +348,6 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		else
 		{
 			throw new AdempiereException("Attribute value " + fromAttributeValue + " is not valid for this storage (" + this + ")");
-		}
-	}
-
-	@Override
-	public final void onQtyChanged(final HUStorageChangeEvent event)
-	{
-		try
-		{
-			onQtyChanged0(event);
-		}
-		finally
-		{
-			event.setAttributeStorage(null);
-			event.setAttributeValue(null);
-		}
-	}
-
-	private void onQtyChanged0(final HUStorageChangeEvent event)
-	{
-		for (final IAttributeValue attributeValue : getAttributeValues())
-		{
-			final IAttributeValueCallout callout = attributeValue.getAttributeValueCallout();
-			if (!(callout instanceof IHUStorageListener))
-			{
-				continue;
-			}
-
-			final IHUStorageListener delegate = (IHUStorageListener)callout;
-			event.setAttributeStorage(this);
-			event.setAttributeValue(attributeValue);
-			delegate.onQtyChanged(event);
 		}
 	}
 

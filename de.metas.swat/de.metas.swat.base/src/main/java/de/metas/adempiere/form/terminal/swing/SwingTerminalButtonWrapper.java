@@ -272,7 +272,10 @@ import de.metas.logging.LogManager;
 	@Override
 	public String toString()
 	{
-		return "SwingTerminalButtonWrapper [listeners=" + listeners + ", getComponent()=" + getComponent() + ", getWidth()=" + getWidth() + ", getHeight()=" + getHeight() + "]";
+		return "SwingTerminalButtonWrapper [listeners=" + listeners 
+				+ ", getComponent()=" + getComponent() 
+				+ ", getWidth()=" + getWidth() 
+				+ ", getHeight()=" + getHeight() + "]";
 	}
 
 	@Override

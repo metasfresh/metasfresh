@@ -39,6 +39,7 @@ import org.junit.Test;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -59,7 +60,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 
-@SuppressWarnings("PMD.SingularField")
 public class AttributesPropagationTest extends AbstractHUTest
 {
 	private I_M_HU_PI huDefPalet;
@@ -71,12 +71,12 @@ public class AttributesPropagationTest extends AbstractHUTest
 	{
 		//
 		// Handling Units Definition
-		huDefBag = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huDefBag = helper.createHUDefinition(HUTestHelper.NAME_Bag_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefBag);
 			helper.assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
 
-			helper.createHU_PI_Item_PackingMaterial(huDefBag, pmIFCO);
+			helper.createHU_PI_Item_PackingMaterial(huDefBag, pmBag);
 
 			// value will not be propagated
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
@@ -96,9 +96,10 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
-			helper.createHU_PI_Item_IncludedHU(huDefIFCO, huDefBag, BigDecimal.ONE);
-			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
-
+			//helper.createHU_PI_Item_IncludedHU(huDefIFCO, huDefIFCO, BigDecimal.ONE);
+			final I_M_HU_PI_Item   piTU_Item_IFCO = helper.createHU_PI_Item_Material(huDefIFCO);
+			helper.assignProduct(piTU_Item_IFCO, pTomato, BigDecimal.TEN, uomEach);
+			
 			// value will not be propagated
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO)
@@ -143,8 +144,8 @@ public class AttributesPropagationTest extends AbstractHUTest
 		final I_M_Transaction incomingTrxDoc = helper.createMTransaction(X_M_Transaction.MOVEMENTTYPE_VendorReceipts, pTomato, new BigDecimal(23));
 
 		// create and destroy instances only with a I_M_Transaction
-		final List<I_M_HU> huPalets = helper.trxBL.transferIncomingToHUs(incomingTrxDoc, huDefPalet);
-
+		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
+		
 		return huPalets;
 	}
 
@@ -152,7 +153,8 @@ public class AttributesPropagationTest extends AbstractHUTest
 	public void testNormalPropagation()
 	{
 		final List<I_M_HU> huPalets = createIncomingPalets();
-
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets", huPalets)));
+		
 		Assert.assertEquals("There should be 2 palets", 2, huPalets.size());
 
 		final I_M_HU palet1 = huPalets.get(0);
@@ -229,7 +231,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		for (final I_M_HU_Item huPaletItem : huPalet2_Items)
 		{
 			// we only have one item with handling unit item type
-			if (huPaletItem.getM_HU_PI_Item().getItemType().equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
+			if (huPaletItem.getItemType().equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
 			{
 				final List<I_M_HU> huIFCOs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huPaletItem);
 				Assert.assertEquals("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem, 1, huIFCOs.size());

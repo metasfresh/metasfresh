@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -30,10 +29,20 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 
+/**
+ * This producer is used if stuff needs to be allocated into a "flat" HU and no capacity constraints need to be taken into account.
+ * I.e. don't invoke it with a palet and expect it to magically discover or create and allocate to included HUs.
+ * <p>
+ * For most real world use cases, you will probably want to use {@link LUTUProducerDestination} instead of this one.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class HUProducerDestination extends AbstractProducerDestination
 {
 	private final I_M_HU_PI _huPI;
@@ -47,10 +56,10 @@ public class HUProducerDestination extends AbstractProducerDestination
 	 */
 	private int maxHUsToCreate = Integer.MAX_VALUE;
 
+	private I_M_HU_Item parentHUItem;
+
 	public HUProducerDestination(final I_M_HU_PI huPI)
 	{
-		super();
-
 		Check.assumeNotNull(huPI, "huPI not null");
 		_huPI = huPI;
 	}
@@ -98,12 +107,22 @@ public class HUProducerDestination extends AbstractProducerDestination
 	}
 
 	/**
+	 * Then this producer creates a new HU, than i uses the given {@code parentHUItem} for the new HU's {@link I_M_HU#COLUMN_M_HU_Item_Parent_ID}.
+	 * 
+	 * @param parentHUItem
+	 */
+	public void setParent_HU_Item(final I_M_HU_Item parentHUItem)
+	{
+		this.parentHUItem = parentHUItem;
+	}
+
+	/**
 	 *
 	 * @return <code>null</code>.
 	 */
 	@Override
 	protected I_M_HU_Item getParent_HU_Item()
 	{
-		return null;
+		return parentHUItem;
 	}
 }

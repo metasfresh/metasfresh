@@ -94,7 +94,6 @@ public class ZoomInfoFactory implements IZoomProvider
 
 		private POZoomSource(final PO po, final int adWindowId)
 		{
-			super();
 			Check.assumeNotNull(po, "Parameter po is not null");
 			this.po = po;
 			this.adWindowId = adWindowId;
