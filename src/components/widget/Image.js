@@ -27,8 +27,7 @@ export default class Image extends React.Component{
     isCameraAvailable(){
         return (
                 !~location.protocol.indexOf('https') ||
-                !~location.href.indexOf('localhost') ||
-                !~location.href.indexOf('127')
+                !~location.href.indexOf('localhost')
             ) &&
             navigator.mediaDevices &&
             navigator.mediaDevices.getUserMedia
