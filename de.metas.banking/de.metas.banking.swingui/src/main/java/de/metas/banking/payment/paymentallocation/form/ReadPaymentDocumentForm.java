@@ -13,15 +13,14 @@ package de.metas.banking.payment.paymentallocation.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Dialog.ModalExclusionType;
 import java.awt.Frame;
@@ -106,8 +105,10 @@ public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 	private ReadPaymentDocumentPanel createAndBindPanel(final int windowNo, final Frame frame, final int adOrgId)
 	{
 		final ReadPaymentDocumentPanel readPaymentPanel = new ReadPaymentDocumentPanel(windowNo, frame, adOrgId);
-		readPaymentPanel.setContextBPartner(invoice==null?null:invoice.getC_BPartner());
-		
+
+		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		readPaymentPanel.setContextBPartner_ID(invoice == null ? -1 : invoice.getC_BPartner_ID());
+
 		frame.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentPanel)
 		{
 			@Override
