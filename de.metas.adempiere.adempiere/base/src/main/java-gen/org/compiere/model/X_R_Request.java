@@ -2102,4 +2102,44 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TaskStatus);
 	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BP_Vendor() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Vendor_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BP_Vendor(org.compiere.model.I_C_BPartner C_BP_Vendor)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Vendor_ID, org.compiere.model.I_C_BPartner.class, C_BP_Vendor);
+	}
+
+	/**
+	 * Set Zulieferant.
+	 * 
+	 * @param C_BP_Vendor_ID Zulieferant
+	 */
+	@Override
+	public void setC_BP_Vendor_ID(int C_BP_Vendor_ID)
+	{
+		if (C_BP_Vendor_ID < 1)
+			set_Value(COLUMNNAME_C_BP_Vendor_ID, null);
+		else
+			set_Value(COLUMNNAME_C_BP_Vendor_ID, Integer.valueOf(C_BP_Vendor_ID));
+	}
+
+	/**
+	 * Get Zulieferant.
+	 * 
+	 * @return Zulieferant
+	 */
+	@Override
+	public int getC_BP_Vendor_ID()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Vendor_ID);
+		if (ii == null)
+			return 0;
+		return ii.intValue();
+	}
 }

@@ -274,13 +274,16 @@ echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
-// metasfresh-task-repo is a constrant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
+// metasfresh-task-repo is a constant (does not depend or the task/branch name) so that maven can find the credentials in our provided settings.xml file
 final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
 echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
 
 // name of the task/branch specific maven nexus-repository that we will create if it doesn't exist and and resolve from
-final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}";
+// make sure the maven repo name is OK, to avoid an error message saying
+// "Only letters, digits, underscores(_), hyphens(-), and dots(.) are allowed in Repository ID"
+final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}".replaceAll('[^a-zA-Z0-9_-]', '_'); 
 echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
+
 
 final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
 echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
@@ -521,7 +524,23 @@ node('agent && linux && libc6-i386')
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-</ul>"""
+""";
+
+				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui'])
+				{
+					currentBuild.description="""${currentBuild.description}
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+""";
+				}
+				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'])
+				{
+					currentBuild.description="""${currentBuild.description}
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+""";
+				}
+				
+				currentBuild.description="""${currentBuild.description}
+</ul>""";
 				
 			}
 		} // withMaven

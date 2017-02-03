@@ -84,6 +84,9 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 		return id;
 	}
 
+	/**
+	 * @return always {@code false}.
+	 */
 	@Override
 	public boolean isVirtualPI()
 	{

@@ -102,13 +102,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	@Override
 	public I_DIM_Dimension_Spec retrieveForInternalName(final String internalName, final IContextAware ctxAware)
 	{
-		return retrieveForInternalName(internalName, ctxAware.getCtx(), ctxAware.getTrxName());
-	}
-
-	@Override
-	public I_DIM_Dimension_Spec retrieveForInternalName(final String internalName, final Properties ctx, final String trxName)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, ctxAware)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec.COLUMN_InternalName, internalName)
 				.create()

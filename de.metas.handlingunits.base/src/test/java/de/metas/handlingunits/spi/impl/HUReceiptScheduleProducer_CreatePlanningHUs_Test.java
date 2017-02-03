@@ -2,6 +2,7 @@ package de.metas.handlingunits.spi.impl;
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -35,13 +36,17 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.hamcrest.Matchers;
+import org.compiere.model.I_M_Attribute;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
+import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.IWeightableFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -314,7 +319,7 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		final List<I_M_ReceiptSchedule_Alloc> rsAllocs = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_None);
 		BigDecimal huQtyNotAllocatedTotal = receiptSchedule.getQtyOrdered();
 
-		System.out.println(de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("assignedLUs", assignedLUs)));
+		// System.out.println(de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml("assignedLUs", assignedLUs)));
 
 		//
 		// Validate LUs against allocations
@@ -324,8 +329,8 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 			for (final I_M_HU luHU : assignedLUs)
 			{
 				// Validate LU
-				Assert.assertTrue("Invalid LU's UnitType", handlingUnitsBL.isLoadingUnit(luHU));
-				Assert.assertEquals("Invalid LU's LU/TU Configuration", receiptSchedule.getM_HU_LUTU_Configuration(), luHU.getM_HU_LUTU_Configuration());
+				assertTrue("Invalid LU's UnitType", handlingUnitsBL.isLoadingUnit(luHU));
+				assertEquals("Invalid LU's LU/TU Configuration", receiptSchedule.getM_HU_LUTU_Configuration(), luHU.getM_HU_LUTU_Configuration());
 
 				final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 				huQtyNotAllocatedTotal = assertValidTUs(rsAllocs, huQtyNotAllocatedTotal, luHU, tuHUs);
@@ -335,14 +340,14 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		//
 		// Validate top level TUs/VHUs against allocations
 		{
-			Assert.assertEquals("Invalid TUs assigned count", expect_QtyTUs.intValueExact(), assignedTUs.size());
+			assertEquals("Invalid TUs assigned count", expect_QtyTUs.intValueExact(), assignedTUs.size());
 			huQtyNotAllocatedTotal = assertValidTUs(rsAllocs, huQtyNotAllocatedTotal, null, assignedTUs);
 		}
 
 		//
 		// Make sure we evaluated each allocation
-		Assert.assertEquals("No other allocations shall exist", Collections.<I_M_ReceiptSchedule_Alloc> emptyList(), rsAllocs);
-		Assert.assertThat("Qty not allocated shall be zero at this point", huQtyNotAllocatedTotal, Matchers.comparesEqualTo(BigDecimal.ZERO));
+		assertEquals("No other allocations shall exist", Collections.<I_M_ReceiptSchedule_Alloc> emptyList(), rsAllocs);
+		assertThat("Qty not allocated shall be zero at this point", huQtyNotAllocatedTotal, comparesEqualTo(BigDecimal.ZERO));
 	}
 
 	/**
@@ -391,6 +396,12 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 			else
 			{
 				vhus = handlingUnitsDAO.retrieveIncludedHUs(tuHU);
+			}
+
+			if (!handlingUnitsBL.isVirtual(tuHU) || handlingUnitsBL.isAggregateHU(tuHU))
+			{
+				// both real TUs and aggregate HUs shall have weigh-related attributes
+				assertValidHUWeighAttributes(tuHU);
 			}
 
 			//
@@ -443,6 +454,19 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 			}
 		}
 		return huQtyNotAllocatedTotal;
+	}
+
+	/**
+	 * Verifies that the given {@code hu} has a weightTare HU-attribute. Maybe will assert more in future.
+	 * 
+	 * @param hu
+	 */
+	private void assertValidHUWeighAttributes(final I_M_HU hu)
+	{
+		final IAttributeStorage attributeStorage = huTestHelper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(hu);
+		final IWeightable weightable = Services.get(IWeightableFactory.class).createWeightableOrNull(attributeStorage);
+		final I_M_Attribute weightTareAttribute = weightable.getWeightTareAttribute();
+		assertThat(attributeStorage.hasAttribute(weightTareAttribute), is(true));
 	}
 
 	private I_M_ReceiptSchedule_Alloc removeReceiptScheduleAllocFromList(final List<I_M_ReceiptSchedule_Alloc> rsAllocs,

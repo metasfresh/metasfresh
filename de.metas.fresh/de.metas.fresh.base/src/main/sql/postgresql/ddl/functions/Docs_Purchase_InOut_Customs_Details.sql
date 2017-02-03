@@ -16,7 +16,7 @@ SELECT
 	
 	distinct thu.value,
 	p.Name, --Product
-	thu.qty AS qty,
+	thu.qty - thu.qtyLU AS qty, --qty should be gross - weight of palette. See #914
 	uom.UOMSymbol,
 	uom.StdPrecision
 FROM
@@ -43,7 +43,8 @@ FROM
 		SELECT
 			thuas.Record_ID, thu.value,
 			1000000 AS C_UOM_ID, -- kilogramm
-			COALESCE ( thuwns.valuenumber, thuwn.valuenumber ) AS qty
+			COALESCE ( thuwns.valuenumber, thuwn.valuenumber ) AS qty,
+			COALESCE(lp.weight, 0) AS qtyLU
 		FROM
 			C_OrderLine ol
 			INNER JOIN M_ReceiptSchedule rs ON rs.AD_Table_ID = ( SELECT Get_Table_ID('C_OrderLine') ) AND rs.Record_ID = ol.C_OrderLine_ID AND rs.isActive = 'Y'
@@ -63,6 +64,15 @@ FROM
 			LEFT OUTER JOIN M_HU_Attribute thuwn ON thu.M_HU_ID = thuwn.M_HU_ID
 				AND thuwn.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'WeightGross'))
 				AND thuwn.isActive = 'Y'
+			--need LU to calculate the weight
+			LEFT OUTER JOIN M_HU_Assignment lhuas ON iol.M_InOutLine_ID = lhuas.Record_ID AND lhuas.isActive = 'Y' 
+								AND lhuas.AD_Table_ID = ((SELECT Get_Table_ID('M_InOutLine'))) and lhuas.M_HU_Assignment_id != thuas.M_HU_Assignment_id
+			LEFT OUTER JOIN M_HU lhu ON lhuas.M_LU_HU_ID = lhu.M_HU_ID
+			LEFT OUTER JOIN M_HU_Item lhui ON lhu.m_hu_id = lhui.m_hu_id AND lhui.itemtype='PM' AND lhui.isActive = 'Y'
+			LEFT OUTER JOIN M_HU_PI_Item lhupi ON lhui.M_HU_PI_Item_ID = lhupi.M_HU_PI_Item_ID and lhupi.itemtype='PM' AND lhupi.isActive = 'Y'
+			LEFT OUTER JOIN M_HU_PackingMaterial lpm ON lhupi.M_HU_PackingMaterial_ID = lpm.M_HU_PackingMaterial_ID AND lpm.isActive = 'Y'
+			LEFT OUTER JOIN M_Product lp ON lpm.M_Product_ID = lp.M_Product_ID AND lp.isActive = 'Y'
+
 		WHERE
 			ol.C_Order_ID = $1 AND ol.isActive = 'Y'
 			AND thuas.M_TU_HU_ID IS NULL AND thuas.AD_Table_ID = ((SELECT Get_Table_ID('M_InOutLine')))
