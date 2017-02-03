@@ -582,8 +582,7 @@ class RawWidget extends Component {
                 return <Image
                     fields={fields}
                     data={widgetData}
-                    pinstanceId={dataId}
-                    processId={windowType}
+                    handlePatch={this.handlePatch}
                 />;
             default:
                 return (

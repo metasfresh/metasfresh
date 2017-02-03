@@ -1,6 +1,5 @@
-import React from 'react';
-import { getImageAction, postImageAction } from '../../actions/ImageActions';
-import { updateProcess } from '../../actions/WindowActions';
+import React, { Component } from 'react';
+import { getImageAction, postImageAction } from '../../actions/AppActions';
 
 export default class Image extends React.Component{
     constructor(props){
@@ -34,7 +33,7 @@ export default class Image extends React.Component{
     }
 
     uploadBlob(blob){
-        const {data, processId, pinstanceId} = this.props;
+        const {data, handlePatch} = this.props;
 
         let fd = new FormData();
         fd.append('file', blob);
@@ -53,13 +52,7 @@ export default class Image extends React.Component{
                 return this.updateImagePreview(imageId)
             })
             .then(imageId => {
-                return updateProcess(processId, pinstanceId, [
-                    {
-                        "op": "replace",
-                        "path": data.field,
-                        "value": imageId
-                    }
-                ])
+                return handlePatch(data.field, imageId)
             })
             .then(() => {
                 return new Promise(resolve => {
@@ -115,12 +108,14 @@ export default class Image extends React.Component{
     }
 
     stopUsingCamera(){
+        const { stream } = this.state;
+        
         return new Promise(resolve => {
             this.setState({
                 usingCamera: false
             }, () => {
                 // stop using camera
-                this.state.stream.getVideoTracks()[0].stop();
+                stream.getVideoTracks()[0].stop();
                 resolve();
             })
         })
@@ -225,7 +220,6 @@ export default class Image extends React.Component{
                     }
                 </div>
             </div>
-
         </div>
     }
 }
