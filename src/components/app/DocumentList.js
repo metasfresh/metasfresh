@@ -302,6 +302,7 @@ class DocumentList extends Component {
                             tabIndex={0}
                             open={open}
                             closeOverlays={closeOverlays}
+                            indentSupported={layout.supportTree}
                         >
                             {layout.supportAttributes &&
                                 <SelectionAttributes

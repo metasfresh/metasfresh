@@ -398,7 +398,8 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays
+            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays,
+            indentSupported
         } = this.props;
 
         const {selected} = this.state;
@@ -432,6 +433,7 @@ class Table extends Component {
                         changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
                         handleSelect={this.selectProduct}
+                        indentSupported={indentSupported}
                     />
                 );
             }
@@ -524,7 +526,7 @@ class Table extends Component {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex
+            fullScreen, tabIndex, indentSupported
         } = this.props;
 
         const {
@@ -589,6 +591,7 @@ class Table extends Component {
                                     orderBy={orderBy}
                                     deselect={this.deselectAllProducts}
                                     page={page}
+                                    indentSupported={indentSupported}
                                 />
                             </thead>
                             {this.renderTableBody()}

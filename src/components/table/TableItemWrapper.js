@@ -68,7 +68,8 @@ class TableItemWrapper extends Component {
         const {
             item, entity, tabid, cols, type, docId, selected, onDoubleClick,
             handleClick, handleRightClick, changeListenOnTrue, changeListenOnFalse,
-            newRow, tabIndex, readonly, mainTable, handleSelect, odd, keyProperty
+            newRow, tabIndex, readonly, mainTable, handleSelect, odd, keyProperty,
+            indentSupported
         } = this.props;
 
         const {rows} = this.state;
@@ -95,6 +96,7 @@ class TableItemWrapper extends Component {
                         newRow={newRow}
                         isSelected={selected.indexOf(row[keyProperty]) > -1}
                         key={index}
+                        indentSupported={indentSupported}
                         indent={row.indent}
                         includedDocuments={row.includedDocuments}
                         lastSibling={row.lastChild}

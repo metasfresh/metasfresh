@@ -136,7 +136,7 @@ class TableItem extends Component {
 
     renderTree = (huType) => {
         const {
-            indent, lastSibling, includedDocuments
+            indent, lastSibling, includedDocuments, indentSupported
         } = this.props;
 
         let indentation = [];
@@ -159,7 +159,7 @@ class TableItem extends Component {
             )
         }
 
-        if(indentation.length > 0){
+        if(indentSupported){
             return (
                 <div
                     className="indent"
@@ -188,7 +188,7 @@ class TableItem extends Component {
             isSelected, fields, selectedProducts, rowId, cols,
             onMouseDown, onDoubleClick, included, tabid, type, docId,
             tabIndex, mainTable, entity, readonly, indent, odd,
-            handleRightClick
+            handleRightClick, indentSupported
         } = this.props;
 
         const huType = findRowByPropName(fields, "HU_UnitType").value;
@@ -204,9 +204,11 @@ class TableItem extends Component {
                     (!odd ? "tr-even ": "")
                 }
             >
-                <td className="indented">
-                    {this.renderTree(huType)}
-                </td>
+                {indentSupported &&
+                    <td className="indented">
+                        {this.renderTree(huType)}
+                    </td>
+                }
                 {this.renderCells(cols, fields)}
             </tr>
         );
