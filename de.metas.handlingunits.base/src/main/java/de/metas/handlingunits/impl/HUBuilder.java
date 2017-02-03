@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -247,13 +246,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	/**
-	 * This instance stores the {@code huPIVersion} parameter with which the {@link #createInstanceRecursively(I_M_HU_PI_Version, I_M_HU_Item)} method was called with.<br>
-	 * Background: if the parent item is a {@link X_M_HU_Item#ITEMTYPE_HUAggregate} item, then a virtual HU is created, no matter what the given {@code huPIVersion} sais.<br>
-	 * However, below that virtual HU, the given {@code huPIVersion}'s material and packaging items shall be created none the less.
-	 */
-	private final ModelDynAttributeAccessor<I_M_HU, I_M_HU_PI_Version> invocationParamPIVersion = new ModelDynAttributeAccessor<>("invocationParamPIVersion", I_M_HU_PI_Version.class);
-
-	/**
 	 * Note that currently this method does not really do work recursive since we registered {@link HUBuilder.HUItemNodeIncludedHUBuilderNOOP} do get the downstream nodes for HU items.
 	 * 
 	 * @param huPIVersion
@@ -283,7 +275,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 		// Create a single HU instance and save it.
 		final I_M_HU hu = createHUInstance(huPIVersionToUse);
-		invocationParamPIVersion.setValue(hu, huPIVersion);
+		BUILDER_INVOCATION_HU_PI_VERSION.setValue(hu, huPIVersion);
 
 		final IHUContext huContext = getHUContext();
 
@@ -292,7 +284,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 		//
 		// Generate HU Attributes
-		// generating HU attributes after the HU was created, because then we already have huItems and those can be used to compute initital weight tare attributes  
 		final IAttributeStorageFactory attributesStorageFactory = huContext.getHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributesStorageFactory.getAttributeStorage(hu);
 		attributeStorage.generateInitialAttributes(getInitialAttributeValueDefaults());
@@ -502,7 +493,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 				// #460 the given 'hu' is an "aggregate/compressed/bag" one.
 
 				// take a look at the M_HU_PI_Version with which the "create()" method for this given aggregate 'hu' was called.
-				final I_M_HU_PI_Version invocationPIVersion = invocationParamPIVersion.getValue(hu);
+				final I_M_HU_PI_Version invocationPIVersion = BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu);
 				if (invocationPIVersion != null && invocationPIVersion.getM_HU_PI_Version_ID() != hu.getM_HU_PI_Version_ID())
 				{
 					// If 'invocationPIVersion' differs from the the M_HU_PI_Version of the aggregate 'hu' we got here

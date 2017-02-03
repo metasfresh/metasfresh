@@ -20,12 +20,14 @@ upcoming Release
   * #460 Provide aggregate HUs
   * #815 Jasper Footer: Show bank account in one line 
   * #904 New Field "Zulieferant" in R_Request Window
-
+  * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
+  
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
   * #196 Grid View 100% height
   * #795 Price Window WebUI Layout
   * #896 Dunning Window WebUI
+  * #194 Open views from process execution result 
 
 ## Fixes
 * metasfresh
@@ -36,6 +38,8 @@ upcoming Release
   * #783 DocAction on Sales Order not available although permission existing
   * #813 hide packing instruction and qty when null
   * #903 Jenkins build error with slash in branch name
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect 
+  * #910 update and fix sales invoice jasper and function
 
 * webui
   * #204 Can not complete Order
@@ -48,19 +52,40 @@ this week's RC
 ## Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
+    * Minor changes on the Grid View for the Shipment Schedules Window.
   * #868 Weekly Revenue Report
+    * Create a weekly Revenue Report in Jasperreports. Similar to the montly report, just comparing different weeks instead months.
   * #827 use the barcode field to select HU using attribute value
+    * New feature to be able to scan barcode attrivutes attached to a Handling Unit fir precise identifying.
 
 * webUI
+  * #198 Process with parameters cannot be started
+    * Fix a Bug in WebUI that did not allow the start of processes with parameters.
+  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+    * Add a Packing Unit dropdown in combined Product Field in Sales Orderline Batchentry.
+  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+    * Now allowing to delete the whole content of the combined Product-Packing Unit Field.
+  * #208 After New autofocus on first record field
+    * New UX Feature that automatically sets the focus onto the first recordable Field in Window when "New Record"
+  * #213 Do not focus fields "in background" when in Expanded view
+    * Adjust the navigation behavior and sequence when using TAB jumping from field to field, now avoids that the focus gets "under" the overlay panel.
+  * #218 Reduce Gap Height between Layout Sections
+    * Refine UX. Reduced the height between Layout Sections to not have the feeling of having a too big gap between them.
   * #862 Payment Window in WebUI
+    * Include the payment Window in WebUI.
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
+    * Include the Customer and Vendor Subtab in Business Partner Window.
   * #883 Sales Purchase Order Window Grid View
+    * Include the Grid View for the Sales and Purchase Order in WebUI.
   * #878 Purchase Order Window WebUI
+    * Include the Purchase Order Window in WebUI.
 
 ## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
+    * Fix to allow the first recordable Field having focus when opening a process paramater window.
   * #864 Adjust C_Country Location Print generation DE
+    * Adjust the Location capture Sequence for Germany.
 
 # metasfresh 4.53.52 (2017-04)
 
