@@ -359,7 +359,8 @@ public class HUKeyFactory implements IHUKeyFactory
 		final List<IHUKey> keys = new ArrayList<IHUKey>(hus.size());
 		for (final I_M_HU hu : hus)
 		{
-			if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu) && hu.getM_HU_Item_Parent().getQty().signum() <= 0)
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			if (handlingUnitsBL.isAggregateHU(hu) && hu.getM_HU_Item_Parent().getQty().signum() <= 0)
 			{
 				continue;
 			}

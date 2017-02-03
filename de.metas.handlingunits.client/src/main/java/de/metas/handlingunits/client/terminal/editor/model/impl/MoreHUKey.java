@@ -118,6 +118,9 @@ public class MoreHUKey extends AbstractHUKey
 		return false;
 	}
 
+	/**
+	 * @return always {@code false}.
+	 */
 	@Override
 	public boolean isVirtualPI()
 	{
