@@ -151,7 +151,8 @@ class RawWidget extends Component {
                                 }}
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                                patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                                handleBackdropLock={handleBackdropLock}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -180,6 +181,7 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -205,8 +207,9 @@ class RawWidget extends Component {
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
