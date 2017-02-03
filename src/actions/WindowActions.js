@@ -413,6 +413,10 @@ export function startProcess(processType, pinstanceId) {
     );
 }
 
+export function updateProcess(processId, pinstanceId, data){
+    return axios.patch(`${config.API_URL}/process/${processId}/${pinstanceId}`, data)
+}
+
 export function deleteLocal(tabid, rowsid, scope) {
     return (dispatch) => {
         for (let rowid of rowsid) {

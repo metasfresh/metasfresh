@@ -14,6 +14,7 @@ import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List/List';
 import ActionButton from './ActionButton';
+import Image from './Image';
 
 class RawWidget extends Component {
     constructor(props) {
@@ -580,6 +581,12 @@ class RawWidget extends Component {
                         autoFocus={autoFocus}
                     />
                 )
+            case "Image":
+                return <Image
+                    fields={fields}
+                    data={widgetData}
+                    handlePatch={this.handlePatch}
+                />;
             default:
                 return (
                     <div>{widgetType}</div>
