@@ -771,7 +771,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
-
+	
 	@Override
 	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
 	{

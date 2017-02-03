@@ -26,6 +26,7 @@ upcoming Release
   * #196 Grid View 100% height
   * #795 Price Window WebUI Layout
   * #896 Dunning Window WebUI
+  * #194 Open views from process execution result 
 
 ## Fixes
 * metasfresh
@@ -36,6 +37,7 @@ upcoming Release
   * #783 DocAction on Sales Order not available although permission existing
   * #813 hide packing instruction and qty when null
   * #903 Jenkins build error with slash in branch name
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect 
 
 * webui
   * #204 Can not complete Order
@@ -52,6 +54,12 @@ this week's RC
   * #827 use the barcode field to select HU using attribute value
 
 * webUI
+  * #198 Process with parameters cannot be started
+  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+  * #208 After New autofocus on first record field
+  * #213 Do not focus fields "in background" when in Expanded view
+  * #218 Reduce Gap Height between Layout Sections
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View

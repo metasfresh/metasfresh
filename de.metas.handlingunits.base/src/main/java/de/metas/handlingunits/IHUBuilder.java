@@ -24,6 +24,7 @@ package de.metas.handlingunits;
 
 import java.util.Date;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
@@ -44,6 +45,14 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  */
 public interface IHUBuilder
 {
+	/**
+	 * This instance stores the {@code huPIVersion} parameter with which the {@link #createInstanceRecursively(I_M_HU_PI_Version, I_M_HU_Item)} method was called with.<br>
+	 * Background: if the parent item is a {@link X_M_HU_Item#ITEMTYPE_HUAggregate} item, then a virtual HU is created, no matter what the given {@code huPIVersion} sais.<br>
+	 * However, below that virtual HU, the given {@code huPIVersion}'s material and packaging items shall be created none the less.
+	 */
+	ModelDynAttributeAccessor<I_M_HU, I_M_HU_PI_Version> BUILDER_INVOCATION_HU_PI_VERSION = new ModelDynAttributeAccessor<>("invocationParamPIVersion", I_M_HU_PI_Version.class);
+
+
 	/**
 	 * Create handling unit by calling {@link #create(I_M_HU_PI_Version)} with the current version of the given <code>pi</code>.
 	 *

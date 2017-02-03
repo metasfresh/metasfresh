@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -224,7 +225,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// TODO: why not setting TrxName inherited?
 		final String currentHUTrxName = InterfaceWrapperHelper.getTrxName(hu);
 		final String contextTrxName = huContext.getTrxName();
-		if (!Check.equals(currentHUTrxName, contextTrxName))
+		if (!Objects.equals(currentHUTrxName, contextTrxName))
 		{
 			InterfaceWrapperHelper.setTrxName(hu, contextTrxName);
 		}
@@ -674,7 +675,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	@OverridingMethodsMustInvokeSuper
 	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
 	{
-		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
+		// TODO: i think we can move this stuff or something better into a model interceptor that is fired when item.qty is changed
 		_createdHUs.forEach(
 				hu -> {
 					final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
