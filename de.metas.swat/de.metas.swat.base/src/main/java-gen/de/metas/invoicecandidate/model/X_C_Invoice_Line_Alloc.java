@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.invoicecandidate.model;
 
@@ -32,7 +16,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -272731171L;
+	private static final long serialVersionUID = -279808115L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (Properties ctx, int C_Invoice_Line_Alloc_ID, String trxName)
@@ -263,6 +247,25 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 		return (java.lang.String)get_Value(COLUMNNAME_Note);
 	}
 
+	/** Set Preis Abw..
+		@param PriceEntered_Override Preis Abw.	  */
+	@Override
+	public void setPriceEntered_Override (java.math.BigDecimal PriceEntered_Override)
+	{
+		set_Value (COLUMNNAME_PriceEntered_Override, PriceEntered_Override);
+	}
+
+	/** Get Preis Abw..
+		@return Preis Abw.	  */
+	@Override
+	public java.math.BigDecimal getPriceEntered_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered_Override);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Berechn. Menge.
 		@param QtyInvoiced 
 		Menge, die bereits in Rechnung gestellt wurde
@@ -280,6 +283,28 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	public java.math.BigDecimal getQtyInvoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zu berechn. Menge abw..
+		@param QtyToInvoice_Override 
+		Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
+	  */
+	@Override
+	public void setQtyToInvoice_Override (java.math.BigDecimal QtyToInvoice_Override)
+	{
+		set_Value (COLUMNNAME_QtyToInvoice_Override, QtyToInvoice_Override);
+	}
+
+	/** Get Zu berechn. Menge abw..
+		@return Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
+	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoice_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_Override);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
