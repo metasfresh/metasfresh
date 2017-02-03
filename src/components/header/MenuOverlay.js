@@ -250,14 +250,39 @@ class MenuOverlay extends Component {
 
     handleKeyDown = (e) => {
         const {handleMenuOverlay} = this.props;
+        const input = document.getElementById('search-input-query');
+        const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
+        const parentSibling = document.activeElement.parentElement.nextSibling;
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
                 if (document.activeElement.classList.contains('js-menu-overlay')) {
-                    document.getElementsByClassName('js-menu-item')[0].focus();
+                    firstMenuItem && firstMenuItem.focus();
+                }else if (document.activeElement.classList.contains('js-menu-header')){
+                    firstMenuItem && firstMenuItem.focus();
+                }else if (document.activeElement.classList.contains('input-field')) {
+                    parentSibling && parentSibling.focus();
                 }
                 break;
-
+            case "Tab":
+                e.preventDefault();
+                if(document.activeElement === input) {
+                    firstMenuItem.focus();
+                } else {
+                    input.focus();
+                }
+                break;
+            case "Enter":
+                e.preventDefault();
+                document.activeElement.click();
+                break;
+            case "Backspace":
+                if(document.activeElement !== input){
+                    e.preventDefault();
+                    this.handleClickBack(e);
+                    document.getElementsByClassName('js-menu-overlay')[0].focus();
+                }
+                break;
             case "Escape":
                 e.preventDefault();
                 handleMenuOverlay("","");
@@ -285,8 +310,10 @@ class MenuOverlay extends Component {
                                 </div>
                                 :
                                 <span
-                                    className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer"
+                                    className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
                                     onClick={() => dispatch(push("/"))}
+                                    tabIndex={0}
+                                    onKeyDown={(e) => this.handleKeyDown(e)}
                                 >
                                     Dashboard
                                 </span>
@@ -305,6 +332,7 @@ class MenuOverlay extends Component {
                                             className="input-field"
                                             placeholder="Type phrase here"
                                             onChange={e => this.handleQuery(e) }
+                                            onKeyDown={(e) => this.handleKeyDown(e)}
                                         />
                                         {this.state.query && <i
                                             className="input-icon meta-icon-close-alt pointer"
