@@ -33,6 +33,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -143,7 +144,7 @@ class ReadPaymentDocumentPanel
 	private final JLabel amountLabel = new JLabel();
 	private final VNumber amountField;
 
-	private I_C_BPartner contextBPartner;
+	private int contextBPartner_ID;
 
 	/**
 	 * @param window
@@ -220,17 +221,17 @@ class ReadPaymentDocumentPanel
 	}
 
 	/**
-	 * Optionally set a bPartner that needs to have a relation to the payment document which we are reading.<br>
+	 * Optionally set the ID of a bPartner that needs to have a relation to the payment document which we are reading.<br>
 	 * If set, and the system finds an existing {@link I_C_BP_BankAccount}, then that bank account is only used
 	 * if it belongs to the given {@code contextBPartner} or to a second bPartner who has a {@code RemitTo} {@link I_C_BP_Relation} with the given {@code contextPartner}.
 	 * 
-	 * @param contextBPartner
+	 * @param contextBPartner_ID
 	 * 
 	 * @task https://github.com/metasfresh/metasfresh/issues/781
 	 */
-	public void setContextBPartner(I_C_BPartner contextBPartner)
+	public void setContextBPartner_ID(final int contextBPartner_ID)
 	{
-		this.contextBPartner = contextBPartner;
+		this.contextBPartner_ID = contextBPartner_ID;
 	}
 
 	public Component getComponent()
@@ -464,9 +465,9 @@ class ReadPaymentDocumentPanel
 	}
 
 	/**
-	 * Checks the given {@code bpBankAccount} against the partner that was set via {@link #setContextBPartner(I_C_BPartner)} (if any) and returns:
-	 * <li>{@code 1} if no {@link #setContextBPartner(I_C_BPartner)} was set, or if the given {@code bpBankAccount}'s bPartner is the one that was set
-	 * <li>{@code 2} else, if the given {@code bpBankAccount}'s bPartner is a {@code RemitTo} partner of the {@link #setContextBPartner(I_C_BPartner)} partner
+	 * Checks the given {@code bpBankAccount} against the partner that was set via {@link #setContextBPartner_ID(I_C_BPartner)} (if any) and returns:
+	 * <li>{@code 1} if no {@link #setContextBPartner_ID(I_C_BPartner)} was set, or if the given {@code bpBankAccount}'s bPartner is the one that was set
+	 * <li>{@code 2} else, if the given {@code bpBankAccount}'s bPartner is a {@code RemitTo} partner of the {@link #setContextBPartner_ID(I_C_BPartner)} partner
 	 * <li>{@code 3} else
 	 * 
 	 * @param bpBankAccount
@@ -474,14 +475,13 @@ class ReadPaymentDocumentPanel
 	 */
 	private int validateAgainstContextBPartner(final I_C_BP_BankAccount bpBankAccount)
 	{
-		final int ctxBPartnerID = contextBPartner != null ? contextBPartner.getC_BPartner_ID() : 0;
-		if (ctxBPartnerID <= 0)
+		if (contextBPartner_ID <= 0)
 		{
 			// we have no BPartner-Context-Info, so we can't verify the bank account.
 			return 1;
 		}
 
-		if (ctxBPartnerID == bpBankAccount.getC_BPartner_ID())
+		if (contextBPartner_ID == bpBankAccount.getC_BPartner_ID())
 		{
 			// the BPartner from the account we looked up is thae one from context
 			return 1;
@@ -491,7 +491,7 @@ class ReadPaymentDocumentPanel
 		final boolean existsRelation = queryBL.createQueryBuilder(I_C_BP_Relation.class, bpBankAccount)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsRemitTo, true)
-				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, ctxBPartnerID)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, contextBPartner_ID)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, bpBankAccount.getC_BPartner_ID())
 				.create()
 				.match();
@@ -559,7 +559,7 @@ class ReadPaymentDocumentPanel
 	private boolean isPaymentStringChanging()
 	{
 		final Object paymentStringValue = paymentStringField.getValue();
-		return !Check.equals(currentPaymentString, paymentStringValue);
+		return !Objects.equals(currentPaymentString, paymentStringValue);
 	}
 
 	/**
