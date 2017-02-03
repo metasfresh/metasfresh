@@ -21,7 +21,7 @@ upcoming Release
   * #815 Jasper Footer: Show bank account in one line 
   * #904 New Field "Zulieferant" in R_Request Window
   * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
-
+  
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
   * #196 Grid View 100% height
@@ -39,6 +39,7 @@ upcoming Release
   * #813 hide packing instruction and qty when null
   * #903 Jenkins build error with slash in branch name
   * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect 
+  * #910 update and fix sales invoice jasper and function
 
 * webui
   * #204 Can not complete Order
