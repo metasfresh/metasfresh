@@ -59,6 +59,7 @@ this week's RC
   * #878 Purchase Order Window WebUI
   * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
   * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+  * #208 After New autofocus on first record field
 
 ## Fixes
 * metasfresh 
