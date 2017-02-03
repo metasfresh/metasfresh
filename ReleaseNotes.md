@@ -58,9 +58,13 @@ this week's RC
 
 * webUI
   * #198 Process with parameters cannot be started
+    * Fix a Bug in WebUI that did not allow the start of processes with parameters.
   * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+    * Add a Packing Unit dropdown in combined Product Field in Sales Orderline Batchentry.
   * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+    * Now allowing to delete the whole content of the combined Product-Packing Unit Field.
   * #208 After New autofocus on first record field
+    * New UX Feature that automatically sets the focus onto the first recordable Field in Window when "New Record"
   * #213 Do not focus fields "in background" when in Expanded view
   * #218 Reduce Gap Height between Layout Sections
   * #862 Payment Window in WebUI
