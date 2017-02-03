@@ -66,16 +66,24 @@ this week's RC
   * #208 After New autofocus on first record field
     * New UX Feature that automatically sets the focus onto the first recordable Field in Window when "New Record"
   * #213 Do not focus fields "in background" when in Expanded view
+    * Adjust the navigation behavior and sequence when using TAB jumping from field to field, now avoids that the focus gets "under" the overlay panel.
   * #218 Reduce Gap Height between Layout Sections
+    * Refine UX. Reduced the height between Layout Sections to not have the feeling of having a too big gap between them.
   * #862 Payment Window in WebUI
+    * Include the payment Window in WebUI.
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
+    * Include the Customer and Vendor Subtab in Business Partner Window.
   * #883 Sales Purchase Order Window Grid View
+    * Include the Grid View for the Sales and Purchase Order in WebUI.
   * #878 Purchase Order Window WebUI
+    * Include the Purchase Order Window in WebUI.
 
 ## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
+    * Fix to allow the first recordable Field having focus when opening a process paramater window.
   * #864 Adjust C_Country Location Print generation DE
+    * Adjust the Location capture Sequence for Germany.
 
 # metasfresh 4.53.52 (2017-04)
 
