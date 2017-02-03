@@ -14,8 +14,13 @@ class DatePicker extends Component {
         }
     }
 
+    componentDidMount() {
+        const {handleBackdropLock} = this.props;
+        handleBackdropLock && handleBackdropLock(true);
+    }
+
     handleBlur = (date) => {
-        const {patch, value} = this.props;
+        const {patch, value, handleBackdropLock} = this.props;
         const {cache} = this.state;
 
         if(JSON.stringify(cache) !== (
@@ -25,6 +30,8 @@ class DatePicker extends Component {
         }
 
         this.handleClose();
+
+        handleBackdropLock && handleBackdropLock(false);
     }
 
     handleFocus = () => {

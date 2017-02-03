@@ -14,6 +14,7 @@ import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List/List';
 import ActionButton from './ActionButton';
+import Image from './Image';
 
 class RawWidget extends Component {
     constructor(props) {
@@ -151,7 +152,8 @@ class RawWidget extends Component {
                                 }}
                                 value={selectedField}
                                 onChange={(date) => handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                                patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
+                                handleBackdropLock={handleBackdropLock}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -180,6 +182,7 @@ class RawWidget extends Component {
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -205,8 +208,9 @@ class RawWidget extends Component {
                             }}
                             value={selectedField}
                             onChange={(date) => handleChange(widgetField, date)}
-                            patch={(date) => this.handlePatch(widgetField, Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ'))}
+                            patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
+                            handleBackdropLock={handleBackdropLock}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -524,7 +528,6 @@ class RawWidget extends Component {
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        fullScreen={fullScreen}
                         ref={c => this.rawWidget = c}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
@@ -577,6 +580,12 @@ class RawWidget extends Component {
                         autoFocus={autoFocus}
                     />
                 )
+            case "Image":
+                return <Image
+                    fields={fields}
+                    data={widgetData}
+                    handlePatch={this.handlePatch}
+                />;
             default:
                 return (
                     <div>{widgetType}</div>

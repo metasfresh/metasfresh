@@ -194,3 +194,16 @@ export function newNotification(msg, count) {
         unreadCount: count
     }
 }
+
+export function getImageAction(id) {
+    return axios({
+        url: `${config.API_URL}/image/${id}`,
+        responseType: 'blob'
+    })
+        .then(response => response.data);
+}
+
+export function postImageAction (data) {
+    return axios.post(`${config.API_URL}/image`, data)
+        .then(response => response.data);
+}
