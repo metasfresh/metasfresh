@@ -54,15 +54,16 @@ this week's RC
   * #827 use the barcode field to select HU using attribute value
 
 * webUI
+  * #198 Process with parameters cannot be started
+  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+  * #208 After New autofocus on first record field
+  * #213 Do not focus fields "in background" when in Expanded view
+  * #218 Reduce Gap Height between Layout Sections
   * #862 Payment Window in WebUI
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
   * #878 Purchase Order Window WebUI
-  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
-  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
-  * #208 After New autofocus on first record field
-  * #218 Reduce Gap Height between Layout Sections
-  * #213 Do not focus fields "in background" when in Expanded view
 
 ## Fixes
 * metasfresh 
