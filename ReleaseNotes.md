@@ -57,7 +57,8 @@ this week's RC
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
   * #878 Purchase Order Window WebUI
-  *  #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
 
 ## Fixes
 * metasfresh 
