@@ -37,6 +37,7 @@ upcoming Release
   * #783 DocAction on Sales Order not available although permission existing
   * #813 hide packing instruction and qty when null
   * #903 Jenkins build error with slash in branch name
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect 
 
 * webui
   * #204 Can not complete Order
