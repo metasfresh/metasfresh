@@ -62,6 +62,7 @@ this week's RC
   * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
   * #208 After New autofocus on first record field
   * #218 Reduce Gap Height between Layout Sections
+  * #213 Do not focus fields "in background" when in Expanded view
 
 ## Fixes
 * metasfresh 
