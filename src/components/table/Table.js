@@ -432,7 +432,7 @@ class Table extends Component {
                         changeListenOnTrue={() => this.changeListen(true)}
                         changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
-                        handleSelect={this.selectProduct}
+                        handleSelect={this.selectRangeProduct}
                         indentSupported={indentSupported}
                     />
                 );

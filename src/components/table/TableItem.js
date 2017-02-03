@@ -123,20 +123,31 @@ class TableItem extends Component {
         )
     }
 
-    handleIndentSelect = (elem) => {
-        const {handleSelect} = this.props;
+    nestedSelect = (elem, cb) => {
+        let res = [];
 
         elem && elem.map(item => {
-            handleSelect(item.id);
+            res = res.concat([item.id]);
+
             if(item.includedDocuments){
-                this.handleIndentSelect(item.includedDocuments);
+                res = res.concat(this.nestedSelect(item.includedDocuments));
+            }else{
+                cb && cb();
             }
         })
+
+        return res;
+    }
+
+    handleIndentSelect = (e, id, elem) => {
+        const {handleSelect} = this.props;
+        e.stopPropagation();
+        handleSelect(this.nestedSelect(elem).concat([id]));
     }
 
     renderTree = (huType) => {
         const {
-            indent, lastSibling, includedDocuments, indentSupported
+            indent, lastSibling, includedDocuments, indentSupported, rowId
         } = this.props;
 
         let indentation = [];
@@ -163,6 +174,7 @@ class TableItem extends Component {
             return (
                 <div
                     className="indent"
+                    onClick={(e) => this.handleIndentSelect(e, rowId, includedDocuments)}
                 >
                     {indentation}
 
@@ -170,7 +182,6 @@ class TableItem extends Component {
 
                     <div
                         className="indent-icon"
-                        onClick={() => this.handleIndentSelect(includedDocuments)}
                     >
                         {huType == "LU" && <i className="meta-icon-palette"/>}
                         {huType == "TU" && <i className="meta-icon-package"/>}
@@ -195,7 +206,7 @@ class TableItem extends Component {
 
         return (
             <tr
-                onMouseDown={onMouseDown}
+                onClick={onMouseDown}
                 onDoubleClick={onDoubleClick}
                 onContextMenu={handleRightClick}
                 className={

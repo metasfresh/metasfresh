@@ -22,12 +22,13 @@ class TableItemWrapper extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        const {item} = this.props;
         if(
             JSON.stringify(prevProps.item) !=
-            JSON.stringify(this.props.item)
+            JSON.stringify(item)
         ){
             this.setState(Object.assign({}, this.state, {
-                rows: this.mapIncluded(this.props.item)
+                rows: this.mapIncluded(item)
             }))
         }
     }
@@ -73,14 +74,13 @@ class TableItemWrapper extends Component {
         } = this.props;
 
         const {rows} = this.state;
-
         return (
             <tbody>
                 {rows.map((row, index) =>
                     <TableItem
                         entity={entity}
                         fields={row.fields}
-                        rowId={item.rowId}
+                        rowId={row[keyProperty]}
                         tabId={tabId}
                         cols={cols}
                         type={type}

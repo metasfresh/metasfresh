@@ -26,6 +26,7 @@ class SelectionAttributes extends Component {
 
     componentDidUpdate = (prevProps) => {
         const {selected} = this.props;
+
         if(
             JSON.stringify(prevProps.selected) !== JSON.stringify(selected)
         ){
