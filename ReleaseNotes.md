@@ -20,6 +20,7 @@ upcoming Release
   * #460 Provide aggregate HUs
   * #815 Jasper Footer: Show bank account in one line 
   * #904 New Field "Zulieferant" in R_Request Window
+  * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
 
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
