@@ -58,7 +58,6 @@ import de.metas.product.IProductBL;
 public class CalloutOrder extends CalloutEngine
 {
 	private static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
-	private static final String CTX_DiscountSchema = "DiscountSchema";
 	private static final String CTX_UOMConversion = "UOMConversion";
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
@@ -848,7 +847,6 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setS_ResourceAssignment_ID(-1);
 		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
 
-		calloutField.putContext(CTX_DiscountSchema, false);
 		String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
