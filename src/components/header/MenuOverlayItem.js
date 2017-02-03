@@ -48,6 +48,7 @@ class MenuOverlayItem extends Component {
 
     handleKeyDown = (e) => {
         const {back, handleMenuOverlay} = this.props;
+        const overlay = document.getElementsByClassName('js-menu-overlay')[0];
 
         switch(e.key){
             case "ArrowDown":
@@ -60,19 +61,17 @@ class MenuOverlayItem extends Component {
                 break;
             case "Tab":
                 e.preventDefault();
-                
-                console.log('tab');
                 document.getElementsByClassName('js-menu-item')[0].focus();
                 break;
             case "Backspace":
                 e.preventDefault();
                 back(e);
-                document.getElementsByClassName('js-menu-overlay')[0].focus();
+                overlay.focus();
                 break;
             case "Enter":
                 e.preventDefault();
                 document.activeElement.childNodes[0].click();
-                document.getElementsByClassName('js-menu-overlay')[0].focus();
+                overlay.focus();
                 break;
             case "Escape":
                 e.preventDefault();
@@ -84,22 +83,25 @@ class MenuOverlayItem extends Component {
         let prevSiblings = document.activeElement.previousSibling;
         if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
             document.getElementById('search-input-query').focus();
-        }
-        else if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
+        } else if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
             document.activeElement.previousSibling.focus();
         } else {
-            if (document.activeElement.parentElement.previousSibling) {
-                const listChildren = document.activeElement.parentElement.previousSibling.childNodes;
+            this.handleGroupUp();
+        }
+    }
 
-                if(listChildren.length == 1){
-                    document.activeElement.parentElement.previousSibling.childNodes[0].focus();
-                }else{
-                    listChildren[listChildren.length - 1].focus();
-                }
-            } else if (document.getElementsByClassName('js-menu-header')[0]){
-                console.log('sds');
-                document.getElementsByClassName('js-menu-header')[0].focus()
+    handleGroupUp() {
+        const previousGroup = document.activeElement.parentElement.previousSibling;
+        const headerLink = document.getElementsByClassName('js-menu-header')[0];
+        if (previousGroup) {
+            const listChildren = previousGroup.childNodes;
+            if(listChildren.length == 1){
+                previousGroup.childNodes[0].focus();
+            }else{
+                listChildren[listChildren.length - 1].focus();
             }
+        } else {
+            headerLink && headerLink.focus()
         }
     }
 
