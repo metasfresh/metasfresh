@@ -20,7 +20,7 @@ class DatePicker extends Component {
     }
 
     handleBlur = (date) => {
-        const {patch, value, handleBackdropLock, onClickOutsideTableCell} = this.props;
+        const {patch, value, handleBackdropLock} = this.props;
         const {cache} = this.state;
 
         if(JSON.stringify(cache) !== (
@@ -32,7 +32,6 @@ class DatePicker extends Component {
         this.handleClose();
 
         handleBackdropLock && handleBackdropLock(false);
-        onClickOutsideTableCell && onClickOutsideTableCell();
     }
 
     handleFocus = () => {

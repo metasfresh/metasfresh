@@ -91,7 +91,7 @@ class RawWidget extends Component {
             handleChange, handleFocus, updated, isModal, filterWidget,
             filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
             isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
-            dropdownOpenCallback, autoFocus, fullScreen, onClickOutsideTableCell
+            dropdownOpenCallback, autoFocus, fullScreen
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -153,7 +153,6 @@ class RawWidget extends Component {
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                                 handleBackdropLock={handleBackdropLock}
-                                onClickOutsideTableCell={onClickOutsideTableCell}
                             />
                             <i className="meta-icon-calendar input-icon-right"></i>
                         </div>
@@ -183,7 +182,6 @@ class RawWidget extends Component {
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
                             handleBackdropLock={handleBackdropLock}
-                            onClickOutsideTableCell={onClickOutsideTableCell}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
@@ -212,7 +210,6 @@ class RawWidget extends Component {
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
                             handleBackdropLock={handleBackdropLock}
-                            onClickOutsideTableCell={onClickOutsideTableCell}
                         />
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>

@@ -124,7 +124,6 @@ class TableCell extends Component {
                             noLabel={true}
                             gridAlign={item.gridAlign}
                             handleBackdropLock={this.handleBackdropLock}
-                            onClickOutsideTableCell={() => onClickOutside(TableCell)}
                         />
                     :
                        <div className="cell-text-wrapper">
