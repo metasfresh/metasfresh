@@ -166,9 +166,7 @@ class TableItem extends Component {
                 >
                     {indentation}
 
-                    {(huType == "LU" || huType == "TU") &&
-                        <div className="indent-bot"/>
-                    }
+                    {includedDocuments && <div className="indent-bot"/>}
 
                     <div
                         className="indent-icon"
