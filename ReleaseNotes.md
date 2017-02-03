@@ -26,6 +26,7 @@ upcoming Release
   * #196 Grid View 100% height
   * #795 Price Window WebUI Layout
   * #896 Dunning Window WebUI
+  * #194 Open views from process execution result 
 
 ## Fixes
 * metasfresh
