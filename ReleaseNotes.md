@@ -50,8 +50,11 @@ this week's RC
 ## Features
 * metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
+    * Minor changes on the Grid View for the Shipment Schedules Window.
   * #868 Weekly Revenue Report
+    * Create a weekly Revenue Report in Jasperreports. Similar to the montly report, just comparing different weeks instead months.
   * #827 use the barcode field to select HU using attribute value
+    * New feature to be able to scan barcode attrivutes attached to a Handling Unit fir precise identifying.
 
 * webUI
   * #198 Process with parameters cannot be started
