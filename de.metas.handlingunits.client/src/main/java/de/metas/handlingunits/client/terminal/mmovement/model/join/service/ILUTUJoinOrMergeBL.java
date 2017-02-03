@@ -28,18 +28,20 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
 import de.metas.handlingunits.model.I_M_HU;
 
-public interface ILUTUJoinBL extends ISingletonService
+public interface ILUTUJoinOrMergeBL extends ISingletonService
 {
 	/**
-	 * Join the selected TUs in the LU using Join keys
+	 * Either join or merge the selected TUs in the LU using Join keys. For those {@code tuKeys} that represent "real" TUs, 
+	 * invoke {@link IHUJoinBL}, for those that represent aggregate HUs, perform a merge.
 	 *
 	 * @param terminalCtx
 	 * @param luKey
 	 * @param tuKeys
-	 * @return joined HUs
+	 * @return HUs that were processed
 	 */
-	List<I_M_HU> joinHUs(ITerminalContext terminalCtx, ILUTUJoinKey luKey, List<? extends ILUTUJoinKey> tuKeys);
+	List<I_M_HU> joinOrMergeHUs(ITerminalContext terminalCtx, ILUTUJoinKey luKey, List<? extends ILUTUJoinKey> tuKeys);
 }

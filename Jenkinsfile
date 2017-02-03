@@ -160,7 +160,7 @@ final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 	<properties>
       <scheduled-task-property>
         <key>numberOfVersionsToKeep</key>
-        <value>1</value>
+        <value>3</value>
       </scheduled-task-property>
       <scheduled-task-property>
         <key>indexBackend</key>
@@ -524,7 +524,23 @@ node('agent && linux && libc6-i386')
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-</ul>"""
+""";
+
+				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui'])
+				{
+					currentBuild.description="""${currentBuild.description}
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+""";
+				}
+				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'])
+				{
+					currentBuild.description="""${currentBuild.description}
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+""";
+				}
+				
+				currentBuild.description="""${currentBuild.description}
+</ul>""";
 				
 			}
 		} // withMaven
