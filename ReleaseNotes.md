@@ -57,6 +57,7 @@ this week's RC
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
   * #883 Sales Purchase Order Window Grid View
   * #878 Purchase Order Window WebUI
+  *  #205 Batch entry Dropdown for Handling Unit Missing in Workflow
 
 ## Fixes
 * metasfresh 
