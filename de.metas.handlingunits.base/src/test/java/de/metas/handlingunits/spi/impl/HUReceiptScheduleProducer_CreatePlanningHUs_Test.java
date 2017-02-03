@@ -378,8 +378,6 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 			final I_M_HU luHU,
 			final List<I_M_HU> tuHUs)
 	{
-		assertValidHUWeighAttributes(luHU);
-
 		// Iterate TUs and validate them
 		for (final I_M_HU tuHU : tuHUs)
 		{
