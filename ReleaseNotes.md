@@ -60,6 +60,7 @@ this week's RC
   * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
   * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
   * #208 After New autofocus on first record field
+  * #218 Reduce Gap Height between Layout Sections
 
 ## Fixes
 * metasfresh 
