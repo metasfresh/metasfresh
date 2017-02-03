@@ -85,7 +85,7 @@ class MenuOverlayItem extends Component {
         if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
             document.getElementById('search-input-query').focus();
         }
-        if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
+        else if (prevSiblings && prevSiblings.classList.contains('js-menu-item')) {
             document.activeElement.previousSibling.focus();
         } else {
             if (document.activeElement.parentElement.previousSibling) {
@@ -96,6 +96,9 @@ class MenuOverlayItem extends Component {
                 }else{
                     listChildren[listChildren.length - 1].focus();
                 }
+            } else if (document.getElementsByClassName('js-menu-header')[0]){
+                console.log('sds');
+                document.getElementsByClassName('js-menu-header')[0].focus()
             }
         }
     }

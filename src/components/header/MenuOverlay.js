@@ -254,11 +254,17 @@ class MenuOverlay extends Component {
         switch(e.key){
             case "ArrowDown":
                 e.preventDefault();
+                // if(document.activeElement.classList.contains('js-menu-overlay') && document.getElementsByClassName('js-menu-header')[0]) {
+                //     document.getElementsByClassName('js-menu-header')[0].focus();
+                // }
                 if (document.activeElement.classList.contains('js-menu-overlay')) {
                     document.getElementsByClassName('js-menu-item')[0].focus();
-                    // document.getElementsByClassName('menu-overlay-header')[0].focus();
-                } else if (document.activeElement.classList.contains('input-field')) {
-                    
+                    // document.getElementsByClassName('js-menu-header')[0].focus();
+                    console.log(document.activeElement);
+                } else if (document.activeElement.classList.contains('js-menu-header')){
+                    console.log('asas');
+                    document.getElementsByClassName('js-menu-item')[0].focus();
+                }else if (document.activeElement.classList.contains('input-field')) {
                     
                     if(document.activeElement.parentElement.nextSibling){
                         document.activeElement.parentElement.nextSibling.focus();
@@ -309,8 +315,10 @@ class MenuOverlay extends Component {
                                 </div>
                                 :
                                 <span
-                                    className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer"
+                                    className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
                                     onClick={() => dispatch(push("/"))}
+                                    tabIndex={0}
+                                    onKeyDown={(e) => this.handleKeyDown(e)}
                                 >
                                     Dashboard
                                 </span>
