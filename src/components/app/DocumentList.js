@@ -6,6 +6,7 @@ import DatetimeRange from '../widget/DatetimeRange';
 import QuickActions from './QuickActions';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
+import SelectionAttributes from './SelectionAttributes';
 
 import {
     initLayout
@@ -242,7 +243,8 @@ class DocumentList extends Component {
     render() {
         const {layout, data} = this.state;
         const {
-            dispatch, windowType, type, filters, pagination, open, closeOverlays, selected
+            dispatch, windowType, type, filters, pagination, open, closeOverlays,
+            selected
         } = this.props;
 
         if(layout && data) {
@@ -271,7 +273,6 @@ class DocumentList extends Component {
                             selected={selected}
                         />
                     </div>
-
                     <div className="document-list-body">
                         <Table
                             entity="documentView"
@@ -301,7 +302,16 @@ class DocumentList extends Component {
                             tabIndex={0}
                             open={open}
                             closeOverlays={closeOverlays}
-                        />
+                        >
+                            {layout.supportAttributes &&
+                                <SelectionAttributes
+                                    entity="documentView"
+                                    windowType={windowType}
+                                    viewId={data.viewId}
+                                    selected={selected}
+                                />
+                            }
+                        </Table>
                     </div>
                 </div>
             );

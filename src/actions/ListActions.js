@@ -77,3 +77,12 @@ export function quickActionsRequest(windowId, viewId, selectedIds) {
         (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
     );
 }
+
+export function selectionAttributes(windowId, viewId, selectedIds) {
+    return () => axios.get(
+        config.API_URL + '/documentView/' +
+        windowId + '/' + viewId +
+        '/quickActions' +
+        (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
+    );
+}

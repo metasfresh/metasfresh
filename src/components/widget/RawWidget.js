@@ -583,6 +583,7 @@ class RawWidget extends Component {
                 )
         }
     }
+
     render() {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,

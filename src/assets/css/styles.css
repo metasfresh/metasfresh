@@ -851,3 +851,26 @@ td.pulse-off input {
     cursor: default;
     color: $brand-color-secondary;
 }
+
+.attributes-selector {
+    flex:1;
+    
+    background-color: #fff;
+    border-radius: 3px;
+    border: 1px solid $brand-border-color;
+    margin-left: .5rem;
+}
+
+.attributes-selector-header,
+.attributes-selector-body {
+    padding: .54rem .7rem;
+}
+
+.attributes-selector-header {
+    border-bottom: 1px solid $brand-border-color;
+    background-color: $brand-super-light-color;
+}
+
+.attributes-selector-body {
+
+}
