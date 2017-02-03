@@ -1,6 +1,7 @@
 package org.adempiere.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -254,6 +255,27 @@ public final class GuavaCollectors
 		final BinaryOperator<ImmutableMap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
 		final Function<ImmutableMap.Builder<K, V>, ImmutableMap<K, V>> finisher = (builder) -> builder.build();
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toMap(final Supplier<Map<K, V>> mapSupplier)
+	{
+		final BiConsumer<Map<K, V>, Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
+		final BinaryOperator<Map<K, V>> combiner = (map1, map2) -> {
+			map1.putAll(map2);
+			return map1;
+		};
+		final Function<Map<K, V>, Map<K, V>> finisher = (map) -> map;
+		return Collector.of(mapSupplier, accumulator, combiner, finisher);
+	}
+
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toHashMap()
+	{
+		return toMap(HashMap::new);
+	}
+	
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toLinkedHashMap()
+	{
+		return toMap(LinkedHashMap::new);
 	}
 
 	public static <K, V> Collector<V, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap(final Function<? super V, ? extends K> keyMapper)

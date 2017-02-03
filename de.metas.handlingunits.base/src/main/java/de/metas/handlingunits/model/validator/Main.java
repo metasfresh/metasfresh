@@ -42,6 +42,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
@@ -203,7 +204,10 @@ public final class Main extends AbstractModuleInterceptor
 		// Warm-up our cache
 		// NOTE: We are calling this on user login and not "onInit" because after logout, cache is reseted.
 		// On server side, it's not so important to warm-up cache, because it will be warmed up much more quickly
-		cacheWarmUp();
+		if (Ini.isClient())
+		{
+			cacheWarmUp();
+		}
 	}
 
 	private void setupTableCacheConfig()
@@ -249,7 +253,7 @@ public final class Main extends AbstractModuleInterceptor
 		{
 			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
 		}
-		
+
 		//
 		// Weights Attributes
 		{

@@ -139,7 +139,7 @@ public class MTree extends MTree_Base
 		//
 		if (TreeType == null)
 		{
-			s_log.error("Could not map " + keyColumnName);
+			s_log.error("Could not map {}", keyColumnName);
 			return 0;
 		}
 
@@ -181,7 +181,7 @@ public class MTree extends MTree_Base
 	 */
 	public static int getDefaultByTableName(final int AD_Client_ID, final String tableName)
 	{
-		s_log.trace("TableName=" + tableName);
+		s_log.trace("TableName={}", tableName);
 		if (tableName == null)
 		{
 			return 0;
@@ -230,7 +230,7 @@ public class MTree extends MTree_Base
 			sql.append(" AND tn.IsActive='Y'");
 		}
 		sql.append(" ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
-		log.trace(sql.toString());
+		log.trace("sql: {}", sql);
 
 		// The Node Loop
 		PreparedStatement pstmt = null;
@@ -271,7 +271,7 @@ public class MTree extends MTree_Base
 		}
 		catch (final SQLException e)
 		{
-			log.error(sql.toString(), e);
+			log.error("", e);
 			m_nodeRowSet = null;
 			m_nodeIdMap = null;
 		}
@@ -312,7 +312,7 @@ public class MTree extends MTree_Base
 		// Nodes w/o parent
 		if (!m_buffer.isEmpty())
 		{
-			log.error("Nodes w/o parent - adding to root - " + m_buffer);
+			log.error("Nodes w/o parent - adding to root - {}", m_buffer);
 			for (int i = 0; i < m_buffer.size(); i++)
 			{
 				final MTreeNode node = m_buffer.get(i);
@@ -327,7 +327,7 @@ public class MTree extends MTree_Base
 			}
 			if (!m_buffer.isEmpty())
 			{
-				log.error("Still nodes in Buffer - " + m_buffer);
+				log.error("Still nodes in Buffer - {}", m_buffer);
 			}
 		}    	// nodes w/o parents
 
@@ -337,9 +337,9 @@ public class MTree extends MTree_Base
 			trimTree();
 		}
 		// diagPrintTree();
-		if (LogManager.isLevelFinest() || m_root.getChildCount() == 0)
+		if (log.isDebugEnabled() || m_root.getChildCount() == 0)
 		{
-			log.debug("ChildCount=" + m_root.getChildCount());
+			log.debug("ChildCount={}", m_root.getChildCount());
 		}
 	}   // loadNodes
 
@@ -405,10 +405,9 @@ public class MTree extends MTree_Base
 				{
 					newNode.add(node);
 				}
-				catch (final Exception e)
+				catch (final Exception ex)
 				{
-					log.error("Adding " + node.getName()
-							+ " to " + newNode.getName() + ": " + e.getMessage());
+					log.error("Failed adding {} to {}", node.getName(), newNode.getName(), ex);
 				}
 				m_buffer.remove(i);
 				i--;
