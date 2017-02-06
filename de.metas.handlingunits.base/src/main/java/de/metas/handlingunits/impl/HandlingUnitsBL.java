@@ -297,8 +297,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder()
-				.setM_HU(hu);
+		return new HUDisplayNameBuilder(hu);
 	}
 
 	@Override
