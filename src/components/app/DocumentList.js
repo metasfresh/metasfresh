@@ -9,6 +9,9 @@ import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
+
 import {
     initLayout
 } from '../../actions/GenericActions';
@@ -38,6 +41,26 @@ class DocumentList extends Component {
             clickOutsideLock: false
         }
         this.updateData();
+    }
+
+    componentDidMount () {
+        const {viewId} = this.props;
+
+        this.sock = new SockJs(config.WS_URL);
+        this.sockClient = Stomp.Stomp.over(this.sock);
+
+        this.sockClient.debug = null;
+        this.sockClient.connect({}, frame => {
+            this.sockClient.subscribe('/view' + '/' + viewId, msg => {
+                if(msg.fullyChanged == true){
+                    this.updateData();
+                }
+            });
+        });
+    }
+
+    componentWillUnmount() {
+        this.sockClient.disconnect();
     }
 
     componentWillReceiveProps(props) {
