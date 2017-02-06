@@ -28,5 +28,11 @@ export default {
     TABLE_CONTEXT: {
         TOGGLE_QUICK_INPUT: mod + '+' + 'q',
         TOGGLE_EXPAND: mod + '+' + 'space'
+    },
+    PAGINATION_CONTEXT: {
+        NEXT_PAGE: 'pageup',
+        PREV_PAGE: 'pagedown',
+        FIRST_PAGE: 'home',
+        LAST_PAGE: 'end'
     }
 }
