@@ -447,7 +447,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 		}
 
 		@Override
-		protected int getIncludedHUsCount()
+		public int getIncludedHUsCount()
 		{
 			final HUKey huKey = getHUKey();
 
