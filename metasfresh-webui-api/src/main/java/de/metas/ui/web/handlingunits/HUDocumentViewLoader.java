@@ -175,7 +175,7 @@ public class HUDocumentViewLoader
 		final I_M_Product product = huStorage.getM_Product();
 
 		final DocumentView storageDocument = DocumentView.builder(adWindowId)
-				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "#" + hu.getM_HU_ID() + "#" + product.getM_Product_ID()))
+				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + hu.getM_HU_ID() + "_" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
