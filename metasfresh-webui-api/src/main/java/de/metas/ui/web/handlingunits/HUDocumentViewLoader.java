@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -15,12 +16,16 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.DocumentView;
 import de.metas.ui.web.view.DocumentViewAttributesProviderFactory;
 import de.metas.ui.web.view.IDocumentViewAttributesProvider;
@@ -42,11 +47,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -123,7 +128,19 @@ public class HUDocumentViewLoader
 
 	private HUDocumentView createDocumentView(final I_M_HU hu)
 	{
-		final String huUnitType = hu.getM_HU_PI_Version().getHU_UnitType();
+		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
+
+		final String huUnitTypeDisplayName;
+		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
+		if (aggregateHU)
+		{
+			huUnitTypeDisplayName = "Agg";
+		}
+		else
+		{
+			huUnitTypeDisplayName = huUnitTypeCode;
+		}
+		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
 		final String huStatusKey = hu.getHUStatus();
 		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retriveListName(Env.getCtx(), I_WEBUI_HU_View.HUSTATUS_AD_Reference_ID, huStatusKey);
@@ -135,30 +152,44 @@ public class HUDocumentViewLoader
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitType)
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HUStatus, huStatus)
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_PackingInfo, extractPackingInfo(hu));
 
-		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
+		//
+		// Product/UOM/Qty if there is only one product stored
+		final IHUProductStorage singleProductStorage = getSingleProductStorage(hu);
+		if (singleProductStorage != null)
+		{
+			huViewRecord
+					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createLookupValue(singleProductStorage.getM_Product()))
+					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createLookupValue(singleProductStorage.getC_UOM()))
+					.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, singleProductStorage.getQty());
+		}
+
+		//
+		// Included HUs
+		if (aggregateHU)
+		{
+			streamProductStorageDocumentViews(hu)
+					.forEach(huViewRecord::addIncludedDocument);
+		}
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitTypeCode))
 		{
 			Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(hu)
 					.stream()
 					.map(includedHU -> createDocumentView(includedHU))
 					.forEach(huViewRecord::addIncludedDocument);
 		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType)
-				|| X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode)
+				|| X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
 		{
-			Services.get(IHandlingUnitsBL.class).getStorageFactory()
-					.getStorage(hu)
-					.getProductStorages()
-					.stream()
-					.map(huStorage -> createDocumentView(huStorage))
+			streamProductStorageDocumentViews(hu)
 					.forEach(huViewRecord::addIncludedDocument);
 		}
 		else
 		{
-			throw new IllegalStateException("Unknown HU_UnitType=" + huUnitType + " for " + hu);
+			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
 		}
 
 		return HUDocumentView.of(huViewRecord.build(), HUDocumentView.RecordType.HU);
@@ -166,7 +197,45 @@ public class HUDocumentViewLoader
 
 	private static final String extractPackingInfo(final I_M_HU hu)
 	{
-		return hu.getM_HU_PI_Version().getName();
+		final IHUDisplayNameBuilder helper = Services.get(IHandlingUnitsBL.class).buildDisplayName(hu)
+				.setShowIncludedHUCount(true);
+
+		final StringBuilder packingInfo = new StringBuilder();
+
+		final String piName = helper.getPIName();
+		packingInfo.append(Check.isEmpty(piName, true) ? "?" : piName);
+
+		final int includedHUsCount = helper.getIncludedHUsCount();
+		if (includedHUsCount > 0)
+		{
+			packingInfo.append(" x ").append(includedHUsCount);
+		}
+
+		return packingInfo.toString();
+	}
+
+	private Stream<HUDocumentView> streamProductStorageDocumentViews(final I_M_HU hu)
+	{
+		return Services.get(IHandlingUnitsBL.class).getStorageFactory()
+				.getStorage(hu)
+				.getProductStorages()
+				.stream()
+				.map(huStorage -> createDocumentView(huStorage));
+	}
+
+	private IHUProductStorage getSingleProductStorage(final I_M_HU hu)
+	{
+		final IHUStorage huStorage = Services.get(IHandlingUnitsBL.class).getStorageFactory()
+				.getStorage(hu);
+
+		final I_M_Product product = huStorage.getSingleProductOrNull();
+		if (product == null)
+		{
+			return null;
+		}
+
+		final IHUProductStorage productStorage = huStorage.getProductStorage(product);
+		return productStorage;
 	}
 
 	private HUDocumentView createDocumentView(final IHUProductStorage huStorage)
@@ -174,13 +243,15 @@ public class HUDocumentViewLoader
 		final I_M_HU hu = huStorage.getM_HU();
 		final I_M_Product product = huStorage.getM_Product();
 
+		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
+
 		final DocumentView storageDocument = DocumentView.builder(adWindowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + hu.getM_HU_ID() + "_" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue())
-				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI)
+				//.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue()) // NOTE: don't show value on storage level
+				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_HU_UnitType, huUnitTypeLookupValue)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_Product_ID, createLookupValue(product))
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_C_UOM_ID, createLookupValue(huStorage.getC_UOM()))
