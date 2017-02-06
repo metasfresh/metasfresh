@@ -37,7 +37,7 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        const {selected, filterWidget, autoFocus} = this.props;
+        const {selected, filterWidget} = this.props;
 
         this.handleValueChanged();
 
@@ -46,14 +46,17 @@ class Lookup extends Component {
         }else{
             this.handleClear();
         }
-
-        if(autoFocus){
-            this.inputSearch.focus();
-        }
     }
 
     componentDidUpdate() {
         this.handleValueChanged();
+
+        const {autoFocus} = this.props;
+        const {isInputEmpty} = this.state;
+
+        if(autoFocus && isInputEmpty){
+            this.inputSearch.focus();
+        }
     }
 
     handleSelect = (select) => {
