@@ -253,6 +253,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  *  when responses should merge store
  */
 export function patch(entity, windowType, id = "NEW", tabId, rowId, property, value, isModal, isAdvanced) {
+    console.log('patch');
     return dispatch => {
         let responsed = false;
 
@@ -275,9 +276,17 @@ export function patch(entity, windowType, id = "NEW", tabId, rowId, property, va
             isAdvanced)
         ).then(response => {
             responsed = true;
-
+            console.log('responsed');
+            console.log(response.data);
             dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
-        })
+        }).catch((err) => {
+            console.log('error');
+            dispatch(getData('window', windowType, id, tabId, rowId, null, null, isAdvanced))
+                .then(response => {
+                    console.log(response.data);
+                    dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+                });
+        });
     }
 }
 
@@ -297,12 +306,22 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 dispatch(addNewRow(item, item.tabid, item.rowId, "master"))
             } else {
                 item.fields.map(field => {
+                    if(field.field === 'C_BPartner_ID'){
+                        console.log('-------field--------');
+                        console.log(field);
+                    }
                     if (rowId && !isModal) {
                         dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(isModal)));
                     } else {
                         if (rowId) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
+
+                        if(field.field === 'C_BPartner_ID'){
+                            console.log('updateDataSuccess');
+                            console.log(field);
+                        }
+                        
                         dispatch(updateDataSuccess(field, getScope(isModal)));
                     }
                 });
