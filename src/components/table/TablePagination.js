@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 
 class TablePagination extends Component {
     constructor(props){
@@ -190,6 +190,13 @@ class TablePagination extends Component {
                         </div>
                     </div>
                 </div>
+
+                <PaginationContextShortcuts
+                    handleFirstPage={() => handleChangePage(1)}
+                    handleLastPage={() => handleChangePage(size ? Math.ceil(size / pageLength) : 0)}
+                    handleNextPage={() => handleChangePage("up")}
+                    handlePrevPage={() => handleChangePage("down")}
+                />
             </div>
         );
 
