@@ -56,13 +56,13 @@
 
 
 .table-striped tbody tr.tr-odd:nth-child(even) {
-    background-color: #F2F7FA;
+    background-color: $brand-super-light-color;
 }
 .table-striped tbody tr.tr-odd:nth-child(odd) {
     background-color: #fff;
 }
 .table-striped tbody tr.tr-even:nth-last-child(odd) {
-    background-color: #F2F7FA;
+    background-color: $brand-super-light-color;
 }
 .table-striped tbody tr.tr-even:nth-last-child(even) {
     background-color: #fff;
@@ -109,6 +109,10 @@
 
     display: flex;
     flex-direction: column;
+}
+
+.table-flex-wrapper-row {
+    flex-direction: row;
 }
 
 .row-bordered-bottom td {
@@ -359,4 +363,8 @@ $indent-signs-offset: 6px;
     width:1px;
     height: 6px;
     border-left: 1px solid #afbfca;
+}
+
+.document-list-table {
+    flex: 2;
 }

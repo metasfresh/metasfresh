@@ -194,3 +194,6 @@
 .meta-icon-upload:before {
   content: "\5a";
 }
+.meta-icon-accept:before {
+  content: "\30";
+}
