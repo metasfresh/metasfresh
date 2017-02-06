@@ -800,7 +800,3 @@ td.pulse-off input {
     font-size: .75rem;
     color: $brand-font-color-weak;
 }
-
-.disabled {
-    pointer-events: none;
-}

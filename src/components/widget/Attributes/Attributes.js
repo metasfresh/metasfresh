@@ -161,7 +161,7 @@ class Attributes extends Component {
                     className={
                         "btn btn-block tag tag-lg tag-block tag-secondary pointer " +
                         (dropdown ? "tag-disabled " : "") +
-                        (readonly ? "disabled " : "")
+                        (readonly ? "tag-disabled disabled " : "")
                     }
                 >
                     {label ? label : "Edit attributes"}

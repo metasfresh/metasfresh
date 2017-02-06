@@ -525,7 +525,7 @@ class RawWidget extends Component {
                         className={
                             "btn btn-sm btn-meta-primary " +
                             (align ? "text-xs-" + align + " " : "") +
-                            (widgetData.readonly ? "disabled " : "")
+                            (widgetData.readonly ? "tag-disabled disabled " : "")
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
