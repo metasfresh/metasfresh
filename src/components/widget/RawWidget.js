@@ -524,11 +524,11 @@ class RawWidget extends Component {
                     <button
                         className={
                             "btn btn-sm btn-meta-primary " +
-                            (align ? "text-xs-" + align + " " : "")
+                            (align ? "text-xs-" + align + " " : "") +
+                            (widgetData.readonly ? "tag-disabled disabled " : "")
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
-                        fullScreen={fullScreen}
                         ref={c => this.rawWidget = c}
                     >
                         {widgetData.value[Object.keys(widgetData.value)[0]]}
@@ -562,6 +562,7 @@ class RawWidget extends Component {
                         patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
+                        readonly={widgetData.readonly}
                     />
                 )
             case "Address":
@@ -579,6 +580,7 @@ class RawWidget extends Component {
                         patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
+                        readonly={widgetData.readonly}
                     />
                 )
             case "Image":
