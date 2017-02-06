@@ -7,6 +7,7 @@ import QuickActions from './QuickActions';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
+import DataLayoutWrapper from '../DataLayoutWrapper';
 
 import {
     initLayout
@@ -305,12 +306,16 @@ class DocumentList extends Component {
                             indentSupported={layout.supportTree}
                         >
                             {layout.supportAttributes &&
-                                <SelectionAttributes
+                                <DataLayoutWrapper
+                                    className="table-flex-wrapper attributes-selector"
                                     entity="documentView"
                                     windowType={windowType}
                                     viewId={data.viewId}
-                                    selected={selected}
-                                />
+                                >
+                                    <SelectionAttributes
+                                        selected={selected}
+                                    />
+                                </DataLayoutWrapper>
                             }
                         </Table>
                     </div>
