@@ -469,7 +469,7 @@ public class HUKeyFactory implements IHUKeyFactory
 				// Iterate VHUs
 				// FIXME: handle the case of an VHU on LU directly !!!!!!! .... in that case there will be no children!!!
 				final List<IHUKey> vhuKeys;
-				if (tuHUKey.isVirtualPI())
+				if (tuHUKey.isVirtualPI() || tuHUKey.isAggregateHU())
 				{
 					vhuKeys = Collections.<IHUKey> singletonList(tuHUKey);
 				}
