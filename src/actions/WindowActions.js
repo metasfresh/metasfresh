@@ -209,6 +209,8 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                         dispatch(addRowData(tabTmp, getScope(isModal)));
                     })
                 })
+            }).catch((err) => {
+                dispatch(addNotification("Error", err.response.data.error, 5000, "error"));
             });
     }
 }
