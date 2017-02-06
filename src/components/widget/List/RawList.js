@@ -8,14 +8,18 @@ class RawList extends Component {
         super(props);
 
         this.state = {
-            selected: 0,
+            selected: props.selected || 0,
             isOpen: false
         }
     }
 
     handleBlur = (e) => {
+        const { selected } = this.props;
+
+        this.dropdown.blur();
         this.setState(Object.assign({}, this.state, {
-            isOpen: false
+            isOpen: false,
+            selected: selected || 0
         }))
     }
 
@@ -45,7 +49,15 @@ class RawList extends Component {
             onSelect(null);
         }
 
-        this.handleBlur();
+        this.setState({
+            selected: (option || 0)
+        }, () => this.handleBlur())
+    }
+
+    handleSwitch = (option) => {
+        this.setState({
+            selected: (option || 0)
+        })
     }
 
     navigate = (up) => {
@@ -85,12 +97,25 @@ class RawList extends Component {
 
     getRow = (index, option, label) => {
         const {selected} = this.state;
+
         return (
             <div
                 key={index}
                 className={"input-dropdown-list-option "  +
-                    (selected === index ? "input-dropdown-list-option-key-on" : "")
+                    (
+                        // selected none
+                        (typeof option !== 'object' && selected === option) ||
+                        // selected some option
+                        (
+                            typeof option === 'object' &&
+                            typeof selected === 'object' &&
+                            Object.keys(selected)[0] === Object.keys(option)[0]
+                        ) ?
+                        "input-dropdown-list-option-key-on" :
+                        ""
+                    )
                 }
+                onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
             >
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
@@ -104,7 +129,7 @@ class RawList extends Component {
         let ret = [];
 
         if(!mandatory){
-            emptyText && ret.push(this.getRow(0, null, emptyText));
+            emptyText && ret.push(this.getRow(0, 0, emptyText));
         }
 
         list.map((option, index) => {
