@@ -160,7 +160,7 @@ final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
 	<properties>
       <scheduled-task-property>
         <key>numberOfVersionsToKeep</key>
-        <value>1</value>
+        <value>3</value>
       </scheduled-task-property>
       <scheduled-task-property>
         <key>indexBackend</key>
@@ -455,9 +455,9 @@ node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')]) 
 	{
-		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.BUILD_VERSION" 
+		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
-		withEnv(["BUILD_VERSION=${BUILD_VERSION}"])
+		withEnv(["BUILD_VERSION=${BUILD_VERSION}", "MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}", "CHANGE_URL=${env.CHANGE_URL}", "BUILD_NUMBER=${env.BUILD_NUMBER}"])
 		{
 		sh "echo \"testing 'witEnv' using shell: BUILD_VERSION=${BUILD_VERSION}\""
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository') 
@@ -524,7 +524,23 @@ node('agent && linux && libc6-i386')
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz\">dist-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
 <li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/endcustomer/mf15/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
-</ul>"""
+""";
+
+				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui'])
+				{
+					currentBuild.description="""${currentBuild.description}
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+""";
+				}
+				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'])
+				{
+					currentBuild.description="""${currentBuild.description}
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+""";
+				}
+				
+				currentBuild.description="""${currentBuild.description}
+</ul>""";
 				
 			}
 		} // withMaven

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -772,6 +773,29 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
+	{
+		if (!isAggregateHU(hu))
+		{
+			return hu.getM_HU_PI_Version();
+		}
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+		
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+
+		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
+	}
+
+	@Override
 	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
@@ -820,7 +844,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// gebindelager is done only when needed
 		final String initialHUStatus = hu.getHUStatus();
 
-		if (Check.equals(huStatus, initialHUStatus))
+		if (Objects.equals(huStatus, initialHUStatus))
 		{
 			// do nothing
 			return;

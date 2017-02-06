@@ -25,16 +25,20 @@ package de.metas.handlingunits.allocation.transfer;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.uom.api.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
  * Implementors perform HU merges. In a merge, we load stuff from source HUs to <b>already existing</b> destination HUs.<br>
- * That the destination HUs already exist is the main different between merge an split and makes merging "simpler" (i.e. we can internally use a {@link HUListAllocationSourceDestination} instead of a {@link ILUTUProducerAllocationDestination}).
+ * That the destination HUs already exists is the main different between merge an split and makes merging "simpler" (i.e. we can internally use a {@link HUListAllocationSourceDestination} instead of a {@link ILUTUProducerAllocationDestination}).
+ * <p>
+ * Use the constructor of {@link TUMergeBuilder} to get an instance.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -48,7 +52,8 @@ public interface ITUMergeBuilder
 	ITUMergeBuilder setCUProduct(I_M_Product product);
 
 	/**
-	 * Set the CU quantity to merge from the source HUs
+	 * Set the CU quantity to merge from the source HUs.<br>
+	 * The default value is {@link Quantity#QTY_INFINITE}, so if this setter is not used, the system will attempt to merge "everything" from the source-HU
 	 * 
 	 * @param qty
 	 * @return
