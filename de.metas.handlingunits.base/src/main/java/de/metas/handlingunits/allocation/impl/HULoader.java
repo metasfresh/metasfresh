@@ -126,7 +126,7 @@ public class HULoader
 
 	/**
 	 *
-	 * @param allowPartialLoads true if partial loads are allowed (i.e. destination can not accept all qty that was unloaded from source)
+	 * @param allowPartialLoads true if partial loads are allowed (i.e. if it is OK in case the destination can not accept all qty that was unloaded from source).
 	 */
 	public void setAllowPartialLoads(final boolean allowPartialLoads)
 	{
