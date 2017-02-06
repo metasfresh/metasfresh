@@ -32,7 +32,8 @@ class Lookup extends Component {
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
             oldValue: '',
-            isOpen: false
+            isOpen: false,
+            shouldBeFocused: true
         }
     }
 
@@ -52,10 +53,13 @@ class Lookup extends Component {
         this.handleValueChanged();
 
         const {autoFocus} = this.props;
-        const {isInputEmpty} = this.state;
+        const {isInputEmpty, shouldBeFocused} = this.state;
 
-        if(autoFocus && isInputEmpty){
+        if(autoFocus && isInputEmpty && shouldBeFocused){
             this.inputSearch.focus();
+            this.setState(Object.assign({}, this.state, {
+                shouldBeFocused: false
+            }));
         }
     }
 
