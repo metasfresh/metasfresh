@@ -13,18 +13,18 @@ package de.metas.dimension.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -102,7 +102,13 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	@Override
 	public I_DIM_Dimension_Spec retrieveForInternalName(final String internalName, final IContextAware ctxAware)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, ctxAware)
+		return retrieveForInternalName(internalName, ctxAware.getCtx(), ctxAware.getTrxName());
+	}
+
+	@Override
+	public I_DIM_Dimension_Spec retrieveForInternalName(final String internalName, final Properties ctx, final String trxName)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec.COLUMN_InternalName, internalName)
 				.create()
