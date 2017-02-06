@@ -110,13 +110,14 @@ export function noConnection(status) {
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId, isAdvanced) {
+export function openModal(title, windowType, type, tabId, rowId, isAdvanced, viewId) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
         modalType: type,
         tabId: tabId,
         rowId: rowId,
+        viewId: viewId,
         title: title,
         isAdvanced: isAdvanced
     }
@@ -374,7 +375,10 @@ export function handleProcessResponse(response, type, id, successCallback) {
             dispatch(addNotification("Process error", summary, 5000, "error"));
         }else{
             if(viewId && viewWindowId){
-                dispatch(push('/window/' + viewWindowId + '?viewId=' + viewId));
+                dispatch(openModal(
+                    "Document view", viewWindowId, "documentView", null, null,
+                    false, viewId
+                ));
             }else if(reportFilename){
                 dispatch(printRequest('process', type, id, reportFilename))
             }

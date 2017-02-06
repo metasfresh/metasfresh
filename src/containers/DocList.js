@@ -66,6 +66,9 @@ class DocList extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
+                        modalViewId={modal.viewId}
+                        query={query}
+                        selected={selected}
                         viewId={viewId}
                         selected={selected}
                      />

@@ -8,6 +8,7 @@ const initialState = {
         type: "",
         tabId: null,
         rowId: null,
+        viewId: null,
         layout: {},
         data: [],
         rowData: {},
@@ -40,6 +41,7 @@ export default function windowHandler(state = initialState, action) {
                     type: action.windowType,
                     tabId: action.tabId,
                     rowId: action.rowId,
+                    viewId: action.viewId,
                     title: action.title,
                     modalType: action.modalType,
                     isAdvanced: action.isAdvanced
