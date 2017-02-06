@@ -10,17 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.56.55 (2017-07)
+# metasfresh 4.56.54 (2017-07)
 
 upcoming
 
 ## Features
 * metasfresh
   * #913 include branch name in build version string
-
-##Fixes
-* webui
-  * #179 Fields too short for documentno in Breadcrumbs
 
 # metasfresh 4.55.54 (2017-06)
 
@@ -56,6 +52,7 @@ this week's RC
 * webui
   * #204 Can not complete Order
   * #886 GrandTotal missing in Purchase Order Grid view
+  * #179 Fields too short for documentno in Breadcrumbs
 
 # metasfresh 4.54.53 (2017-05)
 
