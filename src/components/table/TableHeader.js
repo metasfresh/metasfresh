@@ -38,6 +38,7 @@ class TableHeader extends Component {
 
         )
     }
+
     renderCols = (cols, mainTable) => {
         return cols && cols.map((item, index) =>
             <th
@@ -51,13 +52,19 @@ class TableHeader extends Component {
             </th>
         );
     }
+
     render() {
-        const {cols, mainTable} = this.props;
+        const {
+            cols, mainTable, indentSupported
+        } = this.props;
+        
         return (
             <tr>
-                <th
-                    className="indent"
-                />
+                {indentSupported &&
+                    <th
+                        className="indent"
+                    />
+                }
                 {this.renderCols(cols, mainTable)}
             </tr>
         )

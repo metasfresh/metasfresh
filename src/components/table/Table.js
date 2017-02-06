@@ -33,7 +33,7 @@ class Table extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: [],
+            selected: [null],
             listenOnKeys: true,
             contextMenu: {
                 open: false,
@@ -68,11 +68,6 @@ class Table extends Component {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: !!listenOnKeys
         }))
-    }
-
-    getSelectedItems = () => {
-        const {selected} = this.state;
-        return selected;
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
@@ -347,12 +342,6 @@ class Table extends Component {
         }
     }
 
-    sumProperty = (items, prop) => {
-        return items.reduce((a, b) => {
-            return b[prop] == null ? a : a + b[prop];
-        }, 0);
-    }
-
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
         let arrayIndex;
@@ -398,7 +387,8 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays
+            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays,
+            indentSupported
         } = this.props;
 
         const {selected} = this.state;
@@ -431,7 +421,8 @@ class Table extends Component {
                         changeListenOnTrue={() => this.changeListen(true)}
                         changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
-                        handleSelect={this.selectProduct}
+                        handleSelect={this.selectRangeProduct}
+                        indentSupported={indentSupported}
                     />
                 );
             }
@@ -524,7 +515,7 @@ class Table extends Component {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex
+            fullScreen, tabIndex, indentSupported
         } = this.props;
 
         const {
@@ -533,7 +524,10 @@ class Table extends Component {
 
         return (
             <div className="table-flex-wrapper">
-                <div className="table-flex-wrapper">
+                <div className={"table-flex-wrapper " +
+                        (mainTable ? "table-flex-wrapper-row " : "")
+                    }
+                >
                     {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
@@ -566,7 +560,7 @@ class Table extends Component {
                     </div>}
 
                     <div
-                        className="panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper"
+                        className="panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table"
                     >
                         <table
                             className={
@@ -586,6 +580,7 @@ class Table extends Component {
                                     orderBy={orderBy}
                                     deselect={this.deselectAllProducts}
                                     page={page}
+                                    indentSupported={indentSupported}
                                 />
                             </thead>
                             {this.renderTableBody()}
@@ -595,9 +590,17 @@ class Table extends Component {
                             />
                         </table>
 
+
                         {this.renderEmptyInfo(rowData, tabid)}
                     </div>
+
+                    {
+                        // Other 'table-flex-wrapped' components
+                        // like selection attributes
+                        this.props.children
+                    }
                 </div>
+
                 {page && pageLength &&
                     <div className="row">
                         <div className="col-xs-12">
@@ -614,8 +617,7 @@ class Table extends Component {
                         </div>
                     </div>
                 }
-                {
-                    promptOpen &&
+                {promptOpen &&
                     <Prompt
                         title={"Delete"}
                         text={"Are you sure?"}
@@ -624,6 +626,7 @@ class Table extends Component {
                         onSubmitClick={() => this.handlePromptSubmitClick(selected)}
                     />
                 }
+
                 <DocumentListContextShortcuts
                     handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}

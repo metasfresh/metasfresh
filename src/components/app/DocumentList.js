@@ -3,8 +3,14 @@ import {push, replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import DatetimeRange from '../widget/DatetimeRange';
+import QuickActions from './QuickActions';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
+import SelectionAttributes from './SelectionAttributes';
+import DataLayoutWrapper from '../DataLayoutWrapper';
+
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
 
 import {
     initLayout
@@ -31,13 +37,19 @@ class DocumentList extends Component {
 
         this.state = {
             data: null,
-            layout: null
+            layout: null,
+            clickOutsideLock: false,
+            refresh: null
         }
         this.updateData();
     }
 
+    componentWillUnmount() {
+        this.sockClient.disconnect();
+    }
+
     componentWillReceiveProps(props) {
-        const {sorting, windowType} = props;
+        const {sorting, windowType, viewId} = props;
 
         //if we browse list of docs, changing type of Document
         //does not re-construct component, so we need to
@@ -49,6 +61,10 @@ class DocumentList extends Component {
             }), () => {
                 this.updateData();
             })
+        }
+
+        if(viewId !== this.props.viewId){
+            this.connectWS(viewId);
         }
     }
 
@@ -66,6 +82,25 @@ class DocumentList extends Component {
 
             this.updateData(true);
         }
+    }
+
+    // We have to postpone this task til the viewId won't be created
+    connectWS = (viewId) => {
+        this.sock = new SockJs(config.WS_URL);
+        this.sockClient = Stomp.Stomp.over(this.sock);
+
+        this.sockClient.debug = null;
+        this.sockClient.connect({}, frame => {
+            this.sockClient.subscribe('/view/'+ viewId, msg => {
+                const {fullyChanged} = JSON.parse(msg.body);
+                if(fullyChanged == true){
+                    this.browseView();
+                    this.setState({
+                        refresh: Date.now()
+                    })
+                }
+            });
+        });
     }
 
     setListData = (data) => {
@@ -109,7 +144,9 @@ class DocumentList extends Component {
     }
 
     updateData = (isNewFilter) => {
-        const {dispatch, windowType, type, filters, filtersWindowType, query, viewId} = this.props;
+        const {
+            dispatch, windowType, type, filters, filtersWindowType, query, viewId
+        } = this.props;
 
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
@@ -238,30 +275,46 @@ class DocumentList extends Component {
         dispatch(push('/window/' + windowType + '/new'));
     }
 
+    setClickOutsideLock = (value) => {
+        this.setState({
+            clickOutsideLock: !!value
+        })
+    }
+
     render() {
-        const {layout, data} = this.state;
-        const {dispatch, windowType, type, filters, pagination, open, closeOverlays} = this.props;
+        const {layout, data, clickOutsideLock, refresh} = this.state;
+        const {
+            dispatch, windowType, type, filters, pagination, open, closeOverlays,
+            selected
+        } = this.props;
 
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
-                        {type === "grid" &&
-                            <button
-                                className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
-                                onClick={() => this.newDocument()}
-                            >
-                                <i className="meta-icon-add" /> New {layout.caption}
-                            </button>
-                        }
-                        <Filters
-                            filterData={layout.filters}
-                            filtersActive={data.filters}
+                        <div>
+                            {type === "grid" &&
+                                <button
+                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
+                                    onClick={() => this.newDocument()}
+                                >
+                                    <i className="meta-icon-add" /> New {layout.caption}
+                                </button>
+                            }
+                            <Filters
+                                filterData={layout.filters}
+                                filtersActive={data.filters}
+                                windowType={windowType}
+                                viewId={data.viewId}
+                            />
+                        </div>
+                        <QuickActions
                             windowType={windowType}
                             viewId={data.viewId}
+                            selected={selected}
+                            refresh={refresh}
                         />
                     </div>
-
                     <div className="document-list-body">
                         <Table
                             entity="documentView"
@@ -291,7 +344,24 @@ class DocumentList extends Component {
                             tabIndex={0}
                             open={open}
                             closeOverlays={closeOverlays}
-                        />
+                            indentSupported={layout.supportTree}
+                            disableOnClickOutside={clickOutsideLock}
+                        >
+                            {layout.supportAttributes &&
+                                <DataLayoutWrapper
+                                    className="table-flex-wrapper attributes-selector"
+                                    entity="documentView"
+                                    windowType={windowType}
+                                    viewId={data.viewId}
+                                >
+                                    <SelectionAttributes
+                                        refresh={refresh}
+                                        setClickOutsideLock={this.setClickOutsideLock}
+                                        selected={selected}
+                                    />
+                                </DataLayoutWrapper>
+                            }
+                        </Table>
                     </div>
                 </div>
             );

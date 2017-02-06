@@ -30,13 +30,14 @@ class DocList extends Component {
     }
 
     renderDocumentList = () => {
-        const {windowType, query, viewId} = this.props;
+        const {windowType, query, viewId, selected} = this.props;
         return (<DocumentList
             type="grid"
             updateUri={this.updateUriCallback}
             windowType={windowType}
             query={query}
             viewId={viewId}
+            selected={selected}
         />)
     }
 
