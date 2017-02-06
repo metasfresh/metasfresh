@@ -5,6 +5,8 @@ import {connect} from 'react-redux';
 import DatetimeRange from '../widget/DatetimeRange';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
 
 import {
     initLayout
@@ -34,6 +36,26 @@ class DocumentList extends Component {
             layout: null
         }
         this.updateData();
+    }
+
+    componentDidMount () {
+        const {viewId} = this.props;
+
+        this.sock = new SockJs(config.WS_URL);
+        this.sockClient = Stomp.Stomp.over(this.sock);
+
+        this.sockClient.debug = null;
+        this.sockClient.connect({}, frame => {
+            this.sockClient.subscribe('/view' + '/' + viewId, msg => {
+                if(msg.fullyChanged == true){
+                    this.updateData();
+                }
+            });
+        });
+    }
+
+    componentWillUnmount() {
+        this.sockClient.disconnect();
     }
 
     componentWillReceiveProps(props) {
