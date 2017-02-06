@@ -39,7 +39,7 @@ class DataLayoutWrapper extends Component {
         }))
     }
 
-    handlePatch = (prop, value) => {
+    handlePatch = (prop, value, cb) => {
         const {dispatch, entity, windowType, viewId} = this.props;
         const {dataId} = this.state;
 
@@ -57,7 +57,9 @@ class DataLayoutWrapper extends Component {
                     })
                 }));
             })
-        })
+        });
+
+        cb && cb();
     }
 
     setData = (data, dataId, cb) => {

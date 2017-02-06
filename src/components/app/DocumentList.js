@@ -34,7 +34,8 @@ class DocumentList extends Component {
 
         this.state = {
             data: null,
-            layout: null
+            layout: null,
+            clickOutsideLock: false
         }
         this.updateData();
     }
@@ -241,8 +242,14 @@ class DocumentList extends Component {
         dispatch(push('/window/' + windowType + '/new'));
     }
 
+    setClickOutsideLock = (value) => {
+        this.setState({
+            clickOutsideLock: !!value
+        })
+    }
+
     render() {
-        const {layout, data} = this.state;
+        const {layout, data, clickOutsideLock} = this.state;
         const {
             dispatch, windowType, type, filters, pagination, open, closeOverlays,
             selected
@@ -304,6 +311,7 @@ class DocumentList extends Component {
                             open={open}
                             closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
+                            disableOnClickOutside={clickOutsideLock}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
@@ -313,6 +321,7 @@ class DocumentList extends Component {
                                     viewId={data.viewId}
                                 >
                                     <SelectionAttributes
+                                        setClickOutsideLock={this.setClickOutsideLock}
                                         selected={selected}
                                     />
                                 </DataLayoutWrapper>

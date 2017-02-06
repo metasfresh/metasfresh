@@ -80,6 +80,10 @@ class RawWidget extends Component {
     }
 
     handleBlur = (widgetField, value, id) => {
+        const {handleBlur} = this.props;
+
+        handleBlur && handleBlur();
+
         this.setState(Object.assign({}, this.state, {
             isEdited: false
         }));

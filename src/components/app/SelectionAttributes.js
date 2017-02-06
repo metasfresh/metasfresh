@@ -57,7 +57,7 @@ class SelectionAttributes extends Component {
     render() {
         const {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
-            DLWrapperHandleChange, DLWrapperHandlePatch, entity
+            DLWrapperHandleChange, DLWrapperHandlePatch, entity, setClickOutsideLock
         } = this.props;
 
         return (
@@ -79,6 +79,8 @@ class SelectionAttributes extends Component {
                             key={id}
                             type={item.type}
                             caption={item.caption}
+                            handleFocus={() => setClickOutsideLock(true)}
+                            handleBlur={() => setClickOutsideLock(false)}
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
                         />
