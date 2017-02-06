@@ -10,9 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.56.54 (2017-07)
+
+upcoming
+
+## Features
+* metasfresh
+  * #913 include branch name in build version string
+
 # metasfresh 4.55.54 (2017-06)
 
-upcoming Release
+this week's RC
 
 ## Features
 * metasfresh
@@ -46,8 +54,6 @@ upcoming Release
   * #886 GrandTotal missing in Purchase Order Grid view
 
 # metasfresh 4.54.53 (2017-05)
-
-this week's RC
 
 ## Features
 * metasfresh
