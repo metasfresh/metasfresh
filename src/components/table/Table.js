@@ -33,7 +33,7 @@ class Table extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: [],
+            selected: [null],
             listenOnKeys: true,
             contextMenu: {
                 open: false,
@@ -68,11 +68,6 @@ class Table extends Component {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: !!listenOnKeys
         }))
-    }
-
-    getSelectedItems = () => {
-        const {selected} = this.state;
-        return selected;
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
@@ -345,12 +340,6 @@ class Table extends Component {
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
         }
-    }
-
-    sumProperty = (items, prop) => {
-        return items.reduce((a, b) => {
-            return b[prop] == null ? a : a + b[prop];
-        }, 0);
     }
 
     getProductRange = (id) => {

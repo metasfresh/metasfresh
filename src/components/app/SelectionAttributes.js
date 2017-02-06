@@ -45,6 +45,10 @@ class SelectionAttributes extends Component {
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected, entity} = this.props;
 
+        if(selected[0] == 0){
+            return;
+        }
+
         dispatch(initLayout(entity, windowType, selected[0], null, viewId)
             ).then(response => {
                 this.setState(Object.assign({}, this.state, {
