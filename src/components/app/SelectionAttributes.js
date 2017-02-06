@@ -20,22 +20,23 @@ class SelectionAttributes extends Component {
 
     componentDidUpdate = (prevProps) => {
         const {
-            selected, DLWrapperSetData, DLWrapperSetLayout
+            selected, DLWrapperSetData, DLWrapperSetLayout, refresh
         } = this.props;
 
         if(
-            JSON.stringify(prevProps.selected) !== JSON.stringify(selected)
+            (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
+            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
         ){
-            DLWrapperSetData([], null, () => {
-                DLWrapperSetLayout([], () => {
-                    if(selected.length === 1){
-                        if(selected[0] == 0){
-                            return;
+                DLWrapperSetData([], null, () => {
+                    DLWrapperSetLayout([], () => {
+                        if(selected.length === 1){
+                            if(selected[0] == 0){
+                                return;
+                            }
+                            this.fetchActions();
                         }
-                        this.fetchActions();
-                    }
+                    })
                 })
-            })
         }
     }
 
