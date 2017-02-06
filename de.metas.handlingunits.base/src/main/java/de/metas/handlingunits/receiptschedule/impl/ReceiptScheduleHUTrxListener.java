@@ -57,14 +57,13 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 
 	private ReceiptScheduleHUTrxListener()
 	{
-		super();
 	}
 
 	/**
 	 * Creates {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s. according to the processed {@link I_M_HU_Trx_Line},
 	 * if that line's referenced object is a receipt schedule.
 	 * <p>
-	 * Will not delete preexisting allocations in the process.
+	 * Will not delete pre-existing allocations in the process.
 	 * 
 	 */
 	@Override
