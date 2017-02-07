@@ -97,6 +97,15 @@ public class AttachmentBL implements IAttachmentBL
 
 		return attachment;
 	}
+	
+	@Override
+	public I_AD_Attachment createAttachment(final Object model, final String name, final byte[] data)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		addEntry(attachment, name, data);
+		return attachment;
+	}
+
 
 	@Override
 	public void addEntry(final I_AD_Attachment attachment, final String name, final byte[] data)
