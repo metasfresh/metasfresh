@@ -871,3 +871,10 @@ td.pulse-off input {
     border-bottom: 1px solid $brand-border-color;
     background-color: $brand-super-light-color;
 }
+
+.one-line {
+    width: 100%;
+    overflow:hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
