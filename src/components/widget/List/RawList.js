@@ -95,23 +95,52 @@ class RawList extends Component {
         }
     }
 
+    areOptionsEqual(selected, option){
+        // different types - not equal for sure
+        if (typeof option !== typeof selected){
+            return false;
+        }
+
+        // option and selected are not objects
+        if(
+            typeof option !== 'object' &&
+            typeof selected !== 'object' &&
+            selected === option
+        ){
+            return true;
+        }
+
+        const optionKeys = Object.keys(option);
+        const selectedKeys = Object.keys(selected);
+        const firstOption = option[optionKeys[0]];
+        const firstSelected = selected[selectedKeys[0]];
+
+        // objects, and first elements are not
+        if (
+            typeof option === 'object' &&
+            typeof selected === 'object' &&
+            typeof firstOption !== 'object' &&
+            typeof firstSelected !== 'object'
+        )
+        {
+            return optionKeys[0] === selectedKeys[0] &&
+                    firstOption === firstSelected;
+        }
+
+        // first elements are nested objects, repeat checking
+        return this.areOptionsEqual(firstOption, firstSelected);
+    }
+
     getRow = (index, option, label) => {
         const {selected} = this.state;
 
         return (
             <div
                 key={index}
-                className={"input-dropdown-list-option "  +
+                className={"input-dropdown-list-option"  +
                     (
-                        // selected none
-                        (typeof option !== 'object' && selected === option) ||
-                        // selected some option
-                        (
-                            typeof option === 'object' &&
-                            typeof selected === 'object' &&
-                            Object.keys(selected)[0] === Object.keys(option)[0]
-                        ) ?
-                        "input-dropdown-list-option-key-on" :
+                        this.areOptionsEqual(selected, option) ?
+                        " input-dropdown-list-option-key-on" :
                         ""
                     )
                 }
