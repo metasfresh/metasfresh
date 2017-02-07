@@ -35,6 +35,10 @@ input {
     text-align: inherit;
 }
 
+.form-group-flex {
+    display: flex;
+}
+
 .form-control:disabled {
     cursor: default !important;
 }

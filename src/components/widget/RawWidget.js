@@ -603,14 +603,6 @@ class RawWidget extends Component {
         }
     }
 
-    getInputClassName = (type, noLabel, devices) => {
-        if(type === "primary" || noLabel){
-            return devices ? "col-sm-10" : "col-sm-12";
-        }else{
-            return devices ? "col-sm-7" : "col-sm-9";
-        }
-    }
-
     render() {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
@@ -637,21 +629,25 @@ class RawWidget extends Component {
                         </div>
                     }
                     <div
-                        className={this.getInputClassName(type, noLabel, fields[0].devices)}
+                        className={
+                            ((type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 ") +
+                            (fields[0].devices ? "form-group-flex ": "")
+                        }
                     >
                         {this.renderWidget(
                             widgetType, fields, windowType, dataId, type, widgetData,
                             rowId, tabId, icon, gridAlign
                         )}
+
+                        {fields[0].devices &&
+                            <DevicesWidget
+                                devices={fields[0].devices}
+                                handleChange={(value) =>
+                                    handlePatch && handlePatch(fields[0].field, value)
+                                }
+                            />
+                        }
                     </div>
-                    {fields[0].devices && <div className={"col-sm-2 pl-0"}>
-                        <DevicesWidget
-                            devices={fields[0].devices}
-                            handleChange={(value) =>
-                                handlePatch && handlePatch(fields[0].field, value)
-                            }
-                        />
-                    </div>}
                 </div>
             )
         }else{

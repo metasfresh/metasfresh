@@ -45,7 +45,7 @@ class Device extends Component {
         if(!!value){
             return (
                 <div
-                    className={"btn btn-meta-outline-secondary btn-sm btn-inline pointer " +
+                    className={"btn btn-meta-outline-secondary btn-sm btn-inline pointer ml-1 " +
                         (isMore ? "btn-flagged ": "")
                     }
                     onClick={this.handleClick}
