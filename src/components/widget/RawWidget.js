@@ -1,5 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
+import React, { Component } from 'react';
 import Moment from 'moment';
 
 import {
@@ -15,6 +14,7 @@ import DatetimeRange from './DatetimeRange';
 import List from './List/List';
 import ActionButton from './ActionButton';
 import Image from './Image';
+import DevicesWidget from './Devices/DevicesWidget';
 
 class RawWidget extends Component {
     constructor(props) {
@@ -91,12 +91,14 @@ class RawWidget extends Component {
         this.handlePatch(widgetField, value, id);
     }
 
-    renderWidget = (widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align) => {
+    renderWidget = (
+        widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align
+    ) => {
         const {
-            handleChange, handleFocus, updated, isModal, filterWidget,
-            filterId, parameterName, setSelectedItem, selectedItem, selectedItemTo, id, range, entity,
-            isShown, isHidden, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
-            dropdownOpenCallback, autoFocus, fullScreen
+            handleChange, handleFocus, updated, isModal, filterWidget, filterId,
+            parameterName, setSelectedItem, selectedItem, selectedItemTo, id,
+            range, entity, isShown, isHidden, handleBackdropLock, subentity,
+            subentityId, tabIndex, viewId, dropdownOpenCallback, autoFocus, fullScreen
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -106,7 +108,6 @@ class RawWidget extends Component {
         let selectedField = "";
         let selectedFieldTo = "";
         let widgetFields = "";
-
 
         if (filterWidget) {
             widgetField = parameterName;
@@ -126,7 +127,9 @@ class RawWidget extends Component {
                     //input! For further usage, needs upgrade.
                     return (
                         <DatetimeRange
-                            onChange={(value, valueTo) => this.handlePatch(widgetField, value, valueTo)}
+                            onChange={(value, valueTo) =>
+                                this.handlePatch(widgetField, value, valueTo)
+                            }
                             mandatory={widgetData.mandatory}
                             isShown={isShown}
                             isHidden={isHidden}
@@ -352,7 +355,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
                         />
@@ -377,7 +380,7 @@ class RawWidget extends Component {
                             value={selectedField}
                             disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) =>  handleChange && handleChange(widgetFields.field, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
                         />
@@ -600,6 +603,14 @@ class RawWidget extends Component {
         }
     }
 
+    getInputClassName = (type, noLabel, devices) => {
+        if(type === "primary" || noLabel){
+            return devices ? "col-sm-10" : "col-sm-12";
+        }else{
+            return devices ? "col-sm-7" : "col-sm-9";
+        }
+    }
+
     render() {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
@@ -626,13 +637,21 @@ class RawWidget extends Component {
                         </div>
                     }
                     <div
-                        className={(type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 "}
+                        className={this.getInputClassName(type, noLabel, fields[0].devices)}
                     >
                         {this.renderWidget(
                             widgetType, fields, windowType, dataId, type, widgetData,
                             rowId, tabId, icon, gridAlign
                         )}
                     </div>
+                    {fields[0].devices && <div className={"col-sm-2 pl-0"}>
+                        <DevicesWidget
+                            devices={fields[0].devices}
+                            handleChange={(value) =>
+                                handleChange && handleChange(fields[0].field, value)
+                            }
+                        />
+                    </div>}
                 </div>
             )
         }else{
@@ -641,10 +660,4 @@ class RawWidget extends Component {
     }
 }
 
-RawWidget.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-RawWidget = connect()(RawWidget)
-
-export default RawWidget
+export default RawWidget;
