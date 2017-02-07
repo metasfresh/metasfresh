@@ -615,7 +615,7 @@ class RawWidget extends Component {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal,
-            tabIndex
+            tabIndex, handlePatch
         } = this.props;
 
         if(widgetData[0].displayed && widgetData[0].displayed === true){
@@ -648,7 +648,7 @@ class RawWidget extends Component {
                         <DevicesWidget
                             devices={fields[0].devices}
                             handleChange={(value) =>
-                                handleChange && handleChange(fields[0].field, value)
+                                handlePatch && handlePatch(fields[0].field, value)
                             }
                         />
                     </div>}
