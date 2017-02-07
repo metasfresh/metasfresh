@@ -11,6 +11,8 @@ import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -74,6 +76,7 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 		}
 
 		final IAttributeStorage attributesStorage = getAttributeStorageFactory().getAttributeStorage(hu);
+		attributesStorage.setSaveOnChange(true);
 		return new HUDocumentViewAttributes(attributesStorage);
 	}
 
@@ -87,8 +90,10 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
+		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(huAttributesDAO);
+		
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
 
 		huAttributeStorageFactory.addAttributeStorageListener(AttributeStorage2ExecutionEventsForwarder.instance);
