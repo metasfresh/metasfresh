@@ -277,9 +277,13 @@ export function patch(entity, windowType, id = "NEW", tabId, rowId, property, va
             isAdvanced)
         ).then(response => {
             responsed = true;
-
             dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
-        })
+        }).catch((err) => {
+            dispatch(getData('window', windowType, id, tabId, rowId, null, null, isAdvanced))
+                .then(response => {
+                    dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+                });
+        });
     }
 }
 
@@ -305,6 +309,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                         if (rowId) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
+                        
                         dispatch(updateDataSuccess(field, getScope(isModal)));
                     }
                 });

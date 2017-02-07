@@ -12,8 +12,8 @@ build:
     paths:
       - dist/
   only:
-    - dev
     - /^dev-.*$/
+    - master
 
 deploy-dev:
   stage: deploy
@@ -22,8 +22,8 @@ deploy-dev:
   dependencies:
     - build
   only:
-    - dev
+    - master
     - /^dev-.*$/
   environment:
-    name: dev/$CI_BUILD_REF_NAME
-    url: http://$CI_BUILD_REF_NAME.metasfresh.ci.jzapp.io/
+    name: $CI_BUILD_REF_NAME
+    url: http://$CI_BUILD_REF_NAME.metasfresh.jzapp.io/
