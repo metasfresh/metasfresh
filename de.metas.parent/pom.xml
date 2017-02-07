@@ -1406,5 +1406,18 @@
 			</properties>
 		</profile>
 
+		<!--this profile is analog to "build-number-env-missing" -->
+		<profile>
+			<id>MF_UPSTREAM_BRANCH-env-missing</id>
+			<activation>
+				<property>
+					<name>!env.MF_UPSTREAM_BRANCH</name>
+				</property>
+			</activation>
+			<properties>
+				<env.BUILD_VERSION>LOCAL-BUILD</env.BUILD_VERSION>
+			</properties>
+		</profile>
+
 	</profiles>
 </project>

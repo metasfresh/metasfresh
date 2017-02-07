@@ -1,43 +1,25 @@
 package de.metas.handlingunits.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IMutable;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
+import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
+import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -48,7 +30,6 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	// Options
@@ -62,6 +43,13 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 	/** HU */
 	private I_M_HU _hu;
+	
+	public HUDisplayNameBuilder(final I_M_HU hu)
+	{
+		// NOTE: for convenience, we are accepting null HU,
+		// because we want to be able to use this method in places where we don't want to check if HU is null or not (e.g. exception messages).
+		_hu = hu;
+	}
 
 	@Override
 	public String build()
@@ -134,12 +122,6 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return Env.getCtx();
 	}
 
-	protected IHUDisplayNameBuilder setM_HU(final I_M_HU hu)
-	{
-		_hu = hu;
-		return this;
-	}
-
 	protected boolean isHUSet()
 	{
 		return _hu != null;
@@ -202,13 +184,8 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return huValue;
 	}
 
-	/**
-	 * Return either the name of this instance's {@link #getM_HU()}'s {@code M_HU_PI_Version}
-	 * or - if it's an aggregate HU - the name of the PI that is represented.
-	 * 
-	 * @return
-	 */
-	protected String getPIName()
+	@Override
+	public final String getPIName()
 	{
 		final I_M_HU hu = getM_HU();
 
@@ -230,13 +207,13 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 			}
 		}
 
-		String piName = escape(piNameRaw);
+		final String piName = escape(piNameRaw);
 		return piName;
 	}
 
-	private String getAggregateHuPiName(final I_M_HU hu)
+	private static String getAggregateHuPiName(final I_M_HU hu)
 	{
-		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		// note: if HU is an aggregate HU, then there won't be an NPE here.
 		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
 
 		if (parentPIItem == null)
@@ -254,36 +231,23 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return included_HU_PI.getName();
 	}
 
-	/**
-	 * Gets included HUs count for current HU.
-	 *
-	 * NOTE: this method can be overridden by extending classes in order to optimize how the HUs are counted.
-	 *
-	 * @return included HUs count for {@link #getM_HU()}
-	 */
-	protected int getIncludedHUsCount()
+	// NOTE: this method can be overridden by extending classes in order to optimize how the HUs are counted. 
+	@Override
+	public int getIncludedHUsCount()
 	{
 		final I_M_HU hu = getM_HU();
 
-		// NOTE: we need to retrieve the HUs and count them (instead of doing a COUNT directly on database),
+		// NOTE: we need to iterate the HUs and count them (instead of doing a COUNT directly on database),
 		// because we rely on HU&Items caching
-		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(hu);
-		int includedHUCount = includedHUs.size();
-		if (includedHUCount <= 0)
-		{
-			return 0;
-		}
+		// and also because in case of aggregated HUs, we need special handling
 
-		// Exclude VHUs from counting
-		for (final I_M_HU includedHU : includedHUs)
-		{
-			if (handlingUnitsBL.isVirtual(includedHU))
-			{
-				includedHUCount--;
-			}
-		}
+		final IncludedHUsCounter includedHUsCounter = new IncludedHUsCounter(hu, false); // countVHUs=false
+		
+		final HUIterator huIterator = new HUIterator();
+		huIterator.setListener(includedHUsCounter.toHUIteratorListener());
+		huIterator.iterate(hu);
 
-		return includedHUCount;
+		return includedHUsCounter.getHUsCount();
 	}
 
 	protected String escape(final String string)
@@ -292,9 +256,159 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 	}
 
 	@Override
-	public IHUDisplayNameBuilder setShowIfDestroyed(boolean showIfDestroyed)
+	public IHUDisplayNameBuilder setShowIfDestroyed(final boolean showIfDestroyed)
 	{
 		this.showIfDestroyed = showIfDestroyed;
 		return this;
 	}
+
+	/**
+	 * Counts included HUs (abstract class).
+	 * 
+	 * Extending classes shall implement the abstract methods from here, which are some basic operators on <code>HUHolderType</code>.
+	 *
+	 * @param <HUHolderType> class which contains the HU
+	 */
+	public static abstract class AbstractIncludedHUsCounter<HUHolderType>
+	{
+		private final HUHolderType _rootHUObj;
+		private final boolean _countVHUs;
+
+		private int _counter = 0;
+
+		protected AbstractIncludedHUsCounter(final HUHolderType rootHUObj, final boolean countVHUs)
+		{
+			this._rootHUObj = rootHUObj;
+			this._countVHUs = countVHUs;
+		}
+
+		public final IHUIteratorListener.Result accept(final HUHolderType currentHUObj)
+		{
+			// In case our holder does not contain a proper HU, we shall continue searching
+			if (currentHUObj == null)
+			{
+				return IHUIteratorListener.Result.CONTINUE;
+			}
+			
+			if (isRootHUKey(currentHUObj))
+			{
+				if (!isAggregatedHU(currentHUObj))
+				{
+					// don't count current HU if it's not an aggregate HU
+					return IHUIteratorListener.Result.CONTINUE;
+				}
+
+				incrementCounter(getAggregatedHUsCount(currentHUObj));
+			}
+			else
+			{
+				if (isAggregatedHU(currentHUObj))
+				{
+					incrementCounter(getAggregatedHUsCount(currentHUObj));
+				}
+				else
+				{
+					if (!isCountVHUs() && isVirtualPI(currentHUObj))
+					{
+						// skip virtual HUs; note that also aggregate HUs are "virtual", but that case is handled not here
+						return IHUIteratorListener.Result.CONTINUE;
+					}
+					incrementCounter(1);
+				}
+			}
+
+			// we are counting only first level => so skip downstream
+			return IHUIteratorListener.Result.SKIP_DOWNSTREAM;
+		}
+
+		public final int getHUsCount()
+		{
+			return _counter;
+		}
+
+		protected final boolean isCountVHUs()
+		{
+			return _countVHUs;
+		}
+
+		private final void incrementCounter(final int increment)
+		{
+			Check.assume(increment >= 0, "increment >= 0 but it was {}", increment);
+			_counter += increment;
+		}
+
+		protected final boolean isRootHUKey(final HUHolderType huObj)
+		{
+			return huObj == _rootHUObj;
+		}
+
+		/** @return true if the HU is an aggregated HU */
+		protected abstract boolean isAggregatedHU(final HUHolderType huObj);
+
+		/**
+		 * Called in case the HU is an aggregated HU and it shall return how many HUs are really contained.
+		 *
+		 * @return how many HUs are aggregated
+		 */
+		protected abstract int getAggregatedHUsCount(final HUHolderType huObj);
+
+		/** @return true if the HU is a virtual one */
+		protected abstract boolean isVirtualPI(final HUHolderType huObj);
+	}
+
+	/**
+	 * An {@link AbstractIncludedHUsCounter} implementation which works directly on I_M_HU instances
+	 */
+	private static class IncludedHUsCounter extends AbstractIncludedHUsCounter<I_M_HU>
+	{
+		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		private IncludedHUsCounter(final I_M_HU rootHU, final boolean countVHUs)
+		{
+			super(rootHU, countVHUs);
+		}
+
+		@Override
+		protected boolean isAggregatedHU(final I_M_HU hu)
+		{
+			return handlingUnitsBL.isAggregateHU(hu);
+		}
+
+		@Override
+		protected int getAggregatedHUsCount(final I_M_HU hu)
+		{
+			final I_M_HU_Item parentHUItem = hu.getM_HU_Item_Parent();
+			if (parentHUItem == null)
+			{
+				// shall not happen
+				return 0;
+			}
+			return parentHUItem.getQty().intValueExact();
+		}
+
+		@Override
+		protected boolean isVirtualPI(final I_M_HU huObj)
+		{
+			return handlingUnitsBL.isVirtual(huObj);
+		}
+
+		private IHUIteratorListener toHUIteratorListener()
+		{
+			return new HUIteratorListenerAdapter()
+			{
+				@Override
+				public String toString()
+				{
+					return MoreObjects.toStringHelper(this).addValue(IncludedHUsCounter.this).toString();
+				}
+
+				@Override
+				public Result beforeHU(final IMutable<I_M_HU> hu)
+				{
+					return IncludedHUsCounter.this.accept(hu.getValue());
+				}
+			};
+		}
+	}
+
 }
