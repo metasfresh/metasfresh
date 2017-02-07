@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1865,7 +1866,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// In case the order is not completed (i.e. it was reactivated) and if it also wasn't modified by anyone,
 		// then null the POReference
-		if (Check.equals(order.getPOReference(), candidate.getPOReference())
+		if (Objects.equals(order.getPOReference(), candidate.getPOReference())
 				&& !DocAction.STATUS_Completed.equals(order.getDocStatus()))
 		{
 			candidate.setPOReference(null);

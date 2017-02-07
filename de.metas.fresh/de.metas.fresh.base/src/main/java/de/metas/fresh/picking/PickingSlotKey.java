@@ -16,15 +16,14 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.Collection;
@@ -343,7 +342,7 @@ public class PickingSlotKey extends TerminalKey
 	 * @param uom
 	 * 
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>total capacity definition
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
@@ -355,7 +354,7 @@ public class PickingSlotKey extends TerminalKey
 		{
 			return null;
 		}
-		
+
 		// Corner case (FRESH-194):
 		// * picking slot contains an HU which was previously loaded with a different product, i.e. M_HU.M_HU_PI_Item_Product_ID is about a different product
 		// * now user wants to load another product on that HU, so M_HU.M_HU_PI_Item_Product_ID.M_Product_ID will not match given "product"
@@ -368,7 +367,7 @@ public class PickingSlotKey extends TerminalKey
 			logger.info("Product {} is not matching {}. Returning null capacity.", product, piItemProduct);
 			return null;
 		}
-		
+
 		return huCapacityBL.getCapacity(piItemProduct, product, uom);
 	}
 
@@ -429,7 +428,8 @@ public class PickingSlotKey extends TerminalKey
 		if (hu != null)
 		{
 			final StringBuilder sb = new StringBuilder();
-			final String piName = hu.getM_HU_PI_Version().getM_HU_PI().getName();
+
+			final String piName = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI().getName();
 			sb.append("<font size=\"3\">")
 					.append(Util.maskHTML(piName))
 					.append("</font>");

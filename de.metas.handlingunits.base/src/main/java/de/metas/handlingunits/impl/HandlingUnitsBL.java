@@ -297,8 +297,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder()
-				.setM_HU(hu);
+		return new HUDisplayNameBuilder(hu);
 	}
 
 	@Override
@@ -771,7 +770,30 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
-	
+
+	@Override
+	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
+	{
+		if (!isAggregateHU(hu))
+		{
+			return hu.getM_HU_PI_Version();
+		}
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+		
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+
+		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
+	}
+
 	@Override
 	public I_M_Warehouse getEmptiesWarehouse(final Properties ctx, final I_M_Warehouse warehouse, final String trxName)
 	{
