@@ -354,8 +354,17 @@ class Lookup extends Component {
                     isInputEmpty: false
                 }));
             }
+            
         } else if(oldValue && !defaultValue[0].value && this.inputSearch) { 
-            this.inputSearch.value = "";
+            const inputEmptyValue = defaultValue[0].value;
+
+            if(inputEmptyValue !== oldValue){
+                this.inputSearch.value = inputEmptyValue;
+                this.setState(Object.assign({}, this.state, {
+                    oldValue: inputEmptyValue,
+                    isInputEmpty: true
+                }));
+            }
         }
     }
 
