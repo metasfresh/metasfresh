@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.view.IDocumentView;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -227,6 +228,8 @@ public final class JSONDocument implements Serializable
 					.forEach(jsonFields::add);
 
 			jsonDocument.setFields(jsonFields);
+			
+			jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, documentView.hasAttributes());
 		}
 
 		//

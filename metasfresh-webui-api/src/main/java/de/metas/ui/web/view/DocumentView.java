@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -119,6 +120,12 @@ public final class DocumentView implements IDocumentView
 	{
 		return values;
 	}
+	
+	@Override
+	public boolean hasAttributes()
+	{
+		return attributesProvider != null;
+	}
 
 	@Override
 	public IDocumentViewAttributes getAttributes()
@@ -126,7 +133,7 @@ public final class DocumentView implements IDocumentView
 		final IDocumentViewAttributes attributes = attributesProvider == null ? null : attributesProvider.getAttributes(documentId);
 		if (attributes == null)
 		{
-			throw new IllegalStateException("Document does not support attributes");
+			throw new EntityNotFoundException("Document does not support attributes");
 		}
 		return attributes;
 	}

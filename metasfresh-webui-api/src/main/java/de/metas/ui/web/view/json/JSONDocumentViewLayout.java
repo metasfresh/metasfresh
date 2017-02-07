@@ -83,7 +83,8 @@ public final class JSONDocumentViewLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
 
-	@JsonProperty(value = "supportAttributes")
+	public static final String PROPERTY_supportAttributes = "supportAttributes";
+	@JsonProperty(value = PROPERTY_supportAttributes)
 	private final boolean supportAttributes;
 	@JsonProperty(value = "supportTree")
 	private final boolean supportTree;
@@ -132,7 +133,7 @@ public final class JSONDocumentViewLayout implements Serializable
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty(value = "supportAttributes") final boolean supportAttributes //
+			, @JsonProperty(value = PROPERTY_supportAttributes) final boolean supportAttributes //
 			, @JsonProperty(value = "supportTree") final boolean supportTree)
 	{
 		super();
