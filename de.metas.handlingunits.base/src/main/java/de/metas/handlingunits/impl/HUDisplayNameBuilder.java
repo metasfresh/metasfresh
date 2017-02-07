@@ -245,6 +245,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		
 		final HUIterator huIterator = new HUIterator();
 		huIterator.setListener(includedHUsCounter.toHUIteratorListener());
+		huIterator.setEnableStorageIteration(false);
 		huIterator.iterate(hu);
 
 		return includedHUsCounter.getHUsCount();
