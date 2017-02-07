@@ -38,12 +38,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 public interface IDocumentLUTUConfigurationHandler<T>
 {
 	/**
-	 * Creates a <b>NEW</b> LU/TU Configuration based on given <code>documentLine</code>.
+	 * Create a <b>NEW</b> LU/TU Configuration based on given <code>documentLine</code>.
 	 *
 	 * NOTE:
 	 * <ul>
-	 * <li>this method is not checking if there is an already LU/TU configuration created for that document line
-	 * <li>created LU/TU configuration is not saved
+	 * <li>don't check if there is an already LU/TU configuration created for that document line.
+	 * <li>don't save the created LU/TU configuration.
 	 * </ul>
 	 *
 	 * @param documentLine
@@ -52,14 +52,14 @@ public interface IDocumentLUTUConfigurationHandler<T>
 	I_M_HU_LUTU_Configuration createNewLUTUConfiguration(final T documentLine);
 
 	/**
-	 * Updates given LU/TU Configuration from underlying document line.
+	 * Update the given LU/TU Configuration from underlying document line.
 	 *
 	 * @param lutuConfiguration
 	 */
 	void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final T documentLine);
 
 	/**
-	 * Sets documentLine's current LU/TU Configuration.
+	 * Set documentLine's current LU/TU Configuration.
 	 *
 	 * NOTE: document line is not saved.
 	 *
@@ -77,7 +77,7 @@ public interface IDocumentLUTUConfigurationHandler<T>
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(final T documentLine);
 
 	/**
-	 * Gets documentLine's current LU/TU configuration alternatives (if any)
+	 * Get documentLine's current LU/TU configuration alternatives (if any)
 	 *
 	 * @param documentLine
 	 * @return current LU/TU configuration alternatives or empty; never return <code>null</code>
