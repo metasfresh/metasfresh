@@ -134,7 +134,7 @@ public class HUDocumentViewLoader
 		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 		if (aggregateHU)
 		{
-			huUnitTypeDisplayName = "Agg";
+			huUnitTypeDisplayName = "TU";
 		}
 		else
 		{
@@ -243,7 +243,7 @@ public class HUDocumentViewLoader
 		final I_M_HU hu = huStorage.getM_HU();
 		final I_M_Product product = huStorage.getM_Product();
 
-		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
+		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU");
 
 		final DocumentView storageDocument = DocumentView.builder(adWindowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + hu.getM_HU_ID() + "_" + product.getM_Product_ID()))
