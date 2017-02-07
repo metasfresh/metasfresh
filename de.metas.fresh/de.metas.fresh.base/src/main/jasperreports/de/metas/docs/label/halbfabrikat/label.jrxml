@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-10T17:29:52 -->
+<!-- 2017-02-07T11:56:02 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="226" pageHeight="136" columnWidth="226" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -22,10 +22,10 @@
 	<queryString>
 		<![CDATA[SELECT
 	tu.created::date,
-	tu.value,
+	val.huvalue,
 	av_adr.name AS AdR,
 	COALESCE ( tua_ori.origin, '') || COALESCE ( av_adr.name, '') AS Attributes,
-	tua_gew.valuenumber as weight,
+	(CASE WHEN val.qty IS NOT NULL THEN tua_gew.valuenumber / val.qty ELSE tua_gew.valuenumber END) AS weight,
 	p.name
 FROM
 	M_HU tu
@@ -82,12 +82,17 @@ FROM
 		GROUP BY
 			M_HU_ID
 	) tua_ori ON tu.M_HU_ID = tua_ori.M_HU_ID
+	--get vallues for aggregated HUs if any
+	left outer join "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 WHERE
 	tu.M_HU_ID = $P{M_HU_ID}
-;]]>
+ORDER BY huvalue
+;
+
+]]>
 	</queryString>
 	<field name="created" class="java.sql.Date"/>
-	<field name="value" class="java.lang.String"/>
+	<field name="huvalue" class="java.lang.String"/>
 	<field name="adr" class="java.lang.String"/>
 	<field name="attributes" class="java.lang.String"/>
 	<field name="weight" class="java.math.BigDecimal"/>
