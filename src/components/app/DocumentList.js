@@ -9,6 +9,9 @@ import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
+
 import {
     initLayout
 } from '../../actions/GenericActions';
@@ -35,13 +38,18 @@ class DocumentList extends Component {
         this.state = {
             data: null,
             layout: null,
-            clickOutsideLock: false
+            clickOutsideLock: false,
+            refresh: null
         }
         this.updateData();
     }
 
+    componentWillUnmount() {
+        this.sockClient.disconnect();
+    }
+
     componentWillReceiveProps(props) {
-        const {sorting, windowType} = props;
+        const {sorting, windowType, viewId} = props;
 
         //if we browse list of docs, changing type of Document
         //does not re-construct component, so we need to
@@ -53,6 +61,10 @@ class DocumentList extends Component {
             }), () => {
                 this.updateData();
             })
+        }
+
+        if(viewId !== this.props.viewId){
+            this.connectWS(viewId);
         }
     }
 
@@ -70,6 +82,25 @@ class DocumentList extends Component {
 
             this.updateData(true);
         }
+    }
+
+    // We have to postpone this task til the viewId won't be created
+    connectWS = (viewId) => {
+        this.sock = new SockJs(config.WS_URL);
+        this.sockClient = Stomp.Stomp.over(this.sock);
+
+        this.sockClient.debug = null;
+        this.sockClient.connect({}, frame => {
+            this.sockClient.subscribe('/view/'+ viewId, msg => {
+                const {fullyChanged} = JSON.parse(msg.body);
+                if(fullyChanged == true){
+                    this.browseView();
+                    this.setState({
+                        refresh: Date.now()
+                    })
+                }
+            });
+        });
     }
 
     setListData = (data) => {
@@ -113,7 +144,9 @@ class DocumentList extends Component {
     }
 
     updateData = (isNewFilter) => {
-        const {dispatch, windowType, type, filters, filtersWindowType, query, viewId} = this.props;
+        const {
+            dispatch, windowType, type, filters, filtersWindowType, query, viewId
+        } = this.props;
 
         if(!!filtersWindowType && (filtersWindowType != windowType)) {
             dispatch(setFilter(null,null));
@@ -249,7 +282,7 @@ class DocumentList extends Component {
     }
 
     render() {
-        const {layout, data, clickOutsideLock} = this.state;
+        const {layout, data, clickOutsideLock, refresh} = this.state;
         const {
             dispatch, windowType, type, filters, pagination, open, closeOverlays,
             selected
@@ -279,6 +312,7 @@ class DocumentList extends Component {
                             windowType={windowType}
                             viewId={data.viewId}
                             selected={selected}
+                            refresh={refresh}
                         />
                     </div>
                     <div className="document-list-body">
@@ -321,6 +355,7 @@ class DocumentList extends Component {
                                     viewId={data.viewId}
                                 >
                                     <SelectionAttributes
+                                        refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
                                         selected={selected}
                                     />

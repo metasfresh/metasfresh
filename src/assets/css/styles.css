@@ -855,7 +855,7 @@ td.pulse-off input {
 
 .attributes-selector {
     flex:1;
-    
+
     background-color: #fff;
     border-radius: 3px;
     border: 1px solid $brand-border-color;
