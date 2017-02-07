@@ -10,13 +10,17 @@ class DevicesWidget extends Component {
     render() {
         const {devices, handleChange} = this.props;
 
+        const isMore = devices.length > 1;
+
         return (
             <div>
                 {devices && devices.map((item, index) =>
                     <Device
                         device={item}
                         key={index}
+                        index={index}
                         handleChange={handleChange}
+                        isMore={isMore}
                     />
                 )}
             </div>

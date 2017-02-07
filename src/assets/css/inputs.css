@@ -54,6 +54,19 @@ input {
      position: relative;
  }
 
+ .btn-flag {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: .35rem .2rem;
+    vertical-align: middle;
+    color: #fff;
+    background-color: $brand-color-secondary;
+    border-radius: 3px 0 0 3px;
+    text-align: center;
+ }
+
  .btn-inline {
      display: inline-block;
  }
@@ -193,7 +206,9 @@ input {
     margin-right: 1.5rem;
  }
 
-
+ .btn-flagged {
+     padding-left: 1rem;
+ }
 
 
 /*

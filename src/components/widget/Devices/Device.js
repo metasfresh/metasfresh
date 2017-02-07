@@ -40,14 +40,17 @@ class Device extends Component {
     }
 
     render() {
-        const {value} = this.state;
+        const {value, index, isMore} = this.state;
 
         if(!!value){
             return (
                 <div
-                    className="btn btn-meta-outline-secondary btn-sm btn-inline pointer"
+                    className={"btn btn-meta-outline-secondary btn-sm btn-inline pointer " +
+                        (isMore ? "btn-flagged ": "")
+                    }
                     onClick={this.handleClick}
                 >
+                    {isMore && <span className="btn-flag">{index + 1}</span>}
                     {value}
                 </div>
             )

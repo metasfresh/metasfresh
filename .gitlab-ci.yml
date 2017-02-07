@@ -12,8 +12,8 @@ build:
     paths:
       - dist/
   only:
-    - dev
     - /^dev-.*$/
+    - master
 
 deploy-dev:
   stage: deploy
@@ -22,7 +22,7 @@ deploy-dev:
   dependencies:
     - build
   only:
-    - dev
+    - master
     - /^dev-.*$/
   environment:
     name: dev/$CI_BUILD_REF_NAME
