@@ -15,6 +15,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewAttributesLayout;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -67,13 +68,13 @@ public class DocumentViewAttributesRestController
 	@GetMapping("/layout")
 	public JSONDocumentViewAttributesLayout getAttributesLayout(
 			@PathVariable(PARAM_ViewId) final String viewId //
-			, @PathVariable(PARAM_DocumentId) final int documentId //
+			, @PathVariable(PARAM_DocumentId) final String documentIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
 		final DocumentViewAttributesLayout layout = documentViewsRepo.getView(viewId)
-				.getById(documentId)
+				.getById(DocumentId.of(documentIdStr))
 				.getAttributes()
 				.getLayout();
 
