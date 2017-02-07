@@ -263,7 +263,7 @@ public abstract class DocumentId implements Serializable
 			}
 
 			final StringDocumentId other = (StringDocumentId)obj;
-			return idStr == other.idStr;
+			return Objects.equals(idStr, other.idStr);
 		}
 
 		@Override
