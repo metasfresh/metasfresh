@@ -24,6 +24,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -236,9 +237,16 @@ public final class ProcessInstance
 		//
 		// Build and return the execution result
 		{
+			String summary = processExecutionResult.getSummary();
+			if(Check.isEmpty(summary, true) || JavaProcess.MSG_OK.equals(summary))
+			{
+				// hide summary if empty or MSG_OK (which is the most used non-message)
+				summary = null;
+			}
+			
 			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
 					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
-					.setSummary(processExecutionResult.getSummary())
+					.setSummary(summary)
 					.setError(processExecutionResult.isError());
 			//
 			// Result: report

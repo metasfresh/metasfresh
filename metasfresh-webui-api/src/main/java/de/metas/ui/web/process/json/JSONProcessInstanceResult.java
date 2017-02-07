@@ -44,6 +44,7 @@ public final class JSONProcessInstanceResult implements Serializable
 	private final int pinstanceId;
 
 	@JsonProperty("summary")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String summary;
 	@JsonProperty("error")
 	private final boolean error;
