@@ -136,9 +136,6 @@ export default function windowHandler(state = initialState, action) {
             })
 
         case types.UPDATE_DATA_SUCCESS:
-            if(action.item.field === 'C_BPartner_ID') {
-                console.log(action.item);
-            }
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     data: state[action.scope].data.map(item =>

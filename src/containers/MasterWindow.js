@@ -28,16 +28,6 @@ class MasterWindow extends Component {
         }
     }
 
-    componentDidUpdate() {
-        const {master} = this.props;
-        console.log('******* master *******');
-        master.data.map((item)=> {
-            if(item.field === 'C_BPartner_ID'){
-                console.log(item);
-            }
-        });
-    }
-
     closeModalCallback = (entity, isNew, dataId) => {
         const {dispatch} = this.props;
 

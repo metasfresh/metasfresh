@@ -54,10 +54,6 @@ class Lookup extends Component {
 
     componentDidUpdate() {
         this.handleValueChanged();
-        if(this.props.defaultValue.field === 'C_BPartner_ID'){
-            console.log(this.props.defaultValue);
-        }
-        
     }
 
     handleSelect = (select) => {
@@ -350,10 +346,6 @@ class Lookup extends Component {
             const init = defaultValue[0].value;
             const inputValue = init[Object.keys(init)[0]];
 
-            if(defaultValue.field === 'C_BPartner_ID'){
-                console.log(inputValue);
-            }
-
             if(inputValue !== oldValue){
                 this.inputSearch.value = inputValue;
 
@@ -362,6 +354,8 @@ class Lookup extends Component {
                     isInputEmpty: false
                 }));
             }
+        } else if(oldValue && !defaultValue[0].value && this.inputSearch) { 
+            this.inputSearch.value = "";
         }
     }
 
