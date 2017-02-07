@@ -225,7 +225,27 @@ class Filters extends Component {
         }
     }
 
+    sortFilters = (data) => {
+        let freqFilter = [];
+        let notFreqFilter = [];
+
+        data && data.map((item) => {
+            if(item.frequent){
+                freqFilter.push(item);
+            }else{
+                notFreqFilter.push(item);
+            }
+        });
+
+        return {
+            frequentFilters: freqFilter,
+            notFrequentFilters: notFreqFilter
+        }
+    }
+
     renderStandardFilter = (filterData) => {
+        console.log(filterData)
+
         const {filters} = this.props;
         const {notFrequentListOpen, filterDataItem, notFrequentFilterOpen} = this.state;
 
@@ -233,6 +253,7 @@ class Filters extends Component {
         //once it is rendered
         const active = filters[0] ? getItemsByProperty(filterData, "filterId", filters[0].filterId)[0] : null;
         const isActive = active ? !!active : false;
+
         return (
             <div className="filter-wrapper">
                 <button
@@ -243,7 +264,8 @@ class Filters extends Component {
                         (isActive ? " btn-active" : "")
                     }
                 >
-                <i className="meta-icon-preview" />
+
+                    <i className="meta-icon-preview" />
                     { isActive ? 'Filter: ' + active.caption : 'Select other filter'}
                 </button>
 
@@ -269,6 +291,7 @@ class Filters extends Component {
     }
 
     renderFrequentFilterWrapper = (filterData) => {
+        console.log(filterData)
         const {filters} = this.props;
         const {frequentFilterOpen, selectedItem, active} = this.state;
         return (
@@ -297,29 +320,19 @@ class Filters extends Component {
 
     render() {
         const {filterData, filtersActive} = this.props;
-
-        let freqFilter = [];
-        let notFreqFilter = [];
-
-        filterData && filterData.map((item) => {
-            if(item.frequent){
-                freqFilter.push(item);
-            }else{
-                notFreqFilter.push(item);
-            }
-        })
+        const {frequentFilters, notFrequentFilters} = this.sortFilters(filterData)
 
         return (
             <div>
-            {filterData && !!filterData.length &&
-                <div className="filter-wrapper js-not-unselect">
-                <span>Filters: </span>
-                <div className="filter-wrapper">
-                {!!freqFilter.length && this.renderFrequentFilterWrapper(freqFilter)}
-                {!!notFreqFilter.length && this.renderStandardFilter(notFreqFilter)}
-                </div>
-                </div>
-            }
+                {filterData && !!filterData.length &&
+                    <div className="filter-wrapper js-not-unselect">
+                        <span>Filters: </span>
+                        <div className="filter-wrapper">
+                            {!!frequentFilters.length && this.renderFrequentFilterWrapper(frequentFilters)}
+                            {!!notFrequentFilters.length && this.renderStandardFilter(notFrequentFilters)}
+                        </div>
+                    </div>
+                }
             </div>
         )
     }

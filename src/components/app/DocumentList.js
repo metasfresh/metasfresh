@@ -244,6 +244,18 @@ class DocumentList extends Component {
         this.getData(data.viewId, setPage, 20, this.getSortingQuery(asc, field));
     }
 
+    newDocument = () => {
+        const {dispatch, windowType} = this.props;
+
+        dispatch(push('/window/' + windowType + '/new'));
+    }
+
+    setClickOutsideLock = (value) => {
+        this.setState({
+            clickOutsideLock: !!value
+        })
+    }
+
     handleChangePage = (index) => {
         const {data} = this.state;
         const {sorting, pagination, dispatch, updateUri, windowType} = this.props;
@@ -267,18 +279,6 @@ class DocumentList extends Component {
 
             this.sortData(sorting.dir, sorting.prop, false, currentPage);
         }
-    }
-
-    newDocument = () => {
-        const {dispatch, windowType} = this.props;
-
-        dispatch(push('/window/' + windowType + '/new'));
-    }
-
-    setClickOutsideLock = (value) => {
-        this.setState({
-            clickOutsideLock: !!value
-        })
     }
 
     render() {
