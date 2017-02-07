@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-17T16:00:35 -->
+<!-- 2017-02-07T18:21:15 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="124" pageHeight="453" columnWidth="124" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -47,9 +47,9 @@
 	p.name || ' / ' || pt.name as name,
 	tua_anb.name as anbau,
 	tua_her.name as herkunft,
-	tua_gew.valuenumber as gewicht,
+	(CASE WHEN val.qty IS NOT NULL THEN tua_gew.valuenumber / val.qty ELSE tua_gew.valuenumber END) as gewicht,
 	tu.created as abgepackt,
-	tu.value as lotnummer,
+	val.huvalue as lotnummer,
 	/*tua_cert.name*/ '' as certificate,
 	/*tua_prod.name*/ null as produzent,
 	tua_adr.name as adr,
@@ -101,8 +101,11 @@ FROM
 			AND sub_av.name ILIKE '%suisse%garantie%'
 			AND sub_tua.isActive = 'Y'
 	) tua_sg ON tu.M_HU_ID = tua_sg.M_HU_ID
+	LEFT JOIN "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 WHERE
 	tu.M_HU_ID = $P{M_HU_ID}
+
+ORDER BY lotnummer
 ;]]>
 	</queryString>
 	<field name="org_address" class="java.lang.String"/>
