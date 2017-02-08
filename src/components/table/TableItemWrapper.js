@@ -74,6 +74,7 @@ class TableItemWrapper extends Component {
         } = this.props;
 
         const {rows} = this.state;
+
         return (
             <tbody>
                 {rows.map((row, index) =>

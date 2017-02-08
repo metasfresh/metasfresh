@@ -215,6 +215,10 @@ class Table extends Component {
         const item = rowData[tabid];
         const selectRange = e.shiftKey;
 
+        console.log('handleKeyDownDocList');
+        console.log(e.key);
+        console.log(selected);
+
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
@@ -390,6 +394,8 @@ class Table extends Component {
             onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays,
             indentSupported
         } = this.props;
+
+        console.log(rowData);
 
         const {selected} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
