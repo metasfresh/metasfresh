@@ -223,9 +223,9 @@ class ReadPaymentDocumentPanel
 	 * Optionally set a bPartner that needs to have a relation to the payment document which we are reading.<br>
 	 * If set, and the system finds an existing {@link I_C_BP_BankAccount}, then that bank account is only used
 	 * if it belongs to the given {@code contextBPartner} or to a second bPartner who has a {@code RemitTo} {@link I_C_BP_Relation} with the given {@code contextPartner}.
-	 * 
+	 *
 	 * @param contextBPartner
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/781
 	 */
 	public void setContextBPartner(I_C_BPartner contextBPartner)
@@ -447,7 +447,7 @@ class ReadPaymentDocumentPanel
 	 * <li>filters out accounts where {@link #validateAgainstContextBPartner(I_C_BP_BankAccount)} returned a {@code 3}
 	 * <li>orders by the result of {@link #validateAgainstContextBPartner(I_C_BP_BankAccount)}, i.e. prefers 1s order 2s
 	 * <li>returns the first match.
-	 * 
+	 *
 	 * @param dataProvider
 	 * @return
 	 */
@@ -460,7 +460,7 @@ class ReadPaymentDocumentPanel
 				.map(pair -> pair.getLeft())
 				.findFirst();
 
-		return firstBankAccount.orElseGet(null);
+		return firstBankAccount.orElse(null);
 	}
 
 	/**
@@ -468,7 +468,7 @@ class ReadPaymentDocumentPanel
 	 * <li>{@code 1} if no {@link #setContextBPartner(I_C_BPartner)} was set, or if the given {@code bpBankAccount}'s bPartner is the one that was set
 	 * <li>{@code 2} else, if the given {@code bpBankAccount}'s bPartner is a {@code RemitTo} partner of the {@link #setContextBPartner(I_C_BPartner)} partner
 	 * <li>{@code 3} else
-	 * 
+	 *
 	 * @param bpBankAccount
 	 * @return
 	 */
