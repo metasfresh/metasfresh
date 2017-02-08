@@ -1368,10 +1368,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidateId, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
-		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+
+		if (qtyToInvoiceOverride.signum() == 0)
+		{
+			invoiceCandidate.setQtyToInvoice_Override(null);
+		}
+		else
+		{
+			invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+		}
+
+		if (priceEnteredOverride.signum() == 0)
+		{
+			invoiceCandidate.setPriceEntered_Override(null);
+		}
+		else
+		{
+			invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+		}
+
 		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(BigDecimal.ZERO);
-		
+
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
@@ -1487,6 +1504,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				createUpdateIla(icToLink, il, qtyInvoiced, note);
 				// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
+
 			}
 		}
 	}
