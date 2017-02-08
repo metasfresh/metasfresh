@@ -49,11 +49,11 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -222,11 +222,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		invalidateAllNoNotify();
 
-		final DocumentViewChangesCollector changesCollector = DocumentViewChangesCollector.getCurrentOrNull();
-		if (changesCollector != null)
-		{
-			changesCollector.collectFullyChanged(this);
-		}
+		DocumentViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 
 	private void invalidateAllNoNotify()

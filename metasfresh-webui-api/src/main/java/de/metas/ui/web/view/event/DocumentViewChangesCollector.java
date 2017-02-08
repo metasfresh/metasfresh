@@ -37,11 +37,11 @@ import groovy.transform.Immutable;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -90,6 +90,18 @@ public class DocumentViewChangesCollector implements AutoCloseable
 		return null;
 	}
 
+	public static final DocumentViewChangesCollector getCurrentOrAutoflush()
+	{
+		final DocumentViewChangesCollector collector = getCurrentOrNull();
+		if (collector != null)
+		{
+			return collector;
+		}
+
+		final boolean autoflush = true;
+		return new DocumentViewChangesCollector(autoflush);
+	}
+
 	private static final transient Logger logger = LogManager.getLogger(DocumentViewChangesCollector.class);
 
 	private static final transient ThreadLocal<DocumentViewChangesCollector> THREADLOCAL = new ThreadLocal<>();
@@ -98,14 +110,24 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	@Autowired
 	@Lazy
 	private SimpMessagingTemplate websocketMessagingTemplate;
+	
+	private final boolean autoflush;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final Map<DocumentViewChangesKey, DocumentViewChanges> viewChangesMap = new LinkedHashMap<>();
 
+
 	private DocumentViewChangesCollector()
+	{
+		this(false); // autoflush=false
+	}
+
+	private DocumentViewChangesCollector(final boolean autoflush)
 	{
 		super();
 		Adempiere.autowire(this);
+
+		this.autoflush = autoflush;
 	}
 
 	@Override
@@ -148,12 +170,16 @@ public class DocumentViewChangesCollector implements AutoCloseable
 	public void collectFullyChanged(final IDocumentViewSelection view)
 	{
 		viewChanges(view).setFullyChanged();
+		
+		autoflushIfEnabled();
 	}
 
 	private void collectFromChanges(final DocumentViewChanges changes)
 	{
 		final DocumentViewChangesKey key = new DocumentViewChangesKey(changes.getViewId(), changes.getAD_Window_ID());
 		viewChanges(key).collectFrom(changes);
+		
+		autoflushIfEnabled();
 	}
 
 	private DocumentViewChangesCollector getParentOrNull()
@@ -169,13 +195,19 @@ public class DocumentViewChangesCollector implements AutoCloseable
 
 	private void flush()
 	{
+		final List<DocumentViewChanges> changesList = getAndClean();
+		if(changesList.isEmpty())
+		{
+			return;
+		}
+		
 		//
 		// Try flushing to parent collector if any
 		final DocumentViewChangesCollector parentCollector = getParentOrNull();
 		if (parentCollector != null)
 		{
 			logger.trace("Flushing {} to parent collector: {}", this, parentCollector);
-			getAndClean()
+			changesList
 					.forEach(parentCollector::collectFromChanges);
 		}
 		//
@@ -183,14 +215,29 @@ public class DocumentViewChangesCollector implements AutoCloseable
 		else
 		{
 			logger.trace("Flushing {} to websocket", this);
-			getAndClean().stream()
+			changesList.stream()
 					.map(changes -> JSONDocumentViewChanges.of(changes))
 					.forEach(this::sendToWebsocket);
 		}
 	}
+	
+	private void autoflushIfEnabled()
+	{
+		if(!autoflush)
+		{
+			return;
+		}
+		
+		flush();
+	}
 
 	private List<DocumentViewChanges> getAndClean()
 	{
+		if(viewChangesMap.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
 		final List<DocumentViewChanges> changesList = ImmutableList.copyOf(viewChangesMap.values());
 		viewChangesMap.clear();
 		return changesList;
