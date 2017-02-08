@@ -89,11 +89,10 @@ public class DocumentViewAttributesRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentViewAttributes attributes = documentViewsRepo.getView(viewId)
+		return documentViewsRepo.getView(viewId)
 				.getById(documentId)
-				.getAttributes();
-
-		return JSONDocument.ofMap(attributes.getDocumentPath(), attributes.getData());
+				.getAttributes()
+				.toJSONDocument();
 	}
 
 	@PatchMapping

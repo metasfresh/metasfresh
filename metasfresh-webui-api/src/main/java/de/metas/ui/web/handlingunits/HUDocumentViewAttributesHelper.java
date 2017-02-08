@@ -47,7 +47,12 @@ public final class HUDocumentViewAttributesHelper
 
 	public static String extractAttributeName(final IAttributeValue attributeValue)
 	{
-		return attributeValue.getM_Attribute().getValue();
+		return extractAttributeName(attributeValue.getM_Attribute());
+	}
+
+	public static String extractAttributeName(final org.compiere.model.I_M_Attribute attribute)
+	{
+		return attribute.getValue();
 	}
 
 	public static Object extractJSONValue(final IAttributeValue attributeValue)

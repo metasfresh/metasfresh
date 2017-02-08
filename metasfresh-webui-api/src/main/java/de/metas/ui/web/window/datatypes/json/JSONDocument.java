@@ -258,24 +258,6 @@ public final class JSONDocument implements Serializable
 		return jsonDocument;
 	}
 
-	public static JSONDocument ofMap(final DocumentPath documentPath, final Map<String, Object> map)
-	{
-		final JSONDocument jsonDocument = new JSONDocument(documentPath);
-
-		final List<JSONDocumentField> jsonFields = map.entrySet()
-				.stream()
-				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue())
-						.setDisplayed(true, null)
-						.setReadonly(false, null)
-						.setMandatory(false, null))
-				.collect(Collectors.toList());
-
-		jsonDocument.setFields(jsonFields);
-
-		return jsonDocument;
-
-	}
-
 	@JsonProperty("id")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String id;
@@ -421,7 +403,7 @@ public final class JSONDocument implements Serializable
 		return this;
 	}
 
-	private void setFields(final Collection<JSONDocumentField> fields)
+	public void setFields(final Collection<JSONDocumentField> fields)
 	{
 		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
 	}
