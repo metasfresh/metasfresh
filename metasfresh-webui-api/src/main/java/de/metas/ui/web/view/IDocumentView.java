@@ -35,6 +35,8 @@ public interface IDocumentView
 	DocumentPath getDocumentPath();
 
 	DocumentId getDocumentId();
+	
+	IDocumentViewType getType();
 
 	String getIdFieldNameOrNull();
 

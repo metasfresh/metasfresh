@@ -229,9 +229,15 @@ public final class JSONDocument implements Serializable
 
 			jsonDocument.setFields(jsonFields);
 
+			//
+			// Document view record specific attributes
 			if (documentView.hasAttributes())
 			{
 				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);
+			}
+			if(documentView.getType() != null)
+			{
+				jsonDocument.putOtherProperty("type", documentView.getType().getName());
 			}
 		}
 

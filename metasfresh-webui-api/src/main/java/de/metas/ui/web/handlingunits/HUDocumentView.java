@@ -39,9 +39,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 public final class HUDocumentView implements IDocumentView
 {
-	public static final HUDocumentView of(final IDocumentView delegate, final RecordType recordType)
+	public static final HUDocumentView of(final IDocumentView delegate)
 	{
-		return new HUDocumentView(delegate, recordType);
+		return new HUDocumentView(delegate);
 	}
 
 	public static final HUDocumentView cast(final IDocumentView document)
@@ -49,28 +49,20 @@ public final class HUDocumentView implements IDocumentView
 		return (HUDocumentView)document;
 	}
 
-	public static enum RecordType
-	{
-		HU, HUStorage
-	};
-
 	private final IDocumentView delegate;
-	private final RecordType recordType;
 
-	private HUDocumentView(final IDocumentView delegate, final RecordType recordType)
+	private HUDocumentView(final IDocumentView delegate)
 	{
 		super();
 		Check.assumeNotNull(delegate, "Parameter delegate is not null");
-		Check.assumeNotNull(recordType, "Parameter recordType is not null");
+		Check.assumeNotNull(delegate.getType(), "type shall not be null for {}", delegate);
 		this.delegate = delegate;
-		this.recordType = recordType;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(recordType)
 				.addValue(delegate)
 				.toString();
 	}
@@ -85,6 +77,12 @@ public final class HUDocumentView implements IDocumentView
 	public DocumentId getDocumentId()
 	{
 		return delegate.getDocumentId();
+	}
+
+	@Override
+	public HUDocumentViewType getType()
+	{
+		return (HUDocumentViewType)delegate.getType();
 	}
 
 	@Override
@@ -152,14 +150,9 @@ public final class HUDocumentView implements IDocumentView
 		return X_M_HU.HUSTATUS_Planning.equals(getHUStatus());
 	}
 
-	public RecordType getRecordType()
-	{
-		return recordType;
-	}
-
 	public boolean isPureHU()
 	{
-		return recordType == RecordType.HU;
+		return getType().isPureHU();
 	}
 
 	public String getSummary()

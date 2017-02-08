@@ -131,14 +131,17 @@ public class HUDocumentViewLoader
 		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
 
 		final String huUnitTypeDisplayName;
+		final HUDocumentViewType huRecordType;
 		final boolean aggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 		if (aggregateHU)
 		{
 			huUnitTypeDisplayName = "TU";
+			huRecordType = HUDocumentViewType.TU;
 		}
 		else
 		{
 			huUnitTypeDisplayName = huUnitTypeCode;
+			huRecordType = HUDocumentViewType.ofHU_UnitType(huUnitTypeCode);
 		}
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
 
@@ -148,6 +151,7 @@ public class HUDocumentViewLoader
 
 		final DocumentView.Builder huViewRecord = DocumentView.builder(adWindowId)
 				.setIdFieldName(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID)
+				.setType(huRecordType)
 				.setAttributesProvider(getAttributesProvider())
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
@@ -192,7 +196,7 @@ public class HUDocumentViewLoader
 			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
 		}
 
-		return HUDocumentView.of(huViewRecord.build(), HUDocumentView.RecordType.HU);
+		return HUDocumentView.of(huViewRecord.build());
 	}
 
 	private static final String extractPackingInfo(final I_M_HU hu)
@@ -248,6 +252,7 @@ public class HUDocumentViewLoader
 		final DocumentView storageDocument = DocumentView.builder(adWindowId)
 				.setDocumentId(DocumentId.ofString(I_M_HU_Storage.Table_Name + "_" + hu.getM_HU_ID() + "_" + product.getM_Product_ID()))
 				.setIdFieldName(null) // N/A
+				.setType(HUDocumentViewType.HUStorage)
 				//
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				//.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_Value, hu.getValue()) // NOTE: don't show value on storage level
@@ -258,7 +263,7 @@ public class HUDocumentViewLoader
 				.putFieldValue(I_WEBUI_HU_View.COLUMNNAME_QtyCU, huStorage.getQty())
 				//
 				.build();
-		return HUDocumentView.of(storageDocument, HUDocumentView.RecordType.HUStorage);
+		return HUDocumentView.of(storageDocument);
 	}
 
 	private JSONLookupValue createLookupValue(final I_M_Product product)
