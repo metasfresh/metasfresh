@@ -45,7 +45,7 @@ SELECT
 	p.name || ' / ' || pt.name as name,
 	tua_anb.name as anbau,
 	tua_her.name as herkunft,
-	(CASE WHEN val.qty IS NOT NULL THEN tua_gew.valuenumber / val.qty ELSE tua_gew.valuenumber END) as gewicht,
+	(CASE WHEN val.qty IS NOT NULL THEN round(tua_gew.valuenumber / val.qty,3) ELSE tua_gew.valuenumber END) as gewicht,
 	tu.created as abgepackt,
 	val.huvalue as lotnummer,
 	/*tua_cert.name*/ ''::character varying as certificate,

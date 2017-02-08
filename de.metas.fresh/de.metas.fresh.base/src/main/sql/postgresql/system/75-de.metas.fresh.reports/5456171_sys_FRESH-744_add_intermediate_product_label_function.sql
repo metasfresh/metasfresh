@@ -16,7 +16,7 @@ SELECT
 	val.huvalue,
 	av_adr.name AS AdR,
 	COALESCE ( tua_ori.origin, '') || COALESCE ( av_adr.name, '') AS Attributes,
-	(CASE WHEN val.qty IS NOT NULL THEN tua_gew.valuenumber / val.qty ELSE tua_gew.valuenumber END) AS weight,
+	(CASE WHEN val.qty IS NOT NULL THEN round(tua_gew.valuenumber / val.qty,3) ELSE tua_gew.valuenumber END) AS weight,
 	p.name
 FROM
 	M_HU tu

@@ -80,9 +80,9 @@ FROM
 		COALESCE( (CASE WHEN val.qty IS NOT NULL THEN (avg(tus.qty) / val.qty)::numeric ELSE avg(tus.qty)  END), 0) AS CU_per_TU,
 		COALESCE(val.qty, count(tu.M_HU_ID))::bigint AS TU_per_LU
 		FROM 	M_HU_Item lui
-			LEFT JOIN M_HU_PI_Item lupii ON lui.M_HU_PI_Item_ID = lupii.M_HU_PI_Item_ID AND lupii.ItemType = 'HU' AND lupii.isActive = 'Y'
-			LEFT JOIN M_HU tu ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID
-			LEFT JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID AND tus.isActive = 'Y'
+			 JOIN M_HU_PI_Item lupii ON lui.M_HU_PI_Item_ID = lupii.M_HU_PI_Item_ID AND lupii.ItemType = 'HU' AND lupii.isActive = 'Y'
+			 JOIN M_HU tu ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID
+			 JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID AND tus.isActive = 'Y'
 			LEFT JOIN "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 		WHERE lui.isActive = 'Y'
 		GROUP BY lui.M_HU_ID, val.qty
