@@ -608,11 +608,11 @@ public final class AEnv
 	 */
 	public static void zoom(final int AD_Table_ID, final int Record_ID)
 	{
-		if(AD_Table_ID <= 0)
+		if (AD_Table_ID <= 0)
 		{
 			return;
 		}
-		
+
 		zoom(RecordZoomWindowFinder.newInstance(AD_Table_ID, Record_ID));
 	}
 
@@ -633,30 +633,32 @@ public final class AEnv
 		{
 			return;
 		}
-		
+
 		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
 				.setSO_Window_ID(AD_Window_ID)
 				.setPO_Window_ID(PO_Window_ID));
 	}
-	
+
 	private static final void zoom(final RecordZoomWindowFinder zoomInfo)
 	{
 		final int windowIdToUse = zoomInfo.findAD_Window_ID();
-		if(windowIdToUse <= 0)
+		if (windowIdToUse <= 0)
 		{
 			log.warn("No AD_Window_ID found to zoom for {}", zoomInfo);
 			return;
 		}
-		
+
 		final MQuery query = zoomInfo.createZoomQuery();
-		
-		final AWindow frame = new AWindow();
-		if (!frame.initWindow(windowIdToUse, query))
-		{
-			return;
-		}
-		addToWindowManager(frame);
-		showCenterScreenOrMaximized(frame);
+
+		SwingUtilities.invokeLater(() -> {
+			final AWindow frame = new AWindow();
+			if (!frame.initWindow(windowIdToUse, query))
+			{
+				return;
+			}
+			addToWindowManager(frame);
+			showCenterScreenOrMaximized(frame);
+		});
 	}
 
 	/**
@@ -670,7 +672,7 @@ public final class AEnv
 		{
 			return;
 		}
-		
+
 		zoom(RecordZoomWindowFinder.newInstance(query));
 	}
 
