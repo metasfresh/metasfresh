@@ -33,7 +33,7 @@ class QuickActionsDropdown extends Component {
                     >
                         {action.caption}
                         {action.disabled &&
-                            <p>
+                            <p className="one-line">
                                 <small>({action.disabledReason})</small>
                             </p>
                         }

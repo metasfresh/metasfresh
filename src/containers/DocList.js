@@ -21,7 +21,16 @@ class DocList extends Component {
 
     componentDidMount = () => {
         const {dispatch, windowType} = this.props;
-        dispatch(getWindowBreadcrumb(windowType))
+
+        dispatch(getWindowBreadcrumb(windowType));
+    }
+
+    componentDidUpdate = (prevProps) => {
+        const {dispatch, windowType} = this.props;
+
+        if(prevProps.windowType !== windowType){
+            dispatch(getWindowBreadcrumb(windowType));
+        }
     }
 
     updateUriCallback = (prop, value) => {
