@@ -57,6 +57,7 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -141,9 +142,11 @@ public class HUReportModel implements IDisposable
 			selectedHUs.add(getCurrentHU());
 		}
 
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		for (final I_M_HU hu : selectedHUs)
 		{
-			final String selectedHUUnitType = hu.getM_HU_PI_Version().getHU_UnitType();
+			final String selectedHUUnitType = handlingUnitsBL.getEffectivePIVersion(hu).getHU_UnitType();
 
 			// BL NOT IMPLEMENTED YET FOR VIRTUAL PI REPORTS, because we don't have any
 

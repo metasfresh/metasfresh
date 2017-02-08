@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.editor.model;
 
+import de.metas.handlingunits.IHUIteratorListener;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -13,15 +15,14 @@ package de.metas.handlingunits.client.terminal.editor.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public interface IHUKeyVisitor
 {
@@ -40,7 +41,22 @@ public interface IHUKeyVisitor
 		 *
 		 * This result can be returned only from before* methods.
 		 */
-		SKIP_DOWNSTREAM,
+		SKIP_DOWNSTREAM;
+
+		public static VisitResult of(final IHUIteratorListener.Result result)
+		{
+			switch (result)
+			{
+				case CONTINUE:
+					return VisitResult.CONTINUE;
+				case STOP:
+					return VisitResult.STOP;
+				case SKIP_DOWNSTREAM:
+					return VisitResult.SKIP_DOWNSTREAM;
+				default:
+					throw new IllegalArgumentException("Cannot convert " + result + " to " + VisitResult.class);
+			}
+		}
 	}
 
 	/**
