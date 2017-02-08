@@ -301,12 +301,12 @@ class DocumentList extends Component {
                                     <i className="meta-icon-add" /> New {layout.caption}
                                 </button>
                             }
-                            <Filters
+                            {/*<Filters
                                 filterData={layout.filters}
                                 filtersActive={data.filters}
                                 windowType={windowType}
                                 viewId={data.viewId}
-                            />
+                            />*/}
                         </div>
                         <QuickActions
                             windowType={windowType}

@@ -45,6 +45,8 @@ class Modal extends Component {
                     this.handleClose();
                 });
                 break;
+            case "documentView":
+                break;
         }
     }
 

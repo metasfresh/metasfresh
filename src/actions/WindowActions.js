@@ -310,7 +310,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                         if (rowId) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
-                        
+
                         dispatch(updateDataSuccess(field, getScope(isModal)));
                     }
                 });
