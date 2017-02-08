@@ -9,11 +9,10 @@ class DevicesWidget extends Component {
 
     render() {
         const {devices, handleChange} = this.props;
-
         const isMore = devices.length > 1;
 
         return (
-            <div>
+            <div className="form-group-flex-item">
                 {devices && devices.map((item, index) =>
                     <Device
                         device={item}
