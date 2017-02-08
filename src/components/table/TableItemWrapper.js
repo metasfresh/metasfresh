@@ -102,6 +102,7 @@ class TableItemWrapper extends Component {
                         lastSibling={row.lastChild}
                         handleSelect={handleSelect}
                         odd={(odd && (rows.length & 1))}
+                        contextType={row.type}
                     />
                 )}
             </tbody>

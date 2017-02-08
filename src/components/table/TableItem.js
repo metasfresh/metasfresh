@@ -185,7 +185,7 @@ class TableItem extends Component {
                     >
                         {huType == "LU" && <i className="meta-icon-palette"/>}
                         {huType == "TU" && <i className="meta-icon-package"/>}
-                        {huType == "V" && <i className="meta-icon-product"/>}
+                        {huType == "CU" && <i className="meta-icon-product"/>}
                     </div>
                 </div>
             );
@@ -199,10 +199,8 @@ class TableItem extends Component {
             isSelected, fields, selectedProducts, rowId, cols,
             onMouseDown, onDoubleClick, included, tabid, type, docId,
             tabIndex, mainTable, entity, readonly, indent, odd,
-            handleRightClick, indentSupported
+            handleRightClick, indentSupported, contextType
         } = this.props;
-
-        const huType = findRowByPropName(fields, "HU_UnitType").value;
 
         return (
             <tr
@@ -217,7 +215,7 @@ class TableItem extends Component {
             >
                 {indentSupported &&
                     <td className="indented">
-                        {this.renderTree(huType)}
+                        {this.renderTree(contextType)}
                     </td>
                 }
                 {this.renderCells(cols, fields)}
