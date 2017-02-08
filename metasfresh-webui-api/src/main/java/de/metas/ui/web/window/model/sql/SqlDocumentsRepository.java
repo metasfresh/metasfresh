@@ -26,7 +26,6 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
@@ -265,41 +264,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		 * @return initial value or {@link DocumentValuesSupplier#NO_VALUE} if it cannot provide a value
 		 */
 		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
-	}
-
-	private static final class InitialDocumentValuesSupplier implements DocumentValuesSupplier
-	{
-		private final int id;
-
-		private InitialDocumentValuesSupplier(final int id)
-		{
-			this.id = id;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this).add("id", id).toString();
-		}
-
-		@Override
-		public int getId()
-		{
-			return id;
-		}
-
-		@Override
-		public String getVersion()
-		{
-			return null;
-		}
-
-		@Override
-		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
-		{
-			return NO_VALUE;
-		}
-
 	}
 
 	private static final class ResultSetDocumentValuesSupplier implements DocumentValuesSupplier
