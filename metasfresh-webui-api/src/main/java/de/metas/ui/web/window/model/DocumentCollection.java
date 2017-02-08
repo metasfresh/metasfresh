@@ -240,7 +240,7 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
-		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt())
+		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId())
 				.retriveDocumentOrNull();
 		if (document == null)
 		{

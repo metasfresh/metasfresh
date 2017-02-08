@@ -22,6 +22,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.ProcessParametersRepository;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -39,11 +40,11 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -56,11 +57,11 @@ public class ProcessInstancesRepository
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorFactory;
 
-	private final LoadingCache<Integer, ProcessInstance> processInstances = CacheBuilder.newBuilder()
-			.removalListener(new RemovalListener<Integer, ProcessInstance>()
+	private final LoadingCache<DocumentId, ProcessInstance> processInstances = CacheBuilder.newBuilder()
+			.removalListener(new RemovalListener<DocumentId, ProcessInstance>()
 			{
 				@Override
-				public void onRemoval(final RemovalNotification<Integer, ProcessInstance> notification)
+				public void onRemoval(final RemovalNotification<DocumentId, ProcessInstance> notification)
 				{
 					final ProcessInstance pinstance = notification.getValue();
 					pinstance.destroy();
@@ -89,7 +90,7 @@ public class ProcessInstancesRepository
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
 		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
-		final int adPInstanceId = processInfo.getAD_PInstance_ID();
+		final DocumentId adPInstanceId = DocumentId.of(processInfo.getAD_PInstance_ID());
 
 		//
 		// Build the parameters document
@@ -111,16 +112,17 @@ public class ProcessInstancesRepository
 		return pinstance;
 	}
 
-	private ProcessInstance retrieveProcessInstance(final int adPInstanceId)
+	private ProcessInstance retrieveProcessInstance(final DocumentId adPInstanceId)
 	{
-		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+		Check.assumeNotNull(adPInstanceId, "Parameter adPInstanceId is not null");
+		Check.assume(adPInstanceId.toInt() > 0, "adPInstanceId > 0");
 
 		//
 		// Load process info
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(adPInstanceId)
+				.setAD_PInstance_ID(adPInstanceId.toInt())
 				.build();
 
 		//
@@ -142,11 +144,11 @@ public class ProcessInstancesRepository
 		return new ProcessInstance(processDescriptor, adPInstanceId, parametersDoc);
 	}
 
-	public ProcessInstance getProcessInstanceForReading(final int pinstanceId)
+	public ProcessInstance getProcessInstanceForReading(final int pinstanceIdAsInt)
 	{
 		try
 		{
-			return processInstances.get(pinstanceId);
+			return processInstances.get(DocumentId.of(pinstanceIdAsInt));
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)
 		{
@@ -154,11 +156,11 @@ public class ProcessInstancesRepository
 		}
 	}
 
-	public ProcessInstance getProcessInstanceForWriting(final int pinstanceId)
+	public ProcessInstance getProcessInstanceForWriting(final int pinstanceIdAsInt)
 	{
 		try
 		{
-			return processInstances.get(pinstanceId)
+			return processInstances.get(DocumentId.of(pinstanceIdAsInt))
 					.copy(CopyMode.CheckOutWritable);
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)

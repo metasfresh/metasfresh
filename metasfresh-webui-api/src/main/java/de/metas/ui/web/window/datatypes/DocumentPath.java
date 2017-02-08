@@ -392,6 +392,22 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
 	}
+	
+	public DocumentPath createChildPath(final DetailId detailId, final DocumentId rowId)
+	{
+		if (detailId == null)
+		{
+			throw new IllegalArgumentException("detailId must be not empty");
+		}
+		
+		if (rowId == null || rowId.isNew())
+		{
+			throw new IllegalArgumentException("new or null rowId is not accepted: " + rowId);
+		}
+		
+		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
+	}
+
 
 	public static final class Builder
 	{

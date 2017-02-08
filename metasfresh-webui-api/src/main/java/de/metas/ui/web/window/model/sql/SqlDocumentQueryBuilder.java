@@ -21,6 +21,7 @@ import org.compiere.util.Evaluatees;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -80,7 +81,7 @@ public class SqlDocumentQueryBuilder
 	private transient Evaluatee _evaluationContext = null; // lazy
 	private final List<DocumentFilter> documentFilters = new ArrayList<>();
 	private Document parentDocument;
-	private Integer recordId = null;
+	private DocumentId recordId = null;
 
 	private boolean noSorting = false;
 	private List<DocumentQueryOrderBy> orderBys;
@@ -280,7 +281,8 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// Key column
-		if (isRecordIdSet())
+		final DocumentId recordId = getRecordId();
+		if (recordId != null)
 		{
 			final String sqlKeyColumnName = entityBinding.getKeyColumnName();
 			if (sqlKeyColumnName == null)
@@ -290,7 +292,7 @@ public class SqlDocumentQueryBuilder
 
 			sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
 			sqlWhereClauseBuilder.append(" /* key */ ").append(sqlKeyColumnName).append("=?");
-			sqlParams.add(getRecordId());
+			sqlParams.add(recordId.toInt());
 		}
 
 		//
@@ -605,20 +607,15 @@ public class SqlDocumentQueryBuilder
 		return this;
 	}
 
-	public SqlDocumentQueryBuilder setRecordId(final Integer recordId)
+	public SqlDocumentQueryBuilder setRecordId(final DocumentId recordId)
 	{
 		this.recordId = recordId;
 		return this;
 	}
 
-	private int getRecordId()
+	private DocumentId getRecordId()
 	{
 		return recordId;
-	}
-
-	private boolean isRecordIdSet()
-	{
-		return recordId != null;
 	}
 
 	public SqlDocumentQueryBuilder noSorting()

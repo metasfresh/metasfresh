@@ -49,7 +49,7 @@ public class JSONProcessInstance implements Serializable
 	private JSONProcessInstance(final ProcessInstance pinstance, final JSONOptions jsonOpts)
 	{
 		super();
-		pinstanceId = pinstance.getAD_PInstance_ID();
+		pinstanceId = pinstance.getAD_PInstance_ID().toInt();
 
 		parameters = pinstance.getParameters()
 				.stream()

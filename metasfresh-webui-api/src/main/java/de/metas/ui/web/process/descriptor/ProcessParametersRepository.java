@@ -10,6 +10,7 @@ import org.compiere.util.Env;
 
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -32,11 +33,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -67,7 +68,7 @@ public class ProcessParametersRepository implements DocumentsRepository
 	}
 
 	@Override
-	public Document retrieveDocumentById(final DocumentEntityDescriptor parametersDescriptor, final int adPInstanceId)
+	public Document retrieveDocumentById(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
 	{
 		//
 		// Get parameters
@@ -100,7 +101,7 @@ public class ProcessParametersRepository implements DocumentsRepository
 		throw new UnsupportedOperationException();
 	}
 
-	public Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final int adPInstanceId)
+	public Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
 	{
 		//
 		// Build the parameters (as document)
@@ -111,15 +112,15 @@ public class ProcessParametersRepository implements DocumentsRepository
 	@Override
 	public void refresh(final Document processParameters)
 	{
-		final int adPInstanceId = processParameters.getDocumentIdAsInt();
+		final DocumentId adPInstanceId = processParameters.getDocumentId();
 		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(adPInstanceId);
 		processParameters.refreshFromSupplier(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters));
 	}
 
-	private final Map<String, ProcessInfoParameter> retrieveProcessInfoParameters(final int adPInstanceId)
+	private final Map<String, ProcessInfoParameter> retrieveProcessInfoParameters(final DocumentId adPInstanceId)
 	{
 		final Properties ctx = Env.getCtx();
-		final Map<String, ProcessInfoParameter> processInfoParameters = adPInstanceDAO.retrieveProcessInfoParameters(ctx, adPInstanceId)
+		final Map<String, ProcessInfoParameter> processInfoParameters = adPInstanceDAO.retrieveProcessInfoParameters(ctx, adPInstanceId.toInt())
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(ProcessInfoParameter::getParameterName));
 		return processInfoParameters;
@@ -174,17 +175,17 @@ public class ProcessParametersRepository implements DocumentsRepository
 
 	private static final class ProcessInfoParameterDocumentValuesSupplier implements DocumentValuesSupplier
 	{
-		private final int adPInstanceId;
+		private final DocumentId adPInstanceId;
 		private final Map<String, ProcessInfoParameter> processInfoParameters;
 
-		public ProcessInfoParameterDocumentValuesSupplier(final int adPInstanceId, final Map<String, ProcessInfoParameter> processInfoParameters)
+		public ProcessInfoParameterDocumentValuesSupplier(final DocumentId adPInstanceId, final Map<String, ProcessInfoParameter> processInfoParameters)
 		{
 			this.adPInstanceId = adPInstanceId;
 			this.processInfoParameters = processInfoParameters;
 		}
 
 		@Override
-		public int getId()
+		public DocumentId getDocumentId()
 		{
 			return adPInstanceId;
 		}

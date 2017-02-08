@@ -1,6 +1,7 @@
 package de.metas.ui.web.process;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -30,6 +31,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -132,17 +134,17 @@ public class ProcessRestController
 		final String sqlWhereClause;
 		final String viewId = Strings.emptyToNull(request.getViewId());
 		int view_AD_Window_ID = -1;
-		int view_DocumentId = -1;
+		DocumentId view_DocumentId = null;
 		if (!Check.isEmpty(viewId))
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
-			final List<Integer> viewDocumentIds = request.getViewDocumentIds();
+			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
 			sqlWhereClause = view.getSqlWhereClause(viewDocumentIds);
 
 			if (viewDocumentIds.size() == 1)
 			{
 				view_AD_Window_ID = view.getAD_Window_ID();
-				view_DocumentId = viewDocumentIds.get(0);
+				view_DocumentId = viewDocumentIds.iterator().next();
 			}
 		}
 		else
@@ -158,7 +160,7 @@ public class ProcessRestController
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
 			documentRef = documentsCollection.getTableRecordReference(documentPath);
 		}
-		else if (view_AD_Window_ID > 0 && view_DocumentId >= 0)
+		else if (view_AD_Window_ID > 0 && view_DocumentId != null)
 		{
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_DocumentId);
 			documentRef = documentsCollection.getTableRecordReference(documentPath);

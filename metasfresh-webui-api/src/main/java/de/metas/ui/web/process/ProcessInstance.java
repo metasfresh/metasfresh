@@ -34,6 +34,7 @@ import de.metas.ui.web.view.IDocumentViewSelection;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest.JSONReferencing;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
@@ -82,14 +83,14 @@ public final class ProcessInstance
 	private IDocumentViewsRepository documentViewsRepo;
 
 	private final ProcessDescriptor processDescriptor;
-	private final int adPInstanceId;
+	private final DocumentId adPInstanceId;
 	private final Document parameters;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
 
 	/** New instance constructor */
-	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final int adPInstanceId, final Document parameters)
+	/* package */ ProcessInstance(final ProcessDescriptor processDescriptor, final DocumentId adPInstanceId, final Document parameters)
 	{
 		super();
 		Adempiere.autowire(this);
@@ -141,11 +142,11 @@ public final class ProcessInstance
 		return processDescriptor;
 	}
 
-	public int getAD_PInstance_ID()
+	public DocumentId getAD_PInstance_ID()
 	{
 		return adPInstanceId;
 	}
-
+	
 	public Document getParametersDocument()
 	{
 		return parameters;
@@ -224,7 +225,7 @@ public final class ProcessInstance
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(getAD_PInstance_ID())
+				.setAD_PInstance_ID(getAD_PInstance_ID().toInt())
 				.setTitle(name)
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)

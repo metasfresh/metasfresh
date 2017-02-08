@@ -50,7 +50,7 @@ public final class DocumentQuery
 		return new Builder(entityDescriptor);
 	}
 
-	public static final DocumentQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final int recordId)
+	public static final DocumentQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId)
 	{
 		Check.assumeNotNull(recordId, "Parameter recordId is not null");
 		return builder(entityDescriptor)
@@ -59,9 +59,10 @@ public final class DocumentQuery
 				.build();
 	}
 
+
 	private final DocumentsRepository documentsRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
-	private final Integer recordId;
+	private final DocumentId recordId;
 	private final Document parentDocument;
 
 	private final List<DocumentFilter> filters;
@@ -119,7 +120,7 @@ public final class DocumentQuery
 		return entityDescriptor;
 	}
 
-	public Integer getRecordId()
+	public DocumentId getRecordId()
 	{
 		return recordId;
 	}
@@ -168,7 +169,7 @@ public final class DocumentQuery
 	{
 		private final DocumentEntityDescriptor entityDescriptor;
 		private Document parentDocument;
-		private Integer recordId;
+		private DocumentId recordId;
 		public List<DocumentFilter> filters = null;
 
 		private boolean _noSorting = false; // always false by default
@@ -203,15 +204,9 @@ public final class DocumentQuery
 			return entityDescriptor.getDataBinding().getDocumentsRepository();
 		}
 
-		public Builder setRecordId(final Integer recordId)
-		{
-			this.recordId = recordId;
-			return this;
-		}
-
 		public Builder setRecordId(final DocumentId documentId)
 		{
-			setRecordId(documentId.toInt());
+			this.recordId = documentId;
 			return this;
 		}
 

@@ -194,10 +194,13 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<Integer> viewDocumentIds)
+	public String getSqlWhereClause(final Collection<DocumentId> viewDocumentIds)
 	{
 		Check.assumeNotEmpty(viewDocumentIds, "viewDocumentIds is not empty");
-		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIds) + ")";
+		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
+		final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds); 
+		
+		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIdsAsInts) + ")";
 	}
 
 	@Override

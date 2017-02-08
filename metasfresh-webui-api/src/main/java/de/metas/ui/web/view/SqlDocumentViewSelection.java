@@ -410,7 +410,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<Integer> viewDocumentIds)
+	public String getSqlWhereClause(final Collection<DocumentId> viewDocumentIds)
 	{
 		final String sqlTableName = getTableName();
 		final String sqlKeyColumnName = getKeyColumnName();
@@ -424,7 +424,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 
 		if (!Check.isEmpty(viewDocumentIds))
 		{
-			sqlWhereClause.append(" AND ").append(sqlKeyColumnName).append(" IN ").append(DB.buildSqlList(viewDocumentIds));
+			final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSet(viewDocumentIds);
+			sqlWhereClause.append(" AND ").append(sqlKeyColumnName).append(" IN ").append(DB.buildSqlList(viewDocumentIdsAsInts));
 		}
 
 		return sqlWhereClause.toString();
@@ -490,7 +491,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			return ImmutableList.of();
 		}
 
-		final String sqlWhereClause = getSqlWhereClause(DocumentId.toIntSet(documentIds));
+		final String sqlWhereClause = getSqlWhereClause(documentIds);
 
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
 				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))

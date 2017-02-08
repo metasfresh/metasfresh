@@ -64,6 +64,10 @@ public final class Values
 			// we need to provide the BigDecimals as Strings.
 			return value.toString();
 		}
+		else if (value instanceof DocumentId)
+		{
+			return ((DocumentId)value).toJson();
+		}
 		else
 		{
 			return value;
