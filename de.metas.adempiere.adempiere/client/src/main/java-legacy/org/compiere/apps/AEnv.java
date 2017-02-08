@@ -650,6 +650,7 @@ public final class AEnv
 
 		final MQuery query = zoomInfo.createZoomQuery();
 
+		// task #797 Make sure the windows are displayed in the same thread as the process
 		SwingUtilities.invokeLater(() -> {
 			final AWindow frame = new AWindow();
 			if (!frame.initWindow(windowIdToUse, query))
