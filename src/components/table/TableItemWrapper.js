@@ -23,6 +23,7 @@ class TableItemWrapper extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         const {item} = this.props;
+
         if(
             JSON.stringify(prevProps.item) !=
             JSON.stringify(item)

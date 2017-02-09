@@ -41,12 +41,17 @@ class Table extends Component {
                 y: 0
             },
             promptOpen: false,
-            isBatchEntry: false
+            isBatchEntry: false,
+            rows: []
         }
     }
 
     getChildContext = () => {
         return { shortcuts: shortcutManager }
+    }
+
+    componentDidMount(){
+        this.getIndentData();
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -61,6 +66,21 @@ class Table extends Component {
         const {mainTable, open} = this.props;
         if(mainTable && open){
             this.table.focus();
+        }
+    }
+
+    getIndentData = () => {
+        const {rowData, tabid, indentSupported} = this.props;
+        if(indentSupported){
+            let rowsData = [];
+
+            rowData[tabid].map(item => {
+                rowsData = rowsData.concat(this.mapIncluded(item));
+            })
+
+            this.setState(Object.assign({}, this.state, {
+                rows: rowsData
+            }))
         }
     }
 
@@ -209,21 +229,59 @@ class Table extends Component {
         }
     }
 
-    handleKeyDownDocList = (e) => {
-        const {selected} = this.state;
-        const {rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open} = this.props;
-        const item = rowData[tabid];
-        const selectRange = e.shiftKey;
+    mapIncluded = (node, indent, isParentLastChild = false) => {
+        let ind = indent ? indent : [];
+        let result = [];
 
-        console.log('handleKeyDownDocList');
-        console.log(e.key);
-        console.log(selected);
+        const nodeCopy = Object.assign({}, node, {
+            indent: ind
+        });
+
+        result = result.concat([nodeCopy]);
+
+        if(isParentLastChild){
+            ind[ind.length - 2] = false;
+        }
+
+        if(node.includedDocuments){
+            for(let i = 0; i < node.includedDocuments.length; i++){
+                let copy = node.includedDocuments[i];
+                if(i === node.includedDocuments.length - 1){
+                    copy = Object.assign({}, copy, {
+                        lastChild: true
+                    });
+                }
+
+                result = result.concat(
+                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
+                )
+            }
+        }
+
+        return result;
+    }
+
+    handleKeyDownDocList = (e) => {
+        const {selected, rows} = this.state;
+        const {
+            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open,
+            indentSupported
+        } = this.props;
+        
+        const selectRange = e.shiftKey;
+        let data = "";
+
+        if(indentSupported){
+            data = rows;
+        } else {
+            data = rowData[tabid];
+        }
 
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
 
-                const array = (rowData[tabid]).map((item, id) => {
+                const array = (data).map((item, id) => {
                     return item.id
                 });
 
@@ -242,7 +300,7 @@ class Table extends Component {
             case "ArrowUp":
                 e.preventDefault();
 
-                const arrays = (rowData[tabid]).map((item, id) => {
+                const arrays = (data).map((item, id) => {
                     return item.id
                 });
 
@@ -394,8 +452,6 @@ class Table extends Component {
             onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays,
             indentSupported
         } = this.props;
-
-        console.log(rowData);
 
         const {selected} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
