@@ -173,7 +173,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
 			stage('Set versions and build metasfresh-webui-frontend') 
             {
-				final String mavenUpdateParentsh "rm -r ~/.npm"
+		final String mavenUpdateParent
+		sh "rm -r ~/.npm"
                 def nodeHome = tool name: "$NODEJS_TOOL_NAME"
                 env.PATH = "${nodeHome}/bin:${env.PATH}"
                 sh "npm install"
