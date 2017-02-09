@@ -650,7 +650,7 @@ public final class AEnv
 
 		final MQuery query = zoomInfo.createZoomQuery();
 
-		// task #797 Make sure the windows are displayed in the same thread as the process
+		// task #797 Make sure the window is displayed by the AWT event dispatching thread. The current thread might not be able to do it right.
 		SwingUtilities.invokeLater(() -> {
 			final AWindow frame = new AWindow();
 			if (!frame.initWindow(windowIdToUse, query))
