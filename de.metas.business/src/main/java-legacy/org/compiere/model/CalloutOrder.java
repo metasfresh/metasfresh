@@ -311,7 +311,7 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR;
 		}
 		final boolean IsSOTrx = order.isSOTrx();
-		final String defaultUserOrderByClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
+		final String defaultUserWhereClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
@@ -342,16 +342,17 @@ public class CalloutOrder extends CalloutEngine
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
+				//#928
+				+ " AND  c." + defaultUserWhereClause + " = 'Y' "
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas (2009 0027 G1): making sure that the default billTo
 				// and shipTo location is used
 				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
 				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
 				// metas end
-				// 08578 take default users first. I saw cases were flags were null in the DB, so I added Coalesce
-				// FIXME: make the columns mandatory with default=N, then remove the coalesce
-				+ " , COALESCE(c." + defaultUserOrderByClause + ", 'N')" + " DESC"
-				+ " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
+				// 08578 take default users first.
+				// #928: The IsDefaultContact is no longer important
+				//+ " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
 				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC ";
 		; // #1
 
