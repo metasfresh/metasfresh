@@ -5,7 +5,7 @@
 @Rem explicitly here for different versions, etc. e.g.
 @Rem
 @Rem SET METASFRESH_HOME=C:\metasfresh
-@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_40
+@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_112
 
 @Rem Variables: 
 @Rem DBG_PORT                   ->  Start-Port the script will scan (min. port)
@@ -84,7 +84,20 @@ SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
 @REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
 for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
 
-SET CLASSPATH=%JAR%
+SET USERJARS=
+for /R "%METASFRESH_HOME%/userlib" %%a in (*.jar) do call :ADDTO_USERJARS "%%a"
+goto :ADDTO_USERJARS_END
+
+:ADDTO_USERJARS
+@Echo userjar is %~1
+set USERJARS=%~1;%USERJARS%
+GOTO :EOF
+:ADDTO_USERJARS_END
+
+@REM Multiple path entries are separated by semicolons with no spaces , see https://docs.oracle.com/javase/8/docs/technotes/tools/windows/classpath.html
+SET CLASSPATH=%USERJARS%;%JAR%
+
+SET PATH=%PATH%;%METASFRESH_HOME%\userlib-x64
 
 :MULTI_INSTALL
 @REM  To switch between multiple installs, copy the created metasfresh.properties file
@@ -116,3 +129,5 @@ SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryE
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL
+
+:EOF
