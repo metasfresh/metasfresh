@@ -17,6 +17,9 @@ upcoming
 ## Features
 * metasfresh
   * #913 include branch name in build version string
+  
+* webUI
+  * #254 Cannot see the HU editor icons
 
 # metasfresh 4.55.54 (2017-06)
 
