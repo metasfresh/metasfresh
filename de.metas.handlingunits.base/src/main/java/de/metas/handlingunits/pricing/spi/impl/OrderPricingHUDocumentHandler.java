@@ -57,7 +57,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 		
 		final int productId = product == null ? -1 : product.getM_Product_ID();
 
-		final I_M_ProductPrice_Attribute productPriceAttribute = Services.get(IAttributePricingBL.class).getDefaultAttributePriceOrNull(order,
+		final I_M_ProductPrice_Attribute productPriceAttribute = Services.get(IAttributePricingBL.class).getDefaultAttributePriceOrNull(
 				productId,
 				plv,
 				false); // strictDefault

@@ -104,14 +104,12 @@ public interface IAttributePricingBL extends ISingletonService
 	/**
 	 * 
 	 * 
-	 * @param contextProvider
 	 * @param productId
 	 * @param priceListVersion
 	 * @param strictDefault see {@link IAttributePricingDAO#retrieveDefaultProductPriceAttribute(de.metas.adempiere.model.I_M_ProductPrice, boolean)} for an explanation of this parameter
 	 * @return
 	 */
 	I_M_ProductPrice_Attribute getDefaultAttributePriceOrNull(
-			Object contextProvider,
 			int productId,
 			I_M_PriceList_Version priceListVersion,
 			boolean strictDefault

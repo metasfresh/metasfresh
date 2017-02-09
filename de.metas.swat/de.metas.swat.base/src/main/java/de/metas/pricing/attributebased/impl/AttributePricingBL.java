@@ -269,7 +269,6 @@ public class AttributePricingBL implements IAttributePricingBL
 
 	@Override
 	public I_M_ProductPrice_Attribute getDefaultAttributePriceOrNull(
-			final Object contextProvider,
 			final int productId,
 			final I_M_PriceList_Version priceListVersion,
 			final boolean strictDefault

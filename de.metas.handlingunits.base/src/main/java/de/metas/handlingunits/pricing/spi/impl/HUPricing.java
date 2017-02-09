@@ -205,7 +205,6 @@ public class HUPricing extends AttributePricing
 				InterfaceWrapperHelper.create(
 
 						attributePricingBL.getDefaultAttributePriceOrNull(
-								pricingCtx.getReferencedObject(),
 								pricingCtx.getM_Product_ID(),
 								plv,
 								strictDefault),
