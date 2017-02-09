@@ -191,7 +191,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				sh "npm install"
 				sh "webpack --config webpack.prod.js"
 				sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
-				sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -DURL=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
+				sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -Durl=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
 
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 currentBuild.description="""artifacts (if not yet cleaned up)
