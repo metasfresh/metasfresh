@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -33,7 +34,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -117,7 +117,7 @@ public class MColumn extends X_AD_Column
 			setIsSelectionColumn(false);
 			setIsTranslated(false);
 			setIsUpdateable(true);	// Y
-			setVersion(Env.ZERO);
+			setVersion(BigDecimal.ZERO);
 		}
 	}	// MColumn
 
@@ -350,7 +350,9 @@ public class MColumn extends X_AD_Column
 					.append(tableName)
 					.append(" ADD ").append(constraint);
 		}
-		return sql.toString();
+		
+		// execute the ADD COLUMN SQL within the db_alter_table function to make sure that also views like "SELECT * FROM tableName" work fine with the new column
+		return "SELECT public.db_alter_table('" + tableName + "', '" + sql.toString() + "')";
 	}	// getSQLAdd
 
 	/**
@@ -361,8 +363,9 @@ public class MColumn extends X_AD_Column
 	public String getSQLDDL()
 	{
 		if (isVirtualColumn())
+		{
 			return null;
-
+		}
 		StringBuffer sql = new StringBuffer(getColumnName())
 				.append(" ").append(getSQLDataType());
 
@@ -388,8 +391,9 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-			if (!isMandatory())
-				sql.append(" DEFAULT NULL ");
+			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost			
+			// if (!isMandatory())
+			//	sql.append(" DEFAULT NULL ");
 			defaultValue = null;
 		}
 
@@ -447,8 +451,9 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-			if (!mandatory)
-				sqlDefault.append(" DEFAULT NULL ");
+// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
+//			if (!mandatory)
+//				sqlDefault.append(" DEFAULT NULL ");
 			defaultValue = null;
 		}
 		sql.append(DB.convertSqlToNative(sqlDefault.toString()));
@@ -599,20 +604,22 @@ public class MColumn extends X_AD_Column
 	 */
 	public String syncDatabase()
 	{
-
-		MTable table = new MTable(getCtx(), getAD_Table_ID(), get_TrxName());
+		final MTable table = new MTable(getCtx(), getAD_Table_ID(), get_TrxName());
 		table.set_TrxName(get_TrxName());  // otherwise table.getSQLCreate may miss current column
 		if (table.get_ID() == 0)
+		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + getAD_Table_ID());
+		}
 
 		// Find Column in Database
 		Connection conn = null;
 		try
 		{
 			conn = DB.getConnectionRO();
-			DatabaseMetaData md = conn.getMetaData();
-			String catalog = DB.getDatabase().getCatalog();
-			String schema = DB.getDatabase().getSchema();
+			final DatabaseMetaData md = conn.getMetaData();
+			final String catalog = DB.getDatabase().getCatalog();
+			final String schema = DB.getDatabase().getSchema();
+
 			String tableName = table.getTableName();
 			if (md.storesUpperCaseIdentifiers())
 			{
@@ -641,17 +648,21 @@ public class MColumn extends X_AD_Column
 			rs.close();
 			rs = null;
 
-			// No Table
 			if (noColumns == 0)
+			{
+				// No Table
 				sql = table.getSQLCreate();
-			// No existing column
+			}
 			else if (sql == null)
+			{
+				// No existing column
 				sql = getSQLAdd(table);
-
+			}
 			if (sql == null)
+			{
 				return "No sql";
-
-			int no = 0;
+			}
+			
 			if (sql.indexOf(DB.SQLSTATEMENT_SEPARATOR) == -1)
 			{
 				DB.executeUpdateEx(sql, get_TrxName());
