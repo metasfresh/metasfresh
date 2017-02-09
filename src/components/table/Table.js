@@ -51,7 +51,7 @@ class Table extends Component {
     }
 
     componentDidMount(){
-        this.getIndentData();
+        this.getIndentData(true);
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -69,8 +69,9 @@ class Table extends Component {
         }
     }
 
-    getIndentData = () => {
+    getIndentData = (selectFirst) => {
         const {rowData, tabid, indentSupported} = this.props;
+
         if(indentSupported){
             let rowsData = [];
 
@@ -80,7 +81,14 @@ class Table extends Component {
 
             this.setState(Object.assign({}, this.state, {
                 rows: rowsData
-            }))
+            }), ()=> {
+                if(selectFirst){
+                    this.selectOneProduct(this.state.rows[0].id);
+                    document.getElementsByClassName('js-table')[0].focus();
+                    window.scrollTo(0,0);
+                }
+                
+            })
         }
     }
 
@@ -626,7 +634,7 @@ class Table extends Component {
                     >
                         <table
                             className={
-                                "table table-bordered-vertically table-striped " +
+                                "table table-bordered-vertically table-striped js-table " +
                                 (readonly ? "table-read-only" : "")
                             }
                             onKeyDown={this.handleKey}
