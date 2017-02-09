@@ -55,18 +55,34 @@ class SelectionAttributes extends Component {
             });
     }
 
+    focusHUTable = (e) => {
+        
+        switch(e.key) {
+            case "Tab":
+                e.preventDefault();
+                console.log('Tab preassed');
+                console.log(e.key);
+                document.getElementsByClassName('js-table')[0].focus();
+                window.scrollTo(0,0);
+            break;
+        }
+    }
+
+
     render() {
         const {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
             DLWrapperHandleChange, DLWrapperHandlePatch, entity, setClickOutsideLock
         } = this.props;
 
+        const lastItem = DLWrapperLayout.length-1;
+
         return (
             <div>
                 <div className="attributes-selector-header">
                     Selection attributes
                 </div>
-                <div className="attributes-selector-body">
+                <div tabIndex={1} className="attributes-selector-body js-attributes">
                     {DLWrapperLayout && DLWrapperLayout.map((item, id) =>
                         <RawWidget
                             entity={entity}
@@ -84,6 +100,8 @@ class SelectionAttributes extends Component {
                             handleBlur={() => setClickOutsideLock(false)}
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
+                            tabIndex={1}
+                            focusHUTable={lastItem===id ? this.focusHUTable : ""}
                         />
                     )}
                 </div>

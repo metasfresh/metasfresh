@@ -339,6 +339,11 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
+            case "Tab":
+                e.preventDefault();
+                document.getElementsByClassName('js-attributes')[0].focus();
+                console.log('tab tab tab tab');
+                break;
         }
     }
 
@@ -403,13 +408,22 @@ class Table extends Component {
     }
 
     handleFocus = () => {
-        const {rowData, tabid} = this.props;
-        const {selected} = this.state;
+        const {rowData, tabid, indentSupported} = this.props;
+        const {selected, rows} = this.state;
 
-        if(selected.length <= 0){
+        console.log('handleFocus');
+         if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
         }
+
+        // if(indentSupported){
+        //     this.selectOneProduct(rows[0].id);
+        // }
+    }
+
+    handleBlur = () => {
+        console.log('handleBlur');
     }
 
     getProductRange = (id) => {
@@ -640,6 +654,7 @@ class Table extends Component {
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
+                            onBlur={this.handleBlur}
                             ref={c => this.table = c}
                         >
                             <thead>
