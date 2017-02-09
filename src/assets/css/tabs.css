@@ -9,6 +9,9 @@
     cursor: pointer;
     padding: .6rem 1.2rem;
     font-weight: 400;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .nav-tabs .nav-item.nav-item {
