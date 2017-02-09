@@ -43,7 +43,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductNotOnPriceListException;
@@ -376,7 +375,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			if (qtyToInvoiceOverride.multiply(factor).compareTo(newQtyToInvoiceOverrideFulfilled) <= 0)
 			{
-
 				ic.setQtyToInvoice_Override(null);
 				ic.setQtyToInvoice_OverrideFulfilled(null);
 			}
@@ -1148,11 +1146,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		newIla.setQtyInvoiced(qtyInvoiced);
 		newIla.setC_Invoice_Candidate_Agg_ID(invoiceCand.getC_Invoice_Candidate_Agg_ID());
 
-		// #870
-		// Set Qty and Price Override into the invoice line alloc:
-		newIla.setQtyToInvoice_Override(invoiceCand.getQtyToInvoice_Override());
-		newIla.setPriceEntered_Override(invoiceCand.getPriceEntered_Override());
-
 		translateAndPrependNote(newIla, note);
 
 		InterfaceWrapperHelper.save(newIla); // model validator C_Invoice_Line_Alloc will invalidate 'invoiceCand'
@@ -1300,17 +1293,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
 
-				// #870
-				// Make sure that, when an invoice is reversed, the QtyToInvoice_Override and PriceEntered_Override are set back in the invoice candidate based on the values in the allocations
-				{
-					int invoiceCandidateId = invoiceCandidate.getC_Invoice_Candidate_ID();
-					BigDecimal qtyToInvoice_Override = ilaToReverse.getQtyToInvoice_Override();
-					BigDecimal priceEntered_Override = ilaToReverse.getPriceEntered_Override();
-					Services.get(ITrxManager.class)
-							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-							.onAfterCommit(() -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
-				}
-
 				if (creditMemo && creditedInvoiceReinvoicable && !creditedInvoiceIsReversed)
 				{
 					// undo/reverse the full credit memo quantity. Note that when we handled the credit memo's completion we didn't care about any overlap either, but also created an ila with the full
@@ -1347,31 +1329,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc
 							+ ", (=>overlap=" + overlap + ")";
 				}
-
 				createUpdateIla(
 						invoiceCandidate,
 						reversalLine,
 						qtyInvoicedForIla,
 						note);
-
 			}
 		}
-	}
-
-	/**
-	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
-	 * 
-	 * @param invoiceCandidateId
-	 * @param qtyToInvoiceOverride
-	 * @param priceEnteredOverride
-	 */
-	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, BigDecimal priceEnteredOverride)
-	{
-		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidateId, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
-		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
-		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(BigDecimal.ZERO);
-		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
 	@Override
