@@ -74,7 +74,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	 *
 	 * @param saveOnChange if true, attribute values will be saved to database on each change
 	 */
-	protected void setSaveOnChange(final boolean saveOnChange)
+	@Override
+	public final void setSaveOnChange(final boolean saveOnChange)
 	{
 		//
 		// Iterate existing attribute values and set "saveOnChange" option to them.
