@@ -79,7 +79,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MProductPrice;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.PopupMenuListenerAdapter;
@@ -92,6 +91,7 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.logging.LogManager;
 
 /**
@@ -1165,8 +1165,9 @@ public class VLookup extends JComponent
 
 			if (m_mField != null)
 			{
-				int AD_Table_ID = m_mField.getAD_Table_ID();
-				multipleSelection = (MOrderLine.Table_ID == AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID) || (MProductPrice.Table_ID == AD_Table_ID);
+				final int AD_Table_ID = m_mField.getAD_Table_ID();
+				multipleSelection = (MOrderLine.Table_ID == AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID)
+						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 
 			// Show Info
