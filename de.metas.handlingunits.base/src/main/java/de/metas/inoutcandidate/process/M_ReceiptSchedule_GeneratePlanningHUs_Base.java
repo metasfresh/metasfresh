@@ -19,6 +19,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -98,7 +99,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	@RunOutOfTrx
+	protected final String doIt() throws Exception
 	{
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(this)
 				.addM_ReceiptSchedule(getM_ReceiptSchedule());

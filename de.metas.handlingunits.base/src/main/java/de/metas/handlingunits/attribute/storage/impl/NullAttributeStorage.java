@@ -216,12 +216,12 @@ public final class NullAttributeStorage implements IAttributeStorage
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
-	
+
 	/**
 	 * @throws AttributeNotFoundException
 	 */
 	@Override
-	public String getValueAsString(I_M_Attribute attribute)
+	public String getValueAsString(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
@@ -329,6 +329,14 @@ public final class NullAttributeStorage implements IAttributeStorage
 	public void saveChangesIfNeeded()
 	{
 		// nothing
+		// NOTE: not throwing UnsupportedOperationException because this storage contains no attributes so it will never have something to change
+	}
+
+	@Override
+	public void setSaveOnChange(final boolean saveOnChange)
+	{
+		// nothing
+		// NOTE: not throwing UnsupportedOperationException because this storage contains no attributes so it will never have something to change
 	}
 
 	/**

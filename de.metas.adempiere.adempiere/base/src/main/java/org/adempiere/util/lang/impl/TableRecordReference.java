@@ -61,9 +61,6 @@ public final class TableRecordReference implements ITableRecordReference
 {
 	/**
 	 * Creates an {@link TableRecordReference} from the given model.
-	 * <p>
-	 * <b>IMPORTANT:</b> this method does not inspect the given model's <code>AD_Table_ID</code> and <code>Record_ID</code> but instead returns just <code>model</code>, wrapped up as
-	 * {@link TableRecordReference}.
 	 *
 	 * @param model model interface or {@link TableRecordReference}; <code>null</code> is NOT allowed
 	 * @return {@link TableRecordReference}; never returns null
