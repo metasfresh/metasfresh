@@ -173,13 +173,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
 			stage('Set versions and build metasfresh-webui-frontend') 
             {
-		final String mavenUpdateParent
-		sh "rm -r ~/.npm"
-                def nodeHome = tool name: "$NODEJS_TOOL_NAME"
-                env.PATH = "${nodeHome}/bin:${env.PATH}"
-                sh "npm install"
-                sh "webpack --config webpack.prod.js"
-                sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"Param=''; // empty string for now. Uncomment the two assignements in the if and else *if* and when metasfresh-webui switcheds its parent pom to de.metas.parent
+				final String mavenUpdateParentParam=''; // empty string for now. Uncomment the two assignements in the if and else *if* and when metasfresh-webui switcheds its parent pom to de.metas.parent
 				final String mavenUpdatePropertyParam;
 				if(params.MF_UPSTREAM_VERSION)
 				{
@@ -191,12 +185,12 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 					// mavenUpdateParentParam=''; 
 					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // still update the property, but use the latest version
 				}
-                sh "rm -r ~/.npm"
-                def nodeHome = tool name: "$NODEJS_TOOL_NAME"
-                env.PATH = "${nodeHome}/bin:${env.PATH}"
-                sh "npm install"
-                sh "webpack --config webpack.prod.js"
-                sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
+				sh "rm -r ~/.npm"
+				def nodeHome = tool name: "$NODEJS_TOOL_NAME"
+				env.PATH = "${nodeHome}/bin:${env.PATH}"
+				sh "npm install"
+				sh "webpack --config webpack.prod.js"
+				sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
 				sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -DURL=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
 
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
