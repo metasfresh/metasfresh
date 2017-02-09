@@ -1,3 +1,19 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package de.metas.invoicecandidate.model;
 
 
@@ -215,9 +231,7 @@ public interface I_C_Invoice_Line_Alloc
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	@Deprecated
 	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
@@ -286,29 +300,6 @@ public interface I_C_Invoice_Line_Alloc
     public static final String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set Preis Abw..
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPriceEntered_Override (java.math.BigDecimal PriceEntered_Override);
-
-	/**
-	 * Get Preis Abw..
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getPriceEntered_Override();
-
-    /** Column definition for PriceEntered_Override */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_PriceEntered_Override = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "PriceEntered_Override", null);
-    /** Column name PriceEntered_Override */
-    public static final String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
-
-	/**
 	 * Set Berechn. Menge.
 	 * Menge, die bereits in Rechnung gestellt wurde
 	 *
@@ -332,31 +323,6 @@ public interface I_C_Invoice_Line_Alloc
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "QtyInvoiced", null);
     /** Column name QtyInvoiced */
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
-
-	/**
-	 * Set Zu berechn. Menge abw..
-	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyToInvoice_Override (java.math.BigDecimal QtyToInvoice_Override);
-
-	/**
-	 * Get Zu berechn. Menge abw..
-	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyToInvoice_Override();
-
-    /** Column definition for QtyToInvoice_Override */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_QtyToInvoice_Override = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "QtyToInvoice_Override", null);
-    /** Column name QtyToInvoice_Override */
-    public static final String COLUMNNAME_QtyToInvoice_Override = "QtyToInvoice_Override";
 
 	/**
 	 * Get Aktualisiert.
