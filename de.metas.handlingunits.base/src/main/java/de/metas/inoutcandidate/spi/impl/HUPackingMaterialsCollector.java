@@ -214,6 +214,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		for (final IPair<I_M_HU_PackingMaterial, Integer> huPackingMaterialAndQty : packingMaterialsAndQtys)
 		{
 			final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialAndQty.getLeft();
+			if(huPackingMaterial == null)
+			{
+				// note: some old HUs might have no packing material set.
+				// In this case there is no product, so there is no point to go forward.
+				continue;
+			}
 			final int productId = huPackingMaterial.getM_Product_ID();
 			if (productId <= 0)
 			{

@@ -208,6 +208,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 	{
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public void setSaveOnChange(boolean saveOnChange)
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	public String getQtyUOMTypeOrNull()

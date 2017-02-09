@@ -17,6 +17,15 @@ upcoming
 ## Features
 * metasfresh
   * #913 include branch name in build version string
+  
+* webUI
+  * #226 Implement document field device support
+  * #227 Wrong breadcrumb when the view is opened after process execution
+  * #254 Cannot see the HU editor icons
+
+## Fixes 
+* metasfresh
+  * #797 Zoom does not open new document
 
 # metasfresh 4.55.54 (2017-06)
 
