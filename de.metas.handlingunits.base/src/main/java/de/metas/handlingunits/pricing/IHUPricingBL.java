@@ -56,17 +56,6 @@ public interface IHUPricingBL extends ISingletonService
 			String trxName);
 
 	/**
-	 * Retrieve the product price attribute which depends on HU.
-	 *
-	 * @param contextProvider
-	 * @param productId
-	 * @param priceListVersion
-	 * @param pip
-	 * @return
-	 */
-	I_M_ProductPrice_Attribute getHUAttributePrice(Object contextProvider, int productId, I_M_PriceList_Version priceListVersion, I_M_HU_PI_Item_Product pip);
-
-	/**
 	 * This method shall extract the M_HU_PI_Item_Product_ID from the referenced object of the given <code>context</code> ({@link IPricingContext#getReferencedObject()}). It shall distinguish the
 	 * following cases
 	 * <ul>

@@ -25,18 +25,6 @@ package de.metas.handlingunits.pricing;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.adempiere.model.I_M_ProductPrice;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_ProductPrice_Attribute;
-
 public interface IHUPricingDAO extends ISingletonService
 {
-	/**
-	 * Retrieve the product price attribute which depends on HU
-	 *
-	 * @param productPrice
-	 * @param pip
-	 * @return
-	 */
-	I_M_ProductPrice_Attribute retrieveHUProductPriceAttribute(I_M_ProductPrice productPrice, I_M_HU_PI_Item_Product pip);
 }

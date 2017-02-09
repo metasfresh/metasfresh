@@ -30,17 +30,14 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice_Attribute;
 import de.metas.handlingunits.pricing.IHUPricingBL;
-import de.metas.handlingunits.pricing.IHUPricingDAO;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IAttributePricingDAO;
@@ -103,27 +100,6 @@ public class HUPricingBL implements IHUPricingBL
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public I_M_ProductPrice_Attribute getHUAttributePrice(
-			final Object contextProvider,
-			final int productId,
-			final I_M_PriceList_Version priceListVersion,
-			final I_M_HU_PI_Item_Product pip
-			)
-	{
-		Check.assume(productId > 0, "Product is not null");
-		Check.assumeNotNull(priceListVersion, "Pricelist version is not null");
-		Check.assumeNotNull(pip, "HU PI Item Product is not null");
-
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final IHUPricingDAO huPricingDAO = Services.get(IHUPricingDAO.class);
-
-		final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPrice(priceListVersion, productId);
-
-		final I_M_ProductPrice_Attribute productPriceAttribute = huPricingDAO.retrieveHUProductPriceAttribute(productPrice, pip);
-		return productPriceAttribute;
 	}
 
 	/**
