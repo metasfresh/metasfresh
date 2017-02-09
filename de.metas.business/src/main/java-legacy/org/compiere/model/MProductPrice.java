@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 
 /**
@@ -60,12 +61,7 @@ public class MProductPrice extends X_M_ProductPrice
 
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, M_PriceList_Version_ID, I_M_PriceList_Version.class, trxName);
 		final I_M_ProductPrice  pp = Services.get(IPriceListDAO.class).retrieveProductPrice(plv, M_Product_ID);
-		
-		if ( pp != null)
-		{
-			return (MProductPrice)InterfaceWrapperHelper.getPO(pp);
-		}
-		return null;
+		return LegacyAdapters.convertToPO(pp);
 	}	//	get
 	
 	/**	Logger	*/
