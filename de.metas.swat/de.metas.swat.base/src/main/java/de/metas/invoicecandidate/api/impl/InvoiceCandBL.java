@@ -1303,9 +1303,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				// #870
 				// Make sure that, when an invoice is reversed, the QtyToInvoice_Override and PriceEntered_Override are set back in the invoice candidate based on the values in the allocations
 				{
-					final int invoiceCandidateId = invoiceCandidate.getC_Invoice_Candidate_ID();
-					final BigDecimal qtyToInvoice_Override = ilaToReverse.getQtyToInvoice_Override();
-					final BigDecimal priceEntered_Override = ilaToReverse.getPriceEntered_Override();
+					int invoiceCandidateId = invoiceCandidate.getC_Invoice_Candidate_ID();
+					BigDecimal qtyToInvoice_Override = ilaToReverse.getQtyToInvoice_Override();
+					BigDecimal priceEntered_Override = ilaToReverse.getPriceEntered_Override();
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 							.onAfterCommit(() -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
@@ -1365,13 +1365,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * @param qtyToInvoiceOverride
 	 * @param priceEnteredOverride
 	 */
-	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
+	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, BigDecimal priceEnteredOverride)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidateId, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
 		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
 		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
 		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(BigDecimal.ZERO);
-		
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
