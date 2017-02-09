@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -991,14 +992,14 @@ public abstract class PO
 			// metas-ts 02973 only show this message (and clutter the log) if old and new value differ
 			// NOTE: when comparing we need to take the old value (the one which is in database) and NOT the previously set (via set_ValueNoCheck for example).
 			final Object oldValue = get_ValueOld(index);
-			if (Check.equals(oldValue, value))
+			if (Objects.equals(oldValue, value))
 			{
 				// Value did not changed.
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
 				// ...but we can do a quick look-ahead and see if that's the case
-				if (Check.equals(m_newValues[index], value))
+				if (Objects.equals(m_newValues[index], value))
 				{
 					return true;
 				}

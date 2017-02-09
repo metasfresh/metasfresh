@@ -204,6 +204,8 @@ public class PartitionerService implements IPartitionerService
 					{
 						continue;  // looks like we partitioned *every* record of the given table
 					}
+					Loggables.get().withLogger(logger, Level.INFO).addLog("line={}: starting with record={}", line, record);
+					
 					final Partition partition = attachToPartitionAndCheck(request,
 							mkIterateResult(
 									Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),

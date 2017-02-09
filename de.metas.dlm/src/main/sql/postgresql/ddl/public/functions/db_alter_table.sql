@@ -47,7 +47,9 @@ begin
 		for j in reverse i .. 1 loop
 			if lower(dropviews[j]) = '"dlm".'||lower(p_table_name) 
 			then
-				/* this special view amounts to "select * from p_tablename.." but in viewtexts[j], all columns are explicitly enumerated. So recreating the view with viewtexts[j] won't work in case we jsut dropped on of those columns */
+				/* This special view amounts to "select * from p_tablename.." but in viewtexts[j], all columns are explicitly enumerated. 
+				   So recreating the view with viewtexts[j] won't work in case we just dropped one of those columns 
+				 */
 				command := 'SELECT dlm.reset_dlm_view(''' || p_table_name || ''');';
 			else
 				command := 'create or replace view ' || dropviews[j] || ' as ' || viewtexts[j] ||';';
