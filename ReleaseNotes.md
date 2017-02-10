@@ -34,10 +34,15 @@ this week's RC
 ## Features
 * metasfresh
   * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
+    * Adapt the reports for Material Receipt to work with Receipt Schedule ID as Paramater. This is needed for the new Material Receipt Workflow in WebUI which is now based on generic Material Receipt Schedule Window.
   * #460 Provide aggregate HUs
-  * #815 Jasper Footer: Show bank account in one line 
+    * Introduce the Handling Unit compression to only store and process the minimal needed information about Handling Units per step in supply chain. This Implementation is a huge Performance gain in Handling Unit processing.
+  * #815 Jasper Footer: Show bank account in one line
+    * Adjust the Jasper Reports Footer subdocument. Show all bank information now in same line.
   * #904 New Field "Zulieferant" in R_Request Window
+    * Add new Field in Request window to allow the storage of an explicit Vendor Businesspartner.
   * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
+    * Adjust the customs report to fit for swiss requirements in customs reporting. The gross weight is now calculated as Handling Units weight minus weight Logistics Unit Package Item.
   
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
