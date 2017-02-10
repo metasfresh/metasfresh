@@ -92,6 +92,20 @@ class Table extends Component {
         }
     }
 
+    getAllLeafs = () => {
+        const {rows, selected} = this.state;
+        let leafs = [];
+        
+        rows.map( item => {
+            if(item.id == selected[0]){
+                leafs = this.mapIncluded(item);
+            }
+        });
+
+        // console.log(leafs);
+
+    }
+
     changeListen = (listenOnKeys) => {
         this.setState(Object.assign({}, this.state, {
             listenOnKeys: !!listenOnKeys
@@ -706,6 +720,7 @@ class Table extends Component {
                     handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+                    getAllLeafs={this.getAllLeafs}
                 />
 
                 {!readonly &&
