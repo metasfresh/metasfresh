@@ -89,7 +89,7 @@ for /R "%METASFRESH_HOME%/userlib" %%a in (*.jar) do call :ADDTO_USERJARS "%%a"
 goto :ADDTO_USERJARS_END
 
 :ADDTO_USERJARS
-@Echo userjar is %~1
+@Echo userjar added to CLASSPATH %~1
 set USERJARS=%~1;%USERJARS%
 GOTO :EOF
 :ADDTO_USERJARS_END
