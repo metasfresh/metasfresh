@@ -82,8 +82,11 @@ this week's RC
 
 * webui
   * #204 Can not complete Order
+    * Minor Fix that now allows the completion of Sales Order in Web User Interface.
   * #886 GrandTotal missing in Purchase Order Grid view
+    * Fix that enables the display of Grandtotal Field in Purchase Order Grid View.
   * #179 Fields too short for documentno in Breadcrumbs
+    * Fix that extends the number of visible digits (now 9 digits) in Breadcrumb menu for Document or masterdata identifiers.
 
 # metasfresh 4.54.53 (2017-05)
 
