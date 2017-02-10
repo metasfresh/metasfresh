@@ -6,30 +6,12 @@ class DocumentListContextShortcuts extends Component {
         super(props);
     }
     handleShortcuts = (action, event) => {
-        const {handleAdvancedEdit, handleOpenNewTab, handleDelete} = this.props;
+        const {handleClick} = this.props;
         
         switch (action) {
-        case 'OPEN_SELECTED':
+        case 'QUICK_ACTION_POS':
             event.preventDefault();
-            if(handleOpenNewTab) {
-            handleOpenNewTab();
-            }
-            break
-        case 'REMOVE_SELECTED':
-            event.preventDefault();
-            if(handleDelete){
-            handleDelete();
-            }
-            break
-        case 'ADVANCED_EDIT':
-            event.preventDefault();
-            if(handleAdvancedEdit){
-            handleAdvancedEdit();
-            }
-            break
-        case 'SELECT_ALL_LEAFS':
-            event.preventDefault();
-            //TO DO
+            handleClick();
             break
         }
     }
@@ -37,7 +19,7 @@ class DocumentListContextShortcuts extends Component {
     render() {
         return (
         <Shortcuts
-            name={"DOCUMENT_LIST_CONTEXT"}
+            name={"QUICK_ACTIONS"}
             handler = { this.handleShortcuts }
             targetNodeSelector = { "body" }
             isolate = { true }

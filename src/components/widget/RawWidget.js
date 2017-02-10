@@ -98,8 +98,7 @@ class RawWidget extends Component {
             handleChange, handleFocus, updated, isModal, filterWidget, filterId,
             parameterName, setSelectedItem, selectedItem, selectedItemTo, id,
             range, entity, isShown, isHidden, handleBackdropLock, subentity,
-            subentityId, tabIndex, viewId, dropdownOpenCallback, autoFocus, fullScreen,
-            focusHUTable
+            subentityId, tabIndex, viewId, dropdownOpenCallback, autoFocus, fullScreen
         } = this.props;
 
         const {textValue, isEdited} = this.state;
@@ -379,12 +378,11 @@ class RawWidget extends Component {
                             type="number"
                             className="input-field js-input-field"
                             value={selectedField}
-                            //disabled={widgetData.readonly}
+                            disabled={widgetData.readonly}
                             onFocus={this.handleFocus}
                             onChange={(e) => handleChange && handleChange(widgetFields.field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
-                            onKeyDown={focusHUTable}
                         />
                     </div>
                 )

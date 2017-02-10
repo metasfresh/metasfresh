@@ -83,9 +83,9 @@ class Table extends Component {
                 rows: rowsData
             }), ()=> {
                 if(selectFirst){
-                    this.selectOneProduct(this.state.rows[0].id);
+                    // this.selectOneProduct(this.state.rows[0].id);
                     document.getElementsByClassName('js-table')[0].focus();
-                    window.scrollTo(0,0);
+                    // window.scrollTo(0,0);
                 }
                 
             })
@@ -342,7 +342,6 @@ class Table extends Component {
             case "Tab":
                 e.preventDefault();
                 document.getElementsByClassName('js-attributes')[0].focus();
-                console.log('tab tab tab tab');
                 break;
         }
     }
@@ -411,20 +410,18 @@ class Table extends Component {
         const {rowData, tabid, indentSupported} = this.props;
         const {selected, rows} = this.state;
 
-        console.log('handleFocus');
          if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
         }
 
-        // if(indentSupported){
-        //     this.selectOneProduct(rows[0].id);
-        // }
+        if(indentSupported){
+            this.selectOneProduct(rows[0].id);
+            document.getElementsByClassName('js-table')[0].focus();
+            window.scrollTo(0,0);
+        }
     }
 
-    handleBlur = () => {
-        console.log('handleBlur');
-    }
 
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
@@ -654,7 +651,6 @@ class Table extends Component {
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
                             onFocus={this.handleFocus}
-                            onBlur={this.handleBlur}
                             ref={c => this.table = c}
                         >
                             <thead>

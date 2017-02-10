@@ -55,17 +55,23 @@ class SelectionAttributes extends Component {
             });
     }
 
-    focusHUTable = (e) => {
-        
+    moveToDevice = (e) => {
         switch(e.key) {
-            case "Tab":
+            case "Shift":
                 e.preventDefault();
-                console.log('Tab preassed');
-                console.log(e.key);
-                document.getElementsByClassName('js-table')[0].focus();
-                window.scrollTo(0,0);
+                //TO DO
             break;
         }
+    }
+
+    getTabId = (item) => {
+
+        return item && item[0].readonly ? -1 : 1;
+
+    }
+
+    selectTable = () => {
+        document.getElementsByClassName('js-table')[0].focus();
     }
 
 
@@ -76,6 +82,7 @@ class SelectionAttributes extends Component {
         } = this.props;
 
         const lastItem = DLWrapperLayout.length-1;
+        let data = "";
 
         return (
             <div>
@@ -100,11 +107,11 @@ class SelectionAttributes extends Component {
                             handleBlur={() => setClickOutsideLock(false)}
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
-                            tabIndex={1}
-                            focusHUTable={lastItem===id ? this.focusHUTable : ""}
+                            tabIndex={this.getTabId(item.fields.map(elem => findRowByPropName(DLWrapperData, elem.field)))}
                         />
                     )}
                 </div>
+                <div className="focusHandler" tabIndex={1} onFocus={this.selectTable}></div>
             </div>
         );
     }
