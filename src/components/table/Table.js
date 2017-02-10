@@ -83,7 +83,9 @@ class Table extends Component {
                 rows: rowsData
             }), ()=> {
                 if(selectFirst){
+                    this.selectOneProduct(this.state.rows[0].id);
                     document.getElementsByClassName('js-table')[0].focus();
+                    window.scrollTo(0,0);
                 }
                 
             })
@@ -411,12 +413,6 @@ class Table extends Component {
          if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
-        }
-
-        if(indentSupported){
-            this.selectOneProduct(rows[0].id);
-            document.getElementsByClassName('js-table')[0].focus();
-            window.scrollTo(0,0);
         }
     }
 
