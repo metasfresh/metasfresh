@@ -40,12 +40,16 @@ class DocList extends Component {
 
     renderDocumentList = () => {
         const {windowType, query, viewId, selected} = this.props;
+
         return (<DocumentList
             type="grid"
             updateUri={this.updateUriCallback}
-            windowType={windowType}
-            query={query}
-            viewId={viewId}
+            windowType={parseInt(windowType)}
+            defaultViewId={query.viewId}
+            defaultSort={query.sort}
+            defaultPage={parseInt(query.page)}
+            refType={query.refType}
+            refId={query.refId}
             selected={selected}
         />)
     }
@@ -78,7 +82,7 @@ class DocList extends Component {
                         modalViewId={modal.viewId}
                         query={query}
                         selected={selected}
-                        viewId={viewId}
+                        viewId={query.viewId}
                         selected={selected}
                      />
                  }
@@ -95,7 +99,6 @@ DocList.propTypes = {
     search: PropTypes.string.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
-    viewId: PropTypes.string.isRequired,
     selected: PropTypes.array,
     actions: PropTypes.array.isRequired,
     references: PropTypes.array.isRequired
@@ -123,12 +126,6 @@ function mapStateToProps(state) {
     }
 
     const {
-        viewId
-    } = listHandler || {
-        viewId: ""
-    }
-
-    const {
         search,
         pathname
     } = routing.locationBeforeTransitions || {
@@ -143,7 +140,6 @@ function mapStateToProps(state) {
         search,
         pathname,
         actions,
-        viewId,
         selected,
         references
     }

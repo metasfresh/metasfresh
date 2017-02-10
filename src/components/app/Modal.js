@@ -136,10 +136,8 @@ class Modal extends Component {
                 return (
                     <DocumentList
                         type="grid"
-                        updateUri={this.updateUriCallback}
-                        windowType={windowType}
-                        query={null}
-                        viewId={modalViewId}
+                        windowType={parseInt(windowType)}
+                        defaultViewId={modalViewId}
                         selected={selected}
                     />
             )

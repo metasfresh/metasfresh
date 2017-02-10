@@ -86,6 +86,7 @@ class SelectionAttributes extends Component {
                             handleChange={DLWrapperHandleChange}
                         />
                     )}
+                    {DLWrapperLayout && !DLWrapperLayout.length && <i>Select element to display its attributes.</i>}
                 </div>
             </div>
         );

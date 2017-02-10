@@ -32,14 +32,13 @@ class MasterWindow extends Component {
         const {dispatch} = this.props;
 
         if(isNew){
-            this.setState(
-                Object.assign({}, this.state, {
+            this.setState({
                     newRow: true
-                }), () => {
+                }, () => {
                     setTimeout(() => {
-                        this.setState(Object.assign({}, this.state, {
+                        this.setState({
                             newRow: false
-                        }))
+                        })
                     }, 1000);
                 }
             )
@@ -59,7 +58,7 @@ class MasterWindow extends Component {
             "displayed": true
         };
 
-        const docSummaryData =  findRowByPropName(
+        const docSummaryData = findRowByPropName(
             master.data,
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
