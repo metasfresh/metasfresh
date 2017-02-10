@@ -46,10 +46,16 @@ this week's RC
   
 * webui
   * #873 Customer & Vendor Subtab in BPartner Window WebUI
+    * Add and arrange the customer and vendor subtab in Businesspartner Window in Web User Interface.
   * #196 Grid View 100% height
+    * Adjust the Grid view height to expand to screensize.
   * #795 Price Window WebUI Layout
+    * Add the Layout for the Price window in WebUI.
   * #896 Dunning Window WebUI
+    * Add the Layout for the Dunning Window in WebUI.
   * #194 Open views from process execution result 
+    * Add a new functionality that allows process results to receive a Window ID and open the corresponding Window after finishing the process execution.
+     
 
 ## Fixes
 * metasfresh
