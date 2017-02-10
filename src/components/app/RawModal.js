@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import { push } from 'react-router-redux';
 
 import {
-    closeModal
+    closeRawModal
 } from '../../actions/WindowActions';
 
 class RawModal extends Component {
@@ -59,13 +59,14 @@ class RawModal extends Component {
     removeModal = () => {
         const {dispatch} = this.props;
 
-        dispatch(closeModal());
+        dispatch(closeRawModal());
         document.body.style.overflow = "auto";
     }
 
+
     render() {
         const {
-            modalTitle, dataId, modalType, windowType
+            modalTitle, dataId, modalType, windowType, children
         } = this.props;
 
         const {
@@ -92,7 +93,7 @@ class RawModal extends Component {
                                 onClick={this.handleClose}
                                 tabIndex={0}
                             >
-                                "Done"
+                                Done
                             </button>
                         </div>
                     </div>
@@ -100,7 +101,7 @@ class RawModal extends Component {
                         className="panel-modal-content js-panel-modal-content container-fluid"
                         ref={c => { c && c.focus()}}
                     >
-                        {this.renderModalBody()}
+                        {children}
                     </div>
                 </div>
             </div>

@@ -21,6 +21,19 @@ import {
     addNotification
 } from './AppActions'
 
+export function openRawModal(windowType, viewId) {
+    return {
+        type: types.OPEN_RAW_MODAL,
+        windowType: windowType,
+        viewId: viewId
+    }
+}
+
+export function closeRawModal() {
+    return {
+        type: types.CLOSE_RAW_MODAL
+    }
+}
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -382,10 +395,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
             dispatch(addNotification("Process error", summary, 5000, "error"));
         }else{
             if(viewId && viewWindowId){
-                dispatch(openModal(
-                    "Document view", viewWindowId, "documentView", null, null,
-                    false, viewId
-                ));
+                dispatch(openRawModal(viewWindowId, viewId));
             }else if(reportFilename){
                 dispatch(printRequest('process', type, id, reportFilename))
             }

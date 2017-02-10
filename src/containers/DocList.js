@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
+import RawModal from '../components/app/RawModal';
 
 import {
     getWindowBreadcrumb
@@ -57,7 +58,7 @@ class DocList extends Component {
     render() {
         const {
             dispatch, windowType, breadcrumb, query, actions, modal, viewId,
-            selected, references
+            selected, references, rawModal
         } = this.props;
 
         return (
@@ -83,8 +84,18 @@ class DocList extends Component {
                         query={query}
                         selected={selected}
                         viewId={query.viewId}
-                        selected={selected}
                      />
+                 }
+                 {rawModal.visible &&
+                     <RawModal>
+                         <DocumentList
+                             type="grid"
+                             modalTitle="Document view"
+                             windowType={parseInt(rawModal.type)}
+                             defaultViewId={rawModal.viewId}
+                             selected={selected}
+                         />
+                     </RawModal>
                  }
                 {this.renderDocumentList()}
             </Container>
@@ -99,6 +110,7 @@ DocList.propTypes = {
     search: PropTypes.string.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
+    rawModal: PropTypes.object.isRequired,
     selected: PropTypes.array,
     actions: PropTypes.array.isRequired,
     references: PropTypes.array.isRequired
@@ -109,9 +121,11 @@ function mapStateToProps(state) {
 
     const {
         modal,
+        rawModal,
         selected
     } = windowHandler || {
         modal: false,
+        rawModal: false,
         selected: []
     }
 
@@ -141,7 +155,8 @@ function mapStateToProps(state) {
         pathname,
         actions,
         selected,
-        references
+        references,
+        rawModal
     }
 }
 

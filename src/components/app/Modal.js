@@ -123,7 +123,7 @@ class Modal extends Component {
                         isModal={true}
                         isAdvanced={isAdvanced}
                     />
-            )
+                )
             case "process":
                 return (
                     <Process
@@ -131,16 +131,7 @@ class Modal extends Component {
                         layout={layout}
                         type={windowType}
                     />
-            )
-            case "documentView":
-                return (
-                    <DocumentList
-                        type="grid"
-                        windowType={parseInt(windowType)}
-                        defaultViewId={modalViewId}
-                        selected={selected}
-                    />
-            )
+                )
         }
     }
 
