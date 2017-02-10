@@ -62,14 +62,23 @@ this week's RC
 ## Fixes
 * metasfresh
   * #857 Fix String Attributes Save in POS
+    * Fix that now allows the possibility to save String Attribute in POS Windows also without loosing focus for recorded field.
   * #863 No Result Window for Prosesses that don't allow rerun
+    * Fix for rerun parameter in Processes. Now possible to switch off the rerun confirmation Window after Process.
   * #879 Fix "ValueType not supported: D" when HU attributes are generated
+    * Minor Fix for Value Type of generated HU Attributes.
   * #781 ESR scan processing returns improper bpartner
+    * Fix and Enhancement of ESR Scan functionality in Purchase Invoices. Now allowing to select alternative Business Partner for on the Fly Bank Account generation. 
   * #783 DocAction on Sales Order not available although permission existing
+    * Sysconfig to certrally enable/ disable the Document Action Close.
   * #813 hide packing instruction and qty when null
+    * Fix that does not show the Packing Instruction and Packing Qty on documents anymore when null.
   * #903 Jenkins build error with slash in branch name
-  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect 
-  * #910 update and fix sales invoice jasper and function
+    * Minor Fix for Jenkins Build.
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect
+    * Fix that stores the price & qty override in Invoice Candidates after Reverse-Correct of Invoice.
+  * #910 Put explicit delivery date on invoice
+    * Add the precise description for delivery date as demanded by german law.
 
 * webui
   * #204 Can not complete Order
