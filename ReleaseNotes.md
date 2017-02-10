@@ -22,6 +22,8 @@ upcoming
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
+  * #894 Payment Allocation Window WebUI
+  * #895 Dunning Candidates Window WebUI
 
 ## Fixes 
 * metasfresh
