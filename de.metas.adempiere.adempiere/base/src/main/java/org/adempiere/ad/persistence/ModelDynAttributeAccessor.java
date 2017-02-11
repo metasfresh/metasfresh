@@ -1,6 +1,7 @@
 package org.adempiere.ad.persistence;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -102,12 +103,19 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 		}
 		return attributeValue;
 	}
+	
+	public Optional<AttributeType> getValueIfExists(final ModelType model)
+	{
+		final AttributeType attributeValue = getValue(model);
+		return Optional.ofNullable(attributeValue);
+	}
 
+	
 	public void setValue(final ModelType model, final AttributeType attributeValue)
 	{
 		InterfaceWrapperHelper.setDynAttribute(model, attributeName, attributeValue);
 	}
-
+	
 	public boolean isSet(final ModelType model)
 	{
 		final Object attributeValue = InterfaceWrapperHelper.getDynAttribute(model, attributeName);
