@@ -586,7 +586,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 			//
 			// Skip those HUs which were destroyed in meantime.
 			// It's tempting to also remove their assignments but think to the case when
-			// the assignment was left there intentionatelly, for audit/documentation purposes.
+			// the assignment was left there intentionally, for audit/documentation purposes.
 			if (handlingUnitsBL.isDestroyed(hu))
 			{
 				continue;

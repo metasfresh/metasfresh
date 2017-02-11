@@ -22,5 +22,5 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 COMMIT;
 
-SELECT db_alter_table('M_HU_Item_Snapshot', 'ALTER TABLE public.M_HU_Item_Snapshot ADD ItemType VARCHAR(2) DEFAULT NULL');
-SELECT db_alter_table('M_HU_Item_Snapshot', 'ALTER TABLE public.M_HU_Item_Snapshot ADD M_HU_PackingMaterial_ID NUMERIC(10) DEFAULT NULL');
+SELECT db_alter_table('M_HU_Item_Snapshot', 'ALTER TABLE public.M_HU_Item_Snapshot ADD ItemType VARCHAR(2)');
+SELECT db_alter_table('M_HU_Item_Snapshot', 'ALTER TABLE public.M_HU_Item_Snapshot ADD M_HU_PackingMaterial_ID NUMERIC(10)');

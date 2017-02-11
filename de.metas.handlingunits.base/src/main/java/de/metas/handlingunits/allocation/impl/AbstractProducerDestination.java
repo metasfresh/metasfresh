@@ -539,7 +539,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			if (currentHUCursor == null)
 			{
 				// If there is no current HU to work with, stop here. This happens e.g. if there are 5 TU allowed on one LU and we already created those 5 TUs.
-				// that's not a problem per se, it just means that another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet.
+				// that's not a problem per se, it just means that 
+				// either another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet,
+				// or there are already pre-loaded HUs that have everything we needed
 				break;
 			}
 			I_M_HU currentHU = currentHUCursor.current();
