@@ -31,11 +31,11 @@ import de.metas.process.Param;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -85,19 +85,22 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends M_Receipt
 	private BigDecimal p_QtyLU;
 
 	@Override
-	protected I_M_HU_LUTU_Configuration updateM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfigurationToEdit)
+	protected I_M_HU_LUTU_Configuration updateM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfigurationBase)
 	{
+		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.copy()
+				.setFrom(lutuConfigurationBase)
+				.copyToNew(I_M_HU_LUTU_Configuration.class);
 		//
 		// CU
-		lutuConfigurationToEdit.setQtyCU(p_QtyCU);
+		lutuConfigurationNew.setQtyCU(p_QtyCU);
 
 		//
 		// TU
 		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(getCtx(), p_M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		lutuConfigurationToEdit.setM_HU_PI_Item_Product(tuPIItemProduct);
-		lutuConfigurationToEdit.setM_TU_HU_PI(tuPI);
-		lutuConfigurationToEdit.setQtyTU(p_QtyTU);
+		lutuConfigurationNew.setM_HU_PI_Item_Product(tuPIItemProduct);
+		lutuConfigurationNew.setM_TU_HU_PI(tuPI);
+		lutuConfigurationNew.setQtyTU(p_QtyTU);
 
 		//
 		// LU
@@ -107,26 +110,26 @@ public class M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends M_Receipt
 
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
-			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, lutuConfigurationToEdit.getC_BPartner())
+			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, lutuConfigurationNew.getC_BPartner())
 					.stream()
 					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
 					.findFirst()
 					.orElseThrow(() -> new AdempiereException("@NotFound@ @M_HU_PI_Version_ID@"));
 
-			lutuConfigurationToEdit.setM_LU_HU_PI(luPI);
-			lutuConfigurationToEdit.setM_LU_HU_PI_Item(luPI_Item);
-			lutuConfigurationToEdit.setQtyLU(p_QtyLU);
+			lutuConfigurationNew.setM_LU_HU_PI(luPI);
+			lutuConfigurationNew.setM_LU_HU_PI_Item(luPI_Item);
+			lutuConfigurationNew.setQtyLU(p_QtyLU);
 		}
 		else
 		{
-			lutuConfigurationToEdit.setM_LU_HU_PI(null);
-			lutuConfigurationToEdit.setM_LU_HU_PI_Item(null);
-			lutuConfigurationToEdit.setQtyLU(null);
+			lutuConfigurationNew.setM_LU_HU_PI(null);
+			lutuConfigurationNew.setM_LU_HU_PI_Item(null);
+			lutuConfigurationNew.setQtyLU(null);
 		}
 
-		InterfaceWrapperHelper.save(lutuConfigurationToEdit);
+		// InterfaceWrapperHelper.save(lutuConfigurationNew); // expected to not be saved (important)
 
-		return lutuConfigurationToEdit;
+		return lutuConfigurationNew;
 	}
 
 }

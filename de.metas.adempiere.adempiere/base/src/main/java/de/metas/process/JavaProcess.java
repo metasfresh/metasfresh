@@ -87,7 +87,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	// Common Return Messages
 	protected static final String MSG_SaveErrorRowNotFound = "@SaveErrorRowNotFound@";
 	protected static final String MSG_InvalidArguments = "@InvalidArguments@";
-	protected static final String MSG_OK = "OK";
+	public static final String MSG_OK = "OK";
 	/**
 	 * Process failed error message. To be returned from {@link #doIt()}.
 	 *

@@ -1150,8 +1150,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// #870
 		// Set Qty and Price Override into the invoice line alloc:
-		newIla.setQtyToInvoice_Override(invoiceCand.getQtyToInvoice_Override());
-		newIla.setPriceEntered_Override(invoiceCand.getPriceEntered_Override());
+		// Make sure the numbers are correctly taken from the database, and null is not replaced by 0
+		newIla.setQtyToInvoice_Override(InterfaceWrapperHelper.getValueOrNull(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override));
+		newIla.setPriceEntered_Override(InterfaceWrapperHelper.getValueOrNull(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override));
 
 		translateAndPrependNote(newIla, note);
 
@@ -1304,8 +1305,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				// Make sure that, when an invoice is reversed, the QtyToInvoice_Override and PriceEntered_Override are set back in the invoice candidate based on the values in the allocations
 				{
 					final int invoiceCandidateId = invoiceCandidate.getC_Invoice_Candidate_ID();
-					final BigDecimal qtyToInvoice_Override = ilaToReverse.getQtyToInvoice_Override();
-					final BigDecimal priceEntered_Override = ilaToReverse.getPriceEntered_Override();
+
+					// Make sure the numbers are correctly taken from the database, and null is not replaced by 0
+					final BigDecimal qtyToInvoice_Override = InterfaceWrapperHelper.getValueOrNull(ilaToReverse, I_C_Invoice_Line_Alloc.COLUMNNAME_QtyToInvoice_Override);
+					final BigDecimal priceEntered_Override = InterfaceWrapperHelper.getValueOrNull(ilaToReverse, I_C_Invoice_Line_Alloc.COLUMNNAME_PriceEntered_Override);
+
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 							.onAfterCommit(() -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
@@ -1368,10 +1372,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidateId, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+
 		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+
 		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+
 		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(BigDecimal.ZERO);
-		
+
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
@@ -1487,6 +1494,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				createUpdateIla(icToLink, il, qtyInvoiced, note);
 				// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
+
 			}
 		}
 	}

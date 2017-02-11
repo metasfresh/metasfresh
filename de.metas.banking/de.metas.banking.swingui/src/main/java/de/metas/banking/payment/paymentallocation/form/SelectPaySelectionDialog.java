@@ -67,7 +67,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
@@ -76,7 +75,6 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;
 
@@ -308,7 +306,7 @@ final class SelectPaySelectionDialog
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final IContextAware contextProvider = new PlainContextAware(Env.getCtx(), localTrxName);
+				final IContextAware contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), localTrxName);
 				final I_C_PaySelection paySelection = InterfaceWrapperHelper.newInstance(I_C_PaySelection.class, contextProvider);
 
 				final Timestamp currentTimestamp = SystemTime.asTimestamp();
