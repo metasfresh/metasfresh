@@ -238,3 +238,63 @@ UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:00:27',
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:00:39','YYYY-MM-DD HH24:MI:SS'),Name='Settings',WEBUI_NameBrowse='Settings' WHERE AD_Menu_ID=1000051 AND AD_Language='en_US'
 ;
 
+-- 11.02.2017 18:11
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:11:26','YYYY-MM-DD HH24:MI:SS'),Name='Price List',Description='Maintain Price Lists',WEBUI_NameBrowse='Price List' WHERE AD_Menu_ID=540763 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:12
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:12:37','YYYY-MM-DD HH24:MI:SS'),Name='Price System',Description='Maintain Price Systems',WEBUI_NameBrowse='Price System' WHERE AD_Menu_ID=540756 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:13
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET IsCreateNew='Y', WEBUI_NameNew='New Price System', WEBUI_NameNewBreadcrumb='Price System',Updated=TO_TIMESTAMP('2017-02-11 18:13:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540756
+;
+
+-- 11.02.2017 18:13
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET IsTranslated='N' WHERE AD_Menu_ID=540756
+;
+
+-- 11.02.2017 18:13
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:13:16','YYYY-MM-DD HH24:MI:SS'),WEBUI_NameNew='Price System' WHERE AD_Menu_ID=540756 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:13
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET IsCreateNew='Y', WEBUI_NameNew='Neue Preisliste', WEBUI_NameNewBreadcrumb='Preisliste',Updated=TO_TIMESTAMP('2017-02-11 18:13:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540763
+;
+
+-- 11.02.2017 18:13
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET IsTranslated='N' WHERE AD_Menu_ID=540763
+;
+
+-- 11.02.2017 18:13
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:13:49','YYYY-MM-DD HH24:MI:SS'),WEBUI_NameNew='New Price List' WHERE AD_Menu_ID=540763 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:18
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:18:36','YYYY-MM-DD HH24:MI:SS'),WEBUI_NameNew='New Price System' WHERE AD_Menu_ID=540756 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:19
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:19:17','YYYY-MM-DD HH24:MI:SS'),Name='Actions',WEBUI_NameBrowse='Actions' WHERE AD_Menu_ID=540753 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:19
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:19:27','YYYY-MM-DD HH24:MI:SS'),Name='Reports',WEBUI_NameBrowse='Reports' WHERE AD_Menu_ID=540754 AND AD_Language='en_US'
+;
+
+-- 11.02.2017 18:19
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-02-11 18:19:38','YYYY-MM-DD HH24:MI:SS'),Name='Settings',WEBUI_NameBrowse='Settings' WHERE AD_Menu_ID=540755 AND AD_Language='en_US'
+;
+
