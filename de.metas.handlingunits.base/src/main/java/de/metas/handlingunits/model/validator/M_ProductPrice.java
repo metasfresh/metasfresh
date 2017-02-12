@@ -1,10 +1,21 @@
 package de.metas.handlingunits.model.validator;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.util.Services;
+import org.compiere.model.ModelValidator;
+
+import de.metas.handlingunits.model.I_M_ProductPrice;
+
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,28 +33,16 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
-import org.compiere.model.ModelValidator;
-
-import de.metas.handlingunits.model.I_M_ProductPrice_Attribute;
-
 /**
- * Model validator <b>with attached callout</b>. See {@link #unsetIsHUPrice(I_M_ProductPrice_Attribute)} for what it does.
+ * Model validator <b>with attached callout</b>. See {@link #unsetIsHUPrice(I_M_ProductPrice)} for what it does.
  * 
  * @author ts
  * @task http://dewiki908/mediawiki/index.php/09045_Changes_on_Excel_Export-Import_%28107395757529%29
  *
  */
-@Callout(I_M_ProductPrice_Attribute.class)
-@Validator(I_M_ProductPrice_Attribute.class)
-public class M_ProductPrice_Attribute
+@Callout(I_M_ProductPrice.class)
+@Validator(I_M_ProductPrice.class)
+public class M_ProductPrice
 {
 	@Init
 	public void registerCallout()
@@ -53,20 +52,20 @@ public class M_ProductPrice_Attribute
 	
 	/**
 	 * We now allow PIIPs with unlimited capacity, but in that case, we make sure that the <code>M_ProductPrice_Attribute</code> is not a <code>HUPrice</code>.
-	 * @param ppa
+	 * @param productPrice
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = I_M_ProductPrice_Attribute.COLUMNNAME_M_HU_PI_Item_Product_ID)
-	@CalloutMethod(columnNames = { I_M_ProductPrice_Attribute.COLUMNNAME_M_HU_PI_Item_Product_ID })
-	public void unsetIsHUPrice(final I_M_ProductPrice_Attribute ppa)
+			ifColumnsChanged = I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID)
+	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID })
+	public void unsetIsHUPrice(final I_M_ProductPrice productPrice)
 	{
-		if (ppa.getM_HU_PI_Item_Product_ID() <= 0)
+		if (productPrice.getM_HU_PI_Item_Product_ID() <= 0)
 		{
-			ppa.setIsHUPrice(false);
+			productPrice.setIsHUPrice(false);
 		}
-		else if (ppa.getM_HU_PI_Item_Product().isInfiniteCapacity())
+		else if (productPrice.getM_HU_PI_Item_Product().isInfiniteCapacity())
 		{
-			ppa.setIsHUPrice(false);
+			productPrice.setIsHUPrice(false);
 		}
 	}
 }

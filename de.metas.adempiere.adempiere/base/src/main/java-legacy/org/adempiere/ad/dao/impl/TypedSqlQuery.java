@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
@@ -100,6 +101,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private boolean onlyActiveRecords = false;
 	private boolean onlyClient_ID = false;
 	private int onlySelection_ID = -1;
+	private int notInSelection_ID = -1;
 
 	private int limit = NO_LIMIT;
 	private int offset = NO_LIMIT;
@@ -135,7 +137,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				whereClause,
 				trxName);
 	}
-
 
 	/**
 	 * @return {@link POInfo}; never returns null
@@ -259,6 +260,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.onlySelection_ID = AD_PInstance_ID;
 		return this;
 	}
+	
+	@Override
+	public TypedSqlQuery<T> setNotInSelection(final int AD_PInstance_ID)
+	{
+		this.notInSelection_ID = AD_PInstance_ID;
+		return this;
+	}
+
 
 	/**
 	 * Return a list of all po that match the query criteria.
@@ -1049,7 +1058,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	protected final String getWhereClauseEffective()
 	{
-		final StringBuffer whereBuffer = new StringBuffer();
+		final StringBuilder whereBuffer = new StringBuilder();
 		if (!Check.isEmpty(this.whereClause, true))
 		{
 			if (whereBuffer.length() > 0)
@@ -1074,6 +1083,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 			whereBuffer.append("AD_Client_ID=?");
 		}
+		
+		//
+		// IN selection
 		if (this.onlySelection_ID > 0)
 		{
 			final String keyColumnName = getKeyColumnName();
@@ -1082,8 +1094,20 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			{
 				whereBuffer.append(" AND ");
 			}
-			whereBuffer.append(" EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=?"
-					+ " AND s.T_Selection_ID=" + getTableName() + "." + keyColumnName + ")");
+			whereBuffer.append(" EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=? AND s.T_Selection_ID=" + getTableName() + "." + keyColumnName + ")");
+		}
+		
+		//
+		// NOT IN selection
+		if (this.notInSelection_ID > 0)
+		{
+			final String keyColumnName = getKeyColumnName();
+			//
+			if (whereBuffer.length() > 0)
+			{
+				whereBuffer.append(" AND ");
+			}
+			whereBuffer.append(" NOT EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=? AND s.T_Selection_ID=" + getTableName() + "." + keyColumnName + ")");
 		}
 
 		return whereBuffer.toString();
@@ -1107,12 +1131,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 			parametersEffective.add(AD_Client_ID);
-			log.trace("Parameter AD_Client_ID = " + AD_Client_ID);
+			log.trace("Parameter AD_Client_ID = {}", AD_Client_ID);
 		}
 		if (this.onlySelection_ID > 0)
 		{
 			parametersEffective.add(this.onlySelection_ID);
-			log.trace("Parameter Selection AD_PInstance_ID = " + this.onlySelection_ID);
+			log.trace("Parameter Selection AD_PInstance_ID = {}", this.onlySelection_ID);
+		}
+		if(this.notInSelection_ID > 0)
+		{
+			parametersEffective.add(this.notInSelection_ID);
+			log.trace("Parameter NotInSelection AD_PInstance_ID = {}", this.notInSelection_ID);
 		}
 
 		//
@@ -1303,9 +1332,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				.add("applyAccessFilterRW", applyAccessFilterRW ? Boolean.TRUE : null)
 				.add("onlyActiveRecords", onlyActiveRecords ? Boolean.TRUE : null)
 				.add("onlySelection_ID", onlySelection_ID > 0 ? onlySelection_ID : null)
+				.add("notInSelection_ID", notInSelection_ID > 0 ? notInSelection_ID : null)
 				.add("options", options != null && !options.isEmpty() ? options : null)
 				.toString();
-		}
+	}
 
 	// metas
 	@Override
@@ -1471,6 +1501,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		queryTo.onlyActiveRecords = onlyActiveRecords;
 		queryTo.onlyClient_ID = onlyClient_ID;
 		queryTo.onlySelection_ID = onlySelection_ID;
+		queryTo.notInSelection_ID = notInSelection_ID;
 		queryTo.limit = limit;
 		queryTo.offset = offset;
 		queryTo.unions = unions == null ? null : new ArrayList<>(unions);
@@ -1711,7 +1742,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	<ToModelType> int executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
+	<ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
 		Check.assumeNotNull(queryInserter, "queryInserter not null");
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
@@ -1741,8 +1772,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		sqlFromSelectColumns.asStringBuilder()
 				.insert(0, "SELECT \n")
 				.append("\n FROM ").append(getSqlFrom());
-		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), false // useOrderByClause=false
-		);
+		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), false); // useOrderByClause=false
 		sqlParams.addAll(getParametersEffective());
 
 		//
@@ -1754,8 +1784,34 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				.append(sqlFrom);
 
 		//
+		// Wrap the INSERT SQL and create the insert selection ID if required
+		final int insertSelectionId;
+		final String sql;
+		if (queryInserter.isCreateSelectionOfInsertedRows())
+		{
+			insertSelectionId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(getCtx());
+
+			final String toKeyColumnName = queryInserter.getToKeyColumnName();
+			sql = new StringBuilder()
+					.append("WITH insert_code AS (")
+					.append("\n").append(sqlInsert)
+					.append("\n RETURNING ").append(toKeyColumnName)
+					.append("\n )")
+					//
+					.append("\n INSERT INTO T_Selection (AD_PInstance_ID, T_Selection_ID)")
+					.append("\n SELECT ").append(insertSelectionId).append(", ").append(toKeyColumnName).append(" FROM insert_code")
+					//
+					.toString();
+		}
+		else
+		{
+			insertSelectionId = -1;
+			sql = sqlInsert.toString();
+		}
+
+		//
 		// Execute the INSERT and return how many records were inserted
-		final int countInsert = DB.executeUpdateEx(sqlInsert.toString(), sqlParams.toArray(), getTrxName());
-		return countInsert;
+		final int countInsert = DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

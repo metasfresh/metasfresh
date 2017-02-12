@@ -73,6 +73,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.Lookup;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
@@ -91,7 +92,6 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.logging.LogManager;
 
 /**

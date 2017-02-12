@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,8 +48,10 @@ import org.compiere.swing.CEditor;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 
@@ -111,12 +111,6 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		}
 
 		@Override
-		public int getM_ProductBOM_ID()
-		{
-			return -1;
-		}
-
-		@Override
 		public int getM_Locator_ID()
 		{
 			return -1;
@@ -158,15 +152,6 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		public Boolean getSOTrx()
 		{
 			return null;
-		}
-
-		@Override
-		public String toString()
-		{
-			return String
-					.format("VPAttributeContext [rowIndexModel=%s, getWindowNo()=%s, getTabNo()=%s, isSOTrx()=%s, getM_Warehouse_ID()=%s, getM_Product_ID()=%s, getM_ProductBOM_ID()=%s, getM_Locator_ID()=%s, getM_AttributeSet_ID()=%s, getC_DocType_ID()=%s, getC_BPartner_ID()=%s, getSOTrx()=%s]",
-							rowIndexModel, getWindowNo(), getTabNo(), isSOTrx(), getM_Warehouse_ID(), getM_Product_ID(), getM_ProductBOM_ID(), getM_Locator_ID(), getM_AttributeSet_ID(),
-							getC_DocType_ID(), getC_BPartner_ID(), getSOTrx());
 		}
 	};
 

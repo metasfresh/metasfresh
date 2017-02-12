@@ -28,13 +28,12 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
-
-import de.metas.adempiere.model.I_M_PriceList;
 
 public class ProductNotOnPriceListException extends AdempiereException
 {
@@ -82,7 +81,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 
 		//
 		// Price List
-		final I_M_PriceList priceList = plv == null ? null : InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class);
+		final I_M_PriceList priceList = plv == null ? null : plv.getM_PriceList();
 		sb.append("\n@M_PriceList_ID@: ").append(priceList == null ? "-" : priceList.getName());
 
 		//

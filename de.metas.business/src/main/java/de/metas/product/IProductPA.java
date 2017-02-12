@@ -29,11 +29,11 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.model.MProductScalePrice;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product_Category;
@@ -46,7 +46,6 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
 
 public interface IProductPA extends ISingletonService
@@ -122,7 +121,7 @@ public interface IProductPA extends ISingletonService
 
 	Collection<MProductPrice> retrieveProductPrices(int priceListVersionId, String trxName);
 
-	Collection<MProductScalePrice> retrieveScalePrices(int productPriceId, String trxName);
+	Collection<I_M_ProductScalePrice> retrieveScalePrices(int productPriceId, String trxName);
 
 	I_M_ProductScalePrice retrieveOrCreateScalePrices(int productPriceId, BigDecimal qty, boolean createNew, String trxName);
 

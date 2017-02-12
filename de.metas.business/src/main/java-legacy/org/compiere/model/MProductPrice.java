@@ -20,11 +20,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-
 /**
  *	Product Price
  *	
@@ -40,32 +35,6 @@ public class MProductPrice extends X_M_ProductPrice
 	 * 
 	 */
 	private static final long serialVersionUID = 9187555438223385521L;
-
-	/**
-	 * 	Get Product Price
-	 *	@param ctx ctx
-	 *	@param M_PriceList_Version_ID id
-	 *	@param M_Product_ID id
-	 *	@param trxName trx
-	 *	@return product price or null
-	 *  @deprecated pls use {@link IPriceListDAO#retrieveProductPriceOrNull(I_M_PriceList_Version, int)} instead.
-	 */
-	// metas: changed to Query API
-	@Deprecated
-	public static MProductPrice get(Properties ctx, int M_PriceList_Version_ID, int M_Product_ID, String trxName)
-	{
-		if (M_PriceList_Version_ID <= 0 || M_Product_ID <= 0)
-		{
-			return null;
-		}
-
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, M_PriceList_Version_ID, I_M_PriceList_Version.class, trxName);
-		final I_M_ProductPrice  pp = Services.get(IPriceListDAO.class).retrieveProductPrice(plv, M_Product_ID);
-		return LegacyAdapters.convertToPO(pp);
-	}	//	get
-	
-	/**	Logger	*/
-//	private static Logger s_log = CLogMgt.getLogger(MProductPrice.class);
 	
 	/**
 	 * 	Persistency Constructor

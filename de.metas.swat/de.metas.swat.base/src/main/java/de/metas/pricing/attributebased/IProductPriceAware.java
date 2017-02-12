@@ -23,19 +23,26 @@ package de.metas.pricing.attributebased;
  */
 
 
-public interface I_M_ProductPrice extends de.metas.adempiere.model.I_M_ProductPrice
+/**
+ * Implemented by models which is are aware of Product Price record.
+ * 
+ * It is used in attribute pricing engines to fetch explicit product price attribute settings.
+ * 
+ * To create a new instance, please use {@link ProductPriceAttributeAware#ofModel(Object)}.
+ * 
+ * @author tsa
+ *
+ */
+public interface IProductPriceAware
 {
+	//@formatter:off
+    public static final String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_Attribute_ID";
+	public int getM_ProductPrice_ID();
+	//@formatter:on
 
-	/** Column name M_Attribute_ID */
-	public static final String COLUMNNAME_IsAttributeDependant = "IsAttributeDependant";
-
-	/**
-	 * Set Attribute. Product Attribute
-	 */
-	public void setIsAttributeDependant(boolean isAttributeDependant);
-
-	/**
-	 * Get Attribute. Product Attribute
-	 */
-	public boolean isAttributeDependant();
+	//@formatter:off
+	// NOTE: mainly used for Excel imports (see task 08839)
+	public static final String COLUMNNAME_IsExplicitProductPriceAttribute = "IsExplicitProductPriceAttribute";
+	public boolean isExplicitProductPriceAttribute();
+	//@formatter:on
 }

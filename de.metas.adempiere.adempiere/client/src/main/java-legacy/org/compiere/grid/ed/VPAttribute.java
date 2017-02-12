@@ -26,35 +26,50 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MAttribute;
+import org.compiere.model.MAttributeSet;
+import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.model.MProduct;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -189,6 +204,14 @@ public class VPAttribute extends JComponent
 			}
 		});
 	}	//	VPAttribute
+	
+	static enum VPAttributeType
+	{
+		Regular,
+		ProductWindow,
+		ProcessParameter,
+		Pricing,
+	}
 
 	/**	Data Value				*/
 	private Object				m_value = new Object();
@@ -210,12 +233,11 @@ public class VPAttribute extends JComponent
 	private GridField m_GridField; // added for processCallout
 	
 	/**	Calling Window Info				*/
-	private int					m_AD_Column_ID = 0;
 	private GridField m_mField;
 	/**	No Instance Key					*/
 	private static Integer		NO_INSTANCE = new Integer(0);
 	/**	Logger			*/
-	private static Logger log = LogManager.getLogger(VPAttribute.class);
+	private static final transient Logger log = LogManager.getLogger(VPAttribute.class);
 		
 
 	/**
@@ -318,7 +340,7 @@ public class VPAttribute extends JComponent
 	 * 	@param value value
 	 */
 	@Override
-	public void setValue(Object value)
+	public void setValue(final Object value)
 	{
 		if (value == null || NO_INSTANCE.equals(value))
 		{
@@ -345,6 +367,185 @@ public class VPAttribute extends JComponent
 	{
 		return m_value;
 	}	//	getValue
+	
+	private int getM_AttributeSetInstance_ID()
+	{
+		final Integer value = (Integer)getValue();
+		return value == null ? 0 : value.intValue();
+	}
+	
+	private MAttributeSetInstance getM_AttributeSetInstance()
+	{
+		final int attributeSetInstanceId = getM_AttributeSetInstance_ID();
+		if(attributeSetInstanceId <= 0)
+		{
+			return null;
+		}
+		
+		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(Env.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, ITrx.TRXNAME_None);
+		return LegacyAdapters.convertToPO(asi);
+	}
+	
+	private I_M_Product getM_Product()
+	{
+		final int M_Product_ID = attributeContext.getM_Product_ID();
+		if(M_Product_ID <= 0)
+		{
+			return null;
+		}
+		return MProduct.get(Env.getCtx(), M_Product_ID);
+	}
+	
+	private I_M_AttributeSet getProductAttributeSet()
+	{
+		final I_M_Product product = getM_Product();
+		if(product == null)
+		{
+			return null;
+		}
+		return Services.get(IProductBL.class).getM_AttributeSet(product);
+	}
+	
+	private I_M_AttributeSet getM_AttributeSet()
+	{
+		final VPAttributeType type = getType();
+		
+		final I_M_AttributeSet attributeSet;
+		switch(type)
+		{
+			case Regular:
+			{
+				attributeSet = getProductAttributeSet();
+				// Product has no Instance Attributes
+				if (attributeSet != null && !attributeSet.isInstanceAttribute())
+				{
+					throw new AdempiereException("@PAttributeNoInstanceAttribute@");
+				}
+				break;
+			}
+			case ProductWindow:
+			{
+				attributeSet = getProductAttributeSet();
+				break;
+			}
+			case ProcessParameter:
+			{
+				final I_M_AttributeSet productAttributeSet = getProductAttributeSet();
+				if(productAttributeSet != null)
+				{
+					attributeSet = productAttributeSet;
+					break;
+				}
+				
+				final MAttributeSetInstance asi = getM_AttributeSetInstance();
+				attributeSet = asi == null ? null : asi.getM_AttributeSet();
+				break;
+			}
+			case Pricing:
+			{
+				attributeSet = null;
+				break;
+			}
+			default:
+			{
+				attributeSet = null;
+				break;
+			}
+		}
+		
+		return attributeSet;
+	}
+	
+	private boolean isExcludeAttributeSet(final I_M_AttributeSet attributeSet)
+	{
+		if (attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0)
+		{
+			final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
+			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getAD_Column_ID(), attributeContext.isSOTrx());
+			final boolean exclude = asExclude != null && excludeBL.isFullExclude(asExclude);
+			return exclude;
+		}
+		
+		// NOTE: at this point attributeSet is null or ID=0
+
+		//
+		// Regular window or product window requires a valid attributeSet
+		final VPAttributeType type = getType();
+		if (type == VPAttributeType.Regular || type == VPAttributeType.ProductWindow)
+		{
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private List<MAttribute> retrieveAvailableAttributes()
+	{
+		final MAttributeSet attributeSet = LegacyAdapters.convertToPO(getM_AttributeSet());
+
+		final Stream<MAttribute> attributes;
+		switch(getType())
+		{
+			case Regular:
+			{
+				Check.assumeNotNull(attributeSet, "Parameter attributeSet is not null");
+				attributes = Stream.of(attributeSet.getMAttributes(true)); // all instance attributes
+				break;
+			}
+			case ProductWindow:
+			{
+				Check.assumeNotNull(attributeSet, "Parameter attributeSet is not null");
+				attributes = Stream.of(attributeSet.getMAttributes(false)); // non-instance attributes
+				break;
+			}
+			case ProcessParameter:
+			{
+				attributes = Services.get(IQueryBL.class)
+						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
+						.addOnlyActiveRecordsFilter()
+						.addOnlyContextClient()
+						//
+						.orderBy()
+						.addColumn(I_M_Attribute.COLUMNNAME_Name)
+						.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+						.endOrderBy()
+						//
+						.create()
+						.stream(MAttribute.class);
+				break;
+			}
+			case Pricing:
+			{
+				attributes = Services.get(IQueryBL.class)
+						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
+						.addOnlyActiveRecordsFilter()
+						.addOnlyContextClient()
+						.addEqualsFilter(I_M_Attribute.COLUMNNAME_IsPricingRelevant, true)
+						.addEqualsFilter(I_M_Attribute.COLUMNNAME_AttributeValueType, X_M_Attribute.ATTRIBUTEVALUETYPE_List) // atm only list attributes are supported, see IPricingAttribute
+						//
+						.orderBy()
+						.addColumn(I_M_Attribute.COLUMNNAME_Name)
+						.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
+						.endOrderBy()
+						//
+						.create()
+						.stream(MAttribute.class);
+				break;
+			}
+			default:
+			{
+				return ImmutableList.of();
+			}
+		}
+
+		final IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
+		final int adColumnId = getAD_Column_ID();
+		final boolean isSOTrx = attributeContext.isSOTrx();
+
+		return attributes
+				.filter(attribute -> attributeSet == null || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSet, adColumnId, isSOTrx))
+				.collect(GuavaCollectors.toImmutableList());
+	}
 
 	/**
 	 * 	Get Display Value
@@ -365,7 +566,6 @@ public class VPAttribute extends JComponent
 	public void setField(GridField mField)
 	{
 		//	To determine behavior
-		m_AD_Column_ID = mField.getAD_Column_ID();
 		m_GridField = mField;
 		
 		m_mField = mField;
@@ -387,8 +587,37 @@ public class VPAttribute extends JComponent
 	}	//	setField
 	
 	@Override
-	public GridField getField() {
+	public GridField getField()
+	{
 		return m_mField;
+	}
+	
+	private int getAD_Column_ID()
+	{
+		final GridField gridField = getField();
+		return gridField == null ? -1 : gridField.getAD_Column_ID();
+	}
+	
+	private VPAttributeType getType()
+	{
+		final int AD_Column_ID = getAD_Column_ID();
+		
+		if (AD_Column_ID == 8418) //	FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID = 8418
+		{
+			return VPAttributeType.ProductWindow;
+		}
+		else if (AD_Column_ID == 556075) // FIXME HARDCODED: M_ProductPrice.M_AttributeSetInstance_ID
+		{
+			return VPAttributeType.Pricing;
+		}
+		else if (AD_Column_ID <= 0)
+		{
+			return VPAttributeType.ProcessParameter;
+		}
+		else
+		{
+			return VPAttributeType.Regular;
+		}
 	}
 
 	/**
@@ -407,9 +636,16 @@ public class VPAttribute extends JComponent
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		if (e.getSource() == m_button)
+		try
 		{
-			actionButton();
+			if (e.getSource() == m_button)
+			{
+				actionButton();
+			}
+		}
+		catch (Exception ex)
+		{
+			Services.get(IClientUI.class).error(attributeContext.getWindowNo(), ex);
 		}
 	}	//	actionPerformed
 	
@@ -424,120 +660,77 @@ public class VPAttribute extends JComponent
 			actionButton0();
 		}
 	}
-	
+
 	private void actionButton0()
 	{
-		Integer oldValue = (Integer)getValue ();
-		int oldValueInt = oldValue == null ? 0 : oldValue.intValue ();
-		int M_AttributeSetInstance_ID = oldValueInt;
-		int M_Product_ID = attributeContext.getM_Product_ID();
-		int M_ProductBOM_ID =attributeContext.getM_ProductBOM_ID();
-		int M_Locator_ID = -1;
-
-		log.info("M_Product_ID=" + M_Product_ID + "/" + M_ProductBOM_ID
-			+ ",M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID
-			+ ", AD_Column_ID=" + m_AD_Column_ID);
-		
-		final boolean productWindow = m_AD_Column_ID == 8418;		//	FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID = 8418
-		final boolean isProcessParameter = m_AD_Column_ID <= 0;
-		final boolean isPureProductASI = !productWindow && !isProcessParameter;
-		
-		//	Exclude ability to enter ASI
-		boolean exclude = true;
-		if (M_Product_ID > 0)
+		final I_M_AttributeSet attributeSet = getM_AttributeSet();
+		if(isExcludeAttributeSet(attributeSet))
 		{
-			MProduct product = MProduct.get(Env.getCtx(), M_Product_ID);
-			int M_AttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
-			if (M_AttributeSet_ID > 0)
-			{
-				
-				final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
-				final I_M_AttributeSet attributeSet = InterfaceWrapperHelper.create(Env.getCtx(), M_AttributeSet_ID, I_M_AttributeSet.class, ITrx.TRXNAME_None);
-				final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, m_AD_Column_ID, attributeContext.isSOTrx());
-				if ((null == asExclude) || (!excludeBL.isFullExclude(asExclude)))
-				{
-					exclude = false;
-				}
-			}
+			return;
 		}
 		
-		boolean changed = false;
-		if (M_ProductBOM_ID > 0)	//	Use BOM Component
-			M_Product_ID = M_ProductBOM_ID;
-		//	
-		if (isPureProductASI && (M_Product_ID <= 0 || exclude))
+		final VPAttributeDialog vad = new VPAttributeDialog( //
+				Env.getFrame(this) //
+				, getAD_Column_ID() //
+				, getType() //
+				, getM_AttributeSet() //
+				, retrieveAvailableAttributes() //
+				, getM_AttributeSetInstance() //
+				, attributeContext //
+		);
+		
+		if(!vad.isChanged())
 		{
-			changed = true;
-			m_text.setText(null);
-			M_AttributeSetInstance_ID = 0;
+			return;
+		}
+		
+		final int previousM_AttributeSetInstance_ID = getM_AttributeSetInstance_ID();
+		final int M_AttributeSetInstance_ID = vad.getM_AttributeSetInstance_ID();
+		final int M_Locator_ID = vad.getM_Locator_ID();
+
+		//
+		// Actually set the value
+		m_text.setText(vad.getM_AttributeSetInstanceName());
+		m_value = new Object();				//	force re-query display
+		if (M_AttributeSetInstance_ID <= 0)
+		{
+			setValue(null);
 		}
 		else
 		{
-			final VPAttributeDialog vad = new VPAttributeDialog (Env.getFrame (this), 
-				M_AttributeSetInstance_ID,
-				M_Product_ID,
-				productWindow,
-				m_AD_Column_ID,
-				attributeContext);
-			if (vad.isChanged())
-			{
-				m_text.setText(vad.getM_AttributeSetInstanceName());
-				M_AttributeSetInstance_ID = vad.getM_AttributeSetInstance_ID();
-				if (!productWindow && vad.getM_Locator_ID() > 0)
-				{
-					M_Locator_ID = vad.getM_Locator_ID();
-				}
-				changed = true;
-			}
+			setValue(M_AttributeSetInstance_ID);
+		}		
+		// Change Locator
+		if (m_GridTab != null && M_Locator_ID > 0)
+		{
+			m_GridTab.setValue("M_Locator_ID", M_Locator_ID);
 		}
 		
-		//	Set Value
-		if (changed)
+		//
+		// Fire events
+		try
 		{
-			log.trace("Changed M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID);
-			m_value = new Object();				//	force re-query display
-			if (M_AttributeSetInstance_ID <= 0)
-				setValue(null);
-			else
-				setValue(M_AttributeSetInstance_ID);
-			
-			// Change Locator
-			if (m_GridTab != null && M_Locator_ID > 0)
-			{
-				log.trace("Change M_Locator_ID=" + M_Locator_ID);
-				m_GridTab.setValue("M_Locator_ID", M_Locator_ID);
-			}
-			
-			//
-			// Fire events
-			try
-			{
-				String columnName = "M_AttributeSetInstance_ID";
-		 	 	if (m_GridField != null)
-		 	 	{
-		 	 		columnName = m_GridField.getColumnName();
-		 	 	}
-		 	 	fireVetoableChange(columnName, new Object(), getValue());
-			}
-			catch (PropertyVetoException pve)
-			{
-				log.error("", pve);
-			}
-			if (M_AttributeSetInstance_ID == oldValueInt && m_GridTab != null && m_GridField != null)
-			{
-				//  force Change - user does not realize that embedded object is already saved.
-				m_GridTab.processFieldChange(m_GridField); 
-			}
-		}	//	change
+			String columnName = "M_AttributeSetInstance_ID";
+	 	 	if (m_GridField != null)
+	 	 	{
+	 	 		columnName = m_GridField.getColumnName();
+	 	 	}
+	 	 	fireVetoableChange(columnName, new Object(), getValue());
+		}
+		catch (PropertyVetoException pve)
+		{
+			log.error("", pve);
+		}
+		if (M_AttributeSetInstance_ID == previousM_AttributeSetInstance_ID && m_GridTab != null && m_GridField != null)
+		{
+			//  force Change - user does not realize that embedded object is already saved.
+			m_GridTab.processFieldChange(m_GridField); 
+		}
 	}
 
 
-	/**
-	 *  Property Change Listener
-	 *  @param evt event
-	 */
 	@Override
-	public void propertyChange (PropertyChangeEvent evt)
+	public void propertyChange (final PropertyChangeEvent evt)
 	{
 		final String propertyName = evt.getPropertyName();
 		if (propertyName.equals(org.compiere.model.GridField.PROPERTY))

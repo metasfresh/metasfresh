@@ -35,8 +35,6 @@ public interface IVPAttributeContext
 
 	int getM_Product_ID();
 
-	int getM_ProductBOM_ID();
-
 	boolean isSOTrx();
 
 	int getM_AttributeSet_ID();

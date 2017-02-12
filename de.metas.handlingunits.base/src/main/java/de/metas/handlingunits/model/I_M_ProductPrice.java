@@ -1,10 +1,10 @@
-package de.metas.adempiere.model;
+package de.metas.handlingunits.model;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +22,19 @@ package de.metas.adempiere.model;
  * #L%
  */
 
-
-
 public interface I_M_ProductPrice extends org.compiere.model.I_M_ProductPrice
 {
-	public static final String COLUMNNAME_UseScalePrice = "UseScalePrice";
+	// @formatter:off
+	public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	//public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
+	public int getM_HU_PI_Item_Product_ID();
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
+	//public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
+	// @formatter:on
 
-	public boolean isUseScalePrice();
-
-	public void setUseScalePrice(boolean UseScalePrice);
-
-	public static final String COLUMNNAME_IsSeasonFixedPrice = "IsSeasonFixedPrice";
-	public void setIsSeasonFixedPrice(boolean IsSeasonFixedPrice);
-	public boolean isSeasonFixedPrice();
+	// @formatter:off
+	public static final String COLUMNNAME_IsHUPrice = "IsHUPrice";
+	public void setIsHUPrice(boolean IsHUPrice);
+	public boolean isHUPrice();
+	// @formatter:on
 }
