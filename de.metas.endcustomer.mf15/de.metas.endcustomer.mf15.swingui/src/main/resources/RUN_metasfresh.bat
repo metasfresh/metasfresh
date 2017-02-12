@@ -78,24 +78,16 @@ SET METASFRESH_HOME=%~dp0
 REM @goto MULTI_INSTALL
 
 :METASFRESH_HOME_OK
-SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
+SET MAIN_CLASSNAME=org.springframework.boot.loader.PropertiesLauncher
 
 @REM finding our jar file
 @REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
 for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
 
-SET USERJARS=
-for /R "%METASFRESH_HOME%/userlib" %%a in (*.jar) do call :ADDTO_USERJARS "%%a"
-goto :ADDTO_USERJARS_END
+SET CLASSPATH=%JAR%
 
-:ADDTO_USERJARS
-@Echo userjar added to CLASSPATH %~1
-set USERJARS=%~1;%USERJARS%
-GOTO :EOF
-:ADDTO_USERJARS_END
-
-@REM Multiple path entries are separated by semicolons with no spaces , see https://docs.oracle.com/javase/8/docs/technotes/tools/windows/classpath.html
-SET CLASSPATH=%USERJARS%;%JAR%
+@REM Comma-separated Classpath, e.g. lib,${HOME}/app/lib. see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+SET LOADER_PATH=%METASFRESH_HOME%\userlib
 
 SET PATH=%PATH%;%METASFRESH_HOME%\userlib-x64
 
@@ -121,6 +113,7 @@ SET PATH=%PATH%;%METASFRESH_HOME%\userlib-x64
 @Echo JMX_REMOTE_DEBUG_OPTS=%JMX_REMOTE_DEBUG_OPTS%
 @Echo SECURE=%SECURE%
 @Echo CLASSPATH=%CLASSPATH%
+@Echo LOADER_PATH=%LOADER_PATH%
 @Echo MAIN_CLASSNAME=%MAIN_CLASSNAME%
 
 :START
@@ -129,5 +122,3 @@ SET JAVA_OPTS=-Xms32m -Xmx1024m -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryE
 
 @Rem @sleep 15
 @CHOICE /C YN /T 15 /D N > NUL
-
-:EOF
