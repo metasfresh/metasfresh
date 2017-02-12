@@ -25,6 +25,7 @@ upcoming
   * #734 Add Translation for en_US in WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
+  * #947 Window Greeting Add Translation for en_US
 
 ## Fixes 
 * metasfresh
