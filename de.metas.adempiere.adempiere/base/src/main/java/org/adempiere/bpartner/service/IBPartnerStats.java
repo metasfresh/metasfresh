@@ -45,16 +45,21 @@ public interface IBPartnerStats
 	/**
 	 * @return
 	 */
-	String getSoCreditStatus();
+	String getSOCreditStatus();
 
 	/**
 	 * @return
 	 */
-	BigDecimal getSoCreditUsed();
+	BigDecimal getSOCreditUsed();
 
 	/**
 	 * @return
 	 */
 	BigDecimal getActualLifeTimeValue();
+
+	/**
+	 * @return
+	 */
+	int getC_BPartner_ID();
 
 }

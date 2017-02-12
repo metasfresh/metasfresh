@@ -927,7 +927,7 @@ public class VLocationDialog extends CDialog
 	/**
 	 * Small class used to handle the components of a location part (e.g. the label and field of Address1)
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private final class LocationPart

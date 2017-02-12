@@ -13,11 +13,11 @@ package de.metas.ordercandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,11 +40,14 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public int getC_BPartner_Effective_ID(final I_C_OLCand olCand)
 	{
-		if (olCand.getC_BPartner_Override_ID() <= 0)
+		final Integer bPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_ID);
+		final int bPartnerID = bPartnerOverride == null ? 0 : bPartnerOverride;
+
+		if (bPartnerID <= 0)
 		{
 			return olCand.getC_BPartner_ID();
 		}
-		return olCand.getC_BPartner_Override_ID();
+		return bPartnerID;
 	}
 
 	@Override
@@ -60,11 +63,14 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public int getC_BP_Location_Effective_ID(final I_C_OLCand olCand)
 	{
-		if (olCand.getC_BP_Location_Override_ID() <= 0)
+		final Integer bpLocationOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID);
+		final int bpLocationID = bpLocationOverride == null ? 0 : bpLocationOverride;
+
+		if (bpLocationID <= 0)
 		{
 			return olCand.getC_BPartner_Location_ID();
 		}
-		return olCand.getC_BP_Location_Override_ID();
+		return bpLocationID;
 	}
 
 	@Override
@@ -142,17 +148,37 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public int getDropShip_BPartner_Effective_ID(final I_C_OLCand olCand)
 	{
-		return olCand.getDropShip_BPartner_ID() > 0
-				? olCand.getDropShip_BPartner_ID()
-				: olCand.getC_BPartner_ID();
+		final Integer dropShipBPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID);
+		final int dropShipBPartnerID = dropShipBPartnerOverride == null ? 0 : dropShipBPartnerOverride;
+
+		final int bpartnerID = getC_BPartner_Effective_ID(olCand);
+
+		if (dropShipBPartnerID > 0)
+		{
+			// the dropship partner was set
+			return dropShipBPartnerID;
+		}
+
+		// fall-back to bpartner
+		return bpartnerID;
 	}
 
 	@Override
 	public int getDropShip_Location_Effective_ID(final I_C_OLCand olCand)
 	{
-		return olCand.getDropShip_Location_ID() > 0
-				? olCand.getDropShip_Location_ID()
-				: getC_BP_Location_Effective_ID(olCand);
+		final Integer dropShipLocationOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_DropShip_Location_ID);
+		final int dropShipLocationID = dropShipLocationOverride == null ? 0 : dropShipLocationOverride;
+
+		final int bpLocationId = getC_BP_Location_Effective_ID(olCand);
+
+		if (dropShipLocationID > 0)
+		{
+			// the dropship location was set
+			return dropShipLocationID;
+		}
+
+		// fallback to the bp location
+		return bpLocationId;
 	}
 
 	@Override
@@ -225,4 +251,61 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}
 
+	@Override
+	public int getHandOver_Partner_Effective_ID(final I_C_OLCand olCand)
+	{
+		final Integer handOverPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_HandOver_Partner_ID);
+		final int handOverPartnerID = handOverPartnerOverride == null ? 0 : handOverPartnerOverride;
+
+		final int bpartnerId = getC_BPartner_Effective_ID(olCand);
+
+		if (handOverPartnerID > 0)
+		{
+			// the handover partner was set
+
+			return handOverPartnerID;
+		}
+
+		// fall-back to C_BPartner
+		return bpartnerId;
+
+	}
+
+	@Override
+	public I_C_BPartner getHandOver_Partner_Effective(final I_C_OLCand olCand)
+	{
+		return InterfaceWrapperHelper.create(
+				InterfaceWrapperHelper.getCtx(olCand),
+				getHandOver_Partner_Effective_ID(olCand),
+				I_C_BPartner.class,
+				InterfaceWrapperHelper.getTrxName(olCand));
+	}
+
+	@Override
+	public int getHandOver_Location_Effective_ID(final I_C_OLCand olCand)
+	{
+		final Integer handOverLocationOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_ID);
+		final int handOverLocationID = handOverLocationOverride == null ? 0 : handOverLocationOverride;
+
+		final int bpLocationId = getC_BP_Location_Effective_ID(olCand);
+
+		if (handOverLocationID > 0)
+		{
+			// the handover location was set
+			return handOverLocationID;
+		}
+
+		// fall-back to C_BPartner_Location
+		return bpLocationId;
+	}
+
+	@Override
+	public I_C_BPartner_Location getHandOver_Location_Effective(final I_C_OLCand olCand)
+	{
+		return InterfaceWrapperHelper.create(
+				InterfaceWrapperHelper.getCtx(olCand),
+				getHandOver_Location_Effective_ID(olCand),
+				I_C_BPartner_Location.class,
+				InterfaceWrapperHelper.getTrxName(olCand));
+	}
 }

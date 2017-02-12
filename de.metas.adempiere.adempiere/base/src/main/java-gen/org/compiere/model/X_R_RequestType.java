@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for R_RequestType
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_R_RequestType extends org.compiere.model.PO implements I_R_RequestType, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 955384659L;
 
     /** Standard Constructor */
     public X_R_RequestType (Properties ctx, int R_RequestType_ID, String trxName)
@@ -52,6 +36,8 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 			setIsIndexed (false);
 			setIsSelfService (true);
 // Y
+			setIsUseForPartnerRequestWindow (false);
+// N
 			setName (null);
 			setR_RequestType_ID (0);
 			setR_StatusCategory_ID (0);
@@ -64,32 +50,20 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_R_RequestType[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Auto Due Date Days.
 		@param AutoDueDateDays 
 		Automatic Due Date Days
 	  */
+	@Override
 	public void setAutoDueDateDays (int AutoDueDateDays)
 	{
 		set_Value (COLUMNNAME_AutoDueDateDays, Integer.valueOf(AutoDueDateDays));
@@ -98,6 +72,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Auto Due Date Days.
 		@return Automatic Due Date Days
 	  */
+	@Override
 	public int getAutoDueDateDays () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AutoDueDateDays);
@@ -106,7 +81,10 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		return ii.intValue();
 	}
 
-	/** ConfidentialType AD_Reference_ID=340 */
+	/** 
+	 * ConfidentialType AD_Reference_ID=340
+	 * Reference name: R_Request Confidential
+	 */
 	public static final int CONFIDENTIALTYPE_AD_Reference_ID=340;
 	/** Public Information = A */
 	public static final String CONFIDENTIALTYPE_PublicInformation = "A";
@@ -120,7 +98,8 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param ConfidentialType 
 		Type of Confidentiality
 	  */
-	public void setConfidentialType (String ConfidentialType)
+	@Override
+	public void setConfidentialType (java.lang.String ConfidentialType)
 	{
 
 		set_Value (COLUMNNAME_ConfidentialType, ConfidentialType);
@@ -129,32 +108,33 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Confidentiality.
 		@return Type of Confidentiality
 	  */
-	public String getConfidentialType () 
+	@Override
+	public java.lang.String getConfidentialType () 
 	{
-		return (String)get_Value(COLUMNNAME_ConfidentialType);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfidentialType);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Due Date Tolerance.
 		@param DueDateTolerance 
 		Tolerance in days between the Date Next Action and the date the request is regarded as overdue
 	  */
+	@Override
 	public void setDueDateTolerance (int DueDateTolerance)
 	{
 		set_Value (COLUMNNAME_DueDateTolerance, Integer.valueOf(DueDateTolerance));
@@ -163,6 +143,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Due Date Tolerance.
 		@return Tolerance in days between the Date Next Action and the date the request is regarded as overdue
 	  */
+	@Override
 	public int getDueDateTolerance () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DueDateTolerance);
@@ -171,10 +152,30 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		return ii.intValue();
 	}
 
+	/** Set Interner Name.
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public void setInternalName (java.lang.String InternalName)
+	{
+		set_ValueNoCheck (COLUMNNAME_InternalName, InternalName);
+	}
+
+	/** Get Interner Name.
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public java.lang.String getInternalName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+	}
+
 	/** Set Create Change Request.
 		@param IsAutoChangeRequest 
 		Automatically create BOM (Engineering) Change Request
 	  */
+	@Override
 	public void setIsAutoChangeRequest (boolean IsAutoChangeRequest)
 	{
 		set_Value (COLUMNNAME_IsAutoChangeRequest, Boolean.valueOf(IsAutoChangeRequest));
@@ -183,6 +184,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Create Change Request.
 		@return Automatically create BOM (Engineering) Change Request
 	  */
+	@Override
 	public boolean isAutoChangeRequest () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAutoChangeRequest);
@@ -199,6 +201,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param IsConfidentialInfo 
 		Can enter confidential information
 	  */
+	@Override
 	public void setIsConfidentialInfo (boolean IsConfidentialInfo)
 	{
 		set_Value (COLUMNNAME_IsConfidentialInfo, Boolean.valueOf(IsConfidentialInfo));
@@ -207,6 +210,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Confidential Info.
 		@return Can enter confidential information
 	  */
+	@Override
 	public boolean isConfidentialInfo () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsConfidentialInfo);
@@ -219,18 +223,20 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		return false;
 	}
 
-	/** Set Default.
+	/** Set Standard.
 		@param IsDefault 
 		Default value
 	  */
+	@Override
 	public void setIsDefault (boolean IsDefault)
 	{
 		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
 	}
 
-	/** Get Default.
+	/** Get Standard.
 		@return Default value
 	  */
+	@Override
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
@@ -247,6 +253,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param IsEMailWhenDue 
 		Send EMail when Request becomes due
 	  */
+	@Override
 	public void setIsEMailWhenDue (boolean IsEMailWhenDue)
 	{
 		set_Value (COLUMNNAME_IsEMailWhenDue, Boolean.valueOf(IsEMailWhenDue));
@@ -255,6 +262,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get EMail when Due.
 		@return Send EMail when Request becomes due
 	  */
+	@Override
 	public boolean isEMailWhenDue () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEMailWhenDue);
@@ -271,6 +279,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param IsEMailWhenOverdue 
 		Send EMail when Request becomes overdue
 	  */
+	@Override
 	public void setIsEMailWhenOverdue (boolean IsEMailWhenOverdue)
 	{
 		set_Value (COLUMNNAME_IsEMailWhenOverdue, Boolean.valueOf(IsEMailWhenOverdue));
@@ -279,6 +288,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get EMail when Overdue.
 		@return Send EMail when Request becomes overdue
 	  */
+	@Override
 	public boolean isEMailWhenOverdue () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEMailWhenOverdue);
@@ -295,6 +305,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param IsIndexed 
 		Index the document for the internal search engine
 	  */
+	@Override
 	public void setIsIndexed (boolean IsIndexed)
 	{
 		set_Value (COLUMNNAME_IsIndexed, Boolean.valueOf(IsIndexed));
@@ -303,6 +314,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Indexed.
 		@return Index the document for the internal search engine
 	  */
+	@Override
 	public boolean isIndexed () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsIndexed);
@@ -319,6 +331,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param IsInvoiced 
 		Is this invoiced?
 	  */
+	@Override
 	public void setIsInvoiced (boolean IsInvoiced)
 	{
 		set_Value (COLUMNNAME_IsInvoiced, Boolean.valueOf(IsInvoiced));
@@ -327,6 +340,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Invoiced.
 		@return Is this invoiced?
 	  */
+	@Override
 	public boolean isInvoiced () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsInvoiced);
@@ -343,6 +357,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param IsSelfService 
 		This is a Self-Service entry or this entry can be changed via Self-Service
 	  */
+	@Override
 	public void setIsSelfService (boolean IsSelfService)
 	{
 		set_Value (COLUMNNAME_IsSelfService, Boolean.valueOf(IsSelfService));
@@ -351,9 +366,36 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Self-Service.
 		@return This is a Self-Service entry or this entry can be changed via Self-Service
 	  */
+	@Override
 	public boolean isSelfService () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelfService);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsUseForPartnerRequestWindow.
+		@param IsUseForPartnerRequestWindow 
+		Flag that tells if the R_Request entries of this type will be displayed or not in the business partner request window (Vorgang)
+	  */
+	@Override
+	public void setIsUseForPartnerRequestWindow (boolean IsUseForPartnerRequestWindow)
+	{
+		set_Value (COLUMNNAME_IsUseForPartnerRequestWindow, Boolean.valueOf(IsUseForPartnerRequestWindow));
+	}
+
+	/** Get IsUseForPartnerRequestWindow.
+		@return Flag that tells if the R_Request entries of this type will be displayed or not in the business partner request window (Vorgang)
+	  */
+	@Override
+	public boolean isUseForPartnerRequestWindow () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsUseForPartnerRequestWindow);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -367,7 +409,8 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -375,23 +418,17 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
 
 	/** Set Request Type.
 		@param R_RequestType_ID 
 		Type of request (e.g. Inquiry, Complaint, ..)
 	  */
+	@Override
 	public void setR_RequestType_ID (int R_RequestType_ID)
 	{
 		if (R_RequestType_ID < 1) 
@@ -403,6 +440,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Request Type.
 		@return Type of request (e.g. Inquiry, Complaint, ..)
 	  */
+	@Override
 	public int getR_RequestType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_RequestType_ID);
@@ -411,15 +449,23 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_R_StatusCategory getR_StatusCategory() throws RuntimeException
-    {
-		return (I_R_StatusCategory)MTable.get(getCtx(), I_R_StatusCategory.Table_Name)
-			.getPO(getR_StatusCategory_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_StatusCategory getR_StatusCategory() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class);
+	}
+
+	@Override
+	public void setR_StatusCategory(org.compiere.model.I_R_StatusCategory R_StatusCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class, R_StatusCategory);
+	}
 
 	/** Set Status Category.
 		@param R_StatusCategory_ID 
 		Request Status Category
 	  */
+	@Override
 	public void setR_StatusCategory_ID (int R_StatusCategory_ID)
 	{
 		if (R_StatusCategory_ID < 1) 
@@ -431,6 +477,7 @@ public class X_R_RequestType extends PO implements I_R_RequestType, I_Persistent
 	/** Get Status Category.
 		@return Request Status Category
 	  */
+	@Override
 	public int getR_StatusCategory_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_StatusCategory_ID);

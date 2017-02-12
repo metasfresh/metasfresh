@@ -216,6 +216,8 @@ public class Helper
 	 */
 	public void waitUntilSize(final List<?> list, final int targetSize, final long timeoutMillis) throws InterruptedException, TimeoutException
 	{
+		Thread.sleep(100); // wait a bit, because the processor need not only to increase list.size(), but also flag the package as "processed"
+		
 		int retryCount = 0;
 
 		final long beginTS = SystemTime.millis();

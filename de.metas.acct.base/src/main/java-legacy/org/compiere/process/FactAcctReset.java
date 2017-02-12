@@ -20,17 +20,16 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
-import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MCash;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInventory;
@@ -49,13 +48,16 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  *	Accounting Fact Reset
  *	
  *  @author Jorg Janke
  *  @version $Id: FactAcctReset.java,v 1.5 2006/09/21 21:05:02 jjanke Exp $
  */
-public class FactAcctReset extends SvrProcess
+public class FactAcctReset extends JavaProcess
 {
 	/**	Client Parameter		*/
 	private int		p_AD_Client_ID = 0;
@@ -75,7 +77,7 @@ public class FactAcctReset extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -225,7 +227,7 @@ public class FactAcctReset extends SvrProcess
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_BankStatement + "'";
 		else if (AD_Table_ID == MCash.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_CashJournal + "'";
-		else if (AD_Table_ID == MAllocationHdr.Table_ID)
+		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PaymentAllocation + "'";
 		else if (AD_Table_ID == MJournal.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_GLJournal + "'";

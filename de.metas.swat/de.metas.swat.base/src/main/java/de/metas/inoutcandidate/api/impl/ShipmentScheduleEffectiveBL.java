@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -154,7 +153,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	{
 		final I_AD_User user =
 				sched.getAD_User_Override_ID() <= 0 ?
-						InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : POWrapper.create(sched.getAD_User_Override(), I_AD_User.class);
+						InterfaceWrapperHelper.create(sched.getAD_User(), I_AD_User.class) : InterfaceWrapperHelper.create(sched.getAD_User_Override(), I_AD_User.class);
 		return user;
 	}
 

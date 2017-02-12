@@ -3,53 +3,1017 @@
 
 This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first)
 
-In this document, we sort of lean on http://www.semanticreleasenotes.org/, 
-
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
-The actual release notes
+Here come the actual release notes:
 
-# metasfresh 4.21.20 (upcoming)
+# metasfresh 4.56.54 (2017-07)
+
+upcoming
+
+## Features
+* metasfresh
+  * #913 include branch name in build version string
+  
+* webUI
+  * #226 Implement document field device support
+  * #227 Wrong breadcrumb when the view is opened after process execution
+  * #254 Cannot see the HU editor icons
+  * #894 Payment Allocation Window WebUI
+  * #895 Dunning Candidates Window WebUI
+
+## Fixes 
+* metasfresh
+  * #797 Zoom does not open new document
+
+# metasfresh 4.55.54 (2017-06)
+
+this week's RC
+
+## Features
+* metasfresh
+  * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
+    * Adapt the reports for Material Receipt to work with Receipt Schedule ID as Paramater. This is needed for the new Material Receipt Workflow in WebUI which is now based on generic Material Receipt Schedule Window.
+  * #460 Provide aggregate HUs
+    * Introduce the Handling Unit compression to only store and process the minimal needed information about Handling Units per step in supply chain. This Implementation is a huge Performance gain in Handling Unit processing.
+  * #815 Jasper Footer: Show bank account in one line
+    * Adjust the Jasper Reports Footer subdocument. Show all bank information now in same line.
+  * #904 New Field "Zulieferant" in R_Request Window
+    * Add new Field in Request window to allow the storage of an explicit Vendor Businesspartner.
+  * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
+    * Adjust the customs report to fit for swiss requirements in customs reporting. The gross weight is now calculated as Handling Units weight minus weight Logistics Unit Package Item.
+  
+* webui
+  * #873 Customer & Vendor Subtab in BPartner Window WebUI
+    * Add and arrange the customer and vendor subtab in Businesspartner Window in Web User Interface.
+  * #196 Grid View 100% height
+    * Adjust the Grid view height to expand to screensize.
+  * #795 Price Window WebUI Layout
+    * Add the Layout for the Price window in WebUI.
+  * #896 Dunning Window WebUI
+    * Add the Layout for the Dunning Window in WebUI.
+  * #194 Open views from process execution result 
+    * Add a new functionality that allows process results to receive a Window ID and open the corresponding Window after finishing the process execution.
+     
+
+## Fixes
+* metasfresh
+  * #857 Fix String Attributes Save in POS
+    * Fix that now allows the possibility to save String Attribute in POS Windows also without loosing focus for recorded field.
+  * #863 No Result Window for Prosesses that don't allow rerun
+    * Fix for rerun parameter in Processes. Now possible to switch off the rerun confirmation Window after Process.
+  * #879 Fix "ValueType not supported: D" when HU attributes are generated
+    * Minor Fix for Value Type of generated HU Attributes.
+  * #781 ESR scan processing returns improper bpartner
+    * Fix and Enhancement of ESR Scan functionality in Purchase Invoices. Now allowing to select alternative Business Partner for on the Fly Bank Account generation. 
+  * #783 DocAction on Sales Order not available although permission existing
+    * Sysconfig to certrally enable/ disable the Document Action Close.
+  * #813 hide packing instruction and qty when null
+    * Fix that does not show the Packing Instruction and Packing Qty on documents anymore when null.
+  * #903 Jenkins build error with slash in branch name
+    * Minor Fix for Jenkins Build.
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect
+    * Fix that stores the price & qty override in Invoice Candidates after Reverse-Correct of Invoice.
+  * #910 Put explicit delivery date on invoice
+    * Add the precise description for delivery date as demanded by german law.
+
+* webui
+  * #204 Can not complete Order
+    * Minor Fix that now allows the completion of Sales Order in Web User Interface.
+  * #886 GrandTotal missing in Purchase Order Grid view
+    * Fix that enables the display of Grandtotal Field in Purchase Order Grid View.
+  * #179 Fields too short for documentno in Breadcrumbs
+    * Fix that extends the number of visible digits (now 9 digits) in Breadcrumb menu for Document or masterdata identifiers.
+
+# metasfresh 4.54.53 (2017-05)
+
+## Features
+* metasfresh
+  * #858 Adjustments for Shipment Schedule Grid View
+    * Minor changes on the Grid View for the Shipment Schedules Window.
+  * #868 Weekly Revenue Report
+    * Create a weekly Revenue Report in Jasperreports. Similar to the montly report, just comparing different weeks instead months.
+  * #827 use the barcode field to select HU using attribute value
+    * New feature to be able to scan barcode attrivutes attached to a Handling Unit fir precise identifying.
+
+* webUI
+  * #198 Process with parameters cannot be started
+    * Fix a Bug in WebUI that did not allow the start of processes with parameters.
+  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+    * Add a Packing Unit dropdown in combined Product Field in Sales Orderline Batchentry.
+  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+    * Now allowing to delete the whole content of the combined Product-Packing Unit Field.
+  * #208 After New autofocus on first record field
+    * New UX Feature that automatically sets the focus onto the first recordable Field in Window when "New Record"
+  * #213 Do not focus fields "in background" when in Expanded view
+    * Adjust the navigation behavior and sequence when using TAB jumping from field to field, now avoids that the focus gets "under" the overlay panel.
+  * #218 Reduce Gap Height between Layout Sections
+    * Refine UX. Reduced the height between Layout Sections to not have the feeling of having a too big gap between them.
+  * #862 Payment Window in WebUI
+    * Include the payment Window in WebUI.
+  * #873 Customer and Vendor Subtab in BPartner WebUI Window
+    * Include the Customer and Vendor Subtab in Business Partner Window.
+  * #883 Sales Purchase Order Window Grid View
+    * Include the Grid View for the Sales and Purchase Order in WebUI.
+  * #878 Purchase Order Window WebUI
+    * Include the Purchase Order Window in WebUI.
+
+## Fixes
+* metasfresh 
+  * #782 Focus on the first process parameter
+    * Fix to allow the first recordable Field having focus when opening a process paramater window.
+  * #864 Adjust C_Country Location Print generation DE
+    * Adjust the Location capture Sequence for Germany.
+
+# metasfresh 4.53.52 (2017-04)
+
+## Features
+* metasfresh
+  * #800 Order by product name and partner name in pmm_PurchaseCandidates
+    * Add a new possibility to be able to sort combined search fields by a selected element in the combined Field, e.g. a field combined as Value + Name can now be sorted with Name, and not just Value + Name.
+  * #829 receivedVia entry not translated in Baselanguage de_DE
+    * Add the Translation for receivedVia Field in current Baselanguage de_DE.
+  * #810 Propagate Attribute from Issue to Receive in Production
+    * New Functionality to propagate selected Attributes vertically though a manufacturing process, from action issue to action receipt.
+  * #835 Switch off Process Confirmation Window
+    * Switch off all process confirmation Windows per default. These can be switched on individually per Process where wanted.
+
+* webui
+  * #817 Request Window in WebUI
+    * Initial setup of Request Window in Web User Interface including default view, advanced edit, grid view and sidelist.
+  * #831 Default Document Layout for WebUI
+    * Overhaul of the current general Document Layout for WebUI
+  * #847 Shipment Schedule Window in WebUI
+    * Initial setup of the Shipment Schedule Window in Web User Interface.
+  * #853 Shipment Schedule Window Subtabs in WebUI
+    * Add the Subtabs definition to Shipment Schedule Window in the new metasfresh Web User Interface, including Sidelist.
+  * #855 Shipment Schedule Advanced Edit Mode
+    * Setup for the Advanced Edit Mode of Shipment Scheule in WebUI.
+  * #108 Create Callout for DocNo in Request
+    * Adjustment/ Enhancement of the DocumentNo Generation in non Document datastrucures of WebUI
+  
+
+## Fixes
+* metasfresh 
+  * #785 Make M_InOutLine.IsInvoiceCandidate Iscalculated
+    * Adjust the flag isInvoiceCandidate to be calculated for M_InoutLine records.
+  * #808 DocActionBL.retrieveString method is broken
+    * Fixing the method that retrieves the Document Action Name.
+  * #819 fix/refactor CalloutRequest
+    * Adopting the Callouts in Request window to also work in Web User Interface.
+  * #806 Customs report minor fixes
+    * Minor adjustments and fixes in the Customs report.
+  * #837 Marginal return accounts doubled
+    * Minor Bug Fix in marginal return report that doubled the sums on certain accounts.
+  * #844 Gear from Pricing System and PriceList show wrong processes
+    * Fixing a Bug that leads into wrong representation of Processes in Gear of Pricing System and Priceliste Window.
+
+* parent
+  * #3 Add repo.metasfresh.com also as plugin repo
+    * thx to @sramazzina
+
+# metasfresh 4.52.51 (2017-03)
+
+## Features
+* metasfresh 
+  * #774 show address on all docs so it fits the letter window
+    * Adjust all Documents so that the address fits into the letter window od envelops C5/ C6 according to ISO 269 und DIN 678.
+  * #773 show delivery address on sales order
+    * Show the deliverTo location on Sales Order Documents.
+  * #507 Copy with Details for PP_Product_BOM
+    * Add a new Functionality to allow copy-with-details on Bill of Materials records.
+  * #780 Have logo on jasper report that spans from left to right
+    * Rearranged the logo placing on Documents to allow the upload and usage of large, page-spanning Logos from left to right.
+  * #816 Do not show prices on shipment note
+    * Undisplayed the prices on shipment documents.
+
+## Fixes
+* metasfresh 
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * Addresses the possible case of different procurement products that have different attributes and still both match equally well.
+  * #791 Create Nachbelastung from Invoice Cast exception
+    * Fixes a Bug that lead into an exception when creating an adjustment charge to an existing invoice.
+  * #761 Reactivating an InOut fails sometimes
+    * Now the reactivation of InOuts also works with records that were deleted at the time the async-package is processed
+    
+# metasfresh 4.51.50 (2017-02)
+
+## Features
+* metasfresh
+  * #696 add multi line description per order line
+    * Possibility to now add multiline descriptions. These can be used to add individual Texts to an Orderline.
+  * #755 Automatic upload orders in csv file with COPY into c_olcand
+    * Enhancement to allow the Upload of Sales Orders into Order Candidates via COPY.
+
+## Fixes
+* metasfresh  
+  * #752 request report does not show requests that don't have product or inout
+    * Fix to show request lines in report, which don't have a product included nor a reference to an inout line.
+  * #759 Destroyed HU causes problem with shipment creation
+    * Fix problem when checking for not-yet-delivered M_ShipmentSchedule_QtyPicked records, the system did not check if they reference actually destroyed HUs.
+  * #766 fix for "DocumentPA will not be intercepted because final classes are not supported"
+    * Fix this error shown on server startup. Making DocumentPA not final anymore.
+  * #770 When extending a procurement contract, null becomes 0.00
+    * Fix an issue that set the price to 0,00 when extending a procurement contract, although the initial price was null which means "not set".
+  
+# metasfresh 4.50.49 (2017-01)
+
+## Features
+* metasfresh
+  * #615 Purchase Order wrong Price from Contract or Pricesystem for specific Product
+    * Working Increment that works for the current requirement at hand.
+  * #653 Calculated DailyLotNo in Material Receipt Candidates
+    * Add a Daily Lot No. thats calculated as Day from year, from a given Date in Purchase Order, Orderline Attributes.
+  * #714 Marginal Return report calculation add additional Costcenter
+    * Adjust the marginal return report to show allow more columns with cost center sums on 1 page.
+  * #742 R_Request column c_order_id autocomplete too slow
+    * Take out the autocomplete of c_order_id to speed up the lookup performance in R_Request.
+
+## Fixes
+* metasfresh
+  * #757 Automatic contract extension doesn't work anymore
+    * Fix the automatic extension of contracts when flatrate term conditions are met.
+  * #681 Automatic filling of BPartner and Location only shows value
+    * Fix the Search Field reference that showed only the value, instead of Name and value, in case of BPartner and BPartner Location.
+  * #718 Wrong location in empties vendor return
+    * Close the Gap that allows to record empty returs with BPartner Location that does not belog to the empties BPartner.
+  * #744 Report Bestellkontrolle promised Date-Time seems to have am/pm time formatting
+    * Adjust the Purchase Order control report to have the correct locale for time formatting.
+  * #763 material receipt HU label always shown in preview
+    * Migrate the Handling Unit label enabling direct print, without print preview.
+  
+* webui
+  * #89 Adjust DocAction Names
+    * Adjust/ migrate DocAction Names for WebUI.
+
+# metasfresh 4.49.48 (2016-51)
+ 
+## Features
+* metasfresh
+  * #489 Implement DLM within single logical tables
+    * Data Life-cycle Management Implementation to enable archiving of non-operational data to separate partitions.
+  * #682 Translation in window Vendor Returns
+    * Add german translation of additional Fields in Window Vendor Returns.
+
+* webui
+  * #698 Pipeline - add webui deployment
+    * Add a new Pipeline into Continuous Integration/ Deployment for metasfresh WebUI.
+
+## Fixes
+* metasfresh
+  * #380 duplicate lines in inout
+    * Worked over each jasper report in order not to display materdata records that were deactivated.
+  * #710 MRP Product Info: Qtyies issued to a production shall be subtracted from onhand qty
+    * Fix a Bug that prevented Handling Units Storage to be adjusted when adding raw material to manufacturing order via action issue.
+  * #724 Aggregation Shipment Jasper Documents shows reference from other ad_org_id
+    * Extend the where clause for matching of PO References in Aggregation inout documents. Additional Aggregation matching criteria now are ad_org_id, c_bpartner_id.
+  * #713 Marginal Return Report (short version) doubled sums for accounting group
+    * Fix a partially double summed up accounting group in marginal return Report.
+  
+# metasfresh 4.48.47 (2016-50)
+
+## Features
+* metasfresh
+  * #677 make customs report faster
+    * Significant improvement of the customs report performance.
+  * #541 Remove PiPo from metasfresh removing code and data
+    * Remove the legacy code from Pack-In and Pack-out from metasfresh. The underlying concept is flawed and does not scale.
+
+* webui
+  * #625 Shipment Schedule Window WebUI
+    * Add initial Layout configuration of Shipment Schedule window in metasfresh WebUI.
+  * #687 webUI bundle
+    * Add different Layout changes in a fair amount of windows for Web User Interface.
+    
+## Fixes
+* metasfresh
+  * #679 Bug in ClientUpdateValidator
+    * Fix a Bug in ClientUpdateValidator that avoided starting the client via eclipse for local-build. 
+  * #721 Wrong error message displayed when user enters wrong password on login
+    * Fix for Bug when entering wrong password in Login. Said "locked" but was just wrong credentials/ password.
+
+# metasfresh 4.47.46 (2016-49)
+
+## Features 
+* metasfresh
+  * #639 Marginal Return report calculation does not check ad_org_id
+    * Extend the marginal return report with ad_org_id parm to allow to seperate user for other organisations.
+  * #585 Adjust the remaining Property names
+    * Change properties to metasfresh namespace.
+  * #661 Cultivation Planning report adjustments
+    * Adjustments made to the cultivation planning report in procurement.
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Avoid automatic completion of flatrate term contracts when triffered manually from process gear. This allows the user to record further adjustments after creation.
+
+* webui
+  * #48 Add initial setup of kibana kpi for new webUI dashboard
+    * Setup an initial set of 10 key perfroamnce indicators for the new metasfresh webui.
+  * #59 User friendly URL for Print Endpoint
+    * Add a user frindly/ comprehensive endpoint for document printing tab in webUI.
+  * #45 Dashboard Target area backend support
+    * Add support for Target widgets and target widget area in webUI dashboard
+  * #567 WebUI - Material Receipt Schedule
+    * Initial set of windows, grid views, sidelist and elements and fields for material receipt schedule window.
+
+## Fixes
+* metasfresh
+  * #658 make Ini more robust: throw ex if file can't be read
+    * Fix error with long loading of ini file in Tomcat.
+  * #664 R_Request Performance Issue
+    * Swap Table direct references against search in all R_Request table/ subtable fields to reduce current performance issues.
+  * #674 Filter operator "between" broken
+    * Fix the operator "between" which is used in filtering/ search criteria.
+  
+* webui
+  * #67 Error when introducing parameters to report
+    * Fix parameters support for report usage in webui.
+  * #70 Add BPLocation Error
+    * Fix Errors that prevented the creation of new Business Partner Location lines in webUI.
+
+# metasfresh 4.46.45 (2016-48)
+
+## Features 
+* webui
+  * #425 Kickstart elasticsearch integration
+    * Add the first prototype of elasticsearch integration in WebUI environment of metasfresh ERP. Data for elasticsearch index is created via metasfresh async framework.
+  * #598 WebUI Dashboard initial Prototype definition
+    * Create a prototype dashboard in new metasfresh WebUI. Current prototype uses kibana for KPI and data visualization.
+
+## Fixes
+* metasfresh
+  * #583 Reports without ad_org_id show wrong results
+    * Add support for multi organisation usage of selected 22 reports.
+  * #620 Marginal Return Report doubled sums for accounting group
+    * Fix the doubled sums in Marginal return report for specific accounting group.    
+  * #656 Bug in Import Format - Copy lines process
+    * Fix a minor Bug in Import format.
+  * #646 Fix support for groovy scripts
+    * Fix groovy Script support and extend fieldsize for script recording.
+
+# metasfresh 4.45.44 (2016-47)
+
+This week's RC
+
+## Features
+* metasfresh
+  * #515 Generating C_Flatrate_Term from C_RfQ_Response then don't complete the term
+    * Adjust the completion process of Flatrate terms created manually. Now the flatrate term in not completed and can be manually adjusted by the user without reactivating.
+  * #563 Report Statistics qty per Week
+    * New sales qty report that shows the sold product quanities per week and in comparison the last 11 weeks.
+  * #579 Handling units without washing cycle shall be allowed in washing Manufacturing Order
+    * Adjustment of Handling Unit permissions in manufacturing order, initially filtering out HU with washing cycle set.
+  * #597 Empties mask and functionality with autom. set the selected bpartner
+    * New functionality to add informations about Businsspartner, Location and Purchase Order Reference. This allows the to raise the efficiency when checking and creating purchase invoices via invoice candidates.
+  * #576 Report Reclamation result, quality note and minor changes
+    * New reqirements implemented in reclamation report.
+  * #539 Add missing FK constraints
+    * Add further missin Foreign Key constraints surfacing during Data Lifecycle Management implementation.
+* webui
+  * #567 WebUI - Material Receipt Schedule
+    * Add initial Screen Layout for Material receipt schedule in metasfresh WebUI.
+  * #497 WebUI - ShipmentSchedule Window
+    * Add initial Screen Layout for Shipment Schedule in metasfresh WebUI.
+
+## Fixes
+* metasfresh
+  * #589 console error when doing bpartner setup
+    * Fix a minor bug with jax-rs/ jms timeout in Business Partner setup workflow, which contantly popped up in console.
+  * #553 Report Account Info adjustments. Add parms date range.
+    * Add the parms date range back into Account Info report in Jasper.
+  * #611 IBAN Error for RBS Bank
+    * Add support for RBS Bank in metasfresh IBAN check when creating a new Businesspartner Bankaccount.
+
+# metasfresh 4.44.43 (2016-46)
+
+## Features
+* metasfresh
+  * #553 Report Account Info adjustments. Add parms date range.
+    * Enhancing the Filter parms to allow variable daterange for selection.
+  * #557 Report Saldenbilanz & Account Info native Excel Export
+    * Now Allowing an Excel Export though Report viewer process.
+  * #558 Marginal return calculation - Accountings without c_activity_id
+    * Marginal Return now considers specific records without activity to be calculated on account specific one.
+  * #568 Change on Report "Lieferschein" for one specific Customer
+    * Add properties File for Shipment Report.
+  * #555 Businesspartner Location isEDI shall not be ticked by default
+    * Don't set the Flag isEDI per default when recording new Businesspartner Loactions.
+  * #548 keep M_QualityNote and M_AttributeValue in sync
+    * New Functionality to sync the M_QualityNote and M_AttributeValue for R_Request complaints usage.
+  * #577 Button Request shows too many results
+    * Adjust the Filtering of Request Button in main menue and show Role Based counter.
+  * #565 Report Revenue per Week and BPartner also show qty
+    * Add a new Quantity value in reports Revenue per week and week Businesspartner.
+  * #416 Extended async notification features
+    * Prepare the notification features for WebUI exposure in metasfresh nextGen.
+ 
+## Fixes
+* metasfresh
+  * #578 Request Window Attachment Image too large in viewer
+    * Fixes a Bug that scales window too large after uplaoding a large image.
+
+# metasfresh 4.43.42 (2016-45)
+
+## Features
+* metasfresh
+  * #504 new filter in saldobilanz report
+    * Added a new filter in saldobilanz report to exclude the year end accountings (profit & loss) from report.
+
+* metasfresh-webui
+  * #41 Implement Dashboard REST endpoint
+    * Added a new REST-API endpoint for WebUI KPI widgets.
+
+## Fixes
+* metasfresh
+  * #552 division by 0 in costprice report
+    * Fixed a division by 0 Bug in costprice report.
+
+* metasfresh-webui
+  * #40 Account fields are not working
+    * Fix in new WebUI Implementation. An exception occured because of Field Type account.
+  
+# metasfresh 4.42.41 (2016-44)
+
+## Features
+* metasfresh
+ * #500 Migration: Create Requests for all inout lines with quality issues
+   * SQL Migration Path for all Material Receipts with Quality Issues. Reclamation requests are created.
+ * #514 Reclamations report: group the inouts with ff.
+   * Create a new Report to analyze the Performance Issues in Vendor receipts/ customer deliveries. The report shows all details to performance issues (Quanitity-, Quality-, Delivery-, Receipt-Performance).
+
+## Fixes
+* metasfresh
+ * FRESH-823:#536 Context bug in MLookup
+   * Fixed a minor context Bug in MLookup Fields.
+ * #540 Table and Columns - IsLazyLoading flag is not displayed
+   * Fixed a Bug that occured in Table and Columns Definition, preventing isLazyLoading to be shown.
+
+
+# metasfresh 4.41.40 (2016-43)
+
+## Features
+* metasfresh
+ * #505 Possibility to define multiple Washing Testcycles for Carrots
+   * Quality Assurance Feature for Long Term Storage vegetables. Prossibility to define Washing cycles and route  the Logistic Units to manufacturing Order.
+ * #503 Beautify C_PaySelection_CreateFrom and C_PaymentTerm fields
+   * Adding better descriptions for Parameters in Payment selection Process.
+ * #412 Get rid of AD_Tab.OrderByClause
+   * Adapting the sorting machanism in Tabs to allow Layout engines to receive precise Informations which columns are sorted. Initially needed for new WebUI.
+ * #424 Migrate spring-boot from 1.3.3 to 1.4.x
+   * Updated spring boot-from to to allow the usage of a recent elasticsearch version.
+  
+* metasfresh-webui
+ * #27 Support for custom order bys in browseView
+   * Added new Support for a custom order by criteria in grid-/ browse view.
+ * #29 Adapt Invoice candidates window to webui
+   * Adapted the Invoice Candidates window to WebUI.
+ * #31 Implement document actions
+   * Implemented the Document Action for the Web User Interface.
+ * #32 Implement document references
+   * Provided the Document References to embed these in navigation contex of each document.
+ * #33 Implement document filters from AD_UserQuery
+   * New and much easier Filtering criteria for data selections in metasfresh nextgen.
+ * #20 Cache lookups
+   * Optimize lookups content loading with cache functionality.
+
+## Fixes
+* metasfresh
+ * #508 Creating User without Business Partner throws Exception
+ * #487 Attribute editor dialog stores empty field as ''
+
+# metasfresh 4.40.39 (2016-42)
+
+## Features
+ * #443 Add is to be sent as email to doc outbound log
+ * #418 Improve sales and purchase tracking reports
+
+## Fixes
+ * #407 CCache always creates HashMap cache even if LRU was requested
+ * #428 NPE when reversing an invoice including a product with inactive UOM conversion
+ * #492 build issue with jaxb2-maven-plugin 1.6 and java-8
+ * #483 Gebindeübersicht Report Typo fix
+ * #482 Unable to issue certain HUs to a PP_Order
+ * #494 R_Request new Request context missing
+
+# metasfresh 4.39.38 (2016-41)
+
+## Features
+ * #388 make M_ReceiptSchedule.IsPackagingMaterial a physical column
+   - Changing the Field in Material Receipt Schedule fpr Packing Materiel. Swapped from pirtual to physical column.
+
+
+## Fixes
+ * #448 Rounding issue with partical credit memos
+   - Fixing a rounding issue which popped up after createing a partial credit memo for referenced invoice document.
+ * #270 Purchase Order from Sales Order Process wrong Aggregation
+   - Optimized the Purchase Order creation process from Procurement candidates. Purchase Orders are now aggregated properly when identical Vendor and products (and further details).
+ * #433 C_Order copy with details: Packing Instructions are not copied
+   - Fixed a Bug when using Copy with details in c_order. Packing Instructions are now copied too.
+
+# metasfresh 4.38.37 (2016-40)
+
+## Features
+ * #395 Add Description in Jasper Invoice Vendor
+   - Added a new row in to allow the display of optional line text in further invoices
+
+## Fixes
+ * #451 OCRB not available in JVM but needed for ESR page
+ * #431 QtyTU does not update in wareneingang pos
+ * #436 Single lookup/list value for mandatory field is not automatically set
+ * #454 barcode field is reset after 500ms
+ * #455 autocomplete in non-generic fields not working anymore
+
+# metasfresh 4.37.36 (2016-39)
+
+## Features
+ * #302 Add different onError policies to TrxItemChunkProcessorExecutor
+   - Added further policies for InvoiceCandidate processing.
+ * #213 Add onhand qty to MRP Product Info
+   - Added a new column in MRP Product Info to now show the Handling Unit Storage On Hand Quantity.
+ * #375 Jasper: extend product name on report_details
+   - Extension of name Field in Jasper Report (report_details).
+
+## Fixes
+ * #409 MRP Product Info might leave back stale entries after fast changes
+   - Making sure that statistics in MRP Product Info are updated also after quick complete and reactivate of sales and purchase orders.
+ * #387 Purchase Order generation in Procurement Candidates not to be grouped by user
+   - Ensured that Purchase Order Candidates are aggregated to 1 Purchase Order per Vendor when triggered.
+ * #370 Material Receipt - Somtimes double click needed for weighing machine
+   - Fixing a bug that occured on certain Windows clients with connected weighing machines.
+ * #420 NPE in CalloutOrder.bPartner
+   - Eliminated a Null Pointer Exception in Sales Order Callout CalloutOrder.bPartner.
+ * #410 sscc label org fix
+   - Fixed a minor issue in SSCC Label to load the correct Orgabnisation and Logo when generated and printed.
+ * #422 pricelist report do not show virtual HU
+   - Fixed the pricelist report to also show virtual HU.
+ * #331 Activating the trace log file doesn't always work
+   - Stabilized the new trace log feature. Here switching on/ off visibility.
+ * #437 Old window Produktion is opened automatically by menu search
+   - Fixed the autocall in menu search.
+
+# metasfresh 4.36.35 (2016-38)
+
+## Features
+ * #395 Add Description in Jasper Invoice Vendor
+   - Added a new row in Vendor Invoice to allow the display of optional line Text.
+ * ME-46 Support Ubuntu 16.04 server with metasfresh server installer
+   - Milestone Feature: Provided a new metasfresh installer for Ubuntu 16.04
+ * #369 request report
+   - Provided an excel report for quality analysis bases on dispute request history and data.
+ * #361 Request change for customer service
+   - Added possibility for dispute requests
+ * #377 Implement executed SQLs tracing
+   - Admin Functionality to enable better Performance Tracking of SQL.
+ * #338 Get rid of legacy NOT-EQUALS operators from logic expression
+   - Getting rid of not-equals operators in logic expressions.
+ * #333 All tables shall have a single column primary key
+   - Change needed for metasfresh WebUI and Rest API. All tables used in WebUI/ Rest API shall have a primary Key.
+ * #21 UI Style default for elements
+   - WebUI Fallback Szenario for elements when UI Style is not explicitly set.
+ * #20 Cache lookups
+   - WebUI Performance tweak. Now allowing caching for lookups.
+ * #18 Optimization of root & node requests.
+   - Added limitCount to path elements to allow accurate results for Navigational structure in WebUI.
+ * #16 Implement virtual document fields support
+   - New functionality for WebUI to allow fields with content computed by Business Logic.
+ * #14 Layout documentSummaryElement field to be used for rendering breadcrumb info
+   - Added DocumentSummary support for breadcrumbs in metasfresh WebUI/ Rest API.
+ * #13 elementPath should return path without element
+   - Possibility to return path without leaf node.
+ * #11 Implement grid view support
+   - Awesome, new possibility to open Windows in grid view representation.
+ * #10 implement documents filtering support
+   - Providing metadata for filtering via RestAPI for example for grid view.
+ * #9 provide precision for numeric layout elements
+   - WebUI: Detailed precision funcionality for amount and costs/ prices elements.
+ * #7 provide "grid-align" for layout elements
+   - Generic alignment possibility via application dictionary used for metasfresh WebUI.
+ * #24 Breadcrumb Navigation Plural caption
+   - Added a plural caption for WebUI Breadycrumb navigation.
+
+## Fixes
+ * #411 missing index on C_OrderTax.C_Order_ID
+   - Performance change. Adding index for c_ordertax.
+ * #367 Invoice candidates invoicing Pricelist not found
+   - Fixing a minor issue during invoiceing. Pricelist was not found under certain circumstances.
+ * #380 duplicate lines in inout
+   - Eliminating an issue when deactivating a product and adding another product with same EDI GLN.
+ * #348 Sort tabs shall consider Link column and parent link column if set
+   - Fixing issue considering link and parent column when sorting.
+ * #330 Process's RefreshAllAfterExecution does not work when the record was moved
+   - Eliminiating an issue when refreshing after execution of processes.
+ * #327 Got NPE when completing a drafted order
+   - Fixing a Null Pointer Exception when trying to complete a drafted order document.
+ * #337 ERROR: duplicate key value violates unique constraint "c_bpartner_stats_c_bpartner_id_unique" triggered from some callouts 
+   - Fixing an exception when trying to select a BPartner without valid ship location in Sales Order.
+ * FRESH-257 WI1 - rendering a window with tab, one field per field type incl. editor and fieldgroup
+   - Initial WebUI Proof of Concept Task. A lot has already done since this one, even more to be expected.
+ * FRESH-369 Change bpartner in order -> pricelist does not update
+   - Fixing callout issue not updateing the correct pricelist whan changing a Business Partner in Sales Order.
+ * #379 Included tab randomly not working in inout and invoice
+   - Fixed a bug that ranomly prevented the correct rendering of included Tabs in Invoice window.
+ * #12 Data not shown in SubTab
+   - Adjusted the data defined in RestAPI for Subtab content.
+ * #311 Payment Selection Exception when not able to find bpartner account
+   - Added further Account seelection functionality to prevent Exception when selecting BPartner without Bank account.
+ * #378 Bug in validation of field docsubtype
+   - Eliminated an issue which apperared in Doctype Definition when selecting a DocSubtype.
+ * #262 sales and purchase tracking
+   - Minor tweaks and fixes in sales and purchase tracking Report.
+
+# metasfresh 4.35.34 (2016-37)
+
+## Features
+ * FRESH-112 metasfresh web 
+   - Integrated recent backend related changes done for metasfresh REST API Implementation.
+ * #359 document Note not displayed on invoice
+   - Fixed the issue that c_doctype.documentnote was not shown properly on Jasper invoice documents.
+ * #262 sales and purchase tracking
+   - Implemenation of a large Sales and purchase Tracking Report inclusing possibility to export to excel.
+ * #354 Rearrange unloading fields in Sales Order Window
+   - Adjusted the validation- and display-rules in sales order window abould fields for unloading (Partner, Location).
+
+## Fixes
+ * #366 Faulty unique constraint on M_PriceList
+   - Fixed a wrong contraint in M_Pricelist, that prevented creating Product-BPartner-Price-Combination with BPartner recorded on client level.
+
+# metasfresh 4.34.33 (2016-36)
+
+## Features
+* #297 Performance problems related to zoom-to
+  - Improved user experience, massively reduced loading times for generic zoom-to links in icon-bar.
+* #249 Referenzliste in AttributeValue
+  - Getting rid of Reference List (System) in client side Attribute Values.
+* #347 change default docaction after complete
+  - After eliminating all close docactions in permissions now changing the next docaction in document Workflow.
+
+## Fixes
+* #315 ReceiptSchedule.QtyToMove not properly updated on reopen
+  - Fixed a Bug that prevented the correct update of ReceiptSchedule.QtyToMove after reactivating the record.
+* #319 material tracking - deduplicate numbers in article statistics report
+  - Getting rid of duplicated statistic qmounts in material Tracking report.
+* #329 Revenue reports BPartner & Week show different amounts when HU Price
+  - Fixing an issue in Business Partner Revenue Weeek Report that appeared with Usage of Transportation Units with multiple Customer Units in shipments.
+* #340 Validation Rule in C_BPartner_Product for C_BPartner_ID wrong
+  - Minor Fix of the Validation Rule in C_BPartner_Product. Now also allowing Businesspartners on Client Level.
+* #351 translate order summary
+  - The Order summary is now covered by translation.
+* #335 Invoicing taking wrong Documenttype for Producer Invoice
+  - Issue solved when changing the Parms for Producer Invoiceing in Business Partner after already having created Invoice Candidates.
+
+# metasfresh 4.33.32 (2016-35)
+
+## Features
+ * #320 material tracking - provide excel friendly information view
+   - New SQL report for material tracking
+
+## Fixes
+ * #299 Report "Leergutausgabe" from Window "Lieferantenrücklieferung"
+   - Localized the empties Report so that one can now include alternative languages.
+ * #315 M_ReceiptSchedule.QtyToMove not properly updated on reopen
+   - The QtyToMove is now updated after reactivating/ reopening the Material Receipt Schedule.
+ * #225 Allocation - Accounting 0,00 when Posted
+   - Fixed further minor issues in reposting manchanism for Payment Allocations.
+ * #277 Invoice candidates sums at the bottom are not considering org-assignment
+   - Fixed an issue with Org Role Access in Window Invoice Candidates. Now the Status Row considers the Org Access Permission.
+
+# metasfresh 4.32.31 (2016-34)
+
+## Features
+ * #276 Report Konten-Info new Parameter
+   - Added new Parameters (VAT-Period from-to, Account No. from-to) to Account Information Report.
+ * #273 Report "Anbauplanung" addition & adjustment
+   - Adjusted  the Report for "Anbauplanung" to print out additional information.
+ * #272 Report Karottenendabrechnung / Translate Headlines in Reportlanguage = FRENCH
+   - Implemented the localization for the fresh produce invoice document.
+ * #295 sql in purchase inout takes too long
+   - Performance improvement in the jasper file.
+ * #292 Automatically add reference no from purchase order to invoice candidate
+   - The purchase order reference No is now automatically included in the corresponding invoice canidates.
+ * #293 Create cron job for archiving the async-tables
+   - Created a cron Job to automatically archive the async data. This speeds up the overall async Performance for large environments.
+
+## Fixes
+ * #251 Invoice Candidates double invoiced
+   - Fixed a bug that seldomly appeared after invoiceing and caused that an invoice candidate could be invoiced twice.
+
+# metasfresh 4.31.30a (2016-33a)
+
+## Features
+ - #297 Performance problems related to zoom-to
+   * improve the documentation, both in that code and in the client
+   
+## Fixes
+ - #298 ShipmentSchedule updating fails on missing UOM conversion
+   * prevent an NPE on missing master data
+
+# metasfresh 4.31.30 (2016-33)
+
+## Features
+ - #288 Problem with individual client log settings
+   * outputting the individual log settings on user login to ease support
+
+## Fixes
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+   * fixing some corner cases
+
+# metasfresh 4.30.29 (2016-32)
+
+## Features
+ - #279 Set document type Bestellung as default value in purchase order
+ - #275 In Picking HU Editor. New Flag ignore attributes for Filter
+ - #283 Make Gebindesaldo Report support Multi Org
+
+## Fixes
+ - #255 Invoice candidates action bar is not considering org-assignment
+ - #274 Purchase Order without BPartner Contact, Billto Contact wrong email
+ - #252 Fix the code for ADR Attribute Retrieval
+ - #243 C_Invoice_Candidate - Processed not always updated if IsToClear
+
+# metasfresh 4.29.28 (2016-31)
+
+## Features
+ - #241 Excel Export for Open Items accounting currency
+   * Adjusted the Excel Export of Open Items report ro show the sums in accounting currency.
+ - #240 Consitency check page for Saldobilanz
+   * Added a new Page in Salsobilanz report to allow quick consistency check of accountings.
+ - #225 Allocation - Accounting 0,00 when Posted
+   * Added a process which double checks the accountings of the day. If a document ist posted and the accounting results are 0,00 then a the document information is logged and the document is reposted.
+
+## Fixes
+ - #176 Bestellkontrolle add Promised Date
+   * Added the Date promised onto report Bestellkontrolle.
+ - #263 Delivery Conditions Flag sometimes not set in Procurement Candidates
+   * Fixed a Bug that did not detect contracted lines in Procurement candidates if the contractline was not defined with given price.
+ - #248 Admin Login when deleted properties
+   * Adressed a security issue that allowed to gain admin permissions after deleting the client properties.
+
+# metasfresh 4.28.27 (2016-30)
+
+## Features
+ - #201 KPI Accounted Documents
+   * Created the logic for our new KPI "Accounted Documents" which will be included into our new metasfresh webUI.
+ - #212 MRPProductInfo display Conference flag with sys config
+   * Added a configuration possibility to be able to switch the conference flitering functionality on-off in MRP Product Info.
+ - #226 show accounting currency in open items report
+   * Implemented a counter check Open Items Reports (customer, vendor) with Accounting Balance. Open Items in foreign currency now show also the sums in accounting currency.
+ 
+## Fixes
+ - #153 PaymentRule = S in Invoice
+   * Checked Code for direct setting of PaymentRule cheque got rid of it.
+ - #220 Do not load pricelist and pricelist version  on login
+   * Not loading Pricelist and Pricelist Version into context anymore during login.
+ - FRESH-402 Procurement bidding
+   * Minor jasper fix
+ - #232 Separate c_flatrate_terms from the normal procurement and RfQ in procurement Excel
+   * Separated the sums of procurement contracts vs. sums of RfQ biddings.
+
+# metasfresh 4.27.26 (2016-29)
+
+## Features
+ - #152 Improvements in  counter documents view and window
+   * Added different fields. Renamed fields for better understanding. Added different validation rules.
+ - #173 Window Dunning Candidates - new Field DocumentNo
+   * Included the Invoice Document No. in Dunning Candidates window.
+ - #183 Error in material tracking if one partner has two contracts (with different conditions) for the same product
+   * Skipping a number of unneccesary things if an invoice candidate's `Processed_Override` value is set to "Y"
+ - FRESH-402 Procurement bidding
+   * Adding jasper file for the procurement documents
+ - #181 Customer specific Lieferschein without Price
+   * New Jasper Shipment Document that does not show the prices for each line.
+
+## Fixes
+ - #216 Accounting: Invoice grand total Fact_Acct line was not found
+   * Fixed a Bug in accounting of Allocation Header that appeared in certain circumstances when writing off paid amount completely.
+ - #100 EDI wrong handover location in Picking Terminal
+   * Sales Orders created via EDI Import could have the wrong handover Locations in a certain condition. This wrong Location appeared in Picking Terminal. Fixed this.
+ - #174 Report Konten-Information empty c_activity_id
+   * Added a new Flag in Report Parameters to show all entries which have a empty c_activity_id.
+ - #203 Payment writeoff not possible for Incoming Payment
+   * Fixed a Bug that prohibited the writeoff in incoming Payments.
+ - #175 C_Invoice_Update_PaymentRule
+   * Changed Lagacy Code that set the Payment Rule to cheque.
+ - #210 product appears twice in invoice print preview
+   * Minor Bug in Jasper Document that printed out the wrong quantity and total for an invoiceline when shipment quantity was 0 and the invoiceline was aggregated with more than 1 shipment.
+ - FRESH-529 drop qtyreserved from product info
+   * Dropped the column qtyreserved from product info window.
+
+# metasfresh 4.26.25a (2016-28a)
+
+## Fixes
+ - #204 FRESH-525 db_columns_fk view is not working correctly anymore
+ - #194 FRESH-517 Jasper Report Error: java.net.BigDecimal
+ - #158 FRESH-495 Make de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_NotificationCtxProvider thread safe
+ - #202 FRESH-522 Payment-in-out-allocation buggy when partial allocation
+    * Fixed the newly introduced Feature about allocating 2 Payments (in-out) in cornercase with partial allocated Payments.
+
+# metasfresh 4.26.25 (2016-28)
+
+## Features
+ - #182 FRESH-510 Report "Wareneingangsbeleg" with Information "1." / "2. Waschprobe" ergänzen
+    * Small layout-change and additional field for quality inspection. Thanks to our new contributor @Spavetti
+ - #185 Fresh-512 Receipt POS - sometimes gets wrong numbers from weighting machines
+    * Additional glasspane implementation to avoid uncontrolled button activations during the wighing process in Material receipt. Extended logging of weighing information.
+ - FRESH-402 Procurement bidding
+    * Major new Feature allowing an efficient Procurement Request for bidding workflow, including the extended Procurement bidding web application and automated creation of procurement candidates for selected winners.
+ - #119 FRESH-455 different email per org in inout print preview
+    * Possibility to define and use different eMail adresses for InOuts, depending on document Organization.
+ - #142 FRESH-479 C_AllocationHdr.C_AllocationHdr_ID: Loader too many records
+    * Changed the Fieldreference in Subtab to Search-Field to improve opening Performance.
+ - #150 FRESH-492 Fix implementation for BPartner Statistics
+    * Refactoring, code improvement
+ - #128 FRESH-465 Extend Record_ID Column Implementation
+    * Extended the Record_ID column Feature to allow more than 1 generic table-record-button to jump to referenced Dataset.
+ - #145 FRESH-482 Don't log migration scripts if the transaction failed
+
+## Fixes
+ - #197 FRESH-519 Payment void or reverse correct
+    * Fixed a Bug that could occure when trying to void or reverse-correct a Payment Document.
+ - #151 FRESH-491 When creating a new organization, don't create org access for System role
+    * Now we don't automatically create an Org Access for System Role anymore.
+
+# metasfresh 4.25.24a (2016-27a)
+
+## Features
+ - #162 FRESH-499 modernize the server's index.html
+    * Adjusted the index.html to upgrade of metasfresh to Java 8 usage.
+ - #139 FRESH-475 Check for java8 in the rollout-scripts
+    * Adjusted the rollout scripts of metasfresh to Java 8 usage.
+
+## Fixes
+ - #123 FRESH-460 Users find window name "window, tab, field" confusing
+   * also updated menu items
+ - #147 FRESH-484 Error creating manual DD_Order
+ - #148 FRESH-485 de.metas.async.api.<WP-Name>.AD_User_InCharge_ID can't be overriden on org level
+
+# metasfresh 4.25.24 (2016-27)
+
+## Features
+ - **FRESH-399 Upgrade to java-8**
+    * Existing users, please see [this howto](http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html) for instructions on how to update your metasfresh server
+ - FRESH-397 Upgrade to JasperStudio and latest jasper version
+    * Update of Reports and Documents in metasfresh to use the latest Jasper Studio and Jasper Reports Version. Updating to jasperreports-6.2.1
+ - #136 FRESH-472 Sequence on Org for more than 1 Doctype
+    * Enhancement of Document Sequence seperation among different Organisations. Implemented so that Organisations may uses same Doctypes but seperated Doc Sequences.
+ - #90 FRESH-417 Create view and window to identify missing counter documents
+    * Implemented View to allow check if counter Documents are missing.
+ - #132 FRESH-468 Excel Export of report Konten-Information not working
+ - #123 FRESH-460 Users find window name "window, tab, field" confusing
+    * Adjusted Name of Window "Windows, Tabs and Fields"
+ - #124 FRESH-461 Role "System Administrator" is disabled
+    * Note: Not a "fix" because we deliberately deactivated it before and now find that the normal user is better off with the role being available.
+ - #125 FRESH-462 enable all entity types
+    * Not a fix, the reasoning is similar to #124
+ 
+## Fixes
+ - #137 FRESH-473 Glitches running metasfresh out of eclipse
+    * adding a lauch config to run the client with embedded server
+    * removing a not-needed dependency that might not be available
+    * ignoring local activemq data
+    * thx to @pmaingi for going through them with us
+
+# metasfresh 4.24.23a
+
+## Features
+ - #121 FRESH-457 Make recipient of the mail configurable in Process SendPDFMailsForSelection
+
+## Fixes
+
+# metasfresh 4.24.23
+
+## Features
+ - FRESH-378 process to close invoice candidates
+    * New Feature in Invoice Candidates Window which allows the mass manipulation of records setting these to "processed". Also checking and updating referenced shipment candidates during this workflow.
+ 
+## Fixes
+ - #118 FRESH-454 Dont create InvoiceCandidates for DocSubType Saldokorrektur
+    * Changed InOut Handler to not create Invoice candidates when DocSubType is "Saldokorrektur".
+ - #104 FRESH-441 Notification bar in Material Receipt (POS) covers OK Button
+    * Moved the Notification Bar slightly up, so the OK Button, Cancel Button and Changelog Link is not covered anymore.
+ - #107 FRESH-445 Awkward eMail encoding in Swiss language
+    * Simple Fix to ensure the right encoding when sending eMails.
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+    * Fix related to Order by of Calender and Periods in all relevant Dropdown Lists.
+ - #105 FRESH-442 Annotated model interceptor
+    * Annotated model interceptor with timing after delete and ifColumnChanged does not work correctly. Fixed.
+ - FRESH-438 Make MRP Product Info Work
+    * Removed stale data and added FK-constraints and improved logging to avoid Null Pointer Exception
+ - FRESH-306 Customer alloc with Vendor Payment: Wrong Accounting
+    * Adjusted the accounting of the Alocoation of Incoming and Outgoing Payments.
+
+## Documentation
+ - FRESH-323 metasfresh Developer Documentation
+    * Added some clarifications and described how to import the initial DB-dump
+
+# metasfresh 4.23.22a
+
+## Features
+
+## Fixes
+ - FRESH-408 Picking Issue
+
+# metasfresh 4.23.22
+
+## Features
+ - FRESH-280 Period sorting in all Dropdowns where uses year-month numeric
+    * Changed sorting for all Dropdown entries about Periods (Month-Year) to have order-by year-month numeric desc
+
+## Fixes
+ - FRESH-412 quick input in orders not working
+    * Fixed an issue in Quick order entry in Orders (sales and purchase) window
+ - FRESH-409 Creating Partner Relation throws Exception
+    * Fixing an exception that appeared when creating and saving a Business Partner relation
+ - FRESH-407 M_ShipperTransportation Terminated after complete
+    * Fixing an exception that popped up when completing a shipper transportation document
+ - FRESH-339 Order Candidates BPartner Change does not effect Delivery Adress
+    * Introduced additional callout to adjust the corresponding locations when choosing a different Business Partner in Order Candidates Window
+ - FRESH-279 DD Order CU calculation wrong when TU = 1
+    * Adjusted the Qty CU Calculation when TUQty is 1
+ - FRESH-309 Missing ADR ASIs in purchase order lines since february
+    * Restored attribute set instances that might have been missing in the past on some systems
+ - FRESH-386 another error when sales order is automatically created as counter doc from a purchase order with packagings
+    * Fixed error that appears in sales order counter document because of automatic Handling Unit generation in complete.
+ - FRESH-388 Invoice Candidates not updated for some material receipts
+    * Introducing a view to assist support troubleshooting
+
+# metasfresh 4.22.21
+
+## Features
+ - FRESH-275 Search Field in Role _Access Windows with autocomplete
+    * In Window Role, allow the user to search and autocomplete Windows, Processes, Forms and more, instead of using a dropdown list. This Functioanality allows a faster creation of Permission rules.
+ - FRESH-349 KPI: Printing Performance
+    * Adding a window to show per-shipment performance. This will help to understand if printing performance changes over time.
+ - FRESH-350 check if purchase inout label and print preview can run faster
+    * Improving Performance of material Receipt Labels in Print Preview and Printing.
+ - FRESH-377 make invoice print preview faster
+    * Improving Performance of Purchase- and Sales-Invoice Document in Print Preview and Printing.
+ - FRESH-383 make orders print preview run faster
+    * Improving Performance of Purchase- and Sales-Order-Document in Print Preview and Printing.
+
+## Fixes
+ - FRESH-400 Cut off in invoice jaspers
+    * Header Label for UOM was cut off in Invoice Document. Fixed.
+ - FRESH-344 Move KPI SQL to repository and new DB Schema
+    * Fix: KPI SQLs were in the default/public schema
+ - FRESH-356 make logo work for any org
+ 
+## Documentation
+ - Creation of HowTo's
+    * You can now find a quickly growing Set of HowTo's in our metasfresh documentation Project. Check the details here : <a href="http://metasfresh.github.io/metasfresh-documentation/">http://metasfresh.github.io/metasfresh-documentation/</a>
+
+# metasfresh 4.21.20
 
 ## Features
  - FRESH-349 KPI: Printing Performance
+    * First step in creating queries for printing performance analysis. In near future these queries will be part of an administrator Dashboard and show average Printing performance for different documenttypes.
  - FRESH-344 Move KPI SQL to repository and new DB Schema
+    * Moving all prepared KPI Queries to an own Database Schema called de_metas_fresh_kpi.
  - FRESH-347: Relation type between PMM_Purchase_Candidate and C_Order
+    * Create an AD_relationType between PMM_PurchaseCandidate and C_Order.
  - FRESH-352 Colored Bar
-    * extending WindowHeaderNotice to also allow setting the notice's foreground and background color
+    * Extending WindowHeaderNotice to also allow setting the notice's foreground and background color. Extending WindowHeaderNotice to also allow setting the notice's foreground and background color. Requirement to be able to create a different color Bar in metasfresh, so visually seperate Logins from different Organizations.
  - FRESH-342 Shipments not created
-    * made the shipment schedule enqueuer's doings more transparent to the user; added a house keeping tasks to reenqueue stale shipment schedules
+    * Made the shipment schedule enqueuer's doings more transparent to the user. Also added a house keeping tasks to reenqueue stale shipment schedules.
 
 ## Fixes
+ - FRESH-374 duplicates asi in purchase inout print preview
+    * Fixed a minor issue in Jasper Layout for meterial receipt document.
+ - FRESH-363 Client metasfresh not getting results from server due to cxf bug
+    * Workaround: Never log incoming payload with JMS transport until https://issues.apache.org/jira/browse/CXF-6930 is solved.
  - FRESH-358 Producer Invoice: Jasper Document shows Recapitulation for technical Tax
+    * Fixed a wrong display of special Tax for Urproduzenten in Switzerland.
  - FRESH-360 EDI files occasianally still have wrong encoding
+    * Fixed occasionally apperaring wrong encoding in EDI communication.
  - FRESH-356 make logo work for any org
+    * Possibility to show the Logo on Jasper Documents. The Logo is taken from Organisation or Businesspartner joined to Org-ID.
  - FRESH-351 Error when sales order is automatically created as counter doc from a purchase order with packagings
+    * Solving an issues which appeared in usage of counter documents, because of not matching packagings in each Organisation.
  - FRESH-348 purchase orders created with wrong IsTaxIncluded value
-		ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
+    * Ensuring that whenever the price list changes in an order, IsTaxInCluded, M_PricingSystem_ID and C_Currency are updated.
 
 ## Documentation
  - GROWTH-65 Community and Legal Files
     * Added LICENSE.md, CODE_OF_CONDUCT.md and modified The Contributing Guidelines.
 
-# metasfresh 4.20.19 (release candidate)
+# metasfresh 4.20.19
 
 ## Features
  - FRESH-254 Customer-Vendor Returns manual flag
-    * set the "manual" flag's default to Y in vendor and customer return windows
+    * Set the "manual" flag's default to Y in vendor and customer return windows allowing a more efficient recording.
  - FRESH-334 Product BPartner Contraint Issue
-    * prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense
+    * Prevent the user from accidentally creating C_BPartner_Product record whose AD_Org_ID makes no sense.
  - FRESH-326 Set the Correct Org in Fact_Acct_Summary
     * changed the migration script to be more repeatable 
  
 ## Fixes
  - FRESH-152 Extract statistics fields from C_BPartner and put them to a new table called C_BPartner_Stats
+    * Fix to avoid multiple updates of same statistical value.
  - FRESH-343 Unwanted PInstance log shown after olCands were cleared for processing
- - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID
-    * some polishing around AD_ChangeLog creation
+    * Took out changelog for Orderline Candidates which were cleared for processing.
+ - FRESH-314 Foreign BPartner reference included in sales order C_Order.C_BPartner_ID.
+    * Some polishing around AD_ChangeLog creation.
 
 # metasfresh 4.19.18
 
@@ -580,52 +1544,4 @@ bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
  - 09704 Migration ADempiere to metasfresh (100169279454) +it +feature
     * making hardcoded endcustomer-feature configurable for all metasfresh users
  - 09752 system creates two printing queue items for gernic reports (107420055849) +it +fix
- - 09764 servicemix update (102943200308): the esb bundles now use servmicemix-6.1 +uat +feature
-    *also switching everything from activemq-5.7 to activemq-5.12.1
-    *ActiveMQJMSEndpoint now needs to provide username and password to the jms broker
-    *commenting out the sniffer plugin because we can now build against java 1.7
-    *moving org.adempiere.event to de.metas.event
-    *moving EqualsBuilder and HashcodeBuilder from base to util
-	* removing javax.mail from printing.esb, instead using guava to encode base64
-    * removing javax.mail from de.metas.util
-    * further build fixes and clean-ups
- - 09746_Change of activity report adaptions +fix +uat
-    * fixing a / by zero issue
- - 09756 Record from foreign org in material receipt (POS) (105735084840) +fix +uat
-    * applying user's access rules in all terminal windows
- - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +fix +uat
-    * refined the logic with new specs that came out during QA
- - 09618 order-checkup printing problems (106933593952): +fix +uat
-    * server/core changes: 
-      * allowing an ITrxListener to deactivate itself in case it does not want to be called more than once 
-    * printing client changes
-      * using guava to decode the base64, got rid of javax.mail
-      * Http endpoint: storing the received data in a file that's deleted once the print worked if the print failed, the file's content can be inspected
-      * parent-pom: managing the guava version to be used (=>18.0)
-      * cleaned up the printlcient's code
-- 09761 Do research and improve logging of the stand alone printing client (104599264471) +feature +uat
-    * adding a more usable JUL properties file that includes instructions.
-    * minor changes (removing customer specifics, fixing a log level in the ESB to avoid log file flooding)
- - 09618 Bestellkontrolle Druck Probleme (106933593952): allowing an ITrxListener to deactivate itself in case it does not want to be called more than once +fix +uat
- - 09744_Dunning Report and UI changes +uat
- - 09668_Change quality based invoicing for fresh products +uat
- - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +uat +fix
- - 09743_option to show bugdet data in the balance report  +uat
- - 09746_Change of activity report adaptions +uat
- - 09670_Daily Lot for material storing +uat
- - 09671_accounting_always book discount onto actNo 150 +uat
- - 09704_Migration ADempiere nach metasfresh +fix
-    * adjusting the included tab size in the windows order (sales+purchase), shipment and invoice (sales+purchase) to 800, 
-    * additional fixes
- - 09748_Menu search box working weird +fix
- - 09709_metasfresh web (early prototyping, nothing to use yet)
- - 09733_Problems with Sepa-XML import into Mammut +uat
- - 09694_Fact Acct Summary incremental updates +uat
- - 09502_Support quality based invoicing +uat +fix
- - 09690_Report change of activity +uat +fix
- - 09726_Deep-copy support for AD_Roles +uat
- - 09722_Changes to the costing report +uat
- - 09717_Costprice is 0 on multiple selection in wareneingang pos +uat +fix
- - 09564_Report all not-completed Documents +uat 
- - 09718_Revenuereport Excel-Export broken +uat
- - 09687_DD order Copy with details +uat
+ - 09764 servicemix update (102943200308): the esb bundles now use 

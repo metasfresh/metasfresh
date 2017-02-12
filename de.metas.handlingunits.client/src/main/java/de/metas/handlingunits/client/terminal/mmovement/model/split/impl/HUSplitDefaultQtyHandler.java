@@ -10,31 +10,32 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -49,6 +50,7 @@ import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUM
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.logging.LogManager;
 
 /**
  * Handler for calculating CU-TU-LU quantities automatically for {@link HUSplitModel}.
@@ -203,7 +205,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 		{
 			final I_M_HU_PI lutuPI = lutuKey.getM_HU_PI();
 			if (lutuPI.getM_HU_PI_ID() != huPI.getM_HU_PI_ID()
-					&& !virtual) // if virtual, then all PIs can be applied
+					&& !virtual)      // if virtual, then all PIs can be applied
 			{
 				continue;
 			}
@@ -220,28 +222,20 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
 	private void autoDetectTUForTargetLU(final ILTCUModel model, final I_M_HU luHU)
 	{
-		final List<I_M_HU> includedTUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
+		// group luHU's trade units by their M_HU_PI_ID
+		// TODO: figure out how to also do the next step of getting maxOccurrencePIId in an more elegant way
+		final Map<Integer, Long> includedTUCounts = handlingUnitsDAO
+				.retrieveIncludedHUs(luHU)
+				.stream()
+				.map(tu -> handlingUnitsBL.getEffectivePIVersion(tu).getM_HU_PI_ID())
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-		final Map<Integer, Integer> includedTUCounts = new HashMap<>();
-		for (final I_M_HU includedTU : includedTUs)
-		{
-			final I_M_HU_PI includedTUPI = includedTU.getM_HU_PI_Version().getM_HU_PI();
-			final int includedTUPIId = includedTUPI.getM_HU_PI_ID();
-
-			Integer currentSum = includedTUCounts.remove(includedTUPIId);
-			if (currentSum == null)
-			{
-				currentSum = 0;
-			}
-			currentSum++;
-			includedTUCounts.put(includedTUPIId, currentSum);
-		}
-
-		Integer maxOccurrences = 0;
+		// find the M_HU_PI_ID that occurs most often
+		long maxOccurrences = 0;
 		Integer maxOccurrencePIId = null;
-		for (final Entry<Integer, Integer> includedTUCount : includedTUCounts.entrySet())
+		for (final Entry<Integer, Long> includedTUCount : includedTUCounts.entrySet())
 		{
-			final int occurrences = includedTUCount.getValue();
+			final long occurrences = includedTUCount.getValue();
 			if (maxOccurrences < occurrences)
 			{
 				maxOccurrences = occurrences;
@@ -255,6 +249,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
 		final IKeyLayout tuKeyLayout = model.getTUKeyLayout();
 
+		// iterate the possible TU-keys and pick the *last* one that has
+		// the M_HU_PI which occurred most often and
+		// does not represent "no handling unit"
+		// ..unless the the M_HU_PI which occurred most often is the VirtualPI-one..in that case, just take the last
 		ILUTUCUKey tuKeyToSelect = null;
 		for (final ILUTUCUKey tuKey : tuKeyLayout.getKeys(ILUTUCUKey.class))
 		{
@@ -296,7 +294,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 			final I_M_HU_PI lutuPI = lutuKey.getM_HU_PI();
 
 			if (isTopLevelHU && lutuPI.getM_HU_PI_ID() == noHUPIId // No Handling Unit PI
-					|| !isTopLevelHU && lutuPI.getM_HU_PI_ID() == luPI.getM_HU_PI_ID()) // LU-PI matched
+					|| !isTopLevelHU && lutuPI.getM_HU_PI_ID() == luPI.getM_HU_PI_ID())      // LU-PI matched
 			{
 				luKeyLayout.getKeyLayoutSelectionModel().onKeySelected(lutuKey);
 				model.setLUKey(lutuKey);
@@ -407,7 +405,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 		}
 
 		final BigDecimal deltaTU;
-		if (tuNoPI) // Virtual PIs shall use full qty to split; same goes for division by zero
+		if (tuNoPI)      // Virtual PIs shall use full qty to split; same goes for division by zero
 		{
 			model.setQtyCU(fullCUQty);
 			deltaTU = fullCUQty; // divide by full qty to split
@@ -432,7 +430,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 		// TUQty = AmountToSplit / Delta, with scale=0, rounded up so that we get the maximum amount of TUs necessary
 		Check.assume(deltaTU.signum() != 0, "Error in DeltaTU calculation (division by zero)");
 		final BigDecimal qtyTUCandidate = fullCUQty.divide(deltaTU,
-				0, // no scale
+				0,      // no scale
 				RoundingMode.CEILING); // always round up
 
 		//
@@ -447,7 +445,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
 			final BigDecimal deltaLU;
 			if (qtyTUCandidate.compareTo(luCapacity) >= 0
-					&& luCapacity.signum() != 0) // make sure that the LU's capacity is not 0
+					&& luCapacity.signum() != 0)      // make sure that the LU's capacity is not 0
 			{
 				deltaLU = luCapacity;
 			}
@@ -459,7 +457,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 			//
 			// TUQty = QtyTUNew / DeltaLU, with scale=0, rounded up so that we get the maximum amount of LUs necessary
 			qtyLUNew = qtyTUCandidate.divide(deltaLU,
-					0, // no scale
+					0,      // no scale
 					RoundingMode.CEILING); // always round up
 		}
 		else

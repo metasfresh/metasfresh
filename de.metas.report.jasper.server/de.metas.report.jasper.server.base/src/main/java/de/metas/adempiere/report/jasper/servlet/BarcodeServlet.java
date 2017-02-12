@@ -117,12 +117,12 @@ public class BarcodeServlet extends HttpServlet
 	}
 
 	/**
-	 * gets all Parameters and checks if they're valid.
+	 * Gets all Parameters and checks if they're valid.
 	 * <ul>
-	 * <li>Content is not allowed to be empty or null
-	 * <li>Format is not allowed to be null and has to be a format that is supported by zxing
-	 * <li>Width and Height have to be positive ints. If null they're set to 0
-	 * <li>ecl (error correction level) is only for QR_Code and can be null or empty<br>
+	 * <li>Content is not allowed to be empty or <code>null</code>
+	 * <li>Format is not allowed to be <code>null</code> and has to be a format that is supported by zxing
+	 * <li>Width and Height have to be positive integers. If <code>null</code>, they're set to 0
+	 * <li>ecl (error correction level) is only for QR_Code and can be <code>null</code> or empty<br>
 	 * </ul>
 	 * <br>
 	 * If a parameter is not valid, an exception is thrown.
@@ -177,8 +177,10 @@ public class BarcodeServlet extends HttpServlet
 				for (int i = 0; i <= 3; i++)
 				{
 					ecl = ErrorCorrectionLevel.forBits(i);
-					if (ecl.getName().equals(value))
+					if (ecl.toString().equals(value))
+					{
 						break;
+					}
 				}
 				m_hints.put(EncodeHintType.ERROR_CORRECTION, ecl);
 			}

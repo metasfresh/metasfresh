@@ -8,20 +8,11 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
-import org.compiere.model.MRefList;
 import org.compiere.model.MUser;
-import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -1022,47 +1013,6 @@ public class WebUser
 	{
 		return m_bp.isCreditStopHold();
 	}	//	isCreditStopHold
-
-	/**
-	 * 	Credit Status is Critical.
-	 * 	Used in Web UI
-	 *	@return true if Stop/Hold/Watch
-	 */
-	public boolean isCreditCritical()
-	{
-		//task FRESH-152
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
-		
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(m_ctx, getC_BPartner_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
-		
-		final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-		
-		final String creditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
-		
-		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(creditStatus)
-			|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(creditStatus)
-			|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch.equals(creditStatus);
-	}
-
-	/**
-	 * Credit Status Clear Text.
-	 * Used in Web UI
-	 * 
-	 * @return Clear Text Credit Status
-	 */
-	public String getSOCreditStatus()
-	{
-		//task FRESH-152
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(m_ctx, getC_BPartner_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
-		
-		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
-		
-		return MRefList.getListName(m_ctx, X_C_BPartner_Stats.SOCREDITSTATUS_AD_Reference_ID, bpartnerStatsBL.getSOCreditStatus(stats));
-	}	// getSOCreditStatus
 
 	/**************************************************************************
 	 * Get BP Bank Account (or create it)

@@ -5,7 +5,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
-import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -52,6 +51,11 @@ public class DocOutboundWorkpackageProcessorTest
 	{
 		processor = new DocOutboundWorkpackageProcessor();
 	}
+	
+	private PrintInfo createPrintInfo(final Object record)
+	{
+		return processor.createModelArchiver(record).createPrintInfo();
+	}
 
 	@Test
 	public void test_createPrintInfo_fromInvoice()
@@ -61,9 +65,9 @@ public class DocOutboundWorkpackageProcessorTest
 		invoice.setC_BPartner_ID(12345);
 		InterfaceWrapperHelper.save(invoice);
 
-		final PrintInfo printInfo = processor.createPrintInfo(invoice);
+		final PrintInfo printInfo = createPrintInfo(invoice);
 		Assert.assertEquals("Invalid DocumentNo", "ExpectedDocumentNo", printInfo.getName());
-		Assert.assertEquals("Invalid AD_Table_ID", MTable.getTable_ID("C_Invoice"), printInfo.getAD_Table_ID());
+		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getTableId(I_C_Invoice.class), printInfo.getAD_Table_ID());
 		Assert.assertEquals("Invalid Record_ID", invoice.getC_Invoice_ID(), printInfo.getRecord_ID());
 		Assert.assertEquals("Invalid C_BPartner_ID", invoice.getC_BPartner_ID(), printInfo.getC_BPartner_ID());
 	}
@@ -76,9 +80,9 @@ public class DocOutboundWorkpackageProcessorTest
 		record.setC_BPartner_ID(12345);
 		InterfaceWrapperHelper.save(record);
 
-		final PrintInfo printInfo = processor.createPrintInfo(record);
+		final PrintInfo printInfo = createPrintInfo(record);
 		Assert.assertEquals("Invalid DocumentNo", "ExpectedDocumentNo", printInfo.getName());
-		Assert.assertEquals("Invalid AD_Table_ID", MTable.getTable_ID("Test"), printInfo.getAD_Table_ID());
+		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getTableId(I_Test.class), printInfo.getAD_Table_ID());
 		Assert.assertEquals("Invalid Record_ID", record.getTest_ID(), printInfo.getRecord_ID());
 		Assert.assertEquals("Invalid C_BPartner_ID", record.getC_BPartner_ID(), printInfo.getC_BPartner_ID());
 	}

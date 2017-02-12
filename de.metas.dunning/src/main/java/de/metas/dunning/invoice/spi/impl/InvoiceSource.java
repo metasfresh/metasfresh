@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ConvertIteratorWrapper;
 import org.adempiere.util.collections.Converter;
@@ -76,6 +78,8 @@ public class InvoiceSource extends AbstractDunnableSource
 		final Date dunningGrace = candidate.getDunningGrace();
 		final int paymentTermId = candidate.getC_PaymentTerm_ID();
 		final boolean isInDispute = candidate.isInDispute();
+		
+		final String documentNo; // FRESH-504
 
 		final String tableName;
 		final int recordId;
@@ -83,12 +87,29 @@ public class InvoiceSource extends AbstractDunnableSource
 		{
 			tableName = I_C_InvoicePaySchedule.Table_Name;
 			recordId = invoicePayScheduleId;
+			
+			// The table C_InvoicePaySchedule does not have the column DocumentNo. In this case, the documentNo is null
+			documentNo = null;
 		}
 		else
 		// if (C_Invoice_ID > 0)
 		{
 			tableName = I_C_Invoice.Table_Name;
 			recordId = invoiceId;
+			
+			final I_C_Invoice invoice  = InterfaceWrapperHelper.create(context.getCtx(), invoiceId, I_C_Invoice.class, ITrx.TRXNAME_ThreadInherited);
+			
+			if(invoice == null)
+			{
+				// shall not happen
+				// in case of no referenced record the documentNo is null.
+				
+				documentNo = null;
+			}
+			else
+			{
+				documentNo = invoice.getDocumentNo();
+			}
 		}
 
 		final int daysDue;
@@ -102,6 +123,7 @@ public class InvoiceSource extends AbstractDunnableSource
 		}
 
 		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName, recordId
+				, documentNo // FRESH-504 DocumentNo is also needed
 				, adClientId, adOrgId
 				, bpartnerId, bpartnerLocationId, contactId
 				, currencyId

@@ -33,8 +33,6 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.jfree.chart.ChartMouseEvent;
@@ -44,6 +42,9 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.PieSectionEntity;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Graph
@@ -140,13 +141,15 @@ public class Graph extends CPanel implements ChartMouseListener
 
 		if (m_userSelection)
 		{
-			int AD_Reference_Value_ID = DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType");
-			MLookupInfo info = MLookupFactory.getLookup_List(Env.getLanguage(Env.getCtx()), AD_Reference_Value_ID);
-			MLookup mLookup = new MLookup(info, 0);
+			final int adColumnId = -1;
+			final int AD_Reference_Value_ID = DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType");
+			MLookupInfo info = MLookupFactory.getLookup_List(AD_Reference_Value_ID);
+			MLookup mLookup = new MLookup(Env.getCtx(), adColumnId, info, Env.TAB_None);
 			VLookup lookup = new VLookup("ChartType", false, false, true,
 					mLookup);
 			lookup.addVetoableChangeListener(new VetoableChangeListener() {
 
+				@Override
 				public void vetoableChange(PropertyChangeEvent evt)
 						throws PropertyVetoException {
 					Object value = evt.getNewValue();
@@ -276,6 +279,7 @@ public class Graph extends CPanel implements ChartMouseListener
 		return null;
 	}
 
+	@Override
 	public void chartMouseClicked(ChartMouseEvent event)
 	{
 		if ((event.getEntity()!=null) && (event.getTrigger().getClickCount() > 1))
@@ -302,6 +306,7 @@ public class Graph extends CPanel implements ChartMouseListener
 		}
 	}
 
+	@Override
 	public void chartMouseMoved(ChartMouseEvent event)
 	{
 	}

@@ -13,19 +13,17 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.util.CompositeEvaluatee;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
-import org.compiere.util.MapEvaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 
@@ -67,7 +65,7 @@ public class XlsReportEngine extends AbstractReportEngine
 		}
 
 		final ClassLoader reportClassLoader = createReportClassLoader(reportContext);
-		final String templateResourceName = reportContext.getAD_Process().getJasperReport();
+		final String templateResourceName = reportContext.getReportTemplatePath();
 		Check.assumeNotEmpty(templateResourceName, "templateResourceName not defined in process: {}", reportContext);
 
 		//
@@ -163,11 +161,11 @@ public class XlsReportEngine extends AbstractReportEngine
 	private Evaluatee createEvaluationContext(final ReportContext reportContext)
 	{
 		final Map<String, Object> reportContextAsMap = createContextAsMap(reportContext);
-		final Evaluatee2 reportContextAsEvaluatee = MapEvaluatee.of(reportContextAsMap);
+		final Evaluatee2 reportContextAsEvaluatee = Evaluatees.ofMap(reportContextAsMap);
 
-		final EvaluateeCtx ctxEvaluatee = new EvaluateeCtx(reportContext.getCtx(), Env.WINDOW_MAIN, false); // onlyWindow=false
+		final Evaluatee ctxEvaluatee = Evaluatees.ofCtx(reportContext.getCtx(), Env.WINDOW_MAIN, false); // onlyWindow=false
 
-		return CompositeEvaluatee.of(reportContextAsEvaluatee, ctxEvaluatee);
+		return Evaluatees.compose(reportContextAsEvaluatee, ctxEvaluatee);
 	}
 
 	private Map<String, Object> createContextAsMap(final ReportContext reportContext)

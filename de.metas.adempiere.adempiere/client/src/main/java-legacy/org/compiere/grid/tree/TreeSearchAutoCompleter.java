@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Auto-complete support for {@link MTreeNode}s.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class TreeSearchAutoCompleter extends JTextComponentAutoCompleter

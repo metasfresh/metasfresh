@@ -29,7 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -48,7 +48,7 @@ public interface IPackingService extends ISingletonService
 	 * @param itemPackedProcessor processor used to process our resulting packed item
 	 */
 	void packItem(IPackingContext packingContext,
-			FreshPackingItem itemToPack,
+			IFreshPackingItem itemToPack,
 			BigDecimal qtyToPack,
 			IPackingHandler itemPackedProcessor);
 }

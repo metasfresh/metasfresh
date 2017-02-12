@@ -26,7 +26,7 @@ package de.metas.invoicecandidate.exceptions;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
@@ -70,7 +70,7 @@ public class InconsistentUpdateExeption extends AdempiereException
 		}
 		if (lang == null)
 		{
-			final Properties ctx = POWrapper.getCtx(userToNotify);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(userToNotify);
 			lang = Env.getAD_Language(ctx);
 		}
 		return lang;

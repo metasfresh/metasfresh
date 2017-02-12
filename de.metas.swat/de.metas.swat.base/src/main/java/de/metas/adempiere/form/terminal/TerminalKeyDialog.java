@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,13 +28,13 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 public abstract class TerminalKeyDialog
 		implements ITerminalKeyDialog
@@ -62,11 +62,14 @@ public abstract class TerminalKeyDialog
 	private ITerminalLookupField lookupField;
 	private ITerminalKeySuggestionsPanel suggestionsPanel;
 
+	private boolean disposed = false;
+
 	protected TerminalKeyDialog(final ITerminalTextField textField)
 	{
-		super();
 		this.textField = textField;
 		this.tc = textField.getTerminalContext();
+
+		tc.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -80,7 +83,7 @@ public abstract class TerminalKeyDialog
 
 		initComponents();
 		initUI();
-		
+
 		initialized = true;
 	}
 
@@ -199,12 +202,16 @@ public abstract class TerminalKeyDialog
 	@Override
 	public void dispose()
 	{
-		suggestionsPanel = DisposableHelper.dispose(suggestionsPanel);
-		keysPanel = DisposableHelper.dispose(keysPanel);
-		panel = DisposableHelper.dispose(panel);
-
 		textField = null;
 		lookupField = null;
+
+		disposed  = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 
 	public final ITerminalContext getTerminalContext()
@@ -216,7 +223,7 @@ public abstract class TerminalKeyDialog
 	{
 		return tc.getTerminalFactory();
 	}
-	
+
 	/**
 	 * @return Main panel of this component
 	 */
@@ -224,7 +231,7 @@ public abstract class TerminalKeyDialog
 	{
 		return panel;
 	}
-	
+
 	/**
 	 * @return panel containing keys
 	 */
@@ -243,8 +250,8 @@ public abstract class TerminalKeyDialog
 			throw new TerminalException(ERR_LOOKUP_FIELD_DOES_NOT_MATCH_TEXT_FIELD);
 		}
 		this.lookupField = lookupField;
-		
-		// If we have a lookup field, create suggestions panel for it 
+
+		// If we have a lookup field, create suggestions panel for it
 		if (this.lookupField != null)
 		{
 			this.suggestionsPanel = createTerminalKeySuggestionsPanel(this.lookupField);
@@ -255,12 +262,12 @@ public abstract class TerminalKeyDialog
 	{
 		return lookupField;
 	}
-	
+
 	protected final ITerminalKeySuggestionsPanel getTerminalKeySuggestionsPanel()
 	{
 		return suggestionsPanel;
 	}
-	
+
 	protected abstract ITerminalKeySuggestionsPanel createTerminalKeySuggestionsPanel(final ITerminalLookupField lookupField);
 
 	protected final void requestTextFieldFocus()

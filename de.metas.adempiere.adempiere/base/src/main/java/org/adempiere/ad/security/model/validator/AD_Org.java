@@ -24,8 +24,6 @@ package org.adempiere.ad.security.model.validator;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -36,8 +34,10 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.logging.LogManager;
 
 @Interceptor(I_AD_Org.class)
 public class AD_Org
@@ -49,17 +49,32 @@ public class AD_Org
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void addAccessToRolesWithAutomaticMaintenance(final I_AD_Org org)
 	{
+		final int orgClientId = org.getAD_Client_ID();
+		
 		int orgAccessCreatedCounter = 0;
 		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
 		for (final I_AD_Role role : Services.get(IRoleDAO.class).retrieveAllRolesWithAutoMaintenance(ctx))
 		{
+			// Don't create org access for system role
+			if (role.getAD_Role_ID() == Env.CTXVALUE_AD_Role_ID_System)
+			{
+				continue;
+			}
+
+			// Don't create org access for roles which are not defined on system level nor on org's AD_Client_ID level
+			final int roleClientId = role.getAD_Client_ID();
+			if(roleClientId != orgClientId && roleClientId != Env.CTXVALUE_AD_Client_ID_System)
+			{
+				continue;
+			}
+			
 			MRoleOrgAccess orgAccess = new MRoleOrgAccess(org, role.getAD_Role_ID());
 			if (orgAccess.save())
 			{
 				orgAccessCreatedCounter++;
 			}
 		}
-		logger.info("{} - created #{}", new Object[] { org, orgAccessCreatedCounter });
+		logger.info("{} - created #{} role org access entries", org, orgAccessCreatedCounter);
 
 		// Reset role permissions, just to make sure we are on the safe side
 		if (orgAccessCreatedCounter > 0)

@@ -29,7 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.WeakReference;
 import org.compiere.model.AbstractPOCacheLocal;
 
-public class POWrapperCacheLocal extends AbstractPOCacheLocal
+/*package*/class POWrapperCacheLocal extends AbstractPOCacheLocal
 {
 	private final WeakReference<POWrapper> parentPOWrapperRef;
 	private final int parentColumnIndex;

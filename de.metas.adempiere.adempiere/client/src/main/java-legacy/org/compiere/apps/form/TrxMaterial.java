@@ -14,8 +14,6 @@
 package org.compiere.apps.form;
 
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
@@ -30,10 +28,12 @@ import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Base class for Material Transactions Info form (Warenbewegungen - Übersicht)
@@ -82,7 +82,7 @@ public class TrxMaterial
 		Check.assumeNotNull(wVO, "wVO not null"); // shall not happen
 
 		m_mWindow = new GridWindow (wVO);
-		wVO.Tabs.get(0).IsSearchActive = false;
+		wVO.getTabs().get(0).IsSearchActive = false;
 		m_mTab = m_mWindow.getTab(0);
 		m_mWindow.initTab(0);
 
@@ -96,11 +96,11 @@ public class TrxMaterial
 	public void dynInit(IStatusBar statusBar)
 	{
 		m_staticQuery = new MQuery();
-		m_staticQuery.addRestriction("AD_Client_ID", MQuery.EQUAL, Env.getAD_Client_ID(Env.getCtx()));
+		m_staticQuery.addRestriction("AD_Client_ID", Operator.EQUAL, Env.getAD_Client_ID(Env.getCtx()));
 
 		final GridTab gridTab = getGridTab();
 		//
-		gridTab.setQuery(MQuery.getEqualQuery("1", "2"));
+		gridTab.setQuery(MQuery.getNoRecordQuery());
 		gridTab.query(false);
 		statusBar.setStatusLine(" ", false);
 		statusBar.setStatusDB(" ");
@@ -124,27 +124,27 @@ public class TrxMaterial
 		final MQuery query = m_staticQuery.deepCopy();
 		//  Organization
 		if (organization != null && organization.toString().length() > 0)
-			query.addRestriction(I_M_Transaction.COLUMNNAME_AD_Org_ID, MQuery.EQUAL, organization);
+			query.addRestriction(I_M_Transaction.COLUMNNAME_AD_Org_ID, Operator.EQUAL, organization);
 		//  Locator
 		if (locator != null && locator.toString().length() > 0)
-			query.addRestriction(I_M_Transaction.COLUMNNAME_M_Locator_ID, MQuery.EQUAL, locator);
+			query.addRestriction(I_M_Transaction.COLUMNNAME_M_Locator_ID, Operator.EQUAL, locator);
 		//  Product
 		if (product != null && product.toString().length() > 0)
-			query.addRestriction(I_M_Transaction.COLUMNNAME_M_Product_ID, MQuery.EQUAL, product);
+			query.addRestriction(I_M_Transaction.COLUMNNAME_M_Product_ID, Operator.EQUAL, product);
 		//  MovementType
 		if (movementType != null && movementType.toString().length() > 0)
-			query.addRestriction(I_M_Transaction.COLUMNNAME_MovementType, MQuery.EQUAL, movementType);
+			query.addRestriction(I_M_Transaction.COLUMNNAME_MovementType, Operator.EQUAL, movementType);
 		//  DateFrom
 		if (movementDateFrom != null)
-			query.addRestriction("TRUNC("+I_M_Transaction.COLUMNNAME_MovementDate+")", MQuery.GREATER_EQUAL, movementDateFrom);
+			query.addRestriction("TRUNC("+I_M_Transaction.COLUMNNAME_MovementDate+")", Operator.GREATER_EQUAL, movementDateFrom);
 		//  DateTO
 		if (movementDateTo != null)
-			query.addRestriction("TRUNC("+I_M_Transaction.COLUMNNAME_MovementDate+")", MQuery.LESS_EQUAL, movementDateTo);
+			query.addRestriction("TRUNC("+I_M_Transaction.COLUMNNAME_MovementDate+")", Operator.LESS_EQUAL, movementDateTo);
 		// C_BPartner_ID
 		if (bpartnerId != null && bpartnerId.toString().length() > 0)
 		{
 			final String columnSql = getGridTab().getField(I_M_Transaction.COLUMNNAME_C_BPartner_ID).getColumnSQL(false);
-			query.addRestriction(columnSql, MQuery.EQUAL, bpartnerId);
+			query.addRestriction(columnSql, Operator.EQUAL, bpartnerId);
 		}
 		log.info("TrxMaterial.refresh query=" + query.toString());
 

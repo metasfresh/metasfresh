@@ -39,7 +39,6 @@ import java.util.Properties;
 
 import javax.swing.ListSelectionModel;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -48,14 +47,14 @@ import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IPackingDetailsModel;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.FreshPackingDetailsMd;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.FreshPackingMd;
 import de.metas.fresh.picking.form.FreshPackingMdLinesComparator;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminal;
@@ -136,10 +135,10 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	}
 
 	@Override
-	protected Collection<AbstractPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, final boolean displayNonItems)
+	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, final boolean displayNonItems)
 	{
-		final Collection<AbstractPackingItem> unallocatedLines = new ArrayList<AbstractPackingItem>();
-		final Map<ArrayKey, AbstractPackingItem> key2Sched = new HashMap<ArrayKey, AbstractPackingItem>();
+		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
+		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<>();
 
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
@@ -155,10 +154,10 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 
 				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched, true);
 
-				AbstractPackingItem item = key2Sched.get(key);
+				IPackingItem item = key2Sched.get(key);
 				if (item == null)
 				{
-					item = new FreshPackingItem(schedWithQty, ITrx.TRXNAME_None);
+					item = FreshPackingItemHelper.create(schedWithQty);
 					assert item.getGroupingKey() == key.hashCode();
 
 					key2Sched.put(key, item);
@@ -188,7 +187,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	public IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows_NOTUSED,
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
 		if (unallocatedLines.isEmpty())

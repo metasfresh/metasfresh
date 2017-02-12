@@ -30,15 +30,16 @@
 package org.adempiere.process;
 
 import java.util.Enumeration;
+
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.MColumn;
 import org.compiere.model.MField;
 import org.compiere.model.MForm;
 import org.compiere.model.MMenu;
-import org.compiere.model.MProcess;
-import org.compiere.model.MProcessPara;
 import org.compiere.model.MTab;
 import org.compiere.model.MTask;
 import org.compiere.model.MTree;
@@ -52,18 +53,20 @@ import org.compiere.model.X_ASP_Tab;
 import org.compiere.model.X_ASP_Task;
 import org.compiere.model.X_ASP_Window;
 import org.compiere.model.X_ASP_Workflow;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.wf.MWorkflow;
+
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Generate ASP entries for a level
  *	
  *  @author Carlos Ruiz
  */
-public class ASPGenerateLevel extends SvrProcess
+public class ASPGenerateLevel extends JavaProcess
 {
 	private String  p_ASP_Status;
 	private int p_AD_Menu_ID;
@@ -84,7 +87,7 @@ public class ASPGenerateLevel extends SvrProcess
 	@Override
 	protected void prepare ()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -116,7 +119,14 @@ public class ASPGenerateLevel extends SvrProcess
 		
 		I_AD_ClientInfo clientInfo = Services.get(IClientDAO.class).retrieveClientInfo(getCtx(), getAD_Client_ID());
 		int AD_Tree_ID = clientInfo.getAD_Tree_Menu_ID();
-		MTree thisTree = new MTree (getCtx(), AD_Tree_ID, true, true, true, get_TrxName());
+		final MTree thisTree = MTree.builder()
+				.setCtx(getCtx())
+				.setTrxName(getTrxName())
+				.setAD_Tree_ID(AD_Tree_ID)
+				.setEditable(true)
+				.setClientTree(true)
+				.setAllNodes(true)
+				.build();
 		MTreeNode node;
 		if (p_AD_Menu_ID > 0)
 			node = thisTree.getRoot().findNode(p_AD_Menu_ID);
@@ -254,7 +264,7 @@ public class ASPGenerateLevel extends SvrProcess
 
 	private void generateProcess(int p_AD_Process_ID) {
 		// Add Process and Parameters
-		MProcess process = new MProcess(getCtx(), p_AD_Process_ID, get_TrxName());
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(getCtx(), p_AD_Process_ID);
 		int asp_process_id = DB.getSQLValueEx(get_TrxName(),
 				"SELECT COUNT(*) FROM ASP_Process WHERE ASP_Level_ID = ? AND AD_Process_ID = ?",
 				p_ASP_Level_ID, process.getAD_Process_ID());
@@ -271,8 +281,10 @@ public class ASPGenerateLevel extends SvrProcess
 		} else {
 			aspProcess = new X_ASP_Process(getCtx(), asp_process_id, get_TrxName());
 		}
+		
 		// parameters
-		for (MProcessPara processpara : process.getParameters()) {
+		for (final I_AD_Process_Para processpara : Services.get(IADProcessDAO.class).retrieveProcessParameters(process))
+		{
 			if (DB.getSQLValueEx(
 					get_TrxName(),
 					"SELECT COUNT(*) FROM ASP_Process_Para WHERE ASP_Process_ID = ? AND AD_Process_Para_ID = ?",

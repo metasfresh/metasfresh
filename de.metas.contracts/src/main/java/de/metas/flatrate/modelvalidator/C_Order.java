@@ -1,7 +1,7 @@
 package de.metas.flatrate.modelvalidator;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -34,7 +34,6 @@ import org.compiere.util.Env;
  */
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -44,6 +43,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 
 public class C_Order implements ModelValidator
@@ -81,7 +81,7 @@ public class C_Order implements ModelValidator
 	{
 		if (type == TYPE_BEFORE_CHANGE)
 		{
-			final I_C_Order order = POWrapper.create(po, I_C_Order.class);
+			final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 
 			if (po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered))
 			{
@@ -121,7 +121,7 @@ public class C_Order implements ModelValidator
 		}
 
 		final String trxName = po.get_TrxName();
-		final I_C_Order order = POWrapper.create(po, I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 
 		final IOrderPA orderPA = Services.get(IOrderPA.class);
 

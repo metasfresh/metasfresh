@@ -46,8 +46,11 @@ import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -62,7 +65,10 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	private I_AD_Role _role;
 	private Integer _userId;
 	private Integer _adClientId;
+	private I_AD_Client _adClient; // lazy
+	private I_AD_ClientInfo _adClientInfo; // lazy
 	private TableAccessLevel userLevel;
+	private Integer _menu_AD_Tree_ID;  // lazy or configured
 
 	//
 	private OrgPermissions orgAccesses;
@@ -134,7 +140,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 		if (miscPermissions == null)
 		{
-			miscPermissions = extractPermissions(getAD_Role());
+			miscPermissions = extractPermissions(getAD_Role(), getAD_Client());
 		}
 
 		if (constraints == null)
@@ -209,7 +215,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return new UserRolePermissions(this);
 	}
 
-	private static GenericPermissions extractPermissions(final I_AD_Role role)
+	private static GenericPermissions extractPermissions(final I_AD_Role role, final I_AD_Client adClient)
 	{
 		final GenericPermissions.Builder rolePermissions = GenericPermissions.builder();
 
@@ -223,6 +229,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		rolePermissions.addPermissionIfCondition(role.isChangeLog(), IUserRolePermissions.PERMISSION_ChangeLog);
 		rolePermissions.addPermissionIfCondition(role.isMenuAvailable(), IUserRolePermissions.PERMISSION_MenuAvailable);
 		rolePermissions.addPermissionIfCondition(role.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
+		rolePermissions.addPermissionIfCondition(role.isRoleAlwaysUseBetaFunctions() || adClient.isUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
 
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
 		rolePermissions.addPermissionIfCondition(role.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
@@ -337,6 +344,27 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		// Fallback: use role's AD_Client_ID
 		return getAD_Role().getAD_Client_ID();
 	}
+	
+	private I_AD_Client getAD_Client()
+	{
+		if(_adClient == null)
+		{
+			final int adClientId = getAD_Client_ID();
+			_adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), adClientId);
+		}
+		return _adClient;
+	}
+	
+	private I_AD_ClientInfo getAD_ClientInfo()
+	{
+		if(_adClientInfo == null)
+		{
+			final int adClientId = getAD_Client_ID();
+			_adClientInfo = Services.get(IClientDAO.class).retrieveClientInfo(Env.getCtx(), adClientId);
+		}
+		return _adClientInfo;
+	}
+
 
 	@Override
 	public UserRolePermissionsBuilder setUserLevel(final TableAccessLevel userLevel)
@@ -510,5 +538,39 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	{
 		Check.assumeNotNull(userRolePermissionsIncluded, "userRolePermissionsIncluded not null");
 		return userRolePermissionsIncluded;
+	}
+	
+	public UserRolePermissionsBuilder setMenu_AD_Tree_ID(Integer _menu_AD_Tree_ID)
+	{
+		this._menu_AD_Tree_ID = _menu_AD_Tree_ID;
+		return this;
+	}
+
+	public int getMenu_Tree_ID()
+	{
+		if(_menu_AD_Tree_ID == null)
+		{
+			_menu_AD_Tree_ID = findMenu_Tree_ID();
+		}
+		return _menu_AD_Tree_ID;
+	}
+	
+	private int findMenu_Tree_ID()
+	{
+		int roleMenuTreeId = getAD_Role().getAD_Tree_Menu_ID();
+		if(roleMenuTreeId > 0)
+		{
+			return roleMenuTreeId;
+		}
+		
+		final I_AD_ClientInfo adClientInfo = getAD_ClientInfo();
+		final int adClientMenuTreeId = adClientInfo.getAD_Tree_Menu_ID();
+		if(adClientMenuTreeId > 0)
+		{
+			return adClientMenuTreeId;
+		}
+
+		// Fallback: when role has NO menu and there is no menu defined on AD_ClientInfo level - shall not happen
+		return 10; // Menu // FIXME: hardcoded
 	}
 }

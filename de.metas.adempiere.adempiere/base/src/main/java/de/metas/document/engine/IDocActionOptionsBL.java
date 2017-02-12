@@ -32,5 +32,7 @@ import org.adempiere.util.ISingletonService;
  */
 public interface IDocActionOptionsBL extends ISingletonService
 {
-	int getDocActionIndex(IDocActionOptionsContext optionsCtx);
+	void updateDocActions(IDocActionOptionsContext optionsCtx);
+	
+	void setDocActionOptionsCustomizer(String tableName, IDocActionOptionsCustomizer customizer);
 }

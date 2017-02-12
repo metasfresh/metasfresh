@@ -80,6 +80,10 @@ public class EDIDesadvRoute extends AbstractEDIRoute
 	{
 		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.desadv");
 
+		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
+		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
+		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
+
 		final String desadvFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDIDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
 
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), EDIDesadvRoute.EDI_DESADV_IS_TEST);

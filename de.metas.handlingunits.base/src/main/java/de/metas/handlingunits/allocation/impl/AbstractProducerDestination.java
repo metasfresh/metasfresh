@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +15,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,25 +30,34 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListCursor;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
+import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.IWeightableFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -67,7 +77,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	//
 	// Services
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
 	private static final String MSG_QTY_LOAD_ERROR = "AbstractProducerDestination.load_Error";
@@ -97,7 +107,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// */
 	// private I_M_HU _currentHU = null;
 	private final Map<Integer, ListCursor<I_M_HU>> productId2currentHU = new HashMap<>();
-	private final List<I_M_HU> availableHUs = new ArrayList<>();
 
 	/**
 	 * Set of created HUs or already existing HUs that need to be considered as "created".
@@ -106,13 +115,23 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 */
 	private final Set<I_M_HU> _createdHUs = new TreeSet<I_M_HU>(HUByIdComparator.instance);
 
+	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<I_M_HU>(HUByIdComparator.instance);
+
+	/**
+	 * The number of HUs that were not really created as {@link I_M_HU} instances, but are represented within a HU-aggregation item and its VHU.<br>
+	 * This number together with the size of {@link #_createdNonAggregateHUs} is returned by {@link #getCreatedHUsCount()}.
+	 */
+	private int aggregatedHUsCount;
+
 	public AbstractProducerDestination()
 	{
 		super();
 	}
 
 	/**
-	 * @return true if we are allowed to create a new HU in case is needed
+	 * @return {@code true} if we are allowed to create a new HU <b>or allocate to the current aggregate/"bag"-HU</b> in case is needed.
+	 *         Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
+	 * 
 	 */
 	public abstract boolean isAllowCreateNewHU();
 
@@ -150,7 +169,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			return currentHUCursor;
 		}
 
-		// If we have a next not null HU top pick, advance cursor and return the next one
+		// If we have a next not-null HU top pick, advance cursor and return the next one
 		// => advance the cursor until we found a current not null HU
 		while (currentHUCursor.hasNext())
 		{
@@ -181,7 +200,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 * Returns <code>this</code> instances local <code>_currentHU</code>, making sure that is either <code>null</code> or its internal <code>TrxName</code> is the one that the given
+	 * Returns <code>this</code> instance's local <code>_currentHU</code>, making sure that is either <code>null</code> or its internal <code>TrxName</code> is the one that the given
 	 * <code>huContext</code> has.
 	 *
 	 *
@@ -195,7 +214,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		ListCursor<I_M_HU> currentHUCursor = productId2currentHU.get(productId);
 		if (currentHUCursor == null)
 		{
-			currentHUCursor = new ListCursor<I_M_HU>(availableHUs);
+			currentHUCursor = new ListCursor<I_M_HU>();
 			productId2currentHU.put(productId, currentHUCursor);
 		}
 		return currentHUCursor;
@@ -206,16 +225,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// TODO: why not setting TrxName inherited?
 		final String currentHUTrxName = InterfaceWrapperHelper.getTrxName(hu);
 		final String contextTrxName = huContext.getTrxName();
-		if (!Check.equals(currentHUTrxName, contextTrxName))
+		if (!Objects.equals(currentHUTrxName, contextTrxName))
 		{
 			InterfaceWrapperHelper.setTrxName(hu, contextTrxName);
 		}
-	}
-
-	public final void addHUToAllocate(final I_M_HU hu)
-	{
-		Check.assumeNotNull(hu, "hu not null");
-		availableHUs.add(hu);
 	}
 
 	/**
@@ -269,6 +282,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		huBuilder.setM_HU_Item_Parent(parentItem);
 		huBuilder.setM_Locator(getM_Locator());
 		final String huStatus = getHUStatus();
+
 		if (!Check.isEmpty(huStatus, true))
 		{
 			huBuilder.setHUStatus(huStatus);
@@ -377,7 +391,24 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			afterHUAddedToCreatedList(hu);
 		}
+
+		if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu))
+		{
+			// don't increase the counter before the first load, because it's already increased after each load;
+			// if we increase it now, the number will always be <loaded aggregate VHUs + 1> (i.e. too big)
+			// incAggregatedHUsCount();
+		}
+		else
+		{
+			_createdNonAggregateHUs.add(hu); // this is a subset of _createdHUs
+		}
+
 		return added;
+	}
+
+	private void incAggregatedHUsCount()
+	{
+		aggregatedHUsCount++;
 	}
 
 	/**
@@ -423,6 +454,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		}
 	}
 
+	// TODO: remove, it's probably not needed anymore.
 	private final void destroyCurrentHU(final ListCursor<I_M_HU> currentHUCursor)
 	{
 		final I_M_HU hu = currentHUCursor.current();
@@ -433,6 +465,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		currentHUCursor.setCurrentValue(null); // mark it as removed from our list (which is shared between all other cursors)
 		currentHUCursor.closeCurrent(); // close the current position of this cursor
+
+		// since _createdNonAggregateHUs is just a subset of _createdHUs, we don't know if 'hu' was in there to start with. All we care is that it's not in _createdNonAggregateHUs after this method.
+		_createdNonAggregateHUs.remove(hu);
 
 		final boolean removedFromCreatedHUs = _createdHUs.remove(hu);
 		Check.assume(removedFromCreatedHUs, "Cannot destroy {} because it wasn't created by us", hu);
@@ -477,9 +512,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	@Override
 	public final int getCreatedHUsCount()
 	{
-		return _createdHUs.size();
+		return _createdNonAggregateHUs.size() + aggregatedHUsCount;
 	}
 
+	/**
+	 * ...also uses {@link IHUBuilder} to create the HU and its child-HUs according to the value returned by {@link #getM_HU_PI()}.
+	 */
 	@Override
 	public final IAllocationResult load(final IAllocationRequest request)
 	{
@@ -497,9 +535,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			// Get/create current HU
 			final ListCursor<I_M_HU> currentHUCursor = getCreateCurrentHU(request);
-			// If there is no current HU, stop here
+
 			if (currentHUCursor == null)
 			{
+				// If there is no current HU to work with, stop here. This happens e.g. if there are 5 TU allowed on one LU and we already created those 5 TUs.
+				// that's not a problem per se, it just means that 
+				// either another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet,
+				// or there are already pre-loaded HUs that have everything we needed
 				break;
 			}
 			I_M_HU currentHU = currentHUCursor.current();
@@ -511,37 +553,85 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			final IAllocationResult currentResult = loadHU(currentHU, currentRequest);
 			AllocationUtils.mergeAllocationResult(result, currentResult);
 
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 			//
 			// Nothing was allocated in this turn and we just created a new HU
-			// => destroy newly created HU, throw exception because shall not happen
+			// => destroy newly created HU
 			if (currentResult.isZeroAllocated() && DYNATTR_IsEmptyHU.isSet(currentHU))
 			{
-				// if we could not allocate to a new HU, we surely can not allocate to new ones either
-				final I_M_HU_PI_Version currentHU_PI_Version = currentHU.getM_HU_PI_Version();
-				destroyCurrentHU(currentHUCursor);
-				currentHU = null;
-
-				if (developerModeBL.isEnabled())
+				// this is OK *if* currentHU is an aggregate VHU, because the loadHU method shall only load anything to an aggregate VHU if it can completely "fill" one of the represented TUs.
+				// e.g. if the aggregate VHU represents IFCOs with a capaciy of 40kg and the request is only about 39kg, then loadHU shall not allocate anything to the aggregate VHU.
+				if (!handlingUnitsBL.isAggregateHU(currentHU))
 				{
-					throw new AdempiereException("Allocated ZERO quantity on a newly created HU"
-							+ "\n Current Request: " + currentRequest
-							+ "\n Current Result: " + currentResult
-							+ "\n Initial Request: " + request
-							+ "\n PI: " + (currentHU_PI_Version != null ? currentHU_PI_Version.getName() : ""));
-				}
+					final I_M_HU_PI_Version currentHU_PI_Version = currentHU.getM_HU_PI_Version();
 
-				// throw a nice user friendly error
-				throw new AdempiereException(MSG_QTY_LOAD_ERROR, new Object[] { currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "" });
+					// if we could not allocate to a new not-aggregate HU, so we surely can not allocate to new ones either
+					// throw exception because shall not happen
+					if (developerModeBL.isEnabled())
+					{
+						throw new AdempiereException("Allocated ZERO quantity on a newly created HU"
+								+ "\n Current Request: " + currentRequest
+								+ "\n Current Result: " + currentResult
+								+ "\n Initial Request: " + request
+								+ "\n PI: " + (currentHU_PI_Version != null ? currentHU_PI_Version.getName() : ""));
+					}
+
+					// throw a nice user friendly error
+					throw new AdempiereException(MSG_QTY_LOAD_ERROR, new Object[] { currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "" });
+				}
+				// destroyCurrentHU(currentHUCursor);
+				// currentHU = null;
+			}
+
+			if (handlingUnitsBL.isAggregateHU(currentHU))
+			{
+				final boolean somethingWasAllocated = !currentResult.isZeroAllocated();
+				if (somethingWasAllocated)
+				{
+					// we need to increase aggregatedHUsCount, so the system knows that now the "bag" now represents yet one more HU.
+					// note that in the case of IsEmptyHU=true, the qty was already increased when the HU was created
+					incAggregatedHUsCount();
+				}
 			}
 
 			// Make sure current HU is no longer flagged as a new and empty HU
 			DYNATTR_IsEmptyHU.reset(currentHU);
 
-			// It seems that current HU is fully loaded, we need to move forward to a new one
-			if (currentResult.getQtyToAllocate().signum() != 0)
+			if (currentResult.getQtyToAllocate().signum() != 0) // It seems that current HU is fully loaded and there is still stuff left to allocate
 			{
-				currentHUCursor.closeCurrent();
+				if (handlingUnitsBL.isAggregateHU(currentHU) && isAllowCreateNewHU())
+				{
+					if (currentResult.isZeroAllocated())
+					{
+						// there is something left to allocate, but the loadHU did not want to allocate onto currentHU which is aggregate.
+						// this only happens if the request's qty is less that a full unit of the TUs (e.g. IFCOs) that the aggregated 'currentHU' represent.
+						// to stay in the IFCO-example, we now need to allocate to a partial IFCO. In order to do just that, we need to close the current HU.
+						currentHUCursor.closeCurrent();
+					}
+					else
+					{
+						// don't proceed to a new HU. currentHU is a "bag" and we can load more into it.
+					}
+				}
+				else
+				{
+					currentHUCursor.closeCurrent(); // close the current "not-bag" HU and move on
+				}
+
 				currentHU = null;
+			}
+			else
+			{
+				if (handlingUnitsBL.isAggregateHU(currentHU) && !isAllowCreateNewHU())
+				{
+					// we were able to allocate it all, but
+					// if currentHU is an aggregate and it's not allowed to represent another one within the same aggregate,
+					// then we also need to close it here.
+					// Otherwise there would be another loadHU() invocation with would increase the HA item's qty once again (despite not loading anything further).
+					// Note that there is LUTUProducerDestinationTransferTests.testForCorrectItemQtyOnTwoTrxCandidates() just for this case :-)
+					currentHUCursor.closeCurrent();
+				}
 			}
 		}
 
@@ -556,7 +646,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		//
 		// Notify that we finished the loading
-		loadFinished(result);
+		loadFinished(result, request.getHUContext());
 
 		return result;
 	}
@@ -574,19 +664,44 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 * Called by {@link #load(IAllocationRequest)} right before exiting.
+	 * Called by {@link #load(IAllocationRequest)} right before exiting.<br>
+	 * In this method, implementors can do final polishing because the loader exits.
+	 * <p>
+	 * <b>IMPORTANT:</b> overriding methods should invoke {@code super}, unless they know what they do.
+	 * <p>
+	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items.
+	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU.
 	 *
-	 * In this method, implementators can do final polishing because loader exits.
-	 *
-	 * @param result current result (that will be also returned by {@link #load(IAllocationRequest)} method)
+	 * @param result_IGNORED current result (that will be also returned by {@link #load(IAllocationRequest)} method); won't be changed by this method, but maybe by overriding methods.
 	 */
-	protected void loadFinished(final IMutableAllocationResult result)
+	@OverridingMethodsMustInvokeSuper
+	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
 	{
-		// nothing at this level
+		// TODO: i think we can move this stuff or something better into a model interceptor that is fired when item.qty is changed
+		_createdHUs.forEach(
+				hu -> {
+					final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+					final IWeightable weightable = Services.get(IWeightableFactory.class).createWeightableOrNull(attributeStorage);
+					final I_M_Attribute weightTareAttribute = weightable.getWeightTareAttribute();
+					if (attributeStorage.hasAttribute(weightTareAttribute))
+					{
+						final BigDecimal tareOfHU = WeightTareAttributeValueCallout.calculateWeightTare(hu);
+
+						final BigDecimal taresOfChildren = attributeStorage
+								.getChildAttributeStorages(false).stream()
+								.filter(s -> s.hasAttribute(weightTareAttribute))
+								.map(s -> s.getValueAsBigDecimal(weightTareAttribute))
+								.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+						attributeStorage
+								.setValue(weightTareAttribute, tareOfHU.add(taresOfChildren));
+					}
+				});
 	}
 
 	/**
-	 * Method called when after {@link #load(IAllocationRequest)}-ing we could not allocate all qty
+	 * Method called when after {@link #load(IAllocationRequest)}-ing we could not allocate all qty.
+	 * This implementation does nothing, but can be overridden.
 	 *
 	 * @param request request with remaining qty which was not allocated yet
 	 * @return result
@@ -598,7 +713,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public void loadComplete(final IHUContext huContext) // --NOPMD
+	public void loadComplete(final IHUContext huContext)
 	{
 		// Do nothing on this level.
 	}

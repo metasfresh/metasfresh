@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,11 +40,11 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
 
 /**
  * Post Allocation Documents.
@@ -195,6 +193,30 @@ public class Doc_AllocationHdr extends Doc
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
+		int countPayments = 0;
+		int countInvoices = 0;
+		for (int i = 0; i < p_lines.length; i++)
+		{
+			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+			if (line.hasInvoiceDocument())
+			{
+				countInvoices++;
+			}
+			if (line.hasPaymentDocument())
+			{
+				countPayments++;
+			}
+		}
+
+		//
+		//
+		if (countPayments > 0 && countInvoices == 0)
+		{
+			createFacts_PaymentAllocation(fact);
+			m_facts.add(fact);
+			return m_facts;
+		}
+
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
@@ -283,7 +305,7 @@ public class Doc_AllocationHdr extends Doc
 			//
 			// VAT Tax Correction
 			createTaxCorrection(fact, line);
-		}	// for all lines
+		}            	// for all lines
 
 		// reset line info
 		setC_BPartner_ID(0);
@@ -291,6 +313,66 @@ public class Doc_AllocationHdr extends Doc
 		m_facts.add(fact);
 		return m_facts;
 	}   // createFact
+
+	/**
+	 * Create facts for payments in the case when no invoice was involved.
+	 * The pay Amt will go to Credit for outgoing payments and to Debit for Incoming payments
+	 * 
+	 * @param fact
+	 */
+	private void createFacts_PaymentAllocation(final Fact fact)
+	{
+		final MAcctSchema as = fact.getAcctSchema();
+
+		for (int i = 0; i < p_lines.length; i++)
+		{
+			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
+
+			// FRESH-523: Make sure the partner of the payment is set in the Doc. It will be needed when selecting the correct Account
+			setC_BPartner_ID(line.getPaymentBPartner_ID());
+
+			// In case there is a line with a writeoff amount, throw an exception. This is not supported (yet).
+
+			if (line.getPaymentWriteOffAmt().signum() != 0)
+			{
+				// In case the allocations are for writeoff lines, also create the fact acct lines for writeoff.
+				createPaymentWriteOffAmtFacts(fact, line);
+			}
+			else
+			{
+
+				final MAccount paymentAcct = line.getPaymentAcct(as);
+
+				if (!line.hasPaymentDocument())
+				{
+					continue;
+				}
+
+				final FactLine fl_Payment;
+
+				final BigDecimal allocatedAmt = line.getAllocatedAmt();
+
+				// Incoming payment
+				if (line.isPaymentReceipt())
+				{
+					// Originally on Credit. The amount must be moved to Debit
+					fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), allocatedAmt, null);
+				}
+				// Outgoing payment
+				else
+				{
+					// Originally on Debit. The amount must be moved to Credit, with different sign
+					fl_Payment = fact.createLine(line, paymentAcct, getC_Currency_ID(), null, allocatedAmt.negate());
+				}
+
+				// Make sure the fact line was created
+				Check.assumeNotNull(fl_Payment, "fl_Payment not null");
+
+				fl_Payment.setAD_Org_ID(line.getPaymentOrg_ID());
+				fl_Payment.setC_BPartner_ID(line.getPaymentBPartner_ID());
+			}
+		}
+	}
 
 	/**
 	 * Creates facts related to {@link DocLine_Allocation#getPaymentWriteOffAmt()}.
@@ -807,7 +889,7 @@ public class Doc_AllocationHdr extends Doc
 					return null;
 				m_facts.add(factC);
 			}
-		}	// Commitment
+		}            	// Commitment
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -956,7 +1038,7 @@ public class Doc_AllocationHdr extends Doc
 
 		final MAccount discountAccount = getAccount(isDiscountExpense ? Doc.ACCTTYPE_DiscountExp : Doc.ACCTTYPE_DiscountRev, as);
 		final MAccount writeOffAccount = getAccount(Doc.ACCTTYPE_WriteOff, as);
-		final Doc_AllocationTax tax = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
+		final Doc_AllocationTax taxCorrection = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
 
 		// FIXME: metas-tsa: fix how we retrieve the tax bookings of the invoice, i.e.
 		// * here we retrieve all Fact_Acct records which are not on line level.
@@ -975,12 +1057,8 @@ public class Doc_AllocationHdr extends Doc
 				.endOrderBy()
 				.create()
 				.list(I_Fact_Acct.class);
-		for (final I_Fact_Acct invoiceFactLine : invoiceFactLines)
-		{
-			tax.addInvoiceFact(invoiceFactLine);
-		}
 		// Invoice Not posted
-		if (tax.getLineCount() == 0)
+		if (invoiceFactLines.isEmpty())
 		{
 			throw newPostingException()
 					.setC_AcctSchema(as)
@@ -988,14 +1066,9 @@ public class Doc_AllocationHdr extends Doc
 					.setDocLine(line)
 					.setDetailMessage("Invoice not posted yet - " + line);
 		}
-		// size = 1 if no tax
-		if (tax.getLineCount() < 2)
-		{
-			// return true;
-			return; // OK
-		}
-
-		tax.createEntries(fact, line);
+		taxCorrection.addInvoiceFacts(invoiceFactLines);
+		
+		taxCorrection.createEntries(fact, line);
 	}	// createTaxCorrection
 }   // Doc_Allocation
 
@@ -1041,7 +1114,9 @@ public class Doc_AllocationHdr extends Doc
 	private final MAccount m_WriteOffAccount;
 	private final BigDecimal m_WriteOffAmt;
 	private final boolean isDiscountExpense;
-	private final List<I_Fact_Acct> m_facts = new ArrayList<>();
+	//
+	private I_Fact_Acct _invoiceGrandTotalFact;
+	private final List<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
 
 	private final PostingException newPostingException()
 	{
@@ -1049,24 +1124,69 @@ public class Doc_AllocationHdr extends Doc
 	}
 
 	/**
+	 * Add Invoice Fact Lines
+	 *
+	 * @param facts invoice fact lines
+	 */
+	public void addInvoiceFacts(final Iterable<I_Fact_Acct> facts)
+	{
+		for (final I_Fact_Acct fact : facts)
+		{
+			addInvoiceFact(fact);
+		}
+	}
+
+	/**
 	 * Add Invoice Fact Line
 	 *
 	 * @param fact fact line
 	 */
-	public void addInvoiceFact(final I_Fact_Acct fact)
+	private void addInvoiceFact(final I_Fact_Acct fact)
 	{
-		m_facts.add(fact);
+		if (fact.getC_Tax_ID() > 0)
+		{
+			_invoiceTaxFacts.add(fact);
+		}
+		else
+		{
+			Check.assumeNull(_invoiceGrandTotalFact, "only one invoice grand total fact line set");
+			_invoiceGrandTotalFact = fact;
+		}
 	}
 
-	/**
-	 * Get Line Count
-	 *
-	 * @return number of lines
-	 */
-	public int getLineCount()
+	private I_Fact_Acct getInvoiceGrandTotalFact()
 	{
-		return m_facts.size();
-	}	// getLineCount
+		Check.assumeNotNull(_invoiceGrandTotalFact, "_invoiceGrandTotalFact not null");
+		return _invoiceGrandTotalFact;
+	}
+	
+	private BigDecimal getInvoiceGrandTotalAmt()
+	{
+		final I_Fact_Acct invoiceGrandTotalFact = getInvoiceGrandTotalFact();
+		final BigDecimal amtSourceDr = invoiceGrandTotalFact.getAmtAcctDr();
+		if(amtSourceDr.signum() != 0)
+		{
+			return amtSourceDr;
+		}
+		
+		final BigDecimal amtSourceCr = invoiceGrandTotalFact.getAmtAcctCr();
+		if(amtSourceCr.signum() != 0)
+		{
+			return amtSourceCr;
+		}
+		
+		return BigDecimal.ZERO;
+	}
+	
+	private List<I_Fact_Acct> getInvoiceTaxFacts()
+	{
+		return _invoiceTaxFacts;
+	}
+	
+	public boolean hasInvoiceTaxFacts()
+	{
+		return !_invoiceTaxFacts.isEmpty();
+	}
 
 	private final MAccount getTaxDiscountAcct(final MAcctSchema as, final int taxId)
 	{
@@ -1088,53 +1208,29 @@ public class Doc_AllocationHdr extends Doc
 	 */
 	public void createEntries(final Fact fact, final DocLine_Allocation line)
 	{
+		// If there are no tax facts, there is no need to do tax correction
+		if (!hasInvoiceTaxFacts())
+		{
+			return;
+		}
+		
 		final MAcctSchema as = fact.getAcctSchema();
 
 		//
 		// Get total index (the Receivables/Liabilities line)
-		BigDecimal invoiceGrandTotalAmt = Env.ZERO;
-		int invoiceGrandTotalIndex = -1;
-		for (int i = 0; i < m_facts.size(); i++)
-		{
-			final I_Fact_Acct factAcct = m_facts.get(i);
-			if (factAcct.getAmtSourceDr().compareTo(invoiceGrandTotalAmt) > 0)
-			{
-				invoiceGrandTotalAmt = factAcct.getAmtSourceDr();
-				invoiceGrandTotalIndex = i;
-			}
-			if (factAcct.getAmtSourceCr().compareTo(invoiceGrandTotalAmt) > 0)
-			{
-				invoiceGrandTotalAmt = factAcct.getAmtSourceCr();
-				invoiceGrandTotalIndex = i;
-			}
-		}
-		if (invoiceGrandTotalIndex < 0)
-		{
-			throw newPostingException()
-					.setC_AcctSchema(as)
-					.setFact(fact)
-					.setDocLine(line)
-					.setDetailMessage("Invoice grand total Fact_Acct line was not found");
-		}
-		log.info("Total Invoice = " + invoiceGrandTotalAmt + " - " + m_facts.get(invoiceGrandTotalIndex));
+		final BigDecimal invoiceGrandTotalAmt = getInvoiceGrandTotalAmt();
 
 		//
-		// Iterate the tax lines
+		// Iterate the invoice tax facts
 		final int precision = as.getStdPrecision();
-		for (int i = 0; i < m_facts.size(); i++)
+		for (final I_Fact_Acct taxFactAcct : getInvoiceTaxFacts())
 		{
-			// Skip the total lines
-			if (i == invoiceGrandTotalIndex)
-			{
-				continue;
-			}
-
 			//
 			// Get the C_Tax_ID
-			final I_Fact_Acct taxFactAcct = m_facts.get(i);
 			final int taxId = taxFactAcct.getC_Tax_ID();
 			if (taxId <= 0)
 			{
+				// shall not happen
 				newPostingException()
 						.setC_AcctSchema(as)
 						.setFact(fact)
@@ -1217,7 +1313,7 @@ public class Doc_AllocationHdr extends Doc
 						}
 					}
 				}
-			}	// Discount
+			}            	// Discount
 
 			//
 			// WriteOff Amount
@@ -1253,8 +1349,8 @@ public class Doc_AllocationHdr extends Doc
 						updateFactLine(flCR, taxId, description);
 					}
 				}
-			}	// WriteOff
-		}	// for all lines
+			}            	// WriteOff
+		}            	// for all lines
 	}	// createEntries
 
 	/**

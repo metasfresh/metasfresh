@@ -10,18 +10,17 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 
@@ -51,16 +50,16 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	private boolean oneConfigurationPerPI = false;
 	private boolean allowDifferentCapacities = false;
 
-	// 08393
-	// possibility to allow any partner
+	// 08393 possibility to allow any partner
 	private boolean allowAnyPartner = false;
+
+	private int packagingProductId; // FRESH-386
 
 	@Override
 	public String toString()
 	{
-		return "HUPIItemProductQuery ["
-				+ "M_HU_PI_Item_ID=" + huPIItemId
-				+ ",productId=" + productId
+		return "HUPIItemProductQuery [huPIItemId=" + huPIItemId
+				+ ", productId=" + productId
 				+ ", bpartnerId=" + bpartnerId
 				+ ", date=" + date
 				+ ", allowAnyProduct=" + allowAnyProduct
@@ -69,7 +68,8 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 				+ ", allowVirtualPI=" + allowVirtualPI
 				+ ", oneConfigurationPerPI=" + oneConfigurationPerPI
 				+ ", allowDifferentCapacities=" + allowDifferentCapacities
-				+ "]";
+				+ ", allowAnyPartner=" + allowAnyPartner
+				+ ", packagingProductId=" + packagingProductId + "]";
 	}
 
 	@Override
@@ -86,6 +86,7 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 				.append(allowVirtualPI)
 				.append(oneConfigurationPerPI)
 				.append(allowDifferentCapacities)
+				.append(packagingProductId)
 				.toHashcode();
 	}
 
@@ -114,6 +115,7 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 				.append(allowVirtualPI, other.allowVirtualPI)
 				.append(oneConfigurationPerPI, other.oneConfigurationPerPI)
 				.append(allowDifferentCapacities, other.allowDifferentCapacities)
+				.append(packagingProductId, other.packagingProductId)
 				.isEqual();
 	}
 
@@ -249,5 +251,17 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	{
 		this.allowAnyPartner = allowAnyPartner;
 
+	}
+
+	@Override
+	public int getM_Product_Packaging_ID()
+	{
+		return packagingProductId;
+	}
+
+	@Override
+	public void setM_Product_Packaging_ID(int packagingProductId)
+	{
+		this.packagingProductId = packagingProductId;
 	}
 }

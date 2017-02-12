@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.sql.DriverManager;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -46,6 +47,17 @@ public final class LogManager
 	private static final ILoggerCustomizer loggerCustomizer = SysConfigLoggerCustomizer.instance;
 
 	/**
+	 * See {@link ILoggerCustomizer#dumpConfig()}.
+	 *
+	 * @return
+	 * @task https://github.com/metasfresh/metasfresh/issues/288
+	 */
+	public static String dumpCustomizerConfig()
+	{
+		return loggerCustomizer.dumpConfig();
+	}
+
+	/**
 	 * Initialize Logging
 	 *
 	 * @param isClient client
@@ -81,12 +93,12 @@ public final class LogManager
 
 	public static boolean isFileLoggingEnabled()
 	{
-		return MetasfreshFileLoggerHelper.get().isDisabled();
+		return !MetasfreshFileLoggerHelper.get().isDisabled();
 	}
 
 	public static void setFileLoggingEnabled(final boolean fileLoggingEnabled)
 	{
-		Ini.setProperty(Ini.P_TRACEFILE, fileLoggingEnabled);
+		Ini.setProperty(Ini.P_TRACEFILE_ENABLED, fileLoggingEnabled);
 		MetasfreshFileLoggerHelper.get().setDisabled(!fileLoggingEnabled);
 	}
 
@@ -164,14 +176,18 @@ public final class LogManager
 		{
 			return false;
 		}
-		if (level == null)
-		{
-			return false;
-		}
-		if (!isOwnLogger(logger))
-		{
-			return false;
-		}
+
+		// NOTE: level is OK to be null (i.e. we want to parent's level), as long as it's not the root logger
+		// if (level == null)
+		// {
+		// return false;
+		// }
+
+		// NOTE: we shall allow changing any logger. there is no point not allowing it.
+		// if (!isOwnLogger(logger))
+		// {
+		// return false;
+		// }
 
 		if (logger instanceof ch.qos.logback.classic.Logger)
 		{
@@ -186,6 +202,16 @@ public final class LogManager
 	{
 		final Level level = asLogbackLevel(levelStr);
 		return setLoggerLevel(logger, level);
+	}
+
+	public static final boolean setLoggerLevel(final Class<?> clazz, final Level level)
+	{
+		return setLoggerLevel(getLogger(clazz), level);
+	}
+
+	public static final boolean setLoggerLevel(final String loggerName, final Level level)
+	{
+		return setLoggerLevel(getLogger(loggerName), level);
 	}
 
 	public static String getLoggerLevelName(final Logger logger)
@@ -203,24 +229,24 @@ public final class LogManager
 		return null;
 	}
 
-	private static final boolean isOwnLogger(final Logger logger)
-	{
-		final String loggerName = logger.getName();
-		if (loggerName == null || loggerName.isEmpty())
-		{
-			return false;
-		}
-
-		for (final String loggerPrefix : OWNLOGGERS_NAME_PREFIXES)
-		{
-			if (loggerName.startsWith(loggerPrefix))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
+	// private static final boolean isOwnLogger(final Logger logger)
+	// {
+	// final String loggerName = logger.getName();
+	// if (loggerName == null || loggerName.isEmpty())
+	// {
+	// return false;
+	// }
+	//
+	// for (final String loggerPrefix : OWNLOGGERS_NAME_PREFIXES)
+	// {
+	// if (loggerName.startsWith(loggerPrefix))
+	// {
+	// return true;
+	// }
+	// }
+	//
+	// return false;
+	// }
 
 	private static final List<String> OWNLOGGERS_NAME_PREFIXES = ImmutableList.of("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
 
@@ -456,9 +482,80 @@ public final class LogManager
 
 		if (Ini.isClient())
 		{
-			final boolean fileLoggingEnabled = Ini.isPropertyBool(Ini.P_TRACEFILE);
+			final boolean fileLoggingEnabled = Ini.isPropertyBool(Ini.P_TRACEFILE_ENABLED);
 			MetasfreshFileLoggerHelper.get().setDisabled(!fileLoggingEnabled);
 		}
+	}
+
+	/**
+	 * @param loggerName
+	 * @see #dumpAllLevelsUpToRoot(Logger)
+	 */
+	public static void dumpAllLevelsUpToRoot(final String loggerName)
+	{
+		final Logger logger = getLogger(loggerName);
+		if (logger == null)
+		{
+			return;
+		}
+		dumpAllLevelsUpToRoot(logger);
+	}
+
+	/**
+	 * @see #dumpAllLevelsUpToRoot(Logger)
+	 */
+	public static void dumpAllLevelsUpToRoot(final Class<?> clazz)
+	{
+		final Logger logger = getLogger(clazz);
+		if (logger == null)
+		{
+			return;
+		}
+		dumpAllLevelsUpToRoot(logger);
+	}
+
+	/**
+	 * Helper method to print (on System.out) all log levels starting from given logger, up to the root.
+	 *
+	 * This method is useful in case you are debugging why a given logger does not have the correct effective level.
+	 *
+	 * @param logger
+	 */
+	public static void dumpAllLevelsUpToRoot(final Logger logger)
+	{
+		System.out.println("\nDumping all log levels starting from " + logger);
+
+		final Consumer<Logger> dumpLevel = (currentLogger) -> {
+			final String currentLoggerInfo;
+			if (currentLogger instanceof ch.qos.logback.classic.Logger)
+			{
+				final ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)currentLogger;
+				currentLoggerInfo = "effectiveLevel=" + logbackLogger.getEffectiveLevel() + ", level=" + logbackLogger.getLevel();
+			}
+			else
+			{
+				currentLoggerInfo = "unknown level for logger object " + currentLogger + " (" + currentLogger.getClass() + ")";
+			}
+			System.out.println(" * " + currentLogger.getName() + "(" + System.identityHashCode(currentLogger) + "): " + currentLoggerInfo);
+		};
+
+		Logger currentLogger = logger;
+		String currentLoggerName = currentLogger.getName();
+		while (currentLogger != null)
+		{
+			dumpLevel.accept(currentLogger);
+
+			final int idx = currentLoggerName.lastIndexOf(".");
+			if (idx < 0)
+			{
+				break;
+			}
+
+			currentLoggerName = currentLoggerName.substring(0, idx);
+			currentLogger = getLogger(currentLoggerName);
+		}
+
+		dumpLevel.accept(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME));
 	}
 
 	private LogManager()

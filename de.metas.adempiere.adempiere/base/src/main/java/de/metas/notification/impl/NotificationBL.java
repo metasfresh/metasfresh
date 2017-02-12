@@ -15,10 +15,10 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.EMail;
 
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
+import de.metas.email.EMail;
+import de.metas.email.IMailBL;
+import de.metas.email.Mailbox;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
@@ -57,7 +57,7 @@ public class NotificationBL implements INotificationBL
 	{
 		// task 09833
 		// Provide more specific information to the user, in case there exists a notification context provider
-		final String specificInfo = ctxProviders.getTextMessageOrNull(referencedRecord);
+		final String specificInfo = ctxProviders.getTextMessageIfApplies(referencedRecord).orNull();
 		final StringBuilder detailedMsgText = new StringBuilder();
 		detailedMsgText.append(messageText);
 		if (specificInfo != null)
@@ -144,7 +144,7 @@ public class NotificationBL implements INotificationBL
 		// final de.metas.adempiere.model.I_AD_User sender = userDAO.retrieveUser(ctx, Env.getAD_User_ID(ctx));
 		final I_AD_Client adClient = clientDAO.retriveClient(ctx);
 
-		final IMailbox mailBox = mailBL.findMailBox(
+		final Mailbox mailBox = mailBL.findMailBox(
 				adClient,
 				recipient.getAD_Org_ID(),
 				0,  // AD_Process_ID
@@ -167,5 +167,10 @@ public class NotificationBL implements INotificationBL
 	{
 		ctxProviders.addCtxProvider(ctxProvider);
 	}
-
+	
+	@Override
+	public void setDefaultCtxProvider(final INotificationCtxProvider defaultCtxProvider)
+	{
+		ctxProviders.setDefaultCtxProvider(defaultCtxProvider);
+	}
 }

@@ -1,5 +1,9 @@
 package de.metas.handlingunits;
 
+import java.util.Collection;
+
+import com.google.common.collect.Collections2;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -22,7 +26,6 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
@@ -33,5 +36,37 @@ import de.metas.handlingunits.model.I_M_HU;
  */
 public interface IHUAware
 {
+	/**
+	 * @return given HU, wrapped as {@link IHUAware}
+	 */
+	static IHUAware fromHU(final I_M_HU hu)
+	{
+		return () -> hu;
+	}
+
+	/**
+	 * @return live collection, where each HU is wrapped as {@link IHUAware}
+	 */
+	static Collection<IHUAware> transformHUCollection(final Collection<I_M_HU> hus)
+	{
+		return Collections2.transform(hus, IHUAware::fromHU);
+	}
+
+	/**
+	 * @param model
+	 * @return {@link I_M_HU} or <code>null</code>
+	 */
+	static I_M_HU getM_HUOrNull(final Object model)
+	{
+		if(model instanceof IHUAware)
+		{
+			return ((IHUAware)model).getM_HU();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	I_M_HU getM_HU();
 }

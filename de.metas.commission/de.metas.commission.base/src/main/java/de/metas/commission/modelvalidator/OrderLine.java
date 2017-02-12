@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -39,13 +38,13 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.commission.interfaces.I_C_OrderLine;
 import de.metas.commission.model.IInstanceTrigger;
 import de.metas.commission.service.IInstanceTriggerBL;
 import de.metas.commission.service.IOrderLineBL;
+import de.metas.logging.LogManager;
 
 public class OrderLine implements ModelValidator
 {
@@ -121,7 +120,7 @@ public class OrderLine implements ModelValidator
 
 		if ((type == ModelValidator.TYPE_BEFORE_NEW || type == ModelValidator.TYPE_BEFORE_CHANGE) && ol.getM_Product_ID() > 0)
 		{
-			final I_M_Product product = POWrapper.create(ol.getM_Product(), I_M_Product.class);
+			final I_M_Product product = InterfaceWrapperHelper.create(ol.getM_Product(), I_M_Product.class);
 			Check.assume(product != null, "ol.getM_Product_ID()>0, so product can'tbe null");
 
 			// check if we are dealing with manual commission points
@@ -138,7 +137,7 @@ public class OrderLine implements ModelValidator
 				{
 					final Integer oldProductIdObj = (Integer)po.get_ValueOld(org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID);
 					final int oldProductID = oldProductIdObj == null ? 0 : oldProductIdObj.intValue();
-					final I_M_Product oldProduct = POWrapper.create(ctx, oldProductID, I_M_Product.class, trxName);
+					final I_M_Product oldProduct = InterfaceWrapperHelper.create(ctx, oldProductID, I_M_Product.class, trxName);
 
 					if (oldProduct.isDiverse()) // ... and previous Product was a diverse Product
 					{

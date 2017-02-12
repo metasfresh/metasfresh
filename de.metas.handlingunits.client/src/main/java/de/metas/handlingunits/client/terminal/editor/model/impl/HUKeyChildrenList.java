@@ -13,31 +13,27 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ITaskExecutorService;
-import org.adempiere.util.Services;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
-import de.metas.handlingunits.exceptions.HUException;
+import de.metas.logging.LogManager;
 
 /**
  * Manages a list of child {@link IHUKey}s by offering following features:
@@ -51,7 +47,7 @@ import de.metas.handlingunits.exceptions.HUException;
  * @author tsa
  *
  */
-/* package */class HUKeyChildrenList
+/* package */class HUKeyChildrenList implements IDisposable
 {
 	private static final transient Logger logger = LogManager.getLogger(HUKeyChildrenList.class);
 
@@ -61,8 +57,7 @@ import de.metas.handlingunits.exceptions.HUException;
 	private List<IHUKey> _children = null;
 	private List<IHUKey> _childrenRO = null;
 
-	private Future<List<IHUKey>> _futureChildren = null;
-	private final ReentrantLock _futureChildrenLock = new ReentrantLock();
+	private boolean disposed = false;
 
 	/**
 	 * @param huKey parent
@@ -150,17 +145,8 @@ import de.metas.handlingunits.exceptions.HUException;
 				return;
 			}
 
-			final List<IHUKey> loadedChildren;
-			try
-			{
-				final Future<List<IHUKey>> futureChildren = retrieveFutureChildren();
-				loadedChildren = futureChildren.get();
-				logger.trace("Got future children for {}: count={}", new Object[] { _huKey, loadedChildren.size() });
-			}
-			catch (InterruptedException | ExecutionException e)
-			{
-				throw new HUException("Cannot load " + this, e);
-			}
+			final List<IHUKey> loadedChildren = retrieveChildren();
+			logger.trace("Got children for {}: count={}", new Object[] { _huKey, loadedChildren.size() });
 
 			_children = Collections.synchronizedList(new ArrayList<>(loadedChildren));
 			_childrenRO = Collections.unmodifiableList(_children);
@@ -169,70 +155,6 @@ import de.metas.handlingunits.exceptions.HUException;
 		{
 			childrenLock.unlock();
 		}
-	}
-
-	/**
-	 * Retrieve future children (by using {@link ITaskExecutorService}).
-	 *
-	 * @return future children
-	 */
-	private final Future<List<IHUKey>> retrieveFutureChildren()
-	{
-		_futureChildrenLock.lock();
-		try
-		{
-			if (_futureChildren == null)
-			{
-				logger.trace("Asking the task executor to retrieve the children asynchronously for {}", _huKey);
-				final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class); // local service, used only here
-				_futureChildren = taskExecutorService.submit(new Callable<List<IHUKey>>()
-				{
-
-					@Override
-					public List<IHUKey> call() throws Exception
-					{
-						return retrieveChildren();
-					}
-				},
-				HUKeyChildrenList.class.getSimpleName());
-			}
-
-			return _futureChildren;
-		}
-		finally
-		{
-			_futureChildrenLock.unlock();
-		}
-	}
-
-	private final void resetFutureChildrens()
-	{
-		_futureChildrenLock.lock();
-		try
-		{
-			if (_futureChildren != null)
-			{
-				_futureChildren.cancel(false);
-				_futureChildren = null;
-			}
-		}
-		finally
-		{
-			_futureChildrenLock.unlock();
-		}
-	}
-
-	/**
-	 * Ask this list to start loading it's underlying children asynchronouslly.
-	 *
-	 * This method will exit immediate and children will be loaded in a separate thread.
-	 *
-	 * If they were already loaded, or loading is already started this method will do nothing. So it's fine to call it multiple times.
-	 */
-	public final void startLoadingAsync()
-	{
-		// just trigger the loading....
-		retrieveFutureChildren();
 	}
 
 	/**
@@ -341,10 +263,9 @@ import de.metas.handlingunits.exceptions.HUException;
 	/**
 	 * Remove all children.
 	 */
-	public void clear()
+	@Override
+	public void dispose()
 	{
-		resetFutureChildrens();
-
 		childrenLock.lock();
 		try
 		{
@@ -357,5 +278,17 @@ import de.metas.handlingunits.exceptions.HUException;
 		}
 
 		logger.trace("Cleared for {}", _huKey);
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "HUKeyChildrenList [_huKey=" + _huKey + ", childrenLock=" + childrenLock + ", _children=" + _children + ", _childrenRO=" + _childrenRO + "]";
 	}
 }

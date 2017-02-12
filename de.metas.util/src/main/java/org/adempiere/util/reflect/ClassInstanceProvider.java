@@ -27,7 +27,7 @@ import org.adempiere.util.Check;
 /**
  * To be used when it comes to class loading. Can be extended/overridden for testing.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ClassInstanceProvider implements IClassInstanceProvider
@@ -38,6 +38,7 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 	{
 	}
 
+	@Override
 	public Class<?> provideClass(final String className) throws ClassNotFoundException
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -49,11 +50,10 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 		return clazz;
 	}
 
+	@Override
 	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws InstantiationException, IllegalAccessException
 	{
-		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz),
-				"Class {} doesn't implement {}",
-				instanceClazz.getName(), interfaceClazz.getName());
+		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
 
 		return instanceClazz
 				.asSubclass(interfaceClazz)

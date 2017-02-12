@@ -40,7 +40,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingHandler;
 import de.metas.fresh.picking.service.IPackingService;
@@ -133,7 +133,7 @@ public class PackingService implements IPackingService
 
 	@Override
 	public void packItem(final IPackingContext packingContext,
-			final FreshPackingItem itemToPack,
+			final IFreshPackingItem itemToPack,
 			final BigDecimal qtyToPack,
 			final IPackingHandler packingHandler)
 	{
@@ -166,8 +166,8 @@ public class PackingService implements IPackingService
 				}
 			};
 			
-			final FreshPackingItem itemToPackRemaining = itemToPack.copy();
-			final FreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, acceptShipmentSchedulePredicate);
+			final IFreshPackingItem itemToPackRemaining = itemToPack.copy();
+			final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, acceptShipmentSchedulePredicate);
 
 			//
 			// Process our packed item

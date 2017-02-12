@@ -28,32 +28,31 @@ package de.metas.esb.process;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MColumn;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DisplayType;
 
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.interfaces.I_EXP_FormatLine;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  * 
  */
-public class EXPFormatUpdateFromTable extends SvrProcess
+public class EXPFormatUpdateFromTable extends JavaProcess
 {
 	private int p_EXP_Format_ID = -1;
 
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -74,7 +73,7 @@ public class EXPFormatUpdateFromTable extends SvrProcess
 		if (p_EXP_Format_ID <= 0)
 			throw new FillMandatoryException("EXP_Format_ID");
 
-		I_EXP_Format format = POWrapper.create(new MEXPFormat(getCtx(), p_EXP_Format_ID, get_TrxName()), I_EXP_Format.class);
+		I_EXP_Format format = InterfaceWrapperHelper.create(new MEXPFormat(getCtx(), p_EXP_Format_ID, get_TrxName()), I_EXP_Format.class);
 		MTable table = (MTable)format.getAD_Table();
 		for (MColumn column : table.getColumns(true))
 		{
@@ -142,7 +141,7 @@ public class EXPFormatUpdateFromTable extends SvrProcess
 		{
 			formatLine.setType(X_EXP_FormatLine.TYPE_XMLElement);
 		}
-		POWrapper.save(formatLine);
+		InterfaceWrapperHelper.save(formatLine);
 		return formatLine;
 	}
 }

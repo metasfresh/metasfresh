@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -31,9 +30,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
@@ -54,7 +55,9 @@ import de.metas.logging.LogManager;
  * @author Jorg Janke
  * @version $Id$
  *
- * @author Teo Sarca, www.arhipac.ro <li>FR [ 1658127 ] Select charset encoding on import <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 1658127 ] Select charset encoding on import
+ *         <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
  */
 public final class Ini implements Serializable
 {
@@ -68,19 +71,20 @@ public final class Ini implements Serializable
 
 	/** Apps User ID */
 	public static final String P_UID = "ApplicationUserID";
-	private static final String DEFAULT_UID = "SuperUser";
+	private static final String DEFAULT_UID = "";
 	/** Apps Password */
 	public static final String P_PWD = "ApplicationPassword";
-	private static final String DEFAULT_PWD = "System";
+	private static final String DEFAULT_PWD = "";
 	/** Store Password */
 	public static final String P_STORE_PWD = "StorePassword";
 	private static final boolean DEFAULT_STORE_PWD = true;
 	/** Trace Level */
 	public static final String P_TRACELEVEL = "TraceLevel";
 	private static final String DEFAULT_TRACELEVEL = "WARNING";
-	/** Trace to File */
-	public static final String P_TRACEFILE = "TraceFile";
-	private static final boolean DEFAULT_TRACEFILE = Boolean.getBoolean(P_TRACEFILE);
+	/** Trace to File (Y/N). */
+	public static final String P_TRACEFILE_ENABLED = "TraceFile";
+	private static final boolean DEFAULT_TRACEFILE_ENABLED = false;
+
 	/** Language */
 	public static final String P_LANGUAGE = "Language";
 	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
@@ -201,7 +205,7 @@ public final class Ini implements Serializable
 			.put(P_UID, DEFAULT_UID)
 			.put(P_PWD, DEFAULT_PWD)
 			.put(P_TRACELEVEL, DEFAULT_TRACELEVEL)
-			.put(P_TRACEFILE, DisplayType.toBooleanString(DEFAULT_TRACEFILE))
+			.put(P_TRACEFILE_ENABLED, DisplayType.toBooleanString(DEFAULT_TRACEFILE_ENABLED))
 			.put(P_LANGUAGE, DEFAULT_LANGUAGE)
 			.put(P_INI, DEFAULT_INI)
 			.put(P_CONNECTION, DEFAULT_CONNECTION)
@@ -276,28 +280,23 @@ public final class Ini implements Serializable
 			ModelValidationEngine.get().beforeSaveProperties();
 		}
 
-		String fileName = getFileName();
+		final String fileName = getFileName();
+		final File file = new File(fileName).getAbsoluteFile();
 		FileOutputStream fos = null;
 		try
 		{
-			File f = new File(fileName);
-			f.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
-			fos = new FileOutputStream(f);
-			s_prop.store(fos, "Adempiere");
+			file.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
+			fos = new FileOutputStream(file);
+			s_prop.store(fos, "metasfresh.properties");
 			fos.flush();
 			fos.close();
 		}
 		catch (Exception e)
 		{
-			log.error("Cannot save Properties to " + fileName + " - " + e.toString());
+			log.error("Cannot save Properties to {}", file, e);
 			return;
 		}
-		catch (Throwable t)
-		{
-			log.error("Cannot save Properties to " + fileName + " - " + t.toString());
-			return;
-		}
-		log.info("Saved properties to {}", fileName);
+		log.info("Saved properties to {}", file);
 
 	}	// save
 
@@ -318,52 +317,47 @@ public final class Ini implements Serializable
 	 * @param filename to load
 	 * @return true if first time
 	 */
-	public static boolean loadProperties(String filename)
+	public static boolean loadProperties(final String filename)
 	{
-		boolean loadOK = true;
 		boolean firstTime = false;
 		s_prop = new Properties();
-		FileInputStream fis = null;
-		try
+
+		// gh #658: only show the dialog if the file doesn't exist yet.
+		// for any other fail, we shall throw an exception because there can be
+		// plenty of reasons and we can't just rewrite the file and go on each time.
+		final File propertiesFile = new File(filename).getAbsoluteFile();
+		if (!propertiesFile.exists())
 		{
-			fis = new FileInputStream(filename);
+			log.info("File {} does not exist. Allow the user to set initial properties", propertiesFile);
+			firstTime = true;
+			if (isShowLicenseDialog())
+			{
+				if (!IniDialog.accept())
+				{
+					System.exit(-1);
+				}
+			}
+			saveProperties();
+		}
+
+		try (final FileInputStream fis = new FileInputStream(filename))
+		{
 			s_prop.load(fis);
 			fis.close();
 		}
-		catch (FileNotFoundException e)
-		{
-			log.warn("{} not found", filename);
-			loadOK = false;
-		}
 		catch (Exception e)
 		{
-			log.error("Error while loading {}", filename, e);
-			loadOK = false;
-		}
-		catch (Throwable t)
-		{
-			log.error("Error while loading {}", filename, t);
-			loadOK = false;
-		}
-		if (!loadOK || "".equals(s_prop.getProperty(P_TODAY, "")))
-		{
-			log.info("Properties file {} is missing. Asking for license approval.", filename);
-			firstTime = true;
-			if (isShowLicenseDialog())
-				if (!IniDialog.accept())
-					System.exit(-1);
+			log.warn(filename + " - " + e.toString());
+
+			// gh #658: for f***'s sake, don't just log a warning. When running in tomcat, this logged warning will go nowhere
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		checkProperties();
 
-		// Save if not exist or could not be read
-		if (!loadOK || firstTime)
-		{
-			saveProperties();
-		}
 		s_loaded = true;
-		log.info("Loaded {} properties from {}", s_prop.size(), filename);
-		s_propertyFileName = filename;
+		log.info("Loaded {} properties from {}", s_prop.size(), propertiesFile);
+		s_propertyFileName = propertiesFile.toString();
 
 		return firstTime;
 	}	// loadProperties
@@ -384,15 +378,15 @@ public final class Ini implements Serializable
 		//
 		String tempDir = System.getProperty("java.io.tmpdir");
 		if (tempDir == null || tempDir.length() <= 1)
-			tempDir = getAdempiereHome();
+			tempDir = getMetasfreshHome();
 		if (tempDir == null)
 			tempDir = "";
 		checkProperty(P_TEMP_DIR, tempDir);
 
-		if (System.getProperty(P_TRACEFILE) != null)
+		if (System.getProperty(P_TRACEFILE_ENABLED) != null)
 		{
-			final boolean traceFileEnabled = Boolean.valueOf(System.getProperty(P_TRACEFILE));
-			checkProperty(P_TRACEFILE, DisplayType.toBooleanString(traceFileEnabled));
+			final boolean traceFileEnabled = Boolean.valueOf(System.getProperty(P_TRACEFILE_ENABLED));
+			checkProperty(P_TRACEFILE_ENABLED, DisplayType.toBooleanString(traceFileEnabled));
 		}
 	}
 
@@ -474,7 +468,7 @@ public final class Ini implements Serializable
 			return System.getenv("PropertyFile");
 		}
 
-		String propertyFileName = getAdempiereHome();
+		String propertyFileName = getMetasfreshHome();
 		if (!propertyFileName.endsWith(File.separator))
 		{
 			propertyFileName += File.separator;
@@ -628,13 +622,14 @@ public final class Ini implements Serializable
 
 	/*************************************************************************/
 
-	/** System environment prefix */
-	public static final String ENV_PREFIX = "env.";
-
-	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
-	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
-
 	public static final String METASFRESH_HOME = "METASFRESH_HOME";
+	
+	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
+	@Deprecated
+	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
+	
+	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
+	
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -721,57 +716,84 @@ public final class Ini implements Serializable
 	}   // isLoaded
 
 	/**
-	 * Get Adempiere Home from Environment
+	 * Get Metasfresh home directory.
 	 *
-	 * @return Adempiere home directory; never returns <code>null</code>
+	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
+		return METASFRESH_HOME_Supplier.get();
+	}
+	
+	/**
+	 * Finds {@link #METASFRESH_HOME}.
+	 * 
+	 * @return Metasfresh home directory; never returns <code>null</code>
+	 */
+	private static String findMetasfreshHome()
+	{
+		// Try getting the METASFRESH_HOME from JRE defined properties (i.e. via -DMETASFRESH_HOME=....)
+		{
+			final String env = System.getProperty(METASFRESH_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from system properties variable {})", metasfreshHome, METASFRESH_HOME);
+				return metasfreshHome;
+			}
+		}
+		
 		// Try getting the METASFRESH_HOME from environment
-		String env = System.getenv(METASFRESH_HOME);
-		if (!Check.isEmpty(env, true))
 		{
-			return env.trim();
+			final String env = System.getenv(METASFRESH_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
-		// Try getting the ADEMPIERE_HOME from environment
-		env = System.getenv(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env, true))
+		// Legacy: Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
 		{
-			return env.trim();
+			final String env = System.getProperty(ADEMPIERE_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from system property variable {})", metasfreshHome, ADEMPIERE_HOME);
+				log.warn("Property variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
-		// Try getting the ADEMPIERE_HOME from JRE defined properties (i.e. via -DADEMPIERE_HOME=....)
-		env = System.getProperty(ADEMPIERE_HOME);
-		if (!Check.isEmpty(env))
+		// Legacy: Try getting the ADEMPIERE_HOME from environment
 		{
-			return env;
+			final String env = System.getenv(ADEMPIERE_HOME);
+			if (!Check.isEmpty(env, true))
+			{
+				final String metasfreshHome = env.trim();
+				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, ADEMPIERE_HOME);
+				log.warn("System environment variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				return metasfreshHome;
+			}
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
 		if (isClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
-			env = userHomeDir + File.separator + ".metasfresh";
-			return env;
+			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";
+			log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
+			return metasfreshHome;
 		}
 
 		// Fallback
-		if (env == null)
-			env = File.separator + "metasfresh";
-		return env;
-	}   // getAdempiereHome
-
-	/**
-	 * Set Adempiere Home
-	 *
-	 * @param AdempiereHome ADEMPIERE_HOME
-	 */
-	public static void setAdempiereHome(String AdempiereHome)
-	{
-		if (AdempiereHome != null && AdempiereHome.length() > 0)
-			System.setProperty(ADEMPIERE_HOME, AdempiereHome);
-	}   // setAdempiereHome
+		{
+			final String metasfreshHome = File.separator + "metasfresh";
+			log.info("Found METASFRESH_HOME: {} (fallback)", metasfreshHome);
+			return metasfreshHome;
+		}
+	}
 
 	/**************************************************************************
 	 * Get Window Dimension

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T17:44:12 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippedinouts/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.8627639691774733"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -14,6 +18,7 @@
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
 	<parameter name="Date" class="java.sql.Timestamp"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT
 	p.Name,
@@ -22,17 +27,19 @@
 	SUM( iol.QtyEntered ) AS Qty,
 	uom.UOMSymbol,
 	uom.stdPrecision,
-	o.DocumentNo
+	o.DocumentNo,
+	io.ad_org_id
 FROM
 	M_InOut io
-	LEFT OUTER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
+	LEFT OUTER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 	LEFT OUTER JOIN (
 		SELECT 	M_InOutLine_ID, String_Agg( DISTINCT o.Documentno, ',' ORDER BY o.Documentno ) AS Documentno
 		FROM 	C_InvoiceCandidate_InOutLine iciol
-			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID
+			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 			LEFT OUTER JOIN C_Orderline ol ON ic.AD_Table_ID = Get_Table_ID('C_OrderLine')
-				AND ic.Record_ID = ol.C_OrderLine_ID
-			LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+				AND ic.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
+			LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
+		WHERE iciol.isActive = 'Y'
 		GROUP BY	iciol.M_InOutLine_ID
 	) o ON iol.M_InOutLine_ID = o.M_InOutLine_ID
 	-- Get Packing instruction
@@ -43,10 +50,10 @@ FROM
 		GROUP BY M_InOutLine_ID
 	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 	-- Product and its translation
-	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID
-	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID
+	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 WHERE
 	io.C_BPartner_ID = $P{C_BPartner_ID}
 	AND io.C_BPartner_Location_ID =
@@ -58,12 +65,14 @@ WHERE
 	AND io.isSOTrx = 'Y'
 	AND io.isActive = 'Y'
 	AND io.DocStatus = 'CO'
-	AND p.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	AND p.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
+    AND io.ad_org_id = $P{AD_Org_ID}
 GROUP BY
 	p.Name, pi.name,
 	uom.UOMSymbol,
 	uom.stdPrecision,
-	o.DocumentNo
+	o.DocumentNo,
+	io.ad_org_id
 ORDER BY
 	p.Name, pi.name
 ;]]>
@@ -75,6 +84,7 @@ ORDER BY
 	<field name="uomsymbol" class="java.lang.String"/>
 	<field name="stdprecision" class="java.math.BigDecimal"/>
 	<field name="documentno" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -84,7 +94,7 @@ ORDER BY
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement uuid="31559d9f-ad00-493b-85aa-c40248c81609" key="textField-19" x="445" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-19" x="445" y="0" width="60" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -92,14 +102,14 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718" key="textField-20" x="505" y="0" width="45" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="505" y="0" width="45" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf" key="textField-13" x="245" y="0" width="55" height="12" forecolor="#000000"/>
+				<reportElement key="textField-13" x="245" y="0" width="55" height="12" forecolor="#000000" uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -107,21 +117,21 @@ ORDER BY
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="a02faea5-2530-4505-a8fb-aa78021f3a67" key="textField-17" x="300" y="0" width="145" height="12" forecolor="#000000"/>
+				<reportElement key="textField-17" x="300" y="0" width="145" height="12" forecolor="#000000" uuid="a02faea5-2530-4505-a8fb-aa78021f3a67"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7" key="textField-16" x="37" y="0" width="169" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="169" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7" key="textField-16" x="205" y="0" width="40" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="205" y="0" width="40" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -132,7 +142,7 @@ ORDER BY
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="505" y="0" width="45" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="505" y="0" width="45" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -145,7 +155,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="245" y="0" width="55" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="245" y="0" width="55" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="9" isBold="false"/>
@@ -153,7 +163,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1" key="textField-31" mode="Transparent" x="300" y="0" width="145" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-31" mode="Transparent" x="300" y="0" width="145" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -166,7 +176,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{huname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="37" y="0" width="169" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="169" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -179,7 +189,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="445" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-33" mode="Transparent" x="445" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean( $F{stdprecision}.intValue() == 0 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3"/>
@@ -189,7 +199,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="445" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-33" mode="Transparent" x="445" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean( $F{stdprecision}.intValue() == 2 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3"/>
@@ -199,7 +209,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
-				<reportElement uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="445" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF">
+				<reportElement key="textField-33" mode="Transparent" x="445" y="0" width="60" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean( $F{stdprecision}.intValue() == 3 )]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3"/>
@@ -209,7 +219,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="205" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement key="textField-24" mode="Transparent" x="205" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

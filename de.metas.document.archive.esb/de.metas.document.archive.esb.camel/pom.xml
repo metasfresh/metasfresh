@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>de.metas.document.archive.esb</artifactId>
 		<groupId>de.metas.document.archive.esb</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.document.archive.esb.camel</artifactId>
@@ -17,13 +17,13 @@
 		<dependency>
 			<groupId>de.metas.document.archive.esb</groupId>
 			<artifactId>de.metas.document.archive.esb.base</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.api</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<!-- Apache CAMEL dependencies -->
@@ -102,7 +102,7 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${metasfresh-dependency.version}</version>
+				<version>1.0.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

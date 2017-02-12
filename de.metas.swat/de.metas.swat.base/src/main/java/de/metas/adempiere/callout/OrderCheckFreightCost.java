@@ -25,12 +25,11 @@ package de.metas.adempiere.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.X_C_Order;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -43,8 +42,6 @@ import de.metas.adempiere.service.IOrderBL;
  */
 public class OrderCheckFreightCost extends CalloutEngine
 {
-	final private static String TRX_NAME = null;
-
 	/**
 	 * Callout checks if there are {@link I_M_FreightCostDetail} records for the given BPartner, Location and Shipper.
 	 * 
@@ -56,24 +53,21 @@ public class OrderCheckFreightCost extends CalloutEngine
 	 * @param oldValue
 	 * @return
 	 */
-	public String freightCostRule(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String freightCostRule(final ICalloutField field)
 	{
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
+		final I_C_Order order = field.getModel(I_C_Order.class);
 		if (isCalloutActiveOrNotSOTrx(order))
 		{
 			return "";
 		}
 
-		return doCheckAndUpdate(ctx, order, oldValue);
+		final Properties ctx = field.getCtx();
+		return doCheckAndUpdate(ctx, order);
 	}
 
-	public String deliveryVia(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String deliveryVia(final ICalloutField field)
 	{
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
+		final I_C_Order order = field.getModel(I_C_Order.class);
 		if (isCalloutActiveOrNotSOTrx(order))
 		{
 			return "";
@@ -85,7 +79,8 @@ public class OrderCheckFreightCost extends CalloutEngine
 			return "";
 		}
 
-		return doCheckAndUpdate(ctx, order, oldValue);
+		final Properties ctx = field.getCtx();
+		return doCheckAndUpdate(ctx, order);
 	}
 
 	private boolean isCalloutActiveOrNotSOTrx(final I_C_Order order)
@@ -112,11 +107,9 @@ public class OrderCheckFreightCost extends CalloutEngine
 	 * @param oldValue
 	 * @return
 	 */
-	public String mShipperId(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value,
-			final Object oldValue)
+	public String mShipperId(final ICalloutField field)
 	{
-		final I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
+		final I_C_Order order = field.getModel(I_C_Order.class);
 		if (isCalloutActiveOrNotSOTrx(order))
 		{
 			return "";
@@ -128,14 +121,15 @@ public class OrderCheckFreightCost extends CalloutEngine
 			return "";
 		}
 
-		return doCheckAndUpdate(ctx, order, oldValue);
+		final Properties ctx = field.getCtx();
+		return doCheckAndUpdate(ctx, order);
 	}
 
-	private String doCheckAndUpdate(final Properties ctx, final I_C_Order order, final Object oldValue)
+	private String doCheckAndUpdate(final Properties ctx, final I_C_Order order)
 	{
 		// make sure that the freight amount is up to date
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		orderBL.updateFreightAmt(ctx, order, TRX_NAME);
+		orderBL.updateFreightAmt(ctx, order, ITrx.TRXNAME_None);
 		
 		return "";
 	}

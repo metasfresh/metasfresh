@@ -28,12 +28,12 @@ import com.google.common.collect.ImmutableMap;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,8 +42,8 @@ import com.google.common.collect.ImmutableMap;
 
 /**
  * Base implementation for {@link IQueryBuilderDAO}.
- * 
- * @author metas-dev <dev@metas-fresh.com>
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
@@ -120,7 +120,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 
 	/**
 	 * Extracts the {@link ISqlQueryFilter} part and the nonSQL part of given filter.
-	 * 
+	 *
 	 * @param filter
 	 * @return pair of SQL filter and nonSQL filter
 	 */
@@ -150,7 +150,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 
 	/**
 	 * Actually creates the {@link IQuery} instance for given context.
-	 * 
+	 *
 	 * @param queryBuildCtx
 	 * @param sqlFilters SQL filters part
 	 * @param nonSqlFilters nonSQL filters part
@@ -168,6 +168,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		private final Properties ctx;
 		private final String trxName;
 		private final Class<T> modelClass;
+		private final String modelTableName;
 		private final ImmutableMap<String, Object> queryOptions;
 		//
 		private final int queryOnlySelectionId;
@@ -184,6 +185,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			this.ctx = builderImpl.getCtx();
 			this.trxName = builderImpl.getTrxName();
 			this.modelClass = builderImpl.getModelClass();
+			this.modelTableName = builderImpl.getModelTableName();
 			this.queryOptions = ImmutableMap.copyOf(builderImpl.getOptions());
 			//
 			this.queryOnlySelectionId = builderImpl.getSelectionId();
@@ -202,6 +204,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			this.ctx = parent.ctx;
 			this.trxName = parent.trxName;
 			this.modelClass = parent.modelClass;
+			this.modelTableName = parent.modelTableName;
 			this.queryOptions = parent.queryOptions;
 			//
 			this.queryOnlySelectionId = parent.queryOnlySelectionId;
@@ -236,6 +239,11 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		public Class<T> getModelClass()
 		{
 			return modelClass;
+		}
+
+		public String getModelTableName()
+		{
+			return modelTableName;
 		}
 
 		public ImmutableMap<String, Object> getQueryOptions()

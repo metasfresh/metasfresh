@@ -56,7 +56,7 @@ import de.metas.jax.rs.testService2.ITestService2;
 import de.metas.jax.rs.testService2.TestService2;
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class JaxRsProgramaticTests

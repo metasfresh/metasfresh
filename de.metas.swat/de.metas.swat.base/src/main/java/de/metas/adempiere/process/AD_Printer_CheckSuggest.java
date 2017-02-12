@@ -27,12 +27,12 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
-import org.compiere.process.SvrProcess;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.model.I_AD_Printer;
+import de.metas.process.JavaProcess;
 
-public class AD_Printer_CheckSuggest extends SvrProcess
+public class AD_Printer_CheckSuggest extends JavaProcess
 {
 	@Override
 	protected void prepare()
@@ -51,7 +51,7 @@ public class AD_Printer_CheckSuggest extends SvrProcess
 		if (I_AD_Printer.Table_Name.equals(getTableName()) && getRecord_ID() > 0)
 		{
 			int AD_Printer_ID = getRecord_ID();
-			I_AD_Printer printer = POWrapper.create(getCtx(), AD_Printer_ID, I_AD_Printer.class, get_TrxName());
+			I_AD_Printer printer = InterfaceWrapperHelper.create(getCtx(), AD_Printer_ID, I_AD_Printer.class, get_TrxName());
 			String printerName = printer.getPrinterName();
 			boolean found = false;
 			for (PrintService ps : printServices)

@@ -11,6 +11,7 @@ import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.sync.protocol.SyncRfQ;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  * <p>
  * Note that currently we don't have to use the Consumes and Produces annotations, because we specify those types in the client.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Path("/agentsync")
@@ -68,4 +69,14 @@ public interface IAgentSync
 	@Path("confirmations")
 	@Oneway
 	void confirm(final List<SyncConfirmation> syncConfirmations);
+
+	@POST
+	@Path("rfqs")
+	@Oneway
+	void syncRfQs(List<SyncRfQ> syncRfqs);
+	
+	@POST
+	@Path("closeRfqs")
+	@Oneway
+	void closeRfQs(final List<SyncRfQCloseEvent> syncRfQCloseEvents);
 }

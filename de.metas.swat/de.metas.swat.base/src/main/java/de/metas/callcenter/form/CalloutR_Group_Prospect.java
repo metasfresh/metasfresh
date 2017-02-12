@@ -28,7 +28,7 @@ package de.metas.callcenter.form;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -44,7 +44,7 @@ public class CalloutR_Group_Prospect extends CalloutEngine
 {
 	public String bPartner (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_R_Group_Prospect gp = GridTabWrapper.create(mTab, I_R_Group_Prospect.class);
+		I_R_Group_Prospect gp = InterfaceWrapperHelper.create(mTab, I_R_Group_Prospect.class);
 		
 		int AD_User_ID = 0;
 		if (gp.getC_BPartner_ID() == Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID"))

@@ -1,25 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.ordercandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for C_OLCand
@@ -32,7 +17,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 762519424L;
+	private static final long serialVersionUID = -1780410571L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -272,7 +257,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -992,6 +977,36 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Effective() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setDropShip_BPartner_Effective(org.compiere.model.I_C_BPartner DropShip_BPartner_Effective)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner_Effective);
+	}
+
+	/** Set Lieferempfänger eff..
+		@param DropShip_BPartner_Effective_ID Lieferempfänger eff.	  */
+	@Override
+	public void setDropShip_BPartner_Effective_ID (int DropShip_BPartner_Effective_ID)
+	{
+		throw new IllegalArgumentException ("DropShip_BPartner_Effective_ID is virtual column");	}
+
+	/** Get Lieferempfänger eff..
+		@return Lieferempfänger eff.	  */
+	@Override
+	public int getDropShip_BPartner_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_BPartner getDropShip_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class);
@@ -1023,6 +1038,70 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getDropShip_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setDropShip_BPartner_Override(org.compiere.model.I_C_BPartner DropShip_BPartner_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner_Override);
+	}
+
+	/** Set Lieferempfänger abw..
+		@param DropShip_BPartner_Override_ID Lieferempfänger abw.	  */
+	@Override
+	public void setDropShip_BPartner_Override_ID (int DropShip_BPartner_Override_ID)
+	{
+		if (DropShip_BPartner_Override_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_BPartner_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_BPartner_Override_ID, Integer.valueOf(DropShip_BPartner_Override_ID));
+	}
+
+	/** Get Lieferempfänger abw..
+		@return Lieferempfänger abw.	  */
+	@Override
+	public int getDropShip_BPartner_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Effective() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setDropShip_Location_Effective(org.compiere.model.I_C_BPartner_Location DropShip_Location_Effective)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, DropShip_Location_Effective);
+	}
+
+	/** Set Lieferadresse eff..
+		@param DropShip_Location_Effective_ID Lieferadresse eff.	  */
+	@Override
+	public void setDropShip_Location_Effective_ID (int DropShip_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException ("DropShip_Location_Effective_ID is virtual column");	}
+
+	/** Get Lieferadresse eff..
+		@return Lieferadresse eff.	  */
+	@Override
+	public int getDropShip_Location_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_Location_Effective_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1065,6 +1144,40 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setDropShip_Location_Override(org.compiere.model.I_C_BPartner_Location DropShip_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, DropShip_Location_Override);
+	}
+
+	/** Set Lieferadresse abw..
+		@param DropShip_Location_Override_ID Lieferadresse abw.	  */
+	@Override
+	public void setDropShip_Location_Override_ID (int DropShip_Location_Override_ID)
+	{
+		if (DropShip_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_Location_Override_ID, Integer.valueOf(DropShip_Location_Override_ID));
+	}
+
+	/** Get Lieferadresse abw..
+		@return Lieferadresse abw.	  */
+	@Override
+	public int getDropShip_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Fehlermeldung.
 		@param ErrorMsg Fehlermeldung	  */
 	@Override
@@ -1079,6 +1192,36 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Effective() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_HandOver_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setHandOver_Location_Effective(org.compiere.model.I_C_BPartner_Location HandOver_Location_Effective)
+	{
+		set_ValueFromPO(COLUMNNAME_HandOver_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, HandOver_Location_Effective);
+	}
+
+	/** Set Übergabeadresse eff..
+		@param HandOver_Location_Effective_ID Übergabeadresse eff.	  */
+	@Override
+	public void setHandOver_Location_Effective_ID (int HandOver_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException ("HandOver_Location_Effective_ID is virtual column");	}
+
+	/** Get Übergabeadresse eff..
+		@return Übergabeadresse eff.	  */
+	@Override
+	public int getHandOver_Location_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_Location_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -1116,6 +1259,70 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_HandOver_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setHandOver_Location_Override(org.compiere.model.I_C_BPartner_Location HandOver_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_HandOver_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, HandOver_Location_Override);
+	}
+
+	/** Set Übergabeadresse abw..
+		@param HandOver_Location_Override_ID Übergabeadresse abw.	  */
+	@Override
+	public void setHandOver_Location_Override_ID (int HandOver_Location_Override_ID)
+	{
+		if (HandOver_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Location_Override_ID, Integer.valueOf(HandOver_Location_Override_ID));
+	}
+
+	/** Get Übergabeadresse abw..
+		@return Übergabeadresse abw.	  */
+	@Override
+	public int getHandOver_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getHandOver_Partner_Effective() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_HandOver_Partner_Effective_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setHandOver_Partner_Effective(org.compiere.model.I_C_BPartner HandOver_Partner_Effective)
+	{
+		set_ValueFromPO(COLUMNNAME_HandOver_Partner_Effective_ID, org.compiere.model.I_C_BPartner.class, HandOver_Partner_Effective);
+	}
+
+	/** Set Übergabe an eff..
+		@param HandOver_Partner_Effective_ID Übergabe an eff.	  */
+	@Override
+	public void setHandOver_Partner_Effective_ID (int HandOver_Partner_Effective_ID)
+	{
+		throw new IllegalArgumentException ("HandOver_Partner_Effective_ID is virtual column");	}
+
+	/** Get Übergabe an eff..
+		@return Übergabe an eff.	  */
+	@Override
+	public int getHandOver_Partner_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_Partner_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_BPartner getHandOver_Partner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_HandOver_Partner_ID, org.compiere.model.I_C_BPartner.class);
@@ -1144,6 +1351,40 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getHandOver_Partner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_Partner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getHandOver_Partner_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_HandOver_Partner_Override_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setHandOver_Partner_Override(org.compiere.model.I_C_BPartner HandOver_Partner_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_HandOver_Partner_Override_ID, org.compiere.model.I_C_BPartner.class, HandOver_Partner_Override);
+	}
+
+	/** Set Übergabe an abw..
+		@param HandOver_Partner_Override_ID Übergabe an abw.	  */
+	@Override
+	public void setHandOver_Partner_Override_ID (int HandOver_Partner_Override_ID)
+	{
+		if (HandOver_Partner_Override_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Partner_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Partner_Override_ID, Integer.valueOf(HandOver_Partner_Override_ID));
+	}
+
+	/** Get Übergabe an abw..
+		@return Übergabe an abw.	  */
+	@Override
+	public int getHandOver_Partner_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_Partner_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

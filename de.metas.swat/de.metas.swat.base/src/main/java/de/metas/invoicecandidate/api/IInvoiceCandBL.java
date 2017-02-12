@@ -16,17 +16,18 @@ package de.metas.invoicecandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,7 +35,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -45,7 +45,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
 /**
- * @author tsa
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IInvoiceCandBL extends ISingletonService
@@ -121,7 +122,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, ILoggable loggable);
 
-	IInvoiceGenerateResult generateInvoicesFromQueue(I_AD_PInstance adPInstance);
+	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 
@@ -247,37 +248,47 @@ public interface IInvoiceCandBL extends ISingletonService
 	void handleCompleteForInvoice(org.compiere.model.I_C_Invoice invoice);
 
 	/**
-	 * Set the {@link I_C_Invoice_Candidate#COLUMN_Processed_Calc Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>. <br>
-	 * Processed_calc can be overriden by <code>Processed_Override</code>. If it is not overriden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
+	 * Set the {@value I_C_Invoice_Candidate#COLUMN_Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>.<br>
+	 * <code>Processed_Calc</code> can be overridden by <code>Processed_Override</code>.
+	 * If it is not overridden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
 	 * <p>
 	 * The <code>Processed_Calc</code> shall be set to <code>true</code> if
 	 * <ul>
-	 * <li>the candidate's {@link I_C_Invoice_Candidate#COLUMN_QtyOrdered QtyOrdered} has the same amount as its {@link I_C_Invoice_Candidate#COLUMN_QtyInvoiced QtyInvoiced} <b>and</b> </lu>
-	 * <li>there is at least one not-reversed {@link I_C_InvoiceLine} allocated to the candidate
+	 * <li>the candidate's {@link I_C_Invoice_Candidate#COLUMN_QtyOrdered QtyOrdered} has the same amount as its {@link I_C_Invoice_Candidate#COLUMN_QtyInvoiced QtyInvoiced} <b>and</b></li>
+	 * <li>there is at least one not-reversed {@link I_C_InvoiceLine} allocated to the candidate</li>
 	 * </ul>
 	 * The second condition is important because we might e.g. have a <code>C_OrderLine</code> with <code>QtyOrdered=0</code>, either because the order was reactivated, or because the user simply
 	 * needs to document that a Qty or ZERO was ordered for a certain product. In both case don't we want the candidate to be flagged as processed.
+	 * <p>
+	 * Note that if <code>Processed_Override</code> is set, then its value shall be copied to <code>Processed</code>, no matter what (issue <a href="https://github.com/metasfresh/metasfresh/issues/243">#243</a>).
 	 *
 	 * @param candidate
 	 */
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
 	/**
-	 * Converts the given <code>qty</code> to the given <code>ic</code>'s price UOM.
+	 * Converts the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
 	 * <p>
 	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
+	 * <p>
+	 * <b>SIDE-FFECT (gh #428):</b> if the qty can't be converted due to a missing UOM conversion rule,<br>
+	 * then return <code>null</code>, set the given <code>ic</code>'s <code>IsError='Y'</code> and append an info-message to the <code>ic</code>'s <code>ErrorMsg</code>.<br>
+	 * But don't save the <code>ic</code>.
 	 *
 	 * @param qty the "raw" Qty in terms of the product UOM
 	 * @param ic the invoice candidate whose price UOM, product and product UOM we use for the conversion.
-	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then the given <code>qty</code> is returned.
+	 *
+	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
+	 *
+	 * @see org.adempiere.uom.api.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
 	 */
 	BigDecimal convertToPriceUOM(BigDecimal qty, I_C_Invoice_Candidate ic);
 
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
 	 * <ul>
-	 * <li> {@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}
-	 * <li> {@link I_C_Invoice_Candidate#COLUMNNAME_ErrorMsg}
+	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_AD_Note_ID}
+	 * <li>{@link I_C_Invoice_Candidate#COLUMNNAME_ErrorMsg}
 	 * </ul>
 	 *
 	 * NOTE: this method is NOT saving the invoice candidate
@@ -352,7 +363,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 *
-	 * Only for Sales orders.
+	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
 	 *
 	 * Candidate will not be saved.
 	 *
@@ -367,10 +378,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void invalidateForPartnerIfInvoiceRuleDemandsIt(I_C_Invoice_Candidate ic);
 
-	/** @return today date (without time!) to be used by invoicing BLs */
+	/**
+	 * @return today date (without time!) to be used by invoicing BLs
+	 */
 	Timestamp getToday();
 
-	/** @return current QtyToInvoice_Override or QtyToInvoice */
+	/**
+	 * @return current QtyToInvoice_Override or QtyToInvoice
+	 */
 	BigDecimal getQtyToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
@@ -390,4 +405,52 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @return
 	 */
 	int getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
+
+	/**
+	 * Close the given invoice candidate.
+	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
+	 * Also close the shipment schedules on which the invoice candidates are based
+	 *
+	 * @param candidate
+	 */
+	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
+
+	/**
+	 * Iterate the candidates to close and close them one by one.
+	 *
+	 * @param candidatesToClose
+	 */
+	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
+
+	/**
+	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
+	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_IsToClear"
+	 *
+	 * @return the value of the SYS_Config if found, false by default
+	 */
+	boolean isCloseIfIsToClear();
+
+	/**
+	 * Find out if invoice candidates that were partially invoiced are supposed to be closed
+	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_PartiallyInvoiced"
+	 *
+	 * @return the value of the SYS_Config if found, false by default
+	 */
+	boolean isCloseIfPartiallyInvoiced();
+
+	/**
+	 * If the invoice candidates linked to an invoice have Processed_Override on true, the flag must be unset in case of invoice reversal
+	 *
+	 * @param invoice
+	 */
+	void candidates_unProcess(I_C_Invoice invoice);
+
+	/**
+	 * Close linked invoice candidates if they were partially invoiced
+	 * Note: This behavior is determined by the value of the sys config "C_Invoice_Candidate_Close_PartiallyInvoice".
+	 * The candidates will be closed only if the sys config is set to 'Y'
+	 *
+	 * @param invoice
+	 */
+	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 }

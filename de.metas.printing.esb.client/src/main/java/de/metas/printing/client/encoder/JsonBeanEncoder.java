@@ -24,7 +24,7 @@ package de.metas.printing.client.encoder;
 
 import java.io.InputStream;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.printing.client.util.Util;
 

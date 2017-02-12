@@ -77,6 +77,7 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.print.MPrintFormat;
@@ -89,7 +90,6 @@ import org.compiere.swing.CTextPane;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.eevolution.exceptions.LiberoException;
@@ -97,6 +97,7 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
@@ -219,8 +220,7 @@ public class VOrderDistributionReceipt extends CPanel
 	 */
 	private void fillPicks() throws Exception
 	{
-		Language language = Language.getLoginLanguage();
-		MLookup orderL = 	MLookupFactory.get(Env.getCtx(), m_WindowNo, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) , DisplayType.Search , language , MDDOrder.COLUMNNAME_DD_Order_ID , 0 , false, "DocStatus='CO'");
+		MLookup orderL = 	MLookupFactory.get(Env.getCtx(), m_WindowNo, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) , DisplayType.Search , MDDOrder.COLUMNNAME_DD_Order_ID , 0 , false, "DocStatus='CO'");
 		fOrder = new VLookup (MDDOrder.COLUMNNAME_DD_Order_ID, true, false, true, orderL);
 		lOrder.setText(Msg.translate(Env.getCtx(), MDDOrder.COLUMNNAME_DD_Order_ID));
 		fOrder.addVetoableChangeListener(this);
@@ -556,7 +556,7 @@ public class VOrderDistributionReceipt extends CPanel
 
 					 MPrintFormat format = MPrintFormat.get(Env.getCtx(), MPrintFormat.getPrintFormat_ID("Inventory Move Hdr (Example)", MMovement.Table_ID,  0), false);
 					 MQuery query = new MQuery(MMovement.Table_Name);
-					 query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, MQuery.EQUAL, movement.getM_Movement_ID());
+					 query.addRestriction(MMovement.COLUMNNAME_M_Movement_ID, Operator.EQUAL, movement.getM_Movement_ID());
 		                                
 					//	Engine
 		             PrintInfo info = new PrintInfo(MMovement.Table_Name,MMovement.Table_ID, movement.getM_Movement_ID());               

@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,8 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessCall;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -56,6 +55,8 @@ import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.process.IProcess;
+import de.metas.process.ProcessInfo;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -71,13 +72,13 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  *              Update C_BPartner Open Item Amount
  *      update invoice (IsPaid)
  *      link invoice-payment if batch
- * 
+ *
  *  Lifeline:
  *  -   Created by VPayment or directly
  *  -   When changed in VPayment
  *      - old payment is reversed
  *      - new payment created
- * 
+ *
  *  When Payment is posed, the Allocation is made
  * </pre>
  *
@@ -94,7 +95,7 @@ import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
  * @version $Id: MPayment.java,v 1.4 2006/10/02 05:18:39 jjanke Exp $
  */
 public final class MPayment extends X_C_Payment
-		implements DocAction, ProcessCall
+		implements DocAction, IProcess
 {
 
 	/**
@@ -505,7 +506,7 @@ public final class MPayment extends X_C_Payment
 	}   // processOnline
 
 	/**
-	 * Process Online Payment. implements ProcessCall after standard constructor Called when pressing the Process_Online button in C_Payment
+	 * Process Online Payment. implements {@link IProcess} after standard constructor Called when pressing the Process_Online button in C_Payment
 	 *
 	 * @param ctx Context
 	 * @param pi Process Info
@@ -513,20 +514,20 @@ public final class MPayment extends X_C_Payment
 	 * @return true if the next process should be performed
 	 */
 	@Override
-	public boolean startProcess(Properties ctx, ProcessInfo pi, ITrx trx)
+	public void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
-		log.info("startProcess - " + pi.getRecord_ID());
-		boolean retValue = false;
+		log.info("startProcess: {}", pi);
 		//
-		if (pi.getRecord_ID() != get_ID())
+		if (pi.getRecord_ID() != getC_Payment_ID())
 		{
-			log.error("startProcess - Not same Payment - " + pi.getRecord_ID());
-			return false;
+			throw new AdempiereException("startProcess - Not same Payment - " + pi.getRecord_ID());
 		}
 		// Process it
-		retValue = processOnline();
+		if (!processOnline())
+		{
+			throw new AdempiereException("Failed processing online: " + getErrorMessage());
+		}
 		saveEx(); // metas: changed to saveEx
-		return retValue;    // Payment processed
 	}   // startProcess
 
 	/**
@@ -1746,19 +1747,17 @@ public final class MPayment extends X_C_Payment
 		// Do not pay when Credit Stop/Hold
 		if (!isReceipt())
 		{
-			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 
-			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
-			final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
-			final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+			final String soCreditStatus = stats.getSOCreditStatus();
+			final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
 
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true)))
 			{
 				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-						+ bpartnerStatsBL.getTotalOpenBalance(stats)
+						+ stats.getTotalOpenBalance()
 						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit());
 			}
 
@@ -1863,7 +1862,7 @@ public final class MPayment extends X_C_Payment
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
 			// Update total balance to include this payment
 			final BigDecimal payAmt = Services.get(ICurrencyBL.class).convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
@@ -1874,7 +1873,7 @@ public final class MPayment extends X_C_Payment
 				return DocAction.STATUS_Invalid;
 			}
 			// Total Balance
-			BigDecimal newBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
+			BigDecimal newBalance = stats.getTotalOpenBalance();
 
 			if (newBalance == null)
 			{
@@ -1962,7 +1961,7 @@ public final class MPayment extends X_C_Payment
 
 		//
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Reverse_Correct); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 
@@ -1981,7 +1980,7 @@ public final class MPayment extends X_C_Payment
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
@@ -2815,14 +2814,22 @@ public final class MPayment extends X_C_Payment
 		super.setC_Order_ID(C_Order_ID);
 
 		// checking doc type of C_Order_ID=" + C_Order_ID
-		final MOrder order = new MOrder(getCtx(), C_Order_ID, get_TrxName());
-		final MDocType orderDocType = MDocType.get(getCtx(), order.getC_DocType_ID());
+		final I_C_Order order = getC_Order();
+		if(order == null || order.getC_Order_ID() <= 0)
+		{
+			return;
+		}
 
-		final String docSubType = orderDocType.getDocSubType();
+		final I_C_DocType orderDocType = order.getC_DocType();
+		if (orderDocType == null)
+		{
+			return; // shall not happen
+		}
 
-		if (!MDocType.DOCSUBTYPE_POSOrder.equals(docSubType)
-				&& !MDocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)
-				&& !MDocType.DOCSUBTYPE_PrepayOrder.equals(docSubType))
+		final String orderDocSubType = orderDocType.getDocSubType();
+		if (!X_C_DocType.DOCSUBTYPE_POSOrder.equals(orderDocSubType)
+				&& !X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(orderDocSubType)
+				&& !X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(orderDocSubType))
 		{
 
 			// nothing to do

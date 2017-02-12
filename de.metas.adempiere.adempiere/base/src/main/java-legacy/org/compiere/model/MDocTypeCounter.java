@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -20,18 +20,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
 
-
 /**
- *	Counter Document Type Model
+ * Counter Document Type Model
  *
- *  @author Jorg Janke
- *  @version $Id: MDocTypeCounter.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: MDocTypeCounter.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MDocTypeCounter extends X_C_DocTypeCounter
 {
@@ -40,17 +43,17 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	 */
 	private static final long serialVersionUID = 3469046560457430527L;
 
-
 	/**
-	 * 	Get Counter document for document type
-	 *	@param ctx context
-	 *	@param C_DocType_ID base document
-	 *	@return counter document C_DocType_ID or 0 or -1 if no counter doc
+	 * Get Counter document for document type
+	 * 
+	 * @param ctx context
+	 * @param C_DocType_ID base document
+	 * @return counter document C_DocType_ID or 0 or -1 if no counter doc
 	 */
-	public static int getCounterDocType_ID (Properties ctx, int C_DocType_ID)
+	public static int getCounterDocType_ID(Properties ctx, int C_DocType_ID)
 	{
-		//	Direct Relationship
-		MDocTypeCounter dtCounter = getCounterDocType (ctx, C_DocType_ID);
+		// Direct Relationship
+		MDocTypeCounter dtCounter = getCounterDocType(ctx, C_DocType_ID);
 		if (dtCounter != null)
 		{
 			if (!dtCounter.isCreateCounter() || !dtCounter.isValid())
@@ -58,14 +61,24 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return dtCounter.getCounter_C_DocType_ID();
 		}
 
-		//	Indirect Relationship
+		// task FRESH_417: docBaseType_Counter now has its own table.
+		final String trxName = ITrx.TRXNAME_None;
+
+		// Indirect Relationship
 		int Counter_C_DocType_ID = 0;
-		MDocType dt = MDocType.get(ctx, C_DocType_ID);
+
+		final I_C_DocType dt = InterfaceWrapperHelper.create(ctx, C_DocType_ID, I_C_DocType.class, trxName);
 		if (!dt.isCreateCounter())
+		{
 			return -1;
-		String cDocBaseType = getCounterDocBaseType(dt.getDocBaseType());
+		}
+
+		final String cDocBaseType = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType());
 		if (cDocBaseType == null)
+		{
 			return 0;
+		}
+
 		MDocType[] counters = MDocType.getOfDocBaseType(ctx, cDocBaseType);
 		for (int i = 0; i < counters.length; i++)
 		{
@@ -76,194 +89,164 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 				break;
 			}
 			if (counter.isDefault())
+			{
 				Counter_C_DocType_ID = counter.getC_DocType_ID();
+			}
 			else if (i == 0)
+			{
 				Counter_C_DocType_ID = counter.getC_DocType_ID();
+			}
 		}
 		return Counter_C_DocType_ID;
 	}	// getCounterDocType_ID
 
 	/**
-	 * 	Get (first) valid Counter document for document type
-	 *	@param ctx context
-	 *	@param C_DocType_ID base document
-	 *	@return counter document (may be invalid) or null
+	 * Get (first) valid Counter document for document type
+	 * 
+	 * @param ctx context
+	 * @param C_DocType_ID base document
+	 * @return counter document (may be invalid) or null
 	 */
-	public static MDocTypeCounter getCounterDocType (Properties ctx, int C_DocType_ID)
+	public static MDocTypeCounter getCounterDocType(Properties ctx, int C_DocType_ID)
 	{
-		Integer key = new Integer (C_DocType_ID);
+		Integer key = C_DocType_ID;
 		MDocTypeCounter retValue = s_counter.get(key);
 		if (retValue != null)
 			return retValue;
 
-		//	Direct Relationship
+		// Direct Relationship
 		MDocTypeCounter temp = null;
 		String sql = "SELECT * FROM C_DocTypeCounter WHERE C_DocType_ID=? AND IsActive='Y'";
+		
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
 		try
 		{
-			pstmt = DB.prepareStatement (sql, null);
-			pstmt.setInt (1, C_DocType_ID);
-			ResultSet rs = pstmt.executeQuery ();
-			while (rs.next () && retValue == null)
+			pstmt = DB.prepareStatement(sql, null);
+			pstmt.setInt(1, C_DocType_ID);
+
+			rs = pstmt.executeQuery();
+
+			while (rs.next() && retValue == null)
 			{
-				retValue = new MDocTypeCounter (ctx, rs, null);
+				retValue = new MDocTypeCounter(ctx, rs, null);
 				if (!retValue.isCreateCounter() || !retValue.isValid())
 				{
 					temp = retValue;
 					retValue = null;
 				}
 			}
-			rs.close ();
-			pstmt.close ();
-			pstmt = null;
 		}
 		catch (Exception e)
 		{
 			s_log.error("getCounterDocType", e);
 		}
-		try
+
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close ();
+			DB.close(rs, pstmt);
+			rs = null;
 			pstmt = null;
 		}
-		catch (Exception e)
+
+		if (retValue != null)      	// valid
 		{
-			pstmt = null;
-		}
-		if (retValue != null)	//	valid
 			return retValue;
-		if (temp != null)		//	invalid
+		}
+		if (temp != null)      		// invalid
+		{
 			return temp;
-		return null;			//	nothing found
-	}	//	getCounterDocType
+		}
+		return null;			// nothing found
+	}	// getCounterDocType
 
 	/**
-	 * 	Get MDocTypeCounter from Cache
-	 *	@param ctx context
-	 *	@param C_DocTypeCounter_ID id
-	 *	@return MDocTypeCounter
-	 *	@param trxName transaction
+	 * Get MDocTypeCounter from Cache
+	 * 
+	 * @param ctx context
+	 * @param C_DocTypeCounter_ID id
+	 * @return MDocTypeCounter
+	 * @param trxName transaction
 	 */
-	public static MDocTypeCounter get (Properties ctx, int C_DocTypeCounter_ID, String trxName)
+	public static MDocTypeCounter get(Properties ctx, int C_DocTypeCounter_ID, String trxName)
 	{
-		Integer key = new Integer (C_DocTypeCounter_ID);
-		MDocTypeCounter retValue = s_cache.get (key);
+		Integer key = new Integer(C_DocTypeCounter_ID);
+		MDocTypeCounter retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;
-		retValue = new MDocTypeCounter (ctx, C_DocTypeCounter_ID, trxName);
-		if (retValue.get_ID () != 0)
-			s_cache.put (key, retValue);
+		retValue = new MDocTypeCounter(ctx, C_DocTypeCounter_ID, trxName);
+		if (retValue.get_ID() != 0)
+			s_cache.put(key, retValue);
 		return retValue;
-	}	//	get
+	}	// get
 
-	/**
-	 * 	Get Counter Document BaseType
-	 *	@param DocBaseType Document Base Type (e.g. SOO)
-	 *	@return Counter Document BaseType (e.g. POO) or null if there is none
-	 */
-	public static String getCounterDocBaseType (String DocBaseType)
-	{
-		if (DocBaseType == null)
-			return null;
-		String retValue = null;
-		//	SO/PO
-		if (MDocType.DOCBASETYPE_SalesOrder.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_PurchaseOrder;
-		else if (MDocType.DOCBASETYPE_PurchaseOrder.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_SalesOrder;
-		//	AP/AR Invoice
-		else if (MDocType.DOCBASETYPE_APInvoice.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_ARInvoice;
-		else if (MDocType.DOCBASETYPE_ARInvoice.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_APInvoice;
-		//	Shipment
-		else if (MDocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_MaterialReceipt;
-		else if (MDocType.DOCBASETYPE_MaterialReceipt.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_MaterialDelivery;
-		//	AP/AR CreditMemo
-		else if (MDocType.DOCBASETYPE_APCreditMemo.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_ARCreditMemo;
-		else if (MDocType.DOCBASETYPE_ARCreditMemo.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_APCreditMemo;
-		//	Receipt / Payment
-		else if (MDocType.DOCBASETYPE_ARReceipt.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_APPayment;
-		else if (MDocType.DOCBASETYPE_APPayment.equals(DocBaseType))
-			retValue = MDocType.DOCBASETYPE_ARReceipt;
-		//
-		else
-			s_log.error("getCounterDocBaseType for " + DocBaseType + ": None found");
-		return retValue;
-	}	//	getCounterDocBaseType
-
-
-	/**	Object Cache				*/
-	private static CCache<Integer,MDocTypeCounter> s_cache = new CCache<Integer,MDocTypeCounter>("C_DocTypeCounter", 20);
-	/**	Counter Relationship Cache	*/
-	private static CCache<Integer,MDocTypeCounter> s_counter = new CCache<Integer,MDocTypeCounter>("C_DocTypeCounter", 20);
-	/**	Static Logger	*/
-	private static Logger	s_log	= LogManager.getLogger(MDocTypeCounter.class);
-
+	/** Object Cache */
+	private static CCache<Integer, MDocTypeCounter> s_cache = new CCache<Integer, MDocTypeCounter>("C_DocTypeCounter", 20);
+	/** Counter Relationship Cache */
+	private static CCache<Integer, MDocTypeCounter> s_counter = new CCache<Integer, MDocTypeCounter>("C_DocTypeCounter", 20);
+	/** Static Logger */
+	private static Logger s_log = LogManager.getLogger(MDocTypeCounter.class);
 
 	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param C_DocTypeCounter_ID id
-	 *	@param trxName transaction
+	 * Standard Constructor
+	 * 
+	 * @param ctx context
+	 * @param C_DocTypeCounter_ID id
+	 * @param trxName transaction
 	 */
-	public MDocTypeCounter (Properties ctx, int C_DocTypeCounter_ID, String trxName)
+	public MDocTypeCounter(Properties ctx, int C_DocTypeCounter_ID, String trxName)
 	{
-		super (ctx, C_DocTypeCounter_ID, trxName);
+		super(ctx, C_DocTypeCounter_ID, trxName);
 		if (C_DocTypeCounter_ID == 0)
 		{
-			setIsCreateCounter (true);	// Y
-			setIsValid (false);
+			setIsCreateCounter(true);	// Y
+			setIsValid(false);
 		}
-	}	//	MDocTypeCounter
+	}	// MDocTypeCounter
 
 	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
+	 * Load Constructor
+	 * 
+	 * @param ctx context
+	 * @param rs result set
+	 * @param trxName transaction
 	 */
-	public MDocTypeCounter (Properties ctx, ResultSet rs, String trxName)
+	public MDocTypeCounter(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MDocTypeCounter
-
+	}	// MDocTypeCounter
 
 	/**
-	 * 	Set C_DocType_ID
-	 *	@param C_DocType_ID id
+	 * Set C_DocType_ID
+	 * 
+	 * @param C_DocType_ID id
 	 */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_DocType_ID(int C_DocType_ID)
 	{
-		super.setC_DocType_ID (C_DocType_ID);
+		super.setC_DocType_ID(C_DocType_ID);
 		if (isValid())
 			setIsValid(false);
-	}	//	setC_DocType_ID
-
+	}	// setC_DocType_ID
 
 	/**
-	 * 	Set Counter C_DocType_ID
-	 *	@param Counter_C_DocType_ID id
+	 * Set Counter C_DocType_ID
+	 * 
+	 * @param Counter_C_DocType_ID id
 	 */
 	@Override
-	public void setCounter_C_DocType_ID (int Counter_C_DocType_ID)
+	public void setCounter_C_DocType_ID(int Counter_C_DocType_ID)
 	{
-		super.setCounter_C_DocType_ID (Counter_C_DocType_ID);
+		super.setCounter_C_DocType_ID(Counter_C_DocType_ID);
 		if (isValid())
 			setIsValid(false);
-	}	//	setCounter_C_DocType_ID
+	}	// setCounter_C_DocType_ID
 
 	/**
-	 * 	Get Doc Type
-	 *	@return doc type or null if not existing
+	 * Get Doc Type
+	 * 
+	 * @return doc type or null if not existing
 	 */
 	public MDocType getDocType()
 	{
@@ -275,11 +258,12 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 				dt = null;
 		}
 		return dt;
-	}	//	getDocType
+	}	// getDocType
 
 	/**
-	 * 	Get Counter Doc Type
-	 *	@return counter doc type or null if not existing
+	 * Get Counter Doc Type
+	 * 
+	 * @return counter doc type or null if not existing
 	 */
 	public MDocType getCounterDocType()
 	{
@@ -291,12 +275,12 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 				dt = null;
 		}
 		return dt;
-	}	//	getCounterDocType
-
+	}	// getCounterDocType
 
 	/**************************************************************************
-	 * 	Validate Document Type compatability
-	 *	@return Error message or null if valid
+	 * Validate Document Type compatability
+	 * 
+	 * @return Error message or null if valid
 	 */
 	public String validate()
 	{
@@ -319,74 +303,74 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		String c_dtBT = c_dt.getDocBaseType();
 		log.debug(dtBT + " -> " + c_dtBT);
 
-		//	SO / PO
-		if ((MDocType.DOCBASETYPE_SalesOrder.equals(dtBT) && MDocType.DOCBASETYPE_PurchaseOrder.equals(c_dtBT))
-			|| (MDocType.DOCBASETYPE_SalesOrder.equals(c_dtBT) && MDocType.DOCBASETYPE_PurchaseOrder.equals(dtBT)))
-			setIsValid(true);
-		//	AP/AR Invoice
-		else if ((MDocType.DOCBASETYPE_APInvoice.equals(dtBT) && MDocType.DOCBASETYPE_ARInvoice.equals(c_dtBT))
-			|| (MDocType.DOCBASETYPE_APInvoice.equals(c_dtBT) && MDocType.DOCBASETYPE_ARInvoice.equals(dtBT)))
-			setIsValid(true);
-		//	Shipment
-		else if ((MDocType.DOCBASETYPE_MaterialDelivery.equals(dtBT) && MDocType.DOCBASETYPE_MaterialReceipt.equals(c_dtBT))
-			|| (MDocType.DOCBASETYPE_MaterialDelivery.equals(c_dtBT) && MDocType.DOCBASETYPE_MaterialReceipt.equals(dtBT)))
-			setIsValid(true);
-		//	AP/AR CreditMemo
-		else if ((MDocType.DOCBASETYPE_APCreditMemo.equals(dtBT) && MDocType.DOCBASETYPE_ARCreditMemo.equals(c_dtBT))
-			|| (MDocType.DOCBASETYPE_APCreditMemo.equals(c_dtBT) && MDocType.DOCBASETYPE_ARCreditMemo.equals(dtBT)))
-			setIsValid(true);
-		//	Receipt / Payment
-		else if ((MDocType.DOCBASETYPE_ARReceipt.equals(dtBT) && MDocType.DOCBASETYPE_APPayment.equals(c_dtBT))
-			|| (MDocType.DOCBASETYPE_ARReceipt.equals(c_dtBT) && MDocType.DOCBASETYPE_APPayment.equals(dtBT)))
-			setIsValid(true);
-		else
+		boolean valid = true;
+		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(getCtx(), dtBT);
+
+		if (c_dtBT == null)
+		{
+			valid = false;
+		}
+		else if (docBaseTypeCounter == null)
+		{
+			valid = false;
+		}
+
+		else if (!c_dtBT.equals(docBaseTypeCounter))
+		{
+			valid = false;
+		}
+
+		setIsValid(valid);
+
+		if (!valid)
 		{
 			log.warn("NOT - " + dtBT + " -> " + c_dtBT);
-			setIsValid(false);
 			return "Not valid";
 		}
-		//	Counter should have document numbering
+
+		// Counter should have document numbering
 		if (!c_dt.isDocNoControlled())
 			return "Counter Document Type should be automatically Document Number controlled";
 		return null;
-	}	//	validate
+	}	// validate
 
 	/**
-	 * 	String Representation
-	 *	@return info
+	 * String Representation
+	 * 
+	 * @return info
 	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MDocTypeCounter[");
+		StringBuffer sb = new StringBuffer("MDocTypeCounter[");
 		sb.append(get_ID()).append(",").append(getName())
-			.append(",C_DocType_ID=").append(getC_DocType_ID())
-			.append(",Counter=").append(getCounter_C_DocType_ID())
-			.append(",DocAction=").append(getDocAction())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
-
+				.append(",C_DocType_ID=").append(getC_DocType_ID())
+				.append(",Counter=").append(getCounter_C_DocType_ID())
+				.append(",DocAction=").append(getDocAction())
+				.append("]");
+		return sb.toString();
+	}	// toString
 
 	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
+	 * Before Save
+	 * 
+	 * @param newRecord new
+	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
 		if (getAD_Org_ID() != 0)
 			setAD_Org_ID(0);
 
 		if (!newRecord
-			&& (is_ValueChanged("C_DocType_ID") || is_ValueChanged("Counter_C_DocType_ID")))
+				&& (is_ValueChanged("C_DocType_ID") || is_ValueChanged("Counter_C_DocType_ID")))
 			setIsValid(false);
 
-		//	try to validate
+		// try to validate
 		if (!isValid())
-			 validate();
+			validate();
 		return true;
-	}	//	beforeSave
+	}	// beforeSave
 
-}	//	MDocTypeCounter
+}	// MDocTypeCounter

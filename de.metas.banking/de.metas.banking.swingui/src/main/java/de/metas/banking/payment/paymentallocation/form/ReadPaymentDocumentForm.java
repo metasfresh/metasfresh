@@ -13,35 +13,34 @@ package de.metas.banking.payment.paymentallocation.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Dialog.ModalExclusionType;
 import java.awt.Frame;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
-import org.compiere.model.GridTab;
-import org.compiere.process.ProcessInfo;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Custom Form to read the payment string and create the {@link I_C_Payment_Request}.
@@ -51,7 +50,7 @@ import de.metas.payment.model.I_C_Payment_Request;
  * @author al
  * @task 08762
  */
-public class ReadPaymentDocumentForm implements FormPanel, ISvrProcessPrecondition
+public class ReadPaymentDocumentForm implements FormPanel, IProcessPrecondition
 {
 	private static final String MSG_PREFIX = PaymentAllocationForm.MSG_PREFIX;
 
@@ -106,6 +105,10 @@ public class ReadPaymentDocumentForm implements FormPanel, ISvrProcessPreconditi
 	private ReadPaymentDocumentPanel createAndBindPanel(final int windowNo, final Frame frame, final int adOrgId)
 	{
 		final ReadPaymentDocumentPanel readPaymentPanel = new ReadPaymentDocumentPanel(windowNo, frame, adOrgId);
+		
+		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		readPaymentPanel.setContextBPartner_ID(invoice == null ? -1 : invoice.getC_BPartner_ID());
+		
 		frame.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentPanel)
 		{
 			@Override
@@ -119,21 +122,21 @@ public class ReadPaymentDocumentForm implements FormPanel, ISvrProcessPreconditi
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(gridTab, I_C_Invoice.class);
+		final I_C_Invoice invoice = context.getSelectedModel(I_C_Invoice.class);
 		if (invoice == null)
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("no invoice selected");
 		}
 
 		// only completed invoiced
 		if (!invoiceBL.isComplete(invoice))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("invoice is not completed");
 		}
 
-		return !invoice.isSOTrx(); // only PO Invoices (Eingangsrechnung)
+		return ProcessPreconditionsResolution.acceptIf(!invoice.isSOTrx()); // only PO Invoices (Eingangsrechnung)
 	}
 
 	private void createPaymentRequest(final ReadPaymentPanelResult result)

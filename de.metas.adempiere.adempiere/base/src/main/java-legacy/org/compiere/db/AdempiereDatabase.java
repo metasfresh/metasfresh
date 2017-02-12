@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.db;
 
@@ -39,21 +39,21 @@ public interface AdempiereDatabase
 {
 	/**
 	 * Get Database Name
-	 * 
+	 *
 	 * @return database short name
 	 */
 	public String getName();
 
 	/**
 	 * Get Database Description
-	 * 
+	 *
 	 * @return database long name and version
 	 */
 	public String getDescription();
 
 	/**
 	 * Get and register Database Driver
-	 * 
+	 *
 	 * @return Driver
 	 * @throws DBException
 	 */
@@ -61,14 +61,14 @@ public interface AdempiereDatabase
 
 	/**
 	 * Get Standard JDBC Port
-	 * 
+	 *
 	 * @return standard port
 	 */
 	public int getStandardPort();
 
 	/**
 	 * Get Database Connection String
-	 * 
+	 *
 	 * @param connection Connection Descriptor
 	 * @return connection String
 	 */
@@ -101,14 +101,14 @@ public interface AdempiereDatabase
 
 	/**
 	 * Supports BLOB
-	 * 
+	 *
 	 * @return true if BLOB is supported
 	 */
 	public boolean supportsBLOB();
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -124,7 +124,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Check if DBMS support the sql statement
-	 * 
+	 *
 	 * @sql SQL statement
 	 * @return true: yes
 	 */
@@ -132,7 +132,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Get constraint type associated with the index
-	 * 
+	 *
 	 * @conn connection
 	 * @tableName table name
 	 * @IXName Index name
@@ -143,7 +143,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Check and generate an alternative SQL
-	 * 
+	 *
 	 * @reExNo number of re-execution
 	 * @msg previous execution error message
 	 * @sql previous executed SQL
@@ -153,14 +153,14 @@ public interface AdempiereDatabase
 
 	/**
 	 * Get Name of System User
-	 * 
+	 *
 	 * @return e.g. sa, system
 	 */
 	public String getSystemUser();
 
 	/**
 	 * Get Name of System Database
-	 * 
+	 *
 	 * @param databaseName database Name
 	 * @return e.g. master or database Name
 	 */
@@ -180,7 +180,6 @@ public interface AdempiereDatabase
 	 *
 	 * @param columnName the column name in the SQL
 	 * @param displayType Display Type
-	 * @param AD_Language 6 character language setting (from Env.LANG_*)
 	 *
 	 * @return TRIM(TO_CHAR(columnName,'999G999G999G990D00','NLS_NUMERIC_CHARACTERS='',.'''))
 	 *         or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
@@ -188,7 +187,10 @@ public interface AdempiereDatabase
 	 * @see org.compiere.util.Env
 	 *
 	 **/
-	public String TO_CHAR(String columnName, int displayType, String AD_Language);
+	/**
+	 * @see #TO_CHAR(String, int, String)
+	 */
+	public String TO_CHAR(String columnName, int displayType);
 
 	/**
 	 * Create SQL for formatted Date, Number.
@@ -201,7 +203,7 @@ public interface AdempiereDatabase
 	 *
 	 * @return SQL code
 	 */
-	String TO_CHAR(String columnName, int displayType, String AD_Language, String formatPattern);
+	String TO_CHAR(String columnName, int displayType, String formatPattern);
 
 	/**
 	 * Return number as string for INSERT statements with correct precision
@@ -221,7 +223,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Creates SQL for retrieving next sequence value.
-	 * 
+	 *
 	 * @param sequenceName
 	 * @return
 	 */
@@ -229,7 +231,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Create Native Sequence
-	 * 
+	 *
 	 * @param Sequence Name
 	 * @return true if sequence was created or updated
 	 */
@@ -237,6 +239,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Rename the native sequence
+	 *
 	 * @param dbSequenceNameOld sequence name
 	 * @param dbSequenceNameNew new sequence name
 	 */
@@ -274,7 +277,7 @@ public interface AdempiereDatabase
 
 	/**
 	 * Get Status
-	 * 
+	 *
 	 * @return status info or null if no local datasource available
 	 */
 	public String getStatus();
@@ -308,14 +311,14 @@ public interface AdempiereDatabase
 
 	/**
 	 * Is the database have sql extension that return a subset of the query result
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isPagingSupported();
 
 	/**
 	 * modify sql to return a subset of the query result
-	 * 
+	 *
 	 * @param sql
 	 * @param start
 	 * @param end
@@ -334,7 +337,7 @@ public interface AdempiereDatabase
 	String getSQLDataType(int displayType, String columnName, int fieldLength);
 
 	/**
-	 * 
+	 *
 	 * @param connection
 	 * @param throwDBException if the connection is closed or an {@link SQLException} is caught, then this parameter decides if an {@link DBException} shall be thrown. Set to <code>false</code> if you
 	 *            are already exception handling and just want to use this method to get whatever info you can (and not to throw yet another exception).
@@ -348,4 +351,3 @@ public interface AdempiereDatabase
 	 */
 	String getRowIdSql(final String tableName);
 }   // AdempiereDatabase
-

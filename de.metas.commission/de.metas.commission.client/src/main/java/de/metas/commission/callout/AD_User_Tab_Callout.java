@@ -1,5 +1,7 @@
 package de.metas.commission.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.commission.client
@@ -24,8 +26,6 @@ package de.metas.commission.callout;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.GridTab;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
@@ -34,9 +34,9 @@ import de.metas.commission.interfaces.I_AD_User;
 public class AD_User_Tab_Callout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_AD_User user = InterfaceWrapperHelper.create(gridTab, I_AD_User.class);
+		final I_AD_User user = calloutRecord.getModel(I_AD_User.class);
 
 		final String whereClause =  I_AD_User.COLUMNNAME_IS_COMMISSION + " = ? AND "
 				+ I_AD_User.COLUMNNAME_C_BPartner_ID + " = ?";
@@ -48,11 +48,11 @@ public class AD_User_Tab_Callout extends TabCalloutAdapter
 		
 		if (rows == 0)
 		{
-			gridTab.setValue(I_AD_User.COLUMNNAME_IS_COMMISSION, true);
+			user.setIsCommission(true);
 		}
 		else
 		{
-			gridTab.setValue(I_AD_User.COLUMNNAME_IS_COMMISSION,false);
+			user.setIsCommission(false);
 		}
 	}
 }

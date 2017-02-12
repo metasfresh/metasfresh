@@ -35,6 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Country;
@@ -173,6 +174,8 @@ public class PriceListBL implements IPriceListBL
 			final boolean isSoTrx,
 			final Boolean processedPLVFiltering)
 	{
+		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, isSoTrx={}, processedPLVFiltering={}", country, isSoTrx, processedPLVFiltering);
+
 		if (country == null)
 		{
 			return null;

@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.lutuconfig.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,10 +34,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -263,7 +260,9 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		load(lutuConfiguration, altConfigurations);
 	}
 
-	public void load(final I_M_HU_LUTU_Configuration mainConfiguration, final List<I_M_HU_LUTU_Configuration> altConfigurations)
+	public void load(
+			final I_M_HU_LUTU_Configuration mainConfiguration,
+			final List<I_M_HU_LUTU_Configuration> altConfigurations)
 	{
 		Check.assumeNotNull(mainConfiguration, "lutuConfiguration not null");
 		Check.assumeNotNull(altConfigurations, "altConfigurations not null");
@@ -381,18 +380,30 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	{
 		final CUKey cuKey = createCUKey(lutuConfiguration);
 		final String cuKeyId = cuKey.getId();
+		// we only created this instance to get hold of its ID. now all dispose; the key is not registered anywhere at this point, but we don't want the finalizer() verification method to make a fuzz
+		// TODO don't create it if we don't need it
+		cuKey.dispose();
+
 		final ITerminalKey cuKeyToSelect = getCUKeyLayout().getKeyById(cuKeyId);
 		getCUKeyLayout().keyReturned(cuKeyToSelect);
 		getCUKeyLayout().setSelectedKey(cuKeyToSelect);
 
 		final TUKey tuKey = createTUKey(lutuConfiguration);
 		final String tuKeyId = tuKey.getId();
+		// we only created this instance to get hold of its ID. now all dispose; the key is not registered anywhere at this point, but we don't want the finalizer() verification method to make a fuzz
+		// TODO don't create it if we don't need it
+		tuKey.dispose();
+
 		final ITerminalKey tuKeyToSelect = getTUKeyLayout().getKeyById(tuKeyId);
 		getTUKeyLayout().keyReturned(tuKeyToSelect);
 		getTUKeyLayout().setSelectedKey(tuKeyToSelect);
 
 		final LUKey luKey = createLUKey(lutuConfiguration);
 		final String luKeyId = luKey.getId();
+		// we only created this instance to get hold of its ID. now all dispose; the key is not registered anywhere at this point, but we don't want the finalizer() verification method to make a fuzz
+		// TODO don't create it if we don't need it
+		luKey.dispose();
+
 		final ITerminalKey luKeyToSelect = getLUKeyLayout().getKeyById(luKeyId);
 		getLUKeyLayout().setSelectedKey(luKeyToSelect);
 		getLUKeyLayout().keyReturned(luKeyToSelect);
@@ -415,16 +426,6 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			setQtyTU(lutuConfiguration.getQtyTU());
 		}
 
-		// @formatter:off
-		//	if (lutuConfiguration.isInfiniteQtyLU())
-		//	{
-		//		setQtyLU(1);
-		//	}
-		//	else
-		//	{
-		//  	setQtyLU(lutuConfiguration.getQtyLU());
-		//	}
-		// @formatter:off
 		//
 		// 07451: Always set LU qty to ONE
 		// Background: even if 10 LUs are received, the user wants to deal with them 1-by-1 in 95% of all cases.
@@ -446,20 +447,15 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	{
 		Check.assumeNotNull(lutuConfigurationEditor, "lutuConfigurationEditor not null");
 
-		lutuConfigurationEditor.edit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-		{
-
-			@Override
-			public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-			{
-				save(lutuConfiguration);
-				return lutuConfiguration;
-			}
+		lutuConfigurationEditor.edit(lutuConfiguration -> {
+			save(lutuConfiguration);
+			return lutuConfiguration;
 		});
 	}
 
 	/**
 	 * Save what user was edited to given <code>lutuConfiguration</code>
+	 *
 	 * @param lutuConfiguration
 	 */
 	public final void save(final I_M_HU_LUTU_Configuration lutuConfiguration)
@@ -468,7 +464,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		final LUKey luKey = getSelectedLUKey();
 		final TUKey tuKey = getSelectedTUKey();
-//		final CUKey cuKey = getSelectedCUKey();
+
 		final I_M_Product cuProduct = tuKey.getCuProduct();
 
 		final int qtyTU = getQtyTU().intValueExact();
@@ -483,14 +479,11 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			lutuConfiguration.setIsInfiniteQtyLU(false);
 			lutuConfiguration.setQtyLU(BigDecimal.ZERO);
 		}
-		else if (luKey.isVirtualPI())
-		{
-			throw new AdempiereException("LUKey not allowed to be a virtual PI: " + luKey);
-		}
 		else
 		{
-			final int qtyLU = getQtyLU().intValueExact();
+			Check.errorIf(luKey.isVirtualPI(), "LUKey not allowed to be a virtual PI: {}", luKey);
 
+			final int qtyLU = getQtyLU().intValueExact();
 			lutuConfiguration.setM_LU_HU_PI(luKey.getM_HU_PI());
 			lutuConfiguration.setM_LU_HU_PI_Item(luKey.getM_HU_PI_Item_ForChildJoin());
 			lutuConfiguration.setIsInfiniteQtyLU(false);
@@ -499,17 +492,12 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		//
 		// TU
-		if (tuKey.isNoPI())
-		{
-			throw new AdempiereException("TUKey not allowed to be a No PI: " + tuKey);
-		}
-		else
-		{
-			lutuConfiguration.setM_HU_PI_Item_Product(tuKey.getM_HU_PI_Item_Product());
-			lutuConfiguration.setM_TU_HU_PI(tuKey.getM_HU_PI());
-			lutuConfiguration.setIsInfiniteQtyTU(false);
-			lutuConfiguration.setQtyTU(BigDecimal.valueOf(qtyTU));
-		}
+		Check.errorIf(tuKey.isNoPI(), "TUKey not allowed to be a No PI: {}", tuKey);
+
+		lutuConfiguration.setM_HU_PI_Item_Product(tuKey.getM_HU_PI_Item_Product());
+		lutuConfiguration.setM_TU_HU_PI(tuKey.getM_HU_PI());
+		lutuConfiguration.setIsInfiniteQtyTU(false);
+		lutuConfiguration.setQtyTU(BigDecimal.valueOf(qtyTU));
 
 		//
 		// CU
@@ -555,7 +543,13 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		// Add the TU PI from our configuration (if it was not added yet)
 		{
 			final TUKey tuKey = createTUKey(lutuConfiguration);
-			if (!tuKeys.containsKey(tuKey.getId()))
+			if (tuKeys.containsKey(tuKey.getId()))
+			{
+				// call dispose; the key is not registered anywhere at this point, but we don't want the finalizer() verification method to make a fuzz
+				// TODO don't create it, if we don't need it
+				tuKey.dispose();
+			}
+			else
 			{
 				tuKeys.put(tuKey.getId(), tuKey);
 			}
@@ -617,6 +611,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 		final boolean qtyCUPerTUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = lutuConfiguration.getQtyCU();
+
 		final TUKey tuKey = createTUKey(huPIIP, tuPI, cuProduct, cuUOM, qtyCUPerTUInfinite, qtyCUPerTU);
 		return tuKey;
 	}
@@ -635,7 +630,6 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final TUKey tuKey = createTUKey(virtualItemProduct, virtualPI, cuProduct, cuUOM, qtyCUsPerTU);
 		return tuKey;
 	}
-
 
 	private Collection<ILUTUCUKey> createLUKeys(final I_M_HU_PI tuPI, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
@@ -669,7 +663,13 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		if (tuPI.getM_HU_PI_ID() == lutuConfiguration.getM_TU_HU_PI_ID())
 		{
 			final LUKey luKey = createLUKey(lutuConfiguration);
-			if (!luKeys.containsKey(luKey.getId()))
+			if (luKeys.containsKey(luKey.getId()))
+			{
+				// call dispose; the key is not registered anywhere at this point, but we don't want the finalizer() verification method to make a fuzz
+				// TODO don't create it, if we don't need it
+				luKey.dispose();
+			}
+			else
 			{
 				luKeys.put(luKey.getId(), luKey);
 			}

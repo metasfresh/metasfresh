@@ -27,7 +27,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.Util;
+import org.adempiere.util.Check;
 
 /**
  * Window Tab Customization
@@ -88,15 +88,15 @@ public class MUserDefTab extends X_AD_UserDef_Tab
 	public void apply(GridTabVO vo)
 	{
 		final String name = getName();
-		if (!Util.isEmpty(name) && name.length() > 1)
-			vo.Name = name;
-		if (!Util.isEmpty(getDescription()))
-			vo.Description = getDescription();
-		if (!Util.isEmpty(getHelp()))
-			vo.Help = getHelp();
+		if (!Check.isEmpty(name) && name.length() > 1)
+			vo.setName(name);
+		if (!Check.isEmpty(getDescription()))
+			vo.setDescription(getDescription());
+		if (!Check.isEmpty(getHelp()))
+			vo.setHelp(getHelp());
 		//
 		vo.IsSingleRow = this.isSingleRow();
-		vo.IsReadOnly = this.isReadOnly(); 
+		vo.setReadOnly(this.isReadOnly()); 
 //		vo.IsDeleteable
 //		vo.IsHighVolume
 //		vo.IsInsertRecord

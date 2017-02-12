@@ -13,15 +13,14 @@ package org.adempiere.ad.trx.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -29,6 +28,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 
+/**
+ * This implementation is intended for unit and module testing in scenarios where you want the trxManager to get out of the way.
+ * <p>
+ * Hint: if you want to actually test trx related behavior (e.g. if some trx was committed and so on), then there is {@link MockedTrxManager}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PlainTrxManager extends AbstractTrxManager
 {
 	//
@@ -36,14 +43,18 @@ public class PlainTrxManager extends AbstractTrxManager
 	// NOTE: atm, the actual JDBC are not failing in this case, but, i think is helpful in tests to be much more strict to enforce consistency
 	private boolean failCommitIfTrxNotStarted = true;
 	private boolean failRollbackIfTrxNotStarted = true;
-	//
+	
+	public PlainTrxManager()
+	{
+		super();
+	}
 
 	@Override
-	protected final ITrx createTrx(String trxName)
+	protected ITrx createTrx(String trxName, final boolean autoCommit)
 	{
 		try
 		{
-			return new PlainTrx(this, trxName);
+			return new PlainTrx(this, trxName, autoCommit);
 		}
 		catch (Exception e)
 		{

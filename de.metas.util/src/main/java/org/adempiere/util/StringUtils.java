@@ -107,6 +107,37 @@ public final class StringUtils
 	}
 
 	/**
+	 * Converts the given {@code strBoolean} to a Boolean (or {@code null}), using the following rules:
+	 * <ul>
+	 * <li>empty string, just whitespaces or {@code null} => {@code null}
+	 * <li>{@code "N"} or {@code "n"} => {@code false}
+	 * <li>{@code "Y"} or {@code "y"} => {@code true}
+	 * <li>otherwise, the return value of {@link Boolean#parseBoolean(String)} is returned.
+	 * </ul>
+	 * 
+	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
+	 * @return
+	 */
+	public static Boolean toBooleanOrNull(final String strBoolean)
+	{
+		if(Check.isEmpty(strBoolean, true))
+		{
+			return null;
+		}
+
+		if("Y".equalsIgnoreCase(strBoolean))
+		{
+			return true;
+		}
+		if("N".equalsIgnoreCase(strBoolean))
+		{
+			return false;
+		}
+
+		return Boolean.parseBoolean(strBoolean);
+	}
+	
+	/**
 	 * Formats the given message, using either {@link java.text.Format} or {@link org.slf4j.helpers.MessageFormatter}.<br>
 	 * If the given <code>message</code> contains <code>{0}</code> as a substring and the given <code>params</code> has at least one item, then {@link java.text.Format} is used, otherwise the SLF4J
 	 * formatter.

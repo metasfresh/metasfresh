@@ -96,7 +96,7 @@ public class HUOrderFastInputHandler implements IOrderFastInputHandler
 	}
 
 	@Override
-	public IGridTabRowBuilder createLineBuilderFromHeader(final GridTab gridTab)
+	public IGridTabRowBuilder createLineBuilderFromHeader(final Object model)
 	{
 		return new OrderLineHUPackingGridRowBuilder();
 	}

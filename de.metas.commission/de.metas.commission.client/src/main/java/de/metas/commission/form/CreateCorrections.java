@@ -42,12 +42,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.model.MRelation;
-import org.adempiere.model.MRelationType;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.compiere.grid.CreateFrom;
@@ -98,6 +94,7 @@ public class CreateCorrections extends CreateFrom
 	 * 
 	 * @return true if initialized
 	 */
+	@Override
 	public boolean dynInit() throws Exception
 	{
 		log.info("");
@@ -129,8 +126,8 @@ public class CreateCorrections extends CreateFrom
 
 		if (DateFrom != null || DateTo != null)
 		{
-			final Timestamp from = (Timestamp)DateFrom;
-			final Timestamp to = (Timestamp)DateTo;
+			final Timestamp from = DateFrom;
+			final Timestamp to = DateTo;
 
 			if (from == null && to != null)
 			{
@@ -176,8 +173,8 @@ public class CreateCorrections extends CreateFrom
 
 		if (DateFrom != null || DateTo != null)
 		{
-			Timestamp from = (Timestamp)DateFrom;
-			Timestamp to = (Timestamp)DateTo;
+			Timestamp from = DateFrom;
+			Timestamp to = DateTo;
 			log.debug("Date From=" + from + ", To=" + to);
 
 			if (from == null && to != null)
@@ -274,6 +271,7 @@ public class CreateCorrections extends CreateFrom
 		return data;
 	}
 
+	@Override
 	public void info()
 	{
 
@@ -300,6 +298,7 @@ public class CreateCorrections extends CreateFrom
 	 * 
 	 * @return true if saved
 	 */
+	@Override
 	public boolean save(final IMiniTable miniTable, final String trxName)
 	{
 		// fixed values
@@ -313,11 +312,11 @@ public class CreateCorrections extends CreateFrom
 
 		final I_C_BPartner_Location payrollLocPO = bPartnerBl.retrieveCommissionToLocation(ctx, invoice.getC_BPartner_ID(), trxName);
 
-		final I_C_BPartner_Location payrollLoc = POWrapper.create(payrollLocPO, I_C_BPartner_Location.class);
+		final I_C_BPartner_Location payrollLoc = InterfaceWrapperHelper.create(payrollLocPO, I_C_BPartner_Location.class);
 
 		final int countryID = payrollLocPO.getC_Location().getC_Country_ID();
 
-		final MRelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
+//		final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ctx, "com_calcline2corrline", trxName);
 
 		for (int i = 0; i < miniTable.getRowCount(); i++)
 		{
@@ -384,8 +383,10 @@ public class CreateCorrections extends CreateFrom
 			plusLine.setDescription(plusDescription);
 			plusLine.saveEx();
 
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
-			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
+			// FIXME: adding explicit relations is not supported anymore
+			throw new UnsupportedOperationException("adding explicit relations is not supported anymore");
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), minusLine.get_ID(), trxName);
+//			MRelation.add(ctx, relType, lineToCorrect.get_ID(), plusLine.get_ID(), trxName);
 
 		} // for all rows
 

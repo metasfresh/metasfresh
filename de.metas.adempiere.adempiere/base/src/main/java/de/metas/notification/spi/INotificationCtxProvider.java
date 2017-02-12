@@ -2,6 +2,8 @@ package de.metas.notification.spi;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
+import com.google.common.base.Optional;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -26,30 +28,11 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 public interface INotificationCtxProvider
 {
-
 	/**
-	 * This method will validate if a given reference is suitable for the context provider.
-	 * It can be implemented for any notification particular case, where extra info about the objects that were to be printed is needed.
+	 * Gets the text message that will get into {@code I_AD_Note} as <code>TextMsg</code>.
 	 * 
 	 * @param referencedRecord
-	 * @return true if the referenceRecord fits the filter, false otherwise
+	 * @return text message or {@link Optional#absent()} if it does not apply.
 	 */
-	boolean appliesFor(ITableRecordReference referencedRecord);
-
-	/**
-	 * The text message that will get into {@code I_AD_Note} as <code>TextMsg</code>
-	 * 
-	 * @param referencedRecord
-	 * @return
-	 */
-	public String getTextMessageOrNull(ITableRecordReference referencedRecord);
-
-	/**
-	 * 
-	 * THis method is created for flagging a context provider as default (to be used in case there is no other more particular context provider for the notification)
-	 * 
-	 * @return true if the context provider was flagged as default, false for the rest of the cases
-	 */
-	public boolean isDefault();
-
+	public Optional<String> getTextMessageIfApplies(ITableRecordReference referencedRecord);
 }

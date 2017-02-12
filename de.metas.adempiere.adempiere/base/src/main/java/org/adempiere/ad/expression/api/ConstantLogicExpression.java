@@ -1,112 +1,131 @@
 package org.adempiere.ad.expression.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
+import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.compiere.util.Evaluatee;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableSet;
+
+@JsonSerialize(using = JsonLogicExpressionSerializer.class)
 public final class ConstantLogicExpression implements ILogicExpression
 {
+	public static final ILogicExpression of(final boolean value)
+	{
+		return value ? TRUE : FALSE;
+	}
+	
+	public static final ILogicExpression TRUE = new ConstantLogicExpression(true);
+	public static final ILogicExpression FALSE = new ConstantLogicExpression(false);
+
 	private final boolean value;
 
-	public ConstantLogicExpression(boolean value)
+	private final String toStringValue;
+	private final String expressionString;
+	private final int hashcode;
+
+	private ConstantLogicExpression(final boolean value)
 	{
+		super();
 		this.value = value;
+		expressionString = value ? "1=1" : "1=0";
+		toStringValue = value ? "TRUE" : "FALSE";
+		hashcode = Objects.hash(31, value);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (value ? 1231 : 1237);
-		return result;
+		return hashcode;
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
+		}
 		if (obj == null)
+		{
 			return false;
+		}
 		if (getClass() != obj.getClass())
+		{
 			return false;
-		ConstantLogicExpression other = (ConstantLogicExpression)obj;
-		if (value != other.value)
-			return false;
+		}
+		final ConstantLogicExpression other = (ConstantLogicExpression)obj;
+		return value == other.value;
+	}
+
+	@Override
+	public boolean isConstant()
+	{
 		return true;
 	}
 
-	public boolean booleanValue()
+	@Override
+	public boolean constantValue()
 	{
 		return value;
+	}
+
+	@Override
+	public ILogicExpression toConstantExpression(final boolean constantValue)
+	{
+		if (constantValue != value)
+		{
+			throw new ExpressionCompileException("Cannot convert a constant expression to a constant expression of opposite value"
+					+ "\n Expression: " + this
+					+ "\n Target value: " + constantValue);
+		}
+		return this;
 	}
 
 	@Override
 	public String getExpressionString()
 	{
-		return null;
+		return expressionString;
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return Collections.emptyList();
+		return ImmutableSet.of();
 	}
 
 	@Override
 	public String toString()
 	{
-		return String.valueOf(value);
+		return toStringValue;
 	}
 
 	@Override
 	public String getFormatedExpressionString()
 	{
-		return null;
+		return expressionString;
 	}
 
 	@Override
-	public Boolean evaluate(Evaluatee ctx, boolean ignoreUnparsable)
+	public Boolean evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
 	{
 		return value;
 	}
 
 	@Override
-	public Boolean evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound)
+	public Boolean evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
 	{
 		return value;
 	}
 
 	@Override
-	public final IExpressionEvaluator<ILogicExpression, Boolean> getEvaluator()
+	public LogicExpressionResult evaluateToResult(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
-		return LogicExpressionEvaluator.instance;
+		return value ? LogicExpressionResult.TRUE : LogicExpressionResult.FALSE;
 	}
 }

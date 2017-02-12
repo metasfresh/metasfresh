@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS KPI_Scrap_Worst_Numbers (IN DateStart Date, IN DateFinish Date);
-CREATE OR REPLACE FUNCTION KPI_Scrap_Worst_Numbers (IN DateStart Date, IN DateFinish Date)
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Scrap_Worst_Numbers (IN DateStart Date, IN DateFinish Date);
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Scrap_Worst_Numbers (IN DateStart Date, IN DateFinish Date)
 RETURNS TABLE
 (
 DocumentNo character varying,

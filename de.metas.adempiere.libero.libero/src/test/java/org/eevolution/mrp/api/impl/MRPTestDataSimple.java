@@ -1,5 +1,7 @@
 package org.eevolution.mrp.api.impl;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -10,12 +12,12 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +43,7 @@ import org.eevolution.model.X_PP_Product_Planning;
 
 /**
  * Simple MRP master data definition.
- * 
+ *
  * @author tsa
  *
  */
@@ -54,7 +56,7 @@ public class MRPTestDataSimple
 	public I_C_UOM uomKg;
 	public I_C_UOM uomEach;
 	public I_M_Shipper shipperDefault;
-	
+
 	//
 	// Planning segments: Plants, Warehouses
 	public I_AD_Org adOrg01;
@@ -80,7 +82,7 @@ public class MRPTestDataSimple
 
 	/**
 	 * Distribution network (standard case, i.e. default).
-	 * 
+	 *
 	 * @see #createDistributionNetworks()
 	 */
 	public I_DD_NetworkDistribution ddNetwork;
@@ -155,6 +157,12 @@ public class MRPTestDataSimple
 					.setQtyBOM(1)
 					.endLine()
 				.build();
+
+		// refresh pTomato and pOnion because now that they are part of a BOM, there LowLevel value has changed from 0 to 1
+		// as of now this is done via PP_Product_BOMLine.updateProductLowestLevelCode
+		InterfaceWrapperHelper.refresh(pTomato);
+		InterfaceWrapperHelper.refresh(pOnion);
+
 		//@formatter:off
 	}
 
@@ -178,13 +186,13 @@ public class MRPTestDataSimple
 
 	/**
 	 * Creates the standard product plannings.
-	 * 
+	 *
 	 * NOTE: this method is not called by default!
 	 */
 	public void createStandardProductPlannings()
 	{
 		Check.assume(!_createStandardProductPlannings_Called, "createStandardProductPlannings() not called before");
-		
+
 		// Product Planning: Salad_2xTomato_1xOnion, Picking
 		// => grab it from plant01
 		helper.newProductPlanning()

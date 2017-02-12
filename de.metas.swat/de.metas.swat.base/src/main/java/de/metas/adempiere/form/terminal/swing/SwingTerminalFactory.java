@@ -13,18 +13,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Canvas;
 import java.awt.Component;
@@ -33,8 +32,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.management.ObjectName;
 import javax.swing.AbstractButton;
@@ -54,6 +51,7 @@ import org.compiere.apps.AppsAction;
 import org.compiere.swing.CButton;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.IClientUI;
@@ -94,6 +92,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.jmx.JMXSwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.adempiere.form.terminal.table.swing.SwingTerminalTable2;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -190,7 +189,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalButtonGroup<T> buttonGroup = new SwingTerminalButtonGroup<T>(this);
 
-		addToDisposableComponents(buttonGroup);
+		// addToDisposableComponents(buttonGroup); done within the constructor
 		return buttonGroup;
 	}
 
@@ -318,7 +317,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalContainer container = new SwingTerminalContainer(this, constraints);
 
-		addToDisposableComponents(container);
+		// addToDisposableComponents(container); already called by the constructor
 		return container;
 	}
 
@@ -327,7 +326,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalContainer container = new SwingTerminalContainer(this, layoutConstraints, colConstraints);
 
-		addToDisposableComponents(container);
+		// addToDisposableComponents(container); already called by the constructor
 		return container;
 	}
 
@@ -336,7 +335,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalContainer container = new SwingTerminalContainer(this, layoutConstraints, colConstraints, rowConstraints);
 
-		addToDisposableComponents(container);
+		// addToDisposableComponents(container); already called by the constructor
 		return container;
 	}
 
@@ -354,7 +353,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingListTerminalContainer container = new SwingListTerminalContainer(getTerminalContext(), constraints);
 
-		addToDisposableComponents(container);
+		// addToDisposableComponents(container); already done by constructor
 		return container;
 	}
 
@@ -372,7 +371,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalLabel terminalLabel = new SwingTerminalLabel(getTerminalContext(), label, translate);
 
-		addToDisposableComponents(terminalLabel);
+		// addToDisposableComponents(terminalLabel); already done within the constructor
 		return terminalLabel;
 	}
 
@@ -413,7 +412,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final de.metas.adempiere.form.terminal.swing.SwingKeyLayoutPanel keyLayoutPanel = new de.metas.adempiere.form.terminal.swing.SwingKeyLayoutPanel(getTerminalContext(), keylayout, listener);
 
-		addToDisposableComponents(keyLayoutPanel);
+		// addToDisposableComponents(keyLayoutPanel); already done within the constructor
 		return keyLayoutPanel;
 	}
 
@@ -439,7 +438,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalScrollPane scrollPane = new SwingTerminalScrollPane(content);
 
-		addToDisposableComponents(scrollPane);
+		// addToDisposableComponents(scrollPane); done within the constructor
 		return scrollPane;
 	}
 
@@ -497,7 +496,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalKeyDialog dialog = new SwingTerminalKeyDialog(field);
 
-		addToDisposableComponents(dialog);
+		// addToDisposableComponents(dialog); already done within the constructor
 		return dialog;
 	}
 
@@ -506,7 +505,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final TerminalTable terminalTable = new TerminalTable(getTerminalContext());
 
-		addToDisposableComponents(terminalTable);
+		// addToDisposableComponents(terminalTable); already done within the constructor
 		return terminalTable;
 	}
 
@@ -526,7 +525,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 		clientUI.info(windowNo, title, message);
 	}
 
-	private String toString(final Exception e)
+	private String toString(final Throwable e)
 	{
 		Check.assumeNotNull(e, "exception not null");
 
@@ -559,7 +558,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 				exceptionStr = e.toString();
 			}
 
-			SwingTerminalFactory.logger.warn(exceptionStr, e);
+			logger.warn(exceptionStr, e);
 			msg.append(exceptionStr);
 		}
 
@@ -567,14 +566,14 @@ public class SwingTerminalFactory implements ITerminalFactory
 	}
 
 	@Override
-	public void showWarning(final IComponent component, final String title, final Exception e)
+	public void showWarning(final IComponent component, final String title, final Throwable e)
 	{
 		final String message = null;
 		showWarning(component, title, message, e);
 	}
 
 	@Override
-	public void showWarning(final IComponent component, final String title, final String message, final Exception e)
+	public void showWarning(final IComponent component, final String title, final String message, final Throwable e)
 	{
 		final StringBuilder msg = new StringBuilder();
 		if (e != null)
@@ -676,7 +675,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalComponentWrapper componentWrapper = new SwingTerminalComponentWrapper(getTerminalContext(), (Component)component);
 
-		addToDisposableComponents(componentWrapper);
+		// addToDisposableComponents(componentWrapper); already done in the constructor
 		return componentWrapper;
 	}
 
@@ -686,7 +685,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 		final JPanel containerSwing = SwingTerminalContainer.castPanelComponent(container);
 		final SwingTerminalContainer terminalContainer = new SwingTerminalContainer(this, containerSwing);
 
-		addToDisposableComponents(terminalContainer);
+		// addToDisposableComponents(terminalContainer); already called by the constructor
 		return terminalContainer;
 	}
 
@@ -704,7 +703,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 	{
 		final SwingTerminalTextPane textPane = new SwingTerminalTextPane(getTerminalContext(), text);
 
-		addToDisposableComponents(textPane);
+		// addToDisposableComponents(textPane); already done within the constructor
 		return textPane;
 	}
 
@@ -718,12 +717,18 @@ public class SwingTerminalFactory implements ITerminalFactory
 	}
 
 	@Override
-	public ITerminalDialog createModalDialog(final IComponent parent, final String title, final IComponent content)
+	public ITerminalDialog createModalDialog(
+			final IComponent parent,
+			final String title,
+			final IComponent content)
 	{
 		final SwingTerminalDialog dialog = new SwingTerminalDialog(this, parent, content);
 		dialog.setTitle(title);
 
+		// only register if it does not maintain its own references, because otherwise, we would add 'dialog' to its own contextReferences which it just created in its constructor.
+		// that would lead to a stack overflow on dispose. Also check out the SwingTerminalDialog constructor for details.
 		addToDisposableComponents(dialog);
+
 		return dialog;
 	}
 
@@ -747,7 +752,7 @@ public class SwingTerminalFactory implements ITerminalFactory
 			panel = new SwingPropertiesPanel(getTerminalContext(), containerConstraints);
 		}
 
-		addToDisposableComponents(panel);
+		// addToDisposableComponents(panel); already done within the constructor
 		return panel;
 	}
 

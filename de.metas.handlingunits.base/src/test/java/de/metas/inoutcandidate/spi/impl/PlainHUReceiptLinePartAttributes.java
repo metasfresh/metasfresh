@@ -26,7 +26,9 @@ package de.metas.inoutcandidate.spi.impl;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class PlainHUReceiptLinePartAttributes implements IHUReceiptLinePartAttributes
+import de.metas.inout.model.I_M_QualityNote;
+
+public class PlainHUReceiptLinePartAttributes extends HUReceiptLinePartAttributes
 {
 	private String id;
 	private BigDecimal QualityDiscountPercent = BigDecimal.ZERO;
@@ -36,7 +38,6 @@ public class PlainHUReceiptLinePartAttributes implements IHUReceiptLinePartAttri
 
 	public PlainHUReceiptLinePartAttributes()
 	{
-		super();
 		id = UUID.randomUUID().toString();
 	}
 
@@ -106,4 +107,12 @@ public class PlainHUReceiptLinePartAttributes implements IHUReceiptLinePartAttri
 	{
 		AttributeStorageAggregationKey = attributeStorageAggregationKey;
 	}
+
+	@Override
+	public I_M_QualityNote getQualityNote()
+	{
+		// TODO Add tests for the qualityNote logicS
+		return null;
+	}
+
 }

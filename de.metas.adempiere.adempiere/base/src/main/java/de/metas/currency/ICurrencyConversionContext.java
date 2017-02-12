@@ -29,7 +29,7 @@ import java.util.Date;
  * 
  * Implementations of this interface are usually immutable.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ICurrencyConversionContext

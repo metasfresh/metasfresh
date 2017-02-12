@@ -27,7 +27,7 @@ import javax.swing.DefaultListCellRenderer;
 /**
  * A result item of {@link ResultItemSource}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ResultItem

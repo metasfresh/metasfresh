@@ -17,13 +17,12 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
@@ -32,7 +31,8 @@ import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 
@@ -68,7 +68,7 @@ public class MSession extends X_AD_Session
 		// Create New
 		if (session == null && createNew)
 		{
-			session = new MSession (ctx, null);	//	local session
+			session = new MSession (ctx, ITrx.TRXNAME_None);	//	local session
 			if (session.save())
 			{
 				session.updateContext(true); // force=true
@@ -127,7 +127,7 @@ public class MSession extends X_AD_Session
 	 */
 	public static MSession get (Properties ctx, String Remote_Addr, String Remote_Host, String WebSession)
 	{
-		int AD_Session_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
+		final int AD_Session_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
 		MSession session = get(ctx, AD_Session_ID, false);
 		if (session == null)
 		{
@@ -171,9 +171,7 @@ public class MSession extends X_AD_Session
 	}
 
 	/**	Sessions					*/
-	private static CCache<Integer, MSession> s_sessions = Ini.isClient()
-		? new CCache<Integer, MSession>("AD_Session_ID", 1, 0)		//	one client session
-		: new CCache<Integer, MSession>("AD_Session_ID", 30, 0);	//	no time-out
+	private static CCache<Integer, MSession> s_sessions = CCache.newLRUCache(I_AD_Session.Table_Name, 100, 0);
 
 
 	/**************************************************************************
@@ -220,23 +218,21 @@ public class MSession extends X_AD_Session
 	 *	@param ctx context
 	 *	@param Remote_Addr remote address
 	 *	@param Remote_Host remote host
-	 *	@param WebSession web session
+	 *	@param webSessionId web session
 	 *	@param trxName transaction
 	 */
-	public MSession (Properties ctx, String Remote_Addr, String Remote_Host, String WebSession, String trxName)
+	private MSession (Properties ctx, String Remote_Addr, String Remote_Host, String webSessionId, String trxName)
 	{
 		this (ctx, 0, trxName);
 		if (Remote_Addr != null)
 			setRemote_Addr(Remote_Addr);
 		if (Remote_Host != null)
 			setRemote_Host(Remote_Host);
-		if (WebSession != null)
-			setWebSession(WebSession);
-		setDescription(Adempiere.getMainVersion() + "_"
-				+ Adempiere.getDateVersion() + " "
-				+ Adempiere.getImplementationVersion());
-		setAD_Role_ID(Env.getContextAsInt(ctx, "#AD_Role_ID"));
-		setLoginDate(Env.getContextAsDate(ctx, "#Date"));
+		if (webSessionId != null)
+			setWebSession(webSessionId);
+		setDescription(Adempiere.getMainVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
+		setAD_Role_ID(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Role_ID));
+		setLoginDate(Env.getContextAsDate(ctx, Env.CTXNAME_Date));
 	}	//	MSession
 
 	/**
@@ -267,14 +263,14 @@ public class MSession extends X_AD_Session
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MSession[")
+		final StringBuilder sb = new StringBuilder("MSession[")
 			.append(getAD_Session_ID())
-			.append(",AD_User_ID=").append(getCreatedBy())
+			.append(",AD_User_ID=").append(getAD_User_ID())
 			.append(",").append(getCreated())
 			.append(",Remote=").append(getRemote_Addr());
-		String s = getRemote_Host();
-		if (s != null && s.length() > 0)
-			sb.append(",").append(s);
+		final String removeHost = getRemote_Host();
+		if (removeHost != null && removeHost.length() > 0)
+			sb.append(",").append(removeHost);
 
 		// metas: display also exported attributes
 		for (int i = 0, cols = get_ColumnCount(); i < cols; i++)
@@ -303,30 +299,24 @@ public class MSession extends X_AD_Session
 	 */
 	public void logout()
 	{
-		final boolean processedOld = isProcessed();
+		final boolean alreadyProcessed = isProcessed();
 
 		// Fire BeforeLogout event only if current session is not yet closes(i.e. processed)
-		if (!processedOld)
+		if (!alreadyProcessed)
 		{
 			ModelValidationEngine.get().fireBeforeLogout(this);
 		}
 
 		setProcessed(true);
 		save();
-		s_sessions.remove(new Integer(getAD_Session_ID()));
-		log.info(TimeUtil.formatElapsed(getCreated(), getUpdated()));
+		s_sessions.remove(getAD_Session_ID());
 
 		// Fire AfterLogout event only if current session was closed right now
-		if (!processedOld && isProcessed())
+		if (!alreadyProcessed && isProcessed())
 		{
 			ModelValidationEngine.get().fireAfterLogout(this);
 		}
 	}	//	logout
-
-	public void logMigration(PO po, POInfo pinfo, String event)
-	{
-		Services.get(IMigrationLogger.class).logMigration(this, po, pinfo, event);
-	}
 
 	/**
 	 * Set Login User.
@@ -338,6 +328,16 @@ public class MSession extends X_AD_Session
 	{
 		set_ValueNoCheck(COLUMNNAME_CreatedBy, AD_User_ID);
 	}
+	
+	public static void setAD_User_ID_AndSave(final I_AD_Session session, final int AD_User_ID)
+	{
+		final MSession sessionPO = LegacyAdapters.convertToPO(session);
+		if (sessionPO.getAD_User_ID() != AD_User_ID)
+		{
+			sessionPO.setAD_User_ID(AD_User_ID);
+			sessionPO.saveEx();
+		}
+	}
 
 	/**
 	 * @return Logged in user (i.e. CreatedBy)
@@ -348,8 +348,21 @@ public class MSession extends X_AD_Session
 		return getCreatedBy();
 	}
 
-
 	public static final String CTX_Prefix = "#AD_Session.";
+
+	private static final List<String> CTX_IgnoredColumnNames = ImmutableList.of(
+			COLUMNNAME_AD_Session_ID // this one will be exported particularly
+			, COLUMNNAME_AD_Client_ID
+			, COLUMNNAME_AD_Org_ID
+			, COLUMNNAME_Created
+			, COLUMNNAME_CreatedBy
+			, COLUMNNAME_Updated
+			, COLUMNNAME_UpdatedBy
+			, COLUMNNAME_IsActive
+			, COLUMNNAME_Processed
+			, COLUMNNAME_Remote_Addr
+			, COLUMNNAME_Remote_Host
+			, COLUMNNAME_WebSession);
 
 	/**
 	 * Export attributes from session to context.
@@ -420,27 +433,13 @@ public class MSession extends X_AD_Session
 			return false;
 		}
 
-		final List<String> ignoredColumnNames = Arrays.asList(
-				COLUMNNAME_AD_Session_ID // this one will be exported particularly
-				, COLUMNNAME_AD_Client_ID
-				, COLUMNNAME_AD_Org_ID
-				, COLUMNNAME_Created
-				, COLUMNNAME_CreatedBy
-				, COLUMNNAME_Updated
-				, COLUMNNAME_UpdatedBy
-				, COLUMNNAME_IsActive
-				, COLUMNNAME_Processed
-				, COLUMNNAME_Remote_Addr
-				, COLUMNNAME_Remote_Host
-				, COLUMNNAME_WebSession);
-
 		final String columnName = get_ColumnName(columnIndex);
 		if(columnName == null)
 		{
 			return false;
 		}
 
-		if(ignoredColumnNames.contains(columnName))
+		if(CTX_IgnoredColumnNames.contains(columnName))
 		{
 			return false;
 		}

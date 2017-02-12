@@ -7,20 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.SvrProcess;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -33,6 +30,10 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -57,8 +58,8 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
  */
 
 public class M_Material_Tracking_Report_Line_Create
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 	@Override
 	protected String doIt() throws Exception
@@ -163,7 +164,7 @@ public class M_Material_Tracking_Report_Line_Create
 				|| materialTracking.getM_Material_Tracking_ID() != materialTrackingAware.getM_Material_Tracking_ID())
 		{
 			// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
-			ILoggable.THREADLOCAL.getLoggable().addLog(
+			Loggables.get().addLog(
 					"Skipping {} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {}",
 					materialTrackingAware, materialTracking);
 			return false;
@@ -228,12 +229,12 @@ public class M_Material_Tracking_Report_Line_Create
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		// This process is just for unprocessed reports
-		final I_M_Material_Tracking_Report report = InterfaceWrapperHelper.create(gridTab, I_M_Material_Tracking_Report.class);
+		final I_M_Material_Tracking_Report report = context.getSelectedModel(I_M_Material_Tracking_Report.class);
 
-		return !report.isProcessed();
+		return ProcessPreconditionsResolution.acceptIf(!report.isProcessed());
 	}
 
 }

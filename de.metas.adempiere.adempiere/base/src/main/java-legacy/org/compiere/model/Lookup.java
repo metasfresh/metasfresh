@@ -18,18 +18,22 @@ package org.compiere.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Base Class for MLookup, MLocator.
@@ -478,15 +482,10 @@ public abstract class Lookup extends AbstractListModel
 	{
 		return "";
 	}   //  getValidation
-
-	/**
-	 * Checks if the lookup is immutable. An immutable lookup is a lookup which does not depend on any context variables
-	 * 
-	 * @return true if the lookup is immutable
-	 */
-	public boolean isImmutable()
+	
+	public boolean hasValidation()
 	{
-		return true;
+		return !Check.isEmpty(getValidation(), true);
 	}
 
 	/**
@@ -603,9 +602,9 @@ public abstract class Lookup extends AbstractListModel
 	 * 
 	 * @return list of parameter names
 	 */
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return Collections.emptyList();
+		return ImmutableSet.of();
 	}
 
 	/**

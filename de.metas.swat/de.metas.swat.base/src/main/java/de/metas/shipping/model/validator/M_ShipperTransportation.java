@@ -28,7 +28,9 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 
+import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationDocActionCustomizer;
 
 @Validator(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
@@ -38,5 +40,11 @@ public class M_ShipperTransportation
 	{
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.shipping.callout.M_ShipperTransportation());
+	}
+	
+	@Init
+	public void setupDocActionCustomizer()
+	{
+		Services.get(IDocActionOptionsBL.class).setDocActionOptionsCustomizer(I_M_ShipperTransportation.Table_Name, ShipperTransportationDocActionCustomizer.instance);
 	}
 }

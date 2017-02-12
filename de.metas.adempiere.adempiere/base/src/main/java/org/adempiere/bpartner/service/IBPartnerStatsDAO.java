@@ -19,11 +19,11 @@ import org.compiere.model.I_C_BPartner_Stats;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,12 +32,14 @@ public interface IBPartnerStatsDAO extends ISingletonService
 {
 
 	/**
-	 * Retrieve the {@link I_C_BPartner_Stats} entry for the given partner if it exists and creates a new one if it doesn't exist
+	 * Retrieve the {@link I_C_BPartner_Stats} entry for the given partner if it exists and creates a new one if it doesn't exist.
+	 * Note: Do not return the {@link I_C_BPartner_Stats} directly. This class shall be the only one accessing that table.
+	 * Instead, create a new IBPartnerStats object based on the found bp stats and return it.
 	 * 
 	 * @param partner
-	 * @return the {@link I_C_BPartner_Stats} entry
+	 * @return the {@link IBPartnerStats} object
 	 */
-	I_C_BPartner_Stats retrieveBPartnerStats(I_C_BPartner partner);
+	IBPartnerStats retrieveBPartnerStats(I_C_BPartner partner);
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql
@@ -46,7 +48,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal retrieveTotalOpenBalance(I_C_BPartner_Stats stats);
+	BigDecimal retrieveTotalOpenBalance(IBPartnerStats stats);
 
 	/**
 	 * Retrieve the SOCreditUsed value for the given stats using the old legacy sql
@@ -55,7 +57,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal retrieveSOCreditUsed(I_C_BPartner_Stats stats);
+	void updateSOCreditUsed(IBPartnerStats stats);
 
 	/**
 	 * Retrieve the ActualLifeTimeValue for the given stats using the old legacy sql
@@ -64,6 +66,34 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal retrieveActualLifeTimeValue(I_C_BPartner_Stats stat);
+	void updateActualLifeTimeValue(IBPartnerStats stats);
 
+	/**
+	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
+	 * 
+	 * @param stats
+	 */
+	void setSOCreditStatus(IBPartnerStats stats, String soCreditStatus);
+
+	/**
+	 * Retrieve the bpartner for which the bpStats object was made
+	 * 
+	 * @param bpStats
+	 * @return
+	 */
+	I_C_BPartner retrieveC_BPartner(IBPartnerStats bpStats);
+
+	/**
+	 * Update the SOCreditStatus based on the legacy sql
+	 * 
+	 * @param bpStats
+	 */
+	void updateSOCreditStatus(IBPartnerStats bpStats);
+
+	/**
+	 * Update the TotalOpenBalance based on the legacy sql
+	 * 
+	 * @param bpStats
+	 */
+	void updateTotalOpenBalance(IBPartnerStats bpStats);
 }

@@ -13,11 +13,11 @@ package de.metas.adempiere.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -43,6 +44,8 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -64,6 +67,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
 
 public class OrderLineBL implements IOrderLineBL
@@ -76,6 +80,8 @@ public class OrderLineBL implements IOrderLineBL
 
 	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
+
+	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
 
 	@Override
 	public void setPricesIfNotIgnored(final Properties ctx,
@@ -132,7 +138,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Set PriceEntered
-		if (orderLine.getPriceEntered().signum() == 0 && !orderLine.isManualPrice()) // task 06727
+		if (orderLine.getPriceEntered().signum() == 0 && !orderLine.isManualPrice())  // task 06727
 		{
 			// priceEntered is not set, so set it from the PL
 			orderLine.setPriceEntered(pricingResult.getPriceStd());
@@ -140,7 +146,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Discount
-		if (orderLine.getDiscount().signum() == 0 && !orderLine.isManualDiscount())  // task 06727
+		if (orderLine.getDiscount().signum() == 0 && !orderLine.isManualDiscount())   // task 06727
 		{
 			// pp.getDiscount is the discount between priceList and priceStd
 			// -> useless for us
@@ -173,6 +179,12 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final int taxId = ol.getC_Tax_ID();
+		if (taxId <= 0)
+		{
+			ol.setTaxAmtInfo(BigDecimal.ZERO);
+			return;
+		}
+
 		final boolean taxIncluded = isTaxIncluded(ol);
 		final BigDecimal lineAmout = ol.getLineNetAmt();
 		final int taxPrecision = getPrecision(ol);
@@ -341,8 +353,7 @@ public class OrderLineBL implements IOrderLineBL
 	private IEditablePricingContext createPricingContext(
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final int priceListId,
-			final BigDecimal qty
-			)
+			final BigDecimal qty)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
@@ -365,7 +376,7 @@ public class OrderLineBL implements IOrderLineBL
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
 				productId,
 				bPartnerId,
-				ol.getPrice_UOM_ID(), // task 06942
+				ol.getPrice_UOM_ID(),  // task 06942
 				qty,
 				isSOTrx);
 		pricingCtx.setPriceDate(date);
@@ -465,7 +476,7 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
 		}
-		logger.info("LineNetAmt=" + lineNetAmt);
+		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);
 
 	}
@@ -768,6 +779,59 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getPrecision(order);
+	}
+
+	@Override
+	public boolean isAllowedCounterLineCopy(final org.compiere.model.I_C_OrderLine fromLine)
+	{
+		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(fromLine, de.metas.interfaces.I_C_OrderLine.class);
+
+		if (ol.isPackagingMaterial())
+		{
+			// DO not copy the line if it's packing material. The packaging lines will be created later
+			return false;
+		}
+		
+		return true;
+	}
+
+	@Override
+	public void copyOrderLineCounter(final org.compiere.model.I_C_OrderLine line, final org.compiere.model.I_C_OrderLine fromLine)
+	{
+		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(fromLine, de.metas.interfaces.I_C_OrderLine.class);
+
+		if (ol.isPackagingMaterial())
+		{
+			// do nothing! the packaging lines will be created later
+			return;
+		}
+
+		// link the line with the one from the counter document
+		line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
+		
+		if (line.getM_Product_ID() > 0)      // task 09700
+		{
+			final IProductDAO productDAO = Services.get(IProductDAO.class);
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			final I_AD_Org org = line.getAD_Org();
+			final org.compiere.model.I_M_Product lineProduct = line.getM_Product();
+
+			if (lineProduct.getAD_Org_ID() != 0)
+			{
+				// task 09700 the product from the original order is org specific, so we need to substitute it with the product from the counter-org.
+				final org.compiere.model.I_M_Product counterProduct = productDAO.retrieveMappedProductOrNull(lineProduct, org);
+				if (counterProduct == null)
+				{
+					final String msg = msgBL.getMsg(InterfaceWrapperHelper.getCtx(line),
+							MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
+							new Object[] { lineProduct.getValue(), lineProduct.getAD_Org().getName(), org.getName() });
+					throw new AdempiereException(msg);
+				}
+				line.setM_Product(counterProduct);
+			}
+		}
+
 	}
 
 }

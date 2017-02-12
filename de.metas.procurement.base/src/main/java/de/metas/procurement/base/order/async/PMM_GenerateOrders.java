@@ -40,7 +40,7 @@ import de.metas.procurement.base.order.impl.OrdersGenerator;
 /**
  * Generates purchase orders from {@link I_PMM_PurchaseCandidate} by invoking {@link OrdersGenerator}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PMM_GenerateOrders extends WorkpackageProcessorAdapter

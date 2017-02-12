@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Font;
 
@@ -31,6 +30,12 @@ import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 
+/**
+ * Whatever is created by an implementor will be added to the terminal context's disposable components.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface ITerminalFactory
 {
 	String TITLE_INTERNAL_ERROR = "InternalError";
@@ -93,8 +98,21 @@ public interface ITerminalFactory
 
 	ITerminalCheckboxField createTerminalCheckbox(String name);
 
+	/**
+	 * Create a panel for the given <code>keylayout</code>.
+	 *
+	 * @param keylayout
+	 * @param listener
+	 * @return
+	 */
 	ITerminalKeyPanel createTerminalKeyPanel(IKeyLayout keylayout, ITerminalKeyListener listener);
 
+	/**
+	 * Analog to {@link #createTerminalKeyPanel(IKeyLayout, ITerminalKeyListener)}, but with a {@link NullTerminalKeyListener}.
+	 *
+	 * @param keylayout
+	 * @return
+	 */
 	ITerminalKeyPanel createTerminalKeyPanel(IKeyLayout keylayout);
 
 	ITerminalScrollPane createScrollPane(IComponent content);
@@ -115,9 +133,9 @@ public interface ITerminalFactory
 
 	void showInfo(IComponent component, String title, String message);
 
-	void showWarning(IComponent component, String title, Exception e);
+	void showWarning(IComponent component, String title, Throwable e);
 
-	void showWarning(IComponent component, String title, String message, Exception e);
+	void showWarning(IComponent component, String title, String message, Throwable e);
 
 	/**
 	 * Starts asking user a question.
@@ -166,6 +184,14 @@ public interface ITerminalFactory
 	 */
 	ITerminalNumericField createTerminalNumericField(String name, int displayType, float fontSize, boolean withButtons, boolean withLabel, String constraints);
 
+	/**
+	 * Creates a modal dialog for the given <code>content</code> component.
+	 * <p>
+	 * <b>IMPORTANT:</b> you will most probably want to put this invocation into a <code>try-with-resources</code> block with {@link ITerminalContext#newReferences()},
+	 * and the given <code>content</code> as well as its model shall probably also be within that same block.
+	 *
+	 * @return
+	 */
 	ITerminalDialog createModalDialog(IComponent parent, String title, IComponent content);
 
 	IPropertiesPanel createPropertiesPanel();

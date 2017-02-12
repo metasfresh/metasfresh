@@ -1,41 +1,22 @@
 package de.metas.adempiere.report.jasper.server;
 
-/*
- * #%L
- * de.metas.report.jasper.server.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Map;
+import org.apache.poi.ss.SpreadsheetVersion;
 
 import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.export.Cut;
 import net.sf.jasperreports.engine.export.CutsInfo;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
-
-import org.apache.poi.ss.SpreadsheetVersion;
+import net.sf.jasperreports.export.XlsReportConfiguration;
 
 /**
- * Extension of {@link JRXlsExporter} which implements our custom features (e.g. {@link #PROPERTY_COLUMN_HIDDEN}).
- * 
+ * Extension of {@link JRXlsExporter} which implements our custom features. Mostly that's implementing {@link #PROPERTY_COLUMN_HIDDEN}.<br>
+ * We do this by firstly, "registering" out own {@link net.sf.jasperreports.engine.export.JRXlsExporterNature} subclass,<br>
+ * and by secondly setting individual columns to be hidden, when the sheet is created.
+ *
+ *
+ * Note that we also set some excel parameters to the way we need them.
+ *
  * @author tsa
  *
  */
@@ -43,7 +24,7 @@ public class MetasJRXlsExporter extends JRXlsExporter
 {
 	/**
 	 * This property indicates whether the column content is hidden.
-	 * 
+	 *
 	 * The property could be set to any element and in case at least one element has this property enabled, the entire column will be hidden.
 	 */
 	public static final String PROPERTY_COLUMN_HIDDEN = JRPropertiesUtil.PROPERTY_PREFIX + "export.xls.column.hidden";
@@ -60,6 +41,8 @@ public class MetasJRXlsExporter extends JRXlsExporter
 	 */
 	private final void setStandardParameters()
 	{
+		// TODO: use the modern API, but note that we can't mix calls to this deprecated API with calls to the new one.
+
 		// Set a password to protect the locked cells.
 		// NOTE: if no password is set, the cells which are marked as locked won't be locked.
 		// NOTE2: instead of using a random password, it's better to have a well known one because we are setting the password only to protect the cells from writting and NOT to secure the document.
@@ -78,18 +61,28 @@ public class MetasJRXlsExporter extends JRXlsExporter
 	}
 
 	@Override
-	protected void setParameters()
+	protected void initReport()
 	{
-		super.setParameters();
+		super.initReport();
+
+		final XlsReportConfiguration configuration = getCurrentItemConfiguration();
 
 		// Exporter shall use our "nature" in order to have all properties set to Cuts.
-		nature = new MetasJRXlsExporterNature(jasperReportsContext, filter, isIgnoreGraphics, isIgnorePageMargins);
+		nature = new MetasJRXlsExporterNature(jasperReportsContext, filter,
+				configuration.isIgnoreGraphics(),
+				configuration.isIgnorePageMargins());
 	}
 
+	/**
+	 * First calls the super class's method.<br>
+	 * Then sets the columns to be hidden whose original jasper elements were annotated to be hidden with the {@link MetasJRXlsExporter#PROPERTY_COLUMN_HIDDEN} property.
+	 * <p>
+	 * See {@link MetasJRXlsExporterNature} for how that property gets from the jasper elements to the given <code>xCuts</code> instance.
+	 */
 	@Override
-	protected void updateColumns(final CutsInfo xCuts)
+	protected void createSheet(CutsInfo xCuts, SheetInfo sheetInfo)
 	{
-		super.updateColumns(xCuts);
+		super.createSheet(xCuts, sheetInfo);
 
 		//
 		// Iterate all xCuts (i.e. columns) and hide those which were marked to be hidden
@@ -109,9 +102,8 @@ public class MetasJRXlsExporter extends JRXlsExporter
 	 */
 	private boolean isHideColumn(final Cut xCut)
 	{
-		final Map<String, Object> cutProperties = xCut.getPropertiesMap();
-		final boolean hidden = cutProperties.containsKey(PROPERTY_COLUMN_HIDDEN)
-				&& (Boolean)cutProperties.get(PROPERTY_COLUMN_HIDDEN);
+		final boolean hidden = xCut.hasProperty(PROPERTY_COLUMN_HIDDEN)
+				&& (Boolean)xCut.getProperty(PROPERTY_COLUMN_HIDDEN);
 		return hidden;
 	}
 }

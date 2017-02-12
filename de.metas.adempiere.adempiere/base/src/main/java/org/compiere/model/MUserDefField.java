@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
 
 /**
  * Window Tab Field Customization
@@ -56,21 +57,25 @@ public class MUserDefField extends X_AD_UserDef_Field
 		
 		final String name = getName();
 		if (!Check.isEmpty(name) && name.length() > 1)
-			vo.Header = name;
+			vo.setHeader(name);
 		if (!Check.isEmpty(getDescription()))
-			vo.Description = getDescription();
+			vo.setDescription(getDescription());
 		if (!Check.isEmpty(getHelp()))
-			vo.Help = getHelp();
+			vo.setHelp(getHelp());
 		//
 		vo.setIsDisplayed(this.isDisplayed());
 		if (this.getIsReadOnly() != null)
-			vo.IsReadOnly = "Y".equals(this.getIsReadOnly());
+		{
+			vo.setIsReadOnly(DisplayType.toBoolean(getIsReadOnly()));
+		}
 		if (this.getIsSameLine() != null)
 		{
 			layoutConstraints.setSameLine("Y".equals(this.getIsSameLine()));
 		}
 		if (this.getIsUpdateable() != null)
-			vo.IsUpdateable = "Y".equals(this.getIsUpdateable());
+		{
+			vo.setIsUpdateable(DisplayType.toBoolean(getIsUpdateable()));
+		}
 		if (this.getIsMandatory() != null)
 			vo.setMandatory("Y".equals(this.getIsMandatory()));
 		if (this.getDisplayLength() > 0)

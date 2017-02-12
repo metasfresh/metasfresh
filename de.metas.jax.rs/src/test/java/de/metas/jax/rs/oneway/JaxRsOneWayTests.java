@@ -55,7 +55,7 @@ import de.metas.jax.rs.TestPojo;
 import de.metas.jax.rs.testService2.ITestService2;
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class JaxRsOneWayTests
 {

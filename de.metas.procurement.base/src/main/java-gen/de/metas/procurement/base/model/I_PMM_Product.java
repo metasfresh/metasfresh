@@ -185,7 +185,7 @@ public interface I_PMM_Product
 	 * Set Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
@@ -194,7 +194,7 @@ public interface I_PMM_Product
 	 * Get Packvorschrift-Produkt Zuordnung.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_PI_Item_Product_ID();
@@ -343,8 +343,10 @@ public interface I_PMM_Product
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProductValue (java.lang.String ProductValue);
 
 	/**
@@ -353,14 +355,43 @@ public interface I_PMM_Product
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getProductValue();
 
     /** Column definition for ProductValue */
     public static final org.adempiere.model.ModelColumn<I_PMM_Product, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_PMM_Product, Object>(I_PMM_Product.class, "ProductValue", null);
     /** Column name ProductValue */
     public static final String COLUMNNAME_ProductValue = "ProductValue";
+
+	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Product, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_PMM_Product, Object>(I_PMM_Product.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Aktualisiert.

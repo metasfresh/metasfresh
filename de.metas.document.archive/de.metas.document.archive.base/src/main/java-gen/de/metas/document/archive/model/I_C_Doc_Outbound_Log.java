@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.document.archive.model;
 
 
@@ -32,7 +16,7 @@ public interface I_C_Doc_Outbound_Log
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -114,6 +98,38 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
+	 * Set Geschäftspartnergruppe.
+	 * Geschäftspartnergruppe
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_BP_Group_ID (int C_BP_Group_ID);
+
+	/**
+	 * Get Geschäftspartnergruppe.
+	 * Geschäftspartnergruppe
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_BP_Group_ID();
+
+	public org.compiere.model.I_C_BP_Group getC_BP_Group();
+
+	@Deprecated
+	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
+
+    /** Column definition for C_BP_Group_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group>(I_C_Doc_Outbound_Log.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+    /** Column name C_BP_Group_ID */
+    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -141,35 +157,6 @@ public interface I_C_Doc_Outbound_Log
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner>(I_C_Doc_Outbound_Log.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setC_BP_Group_ID (int C_BP_Group_ID);
-
-	/**
-	 * Get Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_BP_Group_ID();
-
-	public org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
-
-    /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group>(I_C_Doc_Outbound_Log.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-    /** Column name C_BP_Group_ID */
-    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
 	 * Set C_Doc_Outbound_Log.
@@ -380,7 +367,9 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setEMailCount (int EMailCount);
 
 	/**
@@ -423,16 +412,18 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Geschäftspartner erhält EDI-Belege.
+	 * Set Beleg soll per EDI übermittelt werden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
-	 * Get Geschäftspartner erhält EDI-Belege.
+	 * Get Beleg soll per EDI übermittelt werden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -446,12 +437,37 @@ public interface I_C_Doc_Outbound_Log
     public static final String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
 
 	/**
+	 * Set Invoice Email Enabled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice Email Enabled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isInvoiceEmailEnabled();
+
+    /** Column definition for IsInvoiceEmailEnabled */
+    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsInvoiceEmailEnabled = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "IsInvoiceEmailEnabled", null);
+    /** Column name IsInvoiceEmailEnabled */
+    public static final String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+
+	/**
 	 * Set Anz. PDF.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPDFCount (int PDFCount);
 
 	/**
@@ -475,7 +491,9 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPOReference (java.lang.String POReference);
 
 	/**
@@ -499,7 +517,9 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPrintCount (int PrintCount);
 
 	/**

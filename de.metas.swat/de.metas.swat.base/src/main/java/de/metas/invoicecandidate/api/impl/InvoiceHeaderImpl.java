@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,9 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 
 /**
  * Default implementation for {@link IInvoiceHeader}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
@@ -62,7 +62,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 
 	private int C_Order_ID;
 
-	private int M_PricingSystem_ID;
+	private int M_PriceList_ID;
 
 	private int Bill_Location_ID;
 
@@ -98,7 +98,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 				+ "docBaseType=" + docBaseType
 				+ ", dateInvoiced=" + dateInvoiced
 				+ ", AD_Org_ID=" + AD_Org_ID
-				+ ", M_PricingSystem_ID=" + M_PricingSystem_ID
+				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
 				+ ", Bill_BPartner_ID=" + Bill_BPartner_ID
 				+ ", Bill_Location_ID=" + Bill_Location_ID
@@ -147,9 +147,9 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	}
 
 	@Override
-	public int getM_PricingSystem_ID()
+	public int getM_PriceList_ID()
 	{
-		return M_PricingSystem_ID;
+		return M_PriceList_ID;
 	}
 
 	@Override
@@ -217,9 +217,9 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 		C_Order_ID = c_Order_ID;
 	}
 
-	public void setM_PricingSystem_ID(final int m_PricingSystem_ID)
+	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
-		M_PricingSystem_ID = m_PricingSystem_ID;
+		this.M_PriceList_ID = M_PriceList_ID;
 	}
 
 	public void setBill_Location_ID(final int bill_Location_ID)
@@ -321,7 +321,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 
 	/**
 	 * Calculates total net amount by summing up all {@link IInvoiceLineRW#getNetLineAmt()}s.
-	 * 
+	 *
 	 * @return total net amount
 	 */
 	public BigDecimal calculateTotalNetAmtFromLines()

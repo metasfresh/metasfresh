@@ -30,6 +30,7 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabMaxRows;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 
 /**
  * Filter grid records and keep only those who have same value as it has current field.
@@ -98,7 +99,7 @@ public class FilterContextEditorAction extends AbstractContextMenuAction
 		final Object valueDisplay = editor == null ? m_value : editor.getDisplay();
 
 		final MQuery queryInitial = new MQuery(gridTab.getTableName());
-		queryInitial.addRestriction(m_columnName, MQuery.EQUAL, m_value);
+		queryInitial.addRestriction(m_columnName, Operator.EQUAL, m_value);
 		
 		Find find = Find.builder()
 				.setParentFrame(null)

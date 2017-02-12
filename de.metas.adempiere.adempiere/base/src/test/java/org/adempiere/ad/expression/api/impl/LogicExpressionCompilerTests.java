@@ -10,18 +10,17 @@ package org.adempiere.ad.expression.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -69,7 +68,7 @@ public class LogicExpressionCompilerTests
 
 	/**
 	 * Set's <code>adClientId</code> in global context and checks if it was configured correctly
-	 * 
+	 *
 	 * @param adClientId
 	 */
 	private void setClientIdAndCheck(final int adClientId)
@@ -165,5 +164,44 @@ public class LogicExpressionCompilerTests
 
 		// Just to be sure
 		Assert.assertThat("Good and wrong expressions cannot be equal", expressionGood, not(equalTo(expressionWrong)));
+	}
+
+	private void test_compile_ConstantExpressions(final boolean expectedResult, final String expressionStr)
+	{
+		final boolean useOperatorPrecendence = true;
+		final ILogicExpression expression = compile(expressionStr, useOperatorPrecendence);
+
+		Assert.assertNotNull("Not null for " + expressionStr, expression);
+		Assert.assertEquals("Constant expression: " + expression, true, expression.isConstant());
+		Assert.assertEquals("Constant value", expectedResult, expression.constantValue());
+
+		// NOTE: cannot validate the string representations because in some cases they differ with some spaces or some parenthesis.
+		// Assert.assertEquals("ExpressionString", expressionStr, expression.getExpressionString());
+		// Assert.assertEquals("FormatedExpressionString", expressionStr, expression.getFormatedExpressionString());
+		// Assert.assertEquals("toString()", expressionStr, expression.toString());
+	}
+
+	@Test
+	public void test_compile_ConstantExpressions_case01()
+	{
+		test_compile_ConstantExpressions(false, "X=Y");
+		test_compile_ConstantExpressions(true, "X=Y|A=A");
+		test_compile_ConstantExpressions(true, "5=5.0");
+	}
+
+	@Test
+	public void test_compile_ExpressionsWithVariables_ReducedTo_ConstantExpressions()
+	{
+		test_compile_ConstantExpressions(true, "@A@=1|1=1");
+		test_compile_ConstantExpressions(true, "(@A@=1 & @B@=1) & @C@=1 | 1=1");
+	}
+
+	@Test
+	public void test_compile_xor()
+	{
+		final LogicExpression expr = (LogicExpression)compile("@A@=1 ^ @B@=2", true);
+		Assert.assertEquals("Left", "@A@=1", expr.getLeft().getExpressionString());
+		Assert.assertEquals("Right", "@B@=2", expr.getRight().getExpressionString());
+		Assert.assertEquals("Operator", ILogicExpression.LOGIC_OPERATOR_XOR, expr.getOperator());
 	}
 }

@@ -13,15 +13,14 @@ package org.adempiere.ad.trx.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,9 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.exceptions.IllegalTrxRunStateException;
 import org.adempiere.ad.trx.exceptions.OnTrxMissingPolicyNotSupportedException;
 import org.adempiere.ad.trx.exceptions.TrxException;
@@ -65,8 +64,11 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.TrxRunnable2Wrapper;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.logging.LogManager;
 
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
@@ -81,7 +83,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	/**
 	 * Active Transactions Map: trxName to {@link ITrx}
 	 */
-	private final Map<String, ITrx> trxName2trx = new HashMap<String, ITrx>();
+	private final Map<String, ITrx> trxName2trx = new HashMap<>();
 	private final ReentrantLock trxName2trxLock = new ReentrantLock();
 
 	private ITrxNameGenerator trxNameGenerator = DefaultTrxNameGenerator.instance;
@@ -118,7 +120,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	 * @param trxName transaction name; please keep in mind: this is the actual trxName that will be used and not a prefix
 	 * @return create transaction; never return null
 	 */
-	protected abstract ITrx createTrx(final String trxName);
+	protected abstract ITrx createTrx(final String trxName, final boolean autoCommit);
 
 	/**
 	 * Creates and registers {@link ITrx} for given transaction name.
@@ -129,9 +131,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 	 * @return created transaction name
 	 */
 	@VisibleForTesting
-	final ITrx createTrxAndRegister(final String trxName)
+	final ITrx createTrxAndRegister(final String trxName, final boolean autoCommit)
 	{
-		final ITrx trx = createTrx(trxName);
+		final ITrx trx = createTrx(trxName, autoCommit);
 		Check.assumeNotNull(trx, "trx not null"); // shall never happen, but just to make sure the contract is respected
 
 		trxName2trxLock.lock();
@@ -175,9 +177,61 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public ITrxRunConfig createTrxRunConfig(final TrxPropagation trxMode, final OnRunnableSuccess onRunnableSuccess, final OnRunnableFail onRunnableFail)
+	public ITrxRunConfig createTrxRunConfig(TrxPropagation trxPropagation, OnRunnableSuccess onRunnableSuccess, OnRunnableFail onRunnableFail)
 	{
-		return new TrxRunConfig(trxMode, onRunnableSuccess, onRunnableFail);
+		return newTrxRunConfigBuilder()
+				.setTrxPropagation(trxPropagation)
+				.setOnRunnableSuccess(onRunnableSuccess)
+				.setOnRunnableFail(onRunnableFail)
+				.build();
+	}
+
+	@Override
+	public ITrxRunConfigBuilder newTrxRunConfigBuilder()
+	{
+		return new TrxRunConfigBuilder();
+	}
+
+	public static class TrxRunConfigBuilder implements ITrxRunConfigBuilder
+	{
+		private TrxPropagation trxPropagation = TrxPropagation.REQUIRES_NEW;
+		private OnRunnableSuccess onRunnableSuccess = OnRunnableSuccess.COMMIT;
+		private OnRunnableFail onRunnableFail = OnRunnableFail.ASK_RUNNABLE;
+		private boolean autocommit = false;
+
+		@Override
+		public ITrxRunConfigBuilder setAutoCommit(boolean autoCommit)
+		{
+			this.autocommit = autoCommit;
+			return this;
+		}
+
+		@Override
+		public ITrxRunConfigBuilder setTrxPropagation(TrxPropagation trxPropagation)
+		{
+			this.trxPropagation = trxPropagation;
+			return this;
+		}
+
+		@Override
+		public ITrxRunConfigBuilder setOnRunnableSuccess(OnRunnableSuccess onRunnableSuccess)
+		{
+			this.onRunnableSuccess = onRunnableSuccess;
+			return this;
+		}
+
+		@Override
+		public ITrxRunConfigBuilder setOnRunnableFail(OnRunnableFail onRunnableFail)
+		{
+			this.onRunnableFail = onRunnableFail;
+			return this;
+		}
+
+		@Override
+		public ITrxRunConfig build()
+		{
+			return new TrxRunConfig(trxPropagation, onRunnableSuccess, onRunnableFail, autocommit);
+		}
 	}
 
 	@Override
@@ -211,16 +265,22 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public final ITrx get(final String trxName, final boolean createNew)
 	{
-		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ?
-				OnTrxMissingPolicy.CreateNew
+		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ? OnTrxMissingPolicy.CreateNew
 				: OnTrxMissingPolicy.ReturnTrxNone // backward compatibility
-		;
+				;
 
 		return get(trxName, onTrxMissingPolicy);
 	}
 
 	@Override
 	public final ITrx get(String trxName, final OnTrxMissingPolicy onTrxMissingPolicy)
+	{
+		final boolean autoCommit = false; // backward compatibility
+		return get(trxName, onTrxMissingPolicy, autoCommit);
+	}
+
+
+	private final ITrx get(String trxName, final OnTrxMissingPolicy onTrxMissingPolicy, final boolean autoCommit)
 	{
 		Check.assumeNotNull(onTrxMissingPolicy, TrxException.class, "onTrxMissingPolicy not null");
 
@@ -281,7 +341,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 			else if (onTrxMissingPolicy == OnTrxMissingPolicy.CreateNew)
 			{
-				trx = createTrxAndRegister(trxName);
+				trx = createTrxAndRegister(trxName, autoCommit);
 			}
 			else if (onTrxMissingPolicy == OnTrxMissingPolicy.Fail)
 			{
@@ -355,7 +415,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		trxName2trxLock.lock();
 		try
 		{
-			return new ArrayList<ITrx>(trxName2trx.values());
+			return new ArrayList<>(trxName2trx.values());
 		}
 		finally
 		{
@@ -403,21 +463,42 @@ public abstract class AbstractTrxManager implements ITrxManager
 		return createTrxName(prefix);
 	}	// createTrxName
 
+	@Override
+	public <T> T call(final Callable<T> callable)
+	{
+		final TrxCallable<T> trxCallable = TrxCallableWrappers.wrapIfNeeded(callable);
+		return call(trxCallable);
+	}
+
 	/**
 	 * Runs the given trx runnable in an internal transaction (the transaction name will start with <code>"TrxRun"</code>).
 	 */
 	@Override
 	public void run(final TrxRunnable r)
 	{
-		run(ITrx.TRXNAME_None, r);
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
+		call(callable);
+	}
+
+	@Override
+	public <T> T call(final TrxCallable<T> callable)
+	{
+		return call(ITrx.TRXNAME_None, callable);
 	}
 
 	// metas: backward compatibility
 	@Override
 	public void run(final String trxName, final TrxRunnable r)
 	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
+		call(trxName, callable);
+	}
+
+	@Override
+	public <T> T call(final String trxName, final TrxCallable<T> callable)
+	{
 		final boolean manageTrx = false;
-		run(trxName, manageTrx, r);
+		return call(trxName, manageTrx, callable);
 	}
 
 	/**
@@ -431,6 +512,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 	// metas: added manageTrx parameter
 	@Override
 	public void run(final String trxName, final boolean manageTrx, final TrxRunnable runnable)
+	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
+		call(trxName, manageTrx, callable);
+	}
+
+	@Override
+	public <T> T call(final String trxName, final boolean manageTrx, final TrxCallable<T> callable)
 	{
 		final TrxPropagation trxMode;
 		final OnRunnableSuccess onRunnableSuccess;
@@ -472,18 +560,31 @@ public abstract class AbstractTrxManager implements ITrxManager
 			onRunnableSuccess = OnRunnableSuccess.DONT_COMMIT;
 		}
 
-		final ITrxRunConfig trxRunConfig = new TrxRunConfig(trxMode, onRunnableSuccess, onRunnableFail);
-		run(trxNameToUse, trxRunConfig, runnable);
+		final ITrxRunConfig trxRunConfig = newTrxRunConfigBuilder()
+				.setTrxPropagation(trxMode)
+				.setOnRunnableSuccess(onRunnableSuccess)
+				.setOnRunnableFail(onRunnableFail)
+				.setAutoCommit(false) // preserve old behavior.
+				.build();
+
+		return call(trxNameToUse, trxRunConfig, callable);
 	}
 
 	@Override
 	public void run(final String trxName, final ITrxRunConfig cfg, final TrxRunnable runnable)
 	{
+		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
+		call(trxName, cfg, callable);
+	}
+
+	@Override
+	public <T> T call(final String trxName, final ITrxRunConfig cfg, final TrxCallable<T> callable)
+	{
 		//
 		// Determine which trxName we shall use based on trx run configuration
 		final String trxNameToUse;
 		final boolean addTrxToAllowedTrxConstraints;
-		final TrxPropagation trxPropagation = cfg.getTrxMode();
+		final TrxPropagation trxPropagation = cfg.getTrxPropagation();
 		if (trxPropagation == TrxPropagation.REQUIRES_NEW)
 		{
 			Check.assume(ITrx.TRXNAME_ThreadInherited != trxName, IllegalTrxRunStateException.class, "Inherited transaction not allowed when propagation is REQUIRES_NEW");
@@ -558,16 +659,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 				}
 
 				// Create and start the new transaction
-				get(trxNameToUse, OnTrxMissingPolicy.CreateNew);
+				get(trxNameToUse, OnTrxMissingPolicy.CreateNew, cfg.isAutoCommit());
 			}
 
 			// Set our transaction as currently active thread local transaction
 			restoreThreadLocalTrxName = true;
 			threadLocalTrx.set(trxNameToUse);
 
-			final TrxRunnable2 runnable2 = TrxRunnable2Wrapper.wrapIfNeeded(runnable);
-			run0(runnable2, cfg, trxNameToUse);
-
+			return call0(callable, cfg, trxNameToUse);
 		}
 		finally
 		{
@@ -583,9 +682,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final void run0(final TrxRunnable2 runnable, final ITrxRunConfig cfg, final String trxName)
+	private final <T> T call0(final TrxCallable<T> callable, final ITrxRunConfig cfg, final String trxName)
 	{
-		Check.assumeNotNull(runnable, IllegalTrxRunStateException.class, "Param 'runnable' is not null");
+		Check.assumeNotNull(callable, IllegalTrxRunStateException.class, "Param 'callable' is not null");
 		Check.assumeNotNull(cfg, IllegalTrxRunStateException.class, "Param 'cfg' is not null");
 
 		// Validate trxName
@@ -605,17 +704,17 @@ public abstract class AbstractTrxManager implements ITrxManager
 		//
 		// Get/create the actual transaction to use.
 		ITrx trx;
-		final TrxPropagation trxPropagation = cfg.getTrxMode();
+		final TrxPropagation trxPropagation = cfg.getTrxPropagation();
 		if (TrxPropagation.REQUIRES_NEW == trxPropagation)
 		{
-			trx = get(trxName, OnTrxMissingPolicy.CreateNew);
+			trx = get(trxName, OnTrxMissingPolicy.CreateNew, cfg.isAutoCommit());
 		}
 		else if (TrxPropagation.NESTED == trxPropagation)
 		{
-			trx = get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+			trx = get(trxName, OnTrxMissingPolicy.ReturnTrxNone, cfg.isAutoCommit());
 			if (isNull(trx))
 			{
-				trx = get(trxName, OnTrxMissingPolicy.CreateNew);
+				trx = get(trxName, OnTrxMissingPolicy.CreateNew, cfg.isAutoCommit());
 				new IllegalTrxRunStateException("New transaction was created even it was expected to already exist")
 						.setTrxRunConfig(cfg)
 						.setTrxName(trxName)
@@ -642,6 +741,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final OnRunnableFail onRunnableFail = cfg.getOnRunnableFail();
 		ITrxSavepoint savepoint = null;
 		Throwable exceptionToThrow = null; // set in "catch" block; used in finally block to add more suppressed exceptions if needed.
+		T callableResult = null;
 		try
 		{
 			// Create the transaction savepoint if needed
@@ -653,7 +753,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 
 			// Actually execute the runnable
-			runnable.run(trxName);
+			// runnable.run(trxName);
+			callableResult = TrxCallableWrappers.wrapAsTrxCallableWithTrxNameIfNeeded(callable).call(trxName);
 
 			// Commit the transaction if we were asked to do it
 			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
@@ -665,6 +766,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 				// "org.postgresql.util.PSQLException: ERROR: RELEASE SAVEPOINT can only be used in transaction blocks; State=25P01; ErrorCode=0"
 				savepoint = null;
 			}
+
+			return callableResult;
 		}
 		// we catch Throwable and not only Exceptions because java.lang.AssertionError is not an Exception
 		catch (final Throwable runException)
@@ -675,7 +778,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			boolean rollback = true;
 			try
 			{
-				rollback = runnable.doCatch(runException);
+				rollback = callable.doCatch(runException);
 				exceptionToThrow = null;
 			}
 			catch (final Throwable doCatchException)
@@ -723,7 +826,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 							.setTrxRunConfig(cfg)
 							.setTrxName(trxName);
 				}
-			} // end rollback
+			}     // end rollback
 
 			//
 			// Propagate the caught exception, no matter what, even if we were called with OnRunnableFail.DONT_ROLLBACK
@@ -732,6 +835,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				throw AdempiereException.wrapIfNeeded(exceptionToThrow);
 			}
 
+			return callableResult;
 		}
 		finally
 		{
@@ -753,7 +857,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// Call custom finally handler (if any):
 			try
 			{
-				runnable.doFinally();
+				callable.doFinally();
 			}
 			catch (final Throwable doFinallyException)
 			{
@@ -880,6 +984,12 @@ public abstract class AbstractTrxManager implements ITrxManager
 			return AutoCommitTrxListenerManager.instance;
 		}
 		return trx.getTrxListenerManager();
+	}
+	
+	@Override
+	public ITrxListenerManager getCurrentTrxListenerManagerOrAutoCommit()
+	{
+		return getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -1042,25 +1152,34 @@ public abstract class AbstractTrxManager implements ITrxManager
 	@Override
 	public void assertThreadInheritedTrxExists()
 	{
-		final String trxName = getThreadInheritedTrxName();
-		Check.assume(!isNull(trxName), "ThreadInherited transaction shall be set at this point");
+		Check.assume(hasThreadInheritedTrx(), "ThreadInherited transaction shall be set at this point");
 	}
 
 	@Override
 	public void assertThreadInheritedTrxNotExists()
 	{
-		final String trxName = getThreadInheritedTrxName();
-		Check.assume(isNull(trxName), "ThreadInherited transaction shall NOT be set at this point");
+		Check.assume(!hasThreadInheritedTrx(), "ThreadInherited transaction shall NOT be set at this point");
 	}
-
 
 	@Override
 	public String setThreadInheritedTrxName(final String trxName)
 	{
+		if (ITrx.TRXNAME_ThreadInherited.equals(trxName))
+		{
+			throw new TrxException("Setting the thread inherited transaction to " + trxName + " is not allowed");
+		}
+		
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
 
 		return trxNameOld;
+	}
+
+	@Override
+	public boolean hasThreadInheritedTrx()
+	{
+		final String threadInheritedTrxName = getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
+		return !isNull(threadInheritedTrxName);
 	}
 
 	@Override
@@ -1144,6 +1263,12 @@ public abstract class AbstractTrxManager implements ITrxManager
 				}
 				return trxName;
 			}
+
+			@Override
+			public boolean isAllowThreadInherited()
+			{
+				return true;
+			}
 		};
 	}
 
@@ -1193,7 +1318,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			{
 				if (debugClosedTransactionsList == null)
 				{
-					debugClosedTransactionsList = new ArrayList<ITrx>();
+					debugClosedTransactionsList = new ArrayList<>();
 				}
 			}
 			else
@@ -1223,7 +1348,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			{
 				return Collections.emptyList();
 			}
-			return new ArrayList<ITrx>(debugClosedTransactionsList);
+			return new ArrayList<>(debugClosedTransactionsList);
 		}
 		finally
 		{
@@ -1241,6 +1366,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 	public boolean isDebugConnectionBackendId()
 	{
 		return debugConnectionBackendId;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "AbstractTrxManager [trxName2trx=" + trxName2trx + ", trxName2trxLock=" + trxName2trxLock + ", trxNameGenerator=" + trxNameGenerator + ", threadLocalTrx=" + threadLocalTrx + ", threadLocalOnRunnableFail=" + threadLocalOnRunnableFail + ", debugTrxCreateStacktrace=" + debugTrxCreateStacktrace + ", debugTrxCloseStacktrace=" + debugTrxCloseStacktrace + ", debugClosedTransactionsList="
+				+ debugClosedTransactionsList + ", debugConnectionBackendId=" + debugConnectionBackendId + "]";
 	}
 
 }

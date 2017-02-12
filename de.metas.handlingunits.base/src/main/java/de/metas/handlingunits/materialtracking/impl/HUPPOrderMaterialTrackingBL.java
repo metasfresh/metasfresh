@@ -42,7 +42,7 @@ import de.metas.materialtracking.model.I_PP_Order;
  * Links a PP_Order to the <code>M_Material_Tracking</code> of the <code>PP_Order_BOMLine</code>'s HU.<br>
  * Intended to be called when a HU is issued to a PP_Order.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL

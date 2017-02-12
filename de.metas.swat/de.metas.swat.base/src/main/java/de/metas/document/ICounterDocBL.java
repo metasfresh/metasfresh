@@ -31,7 +31,7 @@ import de.metas.document.spi.ICounterDocHandler;
 /**
  * Note: there is still counter-doc logic in various {@link DocAction} implementors. As of now, we only deal with <code>C_Order</code>.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_(100691234288)
  */
 public interface ICounterDocBL extends ISingletonService

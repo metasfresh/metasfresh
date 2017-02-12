@@ -13,18 +13,17 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.sql.Timestamp;
@@ -46,11 +45,11 @@ import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -102,6 +101,8 @@ public class HUIssueModel implements IDisposable
 
 	private final WeakPropertyChangeSupport pcs;
 
+	private boolean disposed = false;
+
 	public HUIssueModel(final ITerminalContext terminalContext)
 	{
 		super();
@@ -147,17 +148,24 @@ public class HUIssueModel implements IDisposable
 
 		//
 		load();
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
+	/**
+	 * Does nothing, only sets the disposed flag.
+	 */
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		pcs.clear();
-		DisposableHelper.disposeAll(
-				warehouseKeyLayout,
-				manufacturingOrderKeyLayout,
-				orderBOMLineKeyLayout);
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	public final ITerminalContext getTerminalContext()
@@ -169,7 +177,7 @@ public class HUIssueModel implements IDisposable
 	{
 		// 06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), service.retrieveWarehouse(getCtx()));
-		warehouseKeyLayout.setKeysFromWarehouses(warehouses);
+		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 
 	public void addPropertyChangeListener(final PropertyChangeListener listener)
@@ -256,7 +264,7 @@ public class HUIssueModel implements IDisposable
 	{
 		final int warehouseId = getSelectedWarehouseId();
 		final List<I_PP_Order> orders = service.getManufacturingOrders(getCtx(), warehouseId);
-		manufacturingOrderKeyLayout.setKeysFromOrders(orders);
+		manufacturingOrderKeyLayout.createAndSetKeysFromOrders(orders);
 	}
 
 	public final void loadOrderBOMLineKeyLayout()
@@ -271,7 +279,7 @@ public class HUIssueModel implements IDisposable
 		}
 
 		final List<I_PP_Order_BOMLine> lines = service.getOrderBOMLines(order);
-		orderBOMLineKeyLayout.setKeysFromBOMLines(lines);
+		orderBOMLineKeyLayout.createAndSetKeysFromBOMLines(lines);
 	}
 
 	private final void clearSelected()
@@ -347,17 +355,19 @@ public class HUIssueModel implements IDisposable
 	{
 		Check.assumeNotNull(editorCallback, "editorCallback not null");
 
-		final HUEditorModel editorModel = createIssueHUEditorModel();
-
-		final boolean edited = editorCallback.editHUs(editorModel);
-
-		if (edited)
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
-			createIssues(selectedHUs);
+			final HUEditorModel editorModel = createIssueHUEditorModel();
+
+			final boolean edited = editorCallback.editHUs(editorModel);
+
+			if (edited)
+			{
+				final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
+				createIssues(selectedHUs);
+			}
 		}
 
-		//
 		// Reload everything
 		loadManufacturingOrderKeyLayout();
 		loadOrderBOMLineKeyLayout();

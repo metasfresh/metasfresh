@@ -30,7 +30,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_TreeNode;
@@ -44,9 +44,9 @@ import org.compiere.model.X_AD_Tree;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_M_Product_Category;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.product.tree.spi.impl.MProductCategoryTreeSupport;
 
@@ -203,14 +203,14 @@ public final class MProductCategoryValidator implements ModelValidator
 		if ((ModelValidator.TYPE_BEFORE_NEW == type || ModelValidator.TYPE_BEFORE_CHANGE == type)
 				&& po.is_ValueChanged(I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID))
 		{
-			I_M_Product_Category pc = POWrapper.create(po, I_M_Product_Category.class);
+			I_M_Product_Category pc = InterfaceWrapperHelper.create(po, I_M_Product_Category.class);
 			if (pc.getM_Product_Category_Parent_ID() > 0)
 			{
 				I_M_Product_Category parent = pc.getM_Product_Category_Parent();
 				if (!parent.isSummary())
 				{
 					parent.setIsSummary(true);
-					POWrapper.save(parent);
+					InterfaceWrapperHelper.save(parent);
 				}
 			}
 		}

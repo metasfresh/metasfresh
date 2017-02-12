@@ -26,20 +26,20 @@ package de.metas.adempiere.engine;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Table_MView;
 import de.metas.adempiere.service.ITableMViewBL;
 import de.metas.adempiere.service.ITableMViewBL.RefreshMode;
 import de.metas.adempiere.service.impl.TableMViewBL;
+import de.metas.logging.LogManager;
 
 public class MViewModelValidator implements ModelValidator
 {
@@ -98,7 +98,7 @@ public class MViewModelValidator implements ModelValidator
 
 	private void processMetadataChanges(PO po, int type)
 	{
-		final I_AD_Table_MView mview = POWrapper.create(po, I_AD_Table_MView.class);
+		final I_AD_Table_MView mview = InterfaceWrapperHelper.create(po, I_AD_Table_MView.class);
 		if (TYPE_AFTER_NEW == type
 				|| (TYPE_AFTER_CHANGE == type && po.is_ValueChanged(I_AD_Table_MView.COLUMNNAME_IsValid) && mview.isValid()))
 		{
@@ -118,7 +118,7 @@ public class MViewModelValidator implements ModelValidator
 			if (mdata == null)
 			{
 				mview.setIsValid(false);
-				POWrapper.save(mview);
+				InterfaceWrapperHelper.save(mview);
 				log.info("No metadata found for " + mview + " [SKIP]");
 				continue;
 			}
@@ -174,7 +174,7 @@ public class MViewModelValidator implements ModelValidator
 			if (invalidateIfNecessary)
 			{
 				mview.setIsValid(false);
-				POWrapper.save(mview);
+				InterfaceWrapperHelper.save(mview);
 			}
 			return false;
 		}

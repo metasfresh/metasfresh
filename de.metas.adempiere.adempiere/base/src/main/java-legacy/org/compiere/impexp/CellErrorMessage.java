@@ -25,7 +25,7 @@ package org.compiere.impexp;
 /**
  * {@link ImpDataCell}'s error message.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class CellErrorMessage

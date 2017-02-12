@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps.search;
 
@@ -73,7 +73,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -103,6 +102,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.MSort;
 import org.compiere.util.Util;
@@ -241,7 +241,7 @@ public abstract class Info extends Component
 			if (!modal)
 			{
 				new AdempiereException("Posible window leak because modal=false and WindowNo is provided. This window won't be added to window manager.")
-						.throwOrLogWarningIfDeveloperMode(log);
+						.throwIfDeveloperModeOrLogWarningElse(log);
 			}
 			p_WindowNo = WindowNo;
 			localWindowNo = false;
@@ -505,17 +505,17 @@ public abstract class Info extends Component
 			{
 				sql.append("\n, ");
 			}
-			
+
 			final boolean isIDColumn = layout[i].isIDcol();
 
 			//
-			// Info column / ID's display name 
+			// Info column / ID's display name
 			sql.append(layout[i].getColSQL());
 			if (isIDColumn)
 			{
 				// Make sure the display column has a column name set and don't allow databases like PG9.3 to generate one (FRESH-235)
 				String columnName = layout[i].getColumnName();
-				if(Check.isEmpty(columnName, true))
+				if (Check.isEmpty(columnName, true))
 				{
 					columnName = "Col" + i + "_DisplayName";
 				}
@@ -527,14 +527,14 @@ public abstract class Info extends Component
 			{
 				sql.append(" AS ").append(layout[i].getColumnName());
 			}
-			
+
 			//
 			// adding ID column
 			if (isIDColumn)
 			{
 				sql.append("\n, ").append(layout[i].getIDcolSQL());
 			}
-			
+
 			// add to model
 			p_table.addColumn(layout[i].getColHeader());
 			if (layout[i].isColorColumn())
@@ -777,7 +777,7 @@ public abstract class Info extends Component
 		}
 
 		final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql.toString(), IStringExpression.class);
-		final Evaluatee evalCtx = new EvaluateeCtx(getCtx(), getWindowNo(), false); // onlyWindow=false
+		final Evaluatee evalCtx = Evaluatees.ofCtx(getCtx(), getWindowNo(), false); // onlyWindow=false
 		String countSql = sqlExpression.evaluate(evalCtx, true); // ignoreUnparsable=true
 
 		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
@@ -836,7 +836,7 @@ public abstract class Info extends Component
 		p_table.stopEditor(true);
 
 		log.info("OK=" + m_ok);
-		if (!m_ok)  // did not press OK
+		if (!m_ok)          // did not press OK
 		{
 			m_results.clear();
 			p_table.removeAll();
@@ -1118,7 +1118,7 @@ public abstract class Info extends Component
 			final Calculator c = new Calculator(null, number);
 			c.setVisible(true);
 			return;
-		}  // popup
+		}          // popup
 
 		// Confirm Panel
 		final String cmd = e.getActionCommand();
@@ -2009,7 +2009,7 @@ public abstract class Info extends Component
 				final String columnName = column.getColumnName();
 
 				modelColumnIndex = p_table.getColumnModelIndex(columnName);
-				if (modelColumnIndex < 0 || modelColumnIndex > p_table.getColumnCount() - 1)  // make sure index is right
+				if (modelColumnIndex < 0 || modelColumnIndex > p_table.getColumnCount() - 1)         // make sure index is right
 				{
 					final Exception ex = new AdempiereException("Model column out of bounds: {}", new Object[] { columnName });
 					log.warn(ex.getLocalizedMessage(), ex);
@@ -2029,6 +2029,21 @@ public abstract class Info extends Component
 			for (final I_AD_User_SortPref_Line_Product sortPreferenceLineProduct : sortPreferenceLineProducts)
 			{
 				final I_M_Product product = sortPreferenceLineProduct.getM_Product();
+				// FRESH-438: check for null and give an informative message if the product is null
+				if (product == null)
+				{
+					final String msg = "Missing M_Product for M_Product_ID=" + sortPreferenceLineProduct.getM_Product_ID()
+							+ "\n in AD_User_SortPref_Line_Product=" + sortPreferenceLineProduct
+							+ "\n in I_AD_User_SortPref_Line_ID=" + sortPreferenceLine.getAD_User_SortPref_Line_ID() + " (SeqNo=" + sortPreferenceLine.getSeqNo() + ")"
+							+ "\n in AD_User_SortPref_Hdr_ID= " + sortPreferenceLine.getAD_User_SortPref_Hdr_ID()
+							+ "\n isConferenceSortPreferences=" + isConferenceSortPreferences + ";"
+							+ " action=" + action + ";"
+							+ " infoWindowId=" + infoWindowId + ";";
+
+					new AdempiereException(msg)
+							.throwIfDeveloperModeOrLogWarningElse(log);
+					continue;
+				}
 				final String productName = product.getName();
 				precedenceProductNames.add(productName);
 			}

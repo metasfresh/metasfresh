@@ -5,26 +5,27 @@ import java.awt.Component;
 import javax.swing.JTable;
 
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.ListComboBoxModel;
-import org.compiere.util.ValueNamePair;
+import org.compiere.util.DisplayType;
 
 /**
  * Advanced search table - cell editor for Operator cell
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindOperatorCellEditor extends FindCellEditor
 {
 	private static final long serialVersionUID = 6655568524454256089L;
 
-	private CComboBox<ValueNamePair> _editor = null;
+	private CComboBox<Operator> _editor = null;
 
-	private final ListComboBoxModel<ValueNamePair> modelForIDColumns = new ListComboBoxModel<>(MQuery.OPERATORS_ID);
-	private final ListComboBoxModel<ValueNamePair> modelForYesNoColumns = new ListComboBoxModel<>(MQuery.OPERATORS_YN);
-	private final ListComboBoxModel<ValueNamePair> modelDefault = new ListComboBoxModel<>(MQuery.OPERATORS);
-	private final ListComboBoxModel<ValueNamePair> modelEmpty = new ListComboBoxModel<>();
+	private final ListComboBoxModel<Operator> modelForLookupColumns = new ListComboBoxModel<>(MQuery.Operator.operatorsForLookups);
+	private final ListComboBoxModel<Operator> modelForYesNoColumns = new ListComboBoxModel<>(MQuery.Operator.operatorsForBooleans);
+	private final ListComboBoxModel<Operator> modelDefault = new ListComboBoxModel<>(MQuery.Operator.values());
+	private final ListComboBoxModel<Operator> modelEmpty = new ListComboBoxModel<>();
 
 	public FindOperatorCellEditor()
 	{
@@ -39,7 +40,7 @@ class FindOperatorCellEditor extends FindCellEditor
 	}
 
 	@Override
-	protected CComboBox<ValueNamePair> getEditor()
+	protected CComboBox<Operator> getEditor()
 	{
 		if (_editor == null)
 		{
@@ -51,28 +52,29 @@ class FindOperatorCellEditor extends FindCellEditor
 
 	private void updateEditor(final JTable table, final int viewRowIndex)
 	{
-		final CComboBox<ValueNamePair> editor = getEditor();
+		final CComboBox<Operator> editor = getEditor();
 
-		final FindAdvancedSearchTableModelRow row = getRow(table, viewRowIndex);
-		final FindPanelSearchField searchField = row.getSearchField();
+		final IUserQueryRestriction row = getRow(table, viewRowIndex);
+		final FindPanelSearchField searchField = FindPanelSearchField.castToFindPanelSearchField(row.getSearchField());
 
 		if (searchField != null)
 		{
 			// check if the column is columnSQL with reference (08757)
-			final String columnName = searchField.getColumnName();
+			// final String columnName = searchField.getColumnName();
+			final int displayType = searchField.getDisplayType();
 			final boolean isColumnSQL = searchField.isVirtualColumn();
 			final boolean isReference = searchField.getAD_Reference_Value_ID() > 0;
 
 			if (isColumnSQL && isReference)
 			{
 				// make sure also the columnSQLs with reference are only getting the ID operators (08757)
-				editor.setModel(modelForIDColumns);
+				editor.setModel(modelForLookupColumns);
 			}
-			else if (columnName.endsWith("_ID") || columnName.endsWith("_Acct"))
+			else if (DisplayType.isAnyLookup(displayType))
 			{
-				editor.setModel(modelForIDColumns);
+				editor.setModel(modelForLookupColumns);
 			}
-			else if (columnName.startsWith("Is"))
+			else if (DisplayType.YesNo == displayType)
 			{
 				editor.setModel(modelForYesNoColumns);
 			}
@@ -87,7 +89,7 @@ class FindOperatorCellEditor extends FindCellEditor
 		}
 	}
 
-	private FindAdvancedSearchTableModelRow getRow(final JTable table, final int viewRowIndex)
+	private IUserQueryRestriction getRow(final JTable table, final int viewRowIndex)
 	{
 		final FindAdvancedSearchTableModel model = (FindAdvancedSearchTableModel)table.getModel();
 		final int modelRowIndex = table.convertRowIndexToModel(viewRowIndex);

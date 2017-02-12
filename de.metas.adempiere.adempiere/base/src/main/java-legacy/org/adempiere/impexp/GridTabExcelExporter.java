@@ -16,6 +16,7 @@ package org.adempiere.impexp;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabLayoutMode;
@@ -24,6 +25,8 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.adempiere.service.IColumnBL;
 
 /**
  * Excel Exporter Adapter for GridTab
@@ -129,21 +132,24 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	private HashMap<String, MLookup> m_buttonLookups = new HashMap<String, MLookup>();
 	
 	private MLookup getButtonLookup(GridField mField)
-	{
+	{		
 		MLookup lookup = m_buttonLookups.get(mField.getColumnName());
 		if (lookup != null)
+		{
 			return lookup;
+		}
+
 		// TODO: refactor with org.compiere.grid.ed.VButton.setField(GridField)
-		if (mField.getColumnName().endsWith("_ID") && !mField.getColumnName().equals("Record_ID"))
+		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordColumnName(mField.getColumnName()))
 		{
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
-				mField.getAD_Column_ID(), DisplayType.Search);
+					mField.getAD_Column_ID(), DisplayType.Search);
 		}
 		else if (mField.getAD_Reference_Value_ID() != 0)
 		{
-			//	Assuming List
+			// Assuming List
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
-				mField.getAD_Column_ID(), DisplayType.List);
+					mField.getAD_Column_ID(), DisplayType.List);
 		}
 		//
 		m_buttonLookups.put(mField.getColumnName(), lookup);

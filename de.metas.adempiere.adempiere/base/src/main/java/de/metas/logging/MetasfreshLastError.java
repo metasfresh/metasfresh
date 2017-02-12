@@ -1,5 +1,6 @@
 package de.metas.logging;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -7,8 +8,6 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-
-import com.google.common.base.Supplier;
 
 /*
  * #%L
@@ -37,7 +36,7 @@ import com.google.common.base.Supplier;
  * 
  * NOTE: in future we will remove this class, because the feature is legacy.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class MetasfreshLastError
@@ -197,7 +196,7 @@ public class MetasfreshLastError
 	private final static LastErrorsInstance getLastErrorsInstance()
 	{
 		final Properties ctx = Env.getCtx();
-		return Env.get(ctx, LASTERRORINSTANCE_CTXKEY, LastErrorsInstance.supplier);
+		return Env.get(ctx, LASTERRORINSTANCE_CTXKEY, LastErrorsInstance::new);
 	}
 
 	/**
@@ -206,18 +205,9 @@ public class MetasfreshLastError
 	 * @author tsa
 	 */
 	@ThreadSafe
-	private static class LastErrorsInstance
+	@SuppressWarnings("serial")
+	private static class LastErrorsInstance implements Serializable
 	{
-		public static final transient Supplier<LastErrorsInstance> supplier = new Supplier<LastErrorsInstance>()
-		{
-
-			@Override
-			public LastErrorsInstance get()
-			{
-				return new LastErrorsInstance();
-			}
-		};
-
 		private ValueNamePair lastError;
 		private Throwable lastException;
 		private ValueNamePair lastWarning;

@@ -13,11 +13,11 @@ package de.metas.flatrate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,11 +49,11 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.util.CacheCtx;
@@ -69,6 +69,7 @@ import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 
 public class FlatrateDAO implements IFlatrateDAO
 {
@@ -109,15 +110,15 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addOnlyActiveRecordsFilter();
 		if (m_Product_Category_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
 		}
 		if (m_Product_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
 		}
 		if (c_Charge_ID > 0)
 		{
-			matchingQueryBuilder.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
 		}
 
 		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder
@@ -182,17 +183,34 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	public List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
+	{
+		final boolean retrieveAll = true;
+		return retrieveClearingAllocs(invoiceCand, retrieveAll);
+	}
+
+	@Override
 	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_C_Invoice_Clearing_Alloc> orFilter =
-				queryBL.createCompositeQueryFilter(I_C_Invoice_Clearing_Alloc.class)
-						.setJoinOr()
-						.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID, invoiceCand.getC_Invoice_Candidate_ID())
-						.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID());
+		final boolean retrieveAll = false;
+		return retrieveClearingAllocs(invoiceCand, retrieveAll);
+	}
 
-		return queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class, invoiceCand)
-				.addOnlyActiveRecordsFilter()
+	private List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand, final boolean retrieveAll)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_C_Invoice_Clearing_Alloc> orFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Clearing_Alloc.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID, invoiceCand.getC_Invoice_Candidate_ID())
+				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID());
+
+		final IQueryBuilder<I_C_Invoice_Clearing_Alloc> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class, invoiceCand);
+		if (!retrieveAll)
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
+
+		return queryBuilder
 				.filter(orFilter)
 				.orderBy().addColumn(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID).endOrderBy()
 				.create()
@@ -229,8 +247,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
 				.setParameters(
 						invoiceCandToClear.getC_Invoice_Candidate_ID(),
-						dataEntry == null ? 0 : dataEntry.getC_Flatrate_DataEntry_ID()
-				)
+						dataEntry == null ? 0 : dataEntry.getC_Flatrate_DataEntry_ID())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.firstOnly(I_C_Invoice_Clearing_Alloc.class);
@@ -289,6 +306,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		}
 		if (date != null)
 		{
+			final Timestamp day = TimeUtil.truncToDay(date);
 			wc.append(
 					// 'date' must lie within entry's period
 					I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID + " IN ( "
@@ -297,8 +315,8 @@ public class FlatrateDAO implements IFlatrateDAO
 							+ "     where p." + I_C_Period.COLUMNNAME_StartDate + "<=? AND "
 							+ "           p." + I_C_Period.COLUMNNAME_EndDate + ">=? "
 							+ ") AND ");
-			params.add(date);
-			params.add(date);
+			params.add(day);
+			params.add(day);
 		}
 		wc.append(
 				// entry must have the given 'dataEntryType'
@@ -314,16 +332,14 @@ public class FlatrateDAO implements IFlatrateDAO
 		// Return the entries in the order of their UOM.
 		// That way, concurrent processes with always process in the same order and thus avoid a deadlock
 		// Note: Just ordering by C_Flatrate_DataEntry_ID might be enough, but I'm not 100% sure here.
-		final String orderBy =
-				I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "," + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID;
+		final String orderBy = I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "," + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID;
 
-		final List<I_C_Flatrate_DataEntry> resultAll =
-				new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
-						.setParameters(params)
-						.setOnlyActiveRecords(true)
-						.setClient_ID()
-						.setOrderBy(orderBy)
-						.list(I_C_Flatrate_DataEntry.class);
+		final List<I_C_Flatrate_DataEntry> resultAll = new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
+				.setParameters(params)
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.setOrderBy(orderBy)
+				.list(I_C_Flatrate_DataEntry.class);
 		if (!onlyNonSim)
 		{
 			return resultAll;
@@ -358,34 +374,27 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final I_C_UOM uom)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<Object> params = new ArrayList<Object>();
-
-		final StringBuilder wc = new StringBuilder();
-
-		wc.append(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID + "=? ");
-		params.add(term.getC_Flatrate_Term_ID());
+		final IQueryBuilder<I_C_Flatrate_DataEntry> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.addOnlyContextClient();
 
 		if (uom != null)
 		{
-			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=?");
-			params.add(uom.getC_UOM_ID());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uom.getC_UOM_ID());
 		}
 
-		if (dataEntryType != null)
+		if (!Check.isEmpty(dataEntryType, true))
 		{
-			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=?");
-			params.add(dataEntryType);
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_Type, dataEntryType);
 		}
 
-		return new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID)
-				.list(I_C_Flatrate_DataEntry.class);
+		return queryBuilder
+				.orderBy().addColumn(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_DataEntry_ID).endOrderBy()
+				.create()
+				.list();
 	}
 
 	@Override
@@ -447,8 +456,7 @@ public class FlatrateDAO implements IFlatrateDAO
 						flatrateTerm.getC_Flatrate_Term_ID(),
 						period.getC_Period_ID(),
 						dataEntryType,
-						uom.getC_UOM_ID()
-				)
+						uom.getC_UOM_ID())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.firstOnly(I_C_Flatrate_DataEntry.class);
@@ -464,17 +472,16 @@ public class FlatrateDAO implements IFlatrateDAO
 		final Timestamp startDate = period.getStartDate();
 		final Timestamp endDate = period.getEndDate();
 
-		final String wc =
-				" COALESCE (" + I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID + ",0)=0 AND "
-						+ I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=? AND "
-						+ "EXISTS ("
-						+ "  select 1 from " + I_C_Invoice_Candidate.Table_Name + " ic "
-						+ "  where "
-						+ "     ic." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "=" + I_C_Invoice_Clearing_Alloc.Table_Name + "."
-						+ I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID
-						+ "     and ic." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + ">=?"
-						+ "     and ic." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + "<=?"
-						+ ") ";
+		final String wc = " COALESCE (" + I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID + ",0)=0 AND "
+				+ I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=? AND "
+				+ "EXISTS ("
+				+ "  select 1 from " + I_C_Invoice_Candidate.Table_Name + " ic "
+				+ "  where "
+				+ "     ic." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "=" + I_C_Invoice_Clearing_Alloc.Table_Name + "."
+				+ I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID
+				+ "     and ic." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + ">=?"
+				+ "     and ic." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + "<=?"
+				+ ") ";
 
 		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
 				.setParameters(
@@ -502,7 +509,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
 			if (entryPeriod.getEndDate().before(dateFrom) // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().after(dateTo)) // entryPeriod begins after dateTo
+					|| entryPeriod.getStartDate().after(dateTo))      // entryPeriod begins after dateTo
 			{
 				continue;
 			}
@@ -622,14 +629,13 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public void updateQtyActualFromDataEntry(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final String sql =
-				"UPDATE " + I_C_Flatrate_DataEntry.Table_Name
-						+ " SET " + I_C_Flatrate_DataEntry.COLUMNNAME_ActualQty + "=? "
-						+ " WHERE "
-						+ I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID + "=? AND "
-						+ I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=? AND "
-						+ I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID + "=? AND "
-						+ I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "!=?";
+		final String sql = "UPDATE " + I_C_Flatrate_DataEntry.Table_Name
+				+ " SET " + I_C_Flatrate_DataEntry.COLUMNNAME_ActualQty + "=? "
+				+ " WHERE "
+				+ I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID + "=? AND "
+				+ I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=? AND "
+				+ I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID + "=? AND "
+				+ I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "!=?";
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
 
@@ -665,14 +671,13 @@ public class FlatrateDAO implements IFlatrateDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
 
-		final String wc =
-				I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " >= ? AND "
-						+ I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " <= ? AND "
-						+ " NOT EXISTS ( "
-						+ "     select 1 from " + I_C_Invoice_Clearing_Alloc.Table_Name + " ica "
-						+ "     where ica." + I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID + "="
-						+ I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID
-						+ " )";
+		final String wc = I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " >= ? AND "
+				+ I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " <= ? AND "
+				+ " NOT EXISTS ( "
+				+ "     select 1 from " + I_C_Invoice_Clearing_Alloc.Table_Name + " ica "
+				+ "     where ica." + I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID + "="
+				+ I_C_Invoice_Candidate.Table_Name + "." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID
+				+ " )";
 
 		final I_C_Period period = dataEntry.getC_Period();
 		final List<I_C_Invoice_Candidate> cands = new Query(ctx, I_C_Invoice_Candidate.Table_Name, wc, trxName)

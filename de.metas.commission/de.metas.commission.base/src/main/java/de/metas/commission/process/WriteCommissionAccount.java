@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.processing.exception.ProcessingException;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.util.Services;
@@ -39,13 +38,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.commission.interfaces.I_C_Invoice;
@@ -57,14 +53,17 @@ import de.metas.commission.model.MCAdvCommissionRelevantPO;
 import de.metas.commission.service.IComRelevantPoBL;
 import de.metas.commission.service.ICommissionFactCandBL;
 import de.metas.commission.service.ICommissionFactCandDAO;
+import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Provisionsberechnung_%282009_0023_G106%29'>(2009 0023 G106)</a>"
  */
-public class WriteCommissionAccount extends SvrProcess
+public class WriteCommissionAccount extends JavaProcess
 {
 	private static final String ALSO_HANDLE_PROCESS_IMMEDIATELY = "AlsoHandleTypesWithProcessNow";
 
@@ -227,7 +226,7 @@ public class WriteCommissionAccount extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{
@@ -264,7 +263,7 @@ public class WriteCommissionAccount extends SvrProcess
 
 		if (allocLine.getC_Order_ID() > 0)
 		{
-			final I_C_Order order = POWrapper.create(allocLine.getC_Order(), I_C_Order.class);
+			final I_C_Order order = InterfaceWrapperHelper.create(allocLine.getC_Order(), I_C_Order.class);
 
 			final IPrepayOrderBL prepayOrderBL = Services.get(IPrepayOrderBL.class);
 			isPrepayOrder = prepayOrderBL.isPrepayOrder(order);
@@ -290,7 +289,7 @@ public class WriteCommissionAccount extends SvrProcess
 
 		if (allocLine.getC_Invoice_ID() > 0)
 		{
-			final I_C_Invoice invoice = POWrapper.create(allocLine.getC_Invoice(), I_C_Invoice.class);
+			final I_C_Invoice invoice = InterfaceWrapperHelper.create(allocLine.getC_Invoice(), I_C_Invoice.class);
 			if (!isPrepayOrder && isTriggerInvoice(invoice))
 			{
 				final MCAdvComDoc comDoc = MCAdvComDoc.createOrUpdate(invoice, allocLine);
@@ -314,8 +313,8 @@ public class WriteCommissionAccount extends SvrProcess
 
 	static boolean isPaidOrder(final I_C_Order order)
 	{
-		final Properties ctx = POWrapper.getCtx(order);
-		final String trxName = POWrapper.getTrxName(order);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 
 		final IPrepayOrderBL prepayOrderBL = Services.get(IPrepayOrderBL.class);
 		final BigDecimal allocatedAmt = prepayOrderBL.retrieveAllocatedAmt(ctx, order.getC_Order_ID(), trxName);

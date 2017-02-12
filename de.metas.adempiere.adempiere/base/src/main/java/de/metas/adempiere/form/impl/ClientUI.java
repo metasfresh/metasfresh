@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.AbstractClientUI;
 import de.metas.adempiere.form.AbstractClientUIInstance;
 import de.metas.adempiere.form.IAskDialogBuilder;
+import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.logging.LogManager;
@@ -144,6 +145,12 @@ public class ClientUI extends AbstractClientUI
 
 		@Override
 		public IClientUIInvoker invoke()
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+		
+		@Override
+		public IClientUIAsyncInvoker invokeAsync()
 		{
 			throw new UnsupportedOperationException("not implemented");
 		}

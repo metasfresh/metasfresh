@@ -33,7 +33,6 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ProcessUtil;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Archive;
@@ -42,7 +41,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.process.DocAction;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
@@ -52,9 +50,11 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.email.EMail;
+import de.metas.email.IMailBL;
+import de.metas.email.Mailbox;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.notification.IMailBL;
-import de.metas.notification.IMailBL.IMailbox;
+import de.metas.process.ProcessExecutor;
 
 /**
  * Workpackage processor for mails
@@ -151,16 +151,42 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 		final String mailCustomType = null;
 
-		final int processID = pInstance == null ? ProcessUtil.getCurrentProcessId() : pInstance.getAD_Process_ID();
-		final int orgID = pInstance == null ? ProcessUtil.getCurrentOrgId() : pInstance.getAD_Org_ID();
+		final int processID = pInstance == null ? ProcessExecutor.getCurrentProcessId() : pInstance.getAD_Process_ID();
+		final int orgID = pInstance == null ? ProcessExecutor.getCurrentOrgId() : pInstance.getAD_Org_ID();
 		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
 
 		final I_C_DocType docType = log.getC_DocType();
 
-		final IMailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
+		final Mailbox mailbox = mailBL.findMailBox(client, orgID, processID, docType,  mailCustomType, userFrom);
 
-		final I_AD_User userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
-		Check.assumeNotNull(userTo, "userTo not null for {}", log);
+		I_AD_User userTo = null;
+		
+		// check if the column for the user is specified
+		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
+		{
+			final String tableName = adTableDAO.retrieveTableName(log.getAD_Table_ID());
+			
+			// chekc if the column exists
+			final boolean existsColumn = adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
+			if (existsColumn)
+			{
+				// load the column content
+				final Object po = InterfaceWrapperHelper.create(ctx, tableName, log.getRecord_ID(), Object.class, trxName);
+				final Integer userToID = InterfaceWrapperHelper.getValueOrNull(po, mailbox.getColumnUserTo());
+				if (userToID != null)
+				{
+					userTo = InterfaceWrapperHelper.create(ctx, I_AD_User.Table_Name, userToID, I_AD_User.class, trxName);
+				}
+			}
+		}
+		
+		//
+		// fallback to old logic
+		if (userTo == null)
+		{
+			userTo = bpartnerBL.retrieveBillContact(ctx, partner.getC_BPartner_ID(), trxName);
+			Check.assumeNotNull(userTo, "userTo not null for {}", log);
+		}
 
 		final String mailTo = userTo.getEMail();
 		Check.assumeNotEmpty(mailTo, "email not empty for {}", log);

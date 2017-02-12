@@ -27,7 +27,7 @@ import org.adempiere.exceptions.AdempiereException;
 /**
  * Exception thrown when {@link IGLDistributionBL#validate(org.compiere.model.I_GL_Distribution)} fails.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GLDistributionNotValidException extends AdempiereException

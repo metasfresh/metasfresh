@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-06T16:02:50 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/docs/sales/billoflading/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -35,22 +39,22 @@ FROM
 	'1 Data' as tag
 FROM
 	M_ShipperTransportation mst
-	INNER JOIN M_ShippingPackage msp ON (msp.M_ShipperTransportation_id= mst.M_ShipperTransportation_id)
-	INNER JOIN M_Package mp ON (mp.M_Package_ID=msp.M_Package_ID)
-	INNER JOIN M_Package_HU mphu ON (mphu.M_Package_ID=msp.M_Package_ID)
+	INNER JOIN M_ShippingPackage msp ON (msp.M_ShipperTransportation_id= mst.M_ShipperTransportation_id) AND msp.isActive = 'Y'
+	INNER JOIN M_Package mp ON (mp.M_Package_ID=msp.M_Package_ID) AND mp.isActive = 'Y'
+	INNER JOIN M_Package_HU mphu ON (mphu.M_Package_ID=msp.M_Package_ID) AND mphu.isActive = 'Y'
 	INNER JOIN M_HU hu ON (hu.M_HU_ID=mphu.M_HU_ID)
-	INNER JOIN M_HU_PI_Version hu_pi_ver ON (hu_pi_ver.M_HU_PI_Version_ID=hu.M_HU_PI_Version_ID)
-	INNER JOIN M_HU_PI hu_pi ON (hu_pi.M_HU_PI_ID=hu_pi_ver.M_HU_PI_ID)
-	INNER JOIN M_HU_Storage hu_storage ON (hu_storage.M_HU_ID=hu.M_HU_ID)
-	INNER JOIN M_Product p ON (p.M_Product_ID=hu_storage.M_Product_ID)
-	LEFT OUTER JOIN C_BPartner_Product bpp ON (p.M_Product_ID = bpp.M_Product_ID)
-	INNER JOIN C_UOM uom ON (COALESCE(hu_storage.C_UOM_ID, p.C_UOM_ID) = uom.C_UOM_ID)
-	INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=msp.C_BPartner_ID)
-	INNER JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID=msp.C_BPartner_Location_ID)
-	INNER JOIN C_Location loc ON (loc.C_Location_ID=bpl.C_Location_ID)
-	INNER JOIN C_Country loc_cy ON (loc_cy.C_Country_ID=loc.C_Country_ID)
+	INNER JOIN M_HU_PI_Version hu_pi_ver ON (hu_pi_ver.M_HU_PI_Version_ID=hu.M_HU_PI_Version_ID) AND hu_pi_ver.isActive = 'Y'
+	INNER JOIN M_HU_PI hu_pi ON (hu_pi.M_HU_PI_ID=hu_pi_ver.M_HU_PI_ID) AND hu_pi.isActive = 'Y'
+	INNER JOIN M_HU_Storage hu_storage ON (hu_storage.M_HU_ID=hu.M_HU_ID) AND hu_storage.isActive = 'Y'
+	INNER JOIN M_Product p ON (p.M_Product_ID=hu_storage.M_Product_ID) AND p.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner_Product bpp ON (p.M_Product_ID = bpp.M_Product_ID) AND bpp.isActive = 'Y'
+	INNER JOIN C_UOM uom ON (COALESCE(hu_storage.C_UOM_ID, p.C_UOM_ID) = uom.C_UOM_ID) AND uom.isActive = 'Y'
+	INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=msp.C_BPartner_ID) AND bp.isActive = 'Y'
+	INNER JOIN C_BPartner_Location bpl ON (bpl.C_BPartner_Location_ID=msp.C_BPartner_Location_ID) AND bpl.isActive = 'Y'
+	INNER JOIN C_Location loc ON (loc.C_Location_ID=bpl.C_Location_ID) AND loc.isActive = 'Y'
+	INNER JOIN C_Country loc_cy ON (loc_cy.C_Country_ID=loc.C_Country_ID) AND loc_cy.isActive = 'Y'
 WHERE
-	mst.M_ShipperTransportation_ID = $P{RECORD_ID}
+	mst.M_ShipperTransportation_ID = $P{RECORD_ID} AND mst.isActive = 'Y'
 UNION
 SELECT
 	null AS DocNo, null AS DocDate, null AS BPName, null AS gln, null, null,
@@ -99,14 +103,14 @@ ORDER BY
 			<band height="21">
 				<printWhenExpression><![CDATA[$F{tag}.equals( "1 Data" )]]></printWhenExpression>
 				<textField>
-					<reportElement uuid="fcd00918-ff3e-4dde-95fd-61d82188fcb7" x="4" y="0" width="33" height="15"/>
+					<reportElement x="4" y="0" width="33" height="15" uuid="fcd00918-ff3e-4dde-95fd-61d82188fcb7"/>
 					<textElement textAlignment="Right">
 						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{gln}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="e5095a38-9f42-43ba-b4a6-0e5272b8dab1" x="45" y="0" width="335" height="15"/>
+					<reportElement x="45" y="0" width="335" height="15" uuid="e5095a38-9f42-43ba-b4a6-0e5272b8dab1"/>
 					<textElement>
 						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
@@ -118,21 +122,21 @@ ORDER BY
 			<band height="16">
 				<printWhenExpression><![CDATA[$F{tag}.equals( "1 Data" )]]></printWhenExpression>
 				<textField pattern="###0.00;-###0.00">
-					<reportElement uuid="5c263df5-fdf7-41df-8e78-33b41d31a4d8" x="81" y="3" width="38" height="12"/>
+					<reportElement x="81" y="3" width="38" height="12" uuid="5c263df5-fdf7-41df-8e78-33b41d31a4d8"/>
 					<textElement textAlignment="Right">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{qtysum}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement uuid="4371e6d9-22e2-4bca-a888-f61915d85726" x="10" y="3" width="71" height="12"/>
+					<reportElement x="10" y="3" width="71" height="12" uuid="4371e6d9-22e2-4bca-a888-f61915d85726"/>
 					<textElement markup="none">
 						<font size="9" isBold="false"/>
 					</textElement>
 					<text><![CDATA[Total Menge]]></text>
 				</staticText>
 				<subreport>
-					<reportElement uuid="ddcc66e0-8892-4671-8e58-e54b3235ed4f" x="0" y="3" width="555" height="13"/>
+					<reportElement x="0" y="3" width="555" height="13" uuid="ddcc66e0-8892-4671-8e58-e54b3235ed4f"/>
 					<subreportParameter name="RECORD_ID">
 						<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -143,7 +147,7 @@ ORDER BY
 					<subreportExpression><![CDATA["de/metas/docs/sales/billoflading/report_sum.jasper"]]></subreportExpression>
 				</subreport>
 				<line>
-					<reportElement uuid="44668b7b-ebdc-46ee-b49b-d90b0dd9a0d2" x="5" y="1" width="535" height="1"/>
+					<reportElement x="5" y="1" width="535" height="1" uuid="44668b7b-ebdc-46ee-b49b-d90b0dd9a0d2"/>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
 					</graphicElement>
@@ -157,28 +161,28 @@ ORDER BY
 			<band height="13">
 				<printWhenExpression><![CDATA[$F{tag}.equals( "1 Data" )]]></printWhenExpression>
 				<textField evaluationTime="Group" evaluationGroup="Product" pattern="###0.00;-###0.00" isBlankWhenNull="false">
-					<reportElement uuid="084cd64b-0b55-4698-8ade-c2b77da88aa2" x="81" y="0" width="38" height="13"/>
+					<reportElement x="81" y="0" width="38" height="13" uuid="084cd64b-0b55-4698-8ade-c2b77da88aa2"/>
 					<textElement textAlignment="Right">
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="0f815414-e1cd-4074-80d2-5ac195829c87" x="123" y="0" width="23" height="13"/>
+					<reportElement x="123" y="0" width="23" height="13" uuid="0f815414-e1cd-4074-80d2-5ac195829c87"/>
 					<textElement>
 						<font size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="fffb7b2f-baf4-4d18-9192-11e982835a46" x="147" y="0" width="259" height="13"/>
+					<reportElement x="147" y="0" width="259" height="13" uuid="fffb7b2f-baf4-4d18-9192-11e982835a46"/>
 					<textElement>
 						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement uuid="fa1849a0-afe4-49bc-bd32-d0bab7799f80" x="469" y="0" width="80" height="13"/>
+					<reportElement x="469" y="0" width="80" height="13" uuid="fa1849a0-afe4-49bc-bd32-d0bab7799f80"/>
 					<textElement>
 						<font size="9" isBold="false" isItalic="false"/>
 					</textElement>
@@ -196,70 +200,70 @@ ORDER BY
 	<pageHeader>
 		<band height="65" splitType="Stretch">
 			<textField>
-				<reportElement uuid="37f1394d-4394-44f9-a5c6-119969a8611e" x="12" y="0" width="100" height="14"/>
+				<reportElement x="12" y="0" width="100" height="14" uuid="37f1394d-4394-44f9-a5c6-119969a8611e"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{orgname}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="32461493-d96b-4c08-90b1-a69e60686740" x="12" y="13" width="100" height="14"/>
+				<reportElement x="12" y="13" width="100" height="14" uuid="32461493-d96b-4c08-90b1-a69e60686740"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{address1}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="5319623a-c1f9-4b2d-ba8a-d52efec55664" x="12" y="26" width="100" height="14"/>
+				<reportElement x="12" y="26" width="100" height="14" uuid="5319623a-c1f9-4b2d-ba8a-d52efec55664"/>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{address2}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="0fc04462-fd77-4010-b1d5-aa784c3aaba9" x="122" y="6" width="310" height="15"/>
+				<reportElement x="122" y="6" width="310" height="15" uuid="0fc04462-fd77-4010-b1d5-aa784c3aaba9"/>
 				<textElement textAlignment="Center" markup="none">
 					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Artikel Rüstliste " +  $F{docno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="66a140ef-89cf-4a01-8d98-6058c1065341" x="122" y="20" width="310" height="18"/>
+				<reportElement x="122" y="20" width="310" height="18" uuid="66a140ef-89cf-4a01-8d98-6058c1065341"/>
 				<textElement textAlignment="Center" markup="none">
 					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement uuid="7045dfb8-1a4d-4985-9023-ac1093027d11" x="122" y="37" width="310" height="15"/>
+				<reportElement x="122" y="37" width="310" height="15" uuid="7045dfb8-1a4d-4985-9023-ac1093027d11"/>
 				<textElement textAlignment="Center" markup="none">
 					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{docdate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="478ee8e5-9d28-40b9-9ca6-bc47e22ba1a6" x="418" y="0" width="123" height="10"/>
+				<reportElement x="418" y="0" width="123" height="10" uuid="478ee8e5-9d28-40b9-9ca6-bc47e22ba1a6"/>
 				<textElement textAlignment="Right">
 					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER}+ " / "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
-				<reportElement uuid="68623e3f-d555-48d1-8ab3-87e22d9f7610" x="540" y="0" width="13" height="10"/>
+				<reportElement x="540" y="0" width="13" height="10" uuid="68623e3f-d555-48d1-8ab3-87e22d9f7610"/>
 				<textElement textAlignment="Right">
 					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="0e4e8fbe-6305-4d7c-bd9e-34e494df3fe7" x="450" y="10" width="35" height="10"/>
+				<reportElement x="450" y="10" width="35" height="10" uuid="0e4e8fbe-6305-4d7c-bd9e-34e494df3fe7"/>
 				<textElement markup="none">
 					<font size="7"/>
 				</textElement>
 				<text><![CDATA[Druckzeit:]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy HH:mm:ss">
-				<reportElement uuid="e8b5a33d-cdb4-4575-aafb-444d57f952e9" x="485" y="10" width="68" height="10"/>
+				<reportElement x="485" y="10" width="68" height="10" uuid="e8b5a33d-cdb4-4575-aafb-444d57f952e9"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="7"/>
 				</textElement>
@@ -274,7 +278,7 @@ ORDER BY
 		<band height="29" splitType="Stretch">
 			<printWhenExpression><![CDATA[$F{tag}.equals( "2 Footer" )]]></printWhenExpression>
 			<subreport>
-				<reportElement uuid="995065be-0666-437f-aacd-2da24d1cf54e" x="0" y="16" width="555" height="13"/>
+				<reportElement x="0" y="16" width="555" height="13" uuid="995065be-0666-437f-aacd-2da24d1cf54e"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -282,14 +286,14 @@ ORDER BY
 				<subreportExpression><![CDATA["de/metas/docs/sales/billoflading/report_sum.jasper"]]></subreportExpression>
 			</subreport>
 			<textField pattern="###0.00;-###0.00">
-				<reportElement uuid="5c263df5-fdf7-41df-8e78-33b41d31a4d8" x="81" y="16" width="38" height="12"/>
+				<reportElement x="81" y="16" width="38" height="12" uuid="5c263df5-fdf7-41df-8e78-33b41d31a4d8"/>
 				<textElement textAlignment="Right">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{qtytotalsum}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="4371e6d9-22e2-4bca-a888-f61915d85726" x="10" y="16" width="71" height="12"/>
+				<reportElement x="10" y="16" width="71" height="12" uuid="4371e6d9-22e2-4bca-a888-f61915d85726"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>

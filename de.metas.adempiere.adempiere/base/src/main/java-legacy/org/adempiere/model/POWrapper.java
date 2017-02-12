@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2010 Teo Sarca, teo.sarca@gmail.com                          *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2010 Teo Sarca, teo.sarca@gmail.com *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.model;
 
@@ -27,13 +27,12 @@ import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.persistence.exceptions.ModelClassNotSupportedException;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.ad.wrapper.POModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.ProxyMethodsCache;
-import org.compiere.model.GridTab;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -65,7 +64,7 @@ import de.metas.logging.LogManager;
  *
  * @author Teo Sarca, teo.sarca@gmail.com
  */
-public class POWrapper implements InvocationHandler
+public class POWrapper implements InvocationHandler, IInterfaceWrapper
 {
 	public static <T> T create(final Object po, final Class<T> cl)
 	{
@@ -125,7 +124,7 @@ public class POWrapper implements InvocationHandler
 		// Try getting the PO using other wrappers too
 		if (po == null)
 		{
-			po = getPO(obj, true);
+			po = getPO(obj);
 		}
 
 		if (!(po instanceof PO))
@@ -151,23 +150,23 @@ public class POWrapper implements InvocationHandler
 	}
 
 	/**
-	 * Create a new instance of given interface
+	 * Similar to {@link #create(Properties, String, int, Class, String)}, but attempts to get the table name from the given <code>modelClass</code>.
 	 *
 	 * @param <T> model interface
 	 * @param ctx context
 	 * @param id record id
-	 * @param cl model interface class
+	 * @param modelClass model interface class
 	 * @param trxName db transaction name
-	 * @return new instance or null if not found
+	 * @return
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> modelClass, final String trxName)
 	{
-		final String tableName = getTableName(cl); // won't return null
-		return create(ctx, tableName, id, cl, trxName);
+		final String tableName = getTableName(modelClass); // won't return null
+		return create(ctx, tableName, id, modelClass, trxName);
 	}
 
 	/**
-	 * Create a new instance of given interface
+	 * Loads the PO with the given <code>id</code> and returns an isntance.
 	 *
 	 * @param <T> model interface
 	 * @param ctx context
@@ -175,7 +174,7 @@ public class POWrapper implements InvocationHandler
 	 * @param id record id
 	 * @param modelClass model interface class
 	 * @param trxName db transaction name
-	 * @return new instance or null if not found
+	 * @return new instance or <code>null</code> if not found.
 	 */
 	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> modelClass, final String trxName)
 	{
@@ -216,7 +215,7 @@ public class POWrapper implements InvocationHandler
 
 	public static <T> T translate(final T model, final Class<T> cl, String trlAdLanguage)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 
 		if (trlAdLanguage == null)
 		{
@@ -235,9 +234,9 @@ public class POWrapper implements InvocationHandler
 
 	public static IModelTranslationMap getModelTranslationMap(final Object model)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
-		
+
 		return po.get_ModelTranslationMap();
 	}
 
@@ -248,12 +247,25 @@ public class POWrapper implements InvocationHandler
 	 * @param model
 	 * @return underlying {@link PO} or null
 	 */
-	public static <T extends PO> T getPO(final Object model)
+	/*package*/ static <T extends PO> T getPO(final Object model)
 	{
 		final boolean checkOtherWrapper = true;
-		@SuppressWarnings("unchecked")
-		final T po = (T)getPO(model, checkOtherWrapper);
+		final T po = getPO(model, checkOtherWrapper);
+		return po;
+	}
 
+	/**
+	 * Method strictly gets the underlying PO if the wrapper supports it.
+	 *
+	 * Compared with {@link #getPO()}, this method will NOT try to load the PO from other wrappers.
+	 *
+	 * @param model
+	 * @return
+	 */
+	public static <T extends PO> T getStrictPO(final Object model)
+	{
+		final boolean checkOtherWrapper = false;
+		final T po = getPO(model, checkOtherWrapper);
 		return po;
 	}
 
@@ -263,10 +275,14 @@ public class POWrapper implements InvocationHandler
 	 * @param checkOtherWrapper if the given <code>model</code> is handled by a {@link GridTabWrapper} and this param is <code>true</code>, then this method <b>loads a new PO from DB</b>, only using
 	 *            the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
 	 *            <code>null</code>.
-	 * @return
+	 * @return <ul>
+	 * <li>PO
+	 * <li>null if model is null
+	 * <li>null if {@link POWrapper} does not support it and <code>checkOtherWrapper</code> is <code>false</code>.
+	 * </ul>
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends PO> T getPO(final Object model, final boolean checkOtherWrapper)
+	private static <T extends PO> T getPO(final Object model, final boolean checkOtherWrapper)
 	{
 		if (model == null)
 		{
@@ -288,12 +304,8 @@ public class POWrapper implements InvocationHandler
 			}
 			if (checkOtherWrapper && ih instanceof GridTabWrapper)
 			{
-				// using the grid tab wrapper to load the PO
-				final GridTab gridTab = GridTabWrapper.getGridTab(model);
-				final String tableName = gridTab.get_TableName();
-				final int recordID = gridTab.getKeyID(gridTab.getCurrentRow());
-				final Properties ctx = Env.getCtx();
-				return (T)tableModelLoader.getPO(ctx, tableName, recordID, ITrx.TRXNAME_None);
+				final GridTabWrapper wrapper = (GridTabWrapper)ih;
+				return wrapper.getPO();
 			}
 		}
 
@@ -338,7 +350,7 @@ public class POWrapper implements InvocationHandler
 	 */
 	public static Properties getCtx(final Object model, final boolean useClientOrgFromModel)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 
 		if (po != null)
 		{
@@ -382,7 +394,7 @@ public class POWrapper implements InvocationHandler
 
 	public static String getTrxName(final Object model)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po != null)
 		{
 			return po.get_TrxName();
@@ -608,6 +620,7 @@ public class POWrapper implements InvocationHandler
 
 	/**
 	 * Returns 0 if there is (or could be) a valid record with ID=0), like for example <code>AD_User_ID</code>.
+	 *
 	 * @param columnName
 	 * @return
 	 */
@@ -721,7 +734,7 @@ public class POWrapper implements InvocationHandler
 
 	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
-		final PO po = getPO(model, false);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null");
 
 		final Method poMethod = null; // N/A
@@ -741,7 +754,7 @@ public class POWrapper implements InvocationHandler
 	{
 		if (poCacheLocals == null)
 		{
-			poCacheLocals = new HashMap<String, POWrapperCacheLocal>();
+			poCacheLocals = new HashMap<>();
 		}
 
 		final String refTableName = InterfaceWrapperHelper.getTableName(refModelClass);
@@ -768,7 +781,7 @@ public class POWrapper implements InvocationHandler
 			throw new IllegalArgumentException("model is null");
 		}
 
-		final PO po = getPO(o);
+		final PO po = getStrictPO(o);
 		if (po != null)
 		{
 			po.saveEx();
@@ -808,7 +821,7 @@ public class POWrapper implements InvocationHandler
 
 	public static boolean isHandled(final Object model)
 	{
-		return getPO(model, false) != null; // checkOtherWrapper=false
+		return getStrictPO(model) != null;
 	}
 
 	/**
@@ -825,7 +838,7 @@ public class POWrapper implements InvocationHandler
 		{
 			throw new IllegalArgumentException("model is null");
 		}
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			throw new ModelClassNotSupportedException(model);
@@ -848,7 +861,7 @@ public class POWrapper implements InvocationHandler
 		{
 			throw new IllegalArgumentException("model is null");
 		}
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			throw new ModelClassNotSupportedException(model);
@@ -863,7 +876,7 @@ public class POWrapper implements InvocationHandler
 		{
 			throw new IllegalArgumentException("model is null");
 		}
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			throw new ModelClassNotSupportedException(model);
@@ -882,7 +895,7 @@ public class POWrapper implements InvocationHandler
 	 */
 	public static boolean isNull(final Object model, final String columnName)
 	{
-		final PO po = getPO(model, false);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			return true;
@@ -894,20 +907,20 @@ public class POWrapper implements InvocationHandler
 
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
-		final Object valueOld = getPO(model, false).setDynAttribute(attributeName, value);
+		final Object valueOld = getStrictPO(model).setDynAttribute(attributeName, value);
 		return valueOld;
 	}
 
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
 		@SuppressWarnings("unchecked")
-		final T value = (T)getPO(model, false).getDynAttribute(attributeName);
+		final T value = (T)getStrictPO(model).getDynAttribute(attributeName);
 		return value;
 	}
 
 	public static boolean hasModelColumnName(final Object model, final String columnName)
 	{
-		final PO po = getPO(model, false);
+		final PO po = getStrictPO(model);
 		if (po == null)
 		{
 			return false;
@@ -936,17 +949,17 @@ public class POWrapper implements InvocationHandler
 
 	public static boolean isNew(final Object model)
 	{
-		return getPO(model, false).is_new();
+		return getStrictPO(model).is_new();
 	}
 
 	public static boolean isUIAction(final Object model)
 	{
-		return getPO(model, false).is_ManualUserAction();
+		return getStrictPO(model).is_ManualUserAction();
 	}
 
 	public static boolean isRecordChanged(final Object model)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 
 		return po.is_Changed();
@@ -954,7 +967,7 @@ public class POWrapper implements InvocationHandler
 
 	public static boolean isValueChanged(final Object model, final String columnName)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 		return isPOValueChanged(po, columnName);
 	}
@@ -966,7 +979,7 @@ public class POWrapper implements InvocationHandler
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
-		final PO po = getPO(model);
+		final PO po = getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
 		for (final String columnName : columnNames)
 		{
@@ -995,7 +1008,7 @@ public class POWrapper implements InvocationHandler
 	public static boolean hasChanges(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
-		final PO po = getPO(model, false); // checkOtherWrapper=false
+		final PO po = getStrictPO(model);
 		return po.is_Changed();
 	}
 

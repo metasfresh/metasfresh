@@ -30,7 +30,7 @@ import de.metas.acct.model.I_Fact_Acct_Summary;
 /**
  * The aggregation dimension used for aggregating {@link I_Fact_Acct_Log}s into {@link I_Fact_Acct_Summary} records.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IFactAcctSummaryKey

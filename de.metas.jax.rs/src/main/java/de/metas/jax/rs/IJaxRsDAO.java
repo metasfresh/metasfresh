@@ -29,7 +29,7 @@ import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
  * #L%
  */
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @task http://dewiki908/mediawiki/index.php/09848_enable_metasfresh_to_provide_jax-rs_services_%28101763395402%29
  */

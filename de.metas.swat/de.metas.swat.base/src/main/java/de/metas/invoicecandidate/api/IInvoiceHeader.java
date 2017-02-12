@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,16 +30,16 @@ import org.compiere.model.I_C_DocType;
 
 /**
  * Invoice predecessor returned by {@link IAggregationBL#aggregate()}.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IInvoiceHeader
 {
 	String getDocBaseType();
 
 	String getPOReference();
-	
+
 	Timestamp getDateInvoiced();
 
 	/**
@@ -49,14 +49,14 @@ public interface IInvoiceHeader
 
 	/**
 	 * Note: when creating an C_Invoice, this value take precedence over the org of the order specified by {@link #getC_Order_ID()} (if >0).
-	 * 
+	 *
 	 * @return
 	 */
 	int getAD_Org_ID();
 
 	int getC_Order_ID();
 
-	int getM_PricingSystem_ID();
+	int getM_PriceList_ID();
 
 	int getBill_Location_ID();
 
@@ -69,7 +69,7 @@ public interface IInvoiceHeader
 
 	/**
 	 * Returns a mapping from invoice candidates to the invoice line predecessor(s) into which the respective invoice candidate has been aggregated.
-	 * 
+	 *
 	 * @return
 	 */
 	List<IInvoiceCandAggregate> getLines();
@@ -82,7 +82,7 @@ public interface IInvoiceHeader
 	boolean isSOTrx();
 
 	int getM_InOut_ID();
-	
+
 	I_C_DocType getC_DocTypeInvoice();
 
 	boolean isTaxIncluded();

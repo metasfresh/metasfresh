@@ -41,7 +41,7 @@ import de.metas.printing.esb.api.PrinterHWList;
 /**
  * This class defines the printing service's web service interface.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Path("/printing/")

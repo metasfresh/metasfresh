@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -35,14 +34,14 @@ import org.adempiere.util.StringUtils;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MPricingSystem;
+import org.compiere.model.MPriceList;
 import org.compiere.util.TimeUtil;
 
 /**
  * {@link InvoiceHeaderImpl} builder class used to collect invoice header values and make sure they match.
- * 
+ *
  * It creates the actual {@link InvoiceHeaderImpl} when calling {@link #build()}.
- * 
+ *
  * @author tsa
  *
  */
@@ -60,7 +59,7 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
 
-	private final Set<Integer> M_PricingSystem_IDs = new LinkedHashSet<>();
+	private final Set<Integer> M_PriceList_IDs = new LinkedHashSet<>();
 
 	private int Bill_BPartner_ID;
 	private int Bill_Location_ID;
@@ -80,7 +79,7 @@ public class InvoiceHeaderImplBuilder
 
 	private Boolean taxIncluded = null;
 
-	/* package */InvoiceHeaderImplBuilder()
+	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
 	}
@@ -102,8 +101,8 @@ public class InvoiceHeaderImplBuilder
 
 		// Pricing and currency
 		invoiceHeader.setC_Currency_ID(getC_Currency_ID());
-		invoiceHeader.setM_PricingSystem_ID(getM_PricingSystem_ID());
-		
+		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
+
 		// Tax
 		invoiceHeader.setTaxIncluded(isTaxIncluded());
 
@@ -210,14 +209,25 @@ public class InvoiceHeaderImplBuilder
 		normalizeIDAndAddIfValid(C_Order_IDs, orderId);
 	}
 
-	public int getM_PricingSystem_ID()
+	/**
+	 *
+	 * @return the <code>M_PriceList_ID</code> to use.
+	 *         If different <code>M_PriceList_ID</code>s were added using {@link #setM_PriceList_ID(int)},
+	 *         then {@link MPriceList#M_PriceList_ID_None} is returned instead.
+	 */
+	public int getM_PriceList_ID()
 	{
-		return ListUtils.singleElementOrDefault(M_PricingSystem_IDs, MPricingSystem.M_PricingSystem_ID_None);
+		return ListUtils.singleElementOrDefault(M_PriceList_IDs, MPriceList.M_PriceList_ID_None);
 	}
 
-	public void setM_PricingSystem_ID(final int pricingSystemId)
+	/**
+	 * Sets/adds the given pricelist for this header. See {@link #getM_PriceList_ID()} for how conflicts are resolved.
+	 *
+	 * @param priceListId
+	 */
+	public void setM_PriceList_ID(final int priceListId)
 	{
-		normalizeIDAndAddIfValid(M_PricingSystem_IDs, pricingSystemId);
+		normalizeIDAndAddIfValid(M_PriceList_IDs, priceListId);
 	}
 
 	public int getBill_Location_ID()

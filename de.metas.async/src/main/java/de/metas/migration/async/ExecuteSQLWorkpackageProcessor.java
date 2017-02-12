@@ -8,10 +8,12 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
-import org.compiere.util.CompositeEvaluatee;
 import org.compiere.util.DB;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -42,9 +44,10 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
  */
 
 /**
- * Processor used to execute a given SQL code and if there were some records updated, re-enqueue a new workpackage to execute it again, until nothing left.
+ * Processor used to execute a given SQL code and if there were some records updated,
+ * then re-enqueue a new workpackage to execute it again, until nothing left.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
@@ -56,7 +59,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		final ILoggable loggable = getLoggable();
+		final ILoggable loggable = Loggables.get();
 		final IParams params = getParameters();
 
 		//
@@ -130,7 +133,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// Parse context variables
 		{
 			final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql, IStringExpression.class);
-			final CompositeEvaluatee evalCtx = new CompositeEvaluatee(InterfaceWrapperHelper.getEvaluatee(workpackage));
+			final Evaluatee evalCtx = Evaluatees.compose(InterfaceWrapperHelper.getEvaluatee(workpackage));
 
 			sql = sqlExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
 		}

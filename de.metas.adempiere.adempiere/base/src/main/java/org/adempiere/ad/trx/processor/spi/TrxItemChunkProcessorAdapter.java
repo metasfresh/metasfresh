@@ -25,7 +25,7 @@ package org.adempiere.ad.trx.processor.spi;
 /**
  * Implement what you need adapter for {@link ITrxItemChunkProcessor}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <IT> input type
  * @param <RT> result type

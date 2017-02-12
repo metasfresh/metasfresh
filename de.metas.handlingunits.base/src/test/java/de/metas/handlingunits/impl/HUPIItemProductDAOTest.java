@@ -1,5 +1,10 @@
 package de.metas.handlingunits.impl;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,18 +15,17 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -53,6 +57,8 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 public class HUPIItemProductDAOTest
@@ -60,7 +66,10 @@ public class HUPIItemProductDAOTest
 	private HUPIItemProductDAO dao;
 	private I_M_Product product1;
 	private I_M_Product product2;
-	// private I_M_Product product3;
+
+	private I_M_Product packagingProduct1;
+	private I_M_Product packagingProduct2;
+
 	private I_C_BPartner bpartner1;
 	private I_C_BPartner bpartner2;
 	private final I_C_BPartner bpartner_NULL = null;
@@ -83,7 +92,10 @@ public class HUPIItemProductDAOTest
 		dao = (HUPIItemProductDAO)Services.get(IHUPIItemProductDAO.class);
 		product1 = createProduct("p1");
 		product2 = createProduct("p2");
-		// product3 = createProduct("p3");
+
+		packagingProduct1 = createProduct("pp1");
+		packagingProduct2 = createProduct("pp2");
+
 		bpartner1 = createBPartner("bp1");
 		bpartner2 = createBPartner("bp2");
 		// bpartner3 = createBPartner("bp3");
@@ -102,9 +114,7 @@ public class HUPIItemProductDAOTest
 				.getComparator();
 
 		final List<I_M_HU_PI_Item_Product> itemProducts = Arrays.asList(
-				createM_HU_PI_Item_Product(product1, null, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit)
-				, createM_HU_PI_Item_Product(product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit)
-				);
+				createM_HU_PI_Item_Product(product1, null, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit), createM_HU_PI_Item_Product(product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit));
 
 		final List<I_M_HU_PI_Item_Product> itemProductsOrdered = new ArrayList<I_M_HU_PI_Item_Product>(itemProducts);
 		Collections.sort(itemProductsOrdered, orderBy);
@@ -145,15 +155,44 @@ public class HUPIItemProductDAOTest
 		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date2, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit); // 06566: don't pull the "anyProduct"
-																																				// I_M_HU_PI_Item_Product, because product2 has no
-																																				// assignment
+		// I_M_HU_PI_Item_Product, because product2 has no
+		// assignment
 		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date4, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit); // 06566: don't pull the "anyProduct"
+	}
+
+	/**
+	 * Tests {@link HUPIItemProductDAO#retrieveMaterialItemProduct(org.compiere.model.I_M_Product, I_C_BPartner, Date, String, boolean, org.compiere.model.I_M_Product)}, i.e that one that also takes the packagacking product into account.
+	 *
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 */
+	@Test
+	public void test_retrieveMaterialItemProductbyPackagingProduct()
+	{
+		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
+
+		final I_M_HU_PI_Item_Product piip1 = createM_HU_PI_Item_Product(product1, bpartner1, date1, huUnitType);
+		assertThat(piip1.getM_HU_PI_Item().getItemType(), is(X_M_HU_PI_Item.ITEMTYPE_Material)); // guard
+		addPackingmaterialToItem(packagingProduct1, piip1.getM_HU_PI_Item());
+		POJOWrapper.setInstanceName(piip1, "piip1");
+
+		final I_M_HU_PI_Item_Product piip2 = createM_HU_PI_Item_Product(product1, bpartner1, date1, huUnitType);
+		assertThat(piip1.getM_HU_PI_Item().getItemType(), is(X_M_HU_PI_Item.ITEMTYPE_Material)); // guard
+		addPackingmaterialToItem(packagingProduct2, piip2.getM_HU_PI_Item());
+		POJOWrapper.setInstanceName(piip2, "piip2");
+
+		final boolean allowInfiniteCapacity = true;
+
+		assertThat(dao.retrieveMaterialItemProduct(product1, bpartner1, date1, huUnitType, allowInfiniteCapacity, packagingProduct1),
+				is(piip1));
+		assertThat(dao.retrieveMaterialItemProduct(product1, bpartner1, date1, huUnitType, allowInfiniteCapacity, packagingProduct2),
+				is(piip2));
 	}
 
 	private void test_retrieveMaterialItemProduct_product_bpartner_date(final I_M_HU_PI_Item_Product expected,
 			final I_M_Product product, final I_C_BPartner bpartner, final Date date, final String huUnitType)
 	{
-		final I_M_HU_PI_Item_Product actual = dao.retrieveMaterialItemProduct(product, bpartner, date, huUnitType, true);
+		final boolean allowInfiniteCapacity = true;
+		final I_M_HU_PI_Item_Product actual = dao.retrieveMaterialItemProduct(product, bpartner, date, huUnitType, allowInfiniteCapacity);
 		final String message = "Invalid for product=" + product.getValue() + ", bpartner=" + bpartner.getValue() + ", date=" + date;
 		assertEqualsByDescription(message, expected, actual);
 	}
@@ -199,14 +238,31 @@ public class HUPIItemProductDAOTest
 		return piVersion;
 	}
 
-	private I_M_HU_PI_Item createM_HU_PI_Item(final String huUnitType)
+	private I_M_HU_PI_Item createMaterialM_HU_PI_Item(final String huUnitType)
 	{
 		final I_M_HU_PI_Version piVersion = createM_HU_PI_Version(huUnitType);
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
 		piItem.setM_HU_PI_Version(piVersion);
+		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
 		InterfaceWrapperHelper.save(piItem);
 		return piItem;
+	}
+
+	private void addPackingmaterialToItem(final I_M_Product packackingProduct, final I_M_HU_PI_Item materialPiItem)
+	{
+		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
+		packingMaterial.setM_Product(packackingProduct);
+		InterfaceWrapperHelper.save(packingMaterial);
+
+		final I_M_HU_PI_Item packingMaterialPiItem = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		packingMaterialPiItem.setM_HU_PI_Version(materialPiItem.getM_HU_PI_Version());
+		
+		packingMaterialPiItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
+		packingMaterialPiItem.setM_HU_PackingMaterial(packingMaterial);
+		packingMaterialPiItem.setQty(BigDecimal.ONE);
+		
+		InterfaceWrapperHelper.save(packingMaterialPiItem);
 	}
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final I_M_Product product, final I_C_BPartner bpartner, final Timestamp validFrom, final String huUnitType)
@@ -221,7 +277,7 @@ public class HUPIItemProductDAOTest
 
 		piItemProduct.setIsInfiniteCapacity(false);
 
-		final I_M_HU_PI_Item huPiItem = createM_HU_PI_Item(huUnitType);
+		final I_M_HU_PI_Item huPiItem = createMaterialM_HU_PI_Item(huUnitType);
 		piItemProduct.setM_HU_PI_Item(huPiItem);
 
 		piItemProduct.setC_BPartner(bpartner);
@@ -301,7 +357,11 @@ public class HUPIItemProductDAOTest
 		final I_M_HU_PI_Item_Product pip4 = createM_HU_PI_Item_Product(product1, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final List<I_M_HU_PI_Item_Product> pipsExpected = Arrays.asList(pip1, pip2, pip4);
-		final List<I_M_HU_PI_Item_Product> pipsActual = dao.retrieveTUs(Env.getCtx(), product1, bpartner1);
+		final List<I_M_HU_PI_Item_Product> pipsActual = dao.retrieveTUs(
+				Env.getCtx(),
+				product1,
+				bpartner1);
+
 		Collections.sort(pipsActual, ModelByIdComparator.getInstance());
 		Assert.assertEquals(
 				pipsExpected,

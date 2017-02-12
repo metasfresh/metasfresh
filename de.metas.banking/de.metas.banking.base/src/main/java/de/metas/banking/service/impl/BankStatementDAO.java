@@ -1,5 +1,7 @@
 package de.metas.banking.service.impl;
 
+import java.util.Date;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -13,24 +15,30 @@ package de.metas.banking.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
@@ -110,5 +118,41 @@ public class BankStatementDAO implements IBankStatementDAO
 		}
 
 		return false;
+	}
+
+	@Override
+	public List<I_C_BankStatement> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		// Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
+		final IQueryBuilder<I_C_BankStatementLine> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatementLine.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, Env.ZERO);
+
+		// Check if there are fact accounts created for each document
+		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_BankStatement.class));
+
+		// query Builder for the bank statement
+
+		final IQueryBuilder<I_C_BankStatement> bankStatementQuery = queryBuilder
+				.andCollect(I_C_BankStatement.COLUMN_C_BankStatement_ID, I_C_BankStatement.class);
+
+		// Only the documents created after the given start time
+		if (startTime != null)
+		{
+			bankStatementQuery.addCompareFilter(I_C_BankStatement.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, startTime);
+		}
+
+		return bankStatementQuery.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Posted, true) // Posted
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Processed, true) // Processed
+				.addInArrayOrAllFilter(I_C_BankStatement.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
+				.create()
+				.list(I_C_BankStatement.class);
+
 	}
 }

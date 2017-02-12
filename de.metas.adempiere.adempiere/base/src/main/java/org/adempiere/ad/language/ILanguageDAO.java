@@ -1,5 +1,6 @@
 package org.adempiere.ad.language;
 
+import java.util.List;
 import java.util.Properties;
 
 /*
@@ -29,6 +30,14 @@ import org.compiere.model.I_AD_Language;
 
 public interface ILanguageDAO extends ISingletonService
 {
+	List<I_AD_Language> retrieveAvailableLanguages(Properties ctx, int clientId);
+	
+	/**
+	 * @param ctx
+	 * @return all available AD_Languages, having the base language as first item
+	 */
+	List<String> retrieveAvailableAD_LanguagesForMatching(Properties ctx);
+
 	/**
 	 * Retrieve Base AD_Language right from database.
 	 * 

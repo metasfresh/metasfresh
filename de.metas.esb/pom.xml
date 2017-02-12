@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent.general</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<groupId>de.metas.esb</groupId>
 	<artifactId>de.metas.esb</artifactId>
-	<version>3-development-SNAPSHOT</version>
-	
+	<version>1.0.0</version>
+
 	<packaging>pom</packaging>
 
 	<properties>
@@ -40,7 +40,7 @@
 		<module>../de.metas.edi.esb.camel</module>
 		<module>../de.metas.printing.esb.camel</module>
 	</modules>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -196,12 +196,6 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>jaxb2-maven-plugin</artifactId>
-					<version>1.6</version>
-				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>

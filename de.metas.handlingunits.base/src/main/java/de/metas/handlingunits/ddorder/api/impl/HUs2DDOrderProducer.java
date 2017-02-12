@@ -18,6 +18,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -40,7 +41,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.X_DD_Order;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
@@ -61,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -72,12 +74,12 @@ import de.metas.handlingunits.storage.IHUProductStorage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -89,7 +91,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
  *
  * NOTE: this producer is NOT actually moving them, but it's just creating draft DD Orders to move them.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @task 08639
  */
@@ -150,7 +152,7 @@ public class HUs2DDOrderProducer
 		prepareProcessing();
 
 		final Properties ctx = getCtx();
-		huTrxBL.createHUContextProcessorExecutor(PlainContextAware.createUsingThreadInheritedTransaction(ctx))
+		huTrxBL.createHUContextProcessorExecutor(PlainContextAware.newWithThreadInheritedTrx(ctx))
 				.run(new IHUContextProcessor()
 				{
 
@@ -186,26 +188,26 @@ public class HUs2DDOrderProducer
 				loggable.addLog(errmsg);
 			}
 		}
-		
+
 		//
 		// Process DD_OrderLine candidates
 		processDDOrderLineCandidates(huContext);
 	}
-	
+
 	private final void processDDOrderLineCandidates(final IHUContext huContext)
 	{
 		if (ddOrderLineCandidates.isEmpty())
 		{
 			return;
 		}
-		
+
 		final I_DD_Order ddOrder = createDD_OrderHeader(huContext);
-		
+
 		for (final DDOrderLineCandidate ddOrderLineCandidate : ddOrderLineCandidates.values())
 		{
 			createDD_OrderLine(huContext, ddOrder, ddOrderLineCandidate);
 		}
-		
+
 		//
 		// Process the DD order if needed
 		docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
@@ -251,13 +253,13 @@ public class HUs2DDOrderProducer
 		final boolean alreadyProcessed = _processed.getAndSet(true);
 		Check.assume(!alreadyProcessed, "producer not already executed");
 	}
-	
+
 	public final HUs2DDOrderProducer setContext(final Properties ctx)
 	{
 		this._ctx = ctx;
 		return this;
 	}
-	
+
 	private final Properties getCtx()
 	{
 		Check.assumeNotNull(_ctx, "_ctx not null");
@@ -301,7 +303,7 @@ public class HUs2DDOrderProducer
 
 	private final ILoggable getLoggable()
 	{
-		return ILoggable.THREADLOCAL.getLoggableOrLogger(logger, Level.INFO);
+		return Loggables.getLoggableOrLogger(logger, Level.INFO);
 	}
 
 	private void addHU(final IHUContext huContext, final I_M_HU hu)
@@ -315,7 +317,7 @@ public class HUs2DDOrderProducer
 			final I_M_Warehouse warehouseTo = getM_Warehouse_To();
 			Check.assume(huLocator.getM_Warehouse_ID() != warehouseTo.getM_Warehouse_ID(), "HU's is not stored in destination warehouse");
 		}
-		
+
 		//
 		// Create DD Order line candidates
 		final List<IHUProductStorage> huProductStorages = huContext.getHUStorageFactory()
@@ -512,9 +514,9 @@ public class HUs2DDOrderProducer
 			{
 				aggregationKeyBuilder.append(attribute2value.getKey().getValue(), attribute2value.getValue());
 			}
-		
+
 			this.aggregationKey = aggregationKeyBuilder.build();
-			
+
 			//
 			// Add this HUProductStoarge
 			addHUProductStorage(huProductStorage);
@@ -525,11 +527,11 @@ public class HUs2DDOrderProducer
 			Check.assumeNotNull(aggregationKey, "aggregationKey not null");
 			return aggregationKey;
 		}
-		
+
 		public void addDDOrderLineCandidate(final DDOrderLineCandidate candidateToAdd)
 		{
 			Check.assume(Check.equals(this.aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {} \nBut it was: {}", this.aggregationKey, candidateToAdd.getAggregationKey());
-			
+
 			this.hus.addAll(candidateToAdd.getM_HUs());
 
 			final BigDecimal huQtyInSourceUOM = candidateToAdd.getQtyInSourceUOM();
@@ -603,7 +605,7 @@ public class HUs2DDOrderProducer
 
 			return description.toString();
 		}
-		
+
 		public Map<org.compiere.model.I_M_Attribute, Object> getAttributes()
 		{
 			return attributes;

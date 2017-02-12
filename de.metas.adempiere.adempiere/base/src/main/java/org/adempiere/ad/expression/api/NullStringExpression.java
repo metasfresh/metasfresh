@@ -1,42 +1,22 @@
 package org.adempiere.ad.expression.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.impl.StringExpressionEvaluator;
+import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.Evaluatee;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * NULL {@link IStringExpression}
- * 
+ *
  * @author tsa
- * 
+ *
  */
-public final class NullStringExpression implements IStringExpression
+@JsonSerialize(using = JsonStringExpressionSerializer.class)
+public final class NullStringExpression implements ICachedStringExpression
 {
 	public static final NullStringExpression instance = new NullStringExpression();
 
@@ -58,32 +38,39 @@ public final class NullStringExpression implements IStringExpression
 	}
 
 	@Override
-	public List<String> getParameters()
+	public Set<String> getParameters()
 	{
-		return Collections.emptyList();
+		return ImmutableSet.of();
 	}
 
 	@Override
-	public List<Object> getExpressionChunks()
+	public String evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
 	{
-		return Collections.emptyList();
+		return EMPTY_RESULT;
 	}
 
 	@Override
-	public String evaluate(Evaluatee ctx, boolean ignoreUnparsable)
+	public String evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound)
 	{
-		return StringExpressionEvaluator.EMPTY_RESULT;
+		return EMPTY_RESULT;
 	}
 
 	@Override
-	public String evaluate(Evaluatee ctx, OnVariableNotFound onVariableNotFound)
+	public final IStringExpression resolvePartial(final Evaluatee ctx)
 	{
-		return StringExpressionEvaluator.EMPTY_RESULT;
+		return this;
 	}
 
 	@Override
-	public final IExpressionEvaluator<IStringExpression, String> getEvaluator()
+	public boolean isNullExpression()
 	{
-		return StringExpressionEvaluator.instance;
+		return true;
+	}
+
+	@Override
+	public Class<String> getValueClass()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

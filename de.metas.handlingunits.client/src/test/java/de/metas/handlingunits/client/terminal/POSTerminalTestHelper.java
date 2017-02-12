@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,8 +30,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.adempiere.form.terminal.context.TerminalContext;
-import de.metas.adempiere.form.terminal.context.TerminalContextTestFactory;
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.adempiere.service.impl.MockedPOSAccessBL;
@@ -47,7 +47,7 @@ public class POSTerminalTestHelper
 {
 	private boolean initAdempiere = true;
 	private boolean initialized = false;
-	private TerminalContext terminalContext;
+	private ITerminalContext terminalContext;
 	private MockedPOSAccessBL posAccessBL;
 
 	public POSTerminalTestHelper()
@@ -76,13 +76,14 @@ public class POSTerminalTestHelper
 		posAccessBL = new MockedPOSAccessBL();
 		Services.registerService(IPOSAccessBL.class, posAccessBL);
 
-		terminalContext = TerminalContextTestFactory.newTeminalContext();
+
+		terminalContext = TerminalContextFactory.get().createContextAndRefs().getLeft();
 
 		//
 		initialized = true;
 	}
 
-	public TerminalContext getTerminalContext()
+	public ITerminalContext getTerminalContext()
 	{
 		return terminalContext;
 	}

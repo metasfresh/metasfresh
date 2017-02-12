@@ -31,8 +31,8 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.service.impl.TriggerUIBL.ModelValidator;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.model.I_M_HU;

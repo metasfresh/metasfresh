@@ -13,15 +13,14 @@ package de.metas.edi.esb.route.exports;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.text.DecimalFormat;
 
@@ -66,6 +65,10 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 	{
 		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoices");
 
+		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
+		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
+		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
+
 		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_FILENAME_PATTERN);
 
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN);
@@ -74,11 +77,11 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 		from(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
-				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
+		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST).constant(isTest)
 
-				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
+		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(new Processor()
 				{
 					@Override
@@ -94,25 +97,25 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 					}
 				})
 
-				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
+		.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
 				.bean(EDICctopInvoiceBean.class, EDICctopInvoiceBean.METHOD_createEDIData)
 
-				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using SDF...")
+		.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using SDF...")
 				.marshal(sdf)
 
-				.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
+		.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
 				.setHeader(Exchange.FILE_NAME).simple(invoiceFilenamePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
+		.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
 				.to(EDIInvoiceRoute.EP_EDI_FILE_INVOICE)
 
-				.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
+		.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, EDIInvoiceRoute.EDIInvoiceFeedback_QNAME, EDIInvoiceRoute.METHOD_setCInvoiceID))
 
-				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
+		.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
 
-				.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
+		.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
 				.to(Constants.EP_JMS_TO_AD);
 	}
 }

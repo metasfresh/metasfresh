@@ -17,7 +17,8 @@
 package org.compiere.model;
 
 import org.adempiere.util.Check;
-import org.compiere.process.ProcessInfo;
+
+import de.metas.process.ProcessInfo;
 
 
 /**
@@ -40,6 +41,7 @@ public class PrintInfo
 		setAD_Process_ID(pi.getAD_Process_ID());
 		setAD_Table_ID(pi.getTable_ID());
 		setRecord_ID(pi.getRecord_ID());
+		setAD_PInstance_ID(pi.getAD_PInstance_ID());
 	}	//	PrintInfo
 	
 	
@@ -89,6 +91,7 @@ public class PrintInfo
 		this.m_AD_Table_ID = printInfo.m_AD_Table_ID;
 		this.m_Record_ID = printInfo.m_Record_ID;
 		this.m_C_BPartner_ID = printInfo.m_C_BPartner_ID;
+		this.m_AD_PInstance_ID = printInfo.m_AD_PInstance_ID;
 	}
 
 	boolean m_withDialog = false;
@@ -104,7 +107,12 @@ public class PrintInfo
 	private int m_Record_ID = 0;
 	private int m_C_BPartner_ID = 0;
 	
+	//FRESH-349: AD_PInstance is also needed
+	private int m_AD_PInstance_ID = 0;
 	
+	
+	
+
 	/**
 	 * 	Is this a Report
 	 *	@return true if report
@@ -283,6 +291,17 @@ public class PrintInfo
 		m_Record_ID = record_ID;
 	}
 	
+	public int getAD_PInstance_ID()
+	{
+		return m_AD_PInstance_ID;
+	}
+
+
+	public void setAD_PInstance_ID(int m_AD_PInstance_ID)
+	{
+		this.m_AD_PInstance_ID = m_AD_PInstance_ID;
+	}
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -290,15 +309,15 @@ public class PrintInfo
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("PrintInfo[");
+		final StringBuilder sb = new StringBuilder("PrintInfo[");
 		sb.append(getName());
-		if (getAD_Process_ID() != 0)
+		if (getAD_Process_ID() > 0)
 			sb.append(",AD_Process_ID=").append(getAD_Process_ID());
-		if (getAD_Table_ID() != 0)
+		if (getAD_Table_ID() > 0)
 			sb.append(",AD_Table_ID=").append(getAD_Table_ID());
-		if (getRecord_ID()!= 0)
+		if (getRecord_ID() > 0)
 			sb.append(",Record_ID=").append(getRecord_ID());
-		if (getC_BPartner_ID() != 0)
+		if (getC_BPartner_ID() > 0)
 			sb.append(",C_BPartner_ID=").append(getC_BPartner_ID());
 		
 		sb.append("]");

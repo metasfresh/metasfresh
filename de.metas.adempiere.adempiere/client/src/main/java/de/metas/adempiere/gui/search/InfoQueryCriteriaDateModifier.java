@@ -33,22 +33,16 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.sql.Timestamp;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
-import net.miginfocom.swing.MigLayout;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
@@ -58,12 +52,17 @@ import org.compiere.grid.ed.VDate;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CEditor;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.jdesktop.swingx.JXPanel;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Component for quick date filtering
@@ -230,11 +229,10 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 		//
 		// Evaluate DefaultValue expression in parent's context
 		final IInfoSimple parent = getParent();
-		final Evaluatee evalCtx = new EvaluateeCtx(parent.getCtx(), parent.getWindowNo(), false); // onlyWindow=false
+		final Evaluatee evalCtx = Evaluatees.ofCtx(parent.getCtx(), parent.getWindowNo(), false); // onlyWindow=false
 		final IStringExpression defaultValueExpression = Services.get(IExpressionFactory.class).compile(defaultValueExpressionStr, IStringExpression.class);
-		final IExpressionEvaluator<IStringExpression, String> evaluator = defaultValueExpression.getEvaluator();
-		final String defaultValueStr = evaluator.evaluate(evalCtx, defaultValueExpression, OnVariableNotFound.ReturnNoResult);
-		if (evaluator.isNoResult(defaultValueStr))
+		final String defaultValueStr = defaultValueExpression.evaluate(evalCtx, OnVariableNotFound.ReturnNoResult);
+		if (defaultValueExpression.isNoResult(defaultValueStr))
 		{
 			// expression could not be evaluated
 			return;

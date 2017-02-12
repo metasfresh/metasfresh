@@ -40,21 +40,22 @@ import org.compiere.model.MUserMail;
 import org.compiere.model.Query;
 import org.compiere.model.X_R_Group;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
-import org.compiere.util.EMail;
 
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
  * @author teo_sarca
  *
  */
-public class AD_BoilderPlate_SendToGroup extends SvrProcess
+public class AD_BoilderPlate_SendToGroup extends JavaProcess
 {
 	public static final String CCM_NotificationType_EMail = "E"; 
 	public static final String CCM_NotificationType_Letter = "L";
@@ -65,7 +66,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -136,18 +137,22 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 	private void notifyEMail(final MADBoilerPlate text, final MRGroupProspect prospect)
 	{
 		MADBoilerPlate.sendEMail(new IEMailEditor() {
+			@Override
 			public Object getBaseObject()
 			{
 				return prospect;
 			}
+			@Override
 			public int getAD_Table_ID()
 			{
 				return X_R_Group.Table_ID;
 			}
+			@Override
 			public int getRecord_ID()
 			{
 				return prospect.getR_Group_ID();
 			}
+			@Override
 			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
 			{
 				String message = text.getTextSnippetParsed(variables);
@@ -159,16 +164,18 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 						text.getName(),
 						message,
 						true);
-				String status = "Check Setup";
+				String statusMessage = "Check Setup";
 				if (email != null)
 				{
 					while (st.hasMoreTokens())
 						email.addTo(st.nextToken());
-					status = email.send();
+					final EMailSentStatus emailSentStatus = email.send();
+					statusMessage = emailSentStatus.getSentMsg();
+					
 					//
 					if (from != null)
-						new MUserMail(from, from.getAD_User_ID(), email).save();
-					if (email.isSentOK())
+						new MUserMail(from, from.getAD_User_ID(), email, emailSentStatus).save();
+					if (emailSentStatus.isSentOK())
 					{
 						//ADialog.info(0, this, "MessageSent");
 						//updateDocExchange(Msg.getMsg(Env.getCtx(), "MessageSent"));
@@ -185,7 +192,7 @@ public class AD_BoilderPlate_SendToGroup extends SvrProcess
 					//ADialog.error(0, this, "MessageNotSent", status);
 					//updateDocExchange(Msg.getMsg(Env.getCtx(), "MessageNotSent") + " " + status); // metas
 				}
-				log.debug("Status: "+status);
+				log.debug("Status: {}", statusMessage);
 				return email;
 			}
 		});

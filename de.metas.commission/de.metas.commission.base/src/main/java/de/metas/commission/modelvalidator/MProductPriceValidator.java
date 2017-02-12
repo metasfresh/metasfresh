@@ -25,7 +25,7 @@ package de.metas.commission.modelvalidator;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -81,7 +81,7 @@ public class MProductPriceValidator implements ModelValidator
 			return null;
 		}
 
-		final I_M_ProductPrice productPrice = POWrapper.create(po, I_M_ProductPrice.class);
+		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.create(po, I_M_ProductPrice.class);
 		if (!productPrice.isUseScalePrice())
 		{
 			return null;
@@ -90,13 +90,13 @@ public class MProductPriceValidator implements ModelValidator
 
 		// if the scalePrice doesn't exist yet, create a new one
 		final I_M_ProductScalePrice productScalePrice =
-				POWrapper.create(productPA.retrieveOrCreateScalePrices(po.get_ID(), BigDecimal.ONE, true, po.get_TrxName()),
+				InterfaceWrapperHelper.create(productPA.retrieveOrCreateScalePrices(po.get_ID(), BigDecimal.ONE, true, po.get_TrxName()),
 						I_M_ProductScalePrice.class);
 
 		// copy the price from the productPrice
 		productScalePrice.setCommissionPoints(productPrice.getCommissionPoints());
 
-		POWrapper.save(productScalePrice);
+		InterfaceWrapperHelper.save(productScalePrice);
 
 		return null;
 	}

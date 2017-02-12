@@ -23,9 +23,9 @@ import java.util.Properties;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 /**
  *  Report Column
@@ -129,9 +129,9 @@ public class RColumn
 		//  List
 		else if (displayType == DisplayType.List)
 		{
-			Language language = Language.getLanguage(Env.getAD_Language(ctx));
+			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
 			m_colSQL = "(" + MLookupFactory.getLookup_ListEmbed(
-				language, AD_Reference_Value_ID, columnName) + ")";
+				languageInfo, AD_Reference_Value_ID, columnName) + ")";
 			m_displaySQL = m_colSQL;
 			m_colClass = String.class;
 			m_isIDcol = false;
@@ -152,40 +152,40 @@ public class RColumn
 		else
 		{
 			m_colClass = String.class;
-			Language language = Language.getLanguage(Env.getAD_Language(ctx));
+			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
 			if (columnName.equals("Account_ID") 
 				|| columnName.equals("User1_ID") || columnName.equals("User2_ID"))
 			{
 				m_displaySQL = "(" + MLookupFactory.getLookup_TableDirEmbed(
-					language, "C_ElementValue_ID", RModel.TABLE_ALIAS, columnName) + ")";
+					languageInfo, "C_ElementValue_ID", RModel.TABLE_ALIAS, columnName) + ")";
 				m_colSQL += "," + m_displaySQL;
 				m_isIDcol = true;
 			}
 			else if (columnName.startsWith("UserElement") && refColumnName != null)
 			{
 				m_displaySQL = "(" + MLookupFactory.getLookup_TableDirEmbed(
-					language, refColumnName, RModel.TABLE_ALIAS, columnName) + ")";
+					languageInfo, refColumnName, RModel.TABLE_ALIAS, columnName) + ")";
 				m_colSQL += "," + m_displaySQL;
 				m_isIDcol = true;
 			}
 			else if (columnName.equals("C_LocFrom_ID") || columnName.equals("C_LocTo_ID"))
 			{
 				m_displaySQL = "(" + MLookupFactory.getLookup_TableDirEmbed(
-					language, "C_Location_ID", RModel.TABLE_ALIAS, columnName) + ")";
+					languageInfo, "C_Location_ID", RModel.TABLE_ALIAS, columnName) + ")";
 				m_colSQL += "," + m_displaySQL;
 				m_isIDcol = true;
 			}
 			else if (columnName.equals("AD_OrgTrx_ID"))
 			{
 				m_displaySQL = "(" + MLookupFactory.getLookup_TableDirEmbed(
-					language, "AD_Org_ID", RModel.TABLE_ALIAS, columnName) + ")";
+					languageInfo, "AD_Org_ID", RModel.TABLE_ALIAS, columnName) + ")";
 				m_colSQL += "," + m_displaySQL;
 				m_isIDcol = true;
 			}
 			else if (displayType == DisplayType.TableDir)
 			{
 				m_displaySQL = "(" + MLookupFactory.getLookup_TableDirEmbed(
-					language, columnName, RModel.TABLE_ALIAS) + ")";
+					languageInfo, columnName, RModel.TABLE_ALIAS) + ")";
 				m_colSQL += "," + m_displaySQL;
 				m_isIDcol = true;
 			}
@@ -338,6 +338,7 @@ public class RColumn
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("RColumn[");

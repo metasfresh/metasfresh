@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-09-07T13:30:13 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="07781559-9273-40dd-ab0a-726b6e29bd5a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -16,40 +20,17 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	i.descriptionbottom,
-	replace(
-		replace(
-			replace(
-				COALESCE( ptt.name_invoice, ptt.name, pt.name_invoice, pt.name ),
-				'$datum_netto',
-				to_char(i.dateinvoiced + pt.netdays, 'DD.MM.YYYY')
-			),
-			'$datum_skonto_1',
-			to_char(i.dateinvoiced::date + pt.discountdays, 'DD.MM.YYYY')
-		),
-		'$datum_skonto_2',
-		to_char(i.dateinvoiced::date + pt.discountdays2, 'DD.MM.YYYY')
-	) AS P_Cond,
-	COALESCE( reft.name, ref.name ) AS P_Term
-FROM
-	C_Invoice i
-	LEFT OUTER JOIN C_PaymentTerm pt on i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
-	LEFT OUTER JOIN C_PaymentTerm_Trl ptt on i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = $P{ad_language}
-	LEFT OUTER JOIN AD_Ref_List ref ON i.PaymentRule = ref.Value AND ref.AD_Reference_ID = 195
-	LEFT OUTER JOIN AD_Ref_List_Trl reft ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = $P{ad_language}
-WHERE
-	i.C_Invoice_ID = $P{c_invoice_id}
-;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer ( $P{c_invoice_id}, $P{ad_language} );]]>
 	</queryString>
 	<field name="descriptionbottom" class="java.lang.String"/>
 	<field name="p_cond" class="java.lang.String"/>
 	<field name="p_term" class="java.lang.String"/>
+	<field name="textcenter" class="java.lang.String"/>
 	<detail>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $F{p_cond} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="4ff37ef9-5963-48e1-b50b-c31a32425867" key="textField-82" style="Test" x="37" y="0" width="485" height="12" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField-82" style="Test" x="37" y="0" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -65,7 +46,7 @@ WHERE
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean( $F{p_term} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="4ff37ef9-5963-48e1-b50b-c31a32425867" key="textField-82" style="Test" x="37" y="0" width="485" height="12" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField-82" style="Test" x="37" y="0" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -79,9 +60,10 @@ WHERE
 			</textField>
 		</band>
 		<band height="24">
-			<printWhenExpression><![CDATA[new Boolean( $F{descriptionbottom} != null )]]></printWhenExpression>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean( $F{descriptionbottom} != null || ($R{showdetailsfooter}.equals( "Y" ) && $F{textcenter} !=null ))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="4ff37ef9-5963-48e1-b50b-c31a32425867" key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -93,11 +75,28 @@ WHERE
 				</textElement>
 				<textFieldExpression><![CDATA[$F{descriptionbottom}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="38887013-dbfd-4e5d-a8ac-219dd98f7cd9">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($R{showdetailsfooter}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" markup="html">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{textcenter}]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("de_CH") && false)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="4ff37ef9-5963-48e1-b50b-c31a32425867" key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true"/>
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -113,7 +112,7 @@ WHERE
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && false)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022" key="textField-16" x="37" y="12" width="485" height="12"/>
+				<reportElement key="textField-16" x="37" y="12" width="485" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>

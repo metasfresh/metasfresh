@@ -1,241 +1,251 @@
 package org.adempiere.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IValuePreferenceBL;
+import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Preference;
-import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
 public class ValuePreferenceBL implements IValuePreferenceBL
 {
-	public static final ValuePreferenceBL instance = new ValuePreferenceBL();
-
-	private final transient Logger logger = LogManager.getLogger(getClass());
-
-	private ValuePreferenceBL()
+	@Override
+	public IUserValuePreferences getWindowPreferences(final Properties ctx, final int adWindowId)
 	{
-	}
-
-	public String getContextKey(I_AD_Preference preference)
-	{
-		final String attribute = preference.getAttribute();
-		Util.assume(!Util.isEmpty(attribute), "Attribute not empty for " + preference);
-
-		final int adWindowId = preference.getAD_Window_ID();
-
-		if (adWindowId > 0)
-		{
-			return "P" + adWindowId + "|" + attribute;
-		}
-		else
-		{
-			return "P|" + attribute;
-		}
-	}
-
-	public I_AD_Preference fetch(Properties ctx, String attribute, int adClientId, int adOrgId, int adUserId, int adWindowId)
-	{
-		final String trxName = null;
-		final List<Object> params = new ArrayList<Object>();
-		final StringBuffer whereClause = new StringBuffer();
-
-		whereClause.append(I_AD_Preference.COLUMNNAME_AD_Client_ID).append("=?");
-		params.add(adClientId);
-
-		whereClause.append(" AND ").append(I_AD_Preference.COLUMNNAME_AD_Org_ID).append("=?");
-		params.add(adOrgId);
-
-		if (adUserId >= 0)
-		{
-			whereClause.append(" AND ").append(I_AD_Preference.COLUMNNAME_AD_User_ID).append("=?");
-			params.add(adUserId);
-		}
-		else
-		{
-			whereClause.append(" AND ").append(I_AD_Preference.COLUMNNAME_AD_User_ID).append(" IS NULL");
-		}
-
-		if (adWindowId > 0)
-		{
-			whereClause.append(" AND ").append(I_AD_Preference.COLUMNNAME_AD_Window_ID).append("=?");
-			params.add(adWindowId);
-		}
-		else
-		{
-			whereClause.append(" AND ").append(I_AD_Preference.COLUMNNAME_AD_Window_ID).append(" IS NULL");
-		}
-
-		whereClause.append(" AND ").append(I_AD_Preference.COLUMNNAME_Attribute).append("=?");
-		params.add(attribute);
-
-		return new Query(ctx, I_AD_Preference.Table_Name, whereClause.toString(), trxName)
-				.setParameters(params)
-				.firstOnly(I_AD_Preference.class);
-
+		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
+		final int AD_User_ID = Env.getAD_User_ID(ctx);
+		return retrieveAllWindowPreferences(AD_Client_ID, AD_Org_ID, AD_User_ID)
+				.getOrDefault(adWindowId, UserValuePreferences.EMPTY);
 	}
 
 	@Override
-	public boolean remove(Properties ctx, String attribute, int adClientId, int adOrgId, int adUserId, int adWindowId)
+	public Collection<IUserValuePreferences> getAllWindowPreferences(final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID)
 	{
-		logger.info("");
+		return retrieveAllWindowPreferences(AD_Client_ID, AD_Org_ID, AD_User_ID).values();
+	}
 
-		final I_AD_Preference preference = fetch(ctx, attribute, adClientId, adOrgId, adUserId, adWindowId);
-		if (preference == null)
+	@Cached(cacheName = I_AD_Preference.Table_Name + "#by#AD_Window_ID#Attribute")
+	Map<Integer, IUserValuePreferences> retrieveAllWindowPreferences(final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Preference.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, AD_Client_ID)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, AD_Org_ID)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, null, Env.CTXVALUE_AD_User_ID_System, AD_User_ID)
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_AD_Preference.COLUMNNAME_AD_Window_ID, Direction.Ascending, Nulls.First)
+				.addColumn(I_AD_Preference.COLUMNNAME_Attribute, Direction.Ascending, Nulls.First)
+				.addColumn(I_AD_Preference.COLUMNNAME_AD_Client_ID, Direction.Ascending, Nulls.First)
+				.addColumn(I_AD_Preference.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.First)
+				.addColumn(I_AD_Preference.COLUMNNAME_AD_Org_ID, Direction.Ascending, Nulls.First)
+				.endOrderBy()
+				//
+				.create().stream()
+				.collect(UserValuePreferencesBuilder.byWindowIdCollector())
+				//
+				;
+	}
+
+	private static final class UserValuePreference implements IUserValuePreference
+	{
+		public static UserValuePreference of(final int adWindowId, final String name, final String value)
 		{
-			return false;
+			return new UserValuePreference(adWindowId, name, value);
 		}
 
-		final String contextName = getContextKey(preference);
-		InterfaceWrapperHelper.delete(preference);
-		Env.setContext(ctx, contextName, (String)null);
-		return true;
-	}
+		private final int adWindowId;
+		private final String name;
+		private final String value;
 
-	@Override
-	public void save(Properties ctx, String attribute, Object value, int adClientId, int adOrgId, int adUserId, int adWindowId)
-	{
-		logger.info("");
-
-		final String trxName = null;
-
-		I_AD_Preference preference = fetch(ctx, attribute, adClientId, adOrgId, adUserId, adWindowId);
-		if (preference == null)
+		public UserValuePreference(final int adWindowId, final String name, final String value)
 		{
-			preference = InterfaceWrapperHelper.create(ctx, I_AD_Preference.class, trxName);
-			preference.setAttribute(attribute);
-			// preference.setAD_Client_ID(adClientId);
-			preference.setAD_Org_ID(adOrgId);
-			preference.setAD_User_ID(adUserId);
-			preference.setAD_Window_ID(adWindowId);
+			super();
+			this.adWindowId = adWindowId;
+			this.name = name;
+			this.value = value;
 		}
 
-		final String valueStr = coerceToString(value);
-
-		preference.setValue(valueStr);
-		InterfaceWrapperHelper.save(preference);
-		Env.setContext(ctx, getContextKey(preference), valueStr);
-	}
-
-	@Override
-	public void save(Properties ctx, String attribute, Object value, int adWindowId)
-	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
-		final int adUserId = Env.getAD_User_ID(ctx);
-		save(ctx, attribute, value, adClientId, adOrgId, adUserId, adWindowId);
-	}
-
-	@Override
-	public String getValueAsString(final Properties ctx, final String attribute, final int adWindowId)
-	{
-		final String valueStr = Env.getPreference(ctx, adWindowId, attribute, false); // system=false
-		return valueStr;
-	}
-
-	@Override
-	public <T> T getValue(final Properties ctx, final String attribute, final int adWindowId, final Class<T> clazz)
-	{
-		final String valueStr = getValueAsString(ctx, attribute, adWindowId);
-		if (String.class.equals(clazz))
+		@Override
+		public String toString()
 		{
-			@SuppressWarnings("unchecked")
-			final T value = (T)valueStr;
+			return MoreObjects.toStringHelper(this)
+					.add("name", name)
+					.add("value", value)
+					.add("AD_Window_ID", adWindowId)
+					.toString();
+		}
+
+		@Override
+		public int getAD_Window_ID()
+		{
+			return adWindowId;
+		}
+
+		@Override
+		public String getName()
+		{
+			return name;
+		}
+
+		@Override
+		public String getValue()
+		{
 			return value;
 		}
+	}
 
-		if (Integer.class.equals(clazz))
+	private static final class UserValuePreferences implements IUserValuePreferences
+	{
+		public static final UserValuePreferences EMPTY = new UserValuePreferences();
+
+		private final int adWindowId;
+		private final Map<String, IUserValuePreference> name2value;
+
+		private UserValuePreferences(final UserValuePreferencesBuilder builder)
 		{
-			try
-			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)(Integer)Integer.parseInt(valueStr);
-				return value;
-			}
-			catch (NumberFormatException e)
-			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)Integer.valueOf(0);
-				return value;
-			}
+			super();
+			adWindowId = builder.adWindowId;
+			name2value = ImmutableMap.copyOf(builder.name2value);
 		}
 
-		if (Boolean.class.equals(clazz))
+		/** empty constructor */
+		private UserValuePreferences()
 		{
-			@SuppressWarnings("unchecked")
-			final T value = (T)Boolean.valueOf("Y".equals(valueStr) || "true".equals(valueStr));
-			return value;
+			super();
+			adWindowId = 0;
+			name2value = ImmutableMap.of();
 		}
 
-		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(clazz);
-		if (tableName != null)
+		@Override
+		public String toString()
 		{
-			final int recordId;
-			try
-			{
-				recordId = Integer.parseInt(valueStr);
-			}
-			catch (NumberFormatException e)
+			return MoreObjects.toStringHelper(this)
+					.add("AD_Window_ID", adWindowId)
+					.add("values", name2value)
+					.toString();
+		}
+
+		@Override
+		public int getAD_Window_ID()
+		{
+			return adWindowId;
+		}
+
+		@Override
+		public String getValue(final String name)
+		{
+			final IUserValuePreference userValuePreference = name2value.get(name);
+			if (userValuePreference == null)
 			{
 				return null;
 			}
-
-			final String keyColumnName = tableName + "_ID";
-			final T value = new Query(ctx, tableName, keyColumnName + "=?", null)
-					.setParameters(recordId)
-					.firstOnly(clazz);
-			return value;
+			return userValuePreference.getValue();
 		}
 
-		return null;
+		@Override
+		public Collection<IUserValuePreference> values()
+		{
+			return name2value.values();
+		}
 	}
 
-	private String coerceToString(Object value)
+	private static final class UserValuePreferencesBuilder
 	{
-		if (value == null)
+		public static Collector<I_AD_Preference, ?, ImmutableMap<Integer, IUserValuePreferences>> byWindowIdCollector()
 		{
-			return null;
+			return Collectors.collectingAndThen(
+					Collectors.groupingBy(adPreference -> extractAD_Window_ID(adPreference), collector()) // downstream collector: AD_Window_ID->IUserValuePreferences
+					, ImmutableMap::copyOf // finisher
+			);
 		}
-		else if (value instanceof String)
+
+		public static Collector<I_AD_Preference, UserValuePreferencesBuilder, IUserValuePreferences> collector()
 		{
-			return (String)value;
+			return Collector.of(
+					UserValuePreferencesBuilder::new // supplier
+					, UserValuePreferencesBuilder::add // accumulator
+					, (l, r) -> l.addAll(r) // combiner
+					, UserValuePreferencesBuilder::build // finisher
+					, Collector.Characteristics.UNORDERED // characteristics
+			);
 		}
-		else if (value instanceof Boolean)
+
+		private static final int extractAD_Window_ID(final I_AD_Preference adPreference)
 		{
-			return ((Boolean)value).booleanValue() ? "Y" : "N";
+			final int adWindowId = adPreference.getAD_Window_ID();
+			return adWindowId > 0 ? adWindowId : IUserValuePreference.AD_WINDOW_ID_NONE;
 		}
-		else
+
+		private int adWindowId = 0;
+		private final Map<String, IUserValuePreference> name2value = new HashMap<>();
+
+		private UserValuePreferencesBuilder()
 		{
-			return value.toString();
+			super();
+		}
+
+		public UserValuePreferences build()
+		{
+			if (isEmpty())
+			{
+				return UserValuePreferences.EMPTY;
+			}
+			return new UserValuePreferences(this);
+		}
+
+		public boolean isEmpty()
+		{
+			return name2value.isEmpty();
+		}
+
+		public UserValuePreferencesBuilder add(final I_AD_Preference adPreference)
+		{
+			final int currentWindowId = extractAD_Window_ID(adPreference);
+			if (isEmpty())
+			{
+				adWindowId = currentWindowId;
+			}
+			else if (adWindowId != currentWindowId)
+			{
+				throw new IllegalArgumentException("Preference " + adPreference + "'s AD_Window_ID=" + currentWindowId + " is not matching builder's AD_Window_ID=" + adWindowId);
+			}
+
+			final String attributeName = adPreference.getAttribute();
+			final String attributeValue = adPreference.getValue();
+			name2value.put(attributeName, UserValuePreference.of(adWindowId, attributeName, attributeValue));
+			return this;
+		}
+
+		public UserValuePreferencesBuilder addAll(final UserValuePreferencesBuilder fromBuilder)
+		{
+			if (fromBuilder == null || fromBuilder.isEmpty())
+			{
+				return this;
+			}
+
+			if (!isEmpty() && adWindowId != fromBuilder.adWindowId)
+			{
+				throw new IllegalArgumentException("Builder " + fromBuilder + "'s AD_Window_ID=" + fromBuilder.adWindowId + " is not matching builder's AD_Window_ID=" + adWindowId);
+			}
+
+			name2value.putAll(fromBuilder.name2value);
+
+			return this;
 		}
 	}
 }

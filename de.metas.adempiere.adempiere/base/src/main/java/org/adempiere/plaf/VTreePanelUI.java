@@ -25,7 +25,7 @@ package org.adempiere.plaf;
 /**
  * UI settings for VTreePanel (the tree which is displayed in main window and in standard windows which have a tree)
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class VTreePanelUI

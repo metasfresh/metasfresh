@@ -26,7 +26,7 @@ import de.metas.product.IProductMappingAware;
 
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
  */
 public interface I_M_Product extends

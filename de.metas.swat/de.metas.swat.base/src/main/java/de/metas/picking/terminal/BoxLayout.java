@@ -40,7 +40,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -77,6 +77,7 @@ public class BoxLayout extends KeyLayout
 	// FIXME: please use the keys from super class
 	private List<ITerminalKey> keys = null;
 
+	@Override
 	public void resetKeys()
 	{
 		super.resetKeys();
@@ -197,12 +198,12 @@ public class BoxLayout extends KeyLayout
 	public BigDecimal getVolumeSumContainer(I_M_PackagingContainer container, int boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		List<AbstractPackingItem> products = packItems.get(boxNo);
+		List<IPackingItem> products = packItems.get(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 
 		volumeSumContainer = BigDecimal.ZERO;
-		for (AbstractPackingItem pi : products)
+		for (IPackingItem pi : products)
 		{
 			final BigDecimal volSingle = pi.retrieveVolumeSingle(null);
 			volumeSumContainer = volumeSumContainer.add(pi.getQtySum().multiply(volSingle));
@@ -220,13 +221,13 @@ public class BoxLayout extends KeyLayout
 	public BigDecimal getWeightSumContainer(I_M_PackagingContainer container, int boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		List<AbstractPackingItem> products = packItems.get(boxNo);
+		List<IPackingItem> products = packItems.get(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 
 		weightSumContainer = BigDecimal.ZERO;
 
-		for (AbstractPackingItem pi : products)
+		for (IPackingItem pi : products)
 		{
 			final BigDecimal weightSingle = pi.retrieveWeightSingle(null);
 			weightSumContainer = weightSumContainer.add(pi.getQtySum().multiply(weightSingle));
@@ -238,7 +239,7 @@ public class BoxLayout extends KeyLayout
 	public PackingStates getContainerState(I_M_PackagingContainer container, int boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		List<AbstractPackingItem> products = packItems.get(boxNo);
+		List<IPackingItem> products = packItems.get(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 		
@@ -254,7 +255,7 @@ public class BoxLayout extends KeyLayout
 		weightSumContainer = BigDecimal.ZERO;
 		volumeSumContainer = BigDecimal.ZERO;
 
-		for (AbstractPackingItem pi : products)
+		for (IPackingItem pi : products)
 		{
 			final BigDecimal volSingle = pi.retrieveVolumeSingle(null);
 			final BigDecimal weightSingle = pi.retrieveWeightSingle(null);

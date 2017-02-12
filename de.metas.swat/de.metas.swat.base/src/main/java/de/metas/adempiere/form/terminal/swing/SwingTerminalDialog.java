@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import org.adempiere.plaf.MetasfreshGlassPane;
 import org.compiere.apps.AEnv;
 import org.compiere.swing.CDialog;
 
@@ -56,6 +57,9 @@ class SwingTerminalDialog extends TerminalDialog
 		// When user closes the window from "X" button, do nothing because we will handle it
 		// using our custom WindowAdapter
 		dialogSwing.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		// Install the glass pane
+		MetasfreshGlassPane.install(dialogSwing);
 	}
 
 	@Override

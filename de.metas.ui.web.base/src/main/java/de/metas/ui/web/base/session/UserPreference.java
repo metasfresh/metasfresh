@@ -14,8 +14,6 @@
 package de.metas.ui.web.base.session;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -23,11 +21,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
+
+import com.google.common.base.MoreObjects;
 
 /**
  *
@@ -41,7 +42,7 @@ public final class UserPreference implements Serializable
 	/** Language */
 	public static final String P_LANGUAGE = "Language";
 	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
-	
+
 	/** Role */
 	public static final String P_ROLE = "Role";
 	private static final String DEFAULT_ROLE = "";
@@ -104,8 +105,18 @@ public final class UserPreference implements Serializable
 			DEFAULT_MENU_COLLAPSED };
 
 	/** Container for Properties */
-	private Properties props = new Properties();
+	private Properties props;
 	private int m_AD_User_ID = -1;
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("AD_User_ID", m_AD_User_ID)
+				.add("properties", props)
+				.toString();
+	}
 
 	/**
 	 * save user preference
@@ -127,6 +138,7 @@ public final class UserPreference implements Serializable
 			if (preference == null)
 			{
 				preference = InterfaceWrapperHelper.create(ctx, I_AD_Preference.class, ITrx.TRXNAME_ThreadInherited);
+				preference.setAD_User_ID(m_AD_User_ID);
 				preference.setAttribute(attribute);
 			}
 
@@ -136,7 +148,7 @@ public final class UserPreference implements Serializable
 		}
 	}
 
-	private final Properties createDAOCtx()
+	private static final Properties createDAOCtx()
 	{
 		final Properties ctx = Env.deriveCtx(Env.getCtx());
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System);
@@ -144,15 +156,15 @@ public final class UserPreference implements Serializable
 		return ctx;
 	}
 
-	private final Map<String, I_AD_Preference> retrievePreferencesMap(final Properties ctx, final int adUserId)
+	private static final Map<String, I_AD_Preference> retrievePreferencesMap(final Properties ctx, final int adUserId)
 	{
-		final List<I_AD_Preference> preferencesList = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Preference.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Client_ID, Env.getAD_Client_ID(ctx))
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Org_ID, Env.getAD_Org_ID(ctx))
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, adUserId)
 				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_Window_ID, null)
-				.addInArrayFilter(I_AD_Preference.COLUMNNAME_Attribute, PROPERTIES)
+				.addInArrayOrAllFilter(I_AD_Preference.COLUMNNAME_Attribute, PROPERTIES)
 				//
 				.orderBy()
 				.addColumn(I_AD_Preference.COLUMNNAME_Attribute)
@@ -161,23 +173,9 @@ public final class UserPreference implements Serializable
 				.endOrderBy()
 				//
 				.create()
-				.list(I_AD_Preference.class);
-
-		final Map<String, I_AD_Preference> preferencesMap = new HashMap<>();
-		for (final I_AD_Preference preference : preferencesList)
-		{
-			final String attribute = preference.getAttribute();
-
-			// Skip preference if already loaded (shall not happen)
-			if (preferencesMap.containsKey(attribute))
-			{
-				continue;
-			}
-
-			preferencesMap.put(attribute, preference);
-		}
-
-		return preferencesMap;
+				.list(I_AD_Preference.class)
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(I_AD_Preference::getAttribute));
 	}
 
 	/**
@@ -185,7 +183,7 @@ public final class UserPreference implements Serializable
 	 *
 	 * @param adUserId
 	 */
-	public void loadPreference(final int adUserId)
+	private void loadPreference(final int adUserId)
 	{
 		if (adUserId < 0)
 		{
@@ -213,7 +211,7 @@ public final class UserPreference implements Serializable
 		m_AD_User_ID = adUserId;
 		this.props = props;
 	}
-	
+
 	public void loadPreference(final Properties ctx)
 	{
 		final int adUserId = Env.getAD_User_ID(ctx);
@@ -277,11 +275,17 @@ public final class UserPreference implements Serializable
 			return "";
 		}
 
-		final String value = props.getProperty(key, "");
-		if(Check.isEmpty(value))
+		if(props == null)
 		{
 			return "";
 		}
+		
+		final String value = props.getProperty(key, "");
+		if (Check.isEmpty(value))
+		{
+			return "";
+		}
+		
 		return value;
 	}
 
@@ -296,7 +300,7 @@ public final class UserPreference implements Serializable
 		final String value = getProperty(key);
 		return DisplayType.toBoolean(value, false);
 	}
-	
+
 	public void updateContext(final Properties ctx)
 	{
 		Env.setContext(ctx, "#ShowTrl", true);

@@ -10,31 +10,33 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
+
+import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 public class CompositeTerminalDialogListener implements ITerminalDialogListener, IDisposable
 {
 	private List<ITerminalDialogListener> listeners = null;
 
-	public CompositeTerminalDialogListener()
-	{
-		super();
+	private boolean disposed = false;
 
+	public CompositeTerminalDialogListener(final ITerminalContext tc)
+	{
 		listeners = new ArrayList<>();
+		tc.addToDisposableComponents(this);
 	}
 
 	public void addListener(final ITerminalDialogListener listener)
@@ -50,6 +52,7 @@ public class CompositeTerminalDialogListener implements ITerminalDialogListener,
 	public void dispose()
 	{
 		listeners = null; // clear listeners
+		disposed = true;
 	}
 
 	@Override
@@ -143,5 +146,11 @@ public class CompositeTerminalDialogListener implements ITerminalDialogListener,
 		{
 			listener.onDialogClosed(dialog);
 		}
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 }

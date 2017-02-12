@@ -28,7 +28,7 @@ import java.util.UUID;
 /**
  * UUIDs helper
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class UUIDs

@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.spi;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -84,7 +84,9 @@ public interface IInvoiceCandidateHandler
 	 */
 	boolean isCreateMissingCandidatesAutomatically(Object model);
 
-	/** @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null. */
+	/**
+	 * @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null.
+	 */
 	DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming();
 
 	/**
@@ -206,13 +208,23 @@ public interface IInvoiceCandidateHandler
 	 * <li>IsTaxIncluded
 	 * </ul>
 	 * of the given invoice candidate.
-	 * <p>
 	 *
 	 * @param ic
 	 *
 	 */
 	void setPriceActual(I_C_Invoice_Candidate ic);
 
+	/**
+	 * * Method responsible for setting
+	 * <ul>
+	 * <li>Bill_BPartner_ID
+	 * <li>Bill_Location_ID
+	 * <li>Bill_User_ID
+	 * </ul>
+	 * of the given invoice candidate.
+	 *
+	 * @param ic
+	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
 	/**

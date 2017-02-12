@@ -10,18 +10,17 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 
@@ -48,6 +47,7 @@ public interface IHUPIItemProductQuery
 
 	/**
 	 * Match only those {@link I_M_HU_PI_Item_Product}s which are about this partner or any bpartner.
+	 *
 	 * @param bpartnerId
 	 */
 	void setC_BPartner_ID(final int bpartnerId);
@@ -85,7 +85,8 @@ public interface IHUPIItemProductQuery
 
 	/**
 	 * In case {@link #isOneConfigurationPerPI()}, if <code>allowDifferentCapacities</code> is true, it will retain one configuration for each distinct {@link I_M_HU_PI} <b>AND</b>
-	 * {@link I_M_HU_PI_Item_Product#getQty()}. </ul>
+	 * {@link I_M_HU_PI_Item_Product#getQty()}.
+	 * </ul>
 	 *
 	 * @param allowDifferentCapacities
 	 */
@@ -97,4 +98,15 @@ public interface IHUPIItemProductQuery
 	boolean isAllowAnyPartner();
 
 	void setAllowAnyPartner(final boolean allowAnyPartner);
+
+	/**
+	 * See {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(org.compiere.model.I_M_Product, org.compiere.model.I_C_BPartner, Date, String, boolean, org.compiere.model.I_M_Product)}.
+	 *
+	 * @param packagingProductId
+	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 */
+	// @formatter:off
+	void setM_Product_Packaging_ID(int packagingProductId);
+	int getM_Product_Packaging_ID();
+	// @formatter:on
 }

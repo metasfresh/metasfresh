@@ -1,126 +1,109 @@
 package org.adempiere.ad.callout.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
+import org.compiere.model.I_AD_Table;
 import org.compiere.util.Env;
+
+import com.google.common.collect.ListMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 
 public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 {
-	// private static final transient Logger logger = CLogMgt.getLogger(ADColumnCalloutDAO.class);
-
 	@Override
-	public List<I_AD_ColumnCallout> retrieveActiveColumnCallouts(final Properties ctx, final int adColumnId)
+	@Cached(cacheName = I_AD_ColumnCallout.Table_Name + "#By#" + I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)
+	public ListMultimap<String, I_AD_ColumnCallout> retrieveAvailableCalloutsToRun(@CacheCtx final Properties ctx, final String tableName)
 	{
-		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Table.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Table.COLUMN_TableName, tableName, UpperCaseQueryFilterModifier.instance)
+				//
+				.andCollectChildren(I_AD_Column.COLUMN_AD_Table_ID)
+				.addOnlyActiveRecordsFilter()
+				//
+				//
+				.andCollectChildren(I_AD_ColumnCallout.COLUMN_AD_Column_ID)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayOrAllFilter(I_AD_ColumnCallout.COLUMN_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, Env.getAD_Client_ID(ctx))
+				.addInArrayOrAllFilter(I_AD_ColumnCallout.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, Env.getAD_Org_ID(ctx))
+				//
+				.orderBy()
+				.addColumn(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)
+				.addColumn(I_AD_ColumnCallout.COLUMNNAME_SeqNo)
+				.addColumn(I_AD_ColumnCallout.COLUMNNAME_AD_ColumnCallout_ID)
+				.endOrderBy()
+				//
+				.create()
+				.stream(I_AD_ColumnCallout.class)
+				// If EntityType is not displayed, skip this callout
+				.filter(cc -> {
+					final String entityType = cc.getEntityType();
+					return Check.isEmpty(entityType, true) || UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
+				})
+				// collect to: AD_Column_ID -> List of AD_ColumnCallouts
+				.collect(GuavaCollectors.toImmutableListMultimap(cc -> extractColumnName(cc)));
+	}
 
-		final List<I_AD_ColumnCallout> calloutsAll = retrieveAllColumnCallouts(ctx, adColumnId);
-		final List<I_AD_ColumnCallout> calloutsActive = new ArrayList<I_AD_ColumnCallout>(calloutsAll.size());
-
-		for (final I_AD_ColumnCallout callout : calloutsAll)
-		{
-			if (!callout.isActive())
-			{
-				continue;
-			}
-
-			final int calloutClientId = callout.getAD_Client_ID();
-			if (calloutClientId != Env.CTXVALUE_AD_Client_ID_System && calloutClientId != AD_Client_ID)
-			{
-				continue;
-			}
-
-			final int calloutOrgId = callout.getAD_Org_ID();
-			if (calloutOrgId != Env.CTXVALUE_AD_Org_ID_System && calloutOrgId != AD_Org_ID)
-			{
-				continue;
-			}
-
-			//
-			// If EntityType is not displayed, skip this callout
-			final String entityType = callout.getEntityType();
-			if (!Check.isEmpty(entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType))
-			{
-				continue;
-			}
-
-			calloutsActive.add(callout);
-		}
-
-		return calloutsActive;
+	/**
+	 * Gets the ColumnName from given {@link I_AD_ColumnCallout}.
+	 *
+	 * The only reason why we have this here, is because the {@link I_AD_ColumnCallout#getColumnName()} is a SQL virtual column which is NOT supported in JUnit testing mode.
+	 *
+	 * @param cc
+	 * @return ColumnName
+	 */
+	protected String extractColumnName(final I_AD_ColumnCallout cc)
+	{
+		return cc.getColumnName();
 	}
 
 	@Override
-	@Cached(cacheName = I_AD_ColumnCallout.Table_Name + "#By#" + I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID)
-	public List<I_AD_ColumnCallout> retrieveAllColumnCallouts(
-			@CacheCtx final Properties ctx,
-			final int adColumnId)
+	// no cache
+	public List<I_AD_ColumnCallout> retrieveAllColumnCallouts(final Properties ctx, final int adColumnId)
 	{
-		final IQueryBuilder<I_AD_ColumnCallout> queryBuilder = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_ColumnCallout.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId);
-
-		queryBuilder.orderBy()
+				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId)
+				//
+				.orderBy()
 				.addColumn(I_AD_ColumnCallout.COLUMNNAME_SeqNo)
-				.addColumn(I_AD_ColumnCallout.COLUMNNAME_AD_ColumnCallout_ID);
-
-		return queryBuilder.create()
+				.addColumn(I_AD_ColumnCallout.COLUMNNAME_AD_ColumnCallout_ID)
+				.endOrderBy()
+				//
+				.create()
 				.list(I_AD_ColumnCallout.class);
 	}
 
 	@Override
 	public int retrieveColumnCalloutLastSeqNo(final Properties ctx, final int adColumnId)
 	{
-		final IQueryBuilder<I_AD_ColumnCallout> queryBuilder = Services.get(IQueryBL.class)
+		final Integer lastSeqNo = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_ColumnCallout.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId);
-
-		final Integer lastSeqNo = queryBuilder.create()
-				.setOnlyActiveRecords(true)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId)
+				//
+				.create()
 				.aggregate(I_AD_ColumnCallout.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
 
 		if (lastSeqNo == null || lastSeqNo < 0)
 		{
 			return 0;
 		}
-
 		return lastSeqNo;
 	}
 }

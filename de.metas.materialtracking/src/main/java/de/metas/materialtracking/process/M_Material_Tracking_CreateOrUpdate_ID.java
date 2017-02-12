@@ -13,11 +13,11 @@ package de.metas.materialtracking.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,18 +25,13 @@ package de.metas.materialtracking.process;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IOrderDAO;
 import de.metas.inout.IInOutDAO;
@@ -50,6 +45,10 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Links a given purchase order line and its inOut lines to a given <code>M_Material_Tracking_ID</code>. <br>
@@ -63,8 +62,8 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
  */
 public class M_Material_Tracking_CreateOrUpdate_ID
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 	// Services
 
@@ -128,10 +127,7 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	@Override
 	protected String doIt() throws Exception
 	{
-		try (final IAutoCloseable loggableRestorer = ILoggable.THREADLOCAL.temporarySetLoggable(this))
-		{
-			doIt0();
-		}
+		doIt0();
 		return MSG_OK;
 	}
 
@@ -153,10 +149,9 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			createUpdateASIAndLink(orderLine, materialTracking);
 			addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @C_OrderLine_ID@ @Line@ " + p_Line));
 
-			final List<I_C_Invoice_Candidate> icsToDelete =
-					InterfaceWrapperHelper.createList(
-							invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
-							I_C_Invoice_Candidate.class);
+			final List<I_C_Invoice_Candidate> icsToDelete = InterfaceWrapperHelper.createList(
+					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
+					I_C_Invoice_Candidate.class);
 			deleteOrUpdate(icsToDelete, materialTracking);
 		}
 		//
@@ -262,19 +257,19 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	 * @return <code>true</code> for orders and order lines with <code>SOTrx=N</code> (i.e. purchase order lines), <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (InterfaceWrapperHelper.isInstanceOf(gridTab, I_C_Order.class))
+		if (I_C_Order.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
-			return !order.isSOTrx();
+			final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+			return ProcessPreconditionsResolution.acceptIf(!order.isSOTrx());
 		}
-		else if (InterfaceWrapperHelper.isInstanceOf(gridTab, I_C_OrderLine.class))
+		else if (I_C_OrderLine.Table_Name.equals(context.getTableName()))
 		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(gridTab, I_C_OrderLine.class);
-			return !orderLine.getC_Order().isSOTrx();
+			final I_C_OrderLine orderLine = context.getSelectedModel(I_C_OrderLine.class);
+			return ProcessPreconditionsResolution.acceptIf(!orderLine.getC_Order().isSOTrx());
 		}
 
-		return false;
+		return ProcessPreconditionsResolution.reject();
 	}
 }

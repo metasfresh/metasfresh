@@ -18,34 +18,43 @@ import org.adempiere.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
- * Wraps an {@link ITrxItemChunkProcessor} and groups the items in batches of a given fixed maximum size.
+ * Wraps an {@link ITrxItemProcessor} and groups the items in batches of a given fixed maximum size.
+ * If the inner processor is a {@link ITrxItemChunkProcessor}, then it can still have chunks
+ * with less than the maximum size, but this wrapper will cause a new chunk to be created when the maximum size is reached.
  * <p>
  * Use {@link org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder#setItemsPerBatch(int)} in order to get an instance.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <IT> item type
  * @param <RT> result type
  */
 class FixedBatchTrxItemProcessor<IT, RT> implements ITrxItemChunkProcessor<IT, RT>
 {
+	/**
+	 *
+	 * @param processor the processor to be wrapped into the new instance.
+	 * @param itemsPerBatch the maximum number of items per chunk. If less or equal zero, then the given <code>processor</code> is not wrapped but just returned as-is
+	 *
+	 * @return an instance of this class that wraps the given <code>processor</code> (if <code>itemsPerBatch>0</code>).
+	 */
 	public static <IT, RT> ITrxItemProcessor<IT, RT> of(final ITrxItemProcessor<IT, RT> processor, final int itemsPerBatch)
 	{
-		if (itemsPerBatch == 1)
+		if (itemsPerBatch <= 0)
 		{
 			return processor;
 		}
-
+		// in case of itemsPerBatch == 1 we might return the given processor *if* that given processor is not a ITrxItem*Chunk*Processor.
 		return new FixedBatchTrxItemProcessor<>(processor, itemsPerBatch);
 	}
 

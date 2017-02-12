@@ -45,7 +45,6 @@ import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.model.POWrapper;
 import org.adempiere.test.TestClientUI;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -87,9 +86,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.ait.validator.BPOpenBalanceValidator;
@@ -434,7 +430,7 @@ public class Helper implements IHelper
 	public ProcessHelper mkDocProcess(final Object model, final String docAction, final String expectedDocStatus)
 	{
 		final ProcessHelper process;
-		final PO po = POWrapper.getPO(model, false);
+		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		if (po != null)
 		{
 			Assert.assertTrue("Object " + po + " is not an instanceof " + DocAction.class, po instanceof DocAction);
@@ -606,13 +602,13 @@ public class Helper implements IHelper
 
 		if (bank == null)
 		{
-			bank = POWrapper.create(ctx, MBank.class, null);
+			bank = InterfaceWrapperHelper.create(ctx, MBank.class, null);
 			bank.setName(bankName);
 			bank.setRoutingNo(routingNo);
 			bank.setIsCashBank(isCashBank);
 			bank.setIsOwnBank(true);
 			bank.setDescription("Created on " + new Date() + " by " + this.getInfo());
-			POWrapper.save(bank);
+			InterfaceWrapperHelper.save(bank);
 			logger.info("Created bank: " + bank.getName() + "-" + bank);
 		}
 
@@ -628,13 +624,13 @@ public class Helper implements IHelper
 		{
 			// get Bank Acc
 
-			bankAcct = POWrapper.create(ctx, I_C_BP_BankAccount.class, null);
+			bankAcct = InterfaceWrapperHelper.create(ctx, I_C_BP_BankAccount.class, null);
 			bankAcct.setAccountNo(bankAccountNoFinal);
 			bankAcct.setC_Bank_ID(bank.getC_Bank_ID());
 			bankAcct.setC_Currency_ID(getC_Currency_ID(getCurrencyCode()));
 			bankAcct.setBankAccountType(X_C_BankAccount.BANKACCOUNTTYPE_Savings);
 			bankAcct.setDescription("Created on " + new Date() + " by " + this.getInfo());
-			POWrapper.save(bankAcct);
+			InterfaceWrapperHelper.save(bankAcct);
 			logger.info("Created bank account: " + bankAcct.getAccountNo() + "-" + bankAcct);
 		}
 
@@ -672,13 +668,13 @@ public class Helper implements IHelper
 
 		if (product == null)
 		{
-			product = POWrapper.create(ctx, I_M_Product.class, null);
+			product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, null);
 			product.setValue(productValueFinal);
 			product.setName(productValueFinal);
 			product.setDescription(getGeneratedBy());
 			product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 			product.setC_UOM_ID(100); // Ea
-			POWrapper.save(product);
+			InterfaceWrapperHelper.save(product);
 			logger.info("Created product: " + product.getValue() + "-" + product);
 		}
 
@@ -715,11 +711,11 @@ public class Helper implements IHelper
 				.firstOnly(I_M_Product_Category.class);
 		if (pc == null)
 		{
-			pc = POWrapper.create(ctx, I_M_Product_Category.class, null);
+			pc = InterfaceWrapperHelper.create(ctx, I_M_Product_Category.class, null);
 			pc.setValue(value);
 			pc.setName(value);
 			pc.setDescription(getGeneratedBy());
-			POWrapper.save(pc);
+			InterfaceWrapperHelper.save(pc);
 			logger.info("Created product category: " + pc.getValue() + "-" + pc);
 		}
 		return pc;
@@ -754,10 +750,10 @@ public class Helper implements IHelper
 				.firstOnly(I_C_TaxCategory.class); // we have a DB unique idx on the C_TaxCategory.Name
 		if (tc == null)
 		{
-			tc = POWrapper.create(ctx, I_C_TaxCategory.class, null);
+			tc = InterfaceWrapperHelper.create(ctx, I_C_TaxCategory.class, null);
 			tc.setName(finalName);
 			tc.setDescription("Created by " + this.getInfo() + " on " + new Date());
-			POWrapper.save(tc);
+			InterfaceWrapperHelper.save(tc);
 		}
 		return tc;
 	}
@@ -781,7 +777,7 @@ public class Helper implements IHelper
 				.first(I_C_Tax.class);
 		if (tc == null)
 		{
-			tc = POWrapper.create(ctx, I_C_Tax.class, null);
+			tc = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, null);
 			tc.setName(finalName);
 			tc.setDescription("Created by " + this.getInfo() + " on " + new Date());
 			tc.setValidFrom(TODAY);
@@ -791,7 +787,7 @@ public class Helper implements IHelper
 			tc.setC_TaxCategory_ID(C_TaxCategory_ID);
 			tc.setC_Country_ID(getCountryByCode(getCountryCode()).getC_Country_ID());
 			tc.setTo_Country_ID(getCountryByCode(getCountryCode()).getC_Country_ID());
-			POWrapper.save(tc);
+			InterfaceWrapperHelper.save(tc);
 		}
 		return tc;
 	}
@@ -821,7 +817,7 @@ public class Helper implements IHelper
 		fc.setValue(product.getValue());
 		fc.setName(product.getName());
 		fc.setDescription(getGeneratedBy());
-		POWrapper.save(fc);
+		InterfaceWrapperHelper.save(fc);
 		// Manually reset the cache for M_FreightCost because:
 		// * in case of new POs the cache is not automatically reset
 		// * see MFreightCost.retrieveFor method which is cached
@@ -863,7 +859,7 @@ public class Helper implements IHelper
 
 		final I_C_BP_BankAccount ba = new Query(ctx, I_C_BP_BankAccount.Table_Name, null, null)
 				.setClient_ID()
-				.setOrderBy(I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
+				.setOrderBy(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
 				.first(I_C_BP_BankAccount.class);
 		Assert.assertNotNull("No default bank account found", ba);
 		return ba;
@@ -878,7 +874,7 @@ public class Helper implements IHelper
 		I_C_BP_BankAccount ba = new Query(ctx, I_C_BP_BankAccount.Table_Name, whereClause, null)
 				.setParameters(AD_Org_ID, C_Currency_ID)
 				.setClient_ID()
-				.setOrderBy(I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
+				.setOrderBy(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault + " DESC")
 				.first(I_C_BP_BankAccount.class);
 		if (ba != null)
 		{
@@ -914,12 +910,12 @@ public class Helper implements IHelper
 		if (pt != null)
 			return pt;
 
-		pt = POWrapper.create(ctx, I_C_PaymentTerm.class, null);
+		pt = InterfaceWrapperHelper.create(ctx, I_C_PaymentTerm.class, null);
 		pt.setValue(paymentTermValue);
 		pt.setName(paymentTermValue);
 		pt.setDescription("Created by " + this.getInfo() + " on " + new Date());
 		pt.setAD_Org_ID(0);
-		POWrapper.save(pt);
+		InterfaceWrapperHelper.save(pt);
 
 		return pt;
 	}
@@ -946,7 +942,7 @@ public class Helper implements IHelper
 		if (ch != null)
 			return ch;
 
-		ch = POWrapper.create(ctx, I_C_Charge.class, null);
+		ch = InterfaceWrapperHelper.create(ctx, I_C_Charge.class, null);
 		ch.setName(chargeName);
 		ch.setDescription("Created by " + this.getInfo() + " on " + new Date());
 
@@ -958,7 +954,7 @@ public class Helper implements IHelper
 		ch.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
 
 		ch.setChargeAmt(Env.ONE);
-		POWrapper.save(ch);
+		InterfaceWrapperHelper.save(ch);
 
 		return ch;
 	}
@@ -980,12 +976,12 @@ public class Helper implements IHelper
 
 		if (ds == null)
 		{
-			ds = POWrapper.create(ctx, I_M_DiscountSchema.class, null);
+			ds = InterfaceWrapperHelper.create(ctx, I_M_DiscountSchema.class, null);
 			ds.setDiscountType(MDiscountSchema.DISCOUNTTYPE_FlatPercent);
 			ds.setFlatDiscount(BigDecimal.ZERO);
 			ds.setIsBPartnerFlatDiscount(true);
 			ds.setName(valueFinal);
-			POWrapper.save(ds);
+			InterfaceWrapperHelper.save(ds);
 			logger.info("Created discount schema " + ds);
 		}
 		return ds;
@@ -1012,12 +1008,12 @@ public class Helper implements IHelper
 				.firstOnly(I_M_PricingSystem.class);
 		if (ps == null)
 		{
-			ps = POWrapper.create(ctx, I_M_PricingSystem.class, null);
+			ps = InterfaceWrapperHelper.create(ctx, I_M_PricingSystem.class, null);
 			ps.setValue(valueFinal);
 			ps.setName(valueFinal);
 			ps.setDescription(getGeneratedBy());
 			ps.setIsActive(true);
-			POWrapper.save(ps);
+			InterfaceWrapperHelper.save(ps);
 			logger.info("Created price system " + ps.getName() + "-" + ps);
 		}
 		return ps;
@@ -1097,7 +1093,7 @@ public class Helper implements IHelper
 				.firstOnly(de.metas.adempiere.model.I_M_PriceList.class);
 		if (pl == null)
 		{
-			pl = POWrapper.create(ctx, I_M_PriceList.class, null);
+			pl = InterfaceWrapperHelper.create(ctx, I_M_PriceList.class, null);
 			pl.setM_PricingSystem_ID(ps.getM_PricingSystem_ID());
 			pl.setName(priceListValue);
 			pl.setDescription(getGeneratedBy());
@@ -1109,7 +1105,7 @@ public class Helper implements IHelper
 			pl.setIsTaxIncluded(true);
 			pl.setEnforcePriceLimit(false);
 			pl.setIsDefault(true);
-			POWrapper.save(pl);
+			InterfaceWrapperHelper.save(pl);
 			logger.info("Created price list " + pl.getName() + "-" + pl
 					+ " (" + ps.getName() + "-" + ps + ", " + countryCode + ", " + currencyCode + ")");
 		}
@@ -1140,7 +1136,7 @@ public class Helper implements IHelper
 
 		if (plv == null)
 		{
-			plv = POWrapper.create(ctx, I_M_PriceList_Version.class, null);
+			plv = InterfaceWrapperHelper.create(ctx, I_M_PriceList_Version.class, null);
 			plv.setM_PriceList_ID(pl.getM_PriceList_ID());
 			plv.setM_DiscountSchema_ID(1000000); // TODO: hardcoded
 
@@ -1148,7 +1144,7 @@ public class Helper implements IHelper
 			// plv.setM_Pricelist_Version_Base_ID(_config.getM_PriceListVersion_Base_ID());
 
 			plv.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-			POWrapper.save(plv);
+			InterfaceWrapperHelper.save(plv);
 			logger.info("Created price list version " + plv + " for " + pl.getName() + "-" + pl);
 		}
 
@@ -1648,8 +1644,8 @@ public class Helper implements IHelper
 	@Override
 	public List<de.metas.adempiere.model.I_C_InvoiceLine> retrieveLines(I_C_Invoice invoice)
 	{
-		Properties ctx = POWrapper.getCtx(invoice);
-		String trxName = POWrapper.getTrxName(invoice);
+		Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 		List<de.metas.adempiere.model.I_C_InvoiceLine> lines = new Query(ctx, I_C_InvoiceLine.Table_Name, I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID + "=?", trxName)
 				.setParameters(invoice.getC_Invoice_ID())
 				.setOrderBy(I_C_InvoiceLine.COLUMNNAME_Line)
@@ -1724,8 +1720,8 @@ public class Helper implements IHelper
 	@Override
 	public <T> T createPO(Class<T> cl)
 	{
-		T model = POWrapper.create(ctx, cl, trxName);
-		PO po = POWrapper.getPO(model);
+		T model = InterfaceWrapperHelper.create(ctx, cl, trxName);
+		PO po = InterfaceWrapperHelper.getPO(model);
 		if (po.get_ColumnIndex("Description") >= 0)
 		{
 			po.set_ValueOfColumn("Description", "Created on " + new Date() + " by " + this.getInfo());

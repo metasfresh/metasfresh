@@ -15,13 +15,13 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.SvrProcess;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -48,10 +48,10 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 /**
  * Processes all activity change requests.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09110_Konten_KST_Pflicht_%28105477200774%29
  */
-public class Fact_Acct_ActivityChangeRequest_Process extends SvrProcess
+public class Fact_Acct_ActivityChangeRequest_Process extends JavaProcess
 {
 	// services
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);

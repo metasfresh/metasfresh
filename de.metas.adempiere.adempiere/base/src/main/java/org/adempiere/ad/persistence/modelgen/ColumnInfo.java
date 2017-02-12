@@ -24,6 +24,7 @@ package org.adempiere.ad.persistence.modelgen;
 
 
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.text.annotation.ToStringBuilder;
 
 import com.google.common.base.Optional;
 
@@ -35,6 +36,7 @@ import com.google.common.base.Optional;
  */
 /* package */class ColumnInfo
 {
+	@ToStringBuilder(skip = true)
 	private TableAndColumnInfoRepository repository;
 	//
 	private final String tableName;
@@ -52,6 +54,7 @@ import com.google.common.base.Optional;
 	private String name;
 	private String description;
 	private boolean virtualColumn;
+	private boolean lazyLoading;
 	private boolean isEncrypted;
 	private boolean isKey;
 	private int seqNo;
@@ -246,6 +249,16 @@ import com.google.common.base.Optional;
 	void setVirtualColumn(final boolean virtualColumn)
 	{
 		this.virtualColumn = virtualColumn;
+	}
+	
+	public boolean isLazyLoading()
+	{
+		return lazyLoading;
+	}
+	
+	public void setLazyLoading(boolean lazyLoading)
+	{
+		this.lazyLoading = lazyLoading;
 	}
 
 	public boolean isEncrypted()

@@ -13,18 +13,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -34,19 +33,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -182,6 +180,8 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 		}
 	};
 
+	private boolean disposed = false;
+
 	protected class TerminalKeyInfo
 	{
 		public ITerminalKey key;
@@ -259,6 +259,8 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 		keyFixedHeight = fixedButtonHeight;
 
 		init();
+
+		tc.addToDisposableComponents(this);
 	}
 
 	protected void init()
@@ -273,12 +275,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	{
 		buttonActionListener = null;
 
-		if (keyLayoutSelectionModel != null)
-		{
-			keyLayoutSelectionModel.dispose();
-			keyLayoutSelectionModel = null;
-		}
-
+		 // not created here, so we don't dispose them
 		caller = NullTerminalKeyListener.instance;
 		renderer = DefaultKeyPanelRenderer.instance;
 
@@ -288,6 +285,13 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 		{
 			keyLayoutInfoMap.clear();
 		}
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	@Override
@@ -373,7 +377,9 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 		}
 	}
 
-	private static IKeyLayoutSelectionModel getCreateKeyLayoutSelectionModel(final IKeyLayout keyLayout, final IKeyLayoutSelectionModel keyLayoutSelectionModelOld)
+	private static IKeyLayoutSelectionModel getCreateKeyLayoutSelectionModel(
+			final IKeyLayout keyLayout,
+			final IKeyLayoutSelectionModel keyLayoutSelectionModelOld)
 	{
 		final IKeyLayoutSelectionModel keyLayoutSelectionModel;
 		if (keyLayout instanceof IKeyLayoutSelectionModel)
@@ -390,7 +396,6 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 			keyLayoutSelectionModel = new DefaultKeyLayoutSelectionModel(keyLayout.getTerminalContext());
 		}
 
-		//
 		// Layout selection properties must be copied to the newly-created selection model
 		if (keyLayoutSelectionModelOld != null)
 		{
@@ -517,7 +522,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 	{
 		final String captionHtml = ""; // it will updated later in updatePOSKeyButton
 		final ITerminalButton button = getTerminalFactory().createButton(captionHtml);
-		button.addListener(WeakPropertyChangeSupport.asWeak(buttonActionListener));
+		button.addListener(buttonActionListener);
 		return button;
 	}
 
@@ -564,7 +569,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 				final boolean sameClass = getClass() == obj.getClass();
 				return sameClass;
 			}
-			
+
 			@Override
 			public int hashCode()
 			{

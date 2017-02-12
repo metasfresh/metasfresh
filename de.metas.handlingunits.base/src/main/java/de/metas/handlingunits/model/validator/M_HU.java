@@ -26,6 +26,9 @@ package de.metas.handlingunits.model.validator;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -56,6 +59,7 @@ import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -225,7 +229,7 @@ public class M_HU
 
 		//
 		// Load old HU values so that we can identify the previous locator
-		final I_M_HU vhuOld = InterfaceWrapperHelper.create(vhu, I_M_HU.class, true); // useOldValues
+		final I_M_HU vhuOld = InterfaceWrapperHelper.createOld(vhu, I_M_HU.class);
 
 		boolean hasRelevantChanges = false; // true if there are any HU relevant changes and it makes sense to create -/+ M_HU_Trx_Lines
 
@@ -237,7 +241,7 @@ public class M_HU
 		{
 			return;
 		}
-		final boolean huStatusChanged = !Check.equals(huStatusOld, huStatusNew);
+		final boolean huStatusChanged = !Objects.equals(huStatusOld, huStatusNew);
 		if (huStatusChanged)
 		{
 			hasRelevantChanges = true;
@@ -278,9 +282,9 @@ public class M_HU
 
 		//
 		// Get VHU Storage
-		final List<I_M_HU_Item> vhuItems = handlingUnitsDAO.retrieveItems(vhu);
+		final List<I_M_HU_Item> vhuItems = handlingUnitsDAO.retrieveItems(vhu).stream().filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(handlingUnitsBL.getItemType(item))).collect(Collectors.toList());
 		Check.errorUnless(vhuItems.size() == 1, "VHUs shall have exactly 1 material item, but vhu={} has {} item(s): {}", vhu, vhuItems.size(), vhuItems);
-		final I_M_HU_Item vhuItem = vhuItems.iterator().next();
+		final I_M_HU_Item vhuItem = vhuItems.get(0);
 
 		final IHUStorage vhuStorage = huStorageFactory.getStorage(vhu);
 		final List<IHUProductStorage> productStorages = vhuStorage.getProductStorages();

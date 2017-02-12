@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.IAttachmentBL;
 import org.adempiere.service.IAttachmentDAO;
 import org.adempiere.util.Services;
@@ -98,6 +97,15 @@ public class AttachmentBL implements IAttachmentBL
 
 		return attachment;
 	}
+	
+	@Override
+	public I_AD_Attachment createAttachment(final Object model, final String name, final byte[] data)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		addEntry(attachment, name, data);
+		return attachment;
+	}
+
 
 	@Override
 	public void addEntry(final I_AD_Attachment attachment, final String name, final byte[] data)
@@ -136,7 +144,7 @@ public class AttachmentBL implements IAttachmentBL
 	@Override
 	public byte[] getFirstEntryAsBytesOrNull(final I_AD_Attachment attachment)
 	{
-		final MAttachment attachmentPO = POWrapper.getPO(attachment);
+		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
 		for (final MAttachmentEntry entry : attachmentPO.getEntries())
 		{
 

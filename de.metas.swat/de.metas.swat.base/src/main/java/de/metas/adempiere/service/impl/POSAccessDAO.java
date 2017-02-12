@@ -41,13 +41,13 @@ public class POSAccessDAO implements IPOSAccessDAO
 {
 
 	@Override
-	@Cached
+	@Cached(cacheName = I_C_POS_Profile.Table_Name + "#by#" + I_C_POS_Profile.COLUMNNAME_AD_Role_ID)
 	public I_C_POS_Profile retrieveProfileByRole(@CacheCtx final Properties ctx, final int adRoleId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_POS_Profile.class, ctx, trxName)
-				.filter(new EqualsQueryFilter<I_C_POS_Profile>(I_C_POS_Profile.COLUMNNAME_AD_Role_ID, adRoleId))
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_POS_Profile.COLUMNNAME_AD_Role_ID, adRoleId)
 				.create()
-				.setOnlyActiveRecords(true)
 				.firstOnly(I_C_POS_Profile.class);
 	}
 

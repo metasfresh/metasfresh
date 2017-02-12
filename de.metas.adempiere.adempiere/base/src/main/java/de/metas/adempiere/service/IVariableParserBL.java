@@ -24,11 +24,10 @@ package de.metas.adempiere.service;
 
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.PO;
 
 public interface IVariableParserBL extends ISingletonService
 {
 	public static final Object NOT_RESOLVED = new Object();
 
-	public Object resolveVariable(String variable, PO po, Object defaultValue);
+	public Object resolveVariable(String variable, Object model, Object defaultValue);
 }

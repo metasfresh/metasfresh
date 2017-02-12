@@ -1,83 +1,77 @@
 package org.adempiere.ad.validationRule.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.NamePair;
+
+import com.google.common.base.MoreObjects;
 
 /**
- * SQL Validation Rule is a validation rule which has only an SQL Where Clause.
- * 
+ * Immutable SQL Validation Rule is a validation rule which has only an SQL Where Clause.
+ *
  * @author tsa
- * 
+ *
  */
-public class SQLValidationRule implements IValidationRule
+/* package */final class SQLValidationRule implements IValidationRule
 {
-	private static final String SYSCONFIG_IsIgnoredValidationCodeFail = "org.adempiere.ad.api.impl.SQLValidationRule.IsIgnoredValidationCodeFail";
-
-	private final Logger log = LogManager.getLogger(getClass());
-
-	private final boolean isIgnoredValidationCodeFail;
-
+	private final String name;
 	private final IStringExpression whereClause;
-	private final boolean isStaticWhereClause;
-	private String whereClauseParsed;
 
-	public SQLValidationRule(String whereClause)
+	public SQLValidationRule(final String name, final String whereClause)
 	{
 		super();
-		this.isIgnoredValidationCodeFail = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_IsIgnoredValidationCodeFail, false);
-
+		this.name = name;
 		this.whereClause = Services.get(IExpressionFactory.class).compileOrDefault(whereClause, IStringExpression.NULL, IStringExpression.class);
-
-		this.isStaticWhereClause = this.whereClause.getParameters().isEmpty();
 	}
 
 	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
+	public String toString()
 	{
-		return true; // FIXME
-//		final String whereClauseParsedNow = parseWhereClause(evalCtx);
-//		final boolean valid = Util.equals(whereClauseParsedNow, this.whereClauseParsed);
-//		return !valid;
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("name", name)
+				.add("whereClause", whereClause)
+				.toString();
 	}
 
-	/**
-	 * @return true if there are no parameters
-	 */
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(whereClause, name);
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		if (!getClass().equals(obj.getClass()))
+		{
+			return false;
+		}
+
+		final SQLValidationRule other = (SQLValidationRule)obj;
+		return Objects.equals(name, other.name)
+				&& Objects.equals(whereClause, other.whereClause);
+	}
+
+	@Override
+	public Set<String> getAllParameters()
+	{
+		return whereClause.getParameters();
+	}
+
 	@Override
 	public boolean isImmutable()
 	{
@@ -85,82 +79,14 @@ public class SQLValidationRule implements IValidationRule
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public IStringExpression getPrefilterWhereClause()
 	{
-		return whereClause.getParameters();
+		return whereClause;
 	}
 
 	@Override
-	public String getPrefilterWhereClause(IValidationContext evalCtx)
+	public final INamePairPredicate getPostQueryFilter()
 	{
-		if (isStaticWhereClause)
-		{
-			return whereClause.getExpressionString();
-		}
-
-		String validation = parseWhereClause(evalCtx);
-		this.whereClauseParsed = validation;
-		boolean validationFailed = Check.isEmpty(validation);
-
-		if (!validationFailed)
-		{
-			return validation;
-		}
-
-		// metas: begin: us1261
-		if (isIgnoredValidationCodeFail)
-		{
-			log.debug("Loader NOT Validated BUT IGNORED: " + this);
-			return "1=1";
-		}
-		// metas: end: us1261
-
-		log.debug("Loader NOT Validated: " + whereClause);
-		// Bug 1843862 - Lookups not working on Report Viewer window
-		// globalqss - when called from Viewer window ignore error about unparsabe context variables
-		// there is no context in report viewer windows
-		final int windowNo = evalCtx.getWindowNo();
-		if (Ini.isClient() == false ||
-				(Env.isRegularOrMainWindowNo(windowNo)
-				&& Env.getWindow(windowNo) != null // metas-ts: in some integration tests, there might be no window at all
-				&& !Env.getWindow(windowNo).getClass().getName().equals("org.compiere.print.Viewer")))
-		{
-			return WHERECLAUSE_ERROR;
-		}
-
-		return validation;
-	}
-
-	private String parseWhereClause(IValidationContext evalCtx)
-	{
-		if (isStaticWhereClause)
-		{
-			return whereClause.getExpressionString();
-		}
-		
-		final boolean ignoreUnparsable = false;
-		final String whereClauseParsedNow = whereClause.evaluate(evalCtx, ignoreUnparsable);
-		return whereClauseParsedNow;
-	}
-
-	/**
-	 * This method always returns true!
-	 */
-	@Override
-	public final boolean accept(IValidationContext evalCtx, NamePair item)
-	{
-		return true;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "SQLValidationRule [whereClause=" + whereClause + ", isStaticWhereClause=" + isStaticWhereClause + "]";
-	}
-
-	@Override
-	public NamePair getValidValue(Object currentValue)
-	{
-		return null;
+		return INamePairPredicate.NULL;
 	}
 }

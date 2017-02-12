@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.invoicecandidate.api.impl;
 
@@ -13,12 +13,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +55,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
 /**
- * 
+ *
  */
 public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSupport
 {
@@ -154,7 +154,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 	}
 
 	/**
-	 * 
+	 *
 	 * <ul>
 	 * <li>Invoice (10)
 	 * <li>=> QtyInvoiced = 10
@@ -193,7 +193,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 	}
 
 	/**
-	 * 
+	 *
 	 * @param reverseInvoice <code>true</code>: reverse the original invoice; <code>false</code> reverse the invoice's credit memo.
 	 * @param reversalIlaExpectedQtyInvoiced
 	 */
@@ -243,7 +243,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(CREDI_MEMO_QTY_INVOICE_NINE.negate()));
 			creditMemoIla = currentIla;
 		}
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getFirst(), comparesEqualTo(BigDecimal.ONE)); // 10 invoiced, 9 credited
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getLeft(), comparesEqualTo(BigDecimal.ONE)); // 10 invoiced, 9 credited
 
 		// create a reversal for the invoice or credit memo
 		// the actual test starts with invoiceCandBL.handleReversalForInvoice()
@@ -288,7 +288,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(reversalIlaExpectedQtyInvoiced));
 		}
 
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getFirst(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getLeft(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
 	}
 
 	private void doTest(final boolean isCreditedInvoiceReinvoicable,

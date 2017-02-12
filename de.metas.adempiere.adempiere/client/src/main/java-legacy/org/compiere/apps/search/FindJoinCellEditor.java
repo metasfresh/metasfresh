@@ -11,7 +11,7 @@ import javax.swing.table.TableCellRenderer;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.Services;
-import org.compiere.apps.search.FindAdvancedSearchTableModelRow.Join;
+import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.X_AD_WF_NextCondition;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CEditor;
@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Advanced search table - cell renderer and editor for AND/OR join option.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer

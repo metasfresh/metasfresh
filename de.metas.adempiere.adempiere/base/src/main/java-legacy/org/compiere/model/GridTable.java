@@ -68,9 +68,10 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -185,8 +186,8 @@ public class GridTable extends AbstractTableModel
 
 	/**	Columns                 		*/
 	private ArrayList<GridField>	m_fields = new ArrayList<GridField>(30);
-	private ArrayList<Object>	m_parameterSELECT = new ArrayList<Object>(5);
-	private ArrayList<Object>	m_parameterWHERE = new ArrayList<Object>(5);
+//	private ArrayList<Object>	m_parameterSELECT = new ArrayList<Object>(5);
+//	private ArrayList<Object>	m_parameterWHERE = new ArrayList<Object>(5);
 
 	/** Complete SQL statement          */
 	private String 		        m_SQL;
@@ -252,21 +253,20 @@ public class GridTable extends AbstractTableModel
 		return m_tableName;
 	}	//	getTableName
 
-	/**
-	 *	Set Where Clause (w/o the WHERE and w/o History).
-	 *  @param newWhereClause sql where clause
-	 *  @param onlyCurrentRows only current rows
-	 *  @param onlyCurrentDays how many days back for current
-	 *	@return true if where clase set
-	 */
-	public boolean setSelectWhereClause(String newWhereClause, boolean onlyCurrentRows, int onlyCurrentDays)
-	{
-// metas: begin
-		return setSelectWhereClause(newWhereClause, onlyCurrentRows, onlyCurrentDays, null);
-	}
+//	/**
+//	 *	Set Where Clause (w/o the WHERE and w/o History).
+//	 *  @param newWhereClause sql where clause
+//	 *  @param onlyCurrentRows only current rows
+//	 *  @param onlyCurrentDays how many days back for current
+//	 *	@return true if where clase set
+//	 */
+//	public boolean setSelectWhereClause(String newWhereClause, boolean onlyCurrentRows, int onlyCurrentDays)
+//	{
+//// metas: begin
+//		return setSelectWhereClause(newWhereClause, onlyCurrentRows, onlyCurrentDays, null);
+//	}
 	public boolean setSelectWhereClause(String newWhereClause, boolean onlyCurrentRows, int onlyCurrentDays, MQuery newQuery)
 	{
-// metas: end
 		if (m_open)
 		{
 			log.error("Table already open - ignored");
@@ -582,33 +582,33 @@ public class GridTable extends AbstractTableModel
 		return DisplayType.getClass(field.getDisplayType(), false);
 	}   //  getColumnClass
 
-	/**
-	 *	Set Select Clause Parameter.
-	 *	Assumes that you set parameters starting from index zero
-	 *  @param index index
-	 *  @param parameter parameter
-	 */
-	public void setParameterSELECT (int index, Object parameter)
-	{
-		if (index >= m_parameterSELECT.size())
-			m_parameterSELECT.add(parameter);
-		else
-			m_parameterSELECT.set(index, parameter);
-	}	//	setParameterSELECT
+//	/**
+//	 *	Set Select Clause Parameter.
+//	 *	Assumes that you set parameters starting from index zero
+//	 *  @param index index
+//	 *  @param parameter parameter
+//	 */
+//	public void setParameterSELECT (int index, Object parameter)
+//	{
+//		if (index >= m_parameterSELECT.size())
+//			m_parameterSELECT.add(parameter);
+//		else
+//			m_parameterSELECT.set(index, parameter);
+//	}	//	setParameterSELECT
 
-	/**
-	 *	Set Where Clause Parameter.
-	 *	Assumes that you set parameters starting from index zero
-	 *  @param index index
-	 *  @param parameter parameter
-	 */
-	public void setParameterWHERE (int index, Object parameter)
-	{
-		if (index >= m_parameterWHERE.size())
-			m_parameterWHERE.add(parameter);
-		else
-			m_parameterWHERE.set(index, parameter);
-	}	//	setParameterWHERE
+//	/**
+//	 *	Set Where Clause Parameter.
+//	 *	Assumes that you set parameters starting from index zero
+//	 *  @param index index
+//	 *  @param parameter parameter
+//	 */
+//	public void setParameterWHERE (int index, Object parameter)
+//	{
+//		if (index >= m_parameterWHERE.size())
+//			m_parameterWHERE.add(parameter);
+//		else
+//			m_parameterWHERE.set(index, parameter);
+//	}	//	setParameterWHERE
 
 
 	/**
@@ -834,10 +834,10 @@ public class GridTable extends AbstractTableModel
 		//
 		m_vetoableChangeSupport = null;
 		//
-		m_parameterSELECT.clear();
-		m_parameterSELECT = null;
-		m_parameterWHERE.clear();
-		m_parameterWHERE = null;
+//		m_parameterSELECT.clear();
+//		m_parameterSELECT = null;
+//		m_parameterWHERE.clear();
+//		m_parameterWHERE = null;
 		//  clear data arrays
 		m_buffer = null;
 		m_sort = null;
@@ -3183,7 +3183,7 @@ public class GridTable extends AbstractTableModel
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
 							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
 					|| columnName.endsWith("atedBy")
-					|| ("Record_ID".equals(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
+					|| (Services.get(IColumnBL.class).isRecordColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
 					)
 				{
 					rowData[j] = new Integer(rs.getInt(j+1));	//	Integer
@@ -3606,54 +3606,54 @@ public class GridTable extends AbstractTableModel
 		 */
 		private void setParameter (PreparedStatement pstmt, boolean countSQL)
 		{
-			if (m_parameterSELECT.size() == 0 && m_parameterWHERE.size() == 0)
-				return;
-			try
-			{
-				int pos = 1;	//	position in Statement
-				//	Select Clause Parameters
-				for (int i = 0; !countSQL && i < m_parameterSELECT.size(); i++)
-				{
-					Object para = m_parameterSELECT.get(i);
-					if (para != null)
-						log.debug("Select " + i + "=" + para);
-					//
-					if (para == null)
-						;
-					else if (para instanceof Integer)
-					{
-						Integer ii = (Integer)para;
-						pstmt.setInt (pos++, ii.intValue());
-					}
-					else if (para instanceof BigDecimal)
-						pstmt.setBigDecimal (pos++, (BigDecimal)para);
-					else
-						pstmt.setString(pos++, para.toString());
-				}
-				//	Where Clause Parameters
-				for (int i = 0; i < m_parameterWHERE.size(); i++)
-				{
-					Object para = m_parameterWHERE.get(i);
-					if (para != null)
-						log.debug("Where " + i + "=" + para);
-					//
-					if (para == null)
-						;
-					else if (para instanceof Integer)
-					{
-						Integer ii = (Integer)para;
-						pstmt.setInt (pos++, ii.intValue());
-					}
-					else if (para instanceof BigDecimal)
-						pstmt.setBigDecimal (pos++, (BigDecimal)para);
-					else
-						pstmt.setString(pos++, para.toString());
-				}
-			}
-			catch (SQLException e)
-			{
-				log.error("parameter", e);
-			}
+//			if (m_parameterSELECT.size() == 0 && m_parameterWHERE.size() == 0)
+//				return;
+//			try
+//			{
+//				int pos = 1;	//	position in Statement
+//				//	Select Clause Parameters
+//				for (int i = 0; !countSQL && i < m_parameterSELECT.size(); i++)
+//				{
+//					Object para = m_parameterSELECT.get(i);
+//					if (para != null)
+//						log.debug("Select " + i + "=" + para);
+//					//
+//					if (para == null)
+//						;
+//					else if (para instanceof Integer)
+//					{
+//						Integer ii = (Integer)para;
+//						pstmt.setInt (pos++, ii.intValue());
+//					}
+//					else if (para instanceof BigDecimal)
+//						pstmt.setBigDecimal (pos++, (BigDecimal)para);
+//					else
+//						pstmt.setString(pos++, para.toString());
+//				}
+//				//	Where Clause Parameters
+//				for (int i = 0; i < m_parameterWHERE.size(); i++)
+//				{
+//					Object para = m_parameterWHERE.get(i);
+//					if (para != null)
+//						log.debug("Where " + i + "=" + para);
+//					//
+//					if (para == null)
+//						;
+//					else if (para instanceof Integer)
+//					{
+//						Integer ii = (Integer)para;
+//						pstmt.setInt (pos++, ii.intValue());
+//					}
+//					else if (para instanceof BigDecimal)
+//						pstmt.setBigDecimal (pos++, (BigDecimal)para);
+//					else
+//						pstmt.setString(pos++, para.toString());
+//				}
+//			}
+//			catch (SQLException e)
+//			{
+//				log.error("parameter", e);
+//			}
 		}	//	setParameter
 
 	}	//	Loader
@@ -4009,7 +4009,7 @@ public class GridTable extends AbstractTableModel
 	}
 	// metas end
 	
-		private String createSelectSql(int oneRow) {
+	private String createSelectSql(int oneRow) {
 		if (m_fields.size() == 0 || m_tableName == null
 				|| m_tableName.equals(""))
 			return "";
@@ -4030,13 +4030,11 @@ public class GridTable extends AbstractTableModel
 		// BF [ 2910358 ]
 		// Restore the Original Value for Key Column Name based in Tab Context
 		// Value
-		String parentKey = Env.getContext(m_ctx, m_WindowNo, getParentTabNo(),
-				CTX_KeyColumnName);
+		String parentKey = Env.getContext(m_ctx, m_WindowNo, getParentTabNo(), CTX_KeyColumnName);
 		
 		if (!Check.isEmpty(parentKey, true) )
 		{
-			String valueKey = Env.getContext(m_ctx, m_WindowNo, getParentTabNo(),
-					parentKey);
+			String valueKey = Env.getContext(m_ctx, m_WindowNo, getParentTabNo(), parentKey);
 
 			if (valueKey != null && valueKey.length() > 0) {
 				Env.setContext(m_ctx, m_WindowNo, parentKey, valueKey);
@@ -4051,8 +4049,7 @@ public class GridTable extends AbstractTableModel
 				where.append(m_whereClause);
 			else // replace variables
 			{
-				String context = Env.parseContext(m_ctx, m_WindowNo,
-						m_whereClause, false);
+				String context = Env.parseContext(m_ctx, m_WindowNo, m_whereClause, false);
 				if (context != null && context.trim().length() > 0) {
 					where.append(context);
 				} else {
@@ -4072,8 +4069,7 @@ public class GridTable extends AbstractTableModel
 				where.append(m_defaultWhereClause);
 			else // replace variables
 			{
-				String ctx = Env.parseContext(m_ctx, m_WindowNo,
-						m_defaultWhereClause, false);
+				String ctx = Env.parseContext(m_ctx, m_WindowNo, m_defaultWhereClause, false);
 				if (ctx != null && ctx.trim().length() > 0) {
 					where.append(ctx);
 				} else {

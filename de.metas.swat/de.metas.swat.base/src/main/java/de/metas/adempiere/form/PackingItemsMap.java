@@ -34,30 +34,30 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.Util;
 
 public class PackingItemsMap
 {
 	public static final int KEY_UnpackedItems = 0;
-	private final Map<Integer, List<AbstractPackingItem>> itemsMap = new HashMap<Integer, List<AbstractPackingItem>>();
+	private final Map<Integer, List<IPackingItem>> itemsMap = new HashMap<>();
 
 	public PackingItemsMap()
 	{
 		super();
 
-		final List<AbstractPackingItem> unpackedItems = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> unpackedItems = new ArrayList<>();
 		itemsMap.put(KEY_UnpackedItems, unpackedItems);
 	}
 
+	/** Copy constructor */
 	private PackingItemsMap(final PackingItemsMap copyFrom)
 	{
 		super();
 
 		//
 		// Do a deep-copy of "copyFrom"'s map
-		for (final Entry<Integer, List<AbstractPackingItem>> key2itemsList : copyFrom.itemsMap.entrySet())
+		for (final Entry<Integer, List<IPackingItem>> key2itemsList : copyFrom.itemsMap.entrySet())
 		{
-			final List<AbstractPackingItem> items = key2itemsList.getValue();
+			final List<IPackingItem> items = key2itemsList.getValue();
 			
 			// skip null items (shall not happen)
 			if (items == null)
@@ -67,7 +67,7 @@ public class PackingItemsMap
 			
 			// NOTE: to avoid NPEs we are also copying empty lists
 			
-			final List<AbstractPackingItem> itemsCopy = new ArrayList<AbstractPackingItem>(items);
+			final List<IPackingItem> itemsCopy = new ArrayList<>(items);
 
 			final Integer key = key2itemsList.getKey();
 
@@ -75,47 +75,47 @@ public class PackingItemsMap
 		}
 	}
 
-	public List<AbstractPackingItem> get(final int key)
+	public List<IPackingItem> get(final int key)
 	{
 		return itemsMap.get(key);
 	}
 
-	public void addUnpackedItems(final Collection<AbstractPackingItem> unpackedItemsToAdd)
+	public void addUnpackedItems(final Collection<? extends IPackingItem> unpackedItemsToAdd)
 	{
 		if (unpackedItemsToAdd == null || unpackedItemsToAdd.isEmpty())
 		{
 			return;
 		}
 
-		final List<AbstractPackingItem> unpackedItems = getUnpackedItems();
+		final List<IPackingItem> unpackedItems = getUnpackedItems();
 		unpackedItems.addAll(unpackedItemsToAdd);
 	}
 
-	private final List<AbstractPackingItem> getUnpackedItems()
+	private final List<IPackingItem> getUnpackedItems()
 	{
-		List<AbstractPackingItem> unpackedItems = itemsMap.get(KEY_UnpackedItems);
+		List<IPackingItem> unpackedItems = itemsMap.get(KEY_UnpackedItems);
 		if (unpackedItems == null)
 		{
-			unpackedItems = new ArrayList<AbstractPackingItem>();
+			unpackedItems = new ArrayList<>();
 			itemsMap.put(KEY_UnpackedItems, unpackedItems);
 		}
 
 		return unpackedItems;
 	}
 
-	public void addUnpackedItem(final AbstractPackingItem unpackedItemToAdd)
+	public void addUnpackedItem(final IPackingItem unpackedItemToAdd)
 	{
 		Check.assumeNotNull(unpackedItemToAdd, "unpackedItemToAdd not null");
-		final List<AbstractPackingItem> unpackedItems = getUnpackedItems();
+		final List<IPackingItem> unpackedItems = getUnpackedItems();
 		unpackedItems.add(unpackedItemToAdd);
 	}
 
-	public void put(int key, List<AbstractPackingItem> items)
+	public void put(int key, List<IPackingItem> items)
 	{
 		itemsMap.put(key, items);
 	}
 
-	public Set<Entry<Integer, List<AbstractPackingItem>>> entrySet()
+	public Set<Entry<Integer, List<IPackingItem>>> entrySet()
 	{
 		return itemsMap.entrySet();
 	}
@@ -129,19 +129,19 @@ public class PackingItemsMap
 	 * @param key
 	 * @return see {@link Map#remove(Object)}
 	 */
-	public List<AbstractPackingItem> remove(int key)
+	public List<IPackingItem> remove(int key)
 	{
 		return itemsMap.remove(key);
 	}
 
-	public void removeUnpackedItem(final AbstractPackingItem itemToRemove)
+	public void removeUnpackedItem(final IPackingItem itemToRemove)
 	{
 		Check.assumeNotNull(itemToRemove, "itemToRemove not null");
-		final List<AbstractPackingItem> unpackedItems = getUnpackedItems();
-		for (final Iterator<AbstractPackingItem> it = unpackedItems.iterator(); it.hasNext();)
+		final List<IPackingItem> unpackedItems = getUnpackedItems();
+		for (final Iterator<IPackingItem> it = unpackedItems.iterator(); it.hasNext();)
 		{
-			final AbstractPackingItem item = it.next();
-			if (Util.same(item, itemToRemove))
+			final IPackingItem item = it.next();
+			if (item.isSameAs(itemToRemove))
 			{
 				it.remove();
 				return;
@@ -157,17 +157,17 @@ public class PackingItemsMap
 	 * @param key
 	 * @param itemPacked
 	 */
-	public void appendPackedItem(final int key, final AbstractPackingItem itemPacked)
+	public void appendPackedItem(final int key, final IPackingItem itemPacked)
 	{
-		List<AbstractPackingItem> existingPackedItems = get(key);
+		List<IPackingItem> existingPackedItems = get(key);
 		if (existingPackedItems == null)
 		{
-			existingPackedItems = new ArrayList<AbstractPackingItem>();
+			existingPackedItems = new ArrayList<>();
 			put(key, existingPackedItems);
 		}
 		else
 		{
-			for (final AbstractPackingItem item : existingPackedItems)
+			for (final IPackingItem item : existingPackedItems)
 			{
 				// add new item into the list only if is a real new item
 				// NOTE: should be only one item with same grouping key
@@ -191,7 +191,7 @@ public class PackingItemsMap
 	 */
 	public boolean hasPackedItems()
 	{
-		for (final Entry<Integer, List<AbstractPackingItem>> key2itemsList : itemsMap.entrySet())
+		for (final Entry<Integer, List<IPackingItem>> key2itemsList : itemsMap.entrySet())
 		{
 			final Integer key = key2itemsList.getKey();
 			
@@ -200,7 +200,7 @@ public class PackingItemsMap
 				continue;
 			}
 			
-			final List<AbstractPackingItem> items = key2itemsList.getValue();
+			final List<IPackingItem> items = key2itemsList.getValue();
 			if (items == null || items.isEmpty())
 			{
 				continue;
@@ -219,7 +219,7 @@ public class PackingItemsMap
 	 */
 	public boolean hasUnpackedItems()
 	{
-		final List<AbstractPackingItem> unpackedItems = getUnpackedItems();
+		final List<IPackingItem> unpackedItems = getUnpackedItems();
 		if (unpackedItems == null || unpackedItems.isEmpty())
 		{
 			return false;

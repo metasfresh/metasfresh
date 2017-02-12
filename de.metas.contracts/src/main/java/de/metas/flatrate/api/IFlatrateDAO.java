@@ -10,18 +10,17 @@ package de.metas.flatrate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -50,11 +49,19 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieves I_C_Invoice_Clearing_Alloc records that have the given invoiceCand as their <code>C_Invoice_Candidate_ID</code> OR <code>C_Invoice_Cand_ToClear_ID</code>.
-	 * 
+	 *
 	 * @param invoiceCand
 	 * @return
 	 */
 	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+
+	/**
+	 * Like {@link #retrieveClearingAllocs(I_C_Invoice_Candidate)}, but also returns inactive records.
+	 *
+	 * @param invoiceCand
+	 * @return
+	 */
+	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(I_C_Invoice_Candidate invoiceCand);
 
 	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_Term term);
 
@@ -67,7 +74,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * <li>it's {@link I_C_Invoice_Clearing_Alloc#COLUMNNAME_C_Flatrate_DataEntry_ID} is not yet set</li>
 	 * <li><code>C_Invoice_Clearing_Alloc.C_Invoice_Cand_ToClear_ID</code> references an invoice candidate whose <code>C_Invoice_Candidate_ID.DateOrdered</code> value is within the given period</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param period
 	 * @return
 	 */
@@ -76,7 +83,7 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Term flatrateTerm, Timestamp date, String dataEntryType, boolean onlyNonSim);
 
 	/**
-	 * 
+	 *
 	 * @param fc
 	 * @param dateOrdered
 	 * @param typeInvoicingPeriodbased
@@ -88,7 +95,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieves the dataEntry that matches the given params and has IsSimulation=N.
-	 * 
+	 *
 	 * @param flatrateTerm
 	 * @param period
 	 * @param dataEntryType
@@ -101,7 +108,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieved data entries that have the given term and uom, have type = 'IP' and have a period that lies at least partially withing the given dateFrom and dateTo.
-	 * 
+	 *
 	 * @param term
 	 * @param dateFrom entries to return must have
 	 * @param dateTo
@@ -111,7 +118,7 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, Timestamp dateFrom, Timestamp dateTo, I_C_UOM uom);
 
 	/**
-	 * 
+	 *
 	 * @param term mandatory; the term whose data entries are returned
 	 * @param dataEntryType optional; if set, then only data entries with the given type are returned
 	 * @param uom optional; if set, then only data entries with the given uom are returned
@@ -122,7 +129,7 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves from DB the allocation record that references the given invoice candidate (column <code>C_Invoice_Cand_ToClear_ID</code>) and the given data entry. If there is no such record it
 	 * returns <code>null</code>.
-	 * 
+	 *
 	 * @param invoiceCandToClear
 	 * @param dataEntry
 	 * @return
@@ -141,7 +148,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * For the given <bold>simulated</bold> dataEntry, this method updates the ActualQty values of all other data Entries that have the same C_Flatrate_Term_ID, C_Period_ID and Type.
-	 * 
+	 *
 	 * @param dataEntry
 	 */
 	void updateQtyActualFromDataEntry(I_C_Flatrate_DataEntry dataEntry);
@@ -149,7 +156,7 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves the flatrate term matching the given invoice candidate or <code>null</code>.<br>
 	 * Basically calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)}, but discards all terms that have <code>IsSimulation=Y</code>.
-	 * 
+	 *
 	 * @return the term or <code>null</code>
 	 * @throws AdempiereException if there is more than one non-simulation-term
 	 */
@@ -157,7 +164,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * This method calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
-	 * 
+	 *
 	 * @param ic
 	 * @return
 	 */
@@ -167,7 +174,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieves invoice candidates that don't have an invoice candidate allocation, but should have. Method to be used when there are already invoice candidates and a term is completed (again).
-	 * 
+	 *
 	 * @param dataEntry
 	 * @return
 	 */
@@ -177,7 +184,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieve all active {@link I_C_Flatrate_Conditions} of context tenant.
-	 * 
+	 *
 	 * @param ctx
 	 * @return
 	 */
@@ -194,7 +201,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * <li>has a <code>C_Period</code> that covers the given <code>movementDate</code></li>
 	 * <li>references the the given <code>product</code> with its <code>M_Product_DataEntry_ID</code> column</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param bPartner_ID
 	 * @param movementDate
 	 * @param product
@@ -208,9 +215,10 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves a {@link I_C_Flatrate_Data} for the given partner or creates and saves it on the fly. Note that if a record is created, it is also directly set to processed, so the anticipation is
 	 * that a term is directly created.
-	 * 
+	 *
 	 * @param bPartner
 	 * @return
 	 */
 	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
+
 }

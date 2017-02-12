@@ -55,7 +55,7 @@ import de.metas.currency.ICurrencyDAO;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CurrencyDAO implements ICurrencyDAO
@@ -121,8 +121,8 @@ public class CurrencyDAO implements ICurrencyDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_ConversionType_Default.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_ConversionType_Default.COLUMN_AD_Client_ID, adClientId, Env.CTXVALUE_AD_Client_ID_System)
-				.addInArrayFilter(I_C_ConversionType_Default.COLUMN_AD_Org_ID, adClientId, Env.CTXVALUE_AD_Org_ID_System)
+				.addInArrayOrAllFilter(I_C_ConversionType_Default.COLUMN_AD_Client_ID, adClientId, Env.CTXVALUE_AD_Client_ID_System)
+				.addInArrayOrAllFilter(I_C_ConversionType_Default.COLUMN_AD_Org_ID, adClientId, Env.CTXVALUE_AD_Org_ID_System)
 				.addCompareFilter(I_C_ConversionType_Default.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, dateDay)
 				//
 				.orderBy()
@@ -172,8 +172,8 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
 				.addCompareFilter(I_C_Conversion_Rate.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, conversionDate)
 				.addCompareFilter(I_C_Conversion_Rate.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, conversionDate)
-				.addInArrayFilter(I_C_Conversion_Rate.COLUMN_AD_Client_ID, 0, conversionCtx.getAD_Client_ID())
-				.addInArrayFilter(I_C_Conversion_Rate.COLUMN_AD_Org_ID, 0, conversionCtx.getAD_Org_ID())
+				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Client_ID, 0, conversionCtx.getAD_Client_ID())
+				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Org_ID, 0, conversionCtx.getAD_Org_ID())
 				//
 				.orderBy()
 				.addColumn(I_C_Conversion_Rate.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)

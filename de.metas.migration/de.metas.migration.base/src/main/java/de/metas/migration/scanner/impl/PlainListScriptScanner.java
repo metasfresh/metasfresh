@@ -33,7 +33,7 @@ import de.metas.migration.scanner.IScriptFactory;
 /**
  * This scanner returns a list of {@link IScript}s.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PlainListScriptScanner extends AbstractScriptScanner

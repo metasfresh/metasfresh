@@ -43,9 +43,9 @@ import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -456,9 +456,9 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 				{
 					final DefaultMutableTreeNode currentChild = en.nextElement();
 					final Object userObj = currentChild.getUserObject();
-					if (userObj instanceof PackingItem)
+					if (userObj instanceof LegacyPackingItem)
 					{
-						final PackingItem pack = (PackingItem)userObj;
+						final LegacyPackingItem pack = (LegacyPackingItem)userObj;
 						if (pck == pack && pck.getProductId() == pack.getProductId())
 						{
 							pck = pack;
@@ -497,7 +497,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 			{
 				final DefaultMutableTreeNode currentChild = en.nextElement();
 				final Object userObj = currentChild.getUserObject();
-				if (userObj instanceof PackingItem)
+				if (userObj instanceof LegacyPackingItem)
 				{
 					listNodes.add(currentChild);
 				}
@@ -505,7 +505,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 			for (final DefaultMutableTreeNode node : listNodes)
 			{
-				final PackingItem pack = (PackingItem)node.getUserObject();
+				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
 				packingTreeModel.movePackItem(node, oldUsedBin, pack.getQtySum());
 			}
 		}
@@ -517,7 +517,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 			{
 				final DefaultMutableTreeNode currentChild = en.nextElement();
 				final Object userObj = currentChild.getUserObject();
-				if (userObj instanceof PackingItem)
+				if (userObj instanceof LegacyPackingItem)
 				{
 					listNodes.add(currentChild);
 				}
@@ -525,7 +525,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 			for (final DefaultMutableTreeNode node : listNodes)
 			{
-				final PackingItem pack = (PackingItem)node.getUserObject();
+				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
 				packingTreeModel.removePackedItem(Env.getCtx(), node, oldUsedBin, pack.getQtySum(), deleteBin);
 			}
 			terminalPanel.refresh(false, true, true);
@@ -646,14 +646,14 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 		return fQty;
 	}
 
-	private AbstractPackingItem pck = null;
+	private IPackingItem pck = null;
 
-	public final AbstractPackingItem getPck()
+	public final IPackingItem getPck()
 	{
 		return pck;
 	}
 
-	public final void setPck(final AbstractPackingItem pck)
+	public final void setPck(final IPackingItem pck)
 	{
 		this.pck = pck;
 	}

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,8 +45,6 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
@@ -64,18 +62,16 @@ import org.compiere.model.I_M_PackagingTreeItem;
 import org.compiere.model.MBPartner;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.exception.NoContainerException;
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.AvailableBins;
 import de.metas.adempiere.form.BinPacker;
 import de.metas.adempiere.form.IBinPacker;
 import de.metas.adempiere.form.IPackingDetailsModel;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
 import de.metas.adempiere.form.MvcMdGenForm;
 import de.metas.adempiere.form.Packing;
@@ -101,13 +97,16 @@ import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
+import net.miginfocom.swing.MigLayout;
 
 /**
- * Picking First Window Panel
- * 
+ * Picking First Window Panel, which is embedded in {@link SwingPickingTerminalPanel}.
+ *
  * @author cg
- * 
+ *
  */
 public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 {
@@ -236,7 +235,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			}
 
 			String value = "";
-			BigDecimal qtyToDeliver = Env.ZERO;
+			BigDecimal qtyToDeliver = BigDecimal.ZERO;
 			int warehouseDestId = 0;
 
 			// restrict the searching;
@@ -304,7 +303,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			// i've decided to postone the refreshing right after other evens are processed.
 			SwingUtilities.invokeLater(new Runnable()
 			{
-				
+
 				@Override
 				public void run()
 				{
@@ -320,6 +319,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		this.pickingTerminalPanel = basePanel;
 		this.pickingPanel = new PickingSubPanel(basePanel);
+
+		basePanel.getTerminalContext().addToDisposableComponents(this);
 	}
 
 	@Override
@@ -363,7 +364,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return i.e. parent panel
 	 */
 	public SwingPickingTerminalPanel getPickingTerminalPanel()
@@ -400,7 +401,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	protected IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows,
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
 		final PackingMd model = getModel();
@@ -430,8 +431,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			containers.add(bin);
 		}
 
-		BigDecimal unpackedQty = Env.ZERO;
-		for (final AbstractPackingItem item : unallocatedLines)
+		BigDecimal unpackedQty = BigDecimal.ZERO;
+		for (final IPackingItem item : unallocatedLines)
 		{
 			unpackedQty = unpackedQty.add(item.getQtySum());
 		}
@@ -549,7 +550,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		}
 
 		unlockShipmentSchedules(); // task 08153: make sure we unlock *and* update the scheds we did picking on
-		
+
 		//
 		// If this window was already disposed (i.e. user closed all windows all together, e.g. on logout) then do nothing
 		if (isDisposed())
@@ -559,7 +560,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		//
 		// Put Picking Window (first window) on front and refresh the current lines
-		
+
 		//
 		// Ask parent to refresh lines
 		{
@@ -569,7 +570,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			final SwingPickingTerminalPanel parent = getPickingTerminalPanel();
 			parent.refreshLines(ResetFilters.IfNoResult);
 		}
-		
+
 		setEnabled(true);
 	}
 
@@ -586,11 +587,9 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void unlockUI(ProcessInfo pi)
+	public void unlockUI(final ProcessInfo pi)
 	{
 		getModel().uiLocked = false;
-		// display the process results
-		ProcessInfoUtil.setLogFromDB(pi);
 		//
 		if (waitIndicator != null)
 		{
@@ -603,19 +602,20 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		final FormFrame framePicking = getPickingFrame();
 		framePicking.setEnabled(true);
 		//
-		final StringBuffer iText = new StringBuffer();
+		final ProcessExecutionResult result = pi.getResult();
+		final StringBuilder iText = new StringBuilder();
 		iText.append("<b>") //
-				.append(pi.getSummary()) //
+				.append(result.getSummary()) //
 				.append("</b><br>(") //
 				.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Belegerstellung")) //
 				.append(")<br>") //
-				.append(pi.getLogInfo(true));
+				.append(result.getLogInfo(true));
 
 		SwingPickingTerminalPanel pickPanel = ((SwingPickingTerminalPanel)pickingPanel.getTerminalBasePanel());
 		ITerminalTextPane text = pickPanel.resultTextPane;
 		text.setText(iText.toString());
 		pickPanel.next();
-		((FormFrame)pickPanel.getComponent()).toFront();
+		pickPanel.getComponent().toFront();
 	}
 
 	private Waiting waitIndicator;
@@ -773,7 +773,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public void configureMiniTable(IMiniTable miniTable)
+	public void configureMiniTable(final IMiniTable miniTable)
 	{
 		columnName2index.clear();
 		miniTable.setMultiSelection(false);
@@ -923,7 +923,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			for (Map.Entry<String, BigDecimal> entry : products.entrySet())
 			{
 				final String name = entry.getKey();
-				BigDecimal totalQty = (BigDecimal)entry.getValue();
+				BigDecimal totalQty = entry.getValue();
 				//
 				if (totalQty.scale() != 0)
 				{
@@ -952,10 +952,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if window was disposed or it's disposing
 	 */
-	private boolean isDisposed()
+	@Override
+	public boolean isDisposed()
 	{
 		if (disposed)
 		{
@@ -987,7 +988,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 			if (packageTerminal != null)
 			{
-				packageTerminal.dispose();
+				packageTerminal.dispose(); // this is not an IDisposable, so we need to deal with it here
 				onPackageTerminalClosed();
 				packageTerminal = null;
 			}

@@ -39,7 +39,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 /**
  * {@link I_PMM_Product} ProductName builder.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PMMProductNameBuilder

@@ -56,8 +56,9 @@ import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MCost;
 import org.compiere.model.X_C_AcctSchema;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Cost Element
@@ -67,7 +68,7 @@ import org.compiere.process.SvrProcess;
  * 
  * @author Teo Sarca, www.arhipac.ro
  */
-public class CreateCostElement extends SvrProcess
+public class CreateCostElement extends JavaProcess
 {
 	private Integer p_AD_Org_ID = null;
 	private int p_C_AcctSchema_ID = 0;
@@ -84,7 +85,7 @@ public class CreateCostElement extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();

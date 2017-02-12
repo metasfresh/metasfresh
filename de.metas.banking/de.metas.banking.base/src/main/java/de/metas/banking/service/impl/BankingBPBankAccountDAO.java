@@ -52,7 +52,7 @@ public class BankingBPBankAccountDAO implements IBankingBPBankAccountDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(InterfaceWrapperHelper.getCtx(partner));
 		queryBuilder.orderBy()
-				.addColumn(I_C_BP_BankAccount.COLUMNNAME_IsDefault, false); // DESC (Y, then N)
+				.addColumn(de.metas.banking.model.I_C_BP_BankAccount.COLUMNNAME_IsDefault, false); // DESC (Y, then N)
 		return queryBuilder.create()
 				.first();
 	}

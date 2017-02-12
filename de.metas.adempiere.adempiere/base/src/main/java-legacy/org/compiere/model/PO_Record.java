@@ -75,7 +75,7 @@ public class PO_Record
 
 	/**	Restrict Table ID			*/
 	private static int[]	s_restricts =	new int[]{
-		X_R_Request.Table_ID,
+		InterfaceWrapperHelper.getTableId(I_R_Request.class),
 		X_CM_Chat.Table_ID
 	//	X_Fact_Acct.Table_ID
 	};

@@ -28,7 +28,7 @@ import de.metas.product.model.I_M_Product_Mapping;
  * Implementors can reference an {@link I_M_Product_Mapping} record.<br>
  * To obtain an instance, use {@link org.adempiere.model.InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
  */
 public interface IProductMappingAware

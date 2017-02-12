@@ -10,18 +10,17 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +39,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 
-/* package*/class HUAttributeStorage extends AbstractHUAttributeStorage
+/* package */class HUAttributeStorage extends AbstractHUAttributeStorage
 {
 	private final String id;
 	private final I_M_HU _hu;
@@ -50,7 +49,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 	 */
 	private Map<String, IAttributeStorage> childrenAttributeStoragesMap = null;
 
-	/* package */HUAttributeStorage(final IAttributeStorageFactory storageFactory, final I_M_HU hu)
+	/* package */ HUAttributeStorage(final IAttributeStorageFactory storageFactory, final I_M_HU hu)
 	{
 		super(storageFactory);
 
@@ -107,7 +106,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 		//
 		// Make sure that we're using a saved parent HU item
-		Check.assume(parentItem.getM_HU_PI_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
+		Check.assume(parentItem.getM_HU_Item_ID() > 0, "parentHUItem already saved ({}) for HU={}", parentItem, hu);
 		final I_M_HU parentHU = parentItem.getM_HU();
 
 		//
@@ -120,19 +119,24 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 		return parentAttributeSetStorage;
 	}
 
-	private final Map<String, IAttributeStorage> getInnerChildrenAttributeStoragesMap()
+	private final Map<String, IAttributeStorage> getInnerChildrenAttributeStoragesMap(final boolean loadIfNeeded)
 	{
 		if (childrenAttributeStoragesMap == null)
 		{
+			if (!loadIfNeeded)
+			{
+				return Collections.emptyMap();
+			}
+
 			childrenAttributeStoragesMap = retrieveChildrenAttributeStorages();
 		}
 		return childrenAttributeStoragesMap;
 	}
 
 	@Override
-	public final Collection<IAttributeStorage> getChildAttributeStorages()
+	public final Collection<IAttributeStorage> getChildAttributeStorages(final boolean loadIfNeeded)
 	{
-		final Map<String, IAttributeStorage> childrenAttributeStoragesMap = getInnerChildrenAttributeStoragesMap();
+		final Map<String, IAttributeStorage> childrenAttributeStoragesMap = getInnerChildrenAttributeStoragesMap(loadIfNeeded);
 		return Collections.unmodifiableCollection(childrenAttributeStoragesMap.values());
 	}
 
@@ -164,17 +168,27 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 		return childrenAttributeSetStorages;
 	}
 
+	/**
+	 * Add the given <code>childAttributeStorage</code> to this storage's children. If children were not yet loaded, then this method also loads them.
+	 *
+	 * @param childAttributeStorage
+	 */
 	@Override
 	protected void addChildAttributeStorage(final IAttributeStorage childAttributeStorage)
 	{
-		final Map<String, IAttributeStorage> childrenAttributeStoragesMap = getInnerChildrenAttributeStoragesMap();
+		final Map<String, IAttributeStorage> childrenAttributeStoragesMap = getInnerChildrenAttributeStoragesMap(true);
 		childrenAttributeStoragesMap.put(childAttributeStorage.getId(), childAttributeStorage);
 	}
 
+	/**
+	 * Removes the given <code>childAttributeStorage</code> from this storage's children. If children were not yet loaded, then this method also loads them.
+	 *
+	 * @param childAttributeStorage
+	 */
 	@Override
 	protected IAttributeStorage removeChildAttributeStorage(final IAttributeStorage childAttributeStorage)
 	{
-		final Map<String, IAttributeStorage> childrenAttributeStoragesMap = getInnerChildrenAttributeStoragesMap();
+		final Map<String, IAttributeStorage> childrenAttributeStoragesMap = getInnerChildrenAttributeStoragesMap(true);
 		return childrenAttributeStoragesMap.remove(childAttributeStorage.getId());
 	}
 }

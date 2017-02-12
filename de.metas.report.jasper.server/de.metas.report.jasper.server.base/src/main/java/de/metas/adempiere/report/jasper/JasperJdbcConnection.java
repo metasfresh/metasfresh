@@ -48,7 +48,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * An {@link Connection} wrapper which inserts a given "query info" comment at the beginning of the SQL queries, right before they are executed.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class JasperJdbcConnection implements Connection

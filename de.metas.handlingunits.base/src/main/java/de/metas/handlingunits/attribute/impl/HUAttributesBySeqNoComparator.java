@@ -46,6 +46,12 @@ public final class HUAttributesBySeqNoComparator implements Comparator<I_M_HU_At
 	@Override
 	public int compare(final I_M_HU_Attribute o1, final I_M_HU_Attribute o2)
 	{
+		// Same instance
+		if(o1 == o2)
+		{
+			return 0;
+		}
+		
 		// note: M_HU_Attribute.M_HU_PI_Attribute_ID is "uber" mandatory and SeqNo is an integer,
 		// so i'm not checking for null and stuff
 		int seqNo1 = o1.getM_HU_PI_Attribute().getSeqNo();
@@ -61,7 +67,8 @@ public final class HUAttributesBySeqNoComparator implements Comparator<I_M_HU_At
 		}
 		else if (seqNo1 == seqNo2)
 		{
-			return 0;
+			// NOTE: basically those are equal but let's have a predictable order, so we are ordering them by M_Attribute_ID
+			return o1.getM_Attribute_ID() - o2.getM_Attribute_ID();
 		}
 		// seqNo1 > seqNo2
 		return 1;

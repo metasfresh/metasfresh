@@ -1,5 +1,7 @@
 package de.metas.invoice.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -27,7 +29,6 @@ import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -41,9 +42,9 @@ public class C_InvoiceLine_TabCallout extends TabCalloutAdapter
 	 * Invokes IInvoiceBL.updateInvoiceLineIsReadOnlyFlags() to make sure the correct fields are editable when a new order line is created.
 	 */
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(gridTab, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine invoiceLine = calloutRecord.getModel(I_C_InvoiceLine.class);
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(invoiceLine.getC_Invoice(), I_C_Invoice.class);
 
 		Services.get(IInvoiceBL.class).updateInvoiceLineIsReadOnlyFlags(invoice, invoiceLine);

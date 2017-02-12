@@ -42,8 +42,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.SwingEventNotifierUI;
 import org.adempiere.util.Check;
@@ -58,6 +56,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Frame used to display notifications in the bottom right corner.
@@ -81,6 +80,8 @@ class SwingEventNotifierFrame extends JFrame
 	private final LinkedHashMap<NotificationItem, NotificationItemPanel> notification2panel = new LinkedHashMap<>();
 	private final int maxNotifications;
 	private final int autoFadeAwayTimeMillis;
+	/** Defines the gap (in pixels) between last notification and screen bottom (see FRESH-441) */
+	private final int frameBottomGap;
 
 	private boolean disposed = false;
 
@@ -134,6 +135,7 @@ class SwingEventNotifierFrame extends JFrame
 		// Max displayed notifications
 		maxNotifications = AdempierePLAF.getInt(SwingEventNotifierUI.NOTIFICATIONS_MaxDisplayed, SwingEventNotifierUI.NOTIFICATIONS_MaxDisplayed_Default);
 		autoFadeAwayTimeMillis = AdempierePLAF.getInt(SwingEventNotifierUI.NOTIFICATIONS_AutoFadeAwayTimeMillis, SwingEventNotifierUI.NOTIFICATIONS_AutoFadeAwayTimeMillis_Default);
+		frameBottomGap = AdempierePLAF.getInt(SwingEventNotifierUI.NOTIFICATIONS_BottomGap, SwingEventNotifierUI.NOTIFICATIONS_BottomGap_Default);
 
 		//
 		// Setup UI
@@ -365,7 +367,7 @@ class SwingEventNotifierFrame extends JFrame
 			final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());// height of the task bar
 			this.setLocation(
 					screenSize.width - getWidth(),
-					screenSize.height - screenInsets.bottom - getHeight()
+					screenSize.height - screenInsets.bottom - getHeight() - (frameBottomGap > 0 ? frameBottomGap : 0)
 					);
 		}
 
@@ -420,7 +422,7 @@ class SwingEventNotifierFrame extends JFrame
 		String summaryTrl = event.getSummary();
 		if (!Check.isEmpty(summaryTrl, true))
 		{
-			summaryTrl = new EventHtmlMessageFormat()
+			summaryTrl = EventHtmlMessageFormat.newInstance()
 					.setArguments(event.getProperties())
 					.format(summaryTrl);
 		}
@@ -445,9 +447,7 @@ class SwingEventNotifierFrame extends JFrame
 			if (!Check.isEmpty(detailADMessage, true))
 			{
 				final String detailTrl = msgBL.getMsg(getCtx(), detailADMessage);
-				final String detailTrlParsed = new EventHtmlMessageFormat()
-						.setLeftBrace("{").setRightBrace("}")
-						.setThrowExceptionIfKeyWasNotFound(false)
+				final String detailTrlParsed = EventHtmlMessageFormat.newInstance()
 						.setArguments(event.getProperties())
 						.format(detailTrl);
 				if (!Check.isEmpty(detailTrlParsed, true))

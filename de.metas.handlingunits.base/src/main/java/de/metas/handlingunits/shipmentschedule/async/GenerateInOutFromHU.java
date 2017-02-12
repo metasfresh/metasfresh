@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.async;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,13 +38,18 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -53,7 +58,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
-import de.metas.inout.event.InOutGeneratedEventBus;
+import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
@@ -103,10 +108,11 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-		final Iterator<IShipmentScheduleWithHU> candidates = retrieveCandidates(workpackage, localTrxName);
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
+		final Iterator<IShipmentScheduleWithHU> candidates = retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_ThreadInherited);
 
 		// 07113: At this point, we only need the shipment drafted
 		final String docActionNone = null;
@@ -117,15 +123,15 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
-		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial, localTrxName);
-		getLoggable().addLog("Generated " + inoutGenerateResult.toString());
+		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial, ITrx.TRXNAME_ThreadInherited);
+		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
 
 		return Result.SUCCESS;
 	}
 
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
 	 */
 	@Override
@@ -193,7 +199,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 		//
 		// Send notifications
-		InOutGeneratedEventBus.newInstance()
+		InOutProcessedEventBus.newInstance()
 				.queueEventsUntilTrxCommit(trxName)
 				.notify(result.getInOuts());
 
@@ -208,18 +214,18 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		return hus;
 	}
 
-	// public for testing
-	public Iterator<IShipmentScheduleWithHU> retrieveCandidates(final I_C_Queue_WorkPackage workpackage, final String trxName)
+	@VisibleForTesting
+	public Iterator<IShipmentScheduleWithHU> retrieveCandidates(final IHUContext huContext, final I_C_Queue_WorkPackage workpackage, final String trxName)
 	{
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final List<IShipmentScheduleWithHU> result = new ArrayList<IShipmentScheduleWithHU>();
+		final List<IShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final List<I_M_HU> hus = retriveWorkpackageHUs(workpackage, trxName);
 		if (hus.isEmpty())
 		{
-			getLoggable().addLog("No HUs found");
+			Loggables.get().addLog("No HUs found");
 			return result.iterator();
 		}
 
@@ -250,7 +256,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				// continue;
 				// }
 
-				final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(ssQtyPicked);
+				final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, ssQtyPicked);
 				candidatesForHU.add(candidate);
 			}
 
@@ -261,7 +267,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			// Log if there were no candidates created for current HU.
 			if (candidatesForHU.isEmpty())
 			{
-				getLoggable().addLog("No eligible " + I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
+				Loggables.get().addLog("No eligible " + I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
 			}
 		}
 

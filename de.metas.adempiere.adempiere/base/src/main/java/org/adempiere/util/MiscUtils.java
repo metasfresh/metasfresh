@@ -334,7 +334,7 @@ public final class MiscUtils
 			final int AD_Table_ID,
 			final boolean startWithEmptyQuery)
 	{
-		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID, 0);
+		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
 		if (wVO == null)
 		{
 			MWindow w = new MWindow(Env.getCtx(), AD_Window_ID, null);

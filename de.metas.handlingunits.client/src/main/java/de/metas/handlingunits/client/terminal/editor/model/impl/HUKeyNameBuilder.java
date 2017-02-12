@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Font;
 import java.math.BigDecimal;
@@ -31,12 +30,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -46,13 +42,14 @@ import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.handlingunits.IHUCapacityDefinition;
+import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
+import de.metas.handlingunits.client.terminal.editor.model.IHUKeyVisitor;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
 import de.metas.handlingunits.document.IHUDocumentLine;
@@ -195,8 +192,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 			return htmlPartHUDisplayName;
 		}
 
-		htmlPartHUDisplayName = new HUKeyDisplayNameBuilder()
-				.setHUKey(getKey())
+		htmlPartHUDisplayName = new HUKeyDisplayNameBuilder(getKey())
 				.setShowIncludedHUCount(true)
 				.setIncludedHUCountSuffix("TU")
 				.setShowHUPINameNextLine(true)
@@ -431,65 +427,84 @@ import de.metas.handlingunits.storage.IProductStorage;
 	 */
 	private static class HUKeyDisplayNameBuilder extends HUDisplayNameBuilder
 	{
-		private HUKey _huKey = null;
-
-		public HUKeyDisplayNameBuilder setHUKey(final HUKey huKey)
+		private final HUKey _huKey;
+		
+		private HUKeyDisplayNameBuilder(final HUKey huKey)
 		{
+			super(huKey == null ? null : huKey.getM_HU());
+			Check.assumeNotNull(huKey, "Parameter huKey is not null");
 			_huKey = huKey;
-			setM_HU(huKey == null ? null : huKey.getM_HU());
-
-			return this;
 		}
 
 		protected final HUKey getHUKey()
 		{
-			Check.assumeNotNull(_huKey, "_huKey not null");
+			// we assume it's not null, see constructor
+			// Check.assumeNotNull(_huKey, "_huKey not null");
+
 			return _huKey;
 		}
 
 		@Override
-		protected int getIncludedHUsCount()
+		public int getIncludedHUsCount()
 		{
 			final HUKey huKey = getHUKey();
 
 			// TODO: optimization: if not LU and countVHUs=false => return 0;
 			// TODO: optimization: if children are not loaded then i think it's better to have and call a DAO method which is counting the TUs directly on database
 
-			final boolean countVHUs = false;
-			final IMutable<AtomicInteger> counter = new Mutable<>(new AtomicInteger(0));
-
-			huKey.iterate(new HUKeyVisitorAdapter()
+			final HUKeyIncludedHUsCounter includedHUsCounter = new HUKeyIncludedHUsCounter(huKey, false); // countVHUs=false
+			huKey.iterate(includedHUsCounter);
+			
+			return includedHUsCounter.getHUsCount();
+		}
+	}
+	
+	private static final class HUKeyIncludedHUsCounter extends HUDisplayNameBuilder.AbstractIncludedHUsCounter<IHUKey> implements IHUKeyVisitor
+	{
+		private HUKeyIncludedHUsCounter(final IHUKey rootHUKey, final boolean countVHUs)
+		{
+			super(rootHUKey, countVHUs);
+		}
+		
+		@Override
+		public VisitResult beforeVisit(final IHUKey currentHUKeyObj)
+		{
+			final HUKey currentHUKey = HUKey.castIfPossible(currentHUKeyObj);
+			if (currentHUKey == null)
 			{
-				@Override
-				public VisitResult beforeVisit(final IHUKey currentKey)
-				{
-					if (currentKey == huKey)
-					{
-						// don't count current HU
-						return VisitResult.CONTINUE;
-					}
+				// we are on an non HUKey node ... keep searching
+				return VisitResult.CONTINUE;
+			}
 
-					final HUKey currentHUKey = HUKey.castIfPossible(currentKey);
-					if (currentHUKey == null)
-					{
-						// we are on an non HUKey node ... keep searching
-						return VisitResult.CONTINUE;
-					}
+			final IHUIteratorListener.Result result = super.accept(currentHUKey);
+			return VisitResult.of(result);
+		}
 
-					if (!countVHUs && currentHUKey.isVirtualPI())
-					{
-						// skip virtual HUs
-						return VisitResult.CONTINUE;
-					}
+		@Override
+		public VisitResult afterVisit(IHUKey key)
+		{
+			return VisitResult.CONTINUE;
+		}
 
-					counter.getValue().incrementAndGet();
+		@Override
+		protected boolean isAggregatedHU(final IHUKey huKeyObj)
+		{
+			final HUKey huKey = HUKey.cast(huKeyObj);
+			return huKey.isAggregateHU();
+		}
+		
+		@Override
+		protected int getAggregatedHUsCount(final IHUKey huKeyObj)
+		{
+			final HUKey huKey = HUKey.cast(huKeyObj);
+			return huKey.getAggregatedHUCount();
+		}
 
-					// we are counting only first level => so skip downstream
-					return VisitResult.SKIP_DOWNSTREAM;
-				}
-			});
-
-			return counter.getValue().get();
+		@Override
+		protected boolean isVirtualPI(final IHUKey huKeyObj)
+		{
+			final HUKey huKey = HUKey.cast(huKeyObj);
+			return huKey.isVirtualPI();
 		}
 	}
 }

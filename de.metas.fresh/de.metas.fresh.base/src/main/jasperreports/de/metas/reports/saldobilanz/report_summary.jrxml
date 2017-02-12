@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-24T16:14:08 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="Date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="defaultAcc" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showCurrencyExchange" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncludePostingTypeStatistical" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="consistency_check" class="java.lang.Boolean"/>
+	<parameter name="ExcludeYearEndBooking" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.saldobilanz_summary_Report (
+$P{Date},
+$P{defaultAcc},
+$P{showCurrencyExchange},
+$P{ad_org_id},
+$P{IncludePostingTypeStatistical},
+$P{ExcludeYearEndBooking}
+);]]>
+	</queryString>
+	<field name="parentname1" class="java.lang.String"/>
+	<field name="parentvalue1" class="java.lang.String"/>
+	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="unionorder" class="java.lang.Integer"/>
+	<variable name="l1_sameyearsum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{l1_sameyearsum}]]></variableExpression>
+	</variable>
+	<variable name="l1_lastyearsum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{l1_lastyearsum}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="77" splitType="Stretch">
+			<textField>
+				<reportElement x="30" y="60" width="50" height="14" uuid="a46eef53-1421-45da-8fd6-efb9a1de3546"/>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="60" width="259" height="14" uuid="31a14705-7213-431c-bd3b-a40b261ca310">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="346" y="60" width="102" height="14" uuid="fb1ad924-79a7-4fac-9239-d8569fe64581"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="447" y="60" width="102" height="14" uuid="a780e549-85d9-4f05-b8a2-a060b56c3f5a"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="206" y="10" width="73" height="13" uuid="3a240ffb-9ac8-4231-a9a1-c85633cb4028"/>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="247" y="23" width="100" height="12" uuid="24cbed2b-90d9-45d2-afe9-6a8e26c11c71"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{CurrencyCHF}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="279" y="10" width="90" height="13" uuid="17d73e2e-59ff-4780-a523-ee5c59b42d22"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="206" y="35" width="163" height="12" uuid="90ce5c9f-50e3-4b3c-8e48-6b62c9cac9a0"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 1)]]></printWhenExpression>
+			<textField>
+				<reportElement x="30" y="6" width="50" height="14" uuid="8f5d025b-00cf-4521-8a58-2afb00cc3aa6">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{parentvalue1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="6" width="259" height="14" uuid="cb9623ff-e112-488f-b551-0db839cc73e5"/>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{parentname1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="346" y="6" width="102" height="14" uuid="4f6c34ca-cfa5-45fe-91f5-9f5b226917bf"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="447" y="6" width="102" height="14" uuid="f48222ff-5f4f-4a64-8aa8-c80da92700b5"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="14">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 2)]]></printWhenExpression>
+			<textField evaluationTime="Report">
+				<reportElement x="80" y="0" width="259" height="14" uuid="e541a392-6bc0-4420-ab46-1dad077458da"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00">
+				<reportElement x="346" y="0" width="102" height="14" uuid="c1c550c5-45eb-45af-9f9c-3c25eecae0e7"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00">
+				<reportElement x="447" y="0" width="102" height="14" uuid="61ec71d9-5e75-4b12-ad04-c1d966624916"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="50"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS KPI_Top_10_Worst_Machine_Time (IN DateStart Date, IN DateFinish Date);
-CREATE OR REPLACE FUNCTION KPI_Top_10_Worst_Machine_Time (IN DateStart Date, IN DateFinish Date)
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Top_10_Worst_Machine_Time (IN DateStart Date, IN DateFinish Date);
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Top_10_Worst_Machine_Time (IN DateStart Date, IN DateFinish Date)
 RETURNS TABLE
 (
 Machine character varying,

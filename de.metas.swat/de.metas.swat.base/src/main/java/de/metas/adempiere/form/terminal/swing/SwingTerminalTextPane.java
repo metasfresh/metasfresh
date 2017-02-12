@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.swing;
 
@@ -13,18 +13,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 
@@ -35,20 +34,24 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * @author cg
- * 
+ *
  */
 /* package */class SwingTerminalTextPane implements ITerminalTextPane
 {
 	private final CTextPane textPane;
 	private final ITerminalContext tc;
 
-	protected SwingTerminalTextPane(ITerminalContext tc, String text)
+	private boolean disposed = false;
+
+	protected SwingTerminalTextPane(final ITerminalContext tc, final String text)
 	{
 		super();
-		
+
 		this.tc = tc;
-		this.textPane = new CTextPane();
-		this.textPane.setText(text);
+		textPane = new CTextPane();
+		textPane.setText(text);
+
+		tc.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -94,37 +97,47 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	}
 
 	@Override
-	public void setEditable(boolean edit)
+	public void setEditable(final boolean edit)
 	{
 		textPane.setEditable(edit);
 	}
 
 	@Override
-	public void setMandatory(boolean mandatory)
+	public void setMandatory(final boolean mandatory)
 	{
 		textPane.setMandatory(mandatory);
 	}
 
 	@Override
-	public void setReadWrite(boolean rw)
+	public void setReadWrite(final boolean rw)
 	{
 		textPane.setReadWrite(rw);
 	}
 
 	@Override
-	public void setText(String text)
+	public void setText(final String text)
 	{
 		textPane.setText(text);
 	}
 
 	@Override
-	public void setValue(Object value)
+	public void setValue(final Object value)
 	{
 		textPane.setValue(value);
 	}
 
+	/**
+	 * Does nothing, only sets our internal disposed flag.
+	 */
 	@Override
 	public void dispose()
 	{
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 }

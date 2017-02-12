@@ -1,20 +1,20 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  * Portions created by Victor Perez are Copyright (C) 1999-2005 e-Evolution,S.C
- * Contributor(s): Victor Perez                                               *
+ * Contributor(s): Victor Perez *
  *****************************************************************************/
 package org.compiere.db;
 
@@ -29,8 +29,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DecimalFormat;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.sql.DataSource;
 
@@ -46,11 +44,14 @@ import org.compiere.dbPort.Convert_PostgreSQL_Native;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Ini;
-import org.postgresql.Driver;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+import de.metas.connection.impl.DB_PostgreSQL_ConnectionCustomizer;
+import de.metas.logging.LogManager;
 
 /**
  * PostgreSQL Database Port
@@ -76,7 +77,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Statement Converter internally (i.e. all methods from this class will use this one).
-	 * 
+	 *
 	 * @see #getInternalConverter()
 	 */
 	private final Convert m_convertInternal;
@@ -85,11 +86,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static final Supplier<org.postgresql.Driver> driverSupplier = Suppliers.memoize(new Supplier<org.postgresql.Driver>()
 	{
 		@Override
-		public Driver get()
+		public org.postgresql.Driver get()
 		{
 			try
 			{
-				final Driver driver = new org.postgresql.Driver();
+				final org.postgresql.Driver driver = new org.postgresql.Driver();
 				DriverManager.registerDriver(driver);
 				DriverManager.setLoginTimeout(Database.CONNECTION_TIMEOUT);
 				return driver;
@@ -167,7 +168,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Gets internal {@link Convert}er. This converter is used internally by methods from this class.
-	 * 
+	 *
 	 * @return internal converter
 	 */
 	private final Convert getInternalConverter()
@@ -178,7 +179,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get Database Name
-	 * 
+	 *
 	 * @return database short name
 	 */
 	@Override
@@ -189,7 +190,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get Database Description
-	 * 
+	 *
 	 * @return database long name and version
 	 */
 	@Override
@@ -209,7 +210,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get Standard JDBC Port
-	 * 
+	 *
 	 * @return standard port
 	 */
 	@Override
@@ -220,7 +221,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get and register Database Driver
-	 * 
+	 *
 	 * @return Driver
 	 */
 	@Override
@@ -233,7 +234,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	 * Get Database Connection String.
 	 * Requirements:
 	 * - createdb -E UNICODE compiere
-	 * 
+	 *
 	 * @param connection Connection Descriptor
 	 * @return connection String
 	 */
@@ -295,7 +296,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Supports BLOB
-	 * 
+	 *
 	 * @return true if BLOB is supported
 	 */
 	@Override
@@ -306,7 +307,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -321,7 +322,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get Status
-	 * 
+	 *
 	 * @return status info
 	 */
 	@Override
@@ -407,7 +408,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get Name of System User
-	 * 
+	 *
 	 * @return e.g. sa, system
 	 */
 	@Override
@@ -418,7 +419,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get Name of System Database
-	 * 
+	 *
 	 * @param databaseName database Name
 	 * @return e.g. master or database Name
 	 */
@@ -463,25 +464,15 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return dateString.toString();
 	}   // TO_DATE
 
-	/**
-	 * Create SQL for formatted Date, Number
-	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
-	 * @param AD_Language 6 character language setting (from Env.LANG_*)
-	 *
-	 * @return TRIM(TO_CHAR(columnName,'999G999G999G990D00','NLS_NUMERIC_CHARACTERS='',.'''))
-	 *         or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
-	 * @see org.compiere.util.DisplayType
-	 * @see org.compiere.util.Env
-	 *
-	 **/
 	@Override
-	public String TO_CHAR(String columnName, int displayType, String AD_Language)
+	public String TO_CHAR(String columnName, int displayType)
 	{
+		Check.assumeNotEmpty(columnName, "columnName is not empty");
+
 		final StringBuilder retValue = new StringBuilder("CAST (");
 		retValue.append(columnName);
 		retValue.append(" AS Text)");
+		return retValue.toString();
 
 		// Numbers
 		/*
@@ -503,39 +494,37 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		 * retValue.append(")");
 		 * //
 		 */
-		return retValue.toString();
 	}   // TO_CHAR
 
 	@Override
 	public String TO_CHAR(
-			final String columnName, 
+			final String columnName,
 			final int displayType,
-			final String AD_Language, 
 			final String formatPattern)
 	{
 		if (Check.isEmpty(formatPattern, false))
 		{
-			return TO_CHAR(columnName, displayType, AD_Language);
+			return TO_CHAR(columnName, displayType);
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
 			final String pgFormatPattern = convertDecimalPatternToPG(formatPattern);
 			if (pgFormatPattern == null)
 			{
-				return TO_CHAR(columnName, displayType, AD_Language);
+				return TO_CHAR(columnName, displayType);
 			}
 
-			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')", displayType, AD_Language);
+			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')", displayType);
 		}
 		else
 		{
-			return TO_CHAR(columnName, displayType, AD_Language);
+			return TO_CHAR(columnName, displayType);
 		}
 	}
 
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
-	 * 
+	 *
 	 * @param formatPattern
 	 * @return PostgreSQL's number formatting pattern or <code>null</code> if it could not be converted
 	 * @see DecimalFormat
@@ -625,7 +614,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			{
 				throw new DBNoConnectionException("Data source could not be retrieved for " + connection);
 			}
-			//
+
 			conn = m_ds.getConnection();
 			conn.setAutoCommit(autoCommit);
 			conn.setTransactionIsolation(transactionIsolation);
@@ -645,8 +634,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 						+ "\n                              Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
 						+ "\n                     Status(initial): " + statusBefore
 						+ "\n Status(after finalizations started): " + statusAfter
-						+ "\n                                Time: " + new java.util.Date()
-						);
+						+ "\n                                Time: " + new java.util.Date());
 			}
 
 			connOk = true;
@@ -659,7 +647,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			{
 				throw new DBConnectionAcquireTimeoutException(sqlException);
 			}
-			
+
 			throw sqlException;
 		}
 		finally
@@ -673,9 +661,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Gets current {@link DataSource}.
-	 * 
+	 *
 	 * NOTE: this method is not initializing the {@link DataSource}.
-	 * 
+	 *
 	 * @return current data source our null
 	 */
 	private final ComboPooledDataSource getDataSourceOrNull()
@@ -724,9 +712,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Creates {@link DataSource} based on {@link CConnection} properties.
-	 * 
+	 *
 	 * NOTE: this method never throws exception but just logs it.
-	 * 
+	 *
 	 * @param connection
 	 * @return {@link DataSource} or <code>null</code> if it cannot be created
 	 */
@@ -748,8 +736,8 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			// cpds.setTestConnectionOnCheckin(true);
 			// cpds.setTestConnectionOnCheckout(true);
 			cpds.setAcquireRetryAttempts(2);
-			
-			// Set checkout timeout to avoid forever locking when trying to connect to a not existing host. 
+
+			// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
 			cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout, 20 * 1000));
 
 			if (Ini.isClient())
@@ -840,7 +828,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Check and generate an alternative SQL
-	 * 
+	 *
 	 * @reExNo number of re-execution
 	 * @msg previous execution error message
 	 * @sql previous executed SQL
@@ -854,7 +842,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Get constraint type associated with the index
-	 * 
+	 *
 	 * @tableName table name
 	 * @IXName Index name
 	 * @return String[0] = 0: do not know, 1: Primary Key 2: Foreign Key
@@ -874,7 +862,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Check if DBMS support the sql statement
-	 * 
+	 *
 	 * @sql SQL statement
 	 * @return true: yes
 	 */
@@ -887,7 +875,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Dump table lock info to console for current transaction
-	 * 
+	 *
 	 * @param conn
 	 */
 	public static void dumpLocks(Connection conn)
@@ -957,9 +945,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	public boolean createSequence(String dbSequenceName, int increment, int minvalue, int maxvalue, int start, String trxName)
 	{
 		Check.assumeNotEmpty(dbSequenceName, "dbSequenceName not empty");
-		
+
 		final int no;
-		
+
 		//
 		// New Sequence
 		if (!hasSequence(dbSequenceName, trxName))
@@ -985,15 +973,15 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		else
 			return true;
 	}
-	
+
 	@Override
 	public void renameSequence(final String dbSequenceNameOld, final String dbSequenceNameNew)
 	{
 		Check.assumeNotEmpty(dbSequenceNameOld, "dbSequenceNameOld not empty");
 		Check.assumeNotEmpty(dbSequenceNameNew, "dbSequenceNameNew not empty");
-		
+
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		
+
 		// If there is no such sequence then do nothing.
 		// This is ok because the table name could be a view
 		if (!hasSequence(dbSequenceNameOld, trxName))
@@ -1001,7 +989,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			log.info("Cannot rename sequence " + dbSequenceNameOld + " to " + dbSequenceNameNew + " because the sequence does not exist. Ignore.");
 			return;
 		}
-		
+
 		// NOTE: we are not using parameters because this command will be logged in migration scripts.
 		DB.executeUpdateEx("ALTER SEQUENCE " + dbSequenceNameOld + " RENAME TO " + dbSequenceNameNew, trxName);
 	}
@@ -1014,7 +1002,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Implemented using the limit and offset feature. use 1 base index for start and end parameter
-	 * 
+	 *
 	 * @param sql
 	 * @param start
 	 * @param end
@@ -1084,7 +1072,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			else
 				return "VARCHAR(" + fieldLength + ")";
 		}
-		if (displayType == DisplayType.Color) // this condition is never reached - filtered above in isID
+		if (displayType == DisplayType.Color)   // this condition is never reached - filtered above in isID
 		{
 			if (columnName.endsWith("_ID"))
 				return "NUMERIC(10)";
@@ -1144,7 +1132,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 		return String.valueOf(pgBackendPID);
 	}
-	
+
 	@Override
 	public String getRowIdSql(final String tableName)
 	{

@@ -10,18 +10,17 @@ package de.metas.adempiere.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_DeliveryViaRule;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
@@ -31,11 +30,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Loc
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Shipper_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Warehouse_ID;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,30 +44,22 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.MPInstance;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.ProcessInfoUtil;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.exception.NoContainerException;
-import de.metas.adempiere.process.PerformPackaging;
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -81,11 +68,14 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
 
 /**
  * Packing View
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
@@ -96,7 +86,6 @@ public abstract class Packing extends MvcGenForm
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IProcessPA processPA = Services.get(IProcessPA.class);
 
 	private static final String MSG_DOING_PACKAGING = "Verarbeite Kommsionierung";
 	private static final String MSG_SHIP_TO_ADDRESS = "Lieferanschrift";
@@ -117,7 +106,7 @@ public abstract class Packing extends MvcGenForm
 		super();
 
 		this.ctx = Env.getCtx();
-		this.adPInstanceId = shipmentSchedulePA.createADPInstanceId(ctx);
+		this.adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -157,7 +146,7 @@ public abstract class Packing extends MvcGenForm
 
 	/**
 	 * Display given error to user
-	 * 
+	 *
 	 * @param e
 	 */
 	protected void displayError(final Throwable e)
@@ -278,63 +267,6 @@ public abstract class Packing extends MvcGenForm
 		miniTable.autoSize();
 	}
 
-	@Override
-	public void addViewListerners(final Properties ctx, final IFormView view)
-	{
-		final IPackingView packingView = (IPackingView)view;
-
-		packingView.addWarehouseListener(new VetoableChangeListener()
-		{
-			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
-			{
-				final Integer warehouseId = (Integer)evt.getNewValue();
-				final PackingMd model = getModel();
-				model.setM_Warehouse_ID(warehouseId == null ? 0 : warehouseId);
-				executeQuery();
-			}
-		});
-		packingView.addDisplayNonDeliverableItemsListener(new VetoableChangeListener()
-		{
-			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
-			{
-				final Boolean display = (Boolean)evt.getNewValue();
-				final PackingMd model = getModel();
-				model.setDisplayNonDeliverableItems(display != null ? display.booleanValue() : false);
-
-				executeQuery();
-			}
-		});
-
-		packingView.addRefreshListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				// just refresh
-				executeQuery();
-			}
-		});
-
-		packingView.addOpenNextOneListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				// refresh
-				executeQuery();
-
-				// now select the first entry
-				final PackingMd model = getModel();
-				if (model.isEmpty())
-				{
-					// nothing to pack
-					return;
-				}
-				createPackingDetails(ctx, new int[] { 0 });
-			}
-		});
-	}
-
 	public final void createPackingDetails(final Properties ctx, final int[] rows)
 	{
 		if (rows == null || rows.length == 0)
@@ -394,7 +326,7 @@ public abstract class Packing extends MvcGenForm
 			lockShipmentSchedules(ctx, olsAndScheds);
 
 			// prepare our "problem" description
-			final Collection<AbstractPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
+			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
 
 			final List<I_M_ShipmentSchedule> nonItemScheds = new ArrayList<I_M_ShipmentSchedule>();
 
@@ -430,26 +362,31 @@ public abstract class Packing extends MvcGenForm
 		invokeProcess(detailsModel);
 	}
 
-	protected Collection<AbstractPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
+	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
 	{
-		final Collection<AbstractPackingItem> unallocatedLines = new ArrayList<AbstractPackingItem>();
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final Map<ArrayKey, AbstractPackingItem> key2Sched = new HashMap<ArrayKey, AbstractPackingItem>();
+		final Collection<IPackingItem> unallocatedLines = new ArrayList<IPackingItem>();
+
+		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<ArrayKey, IPackingItem>();
 
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
 			if (sched.isDisplayed() || displayNonItems)
 			{
-				final BigDecimal qtyToDeliver = Services.get(IShipmentScheduleEffectiveBL.class).getQtyToDeliver(sched);
+				final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
 				final Map<I_M_ShipmentSchedule, BigDecimal> schedWithQty = Collections.singletonMap(sched, qtyToDeliver);
 
-				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched);
+				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
+				final boolean includeBPartner = true;
+				final ArrayKey key = shipmentScheduleBL.mkKeyForGrouping(sched, includeBPartner);
 
-				AbstractPackingItem item = key2Sched.get(key);
+				IPackingItem item = key2Sched.get(key);
 				if (item == null)
 				{
-					item = new PackingItem(schedWithQty, null);
+					item = new LegacyPackingItem(schedWithQty, null);
 					assert item.getGroupingKey() == key.hashCode();
 
 					key2Sched.put(key, item);
@@ -468,7 +405,7 @@ public abstract class Packing extends MvcGenForm
 	protected IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows,
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
 		final PackingMd model = getModel();
@@ -488,10 +425,10 @@ public abstract class Packing extends MvcGenForm
 		for (final I_M_PackagingContainer pc : pcs)
 		{
 			final BigDecimal qtyAvail = storagePA.retrieveQtyAvailable(
-					warehouseId, // M_Warehouse_ID
-					0, // M_Locator_ID
+					warehouseId,  // M_Warehouse_ID
+					0,  // M_Locator_ID
 					pc.getM_Product_ID(),
-					0, // M_AttributeSetInstance_ID
+					0,  // M_AttributeSetInstance_ID
 					ITrx.TRXNAME_None);
 
 			final AvailableBins bin = new AvailableBins(ctx, pc, qtyAvail.intValue(), null);
@@ -499,7 +436,7 @@ public abstract class Packing extends MvcGenForm
 		}
 
 		BigDecimal qty = Env.ZERO;
-		for (final AbstractPackingItem item : unallocatedLines)
+		for (final IPackingItem item : unallocatedLines)
 		{
 			qty = qty.add(item.getQtySum());
 		}
@@ -547,7 +484,7 @@ public abstract class Packing extends MvcGenForm
 
 	/**
 	 * Lock given shipment schedules
-	 * 
+	 *
 	 * @param ctx
 	 * @param olsAndScheds
 	 */
@@ -559,7 +496,7 @@ public abstract class Packing extends MvcGenForm
 			public void run(String localTrxName)
 			{
 				shipmentSchedulePA.createLocksForShipmentRun(olsAndScheds,
-						adPInstanceId, // AD_PInstance_ID
+						adPInstanceId,  // AD_PInstance_ID
 						Env.getAD_User_ID(ctx),
 						localTrxName);
 			}
@@ -573,7 +510,7 @@ public abstract class Packing extends MvcGenForm
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
-		
+
 		trxManager.run(new TrxRunnable()
 		{
 			@Override
@@ -587,8 +524,7 @@ public abstract class Packing extends MvcGenForm
 						adUserId,
 						adPInstanceId,
 						updateOnlyLocked,
-						localTrxName
-						);
+						localTrxName);
 				shipmentSchedulePA.deleteUnprocessedLocksForShipmentRun(
 						adPInstanceId,
 						adUserId,
@@ -607,88 +543,51 @@ public abstract class Packing extends MvcGenForm
 			public void run(String localTrxName)
 			{
 				shipmentSchedulePA.markLocksForShipmentRunProcessed(
-						adPInstanceId, // AD_PInstance_ID
+						adPInstanceId,  // AD_PInstance_ID
 						adUserId,
-						localTrxName
-						);
+						localTrxName);
 			}
 		});
 	}
 
-	public ProcessCtl invokeProcess(final IPackingDetailsModel model)
+	private void invokeProcess(final IPackingDetailsModel model)
 	{
-		final ProcessCtl[] workers = new ProcessCtl[1];
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ProcessCtl worker = invokeProcess0(model, localTrxName);
-				workers[0] = worker;
-			}
-		});
-
-		return workers[0];
-	}
-
-	private ProcessCtl invokeProcess0(final IPackingDetailsModel model, final String trxName)
-	{
-		final ITrx trx = trxManager.get(trxName, false);
-		Check.assumeNotNull(trx, "Transaction shall be created for trxName={}", trxName);
-
-		getModel().setTrx(trx);
-
-		final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
-
-		final MPInstance instance = new MPInstance(ctx, processId, 0, 0);
-		instance.saveEx();
-
-		final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
-		pi.setTitle("Kommisionierungsbelege");
-		pi.setAD_PInstance_ID(instance.getAD_PInstance_ID());
-
-		final ProcessInfoParameter pipSelectection =
-				new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null);
-
-		final ProcessInfoParameter pipShipper =
-				new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null);
-
-		final ProcessInfoParameter pipNonItems =
-				new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null);
-
-		pi.setParameter(new ProcessInfoParameter[] { pipSelectection, pipShipper, pipNonItems });
-
-		getModel().setProcessInfo(pi);
-
-		lockUI(pi);
-
-		// final ProcessCtl worker = new ProcessCtl(this,
-		// getModel().getWindowNo(), pi, trx);
-		// worker.start();
-		// don't run asynchronously
-		final ProcessCtl worker = ProcessCtl.process(this, getModel().getWindowNo(), null, pi, trx);
-		return worker;
+		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
+		// NOTE assume this is not called
+		throw new UnsupportedOperationException();
+		
+//		final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
+//
+//		final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
+//		pi.setTitle("Kommisionierungsbelege");
+//		pi.setWindowNo(getModel().getWindowNo());
+//		pi.setParameter(new ProcessInfoParameter[] {
+//				new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null) //
+//				, new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null) //
+//				, new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null) //
+//		});
+//
+//		return ProcessCtl.builder()
+//				.setAsyncParent(this)
+//				.setProcessInfo(pi)
+//				.execute();
 	}
 
 	@Override
-	public void unlockUI(ProcessInfo pi)
+	public void unlockUI(final ProcessInfo pi)
 	{
 		super.unlockUI(pi);
 
-		// display the process results
-		ProcessInfoUtil.setLogFromDB(pi);
-
-		final StringBuffer iText = new StringBuffer();
+		final ProcessExecutionResult result = pi.getResult();
+		final StringBuilder iText = new StringBuilder();
 		iText.append("<b>") //
-				.append(pi.getSummary()) //
+				.append(result.getSummary()) //
 				.append("</b><br>(") //
 				.append(Msg.getMsg(ctx, "Belegerstellung")) //
 				.append(")<br>") //
-				.append(pi.getLogInfo(true));
+				.append(result.getLogInfo(true));
 
-		getView().modelPropertyChange(
-				new PropertyChangeEvent(this, PROP_INFO_TEXT, null, iText
-						.toString()));
+		getView().modelPropertyChange(new PropertyChangeEvent(this, PROP_INFO_TEXT, null, iText.toString()));
 	}
 
 	@Override

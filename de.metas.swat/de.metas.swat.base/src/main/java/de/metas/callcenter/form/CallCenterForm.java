@@ -49,8 +49,6 @@ import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
@@ -60,7 +58,7 @@ import javax.swing.Timer;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -86,9 +84,11 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
+import org.slf4j.Logger;
 
 import de.metas.callcenter.model.I_RV_R_Group_Prospect;
 import de.metas.callcenter.model.I_R_Request;
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -433,7 +433,7 @@ public class CallCenterForm
 		{
 			tab.dataNew(DataNewCopyMode.NoCopy);
 		}
-		final I_R_Request request = GridTabWrapper.create(tab, I_R_Request.class);
+		final I_R_Request request = InterfaceWrapperHelper.create(tab, I_R_Request.class);
 		if (isNew)
 		{
 			m_model.setRequestDefaults(request, contact);

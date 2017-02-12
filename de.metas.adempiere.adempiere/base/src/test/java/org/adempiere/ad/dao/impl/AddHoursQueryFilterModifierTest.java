@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +37,7 @@ import org.junit.Test;
 
 /**
  * Tests {@link AddHoursQueryFilterModifier} by using an {@link CompareQueryFilter}.
- * 
+ *
  * @author tsa
  *
  */
@@ -89,7 +89,7 @@ public class AddHoursQueryFilterModifierTest
 	{
 		final ITestModel testModel = createTestModel(operand1_date, operand1_hoursToAdd);
 
-		final CompareQueryFilter<ITestModel> filter = new CompareQueryFilter<ITestModel>(ITestModel.COLUMNNAME_Date,
+		final CompareQueryFilter<ITestModel> filter = new CompareQueryFilter<>(ITestModel.COLUMNNAME_Date,
 				operator,
 				operand2,
 				new AddHoursQueryFilterModifier(ITestModel.COLUMNNAME_HoursToAdd));
@@ -114,8 +114,8 @@ public class AddHoursQueryFilterModifierTest
 	@Test
 	public void test_NoHoursToAdd()
 	{
-		final Timestamp date1 = TimeUtil.getDay(2014, 8, 10, 10, 30, 21);
-		final Timestamp date2 = TimeUtil.getDay(2014, 8, 10, 14, 30, 21);
+		final Timestamp date1 = TimeUtil.getDay(2014, 8, 10, 10, 30, 21); // 2014-08-10 10:30:21.0
+		final Timestamp date2 = TimeUtil.getDay(2014, 8, 10, 14, 30, 21); // 2014-08-10 14:30:21.0
 
 		final int operand1_hoursToAdd = 0;
 		assertComparation(true, date1, operand1_hoursToAdd, Operator.LESS_OR_EQUAL, date2);

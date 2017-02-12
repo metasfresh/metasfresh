@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,15 +49,12 @@ import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.MPriceList;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
@@ -65,6 +62,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocActionBL;
@@ -84,7 +82,6 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.product.IProductPA;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
@@ -99,7 +96,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	private final transient IProductPA productPA = Services.get(IProductPA.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
 	private final transient IMsgDAO msgDAO = Services.get(IMsgDAO.class);
@@ -147,8 +143,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// NOTE: not static becase we share the services
 	private class DefaultInvoiceGeneratorRunnable implements IInvoiceGeneratorRunnable, TrxRunnable2
 	{
-		private static final String ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = "InvoiceCand_PriceList_Missing";
-
 		// Input parameters
 		private IInvoiceHeader header;
 		private Properties ctx;
@@ -289,7 +283,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 								invoiceHeader.getC_DocTypeInvoice() != null ? invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID() : 0,
 								invoiceHeader.getDateInvoiced(),
 								invoiceHeader.getDateAcct() // task 08437
-				),
+						),
 						I_C_Invoice.class);
 				setC_DocType(invoice, invoiceHeader);
 
@@ -323,15 +317,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateInvoiced(invoiceHeader.getDateInvoiced());
 				invoice.setDateAcct(invoiceHeader.getDateAcct()); // 03905: also updating DateAcct
 
-				final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, invoiceHeader.getM_PricingSystem_ID(), invoiceHeader.getBill_Location_ID(), invoiceHeader.isSOTrx(), trxName);
-				if (pl == null)
-				{
-					throw new AdempiereException(Env.getAD_Language(ctx), DefaultInvoiceGeneratorRunnable.ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-							new Object[] {
-									InterfaceWrapperHelper.create(ctx, invoiceHeader.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),
-									InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class, ITrx.TRXNAME_None).getName() });
-				}
-				invoice.setM_PriceList_ID(pl.getM_PriceList_ID());
+				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
 			}
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
@@ -640,7 +626,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final BigDecimal qtyInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null);
+						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null); // TODO
+
+						// #870
+						// Make sure the Qty and Price override are set to null when an invoiceline is created
+						{
+							final int invoiceCandidate_ID = candForIlVO.getC_Invoice_Candidate_ID();
+
+							Services.get(ITrxManager.class)
+									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+									.onAfterCommit(() -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+						}
 					}
 
 					//
@@ -678,6 +674,21 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					throw e;
 				}
 			}
+		}
+
+		/**
+		 * @param invoiceCandidate_ID
+		 */
+		private void set_QtyAndPriceOverrideToNull(final int invoiceCandidate_ID)
+		{
+
+			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+
+			ic.setQtyToInvoice_Override(null);
+			ic.setPriceEntered_Override(null);
+
+			InterfaceWrapperHelper.save(ic);
+
 		}
 
 		private final I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)

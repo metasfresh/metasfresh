@@ -13,11 +13,11 @@ package org.adempiere.bpartner.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,8 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -61,6 +59,7 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_BPartner;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
@@ -68,6 +67,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
@@ -93,10 +93,10 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (result == null)
 		{
-			BPartnerDAO.logger.debug("Didn't find bPartner with value '" + value + "'. Returning null.");
+			logger.debug("Didn't find bPartner with value '{}'. Returning null.", value);
 			return null;
 		}
-		BPartnerDAO.logger.debug("Returning bPartner with value '" + value + "'");
+		logger.debug("Returning bPartner with value '{}'", value);
 		return result;
 	}
 
@@ -176,20 +176,19 @@ public class BPartnerDAO implements IBPartnerDAO
 				.first(I_C_BPartner_Location.class);
 	}
 
-	private static final String SQL_DEFAULT_VENDOR = //
-			"SELECT bp.* " //
-					+ " FROM C_BPartner bp "
-					+ "   LEFT JOIN M_Product_PO p ON p.C_BPartner_ID = bp.C_BPartner_ID "
-					+ " WHERE p.M_Product_ID=? " + " ORDER BY p.IsCurrentVendor DESC";
+	private static final String SQL_DEFAULT_VENDOR =  //
+	"SELECT bp.* " //
+			+ " FROM C_BPartner bp "
+			+ "   LEFT JOIN M_Product_PO p ON p.C_BPartner_ID = bp.C_BPartner_ID "
+			+ " WHERE p.M_Product_ID=? " + " ORDER BY p.IsCurrentVendor DESC";
 
 	@Override
 	public I_C_BPartner retrieveDefaultVendor(final int productId, final String trxName) throws ProductHasNoVendorException
 	{
 		final IDatabaseBL db = Services.get(IDatabaseBL.class); // FIXME update this query to current standards
 
-		final List<X_C_BPartner> result =
-				db.retrieveList(BPartnerDAO.SQL_DEFAULT_VENDOR,
-						new Object[] { productId }, X_C_BPartner.class, trxName);
+		final List<X_C_BPartner> result = db.retrieveList(BPartnerDAO.SQL_DEFAULT_VENDOR,
+				new Object[] { productId }, X_C_BPartner.class, trxName);
 
 		if (result.isEmpty())
 		{
@@ -335,9 +334,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addColumn(I_AD_User.COLUMNNAME_IsDefaultContact, Direction.Descending, Nulls.Last)
 				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.Last);
 
-		return queryBuilder.
-				create().
-				first();
+		return queryBuilder.create().first();
 
 	}
 
@@ -396,11 +393,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (bpPriceListId != null && bpPriceListId > 0)
 		{
-
-			if (BPartnerDAO.logger.isDebugEnabled())
-			{
-				BPartnerDAO.logger.debug("Got M_PriceList_ID=" + bpPriceListId + " from bPartner=" + bPartner);
-			}
+			logger.debug("Got M_PriceList_ID={} from bPartner={}", bpPriceListId, bPartner);
 			return bpPriceListId;
 		}
 		// If there is no Pricelist in BPartner, Try to set PriceList from BPGroup
@@ -423,17 +416,12 @@ public class BPartnerDAO implements IBPartnerDAO
 
 			if (bpGroupPriceListId != null && bpGroupPriceListId > 0)
 			{
-
-				if (BPartnerDAO.logger.isDebugEnabled())
-				{
-					BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpGroupPriceListId
-							+ " from bpGroup=" + bpGroup);
-				}
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPriceListId, bpGroup);
 				return bpGroupPriceListId;
 			}
 		}
 
-		BPartnerDAO.logger.warn("bPartner=" + bPartner + " has no pricelist id");
+		logger.warn("bPartner={} has no pricelist id", bPartner);
 		return 0;
 	}
 
@@ -463,7 +451,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// metas: end
 		if (bpPricingSysId != null && bpPricingSysId > 0)
 		{
-			BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpPricingSysId + " from bPartner=" + bPartner);
+			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
 			return bpPricingSysId;
 		}
 
@@ -486,7 +474,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			// metas: end
 			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
 			{
-				BPartnerDAO.logger.debug("Got M_PricingSystem_ID=" + bpGroupPricingSysId + " from bpGroup=" + bpGroup);
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
 				return bpGroupPricingSysId;
 			}
 		}
@@ -501,7 +489,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		BPartnerDAO.logger.warn("bPartner=" + bPartner + " has no pricing system id (soTrx=" + soTrx + "); returning 0");
+		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning 0", bPartner, soTrx);
 		return 0;
 	}
 
@@ -716,7 +704,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		{
 			partnerLocationId = null;
 		}
-		queryBuilder.addInArrayFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
+		queryBuilder.addInArrayOrAllFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID, partnerLocationId, null);
 		queryBuilder.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true);
 
 		final IQuery<I_C_BP_Relation> query = queryBuilder
@@ -796,7 +784,9 @@ public class BPartnerDAO implements IBPartnerDAO
 		filters.addOnlyActiveRecordsFilter();
 
 		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, Direction.Descending, Nulls.Last);
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, Direction.Descending, Nulls.Last)
+				// FRESH-339: In case there is no shipToDefault set, select the last created location
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
 
 		return queryBuilder.create()
 				.first();

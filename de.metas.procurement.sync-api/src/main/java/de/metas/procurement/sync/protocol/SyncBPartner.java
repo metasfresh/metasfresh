@@ -32,6 +32,8 @@ public class SyncBPartner extends AbstractSyncModel
 
 	private boolean syncContracts = false;
 	private List<SyncContract> contracts = new ArrayList<>();
+	
+	private List<SyncRfQ> rfqs = new ArrayList<>();
 
 	@Override
 	public String toString()
@@ -40,6 +42,7 @@ public class SyncBPartner extends AbstractSyncModel
 				+ ", users=" + users
 				+ ", syncContracts=" + syncContracts
 				+ ", contracts=" + contracts
+				+", rfqs="+rfqs
 				+ "]";
 	}
 
@@ -91,5 +94,15 @@ public class SyncBPartner extends AbstractSyncModel
 	public void setContracts(List<SyncContract> contracts)
 	{
 		this.contracts = contracts;
+	}
+
+	public List<SyncRfQ> getRfqs()
+	{
+		return rfqs;
+	}
+
+	public void setRfqs(List<SyncRfQ> rfqs)
+	{
+		this.rfqs = rfqs;
 	}
 }

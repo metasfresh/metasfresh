@@ -10,12 +10,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.process.JavaProcess;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
@@ -46,10 +46,10 @@ import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 /**
  * Updates selected {@link I_PMM_PurchaseCandidate} prices.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task https://metasfresh.atlassian.net/browse/FRESH-202
  */
-public class PMM_Purchase_Candidate_UpdatePricing extends SvrProcess
+public class PMM_Purchase_Candidate_UpdatePricing extends JavaProcess
 {
 	// services
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);

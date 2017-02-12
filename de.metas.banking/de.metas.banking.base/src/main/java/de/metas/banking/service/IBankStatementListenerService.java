@@ -27,7 +27,7 @@ import org.adempiere.util.ISingletonService;
 /**
  * {@link IBankStatementListener} factory service.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IBankStatementListenerService extends ISingletonService

@@ -30,13 +30,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.service.ISweepTableBL;
@@ -48,6 +46,8 @@ import de.metas.commission.model.I_C_AdvCommissionInstance;
 import de.metas.commission.model.I_C_AdvCommissionPayroll;
 import de.metas.commission.model.I_C_AdvCommissionPayrollLine;
 import de.metas.commission.model.MCAdvCommissionFact;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Helper process that supports regression tests by deleting all commission data that was created after a given date
@@ -55,7 +55,7 @@ import de.metas.commission.model.MCAdvCommissionFact;
  * @author ts
  * 
  */
-public class DeleteCommissionData extends SvrProcess
+public class DeleteCommissionData extends JavaProcess
 {
 
 	private MPeriod period;
@@ -129,7 +129,7 @@ public class DeleteCommissionData extends SvrProcess
 					followUpInfo = followUpInfo.substring(0, followUpInfo.length() - 1);
 				}
 				factToEdit.setC_AdvComFact_IDs_FollowUp(followUpInfo);
-				POWrapper.save(factToEdit);
+				InterfaceWrapperHelper.save(factToEdit);
 
 			}
 		}
@@ -228,7 +228,7 @@ public class DeleteCommissionData extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,6 +36,15 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 
+/**
+ * Does not represent a particular HU, but the root under which particular HUs can be displayed.
+ * Those HUs' {@link IHUKey}s are "manually" added to this instance by the code that had the factory create this instance.
+ * <p>
+ * Generally instances of this class are created by {@link IHUKeyFactory#createRootKey()}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 /* package */class RootHUKey extends AbstractHUKey
 {
 	private final String id;
@@ -75,6 +84,9 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 		return id;
 	}
 
+	/**
+	 * @return always {@code false}.
+	 */
 	@Override
 	public boolean isVirtualPI()
 	{

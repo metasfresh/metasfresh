@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.facet.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +35,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -69,9 +69,12 @@ public class C_Invoice_Candidate_Misc_FacetCollector extends SingleFacetCategory
 	@Override
 	protected List<IFacet<I_C_Invoice_Candidate>> collectFacets(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder)
 	{
+		// FRESH-560: Add default filter
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilderWithDefaultFilters = Services.get(IInvoiceCandDAO.class).applyDefaultFilter(queryBuilder);
+
 		final List<IFacet<I_C_Invoice_Candidate>> facets = new ArrayList<>();
 
-		final boolean hasICApprovedForInvoicing = queryBuilder
+		final boolean hasICApprovedForInvoicing = queryBuilderWithDefaultFilters
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, true)
 				.create()
 				.match();

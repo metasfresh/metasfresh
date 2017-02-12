@@ -37,7 +37,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType
 /**
  * One instance expectations for one PP_Order (quality inspection or not). Multiple instances are bundles into one {@link QualityInspectionExpectations} instance.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class QualityInspectionLineExpectations

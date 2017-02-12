@@ -34,7 +34,7 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 /**
  * Generates purchase orders from {@link I_PMM_PurchaseCandidate}s by utilizing {@link OrdersAggregator}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class OrdersGenerator

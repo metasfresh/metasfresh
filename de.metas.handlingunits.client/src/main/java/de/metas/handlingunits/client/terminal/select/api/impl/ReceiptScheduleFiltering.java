@@ -13,18 +13,17 @@ package de.metas.handlingunits.client.terminal.select.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,22 +31,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.FilterUtils;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Product;
 import org.eevolution.model.X_M_Warehouse_Routing;
@@ -152,6 +147,9 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(filters);
 
+		// task 06570: exclude lines that are packaging materials
+		queryBuilder.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_IsPackagingMaterial, false);
+
 		// order by
 		queryBuilder.orderBy()
 				.addColumn(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_MovementDate)
@@ -160,53 +158,15 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 
 		final List<I_M_ReceiptSchedule> schedules = queryBuilder.create()
 				.setApplyAccessFilterRW(true)
-				.list(I_M_ReceiptSchedule.class);
+				.list(I_M_ReceiptSchedule.class)
+				.stream()
 
-		// task 06570: exclude lines that are packaging materials
-		final List<I_M_ReceiptSchedule> filteredScheds =
-				FilterUtils.filter(schedules, new Predicate<I_M_ReceiptSchedule>()
-				{
-					@Override
-					public boolean evaluate(final I_M_ReceiptSchedule rs)
-					{
-						return !isPackagingMaterial(rs); // only add if not packing material
-					}
-				});
+		// task 07074: exclude lines with products that have type != item (fixes this comment when i migrated to lambda)
+				.filter(rs -> X_M_Product.PRODUCTTYPE_Item.equals(rs.getM_Product().getProductType()))
 
-		// task 07074: exclude lines with products that have type = item
-		final List<I_M_ReceiptSchedule> filteredSchedsProductType_Item =
-				FilterUtils.filter(filteredScheds, new Predicate<I_M_ReceiptSchedule>()
-				{
-					@Override
-					public boolean evaluate(final I_M_ReceiptSchedule rs)
-					{
-						final I_M_Product product = rs.getM_Product();
+		.collect(Collectors.toList());
 
-						final boolean isItem = X_M_Product.PRODUCTTYPE_Item.equals(product.getProductType());
-
-						return isItem;
-
-					}
-				});
-
-		return createTableRows(filteredSchedsProductType_Item);
-	}
-
-	// FIXME: ts (during review): should be moved to a BL, but right now idk which one
-	private boolean isPackagingMaterial(final I_M_ReceiptSchedule rs)
-	{
-		// return rs.isPackagingMaterial() not using SQL columns in business logic! they might be stale. Only using them to display things to the user.
-
-		if (rs.getAD_Table_ID() != Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name)
-				|| rs.getRecord_ID() <= 0)
-		{
-			// not referencing a C_OrderLine
-			return false;
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(rs);
-		// FIXME: consider if TableRecordCacheLocal can be used here
-		return InterfaceWrapperHelper.create(ctx, rs.getRecord_ID(), de.metas.handlingunits.model.I_C_OrderLine.class, ITrx.TRXNAME_NoneNotNull).isPackagingMaterial();
+		return createTableRows(schedules);
 	}
 
 	private List<IPOSTableRow> createTableRows(final List<? extends Object> schedules)

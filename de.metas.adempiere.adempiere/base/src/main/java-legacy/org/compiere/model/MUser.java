@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -33,22 +31,22 @@ import javax.mail.internet.InternetAddress;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.permissions.OrgPermission;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.logging.LogManager;
 
 /**
  *  User Model
@@ -312,32 +310,9 @@ public class MUser extends X_AD_User
 	private List<I_AD_UserBPAccess>	m_bpAccess = null;
 
 	/** Is Administrator */
-	private final Supplier<Boolean> m_isAdministratorSupplier = Suppliers.memoize(new Supplier<Boolean>()
-	{
-		@Override
-		public Boolean get()
-		{
-			return Services.get(IUserRolePermissionsDAO.class)
-					.matchUserRolesPermissionsForUser(getCtx(), getAD_User_ID(), new Predicate<IUserRolePermissions>()
-					{
-
-						@Override
-						public boolean evaluate(final IUserRolePermissions permissions)
-						{
-							if (permissions.getAD_Role_ID() != IUserRolePermissions.SYSTEM_ROLE_ID)
-							{
-								return false;
-							}
-
-							// Shall have at access to system organization
-							if (!permissions.isOrgAccess(OrgPermission.AD_Org_ID_System, true))
-							{
-								return false;
-							}
-							return true;
-						}
-					});
-		}
+	private final Supplier<Boolean> m_isAdministratorSupplier = Suppliers.memoize(() -> {
+		return Services.get(IUserRolePermissionsDAO.class)
+				.matchUserRolesPermissionsForUser(getCtx(), getAD_User_ID(), IUserRolePermissions::isSystemAdministrator);
 	});
 
 	/**
@@ -608,14 +583,19 @@ public class MUser extends X_AD_User
 	 */
 	public boolean isCanSendEMail()
 	{
-		String s = getEMailUser();
-		if (s == null || s.length() == 0)
+		final String emailUser = getEMailUser();
+		if(Check.isEmpty(emailUser, true))
+		{
 			return false;
+		}
+		
 		// If SMTP authorization is not required, then don't check password - teo_sarca [ 1723309 ]
 		if (!MClient.get(getCtx()).isSmtpAuthorization())
+		{
 			return true;
-		s = getEMailUserPW();
-		return s != null && s.length() > 0;
+		}
+		final String emailPassword = getEMailUserPW();
+		return !Check.isEmpty(emailPassword, false);
 	}	//	isCanSendEMail
 
 	/**

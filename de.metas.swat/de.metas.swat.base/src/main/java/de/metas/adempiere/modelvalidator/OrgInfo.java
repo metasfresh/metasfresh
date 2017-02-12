@@ -25,7 +25,7 @@ package de.metas.adempiere.modelvalidator;
 
 import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.ModelValidationEngine;
@@ -45,16 +45,18 @@ public class OrgInfo implements ModelValidator
 	public static final String ENV_ORG_INFO_STORE_CC_DATA = "#StoreCreditCardData";
 	private int ad_Client_ID = -1;
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return ad_Client_ID;
 	}
 
+	@Override
 	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		final Properties ctx = Env.getCtx();
 
-		final I_AD_OrgInfo orgInfo = POWrapper.create(MOrgInfo.get(ctx, AD_Org_ID, null), I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(MOrgInfo.get(ctx, AD_Org_ID, null), I_AD_OrgInfo.class);
 		final String ccStoreMode = orgInfo.getStoreCreditCardData();
 
 		Env.setContext(ctx, ENV_ORG_INFO_STORE_CC_DATA, ccStoreMode);
@@ -62,6 +64,7 @@ public class OrgInfo implements ModelValidator
 		return null;
 	}
 
+	@Override
 	public final void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
@@ -86,7 +89,7 @@ public class OrgInfo implements ModelValidator
 		{
 			if (po.is_ValueChanged(I_AD_OrgInfo.COLUMNAME_StoreCreditCardData))
 			{
-				final I_AD_OrgInfo orgInfo = POWrapper.create(po, I_AD_OrgInfo.class);
+				final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(po, I_AD_OrgInfo.class);
 
 				final String ccStoreMode = orgInfo.getStoreCreditCardData();
 

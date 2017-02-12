@@ -62,7 +62,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 /**
  * This helper class declares master data and objects that are useful for testing.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class HUDocumentSelectTestHelper extends HUTestHelper

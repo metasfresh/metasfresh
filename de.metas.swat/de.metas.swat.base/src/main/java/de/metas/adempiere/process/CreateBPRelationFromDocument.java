@@ -27,12 +27,13 @@ package de.metas.adempiere.process;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Create BP relation from document.
@@ -43,7 +44,7 @@ import org.compiere.process.SvrProcess;
  *      %282010122110000025%29
  *
  */
-public class CreateBPRelationFromDocument extends SvrProcess
+public class CreateBPRelationFromDocument extends JavaProcess
 {
 	public static String PARAM_C_BPartner_ID = I_C_BP_Relation.COLUMNNAME_C_BPartner_ID;
 	public static String PARAM_C_BPartner_Location_ID = I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID;
@@ -66,7 +67,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -119,7 +120,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		relation.setIsPayFrom(p_IsPayFrom);
 		relation.setIsRemitTo(p_IsRemitTo);
 		relation.setIsShipTo(p_IsShipTo);
-		POWrapper.save(relation);
+		InterfaceWrapperHelper.save(relation);
 
 		final String tableName = getTableName();
 		if (I_C_Order.Table_Name.equals(tableName))
@@ -134,7 +135,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 		I_C_Order order = null;
 		if (orderId > 0)
 		{
-			order = POWrapper.create(getCtx(), orderId, I_C_Order.class, get_TrxName());
+			order = InterfaceWrapperHelper.create(getCtx(), orderId, I_C_Order.class, get_TrxName());
 		}
 		if (order == null)
 		{
@@ -158,7 +159,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 			order.setBill_Location_ID(rel.getC_BPartnerRelation_Location_ID());
 		}
 
-		POWrapper.save(order);
+		InterfaceWrapperHelper.save(order);
 	}
 
 	private I_C_BP_Relation findRelation(final int bpartnerId, final int bpLocationId, final int bpRelationId, final int locRelationId, final boolean create)
@@ -188,7 +189,7 @@ public class CreateBPRelationFromDocument extends SvrProcess
 
 		if (relation == null && create)
 		{
-			relation = POWrapper.create(getCtx(), 0, I_C_BP_Relation.class, get_TrxName());
+			relation = InterfaceWrapperHelper.create(getCtx(), I_C_BP_Relation.class, get_TrxName());
 			relation.setC_BPartner_ID(bpartnerId);
 			relation.setC_BPartner_Location_ID(bpLocationId);
 			relation.setC_BPartnerRelation_ID(bpRelationId);

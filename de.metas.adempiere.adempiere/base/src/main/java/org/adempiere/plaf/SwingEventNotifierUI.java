@@ -45,6 +45,10 @@ public final class SwingEventNotifierUI
 
 	public static final String NOTIFICATIONS_AutoFadeAwayTimeMillis = "EventNotifier.AutoFadeAwayTimeMillis";
 	public static final int NOTIFICATIONS_AutoFadeAwayTimeMillis_Default = 15 * 1000; // 13sec
+	
+	/** Defines the gap (in pixels) between last notification and screen bottom (see FRESH-441) */
+	public static final String NOTIFICATIONS_BottomGap = "EventNotifier.BottomGap";
+	public static final int NOTIFICATIONS_BottomGap_Default = 40;
 
 	public static final String ITEM_BackgroundColor = "EventNotifier.Item.Background";
 	public static final String ITEM_Border = "EventNotifier.Item.Border";
@@ -67,6 +71,7 @@ public final class SwingEventNotifierUI
 				// Notifications settings
 				NOTIFICATIONS_MaxDisplayed, NOTIFICATIONS_MaxDisplayed_Default
 				, NOTIFICATIONS_AutoFadeAwayTimeMillis, NOTIFICATIONS_AutoFadeAwayTimeMillis_Default
+				, NOTIFICATIONS_BottomGap, NOTIFICATIONS_BottomGap_Default
 
 				//
 				// Item settings

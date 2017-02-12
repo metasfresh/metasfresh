@@ -25,13 +25,13 @@ package org.compiere.model;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 public class CalloutEXP_Format extends CalloutEngine
 {
 	public String onAD_Table_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_EXP_Format format = GridTabWrapper.create(mTab, I_EXP_Format.class);
+		I_EXP_Format format = InterfaceWrapperHelper.create(mTab, I_EXP_Format.class);
 		if (format.getAD_Table_ID() > 0)
 		{
 			String tableName = MTable.getTableName(ctx, format.getAD_Table_ID());
@@ -43,7 +43,7 @@ public class CalloutEXP_Format extends CalloutEngine
 
 	public String setLineValueName(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_EXP_FormatLine line = GridTabWrapper.create(mTab, I_EXP_FormatLine.class);
+		I_EXP_FormatLine line = InterfaceWrapperHelper.create(mTab, I_EXP_FormatLine.class);
 		if (line.getEXP_EmbeddedFormat_ID() > 0
 				&& X_EXP_FormatLine.TYPE_EmbeddedEXPFormat.equals(line.getType()))
 		{

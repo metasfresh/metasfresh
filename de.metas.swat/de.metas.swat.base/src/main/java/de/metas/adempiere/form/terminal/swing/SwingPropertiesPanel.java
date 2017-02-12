@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 import java.awt.Container;
@@ -34,13 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DisplayType;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
+import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncExecutor;
 import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IPropertiesPanel;
@@ -61,14 +60,15 @@ import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.WrongValueException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
+import de.metas.adempiere.form.terminal.event.UIAsyncPropertyChangeListener;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.logging.LogManager;
 
 /* package */final class SwingPropertiesPanel implements IPropertiesPanel
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(SwingPropertiesPanel.class);
-	
+
 	private static final float DEFAULT_FONT_SIZE = 12f;
 	private static final String DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS = "";
 	private static final String DEFAULT_LABEL_CONSTRAINTS = "right, wmin 50, shrink 100";
@@ -82,7 +82,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 	private IPropertiesPanelModel model;
 
 	private IContainer panel;
-	private ITerminalScrollPane scroll;
+	private final ITerminalScrollPane scroll;
 
 	private final Map<String, ITerminalField<?>> propertyName2editors = new HashMap<>();
 
@@ -96,14 +96,18 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 		{
 			onModelChanged(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "SwingPropertiesPanel[<anonymous modelListener>]"; };
+		// @formatter:on
 	};
 
-	/* package */SwingPropertiesPanel(final ITerminalContext terminalContext)
+	/* package */ SwingPropertiesPanel(final ITerminalContext terminalContext)
 	{
 		this(terminalContext, DEFAULT_CONTAINER_CONSTARAINTS);
 	}
 
-	/* package */SwingPropertiesPanel(final ITerminalContext terminalContext, final String containerConstraints)
+	/* package */ SwingPropertiesPanel(final ITerminalContext terminalContext, final String containerConstraints)
 	{
 		super();
 
@@ -117,6 +121,8 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 		scroll.setVerticalScrollBarPolicy(ScrollPolicy.WHEN_NEEDED);
 
 		scroll.setBorderEnabled(false); // hide borders
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private void onModelChanged(final String eventName, final Object valueOld, final Object valueNew)
@@ -222,7 +228,12 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 				final String name = model.getPropertyDisplayName(propertyName);
 				throw new WrongValueException(editor, "@NotValid@ " + name);
 			}
+
+			// task #857
+			// Make sure all the values set in UI are pushed to the model when they are validated and the OK button is pressed
+			setValueFromUI(propertyName, editor.getValue(), editor);
 		}
+
 	}
 
 	/**
@@ -305,6 +316,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 			}
 
 			final Object value = model.getPropertyValue(propertyName);
+			logger.debug("Setting property={} to value={} at editor={}", propertyName, value, editor);
 			editor.setValue(value);
 
 			final boolean editable = model.isEditable(propertyName);
@@ -357,30 +369,39 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 			inputMethodButton.setEnabled(true);
 
 			inputMethodButton.addListener(/* add the action's listener */
-					new UIPropertyChangeListener(inputMethodButton)
+					new UIAsyncPropertyChangeListener<Object, Void>(inputMethodButton)
 					{
 						@Override
-						public void propertyChangeEx(final PropertyChangeEvent evt)
+						public Object runInBackground(final IClientUIAsyncExecutor<PropertyChangeEvent, Object, Void> executor)
 						{
 							final Object value = inputMethod.invoke();
-							
+							logger.debug("inputMethod={} returned value={} in UIAsyncPropertyChangeListener={} in UIAsyncPropertyChangeListener={}", inputMethod, value, this);
+							return value;
+						};
+
+						@Override
+						public void finallyUpdateUI(final IClientUIAsyncExecutor<PropertyChangeEvent, Object, Void> executor, final Object value)
+						{
 							// Guard against concurrency issues, when the model was changed in meantime.
 							// Shall not happen, but better safe then sorry
 							final IPropertiesPanelModel modelActual = getModel();
 							if (model != modelActual)
 							{
 								final TerminalException ex = new TerminalException("Internal error: skip setting the value aquired from input method because model changed in meantime."
-										+"\n Model: "+model
-										+"\n Model(now): "+modelActual
-										+"\n Input method: "+inputMethod
-										+"\n Value aquired: "+value);
+										+ "\n Model: " + model
+										+ "\n Model(now): " + modelActual
+										+ "\n Input method: " + inputMethod
+										+ "\n Value aquired: " + value);
 								logger.warn(ex.getLocalizedMessage(), ex);
 								return;
 							}
-							
-							editor.setValue(value, true); // fireEvent=true
+							logger.debug("Set value={} to editor={} ,editor.toString()={} in UIAsyncPropertyChangeListener={}", value, editor.getName(), editor, this);
+							//
+							// #370: trying to *not* set the field but the model. setting the field will also cause the model to be updated, but eventually from the model updating, the field will be updated a second time
+							// editor.setValue(value, true); // fireEvent=true
+							getModel().setPropertyValue(propertyName, value);
 						}
-					});
+					}); // addListener
 
 			// NOTE: we are appending the input method buttons INSIDE the editor component
 			// mainly because we want the "constraintsEditor" to be applied to the whole editor+inputMethodButtons as a group.
@@ -391,7 +412,7 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 
 	/**
 	 * Create editing component and registers the change listners to it.
-	 * 
+	 *
 	 * TODO (workaround): Note that because we can have any number of different display types, we can keep the {@link ITerminalField} raw and pass it through within this implementation.
 	 *
 	 * @param propertyName
@@ -406,12 +427,11 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 		{
 			final ITerminalNumericField editor = factory.createTerminalNumericField(propertyName, displayType,
 					SwingPropertiesPanel.DEFAULT_FONT_SIZE,
-					true, // withButtons,
-					false, // withLabel
+					true,       // withButtons,
+					false,       // withLabel
 					SwingPropertiesPanel.DEFAULT_NUMBERIC_BUTTONS_CONSTRAINTS);
 			editor.addListener(new PropertyChangeListener()
 			{
-
 				@Override
 				public void propertyChange(final PropertyChangeEvent evt)
 				{
@@ -421,6 +441,10 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 						setValueFromUI(propertyName, value, editor);
 					}
 				}
+
+				// @formatter:off
+				@Override public String toString() { return "SwingPropertiesPanel[<anonymous propertyChangeListener for property=" + propertyName + " and editor=" + editor+">]"; }
+				// @formatter:on
 			});
 
 			return editor;
@@ -527,12 +551,13 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 
 					if (textFieldActionPerformed
 							|| fireValueChangedOnFocusLost && isValueChanged
-							|| isFocusLost
-					)
+							|| isFocusLost)
 					{
+
 						final Object value = editor.getText();
 						setValueFromUI(propertyName, value, editor);
 					}
+
 				}
 			});
 
@@ -541,6 +566,8 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 	}
 
 	private boolean _fireValueChangedOnFocusedLost = true;
+
+	private boolean disposed = false;
 
 	@Override
 	public final void disableFireValueChangedOnFocusLost()
@@ -630,22 +657,19 @@ import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstrain
 	{
 		setModel(null); // will also reset depending fields
 
-		if (scroll != null)
-		{
-			scroll.dispose();
-			scroll = null;
-		}
-
-		if (panel != null)
-		{
-			panel.dispose();
-			panel = null;
-		}
+		disposed = true;
 	}
 
 	@Override
-	public void setVerticalScrollBarPolicy(ScrollPolicy scrollPolicy)
+	public boolean isDisposed()
+	{
+		return disposed;
+	}
+
+	@Override
+	public void setVerticalScrollBarPolicy(final ScrollPolicy scrollPolicy)
 	{
 		scroll.setVerticalScrollBarPolicy(scrollPolicy);
 	}
+
 }

@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,28 +30,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.MSession;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -63,8 +60,9 @@ import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.MinMaxNumericFieldConstraint;
+import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDeviceBL;
-import de.metas.device.api.IDevice;
+import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -75,6 +73,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.logging.LogManager;
 
 public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 {
@@ -108,7 +107,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		public void onAttributeStorageDisposed(final IAttributeStorage storage)
 		{
 			logger.debug("Reseting the properties model because attribute storage was disposed: {}", HUAttributeSetPropertiesModel.this);
-			
+
 			// Make sure it makes sense to reset current storage
 			final IAttributeStorage currentStorage = getIndexedAttributeStorage().getAttributeStorage();
 			if (currentStorage == null)
@@ -128,12 +127,16 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			// Actually reset current attribute storage and also fire events so the UI will know that it needs to reload.
 			setAttributeStorage(null);
 		};
+
+		//@formatter:off
+		@Override public String toString(){ return "HUAttributeSetPropertiesModel[<anonymous AttributeStorageListenerAdapter>]"; };
+		//@formatter:on
 	};
 
 	public HUAttributeSetPropertiesModel(final ITerminalContext terminalContext)
 	{
 		super(terminalContext);
-		
+
 		logger.debug("New instance: {}", this);
 	}
 
@@ -161,7 +164,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			final IAttributeStorage attributeStorageOld = this._indexedAttributeStorage.getAttributeStorage();
 			this._indexedAttributeStorage = IndexedAttributeStorage.of(attributeStorage);
-			
+
 			logger.debug("Attribute storage old: {}", attributeStorageOld);
 			logger.debug("Attribute storage new: {}", attributeStorage);
 
@@ -194,9 +197,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 	/**
 	 * Gets underlying indexed attribute storage.
-	 * 
+	 *
 	 * IMPORTANT: make sure you have ONLY one call of this method, in each method you are using it!!!
-	 * 
+	 *
 	 * @return
 	 */
 	private IndexedAttributeStorage getIndexedAttributeStorage()
@@ -216,7 +219,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * Task 04966: Queries the device API to find out if there are devices available for
 	 * <ul>
 	 * <li>the given <code>attribute</code> and</li>
-	 * <li>the current host IP (taken from {@link MSession#get(Properties, boolean)}).</li>
+	 * <li>the current host IP (taken from {@link NetUtils#getLocalHost()}).</li>
 	 * </ul>
 	 * If there are such devices, then this method creates a {@link InputMethod} for echa available {@link IDeviceRequest} that has an {@link ISingleValueResponse}.<br>
 	 * The background of this last restriction is that (at least for now) we want just one value to set it to the attribute propersies editor.
@@ -226,87 +229,15 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * @see #getAdditionalInputMethods(int)
 	 *
 	 */
-	@SuppressWarnings("rawtypes")
 	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
-		final List<IInputMethod<?>> inputMethods = new ArrayList<>();
-
-		final IHostIdentifier myHost = NetUtils.getLocalHost();
-
-		final IDeviceBL deviceBL = Services.get(IDeviceBL.class);
-		final List<String> devicesForThisAttribute = deviceBL.getAllDeviceNamesForAttrAndHost(
-				attribute,
-				myHost);
-
-		if (logger.isInfoEnabled())
-			logger.info(String.format("Devices for host %s and attributte %s: ", myHost, attribute.getValue()) + devicesForThisAttribute);
-
-		// If there are more than one device for this attribute, we use the device names' first characters for the button texts.
-		// How many chars we need depends of how log the common prefix is.
-		final String commonPrefix;
-		if (devicesForThisAttribute.size() == 1)
-		{
-			commonPrefix = ""; // only one dev => we will do with the dev name's first character
-		}
-		else
-		{
-			commonPrefix = StringUtils.getCommonPrefix(devicesForThisAttribute.toArray(new String[0]));
-		}
-		for (final String deviceName : devicesForThisAttribute)
-		{
-			// trying to access the device.
-			final IDevice device;
-			try
-			{
-				device = deviceBL.createAndConfigureDeviceOrReturnExisting(ctx, deviceName, myHost);
-			}
-			catch (final Exception e)
-			{
-				final String msg = String.format("Unable to access device %s from host %s. Details:\n%s", deviceName, myHost, e.getLocalizedMessage());
-				logger.warn(msg, e);
-				Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, msg);
-				continue;
-			}
-
-			// OK, we were able to access it. Now add a button for each sort of request to our panel
-			final IDevice deviceToAddInputMethodFor = device;
-
-			final List<IDeviceRequest<ISingleValueResponse>> allRequestsFor = deviceBL.getAllRequestsFor(deviceName, attribute, ISingleValueResponse.class);
-
-			if (logger.isInfoEnabled())
-				logger.info(String.format("Found these requests for deviceName %s and attribute %s: ", deviceName, attribute.getValue()) + allRequestsFor);
-
-			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
-			{
-				final IInputMethod<?> method = new IInputMethod<Object>()
-				{
-					@Override
-					public AppsAction getAppsAction()
-					{
-						final String buttonText = commonPrefix + deviceName.charAt(commonPrefix.length());
-						// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
-						return AppsAction.builder()
-								.setAction(buttonText)
-								.setToolTipText(buttonText)
-								.build();
-					}
-
-					@Override
-					public Object invoke()
-					{
-						logger.debug("Device: {}; Request: {}", new Object[] { deviceToAddInputMethodFor, request });
-
-						final ISingleValueResponse response = deviceToAddInputMethodFor.accessDevice(request);
-						logger.debug("Device {}; Response: {}", new Object[] { deviceToAddInputMethodFor, response });
-
-						return response.getSingleValue();
-					}
-				};
-				inputMethods.add(method);
-			}
-		}
-		return ImmutableList.copyOf(inputMethods);
+		return Services.get(IDevicesHubFactory.class)
+				.getDefaultAttributesDevicesHub()
+				.getAttributeDeviceAccessors(attribute.getValue())
+				.consumeWarningMessageIfAny(warningMessage -> Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, warningMessage))
+				.stream()
+				.map(DeviceAccessorAsInputMethod::new)
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@Override
@@ -380,8 +311,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		// NOTE: if the model is disposed then the underlying indexedAttributeStorage would be "null", so it's safe to not check.
 		final IndexedAttributeStorage indexedAttributeStorage = getIndexedAttributeStorage();
-		
-		logger.debug("Setting {}={} on {} ({})", propertyName, value, indexedAttributeStorage, this);
+
+		logger.debug("Setting propertyName={} to value={} on indexedAttributeStorage={} (this={})", propertyName, value, indexedAttributeStorage, this);
 		indexedAttributeStorage.setPropertyValue(propertyName, value);
 	}
 
@@ -484,7 +415,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * Background: We query the device API to find out if there are devices available for
 	 * <ul>
 	 * <li>the given <code>attribute</code> and</li>
-	 * <li>the current host IP (taken from {@link MSession#get(Properties, boolean)}).</li>
+	 * <li>the current host IP (taken from {@link NetUtils#getLocalHost()}).</li>
 	 * </ul>
 	 * If there are such devices, then this method creates a {@link InputMethod} for echa available {@link IDeviceRequest} that has an {@link ISingleValueResponse}.<br>
 	 * The background of this last restriction is that (at least for now) we want just one value to set it to the attribute propersies editor.
@@ -574,9 +505,17 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		attributeStorage.saveChangesIfNeeded();
 	}
 
+	@Override
+	public String toString()
+	{
+		return "HUAttributeSetPropertiesModel [_indexedAttributeStorage=" + _indexedAttributeStorage + ", _indexedAttributeStorageLock=" + _indexedAttributeStorageLock + ", readonly=" + readonly + ", attributesEditableOnlyIfVHU=" + attributesEditableOnlyIfVHU + ", attributeStorageListener=" + attributeStorageListener + "]";
+	}
+
 	/**
 	 * Immutable {@link IAttributeStorage} wrapper which also contains indexed attributes and other additional informations.
-	 * 
+	 * <p>
+	 * By "indexed attributes", we mean the ability to work with the storage in terms of attribute-property names (at the core that's usually <code>M_Attribute.Value</code>).
+	 *
 	 * @author tsa
 	 *
 	 */
@@ -593,10 +532,15 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return new IndexedAttributeStorage(attributeStorage);
 		}
 
+		/**
+		 * The actual wrapped attributes.
+		 */
 		private final IAttributeStorage attributeStorage;
+
 		private final ImmutableList<String> propertyNames;
 		private final Map<String, I_M_Attribute> propertyName2attribute;
 		private final Map<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction; // task 04966
+
 		/** true if attribute set's underlying HU is a virtual HU */
 		private final boolean virtualHU;
 
@@ -626,7 +570,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 				{
 					continue;
 				}
-				
+
 				final I_M_Attribute attribute = attributeValue.getM_Attribute();
 				final String propertyName = attribute.getValue();
 
@@ -644,7 +588,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			this.propertyName2AdditionalInputAction = ImmutableMap.copyOf(propertyName2AdditionalInputAction);
 			this.virtualHU = attributeStorage.isVirtual();
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -723,6 +667,41 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		{
 			return virtualHU;
 		}
+	}
+	
+	
+	private static final class DeviceAccessorAsInputMethod implements IInputMethod<Object>
+	{
+		private final AttributeDeviceAccessor deviceAccessor;
 
+		private DeviceAccessorAsInputMethod(final AttributeDeviceAccessor deviceAccessor)
+		{
+			super();
+			this.deviceAccessor = deviceAccessor;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this).addValue(deviceAccessor).toString();
+		}
+
+		@Override
+		public AppsAction getAppsAction()
+		{
+			// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
+			final String buttonText = deviceAccessor.getDisplayName();
+			return AppsAction.builder()
+					.setAction(buttonText)
+					.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.
+					.setToolTipText(buttonText)
+					.build();
+		}
+
+		@Override
+		public Object invoke()
+		{
+			return deviceAccessor.acquireValue();
+		}
 	}
 }

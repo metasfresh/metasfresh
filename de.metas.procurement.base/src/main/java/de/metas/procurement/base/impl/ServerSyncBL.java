@@ -34,11 +34,16 @@ import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
+import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
+import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
+import de.metas.procurement.sync.protocol.SyncRfQPriceChangeEvent;
+import de.metas.procurement.sync.protocol.SyncRfQQtyChangeEvent;
 import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 
@@ -55,11 +60,11 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -397,10 +402,139 @@ public class ServerSyncBL implements IServerSyncBL
 				@Override
 				public void run(final String localTrxName) throws Exception
 				{
-					final IContextAware context = PlainContextAware.createUsingThreadInheritedTransaction(tempCtx);
+					final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(tempCtx);
 					processor.processEvent(context, pmmProduct);
 				}
 			});
 		}
 	}
+
+	@Override
+	public void reportRfQChanges(final SyncRfQChangeRequest request)
+	{
+		for (final SyncRfQPriceChangeEvent priceChangeEvent : request.getPriceChangeEvents())
+		{
+			try
+			{
+				createRfQPriceChangeEvent(priceChangeEvent);
+			}
+			catch (final Exception e)
+			{
+				logger.error("Failed importing " + priceChangeEvent + ". Skipped.", e);
+			}
+		}
+
+		for (final SyncRfQQtyChangeEvent qtyChangeEvent : request.getQtyChangeEvents())
+		{
+			try
+			{
+				createRfQQtyChangeEvent(qtyChangeEvent);
+			}
+			catch (final Exception e)
+			{
+				logger.error("Failed importing " + qtyChangeEvent + ". Skipped.", e);
+			}
+		}
+
+	}
+
+	private void createRfQPriceChangeEvent(final SyncRfQPriceChangeEvent priceChangeEvent)
+	{
+		final String product_uuid = priceChangeEvent.getProduct_uuid();
+		loadPMMProductAndProcess(
+				product_uuid,
+				new IEventProcessor()
+				{
+					@Override
+					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
+					{
+						createRfQPriceChangeEvent(context, pmmProduct, priceChangeEvent);
+					}
+				});
+	}
+
+	private void createRfQPriceChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQPriceChangeEvent syncPriceChangeEvent)
+	{
+		logger.debug("Creating event from {} ({})", syncPriceChangeEvent, pmmProduct);
+
+		final I_PMM_RfQResponse_ChangeEvent event = InterfaceWrapperHelper.newInstance(I_PMM_RfQResponse_ChangeEvent.class, context);
+		event.setEvent_UUID(syncPriceChangeEvent.getUuid());
+
+		//
+		// RfQ Response Line
+		final String rfqResponseLine_UUID = syncPriceChangeEvent.getRfq_uuid();
+		event.setC_RfQResponseLine_UUID(rfqResponseLine_UUID);
+
+		//
+		// Price
+		event.setType(X_PMM_RfQResponse_ChangeEvent.TYPE_Price);
+		event.setPrice(syncPriceChangeEvent.getPrice());
+
+		// Product
+		event.setPMM_Product(pmmProduct);
+
+		// Save
+		event.setProcessed(false);
+		event.setIsActive(true);
+		InterfaceWrapperHelper.save(event);
+
+		logger.debug("Imported {} to {}:\n{}", syncPriceChangeEvent, event);
+
+		// Notify agent that we got the message
+		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
+		SyncConfirmationsSender.forCurrentTransaction().confirm(syncPriceChangeEvent, serverEventId);
+	}
+
+	private void createRfQQtyChangeEvent(final SyncRfQQtyChangeEvent qtyChangeEvent)
+	{
+		final String product_uuid = qtyChangeEvent.getProduct_uuid();
+		loadPMMProductAndProcess(
+				product_uuid,
+				new IEventProcessor()
+				{
+					@Override
+					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
+					{
+						createRfQQtyChangeEvent(context, pmmProduct, qtyChangeEvent);
+					}
+				});
+	}
+
+	private void createRfQQtyChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQtyChangeEvent syncQtyChangeEvent)
+	{
+		logger.debug("Creating event from {} ({})", syncQtyChangeEvent, pmmProduct);
+
+		final I_PMM_RfQResponse_ChangeEvent event = InterfaceWrapperHelper.newInstance(I_PMM_RfQResponse_ChangeEvent.class, context);
+		event.setEvent_UUID(syncQtyChangeEvent.getUuid());
+
+		//
+		// RfQ Response Line
+		final String rfqResponseLine_UUID = syncQtyChangeEvent.getRfq_uuid();
+		event.setC_RfQResponseLine_UUID(rfqResponseLine_UUID);
+
+		//
+		// Qty
+		event.setType(X_PMM_RfQResponse_ChangeEvent.TYPE_Quantity);
+		event.setQty(syncQtyChangeEvent.getQty());
+		
+		//
+		// Date
+		final Timestamp datePromised = syncQtyChangeEvent.getDay() == null ? null : TimeUtil.trunc(syncQtyChangeEvent.getDay(), TimeUtil.TRUNC_DAY);
+		event.setDatePromised(datePromised);
+
+		// Product
+		event.setPMM_Product(pmmProduct);
+
+		// Save
+		event.setProcessed(false);
+		event.setIsActive(true);
+		InterfaceWrapperHelper.save(event);
+
+		logger.debug("Imported {} to {}:\n{}", syncQtyChangeEvent, event);
+
+		// Notify agent that we got the message
+		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
+		SyncConfirmationsSender.forCurrentTransaction().confirm(syncQtyChangeEvent, serverEventId);
+	}
+
 }

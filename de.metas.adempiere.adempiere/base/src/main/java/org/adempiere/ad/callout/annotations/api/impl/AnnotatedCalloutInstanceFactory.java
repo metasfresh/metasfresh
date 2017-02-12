@@ -10,23 +10,21 @@ package org.adempiere.ad.callout.annotations.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +34,14 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 
 import de.metas.logging.LogManager;
 
@@ -50,7 +51,7 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-public class AnnotatedCalloutInstanceFactory
+public final class AnnotatedCalloutInstanceFactory
 {
 	// services
 	private final transient Logger logger = LogManager.getLogger(getClass());
@@ -60,7 +61,7 @@ public class AnnotatedCalloutInstanceFactory
 	private Callout.RecursionAvoidanceLevel recursionAvoidanceLevel;
 	private final Set<String> columnNames = new HashSet<String>();
 
-	private final transient Map<CalloutMethodPointcutKey, List<CalloutMethodPointcut>> mapPointcuts = new HashMap<CalloutMethodPointcutKey, List<CalloutMethodPointcut>>();
+	private final transient ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts = ArrayListMultimap.create();
 
 	public List<AnnotatedCalloutInstance> create()
 	{
@@ -82,36 +83,38 @@ public class AnnotatedCalloutInstanceFactory
 		}
 		else if (Callout.RecursionAvoidanceLevel.CalloutField == recursionAvoidanceLevel)
 		{
-			for (final Map.Entry<CalloutMethodPointcutKey, List<CalloutMethodPointcut>> pointcutEntry : mapPointcuts.entrySet())
+			for (final CalloutMethodPointcutKey key : mapPointcuts.keySet())
 			{
-				final CalloutMethodPointcutKey key = pointcutEntry.getKey();
 				final String columnName = key.getColumnName();
-				final List<CalloutMethodPointcut> pointcuts = pointcutEntry.getValue();
+				final List<CalloutMethodPointcut> pointcuts = mapPointcuts.get(key);
+				if (pointcuts.isEmpty())
+				{
+					continue;
+				}
 
 				final String id = annotatedCalloutObject.getClass().getName() + "#ColumnName=" + columnName;
-				final AnnotatedCalloutInstance calloutInstance = createCalloutInstance(id,
-						Collections.singleton(columnName),
-						Collections.singletonMap(key, pointcuts));
+				final Set<String> columnNames = ImmutableSet.of(columnName);
+				final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> instancePointcuts = ImmutableListMultimap.<CalloutMethodPointcutKey, CalloutMethodPointcut> builder()
+						.putAll(key, pointcuts)
+						.build();
+				final AnnotatedCalloutInstance calloutInstance = createCalloutInstance(id, columnNames, instancePointcuts);
 				calloutInstances.add(calloutInstance);
 			}
 		}
 		else if (Callout.RecursionAvoidanceLevel.CalloutMethod == recursionAvoidanceLevel)
 		{
-			for (final Map.Entry<CalloutMethodPointcutKey, List<CalloutMethodPointcut>> pointcutEntry : mapPointcuts.entrySet())
+			for (final Map.Entry<CalloutMethodPointcutKey, CalloutMethodPointcut> e : mapPointcuts.entries())
 			{
-				final CalloutMethodPointcutKey key = pointcutEntry.getKey();
+				final CalloutMethodPointcutKey key = e.getKey();
 				final String columnName = key.getColumnName();
+				final CalloutMethodPointcut pointcut = e.getValue();
 
-				for (final CalloutMethodPointcut pointcut : pointcutEntry.getValue())
-				{
-					final String id = annotatedCalloutObject.getClass().getName() + "#Method=" + pointcut.getMethod().getName();
-					final AnnotatedCalloutInstance calloutInstance = createCalloutInstance(id,
-							Collections.singleton(columnName),
-							Collections.singletonMap(key, Collections.singletonList(pointcut)));
-					calloutInstances.add(calloutInstance);
-				}
+				final String id = annotatedCalloutObject.getClass().getName() + "#Method=" + pointcut.getMethod().getName();
+				final ImmutableSet<String> columnNames = ImmutableSet.of(columnName);
+				final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> instancePointcuts = ImmutableListMultimap.of(key, pointcut);
+				final AnnotatedCalloutInstance calloutInstance = createCalloutInstance(id, columnNames, instancePointcuts);
+				calloutInstances.add(calloutInstance);
 			}
-
 		}
 		else
 		{
@@ -123,7 +126,7 @@ public class AnnotatedCalloutInstanceFactory
 
 	private final AnnotatedCalloutInstance createCalloutInstance(final String id,
 			final Set<String> columnNames,
-			final Map<CalloutMethodPointcutKey, List<CalloutMethodPointcut>> mapPointcuts)
+			final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts)
 	{
 		return new AnnotatedCalloutInstance(id, tableName, columnNames, annotatedCalloutObject, mapPointcuts);
 	}
@@ -166,17 +169,10 @@ public class AnnotatedCalloutInstanceFactory
 		// * log warning if production mode
 		if (!tableName.equals(annotatedClass.getSimpleName()))
 		{
-			final CalloutInitException ex = new CalloutInitException("According to metas best practices,"
+			new CalloutInitException("According to metas best practices,"
 					+ "Callouts shall have the same name as the table."
-					+ " Please rename class " + annotatedClass + " to " + tableName);
-			if (Services.get(IDeveloperModeBL.class).isEnabled())
-			{
-				throw ex;
-			}
-			else
-			{
-				logger.warn(ex.getLocalizedMessage(), ex);
-			}
+					+ " Please rename class " + annotatedClass + " to " + tableName)
+							.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 
 		recursionAvoidanceLevel = annCallout.recursionAvoidanceLevel();
@@ -270,25 +266,11 @@ public class AnnotatedCalloutInstanceFactory
 		// Add pointcut to map
 		for (final String columnName : pointcut.getColumnNames())
 		{
-			final CalloutMethodPointcutKey key = mkKey(pointcut, columnName);
-			List<CalloutMethodPointcut> pointcutsForKey = mapPointcuts.get(key);
-			if (pointcutsForKey == null)
-			{
-				pointcutsForKey = new ArrayList<>();
-				mapPointcuts.put(key, pointcutsForKey);
-			}
-			pointcutsForKey.add(pointcut);
-
+			final CalloutMethodPointcutKey key = CalloutMethodPointcutKey.of(columnName);
+			mapPointcuts.put(key, pointcut);
 			columnNames.add(columnName);
 		}
 
 		logger.debug("Loaded {}", pointcut);
 	}
-
-	private final CalloutMethodPointcutKey mkKey(final CalloutMethodPointcut pointcut, final String columnName)
-	{
-		final CalloutMethodPointcutKey key = new CalloutMethodPointcutKey(columnName);
-		return key;
-	}
-
 }

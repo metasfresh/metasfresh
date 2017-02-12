@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 
 /*
  * #%L
@@ -33,7 +37,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.POInfo;
@@ -41,6 +47,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 
 public class LanguageDAO implements ILanguageDAO
@@ -50,6 +57,49 @@ public class LanguageDAO implements ILanguageDAO
 	private static final String SQL_retriveBaseLanguage_1P = "SELECT " + I_AD_Language.COLUMNNAME_AD_Language
 			+ " FROM " + I_AD_Language.Table_Name
 			+ " WHERE " + I_AD_Language.COLUMNNAME_IsBaseLanguage + "=?";
+
+	private static final IQueryOrderBy ORDERBY_BaseLanguage_SystemLanguage_First = Services.get(IQueryBL.class)
+			.createQueryOrderByBuilder(I_AD_Language.class)
+			.addColumn(I_AD_Language.COLUMNNAME_IsBaseLanguage, Direction.Descending, Nulls.Last)
+			.addColumn(I_AD_Language.COLUMNNAME_IsSystemLanguage, Direction.Descending, Nulls.Last)
+			.addColumn(I_AD_Language.COLUMNNAME_AD_Language, Direction.Ascending, Nulls.Last)
+			.createQueryOrderBy();
+
+	@Override
+	@Cached(cacheName = I_AD_Language.Table_Name)
+	public List<I_AD_Language> retrieveAvailableLanguages(@CacheCtx final Properties ctx, final int clientId)
+	{
+		final IQueryBuilder<I_AD_Language> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
+				.addInArrayOrAllFilter(I_AD_Language.COLUMNNAME_AD_Client_ID, 0, clientId)
+				.addOnlyActiveRecordsFilter();
+
+		// Only Base or System languages
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsBaseLanguage, true)
+				.addEqualsFilter(I_AD_Language.COLUMNNAME_IsSystemLanguage, true);
+
+		// Ordered by Name
+		queryBuilder.orderBy()
+				.addColumn(I_AD_Language.COLUMNNAME_Name)
+				.addColumn(I_AD_Language.COLUMNNAME_AD_Language);
+
+		return queryBuilder.create().listImmutable(I_AD_Language.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_AD_Language.Table_Name + "#AvailableForMatching")
+	public List<String> retrieveAvailableAD_LanguagesForMatching(@CacheCtx final Properties ctx)
+	{
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		return retrieveAvailableLanguages(ctx, adClientId)
+				.stream()
+				.sorted(ORDERBY_BaseLanguage_SystemLanguage_First.getComparator())
+				.map(adLanguageModel -> adLanguageModel.getAD_Language())
+				.collect(GuavaCollectors.toImmutableList());
+
+	}
 
 	@Override
 	public String retrieveBaseLanguage()
@@ -112,7 +162,7 @@ public class LanguageDAO implements ILanguageDAO
 			{
 				continue;
 			}
-			
+
 			try
 			{
 				addRemoveLanguageTranslations(language, true);

@@ -38,7 +38,7 @@ import org.junit.Assert;
 /**
  * {@link I_M_AttributeInstance} expectation.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class AttributeInstanceExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>

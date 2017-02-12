@@ -13,18 +13,18 @@ package org.adempiere.invoice.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -55,7 +55,7 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice, String trxName);
-	
+
 	IQueryBuilder<I_C_InvoiceLine> retrieveLinesQuery(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceLine> retrieveLines(I_M_InOutLine inoutLine);
@@ -114,7 +114,8 @@ public interface IInvoiceDAO extends ISingletonService
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
 
 	/**
-	 * Retrieves the invoice that has crediMemo's ID as Ref_CreditMemo.<br> Never returns <code>null</code>.
+	 * Retrieves the invoice that has crediMemo's ID as Ref_CreditMemo.<br>
+	 * Never returns <code>null</code>.
 	 * This method retrieves an iterator of invoices that have this ref_creditMemo.<br>
 	 * At the moment, there shouldn't be more than one, but in the future, the possibility of allocating several invoices against the same credit memo is not out of question.
 	 * 
@@ -124,7 +125,8 @@ public interface IInvoiceDAO extends ISingletonService
 	Iterator<I_C_Invoice> retrieveParentInvoiceForCreditMemo(I_C_Invoice creditMemo);
 
 	/**
-	 * Retrieves the invoice that has the ID of the adjustmentCharge as Ref_AdjustmentCharge_ID.<br> Never returns <code>null</code>.
+	 * Retrieves the invoice that has the ID of the adjustmentCharge as Ref_AdjustmentCharge_ID.<br>
+	 * Never returns <code>null</code>.
 	 * This method retrieves an iterator of invoices that have this Ref_AdjustmentCharge_ID.<br>
 	 * Similar with <code>org.adempiere.invoice.service.IInvoiceDAO.retrieveReversalLine(I_C_InvoiceLine, int)</code>
 	 * 
@@ -132,4 +134,14 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveParentInvoiceForAdjustmentCharge(I_C_Invoice adjustmentCharge);
+
+	/**
+	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
+	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
+	 * 
+	 * @param ctx
+	 * @param startDate
+	 * @return
+	 */
+	List<I_C_Invoice> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 }

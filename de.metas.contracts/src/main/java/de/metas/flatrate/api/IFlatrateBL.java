@@ -13,11 +13,11 @@ package de.metas.flatrate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -91,14 +92,15 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Create a new flatrate term using the given term as template. The new term's C_Year will be the year after the given term's C_Year.
 	 *
-	 * <b>IMPORTANT:</b> method might set the given term's C_FlatrateTerm_Next_ID, but won't save it!
+	 * <b>IMPORTANT:</b> the method might set the given term's C_FlatrateTerm_Next_ID, but won't save it!
 	 *
 	 * @param term
 	 * @param forceExtend will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
-	 * @param forceComplete will complete a new term (if one has been created), even if it has <code>IsAutoComplete='N'</code>
+	 * @param completeNewTerm optional, may be <code>null</code>. If not <code>null</code>, then this value will decide if the new term is completed.
+	 *            If <code>null</code>, then {@link I_C_Flatrate_Transition#isAutoCompleteNewTerm()} of the given <code>term</code> transition will decide.
 	 * @param ol if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
-	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, boolean forceComplete, I_C_OrderLine ol);
+	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, Boolean completeNewTerm, final Timestamp nextTermStartDate, I_C_OrderLine ol);
 
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}
@@ -154,20 +156,37 @@ public interface IFlatrateBL extends ISingletonService
 	 * </ul>
 	 * Note that as of now, the log messages are non-localized EN strings.
 	 *
-	 * @param flatrateConditions
+	 * @param context
+	 * @param the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
+	 * @param conditions
 	 * @param startDate the start date for the new term
 	 * @param userInCharge may be <code>null</code>. If set, then this value is used for <code>C_FLatrate_Term.AD_User_InCharge_ID</code>. Otherwise, the method tries
 	 *            <code>C_BPartner.SalesRep_ID</code>
 	 * @param product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
 	 * @param completeIt if <code>true</code>, then attempt to complete the new term
-	 * @param partner the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
 	 *
-	 * @return the newly created and completed term or <code>null</code>.
+	 * @return the newly created and completed term; never returns <code>null</code>
+	 * @throws AdempiereException in case of any error
 	 */
-	I_C_Flatrate_Term createTerm(
+	I_C_Flatrate_Term createTerm(IContextAware context,
 			I_C_BPartner bPartner,
-			I_C_Flatrate_Conditions flatrateConditions,
+			I_C_Flatrate_Conditions conditions,
 			Timestamp startDate,
 			I_AD_User userInCharge,
-			I_M_Product product, boolean completeIt);
+			I_M_Product product,
+			boolean completeIt);
+
+	/**
+	 * Complete given contract.
+	 *
+	 * @param term the contract
+	 */
+	void complete(I_C_Flatrate_Term term);
+
+	/**
+	 * Void given contract
+	 *
+	 * @param term
+	 */
+	void voidIt(I_C_Flatrate_Term term);
 }

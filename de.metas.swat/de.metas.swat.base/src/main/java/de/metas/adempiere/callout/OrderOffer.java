@@ -29,11 +29,9 @@ package de.metas.adempiere.callout;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.MDocType;
 import org.compiere.util.TimeUtil;
 
@@ -45,10 +43,10 @@ import de.metas.adempiere.model.I_C_Order;
  */
 public class OrderOffer extends CalloutEngine
 {
-	public String setOfferValidDays (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String setOfferValidDays (final ICalloutField calloutField)
 	{
-		I_C_Order order = GridTabWrapper.create(mTab, I_C_Order.class);
-		setOfferValidDate(ctx, order);
+		I_C_Order order = calloutField.getModel(I_C_Order.class);
+		setOfferValidDate(calloutField.getCtx(), order);
 		return "";
 	}
 	

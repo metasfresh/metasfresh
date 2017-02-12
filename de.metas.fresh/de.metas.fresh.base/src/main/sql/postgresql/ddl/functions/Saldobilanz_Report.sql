@@ -7,6 +7,7 @@ DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc charac
 
 DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN p_IncludePostingTypeStatistical char(1),  IN ad_org_id numeric(10,0));
 DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1));
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1), IN p_ExcludePostingTypeYearEnd char(1));
 
 DROP TABLE IF EXISTS report.saldobilanz_Report;
 
@@ -44,7 +45,7 @@ WITH (
 	OIDS=FALSE
 );
 
-CREATE FUNCTION report.saldobilanz_Report(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N') RETURNS SETOF report.saldobilanz_Report AS
+CREATE FUNCTION report.saldobilanz_Report(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N',  p_ExcludePostingTypeYearEnd char(1) = 'N') RETURNS SETOF report.saldobilanz_Report AS
 $BODY$
 SELECT
 	parentname1,
@@ -62,9 +63,9 @@ SELECT
 	(case when IsConvertToEUR
 		then currencyConvert(a.SameYearSum
 			, a.C_Currency_ID -- p_curfrom_id
-			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR') -- p_curto_id
+			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') -- p_curto_id
 			, a.enddate::date -- p_convdate
-			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
+			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P' AND isActive = 'Y') -- p_conversiontype_id
 			, a.AD_Client_ID
 			, $4 --ad_org_id
 			)
@@ -97,8 +98,8 @@ FROM
 			, lvl.Value as Value
 			, ev.AccountType
 			
-			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, p.enddate::date, $4, $5)).Balance * ev.Multiplicator as SameYearSum
-			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, $4, $5)).Balance * ev.Multiplicator as LastYearSum
+			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, $1::date, $4, $5, $6)).Balance * ev.Multiplicator as SameYearSum
+			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, $4, $5, $6)).Balance * ev.Multiplicator as LastYearSum
 			
 			-- Hardcoding replaced
 			
@@ -112,7 +113,7 @@ FROM
 			ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
 				(
 					exists
-					(select 1 from C_ElementValue elv where lvl.C_ElementValue_ID = elv.C_ElementValue_ID and elv.ShowIntCurrency = 'Y' and elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR'))
+					(select 1 from C_ElementValue elv where lvl.C_ElementValue_ID = elv.C_ElementValue_ID and elv.ShowIntCurrency = 'Y' and elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') and elv.isActive = 'Y')
 				)		
 			END			
 			AS IsConvertToEUR
@@ -127,7 +128,7 @@ FROM
 		FROM
 			C_Period p 
 				-- Get last period of previous year
-				LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive (p.C_Period_ID, p.PeriodNo::int))
+				LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive (p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
 			--
 			, C_Element_Levels lvl
 				INNER JOIN (
@@ -138,15 +139,17 @@ FROM
 					, ad_client_id
 					, AccountType
 					FROM C_ElementValue
+					WHERE isActive = 'Y'
 				) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
-				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID)
-				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID)
+				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
+				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID) AND acs.isActive = 'Y'
 		--
 		WHERE true
 			-- Period: determine it by DateAcct
 			AND p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, $1 ) 
 			-- Shall we Show default accounts?
 			AND (CASE WHEN $2='Y' THEN true ELSE lvl1_value != 'ZZ' END)
+			AND p.isActive = 'Y'
 			
 	) a
 ORDER BY

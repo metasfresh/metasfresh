@@ -24,19 +24,17 @@ package org.adempiere.db;
 
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
-import org.compiere.model.Query;
 
 /**
  * 
  * @author ts
- * @deprecated use {@link Query}
+ * @deprecated use {@link IQueryBL}
  */
 @Deprecated
 public interface IDatabaseBL extends ISingletonService {
@@ -54,14 +52,11 @@ public interface IDatabaseBL extends ISingletonService {
 	 *            Array of prepared statement parameters. May be empty, but not
 	 *            null.
 	 * @param clazz
-	 *            the real po type (e.g. MOrder oder X_C_Order). Needs to have a
-	 *            constructor with three parameters: <li>{@link Properties}, <li>
-	 *            {@link ResultSet}, <li>{@link String}
+	 *            the real po type (e.g. MOrder or X_C_Order).
 	 * @param trxName
 	 * @return
 	 */
-	<T extends PO> List<T> retrieveList(String sql, Object[] params,
-			Class<T> clazz, String trxName);
+	<T extends PO> List<T> retrieveList(String sql, Object[] params, Class<T> clazz, String trxName);
 
 	/**
 	 * Similar to {@link #retrieveList(String, Object[], Class, String)}, but
@@ -74,7 +69,5 @@ public interface IDatabaseBL extends ISingletonService {
 	 * @param trxName
 	 * @return
 	 */
-	<T extends PO> Map<Integer, T> retrieveMap(String sql, Object[] params,
-			Class<T> clazz, String trxName);
-
+	<T extends PO> Map<Integer, T> retrieveMap(String sql, Object[] params, Class<T> clazz, String trxName);
 }

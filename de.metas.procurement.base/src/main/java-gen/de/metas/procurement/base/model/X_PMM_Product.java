@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1505030657L;
+	private static final long serialVersionUID = 1783161338L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -22,7 +22,6 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
       super (ctx, PMM_Product_ID, trxName);
       /** if (PMM_Product_ID == 0)
         {
-			setM_HU_PI_Item_Product_ID (0);
 			setM_Product_ID (0);
 			setPMM_Product_ID (0);
         } */
@@ -298,6 +297,28 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	public java.lang.String getProductValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Gültig ab.

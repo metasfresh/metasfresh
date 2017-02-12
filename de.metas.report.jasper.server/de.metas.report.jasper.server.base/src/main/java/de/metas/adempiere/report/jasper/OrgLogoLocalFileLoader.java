@@ -13,15 +13,14 @@ package de.metas.adempiere.report.jasper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +28,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
+
+import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,7 +38,9 @@ import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import com.google.common.base.Optional;
@@ -102,6 +105,25 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		}
 
 		final Properties ctx = Env.getCtx();
+
+		//
+		// Get Logo from Org's BPartner
+		// task FRESH-356: get logo also from org's bpartner if is set
+		{
+			final I_AD_Org org = Services.get(IOrgDAO.class).retrieveOrg(ctx, adOrgId);
+			if (org != null)
+			{
+				final I_C_BPartner orgBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
+				if (orgBPartner != null)
+				{
+					final I_AD_Image orgBPartnerLogo = orgBPartner.getLogo();
+					if (orgBPartnerLogo != null && orgBPartnerLogo.getAD_Image_ID() > 0)
+					{
+						return orgBPartnerLogo;
+					}
+				}
+			}
+		}
 
 		//
 		// Get Org Logo

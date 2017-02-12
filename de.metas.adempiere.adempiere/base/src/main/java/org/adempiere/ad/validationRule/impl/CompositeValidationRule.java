@@ -10,82 +10,77 @@ package org.adempiere.ad.validationRule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.util.Check;
-import org.compiere.util.NamePair;
+import org.adempiere.ad.validationRule.NamePairPredicates;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
- * Composite validation rule consist of a collection of child validation rules.
- * 
+ * Immutable composite validation rule consist of a collection of child validation rules.
+ *
  * @author tsa
- * 
+ *
  */
-public class CompositeValidationRule implements IValidationRule
+public final class CompositeValidationRule implements IValidationRule
 {
-	private final List<IValidationRule> rules = new ArrayList<IValidationRule>();
-	private final List<IValidationRule> rulesRO = Collections.unmodifiableList(rules);
-
-	private boolean immutable = true;
-
-	public void addValidationRule(IValidationRule rule)
+	public static final IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
 	{
-		if (rule == null)
-		{
-			return;
-		}
-
-		if (rule instanceof NullValidationRule)
-		{
-			return;
-		}
-
-		if (rules.contains(rule))
-		{
-			return;
-		}
-
-		//
-		// Update immutable flag
-		this.immutable = this.immutable && rule.isImmutable();
-
-		rules.add(rule);
+		return builder()
+				.add(rule1)
+				.add(rule2)
+				.build();
 	}
 
-	public List<IValidationRule> getValidationRules()
+	public static final Builder builder()
 	{
-		return rulesRO;
+		return new Builder();
 	}
 
-	@Override
-	public boolean isValidationRequired(IValidationContext evalCtx)
-	{
-		for (final IValidationRule rule : rules)
-		{
-			if (rule.isValidationRequired(evalCtx))
-			{
-				return true;
-			}
-		}
+	private final List<IValidationRule> rules;
+	private final boolean immutable;
+	private final IStringExpression prefilterWhereClause;
+	private final INamePairPredicate postQueryPredicates;
 
-		return false;
+	private Set<String> _allParameters; // lazy
+	
+	private CompositeValidationRule(final Builder builder)
+	{
+		super();
+		rules = ImmutableList.copyOf(builder.rules); // at this point, we assume that we have more than one rule
+		immutable = builder.immutable;
+		prefilterWhereClause = builder.buildPrefilterWhereClause();
+		postQueryPredicates = builder.postQueryPredicates.build();
+	}
+
+	private List<IValidationRule> getValidationRules()
+	{
+		return rules;
+	}
+
+	public boolean isEmpty()
+	{
+		return rules.isEmpty();
 	}
 
 	/**
@@ -98,86 +93,124 @@ public class CompositeValidationRule implements IValidationRule
 	}
 
 	@Override
-	public String getPrefilterWhereClause(IValidationContext evalCtx)
+	public Set<String> getAllParameters()
 	{
-		final StringBuilder wc = new StringBuilder();
-		for (final IValidationRule rule : rules)
+		if(_allParameters == null)
 		{
-			final String ruleWhereClause = rule.getPrefilterWhereClause(evalCtx);
-			if (Check.isEmpty(ruleWhereClause, true))
-			{
-				continue;
-			}
-
-			if (wc.length() > 0)
-			{
-				wc.append(" AND ");
-			}
-			wc.append("(").append(ruleWhereClause).append(")");
+			_allParameters = ImmutableSet.<String>builder()
+					.addAll(prefilterWhereClause.getParameters())
+					.addAll(postQueryPredicates.getParameters())
+					.build();
 		}
-
-		return wc.toString();
+		return _allParameters;
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public IStringExpression getPrefilterWhereClause()
 	{
-		final List<String> parameters = new ArrayList<String>();
-
-		//
-		// Add parameters
-		for (IValidationRule rule : rules)
-		{
-			for (String p : rule.getParameters(evalCtx))
-			{
-				if (!parameters.contains(p))
-				{
-					parameters.add(p);
-				}
-			}
-		}
-
-		return parameters;
+		return prefilterWhereClause;
 	}
-
+	
 	@Override
-	public boolean accept(IValidationContext evalCtx, NamePair item)
+	public INamePairPredicate getPostQueryFilter()
 	{
-		for (final IValidationRule rule : rules)
-		{
-			if (!rule.accept(evalCtx, item))
-			{
-				return false;
-			}
-		}
-
-		return true;
+		return postQueryPredicates;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "CompositeValidationRule [rules=" + rules + "]";
+		return MoreObjects.toStringHelper(this)
+				.addValue(rules)
+				.toString();
 	}
 
-	/**
-	 * For composite validation rules, returns the first not null valid value of its children.
-	 * 
-	 * @param currentValue Current value of the field to be changed.
-	 * @return
-	 */
-	@Override
-	public NamePair getValidValue(final Object currentValue)
+	public static final class Builder
 	{
-		for (final IValidationRule rule : rules)
+		private final List<IValidationRule> rules = new ArrayList<>();
+		private final NamePairPredicates.Composer postQueryPredicates = NamePairPredicates.compose();
+		private boolean immutable = true;
+
+		private Builder()
 		{
-			final NamePair value = rule.getValidValue(currentValue);
-			if (value != null)
+			super();
+		}
+
+		public IValidationRule build()
+		{
+			if (rules.isEmpty())
 			{
-				return value;
+				return NullValidationRule.instance;
+			}
+			else if (rules.size() == 1)
+			{
+				return rules.get(0);
+			}
+			else
+			{
+				return new CompositeValidationRule(this);
 			}
 		}
 		
-		return null;
+		private IStringExpression buildPrefilterWhereClause()
+		{
+			final CompositeStringExpression.Builder builder = CompositeStringExpression.builder();
+			for (final IValidationRule rule : rules)
+			{
+				final IStringExpression ruleWhereClause = rule.getPrefilterWhereClause();
+				if (ruleWhereClause == null || ruleWhereClause ==IStringExpression.NULL)
+				{
+					continue;
+				}
+
+				builder.appendIfNotEmpty(" AND ");
+				builder.append("(").append(ruleWhereClause).append(")");
+			}
+
+			return builder.build();
+		}
+		
+		public Builder add(final IValidationRule rule)
+		{
+			final boolean explodeComposite = false;
+			add(rule, explodeComposite);
+			return this;
+		}
+
+		public Builder addExploded(final IValidationRule rule)
+		{
+			final boolean explodeComposite = true;
+			add(rule, explodeComposite);
+			return this;
+		}
+
+		private Builder add(final IValidationRule rule, final boolean explodeComposite)
+		{
+			// Don't add null rules
+			if (NullValidationRule.isNull(rule))
+			{
+				return this;
+			}
+
+			// Don't add if already exists
+			if (rules.contains(rule))
+			{
+				return this;
+			}
+
+			if (explodeComposite && rule instanceof CompositeValidationRule)
+			{
+				final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
+				compositeRule.getValidationRules().forEach(includedRule -> add(includedRule, explodeComposite));
+			}
+			else
+			{
+				rules.add(rule);
+				immutable = immutable && rule.isImmutable();
+				postQueryPredicates.add(rule.getPostQueryFilter());
+			}
+
+			return this;
+		}
 	}
 }

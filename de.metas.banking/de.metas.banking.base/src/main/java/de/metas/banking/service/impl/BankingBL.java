@@ -8,15 +8,16 @@ import java.util.List;
 
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
 import org.adempiere.util.MiscUtils;
+import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRecurrentPaymentHistory;
 import org.compiere.model.MRecurrentPaymentLine;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public class BankingBL implements IBankingBL
 		final MInvoice invoice = new MInvoice(line.getCtx(), 0, line.get_TrxName());
 		invoice.setAD_Org_ID(line.getAD_Org_ID());
 
-		final I_C_Invoice extInvoice = POWrapper.create(invoice, I_C_Invoice.class);
+		final I_C_Invoice extInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		extInvoice.setC_RecurrentPaymentLine_ID(line.get_ID());
 
 		final Timestamp dateInvoiced = SystemTime.asTimestamp();
@@ -129,7 +130,10 @@ public class BankingBL implements IBankingBL
 		invoice.setSalesRep_ID(line.getSalesRep_ID());
 		invoice.setC_PaymentTerm_ID(line.getC_PaymentTerm_ID());
 		invoice.setIsSOTrx(false); // always vendor invoice
-		invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_DirectDeposit);
+		
+		// FRESH-488: Set the payment rule 
+		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		invoice.setPaymentRule(paymentRuleToUse);
 
 		// metas: using DocBaseType rather than sysconfig
 		invoice.setC_DocTypeTarget_ID(Constants.DOCBASETYPE_AVIinvoice);

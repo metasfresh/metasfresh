@@ -32,7 +32,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
@@ -40,6 +39,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.jms.IJMSService;
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IStatusService;
+import de.metas.session.jaxrs.StatusServiceResult;
 
 /**
  * Adempiere Connection Descriptor
@@ -118,7 +118,7 @@ public final class CConnection implements Serializable, Cloneable
 				log.error("Failed loading the connection from attributes: {}", attributes, e);
 			}
 		}
-		
+
 		//
 		// Ask user to provide the configuration if not already configured
 		while(cc == null || !cc.isDatabaseOK())
@@ -141,7 +141,7 @@ public final class CConnection implements Serializable, Cloneable
 
 	/**
 	 * Creates a connection configuration by asking the user.
-	 * 
+	 *
 	 * @param ccTemplate connection template (optional)
 	 * @return user created {@link CConnection}; never returns <code>null</code>
 	 * @throws DBNoConnectionException if user canceled the settings panel
@@ -156,7 +156,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		else
 		{
-			 ccTemplateToUse = ccTemplate;			
+			 ccTemplateToUse = ccTemplate;
 		}
 
 		// Ask the user (UI!) to provide the parameters
@@ -169,7 +169,7 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			throw new DBNoConnectionException("User canceled the connection dialog");
 		}
-		
+
 		return cc;
 	}
 
@@ -211,8 +211,6 @@ public final class CConnection implements Serializable, Cloneable
 	 * don't access directly, but use {@link #getStatusServiceOrNull()} instead.
 	 */
 	private IStatusService m_statusServiceEndpoint = null;
-
-	private final static String SECURITY_PRINCIPAL = "org.adempiere.security.principal";
 
 	/*************************************************************************
 	 * Get Name
@@ -384,7 +382,9 @@ public final class CConnection implements Serializable, Cloneable
 		try
 		{
 			Services.get(IJMSService.class).updateConfiguration();
-			m_version = statusService.getDateVersion();
+			final StatusServiceResult status = statusService.getStatus();
+
+			m_version = status.getDateVersion();
 			m_okApps = true;
 		}
 		catch (Throwable t)
@@ -622,7 +622,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public String getType()
 	{
-		return attrs.getDbType();
+		return Database.DB_POSTGRESQL;
 	}
 
 	/**
@@ -810,12 +810,12 @@ public final class CConnection implements Serializable, Cloneable
 			DB.close(conn);
 		}
 	} 	// testDatabase
-	
+
 	/**
 	 * Tests database connection, if not already tested.
-	 * 
+	 *
 	 * This method never throws an exception.
-	 * 
+	 *
 	 * @return true if database connection is OK
 	 */
 	private final boolean testDatabaseIfNeeded()
@@ -1278,14 +1278,17 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			throw new IllegalArgumentException("AppsServer was NULL");
 		}
-		setType(svr.getDbType());
-		setDbHost(svr.getDbHost());
-		setDbPort(svr.getDbPort());
-		setDbName(svr.getDbName());
-		setDbUid(svr.getDbUid());
-		setDbPwd(svr.getDbPwd());
 
-		m_version = svr.getDateVersion();
+		final StatusServiceResult status = svr.getStatus();
+
+		setType(status.getDbType());
+		setDbHost(status.getDbHost());
+		setDbPort(status.getDbPort());
+		setDbName(status.getDbName());
+		setDbUid(status.getDbUid());
+		setDbPwd(status.getDbPwd());
+
+		m_version = status.getDateVersion();
 		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
 
@@ -1335,16 +1338,6 @@ public final class CConnection implements Serializable, Cloneable
 		return Boolean.getBoolean(SERVER_EMBEDDED_PROPERTY); // return the system property
 	}
 
-	public void setAppServerCredential(String principal, String credential)
-	{
-		SecurityPrincipal sp = new SecurityPrincipal();
-		sp.principal = principal;
-		sp.credential = credential;
-		Env.getCtx().put(SECURITY_PRINCIPAL, sp);
-		// m_iContext = null;
-		// m_env = null;
-	}
-
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -1355,7 +1348,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Implementors provide a IStatusService proxy, implementation or whatever that can be used by the CConnection to talk to the application server.
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	public interface IStatusServiceEndPointProvider

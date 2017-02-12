@@ -53,7 +53,7 @@ import org.compiere.swing.CPanel;
  * </ul>
  *
  * @author Jorg Janke
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 public final class ConfirmPanel extends CPanel
 {

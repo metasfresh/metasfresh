@@ -45,10 +45,10 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 public abstract class AbstractDocActionBL implements IDocActionBL
@@ -127,7 +127,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		if (InterfaceWrapperHelper.isNew(doc))
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)
-					.throwOrLogWarningIfDeveloperMode(logger);
+					.throwIfDeveloperModeOrLogWarningElse(logger);
 			InterfaceWrapperHelper.save(doc);
 		}
 		
@@ -265,11 +265,11 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	{
 		final DocAction doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
-
 		return isStatusOneOf(docStatus,
 				DocAction.STATUS_Reversed,
 				DocAction.STATUS_Voided);
 	}
+
 
 	@Override
 	public String getDocStatusOrNull(Properties ctx, int adTableId, int recordId)

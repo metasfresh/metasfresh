@@ -26,7 +26,7 @@ package de.metas.materialtracking.model;
 /**
  * Use {@link org.adempiere.model.InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)} to get an instance.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IMaterialTrackingAware

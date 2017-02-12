@@ -34,7 +34,7 @@ import de.metas.adempiere.model.I_M_ProductPrice;
 /**
  * Adapter for {@link IPricingRule} which allows developer to implement only the mandatory methods.
  * 
- * It is highly recomended to extend this class instead of extending the {@link IPricingRule} interface.
+ * It is highly recommended to extend this class instead of extending the {@link IPricingRule} interface.
  * 
  * @author tsa
  */

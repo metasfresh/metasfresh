@@ -22,10 +22,11 @@ package org.adempiere.util.api;
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+
+import de.metas.i18n.ITranslatableString;
 
 public interface IMsgBL extends ISingletonService
 {
@@ -73,16 +74,38 @@ public interface IMsgBL extends ISingletonService
 	/**
 	 * "Translate" text.
 	 * 
-	 * <pre>
-	 * 	- Check AD_Message.AD_Message 	->	MsgText
-	 * 	- Check AD_Element.ColumnName	->	Name
-	 * </pre>
+	 * <ul>
+	 * <li>Checks AD_Message.AD_Message, if exists returns AD_Message.MsgText
+	 * <li>Checks AD_Element.ColumnName, if exists returns AD_Element.Name
+	 * </ul>
 	 * 
-	 * @param ctx Context
-	 * @param text Text - MsgText or Element Name
+	 * @param ctx context, used to fetch the AD_Language and IsSOTrx flag
+	 * @param text text to be translated
 	 * @return translated text or original text if not found
 	 */
 	String translate(Properties ctx, String text);
 
 	String translate(Properties ctx, String text, boolean isSOTrx);
+
+	/**
+	 * "Translate" text.
+	 * 
+	 * <ul>
+	 * <li>Checks AD_Message.AD_Message, if exists returns AD_Message.MsgText
+	 * <li>Checks AD_Element.ColumnName, if exists returns AD_Element.Name
+	 * </ul>
+	 * 
+	 * @param text text to be translated
+	 * @return translatable string
+	 * @see #translate(Properties, String, boolean)
+	 */
+	ITranslatableString translatable(String text);
+
+	/**
+	 * @param adMessage AD_Message
+	 * @param msgParameters optional AD_Message parameters
+	 * @return AD_Message as translatable string
+	 */
+	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
+
 }

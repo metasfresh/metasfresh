@@ -31,10 +31,10 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Update {@link I_C_Dunning_Candidate#COLUMNNAME_DunningDate} field for selected records.
@@ -42,7 +42,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
  * @author tsa
  * 
  */
-public class C_Dunning_Candidate_SetDunningGrace extends SvrProcess
+public class C_Dunning_Candidate_SetDunningGrace extends JavaProcess
 {
 	private static final String PARAM_DunningGrace = I_C_Dunning_Candidate.COLUMNNAME_DunningGrace;
 	private Timestamp p_DunningGrace = null;
@@ -50,7 +50,7 @@ public class C_Dunning_Candidate_SetDunningGrace extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{

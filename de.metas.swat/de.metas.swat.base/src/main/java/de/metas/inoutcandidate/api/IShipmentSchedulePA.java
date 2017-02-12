@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -40,6 +41,7 @@ import org.compiere.model.MOrderLine;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.storage.IStorageSegment;
 
 /**
@@ -50,16 +52,6 @@ import de.metas.storage.IStorageSegment;
  */
 public interface IShipmentSchedulePA extends ISingletonService
 {
-	/**
-	 * Generate a new AD_PInstance_ID to be used in shipment schedule locking and invalidation.
-	 *
-	 * You will need this method when shipment schedule processing code is called from a place where we don't have an AD_PInstance_ID (i.e. from a not-AD_Process code).
-	 *
-	 * @param ctx
-	 * @return new unique AD_PInstance_ID
-	 */
-	int createADPInstanceId(Properties ctx);
-
 	/**
 	 *
 	 * @param orderLineId
@@ -238,7 +230,9 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/** Untag M_ShipmentSchedule_Recompute records which were tagged with given tag */
 	void releaseRecomputeMarker(int adPInstanceId, String trxName);
 
-	/** @return a list of M_ShipmentSchedule_IDs which are in M_ShipmentSchedule_ShipmentRun and there are flagged as processed */
+	/**
+	 * @return a list of M_ShipmentSchedule_IDs which are in M_ShipmentSchedule_ShipmentRun and there are flagged as processed
+	 */
 	List<Integer> retrieveProcessedShipmentRunIds(String trxName);
 
 	void deleteProcessedShipmentRunIds(List<Integer> processedShipmentRunIds, String trxName);
@@ -323,4 +317,20 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * @return the created queryBuilder
 	 */
 	IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(Properties ctx, IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter);
+
+	/**
+	 * Retrieve all the Shipment Schedules that the given invoice candidate is based on.
+	 * 
+	 * @param candidate
+	 * @return
+	 */
+	Set<I_M_ShipmentSchedule> retrieveForInvoiceCandidate(I_C_Invoice_Candidate candidate);
+
+	/**
+	 * Retrieve all the SHipment Schedules that the given inout line is based on
+	 * 
+	 * @param inoutLine
+	 * @return
+	 */
+	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
 }

@@ -13,11 +13,11 @@ package de.metas.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -34,6 +35,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 
 import de.metas.inout.IInOutDAO;
 
@@ -128,13 +130,13 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public IQueryBuilder<I_M_InOutLine> createUnprocessedShipmentLinesQuery(final Properties ctx)
 	{
-		// + "    AND io.DocStatus IN ('DR', 'IP','WC')"
-		// + "    AND io.IsSOTrx='Y'"
-		// + "    AND iol.AD_Client_ID=?";
+		// + " AND io.DocStatus IN ('DR', 'IP','WC')"
+		// + " AND io.IsSOTrx='Y'"
+		// + " AND iol.AD_Client_ID=?";
 
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus,
-						DocAction.STATUS_Drafted, // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
+						DocAction.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
 						// anymore, because they are already in a shipper-transportation
 						DocAction.STATUS_InProgress,
 						DocAction.STATUS_WaitingConfirmation)
@@ -155,5 +157,22 @@ public class InOutDAO implements IInOutDAO
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_PackingMaterial_InOutLine_ID, packingMaterialLine.getM_InOutLine_ID())
 				.orderBy().addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
 
+	}
+
+	@Override
+	public List<Integer> retrieveLinesWithQualityIssues(final I_M_InOut inOut)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<de.metas.inout.model.I_M_InOutLine> queryBuilder = queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOutLine.class, inOut)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
+				.addNotEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, null)
+				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, Env.ZERO);
+
+		return queryBuilder
+				.create()
+				.listIds();
 	}
 }

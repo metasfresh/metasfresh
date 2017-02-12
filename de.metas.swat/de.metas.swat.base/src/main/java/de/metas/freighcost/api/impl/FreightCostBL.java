@@ -28,8 +28,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,6 +47,7 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.adempiere.service.IOrderDAO;
@@ -56,6 +55,7 @@ import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 
 // This class was formerly known as de.metas.adempiere.service.impl.FreightCostSubscriptionBL
@@ -74,21 +74,20 @@ public class FreightCostBL implements IFreightCostBL
 	{
 		if (!X_C_Order.DELIVERYVIARULE_Shipper.equals(orderOrInOut.getDeliveryViaRule()))
 		{
-			logger.info("No freightcost because of deliveryViaRule={} (not 'shipper'); Order :{}"
-					, new Object[]{orderOrInOut.getDeliveryViaRule(), orderOrInOut});
+			logger.debug("No freightcost because of deliveryViaRule={} (not 'shipper'); Order :{}", orderOrInOut.getDeliveryViaRule(), orderOrInOut);
 			return true;
 		}
 
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(orderOrInOut.getC_BPartner(), I_C_BPartner.class);
 		if (bPartner == null)
 		{
-			logger.info("No freigtcost because order has no C_BPartner yet; Order :" + orderOrInOut);
+			logger.debug("No freigtcost because order has no C_BPartner yet; Order : {}", orderOrInOut);
 			return true;
 		}
 
 		if (X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(orderOrInOut.getFreightCostRule()))
 		{
-			logger.info("No freightcost because order has FreightCostRule='" + X_C_Order.FREIGHTCOSTRULE_FreightIncluded + "'; Order :" + orderOrInOut);
+			logger.debug("No freightcost because order has FreightCostRule='{}'; Order: {}", X_C_Order.FREIGHTCOSTRULE_FreightIncluded, orderOrInOut);
 			return true;
 		}
 
@@ -96,13 +95,13 @@ public class FreightCostBL implements IFreightCostBL
 
 		if (I_C_BPartner.POSTAGEFREE_Always.equals(postageFree))
 		{
-			logger.info("No freigtcost because of receiving c_bpartner has" + "postageFree=" + postageFree + "; Order :" + orderOrInOut);
+			logger.debug("No freigtcost because of receiving c_bpartner has postageFree={}; Order: {}", postageFree, orderOrInOut);
 			return true;
 		}
 
 		if (orderOrInOut.getM_Shipper_ID() <= 0)
 		{
-			logger.info("No freigtcost because M_Shipper_ID=" + orderOrInOut.getM_Shipper_ID());
+			logger.debug("No freigtcost because M_Shipper_ID={}", orderOrInOut.getM_Shipper_ID());
 			return true;
 		}
 		return false;
@@ -122,7 +121,7 @@ public class FreightCostBL implements IFreightCostBL
 		if (!(de.metas.adempiere.model.I_C_Order.FREIGHTCOSTRULE_Versandkostenpauschale.equals(order.getFreightCostRule())
 				|| X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule())))
 		{
-			logger.info(
+			logger.debug(
 					"Freigt cost is not computed because of FreightCostRule=" + order.getFreightCostRule()
 							+ " (not '" + de.metas.adempiere.model.I_C_Order.FREIGHTCOSTRULE_Versandkostenpauschale
 							+ "' or '" + X_C_Order.FREIGHTCOSTRULE_FixPrice
@@ -137,7 +136,7 @@ public class FreightCostBL implements IFreightCostBL
 			final List<I_C_OrderLine> lines = Services.get(IOrderDAO.class).retrieveOrderLines(order);
 			for (final I_C_OrderLine poLine : lines)
 			{
-				final I_C_OrderLine ol = (I_C_OrderLine)poLine;
+				final I_C_OrderLine ol = poLine;
 
 				final BigDecimal qty = poLine.getQtyOrdered();
 				orderValue = orderValue.add(ol.getPriceActual().multiply(qty));
@@ -203,7 +202,7 @@ public class FreightCostBL implements IFreightCostBL
 
 			if (X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(freightCostRule))
 			{
-				logger.info(poLine + " is free because it belongs to " + order
+				logger.debug(poLine + " is free because it belongs to " + order
 						+ " which has freight cost rule 'frieght included' ("
 						+ X_C_Order.FREIGHTCOSTRULE_FreightIncluded + ")");
 
@@ -221,7 +220,7 @@ public class FreightCostBL implements IFreightCostBL
 					{
 						if(freightCostFreeEvaluator.isFreighCostFree(iol))
 						{
-							logger.info(poLine + " is free because " + freightCostFreeEvaluator + " sais so");
+							logger.debug(poLine + " is free because " + freightCostFreeEvaluator + " sais so");
 							atLeastOneIsFree = true;
 							break;
 						}
@@ -239,7 +238,7 @@ public class FreightCostBL implements IFreightCostBL
 		}
 		if (atLeastOneIsFree)
 		{
-			logger.info("At least one shipment line is free for M_InOut_ID " + inOutId);
+			logger.debug("At least one shipment line is free for M_InOut_ID {}", inOutId);
 			return BigDecimal.ZERO;
 		}
 		return retrieveFreightCost(inOut.getCtx(), orderOrInOut, shipmentValue, inOut.getMovementDate(), inOut.get_TrxName());

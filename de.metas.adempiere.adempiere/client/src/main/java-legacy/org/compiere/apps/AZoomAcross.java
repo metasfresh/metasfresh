@@ -24,16 +24,23 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
+import org.adempiere.model.ZoomInfoFactory.IZoomSource;
+import org.adempiere.model.ZoomInfoFactory.POZoomSource;
+import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 
 /**
@@ -58,22 +65,26 @@ public class AZoomAcross
 	 */
 	public AZoomAcross(JComponent invoker, String tableName, final int windowID, MQuery query)
 	{
-		this(invoker, retrievePO(tableName, query), windowID);
+		this(invoker, retrieveZoomSourceOrNull(tableName, query, windowID));
 	}
 
-	private static final PO retrievePO(final String tableName, final MQuery query)
+	private static final IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final int adWindowId)
 	{
-		final PO po = new Query(Env.getCtx(), tableName, query.getWhereClause(), null)
+		final PO po = new Query(Env.getCtx(), tableName, query.getWhereClause(), ITrx.TRXNAME_None)
 				.firstOnly();
-		return po;
+		if(po == null)
+		{
+			return null;
+		}
+		return POZoomSource.of(po, adWindowId);
 	}
 
-	public AZoomAcross(JComponent invoker, PO po, final int windowID)
+	private AZoomAcross(final JComponent invoker, IZoomSource source)
 	{
-		logger.info("PO=" + po + ", WindowID=" + windowID);
+		super();
+		logger.info("source={}", source);
 
-		mkZoomTargets(po, windowID);
-
+		final List<ZoomInfo> zoomInfos = retrieveZoomTargets(source);
 		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomInfos)
 		{
 
@@ -101,24 +112,21 @@ public class AZoomAcross
 
 	private static final Logger logger = LogManager.getLogger(AZoomAcross.class);
 
-	private final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<ZoomInfoFactory.ZoomInfo>();
-
-	private void mkZoomTargets(final PO po, final int windowID)
+	private List<ZoomInfoFactory.ZoomInfo> retrieveZoomTargets(final IZoomSource source)
 	{
-		if(po == null)
+		if (source == null)
 		{
-			return; // guard against NPE
+			return ImmutableList.of(); // guard against NPE
 		}
 
-		for (final ZoomInfoFactory.ZoomInfo zoomInfo : ZoomInfoFactory.retrieveZoomInfos(po, windowID))
+		final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<>();
+		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
+		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
 		{
-			if (zoomInfo.query.getRecordCount() == 0)
-			{
-				logger.debug("No target records for destination " + zoomInfo.destinationDisplay);
-				continue;
-			}
 			zoomInfos.add(zoomInfo);
 		}
+		
+		return ImmutableList.copyOf(zoomInfos);
 	}
 
 	/**
@@ -126,13 +134,12 @@ public class AZoomAcross
 	 *
 	 * @param pp KeyPair
 	 */
-	public void launch(final ZoomInfoFactory.ZoomInfo zoomInfo)
+	private void launch(final ZoomInfoFactory.ZoomInfo zoomInfo)
 	{
-		final int AD_Window_ID = zoomInfo.windowId;
-		final MQuery query = zoomInfo.query;
+		final int AD_Window_ID = zoomInfo.getAD_Window_ID();
+		final MQuery query = zoomInfo.getQuery();
 
-		logger.info("AD_Window_ID=" + AD_Window_ID
-				+ " - " + query);
+		logger.info("AD_Window_ID={} - {}", AD_Window_ID, query);
 
 		AWindow frame = new AWindow();
 		if (!frame.initWindow(AD_Window_ID, query))

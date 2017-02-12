@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
@@ -139,7 +139,7 @@ public class LettersValidator implements ModelValidator
 		if (I_C_DunningRunEntry.Table_Name.equals(po.get_TableName())
 				&& TYPE_BEFORE_NEW == type)
 		{
-			I_C_DunningRunEntry dre = POWrapper.create(po, I_C_DunningRunEntry.class);
+			I_C_DunningRunEntry dre = InterfaceWrapperHelper.create(po, I_C_DunningRunEntry.class);
 			setDunningRunEntryNote(dre);
 		}
 		return null;
@@ -154,7 +154,7 @@ public class LettersValidator implements ModelValidator
 		//
 		for (MColumn c : MTable.get(po.getCtx(), po.get_Table_ID()).getColumns(false))
 		{
-			I_AD_Column column = POWrapper.create(c, I_AD_Column.class);
+			I_AD_Column column = InterfaceWrapperHelper.create(c, I_AD_Column.class);
 			if (column.isAdvancedText())
 			{
 				parseField(po, column.getColumnName(), vars);
@@ -302,8 +302,8 @@ public class LettersValidator implements ModelValidator
 
 	private static void setDunningRunEntryNote(I_C_DunningRunEntry dre)
 	{
-		final Properties ctx = POWrapper.getCtx(dre);
-		final String trxName = POWrapper.getTrxName(dre);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(dre);
+		final String trxName = InterfaceWrapperHelper.getTrxName(dre);
 
 		final I_C_DunningLevel dl = dre.getC_DunningLevel();
 		final MBPartner bp = MBPartner.get(ctx, dre.getC_BPartner_ID());
@@ -311,7 +311,7 @@ public class LettersValidator implements ModelValidator
 		final String text;
 		if (adLanguage != null)
 		{
-			text = POWrapper.getPO(dl).get_Translation(I_C_DunningLevel.COLUMNNAME_Note, adLanguage);
+			text = InterfaceWrapperHelper.getPO(dl).get_Translation(I_C_DunningLevel.COLUMNNAME_Note, adLanguage);
 		}
 		else
 		{
@@ -320,7 +320,7 @@ public class LettersValidator implements ModelValidator
 		final boolean isEmbeded = true;
 
 		final Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put(MADBoilerPlate.VAR_UserPO, POWrapper.getPO(dre));
+		attrs.put(MADBoilerPlate.VAR_UserPO, InterfaceWrapperHelper.getPO(dre));
 
 		final String textParsed = MADBoilerPlate.parseText(ctx, text, isEmbeded, attrs, trxName);
 

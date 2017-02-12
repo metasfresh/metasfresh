@@ -1,5 +1,8 @@
 package de.metas.handlingunits;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,11 +16,11 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,7 +33,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -39,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.inout.service.IMTransactionBL;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
@@ -50,6 +56,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
@@ -74,23 +81,27 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.builder.IHUSplitBuilder;
-import de.metas.handlingunits.allocation.builder.ITUMergeBuilder;
-import de.metas.handlingunits.allocation.builder.impl.HUSplitBuilder;
-import de.metas.handlingunits.allocation.builder.impl.TUMergeBuilder;
 import de.metas.handlingunits.allocation.impl.AbstractAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
-import de.metas.handlingunits.allocation.join.IHUJoinBL;
+import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
+import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
+import de.metas.handlingunits.attribute.impl.WeightableFactory;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -110,7 +121,6 @@ import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -133,7 +143,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 /**
  * This class sets up basic master data like attributes and HU-items that can be used in testing.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class HUTestHelper
@@ -160,10 +170,11 @@ public class HUTestHelper
 	public static final String NAME_Volume_Attribute = "Volume";
 	public static final String NAME_FragileSticker_Attribute = "Fragile";
 
-	public static final String NAME_WeightGross_Attribute = "WeightGross";
-	public static final String NAME_WeightNet_Attribute = "WeightNet";
-	public static final String NAME_WeightTare_Attribute = "WeightTare";
-	public static final String NAME_WeightTareAdjust_Attribute = "WeightTareAdjust";
+	// we reuse the "production" M_Attribute.Values from WeightableFactory
+	public static final String NAME_WeightGross_Attribute = WeightableFactory.ATTR_WeightGross_Value;
+	public static final String NAME_WeightNet_Attribute = WeightableFactory.ATTR_WeightNet_Value;
+	public static final String NAME_WeightTare_Attribute = WeightableFactory.ATTR_WeightTare_Value;
+	public static final String NAME_WeightTareAdjust_Attribute = WeightableFactory.ATTR_WeightTareAdjust_Value;
 
 	public static final String NAME_QualityDiscountPercent_Attribute = "QualityDiscountPercent";
 	public static final String NAME_QualityNotice_Attribute = "QualityNotice";
@@ -202,7 +213,7 @@ public class HUTestHelper
 	public I_M_HU_PackingMaterial pmIFCO; // IFCO Packing Material
 
 	/**
-	 * Value: Bag
+	 * Value: Blister
 	 */
 	public I_M_Product pBag; // Bags are another kind of packing material
 	public final BigDecimal pBag_Weight_0_5Kg = BigDecimal.valueOf(0.5);
@@ -285,6 +296,9 @@ public class HUTestHelper
 
 	public I_M_Attribute attr_LotNumberDate;
 
+	// #653
+	public I_M_Attribute attr_LotNumber;
+
 	/**
 	 * Mandatory in receipts
 	 */
@@ -330,7 +344,6 @@ public class HUTestHelper
 		{
 			return trxName;
 		}
-
 	};
 	private IMutableHUContext huContext;
 
@@ -348,7 +361,6 @@ public class HUTestHelper
 	 */
 	public HUTestHelper(final boolean init)
 	{
-		super();
 		if (init)
 		{
 			init();
@@ -445,8 +457,11 @@ public class HUTestHelper
 		//
 		// Handling units model validator
 		new de.metas.handlingunits.model.validator.Main().registerFactories();
+
+		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+
 		// We need to manually register M_Movement interceptor, else we won't get the packing material lines on movements
-		Services.get(IModelInterceptorRegistry.class)
+		modelInterceptorRegistry
 				.addModelInterceptor(de.metas.handlingunits.model.validator.M_Movement.instance);
 	}
 
@@ -516,6 +531,9 @@ public class HUTestHelper
 		}
 	}
 
+	/**
+	 * Sets up all the nice fields this helper offers. Called by the {@link #init()} method.
+	 */
 	protected void setupMasterData()
 	{
 		uomEach = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
@@ -535,14 +553,10 @@ public class HUTestHelper
 		attr_Volume = createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross =
-				createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet =
-				createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare =
-				createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust =
-				createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
 		attr_CostPrice = createM_Attribute(Constants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
@@ -561,22 +575,24 @@ public class HUTestHelper
 
 		attr_LotNumberDate = createM_Attribute(Constants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
+		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
 		attr_PurchaseOrderLine = createM_Attribute(Constants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = createM_Attribute(Constants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
-				null, // product,
-				uomEach, // uomFrom,
-				uomKg,// uomTo,
+				null,  // product,
+				uomEach,  // uomFrom,
+				uomKg, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
 		// Create 1-to-1 conversion between "Each" and PCE / Stk
 		createUOMConversion(
-				null, // product,
-				uomEach, // uomFrom,
-				uomPCE,// uomTo,
+				null,  // product,
+				uomEach,  // uomFrom,
+				uomPCE, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
@@ -632,7 +648,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
-		createVersion(huDefNone, true, huUnitType);
+		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.NO_HU_PI_Version_ID);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.NO_HU_PI_Item_ID);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
@@ -648,7 +664,7 @@ public class HUTestHelper
 		InterfaceWrapperHelper.save(huDefVirtual);
 
 		final String huUnitType = null; // any
-		createVersion(huDefVirtual, true, huUnitType);
+		createVersion(huDefVirtual, true, huUnitType, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
@@ -779,6 +795,21 @@ public class HUTestHelper
 			piAttrSeqNo += 10;
 		}
 
+		// #653
+		{
+			final I_M_HU_PI_Attribute piAttr_LotNumber = createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_LotNumber)
+					.setM_HU_PI(huDefNone)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
+					.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class)
+					.setAggregationStrategyClass(NullAggregationStrategy.class)
+					.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class));
+			piAttr_LotNumber.setIsReadOnly(false);
+			piAttr_LotNumber.setSeqNo(piAttrSeqNo);
+			piAttr_LotNumber.setUseInASI(true);
+			InterfaceWrapperHelper.save(piAttr_LotNumber);
+			piAttrSeqNo += 10;
+		}
+
 		{
 			final I_M_HU_PI_Attribute piAttr_PurchaseOrderLine = createM_HU_PI_Attribute(
 					new HUPIAttributeBuilder(attr_PurchaseOrderLine)
@@ -836,7 +867,7 @@ public class HUTestHelper
 
 	private void setupEmptiesWarehouse()
 	{
-		final PlainContextAware context = new PlainContextAware(getCtx());
+		final PlainContextAware context = PlainContextAware.newOutOfTrx(getCtx());
 
 		warehouse_Empties = createWarehouse("Empties warehouse");
 
@@ -884,7 +915,7 @@ public class HUTestHelper
 
 	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
 	{
-		final IContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return Services.get(IHandlingUnitsBL.class).createMutableHUContextForProcessing(contextProvider);
 	}
 
@@ -1024,27 +1055,29 @@ public class HUTestHelper
 
 	public I_M_HU_PI createHUDefinition(final String name, final String huUnitType)
 	{
-		final I_M_HU_PI hu = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
-		hu.setName(name);
-		InterfaceWrapperHelper.save(hu);
+		final I_M_HU_PI pi = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
+		pi.setName(name);
+		InterfaceWrapperHelper.save(pi);
 
 		// // Create some several dummy versions
 		// createVersion(hu, false);
 		// createVersion(hu, false);
 
 		// Create the current version
-		createVersion(hu, true, huUnitType);
+		final Integer huPIVersionId = null;
+		createVersion(pi, true, huUnitType, huPIVersionId);
 
-		return hu;
+		return pi;
 	}
 
 	public I_M_HU_PI_Version createVersion(final I_M_HU_PI handlingUnit, final boolean current)
 	{
 		final String huUnitType = null;
-		return createVersion(handlingUnit, current, huUnitType);
+		final Integer huPIVersionId = null;
+		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
 	}
 
-	public I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType)
+	private I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType, final Integer huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
 		version.setName(pi.getName());
@@ -1053,6 +1086,10 @@ public class HUTestHelper
 		if (huUnitType != null)
 		{
 			version.setHU_UnitType(huUnitType);
+		}
+		if (huPIVersionId != null)
+		{
+			version.setM_HU_PI_Version_ID(huPIVersionId);
 		}
 		InterfaceWrapperHelper.save(version);
 		return version;
@@ -1082,6 +1119,14 @@ public class HUTestHelper
 		return piItem;
 	}
 
+	/**
+	 * Invokes {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal, I_C_BPartner)} with bPartner being {@code null}.
+	 * 
+	 * @param huDefinition
+	 * @param includedHuDefinition
+	 * @param qty
+	 * @return
+	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty)
@@ -1090,10 +1135,20 @@ public class HUTestHelper
 		return createHU_PI_Item_IncludedHU(huDefinition, includedHuDefinition, qty, bpartner);
 	}
 
+	/**
+	 * Creates an {@link I_M_HU_PI_Item} with the given {@code qty} ("capacity") and {@code pPartner}<br>
+	 * and links it with the given {@code huDefinition} and {@code includedHuDefinition}.
+	 * 
+	 * @param huDefinition
+	 * @param includedHuDefinition
+	 * @param qty
+	 * @param bPartner
+	 * @return
+	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty,
-			final I_C_BPartner bpartner)
+			final I_C_BPartner bPartner)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
@@ -1101,8 +1156,8 @@ public class HUTestHelper
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
-		itemDefinition.setC_BPartner(bpartner);
-		if (!Check.equals(qty, QTY_NA))
+		itemDefinition.setC_BPartner(bPartner);
+		if (!Objects.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);
 		}
@@ -1111,17 +1166,27 @@ public class HUTestHelper
 		return itemDefinition;
 	}
 
-	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial pmProduct)
+	/**
+	 * 
+	 * @param huDefinition
+	 * @param huPackingMaterial
+	 * @return
+	 */
+	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial huPackingMaterial)
 	{
+		Check.assumeNotNull(huDefinition, "Parameter huDefinition is not null");
+		Check.assumeNotNull(huPackingMaterial, "Parameter pmProduct is not null");
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
-		final I_M_HU_PI_Item itemDefinition = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
-		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
-		itemDefinition.setM_HU_PackingMaterial(pmProduct);
-		itemDefinition.setM_HU_PI_Version(version);
+		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
+		piItem.setM_HU_PI_Version(version);
 
-		InterfaceWrapperHelper.save(itemDefinition);
-		return itemDefinition;
+		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
+		piItem.setM_HU_PackingMaterial(huPackingMaterial);
+		piItem.setQty(BigDecimal.ONE);
+
+		InterfaceWrapperHelper.save(piItem);
+		return piItem;
 	}
 
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
@@ -1132,6 +1197,8 @@ public class HUTestHelper
 
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final I_C_BPartner bpartner)
 	{
+		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
+
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product(product);
@@ -1164,36 +1231,6 @@ public class HUTestHelper
 
 		InterfaceWrapperHelper.save(itemDefProduct);
 		return itemDefProduct;
-	}
-
-	/**
-	 * Just in case you want to play with a random quantity
-	 *
-	 * @param itemPI
-	 * @param product
-	 * @param qty
-	 * @param uom
-	 * @return
-	 */
-	public I_M_HU_PI_Item_Product assignProductInfiniteCapacity(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
-	{
-		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
-		itemDefProduct.setM_HU_PI_Item(itemPI);
-		itemDefProduct.setM_Product(product);
-		itemDefProduct.setQty(qty);
-		itemDefProduct.setC_UOM(uom);
-		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-
-		// regardless of qty, we can allow however much we want here
-		itemDefProduct.setIsInfiniteCapacity(true);
-
-		InterfaceWrapperHelper.save(itemDefProduct);
-		return itemDefProduct;
-	}
-
-	public I_M_HU_PI_Item_Product assignProductInfiniteCapacity(final I_M_HU_PI_Item itemPI, final I_M_Product product, final I_C_UOM uom)
-	{
-		return assignProductInfiniteCapacity(itemPI, product, BigDecimal.ZERO, uom);
 	}
 
 	public I_M_Transaction createMTransaction(final String movementType, final I_M_Product product, final BigDecimal qty)
@@ -1247,6 +1284,10 @@ public class HUTestHelper
 			final I_C_UOM uom,
 			final boolean isInstanceAttribute)
 	{
+
+		// make sure the attribute was not already defined
+		final I_M_Attribute existingAttribute = retrieveAttributeBuValue(name);
+
 		final I_AD_JavaClass javaClassDef;
 		if (javaClass != null)
 		{
@@ -1260,7 +1301,17 @@ public class HUTestHelper
 			javaClassDef = null;
 		}
 
-		final I_M_Attribute attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
+		final I_M_Attribute attr;
+
+		if (existingAttribute != null)
+		{
+			attr = existingAttribute;
+		}
+
+		else
+		{
+			attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
+		}
 		attr.setValue(name);
 		attr.setName(name);
 		attr.setAttributeValueType(valueType);
@@ -1284,6 +1335,22 @@ public class HUTestHelper
 
 		InterfaceWrapperHelper.save(attr);
 		return attr;
+	}
+
+	/**
+	 * Method needed to make sure the attribute was not already created
+	 * Normally, this will never happen anywhere else except testing
+	 * 
+	 * @param name
+	 * @return
+	 */
+	private I_M_Attribute retrieveAttributeBuValue(String name)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Attribute.class, ctx, ITrx.TRXNAME_None).addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, name)
+				.create()
+				.firstOnly(I_M_Attribute.class);
 	}
 
 	/**
@@ -1375,7 +1442,7 @@ public class HUTestHelper
 				product,
 				uom,
 				false // allowNegativeCapacity
-				);
+		);
 		final BigDecimal qtyInitial = fullyLoaded ? qtyCapacity : BigDecimal.ZERO;
 		final PlainProductStorage storage = new PlainProductStorage(capacity, qtyInitial);
 
@@ -1400,8 +1467,8 @@ public class HUTestHelper
 			final I_C_UOM qtyToLoadUOM)
 	{
 		final IAllocationSource source = createDummySourceDestination(productToLoad,
-				new BigDecimal("100000000"), // qtyCapacity
-				qtyToLoadUOM, // UOM
+				new BigDecimal("100000000"),  // qtyCapacity
+				qtyToLoadUOM,  // UOM
 				true // fullyLoaded => empty
 		);
 
@@ -1415,9 +1482,8 @@ public class HUTestHelper
 				productToLoad,
 				qtyToLoad,
 				qtyToLoadUOM,
-				getTodayDate(), // date
-				referenceModel
-				);
+				getTodayDate(),  // date
+				referenceModel);
 
 		loader.load(request);
 
@@ -1432,7 +1498,10 @@ public class HUTestHelper
 	 * @param cuQty
 	 * @return created HUs
 	 */
-	public List<I_M_HU> createHUs(final IHUContext huContext, final ILUTUProducerAllocationDestination allocationDestination, final BigDecimal cuQty)
+	public List<I_M_HU> createHUs(
+			final IHUContext huContext,
+			final ILUTUProducerAllocationDestination allocationDestination,
+			final BigDecimal cuQty)
 	{
 		final IHUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
@@ -1548,22 +1617,129 @@ public class HUTestHelper
 		return result;
 	}
 
-	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU hu)
+	/**
+	 * Take the given {@code lutuProducer} and load the given {@code loadCuQty} and {@code loadCuUOM} of the given {@code cuProduct} into new HUs.
+	 * <p>
+	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * 
+	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
+	 * @param cuProduct
+	 * @param loadCuQty
+	 * @param loadCuUOM
+	 */
+	public final void load(
+			final LUTUProducerDestination lutuProducer,
+			final I_M_Product cuProduct,
+			final BigDecimal loadCuQty,
+			final I_C_UOM loadCuUOM)
 	{
-		final List<I_M_HU> result = new ArrayList<I_M_HU>();
+		final IAllocationSource source = createDummySourceDestination(cuProduct, IHUCapacityDefinition.INFINITY, loadCuUOM, true);
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		for (final I_M_HU_Item huItem : handlingUnitsDAO.retrieveItems(hu))
-		{
-			final List<I_M_HU> includedHUs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huItem);
-			result.addAll(includedHUs);
-		}
+		final HULoader huLoader = new HULoader(source, lutuProducer);
+		huLoader.setAllowPartialUnloads(false);
+		huLoader.setAllowPartialLoads(false);
 
-		return result;
+		final IMutableHUContext huContext0 = createMutableHUContextOutOfTransaction();
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
+				cuProduct, // product
+				loadCuQty, // qty
+				loadCuUOM, // uom
+				SystemTime.asTimestamp());
+
+		huLoader.load(request);
 	}
 
 	/**
-	 * This method creates one of many new HU(s) by "taking" the given product and qty out of the given source HU(s). The source HU's items are modified in this process. It also creates a
+	 * Creates LUs with TUs and loads the products from the given {@code mtrx} into them.<br>
+	 * <b>Important:</b> only works if the given {@code huPI} has exactly one HU PI-item for the TU.
+	 * 
+	 * This method contains the code that used to be in {@link IHUTrxBL} {@code transferIncomingToHUs()}.<br>
+	 * When it was there, that method was used only by test cases and also doesn't make a lot of sense for production.
+	 * 
+	 * @param mtrx the load's source. Also provides the context.
+	 * @param huPI a "simple" PI that contains one HU-item which links to one child-HU PI
+	 * @return
+	 */
+	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
+	{
+		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
+				"mtrx shall be inbound transaction: {}", mtrx);
+
+		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
+		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+
+		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
+		// final HUProducerDestination destination = new HUProducerDestination(huPI);
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLUPI(huPI);
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU_PI_Version currentPIVersion = handlingUnitsDAO.retrievePICurrentVersion(huPI);
+		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
+				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
+				.collect(Collectors.toList());
+		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
+
+		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
+		lutuProducer.setTUPI(piItemsForChildHU.get(0).getIncluded_HU_PI());
+
+		final HULoader loader = new HULoader(source, lutuProducer);
+
+		final I_C_UOM uom = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(
+				huContext,
+				mtrx.getM_Product(),
+				mtrx.getMovementQty(),
+				uom, mtrx.getMovementDate(),
+				mtrx);
+
+		loader.load(request);
+
+		return lutuProducer.getCreatedHUs();
+	}
+	
+	/**
+	 * Sets up a {@link HUListAllocationSourceDestination} for the given {@code sourceHUs} and loads them to the given {@code lutuProducer}.
+	 * <p>
+	 * You can use {@link LUTUProducerDestination#getCreatedHUs()} to collect the results after the loading.
+	 * Note that this method does less than {@link IHUSplitBuilder}. E.g. it does not:
+	 * <li>propagate the source HUs' Locator, Status etc
+	 * <li>destroy empty source HUs
+	 * 
+	 * @param sourceHUs
+	 * @param lutuProducer used as the loader's {@link IAllocationDestination}
+	 * @param qty
+	 * @param product
+	 * @param uom
+	 * @return
+	 */
+	public void transferMaterialToNewHUs(final List<I_M_HU> sourceHUs,
+			final LUTUProducerDestination lutuProducer,
+			final BigDecimal qty,
+			final I_M_Product product,
+			final I_C_UOM uom)
+	{
+		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
+
+		final IMutableHUContext huContext = getHUContext();
+		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
+
+		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
+
+		final HULoader loader = new HULoader(source, lutuProducer);
+
+		// allowing partial loads and unloads because that's interesting cases to test
+		loader.setAllowPartialUnloads(true);
+		loader.setAllowPartialLoads(true);
+
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
+
+		loader.load(request); // use context date for now
+	}
+
+	/**
+	 * This method creates one or many new HU(s) by "taking" the given product and qty out of the given source HU(s). The source HU's items are modified in this process. It also creates a
 	 * {@link I_M_HU_Trx_Hdr} to document from which source items (of <code>sourceHU</code>) to which destination items (of the new HU) the qtys were moved. That trx-hdr has a one line for every
 	 * {@link de.metas.handlingunits.model.I_M_HU_Item} of the source HU and one line for
 	 *
@@ -1572,7 +1748,11 @@ public class HUTestHelper
 	 * @param product the product the shall be taken out of the <code>sourceHUs</code>
 	 * @param destinationHuPI the definition of the new HU that shall be created with the given product and qty
 	 * @return the newly created HUs that are "split off" the source HU
+	 * 
+	 * @deprecated uses {@link HUProducerDestination}; deprecated for the same reasons as {@link #transferIncomingToHUs(I_M_Transaction, I_M_HU_PI)}.
+	 *             Please consider calling {@link #transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, I_M_Product, I_C_UOM, I_M_HU_PI)}.
 	 */
+	@Deprecated
 	public List<I_M_HU> transferMaterialToNewHUs(final List<I_M_HU> sourceHUs, final BigDecimal qty, final I_M_Product product, final I_M_HU_PI destinationHuPI)
 	{
 		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
@@ -1632,7 +1812,11 @@ public class HUTestHelper
 	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
 	 * @return the newly created HUs that were created from the transaction doc.
+	 * 
+	 * @deprecated this method only uses {@link HUProducerDestination} which will only create a simple plain HU. In almost every scenario that's not what you want test-wise.
+	 *             Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
 	 */
+	@Deprecated
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
 		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
@@ -1660,6 +1844,16 @@ public class HUTestHelper
 		return destination.getCreatedHUs();
 	}
 
+	/**
+	 * 
+	 * @param sourceHUs
+	 * @param destinationHUs
+	 * @param product
+	 * @param qty
+	 * @param uom
+	 * 
+	 * 
+	 */
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
 		final IAllocationSource source = new HUListAllocationSourceDestination(sourceHUs);
@@ -1697,12 +1891,25 @@ public class HUTestHelper
 		return bpl;
 	}
 
+	/**
+	 * Calls {@link #createWarehouse(String, boolean)} with {@code isIssueWarehouse == false}
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public I_M_Warehouse createWarehouse(final String name)
 	{
 		final boolean isIssueWarehouse = false;
 		return createWarehouse(name, isIssueWarehouse);
 	}
 
+	/**
+	 * Creates a warehouse and one (default) locator.
+	 * 
+	 * @param name
+	 * @param isIssueWarehouse
+	 * @return
+	 */
 	public I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
 	{
 		final de.metas.interfaces.I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(de.metas.interfaces.I_M_Warehouse.class, contextProvider);
@@ -1817,11 +2024,6 @@ public class HUTestHelper
 		return splitBuilder;
 	}
 
-	public IHUSplitBuilder splitHUs()
-	{
-		return new HUSplitBuilder(ctx);
-	}
-
 	/**
 	 * Join given <code>tradingUnits</code> to the <code>loadingUnit</code>
 	 *
@@ -1830,10 +2032,11 @@ public class HUTestHelper
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final Collection<I_M_HU> tradingUnits)
 	{
-		for (final I_M_HU tradingUnit : tradingUnits)
-		{
-			Services.get(IHUJoinBL.class).assignTradingUnitToLoadingUnit(huContext, loadingUnit, tradingUnit);
-		}
+		Check.assumeNotNull(tradingUnits, "PAram 'tradingUnits' is not null; other params: huContext={}, loadingUnit={}", huContext, loadingUnit);
+		final IHUJoinBL huJoinBL = Services.get(IHUJoinBL.class);
+
+		tradingUnits
+				.forEach(tradingUnit -> huJoinBL.assignTradingUnitToLoadingUnit(huContext, loadingUnit, tradingUnit));
 	}
 
 	/**
@@ -1844,43 +2047,23 @@ public class HUTestHelper
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final I_M_HU... tradingUnits)
 	{
-		joinHUs(huContext, loadingUnit, Arrays.asList(tradingUnits));
+		trxBL.createHUContextProcessorExecutor(huContext)
+				.run(new IHUContextProcessor()
+				{
+
+					@Override
+					public IMutableAllocationResult process(IHUContext huContextLocal)
+					{
+						joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
+						return NULL_RESULT;
+					}
+				});
 	}
 
 	/**
-	 * <b>Note: yeah, this method is a duplicate of {@link #joinHUs(I_M_HU, I_M_HU...)}, but it's here to flag exactly that point</b><br>
-	 * <br>
-	 * Merge given <code>tradingUnitsSource</code> on the <code>loadingUnitTarget</code>
+	 * Configure and use {@link ITUMergeBuilder} to move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
 	 *
 	 * @param huContext
-	 *
-	 * @param loadingUnitTarget target LU
-	 * @param tradingUnitsSource source TUs
-	 */
-	public void mergeLUs(final IHUContext huContext, final I_M_HU loadingUnitTarget, final Collection<I_M_HU> tradingUnitsSource)
-	{
-		for (final I_M_HU tradingUnitSource : tradingUnitsSource)
-		{
-			Services.get(IHUJoinBL.class).assignTradingUnitToLoadingUnit(huContext, loadingUnitTarget, tradingUnitSource);
-		}
-	}
-
-	/**
-	 * <b>Note: yeah, this method is a duplicate of {@link #joinHUs(I_M_HU, I_M_HU...)}, but it's here to flag exactly that point</b><br>
-	 * <br>
-	 * Merge given <code>tradingUnitsSource</code> on the <code>loadingUnitTarget</code>
-	 *
-	 * @param loadingUnitTarget
-	 * @param tradingUnitsSource
-	 */
-	public void mergeLUs(final IHUContext huContext, final I_M_HU loadingUnitTarget, final I_M_HU... tradingUnitsSource)
-	{
-		mergeLUs(huContext, loadingUnitTarget, Arrays.asList(tradingUnitsSource));
-	}
-
-	/**
-	 * Move given <code>sourceHUs</code> customer units (products) on the <code>targetHU</code> with the qty, UOM of that product
-	 *
 	 * @param sourceHUs
 	 * @param targetHU
 	 * @param cuProduct
@@ -1906,5 +2089,19 @@ public class HUTestHelper
 	{
 		return new ProductBOMBuilder()
 				.setContext(contextProvider);
+	}
+
+	/**
+	 * Commits {@link #trxName} and writes the given {@code hu} as XML to std-out. The commit might break some tests.
+	 * Please only use this method temporarily to debug tests and comment it out again when the tests are fixed.
+	 * 
+	 * @param hu
+	 * @deprecated please only use temporarily for debugging.
+	 */
+	@Deprecated
+	public void commitAndDumpHU(I_M_HU hu)
+	{
+		Services.get(ITrxManager.class).commit(trxName);
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(hu)));
 	}
 }

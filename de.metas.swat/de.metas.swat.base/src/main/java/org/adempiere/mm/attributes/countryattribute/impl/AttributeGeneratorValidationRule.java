@@ -1,30 +1,6 @@
 package org.adempiere.mm.attributes.countryattribute.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -35,6 +11,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
@@ -48,15 +26,10 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
  */
 public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 {
+	private static final Set<String> PARAMETERS = ImmutableSet.of(I_M_Attribute.COLUMNNAME_AttributeValueType);
 
 	@Override
-	public boolean isImmutable()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean accept(IValidationContext evalCtx, NamePair item)
+	public boolean accept(final IValidationContext evalCtx, final NamePair item)
 	{
 		final String valueType = evalCtx.get_ValueAsString(I_M_Attribute.COLUMNNAME_AttributeValueType);
 
@@ -104,9 +77,9 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public List<String> getParameters(IValidationContext evalCtx)
+	public Set<String> getParameters()
 	{
-		return Arrays.asList(I_M_Attribute.COLUMNNAME_AttributeValueType);
+		return PARAMETERS;
 	}
 
 }

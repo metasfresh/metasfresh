@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS KPI_Purchase_Order_Status_Overview_Function (IN DateFrom date, IN DateTo date) ;
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Purchase_Order_Status_Overview_Function (IN DateFrom date, IN DateTo date) ;
 
-CREATE OR REPLACE FUNCTION KPI_Purchase_Order_Status_Overview_Function (IN DateFrom date, IN DateTo date) 
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Purchase_Order_Status_Overview_Function (IN DateFrom date, IN DateTo date) 
 RETURNS TABLE 
 (
 	Confirmed numeric,

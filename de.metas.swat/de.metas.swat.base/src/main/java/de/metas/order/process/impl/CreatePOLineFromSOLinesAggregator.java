@@ -11,7 +11,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
@@ -32,12 +32,12 @@ import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +46,7 @@ import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 /**
  * Creates purchase order lines for sales order lines. One instance of this aggregator is called with sales order lines that all belong to the same purchase order.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLine, I_C_OrderLine>
@@ -85,7 +85,7 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 		}
 		catch (final Throwable t)
 		{
-			ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL).addLog("@Error@: " + t);
+			Loggables.get().addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 

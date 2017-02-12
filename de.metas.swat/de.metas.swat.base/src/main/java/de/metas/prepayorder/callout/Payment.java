@@ -24,48 +24,45 @@ package de.metas.prepayorder.callout;
 
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 public class Payment extends CalloutEngine
 {
-	public String order(final Properties ctx, final int WindowNo, final GridTab mTab,
-			final GridField mField, final Object value)
+	public String order(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
 		{
-			return "";
+			return NO_ERROR;
 		}
-		final I_C_Payment payment = GridTabWrapper.create(mTab, I_C_Payment.class);
+		final I_C_Payment payment = calloutField.getModel(I_C_Payment.class);
 
 		final int orderId = payment.getC_Order_ID();
 		
 		if (orderId <= 0)
 		{
 			// nothing to do
-			return "";
+			return NO_ERROR;
 		}
 
 		final IPrepayOrderBL prepayOrderBL = Services.get(IPrepayOrderBL.class);
-		if (!prepayOrderBL.isPrepayOrder(ctx, orderId, null))
+		if (!prepayOrderBL.isPrepayOrder(calloutField.getCtx(), orderId, ITrx.TRXNAME_None))
 		{
 			// nothing to do
-			return "";
+			return NO_ERROR;
 		}
 
-		final BigDecimal allocated = prepayOrderBL.retrieveAllocatedAmt(ctx, orderId, null);
+		final BigDecimal allocated = prepayOrderBL.retrieveAllocatedAmt(calloutField.getCtx(), orderId, ITrx.TRXNAME_None);
 		final BigDecimal openAmt = payment.getC_Order().getGrandTotal().subtract(allocated);
 		payment.setPayAmt(openAmt);
 
-		return "";
+		return NO_ERROR;
 	}
 	
 	

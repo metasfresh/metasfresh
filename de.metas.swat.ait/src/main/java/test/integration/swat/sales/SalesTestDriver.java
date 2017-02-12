@@ -37,7 +37,6 @@ import java.util.Properties;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -67,7 +66,6 @@ import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
-import test.integration.swat.sales.scenario.SalesScenario;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.helper.Helper;
@@ -85,6 +83,7 @@ import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_OrderLine;
+import test.integration.swat.sales.scenario.SalesScenario;
 
 @RunWith(IntegrationTestRunner.class)
 public class SalesTestDriver extends AIntegrationTestDriver
@@ -135,7 +134,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 			Assert.assertFalse(invoice.isPaid()); // is paid is not set automatically after complete
 
 			MInvoice.setIsPaid(ctx, invoice.getC_BPartner_ID(), trxName);
-			POWrapper.refresh(invoice);
+			InterfaceWrapperHelper.refresh(invoice);
 			Assert.assertTrue(invoice.isPaid());
 		}
 		{
@@ -144,7 +143,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 			Assert.assertFalse(invoice.isPaid());
 
 			MInvoice.setIsPaid(ctx, invoice.getC_BPartner_ID(), trxName);
-			POWrapper.refresh(invoice);
+			InterfaceWrapperHelper.refresh(invoice);
 			Assert.assertFalse(invoice.isPaid());
 		}
 	}
@@ -167,10 +166,10 @@ public class SalesTestDriver extends AIntegrationTestDriver
 			Assert.assertTrue(payment.isAllocated()); // is allocated is set automatically after complete
 
 			payment.setIsAllocated(false);
-			POWrapper.save(payment);
+			InterfaceWrapperHelper.save(payment);
 
 			MPayment.setIsAllocated(ctx, payment.getC_BPartner_ID(), trxName);
-			POWrapper.refresh(payment);
+			InterfaceWrapperHelper.refresh(payment);
 			Assert.assertTrue(payment.isAllocated());
 		}
 		{
@@ -179,7 +178,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 			Assert.assertFalse(payment.isAllocated()); // is paid is not set automatically after complete
 
 			MPayment.setIsAllocated(ctx, payment.getC_BPartner_ID(), trxName);
-			POWrapper.refresh(payment);
+			InterfaceWrapperHelper.refresh(payment);
 			Assert.assertFalse(payment.isAllocated());
 		}
 	}
@@ -273,7 +272,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		{
 			if (iline.getC_OrderLine_ID() <= 0)
 				continue;
-			I_C_OrderLine oline = POWrapper.create(iline.getC_OrderLine(), I_C_OrderLine.class);
+			I_C_OrderLine oline = InterfaceWrapperHelper.create(iline.getC_OrderLine(), I_C_OrderLine.class);
 			Assert.assertEquals("Invoice line net amount is not equal with order line net amount", oline.getLineNetAmt(), iline.getLineNetAmt());
 			invoiceNetAmt = invoiceNetAmt.add(iline.getLineNetAmt());
 		}
@@ -347,7 +346,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 			getHelper().setProductPrice(pl, IHelper.DEFAULT_ProductValue, price);
 
 			MInvoice invoice = new MInvoice(ctx, 0, trxName);
-			invoice.setBPartner((MBPartner)POWrapper.getPO(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig())));
+			invoice.setBPartner((MBPartner)InterfaceWrapperHelper.getPO(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig())));
 			invoice.setDateInvoiced(SystemTime.asTimestamp());
 			invoice.setDateAcct(SystemTime.asTimestamp());
 			invoice.setM_PriceList_ID(pl.getM_PriceList_ID());
@@ -375,7 +374,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		final String trxName = getTrxName();
 
 		final MInvoice invoice = new MInvoice(ctx, 0, trxName);
-		invoice.setBPartner((MBPartner)POWrapper.getPO(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig())));
+		invoice.setBPartner((MBPartner)InterfaceWrapperHelper.getPO(getHelper().mkBPartnerHelper().getC_BPartner(getHelper().getConfig())));
 		invoice.setDateInvoiced(SystemTime.asTimestamp());
 		invoice.setDateAcct(SystemTime.asTimestamp());
 		invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None);
@@ -421,7 +420,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		testOrderInvoicePriceMatch(iline);
 
 		// Make sure is saved
-		POWrapper.save(iline);
+		InterfaceWrapperHelper.save(iline);
 		Assert.assertTrue("Invoice line should be saved " + iline, iline.getC_InvoiceLine_ID() > 0);
 
 		// Tests for BEFORE_CHANGE events
@@ -453,7 +452,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		fireTestEvent(EventType.ORDER_PREPAY_COMPLETE_AFTER, order);
 
-		final I_C_Payment payment = POWrapper.create(getCtx(), I_C_Payment.class, getTrxName());
+		final I_C_Payment payment = InterfaceWrapperHelper.create(getCtx(), I_C_Payment.class, getTrxName());
 		payment.setC_Order_ID(order.getC_Order_ID());
 		payment.setIsReceipt(true);
 		payment.setC_BPartner_ID(order.getBill_BPartner_ID());
@@ -467,9 +466,9 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		payment.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		payment.setC_Currency_ID(order.getC_Currency_ID());
 
-		POWrapper.save(payment);
+		InterfaceWrapperHelper.save(payment);
 
-		final MPayment paymentPO = (MPayment)POWrapper.getPO(payment);
+		final MPayment paymentPO = (MPayment)InterfaceWrapperHelper.getPO(payment);
 
 		getHelper().process(paymentPO, DocAction.ACTION_Complete, X_C_Payment.DOCSTATUS_Completed);
 
@@ -582,7 +581,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		final MInvoice invoice = retrieveAndCheckPOSInvoice(order);
 
-		final I_C_Payment payment = POWrapper.create(getCtx(), I_C_Payment.class, getTrxName());
+		final I_C_Payment payment = InterfaceWrapperHelper.create(getCtx(), I_C_Payment.class, getTrxName());
 		payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		payment.setIsReceipt(true);
 		payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
@@ -595,9 +594,9 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		payment.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		payment.setC_Currency_ID(invoice.getC_Currency_ID());
 
-		POWrapper.save(payment);
+		InterfaceWrapperHelper.save(payment);
 
-		final MPayment paymentPO = (MPayment)POWrapper.getPO(payment);
+		final MPayment paymentPO = (MPayment)InterfaceWrapperHelper.getPO(payment);
 
 		getHelper().process(paymentPO, DocAction.ACTION_Complete, X_C_Payment.DOCSTATUS_Completed);
 
@@ -675,8 +674,8 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		MAllocationHdr allocation = assertOnlyOneCompletedAndGet(payment);
 		System.out.println("Allocation: " + allocation);
 
-		POWrapper.refresh(invoice);
-		final MInvoice invoicePO = (MInvoice)POWrapper.getPO(invoice);
+		InterfaceWrapperHelper.refresh(invoice);
+		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
 		assertThat("Invoice open amount should be zero - " + invoice, invoicePO.getOpenAmt(), comparesEqualTo(Env.ZERO));
 
 		//
@@ -693,8 +692,8 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		//
 		// Check: invoice and payment should be not paid and not allocated (again)
-		POWrapper.refresh(invoice);
-		POWrapper.refresh(payment);
+		InterfaceWrapperHelper.refresh(invoice);
+		InterfaceWrapperHelper.refresh(payment);
 		Assert.assertFalse("Invoice should not be paid - " + invoice, invoice.isPaid());
 		assertThat("Invoice open amount not correct - " + invoice, invoicePO.getOpenAmt(), comparesEqualTo(invoicePO.getGrandTotal(true)));
 		Assert.assertFalse("Payment should not be allocated - " + payment, payment.isAllocated());
@@ -728,8 +727,8 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 	private MAllocationHdr assertOnlyOneCompletedAndGet(I_C_Payment payment)
 	{
-		final Properties ctx = POWrapper.getCtx(payment);
-		final String trxName = POWrapper.getTrxName(payment);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
+		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(ctx, payment.getC_Payment_ID(), trxName);
 		Assert.assertNotNull("No allocations were created", allocations);

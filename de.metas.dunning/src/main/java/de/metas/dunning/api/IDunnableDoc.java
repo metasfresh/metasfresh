@@ -64,4 +64,8 @@ public interface IDunnableDoc
 	int getRecordId();
 
 	boolean isInDispute();
+	
+	//FRESH-504: Add DocumentNo
+	
+	String getDocumentNo();
 }

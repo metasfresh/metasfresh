@@ -46,6 +46,12 @@ public class TestClientUIInvoker extends AbstractClientUIInvoker
 	{
 		return runnable;
 	}
+	
+	@Override
+	protected Runnable asShowGlassPaneRunnable(Runnable runnable)
+	{
+		return runnable;
+	}
 
 	@Override
 	public IClientUIInvoker setParentComponent(Object parentComponent)

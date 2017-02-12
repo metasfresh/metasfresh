@@ -26,11 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
@@ -50,6 +49,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.WebDoc;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Window Model
@@ -86,7 +88,7 @@ public class GridWindow implements Serializable
 	 */
 	public static GridWindow get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
 	{
-		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
+		log.debug("Window={}, AD_Window_ID={}", WindowNo, AD_Window_ID);
 		GridWindowVO mWindowVO = GridWindowVO.create (ctx, WindowNo, AD_Window_ID);
 		if (mWindowVO == null)
 			return null;
@@ -137,7 +139,7 @@ public class GridWindow implements Serializable
 	 */
 	public void dispose()
 	{
-		log.info("AD_Window_ID=" + m_vo.AD_Window_ID);
+		log.debug("AD_Window_ID={}", m_vo.getAD_Window_ID());
 		for (int i = 0; i < getTabCount(); i++)
 			getTab(i).dispose();
 		m_tabs.clear();
@@ -150,19 +152,22 @@ public class GridWindow implements Serializable
 	 */
 	private boolean loadTabData()
 	{
-		log.info("");
-
-		if (m_vo.Tabs == null)
-			return false;
-
-		for (int t = 0; t < m_vo.Tabs.size(); t++)
+		final List<GridTabVO> tabVOs = m_vo.getTabs();
+		if (tabVOs == null || tabVOs.isEmpty())
 		{
-			GridTabVO mTabVO = m_vo.Tabs.get(t);
-			if (mTabVO != null)
+			return false;
+		}
+
+		for (final GridTabVO mTabVO : tabVOs)
+		{
+			if(mTabVO == null)
 			{
-				GridTab mTab = new GridTab(mTabVO, this, m_virtual);
-				m_tabs.add(mTab);
+				// shall not happen
+				continue;
 			}
+			
+			final GridTab mTab = new GridTab(mTabVO, this, m_virtual);
+			m_tabs.add(mTab);
 		}	//  for all tabs
 		return true;
 	}	//	loadTabData
@@ -281,10 +286,10 @@ public class GridWindow implements Serializable
 	 */
 	public Image getImage()
 	{
-		if (m_vo.AD_Image_ID == 0)
+		if (m_vo.getAD_Image_ID() <= 0)
 			return null;
 		//
-		MImage mImage = MImage.get(Env.getCtx(), m_vo.AD_Image_ID);
+		MImage mImage = MImage.get(Env.getCtx(), m_vo.getAD_Image_ID());
 		return mImage.getImage();
 	}   //  getImage
 
@@ -294,10 +299,10 @@ public class GridWindow implements Serializable
 	 */
 	public Icon getIcon()
 	{
-		if (m_vo.AD_Image_ID == 0)
+		if (m_vo.getAD_Image_ID() <= 0)
 			return null;
 		//
-		MImage mImage = MImage.get(Env.getCtx(), m_vo.AD_Image_ID);
+		MImage mImage = MImage.get(Env.getCtx(), m_vo.getAD_Image_ID());
 		return mImage.getIcon();
 	}   //  getIcon
 
@@ -307,9 +312,9 @@ public class GridWindow implements Serializable
 	 */
 	public CompiereColor getColor()
 	{
-		if (m_vo.AD_Color_ID == 0)
+		if (m_vo.getAD_Color_ID() <= 0)
 			return null;
-		MColor mc = new MColor(m_vo.ctx,  m_vo.AD_Color_ID, null);
+		MColor mc = new MColor(m_vo.getCtx(),  m_vo.getAD_Color_ID(), ITrx.TRXNAME_None);
 		return mc.getAdempiereColor();
 	}   //  getColor
 
@@ -319,7 +324,7 @@ public class GridWindow implements Serializable
 	 */
 	public boolean isSOTrx()
 	{
-		return m_vo.IsSOTrx;
+		return m_vo.isSOTrx();
 	}	//	isSOTrx
 	
 	
@@ -328,7 +333,7 @@ public class GridWindow implements Serializable
 	 */
 	public void query()
 	{
-		log.info("");
+		log.info("query");
 		GridTab tab = getTab(0);
 		tab.query(false, 0, GridTabMaxRows.NO_RESTRICTION);
 		if (tab.getRowCount() > 0)
@@ -376,7 +381,7 @@ public class GridWindow implements Serializable
 	 */
 	public int getAD_Window_ID()
 	{
-		return m_vo.AD_Window_ID;
+		return m_vo.getAD_Window_ID();
 	}	//	getAD_Window_ID
 
 	/**
@@ -385,7 +390,7 @@ public class GridWindow implements Serializable
 	 */
 	public int getWindowNo()
 	{
-		return m_vo.WindowNo;
+		return m_vo.getWindowNo();
 	}	//	getWindowNo
 
 	/**
@@ -394,7 +399,7 @@ public class GridWindow implements Serializable
 	 */
 	public String getName()
 	{
-		return m_vo.Name;
+		return m_vo.getName();
 	}	//	getName
 
 	/**
@@ -403,7 +408,7 @@ public class GridWindow implements Serializable
 	 */
 	public String getDescription()
 	{
-		return m_vo.Description;
+		return m_vo.getDescription();
 	}	//	getDescription
 
 	/**
@@ -412,7 +417,7 @@ public class GridWindow implements Serializable
 	 */
 	public String getHelp()
 	{
-		return m_vo.Help;
+		return m_vo.getHelp();
 	}	//	getHelp
 
 	/**
@@ -421,7 +426,7 @@ public class GridWindow implements Serializable
 	 */
 	public String getWindowType()
 	{
-		return m_vo.WindowType;
+		return m_vo.getWindowType();
 	}	//	getWindowType
 
 	/**
@@ -430,7 +435,7 @@ public class GridWindow implements Serializable
 	 */
 	public boolean isTransaction()
 	{
-		return m_vo.WindowType.equals(GridWindowVO.WINDOWTYPE_TRX);
+		return GridWindowVO.WINDOWTYPE_TRX.equals(m_vo.getWindowType());
 	}   //	isTransaction
 
 	/**
@@ -439,8 +444,10 @@ public class GridWindow implements Serializable
 	 */
 	public Dimension getWindowSize()
 	{
-		if (m_vo.WinWidth != 0 && m_vo.WinHeight != 0)
-			return new Dimension (m_vo.WinWidth, m_vo.WinHeight);
+		final int winWidth = m_vo.getWinWidth();
+		final int winHeight = m_vo.getWinHeight();
+		if (winWidth != 0 && winHeight != 0)
+			return new Dimension (winWidth, winHeight);
 		return null;
 	}	//	getWindowSize
 
@@ -451,7 +458,7 @@ public class GridWindow implements Serializable
 	@Override
 	public String toString()
 	{
-		return "MWindow[" + m_vo.WindowNo + "," + m_vo.Name + " (" + m_vo.AD_Window_ID + ")]";
+		return "MWindow[" + m_vo.getWindowNo() + "," + m_vo.getName() + " (" + m_vo.getAD_Window_ID() + ")]";
 	}   //  toString
 
 	/**

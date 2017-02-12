@@ -33,7 +33,6 @@ import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -41,13 +40,14 @@ import org.compiere.util.Trx;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
+import de.metas.process.JavaProcess;
 
 /**
  *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Abonnement_Auftragsverwaltung_(2009_0015_G36)'>(2009 0015 G36)</a>"
  */
-public class C_SubscriptionProgress_Evaluate extends SvrProcess
+public class C_SubscriptionProgress_Evaluate extends JavaProcess
 {
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
@@ -70,7 +70,7 @@ public class C_SubscriptionProgress_Evaluate extends SvrProcess
 				.addOnlyContextClient(localCtx)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement)
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
+				.addInArrayOrAllFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate).addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
 				.create()

@@ -32,13 +32,14 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
 import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.picking.terminal.ProductLayout;
@@ -92,16 +93,16 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		{
 			// get objects from box 0: means unpacked items
 			final int key = PackingItemsMap.KEY_UnpackedItems;
-			final List<AbstractPackingItem> unpacked = map.get(key);
+			final List<IPackingItem> unpacked = map.get(key);
 			// add to layout unpacked items
 			{
 				if (!(unpacked == null || unpacked.isEmpty()))
 				{
-					for (final AbstractPackingItem apck : unpacked)
+					for (final IPackingItem apck : unpacked)
 					{
-						final FreshPackingItem pck = (FreshPackingItem)apck;
+						final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
 						final FreshProductKey productKey = createProductKey(pck, key, selectedPickingSlot); // selectedPickingSlot=null
-						final FreshPackingItem allocatedItem = new FreshPackingItem(pck);
+						final IFreshPackingItem allocatedItem = FreshPackingItemHelper.copy(pck);
 						productKey.setUnAllocatedPackingItem(allocatedItem);
 						productKey.setPackingItem(null); // nothing packed yet in the key
 						if (!productKey.isActive())
@@ -118,12 +119,12 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		{
 			// put to layout items from selected box
 			final int key = selectedPickingSlot.getM_PickingSlot().getM_PickingSlot_ID();
-			final List<AbstractPackingItem> selected = map.get(key);
+			final List<IPackingItem> selected = map.get(key);
 			if (selected != null && !selected.isEmpty())
 			{
-				for (final AbstractPackingItem apck : selected)
+				for (final IPackingItem apck : selected)
 				{
-					final FreshPackingItem pck = (FreshPackingItem)apck;
+					final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
 					final FreshProductKey productKey = createProductKey(pck, key, selectedPickingSlot);
 					if (productKey == null || !productKey.isActive())
 					{
@@ -135,11 +136,11 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 			}
 
 			// now show unpacked for that specific partner
-			final List<AbstractPackingItem> unpacked = map.get(PackingItemsMap.KEY_UnpackedItems);
-			final List<AbstractPackingItem> items = getPackageItems().createUnpackedForBpAndBPLoc(unpacked, selectedPickingSlot);
-			for (final AbstractPackingItem apck : items)
+			final List<IPackingItem> unpacked = map.get(PackingItemsMap.KEY_UnpackedItems);
+			final List<IPackingItem> items = getPackageItems().createUnpackedForBpAndBPLoc(unpacked, selectedPickingSlot);
+			for (final IPackingItem apck : items)
 			{
-				final FreshPackingItem packingItem = (FreshPackingItem)apck;
+				final IFreshPackingItem packingItem = FreshPackingItemHelper.cast(apck);
 				
 				// if the item exist in the list, do not create the key again
 				final FreshProductKey productKeyExisting = getExistentProductKey(productKeys, packingItem);
@@ -167,7 +168,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		return Collections.unmodifiableList(productKeys);
 	}
 
-	private FreshProductKey createProductKey(final FreshPackingItem pck,
+	private FreshProductKey createProductKey(final IFreshPackingItem pck,
 			final int key,
 			final PickingSlotKey selectedPickingSlot)
 	{
@@ -182,7 +183,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		return productKey;
 	}
 
-	private static FreshProductKey getExistentProductKey(final List<ITerminalKey> productKeys, final AbstractPackingItem apck)
+	private static FreshProductKey getExistentProductKey(final List<ITerminalKey> productKeys, final IPackingItem apck)
 	{
 		for (final ITerminalKey keyItem : productKeys)
 		{
@@ -196,19 +197,19 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	}
 
 	@Override
-	public boolean isSameBPartner(final AbstractPackingItem item1, final AbstractPackingItem item2)
+	public boolean isSameBPartner(final IPackingItem item1, final IPackingItem item2)
 	{
-		final FreshPackingItem freshItem1 = (FreshPackingItem)item1;
-		final FreshPackingItem freshItem2 = (FreshPackingItem)item2;
-		return freshItem1.getBpartnerId() == freshItem2.getBpartnerId();
+		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
+		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
+		return freshItem1.getC_BPartner_ID() == freshItem2.getC_BPartner_ID();
 	}
 
 	@Override
-	public boolean isSameBPLocation(final AbstractPackingItem item1, final AbstractPackingItem item2)
+	public boolean isSameBPLocation(final IPackingItem item1, final IPackingItem item2)
 	{
-		final FreshPackingItem freshItem1 = (FreshPackingItem)item1;
-		final FreshPackingItem freshItem2 = (FreshPackingItem)item2;
-		return freshItem1.getBpartnerLocationId() == freshItem2.getBpartnerLocationId();
+		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
+		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
+		return freshItem1.getC_BPartner_Location_ID() == freshItem2.getC_BPartner_Location_ID();
 	}
 
 }

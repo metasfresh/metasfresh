@@ -1,12 +1,18 @@
 package org.adempiere.ad.trx.processor.api.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.AssertionFailedError;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
+import org.adempiere.ad.trx.processor.api.LoggerTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -14,7 +20,8 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
+
+import junit.framework.AssertionFailedError;
 
 /*
  * #%L
@@ -29,19 +36,19 @@ import org.junit.Assert;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * Executes a given {@link ITrxItemChunkProcessor} and asserts expectations.
- * 
- * @author metas-dev <dev@metas-fresh.com>
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <IT>
  * @param <RT>
@@ -51,17 +58,37 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private ITrxItemChunkProcessor<IT, RT> _processor;
 	private boolean _runInTrx = false;
-	private Boolean useTrxSavepoints = null;
+	private boolean useTrxSavepoints = ITrxItemProcessorExecutor.DEFAULT_UseTrxSavepoints;
 	//
 	private List<IT> _items;
 	private RT expectedResult;
 	private Class<?> expectedExceptionClass;
+	private OnItemErrorPolicy onItemErrorPolicy;
+
+	/**
+	 * The exception handler that is used when we test the executor. Extend as needed.
+	 */
+	private final ITrxItemExceptionHandler exceptionHandler = new LoggerTrxItemExceptionHandler()
+	{
+		@Override
+		public void onItemError(Exception e, Object item)
+		{
+			super.onItemError(e, item);
+			if (item instanceof Item)
+			{
+				((Item)item).setOnItemErrorException(e);
+			}
+		}
+	};
 
 	public TrxItemProcessorExecutorRunExpectations()
 	{
 		super();
 	}
 
+	/**
+	 * Executes the executor and asserts that all expectations hold true.
+	 */
 	public void assertExpected()
 	{
 		//
@@ -80,12 +107,11 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		final IMutable<Exception> exceptionActual = new Mutable<>();
 		final TrxRunnable trxRunnable = new TrxRunnableAdapter()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
 				final ITrx trx = trxManager.getTrx(localTrxName);
-				Assert.assertEquals("Null transaction", !isRunInTrx(), trxManager.isNull(trx));
+				assertEquals("Null transaction", !isRunInTrx(), trxManager.isNull(trx));
 
 				//
 				// Create the context
@@ -95,13 +121,11 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 				//
 				// Create the executor
 				final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<>(
-						processorCtx, // processing context
-						processor // processor
-				);
-				if (useTrxSavepoints != null)
-				{
-					executor.setUseTrxSavepoints(useTrxSavepoints);
-				}
+						processorCtx,    // processing context
+						processor,    // processor
+						exceptionHandler,
+						onItemErrorPolicy,
+						useTrxSavepoints);
 
 				//
 				// Run the executor and gather the result
@@ -134,18 +158,18 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		//
 		// Check the result
 		assertException(getExpectedExceptionClass(), exceptionActual.getValue());
-		Assert.assertEquals("Invalid result", getExpectedResult(), resultActual.getValue());
+		assertEquals("Invalid result", getExpectedResult(), resultActual.getValue());
 
 		//
 		// Make sure all all transactions were closed
 		final List<ITrx> activeTrxs = trxManager.getActiveTransactionsList();
-		Assert.assertTrue("All transactions shall be closed: " + activeTrxs, activeTrxs.isEmpty());
+		assertTrue("All transactions shall be closed: " + activeTrxs, activeTrxs.isEmpty());
 
 		//
 		// Make sure the thread inherited transaction was restored
 		final String threadIneritedTrxNameAfter = trxManager.getThreadInheritedTrxName();
-		Assert.assertEquals("ThreadInherited transaction shall be restored to the value that it was before",
-				threadIneritedTrxNameBefore, // expected,
+		assertEquals("ThreadInherited transaction shall be restored to the value that it was before",
+				threadIneritedTrxNameBefore,    // expected,
 				threadIneritedTrxNameAfter // actual
 		);
 		trxManager.setThreadInheritedTrxName(null); // just reset it to have it clean
@@ -173,7 +197,7 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 			if (exceptionActual == null)
 			{
 				// exception expected but we got no exception
-				Assert.fail("We were expecting expection " + expectedExceptionClass + " but we got nothing");
+				fail("We were expecting expection " + expectedExceptionClass + " but we got nothing");
 				return;
 			}
 			else if (expectedExceptionClass.isAssignableFrom(exceptionActual.getClass()))
@@ -250,6 +274,12 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 	public TrxItemProcessorExecutorRunExpectations<IT, RT> setUseTrxSavepoints(final boolean useTrxSavepoints)
 	{
 		this.useTrxSavepoints = useTrxSavepoints;
+		return this;
+	}
+
+	public TrxItemProcessorExecutorRunExpectations<IT, RT> setOnItemErrorPolicy(OnItemErrorPolicy onItemErrorPolicy)
+	{
+		this.onItemErrorPolicy = onItemErrorPolicy;
 		return this;
 	}
 

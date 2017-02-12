@@ -28,16 +28,20 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.INamePairIterator;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.Services;
 import org.compiere.model.MLookup.ILookupData;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import com.google.common.base.Stopwatch;
+
+import de.metas.logging.LogManager;
 
 /**
  * Asynchronous lookup data loader
@@ -67,8 +71,6 @@ import org.compiere.util.Util.ArrayKey;
 	private boolean allLoaded = false;
 	private boolean wasInterrupted = false;
 
-	private final long m_startTime = System.currentTimeMillis();
-
 	/**
 	 * MLoader Constructor
 	 */
@@ -77,7 +79,7 @@ import org.compiere.util.Util.ArrayKey;
 		super();
 
 		threadName = "MLookupLoader-W" + lookupInfo.getWindowNo() + "-" + lookupInfo.getKeyColumnFQ();
-		log.debug("Loading: " + threadName);
+		log.debug("Loading: {}", threadName);
 
 		this.validationCtx = validationCtx;
 		this.lookupInfo = lookupInfo;
@@ -114,10 +116,8 @@ import org.compiere.util.Util.ArrayKey;
 
 	private final ILookupData call0(final INamePairIterator data)
 	{
-
-		final long startTime = System.currentTimeMillis();
-		MLookupCache.loadStart(lookupInfo);
-
+		final Stopwatch duration = Stopwatch.createStarted();
+		
 		if (!data.isValid())
 		{
 			this.validationKey = null;
@@ -130,7 +130,7 @@ import org.compiere.util.Util.ArrayKey;
 		// check
 		if (Thread.interrupted())
 		{
-			log.warn(threadName + ": Loader interrupted");
+			log.warn("{}: Loader interrupted", threadName);
 			this.wasInterrupted = true;
 			return this;
 		}
@@ -141,12 +141,13 @@ import org.compiere.util.Util.ArrayKey;
 		hasInactiveValues = false;
 		allLoaded = true;
 
+		final INamePairPredicate postQueryFilter = lookupInfo.getValidationRule().getPostQueryFilter();
 		for (NamePair item = data.next(); item != null; item = data.next())
 		{
 			final int rows = values.size();
 			if (rows >= MLookup.MAX_ROWS)
 			{
-				final String errmsg = lookupInfo.KeyColumn + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
+				final String errmsg = lookupInfo.getKeyColumnFQ() + ": Loader - Too many records. Please consider changing it to Search reference or use a (better) validation rule."
 						+ "\n Fetched Rows: " + rows
 						+ "\n Max rows allowed: " + MLookup.MAX_ROWS;
 				log.warn(errmsg);
@@ -165,26 +166,24 @@ import org.compiere.util.Util.ArrayKey;
 				hasInactiveValues = true;
 			}
 
-			if (!lookupInfo.getValidationRule().accept(validationCtx, item))
+			if (!postQueryFilter.accept(validationCtx, item))
 			{
 				continue;
 			}
 
 			values.put(item.getID(), item);
 		}
+		
+		duration.stop();
 
 		if (log.isTraceEnabled())
 		{
 			final int size = values.size();
-			log.trace(lookupInfo.getKeyColumnFQ()
-					+ " (" + lookupInfo.getAD_Column_ID() + "):"
+			log.trace(lookupInfo.getKeyColumnFQ() + ": "
 					// + " ID=" + m_info.AD_Column_ID + " " +
 					+ " - Loader complete #" + size + " - all=" + allLoaded
-					+ " - ms=" + String.valueOf(System.currentTimeMillis() - m_startTime)
-					+ " (" + String.valueOf(System.currentTimeMillis() - startTime) + ")");
+					+ " - " + duration);
 		}
-
-		MLookupCache.loadEnd(lookupInfo, values);
 
 		return this;
 	}	// run

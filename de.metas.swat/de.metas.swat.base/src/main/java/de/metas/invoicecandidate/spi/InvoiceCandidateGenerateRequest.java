@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Request for generating invoice candidates.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class InvoiceCandidateGenerateRequest

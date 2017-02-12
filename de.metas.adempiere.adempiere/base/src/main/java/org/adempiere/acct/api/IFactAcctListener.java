@@ -27,7 +27,7 @@ import org.compiere.model.I_Fact_Acct;
 /**
  * Listens {@link I_Fact_Acct} events.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IFactAcctListener

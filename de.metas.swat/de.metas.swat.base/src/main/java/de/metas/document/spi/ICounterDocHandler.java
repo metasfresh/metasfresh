@@ -27,7 +27,7 @@ import org.compiere.process.DocAction;
 /**
  * Note: Implementers usually extend {@link CounterDocumentHandlerAdapter}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ICounterDocHandler

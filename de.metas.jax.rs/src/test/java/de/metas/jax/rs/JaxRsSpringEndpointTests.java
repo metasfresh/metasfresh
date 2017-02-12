@@ -50,7 +50,7 @@ import de.metas.jax.rs.testService.ITestService;
  * Theses test cases are here only for reference! Currently, we don't use spring to configure cxf.<br>
  * See {@link JaxRsProgramaticTests} for how to do that.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class JaxRsSpringEndpointTests

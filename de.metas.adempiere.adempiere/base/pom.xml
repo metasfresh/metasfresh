@@ -5,12 +5,13 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.adempiere.adempiere</groupId>
 	<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -18,24 +19,26 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
+			<version>1.0.0</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<!-- NOTE: we need this for MG to be able to track dependencies -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -131,21 +134,21 @@
 			<version>0.9.5</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.2-1003-jdbc4</version> 
-			<!-- 04750 the old version was buggy -->
+			<version>9.4.1209.jre7</version>
 		</dependency>
+
 
 		<!-- Scripting support -->
-
-		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/model/Scriptlet.java -->
 		<dependency>
-			<groupId>org.beanshell</groupId>
-			<artifactId>bsh</artifactId>
-			<version>2.0b5</version>
+			<!-- required by AD_Rule scripts -->
+		    <groupId>org.codehaus.groovy</groupId>
+		    <artifactId>groovy-jsr223</artifactId>
 		</dependency>
+		
 
 		<!-- Swing -->
 		<dependency>
@@ -170,6 +173,7 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -195,11 +199,21 @@
 		</dependency>
 
 		<!-- Reporting -->
-
+		<dependency>
+			<groupId>de.metas.report.jasper.commons</groupId>
+			<artifactId>de.metas.report.jasper.commons</artifactId>
+			<version>1.0.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xmlParserAPIs</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- poi 3.12 is also the version contained in jasperreports 6.2.2 -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.7</version>
 
 			<exclusions>
 				<!-- working on ..root-webapp-3.7.0-FR3403603-SNAPSHOT-exp.war\WEB-INF\lib\servlet-api-2.3.jar) 
@@ -222,7 +236,6 @@
 		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
-			<version>2.1.7</version>
 			<exclusions>
 				<exclusion>
 					<groupId>bouncycastle</groupId>
@@ -245,13 +258,15 @@
 			<version>1.0</version>
 		</dependency>
 
+		<!-- required for PI-stuff in org.adempiere.apps.graph and also other stuff
+		this is the jfreechart version also used by jasperreports-6.2.2 -->
 		<dependency>
-			<groupId>jfree</groupId>
+			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-			<version>1.0.12</version>
+			<version>1.0.19</version>
 		</dependency>
 
-		<!-- workaound, see 06687 Get rid of calls to non-API (107116288996) -->
+		<!-- workaround, see 06687 Get rid of calls to non-API (107116288996) -->
 		<!-- if you are using badly written maven plugins then blame them and add
       	<scope>provided</scope>
       	-->

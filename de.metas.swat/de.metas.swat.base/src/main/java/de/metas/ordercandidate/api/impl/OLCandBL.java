@@ -13,11 +13,11 @@ package de.metas.ordercandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,17 +45,21 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelation;
-import org.adempiere.model.MRelationType;
+import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrder;
@@ -67,14 +71,14 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_C_Order;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderLineBL;
@@ -82,6 +86,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -99,6 +104,7 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;
 import de.metas.pricing.attributebased.ProductPriceAttributeAware;
 import de.metas.product.IProductPA;
+import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 
@@ -120,27 +126,30 @@ public class OLCandBL implements IOLCandBL
 			final ILoggable process,
 			final String trxName)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
+
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
 		// but I'm afraid that grouping by time - granularity is not really portable. Also there might be other
 		// granularity levels, that can't be put into an sql later on.
 
 		//
 		// 1. Get the ol-candidates to process (using relation)
-		final MRelationType relationType = MRelationType.retrieveForInternalName(ctx, mkRelationTypeInternalName(processor), trxName);
-		if (relationType == null)
+		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
+		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance
+				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
+
+		if (allCandidates.isEmpty())
 		{
-			final String msg = "No relation type has been configured for" + processor;
-			logProcess(process, msg);
-			throw new AdempiereException(msg);
+			loggable.addLog("Found no order candidates for relationTypeInternalName={}; nothing to do", relationTypeInternalName);
+			return;
 		}
 
-		//
-		// FIXME retrieve (AND FILTER) the candidates directly, and not with M..., please
-		final List<I_C_OLCand> allCandidates = relationType.retrieveDestinations(InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class);
 		final List<I_C_OLCand> orderCandidates = filterValidOrderCandidates(ctx, allCandidates, trxName);
+
 		if (orderCandidates.isEmpty())
 		{
-			logProcess(process, "Found no Orders candidates; nothing to do");
+			loggable.addLog("Found no candidates for relation type with internalName={}; nothing to do", relationTypeInternalName);
 			return;
 		}
 
@@ -148,11 +157,11 @@ public class OLCandBL implements IOLCandBL
 
 		if (candidates.isEmpty())
 		{
-			logProcess(process, "Found no unprocessed candidates; nothing to do");
+			loggable.addLog("Found no unprocessed and valid candidates; nothing to do");
 			return;
 		}
 
-		logProcess(process, "Processing " + candidates.size() + " order line candidates");
+		loggable.addLog("Processing {} order line candidates", candidates.size());
 
 		//
 		// 2. Order the candidates
@@ -192,8 +201,6 @@ public class OLCandBL implements IOLCandBL
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<Integer>();
 
-		final MRelationType relTypeOlC2Ol = MRelationType.retrieveForInternalName(ctx, mkRelTypeIntNameOlC2Ol(), trxName);
-
 		MOrder order = null;
 		MOrderLine orderLine = null;
 		final List<MOrderLine> createdOrderLines = new ArrayList<MOrderLine>();
@@ -229,7 +236,7 @@ public class OLCandBL implements IOLCandBL
 				// 02384
 				try
 				{
-					orderLine = processOLCand(ctx, grouping, relTypeOlC2Ol, order, orderLine, candOfGroup, trxName);
+					orderLine = processOLCand(ctx, grouping, order, orderLine, candOfGroup, trxName);
 
 					// 03472: establishing a "real" link with FK-constraints between order candidate and order line
 					createOla(
@@ -240,6 +247,10 @@ public class OLCandBL implements IOLCandBL
 				}
 				catch (final AdempiereException e)
 				{
+					final String msg = "Caught exception while processing {}; message={}; exception={}";
+					Loggables.get().addLog(msg, candOfGroup, e.getLocalizedMessage(), e);
+					logger.warn(StringUtils.formatMessage(msg, candOfGroup, e.getLocalizedMessage(), e), e);
+
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 					// storing the error-info out of trx, i hope this solves the bug that the info just wasn't there
@@ -300,6 +311,10 @@ public class OLCandBL implements IOLCandBL
 			}
 			catch (final AdempiereException e)
 			{
+				final String msg = "Caught exception while completing {}; message={}; exception={}";
+				Loggables.get().addLog(msg, order, e.getLocalizedMessage(), e);
+				logger.warn(StringUtils.formatMessage(msg, order, e.getLocalizedMessage(), e), e);
+
 				final StringBuilder sb = new StringBuilder();
 				boolean first = true;
 				int counter = 0;
@@ -349,7 +364,6 @@ public class OLCandBL implements IOLCandBL
 	private MOrderLine processOLCand(
 			final Properties ctx,
 			final Map<ArrayKey, List<I_C_OLCand>> grouping,
-			final MRelationType relTypeOlC2Ol,
 			final MOrder order,
 			final MOrderLine currentOrderLine,
 			final I_C_OLCand candToProcess,
@@ -443,8 +457,6 @@ public class OLCandBL implements IOLCandBL
 		candToProcess.setProcessed(true);
 		InterfaceWrapperHelper.save(candToProcess);
 
-		MRelation.add(ctx, relTypeOlC2Ol, candToProcess.getC_OLCand_ID(), resultOrderLinePO.get_ID(), trxName);
-
 		return resultOrderLinePO;
 	}
 
@@ -458,7 +470,7 @@ public class OLCandBL implements IOLCandBL
 		if (order.processIt(X_C_Order.DOCACTION_Complete))
 		{
 			order.saveEx();
-			logProcess(process, "@Created@ @C_Order_ID@ " + order.getDocumentNo());
+			Loggables.get().withLogger(logger, Level.INFO).addLog("@Created@ @C_Order_ID@ " + order.getDocumentNo());
 		}
 		else
 		{
@@ -513,14 +525,14 @@ public class OLCandBL implements IOLCandBL
 
 		// if the olc has no value set, we are not falling back here!
 		// 05617
-		order.setDropShip_BPartner_ID(olCand.getDropShip_BPartner_ID());
+		order.setDropShip_BPartner_ID(effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand));
 		order.setDropShip_Location_ID(olCand.getDropShip_Location_ID());
-		final boolean isDropShip = olCand.getDropShip_BPartner_ID() > 0 && olCand.getDropShip_Location_ID() > 0;
+		final boolean isDropShip = effectiveValuesBL.getDropShip_BPartner_Effective_ID(olCand) > 0 || effectiveValuesBL.getDropShip_Location_Effective_ID(olCand) > 0;
 		order.setIsDropShip(isDropShip);
 
-		order.setHandOver_Location_ID(olCand.getHandOver_Location_ID());
-		order.setHandOver_Partner_ID(olCand.getHandOver_Partner_ID());
-		order.setIsUseHandOver_Location(olCand.getHandOver_Location_ID() > 0);
+		order.setHandOver_Location_ID(effectiveValuesBL.getHandOver_Location_Effective_ID(olCand));
+		order.setHandOver_Partner_ID(effectiveValuesBL.getHandOver_Partner_Effective_ID(olCand));
+		order.setIsUseHandOver_Location(effectiveValuesBL.getHandOver_Location_Effective_ID(olCand) > 0);
 
 		if (olCand.getC_Currency_ID() > 0)
 		{
@@ -572,10 +584,10 @@ public class OLCandBL implements IOLCandBL
 		{
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			
+
 			final int bpartnerID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 			final boolean soTrx = true;
-			
+
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(ctx, bpartnerID, soTrx, trxName);
 			return pricingSystemId;
 		}
@@ -619,10 +631,10 @@ public class OLCandBL implements IOLCandBL
 				|| effectiveValuesBL.getBill_User_Effective_ID(previousCandidate) != effectiveValuesBL.getBill_User_Effective_ID(candidate)
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
 				|| !Check.equals(effectiveValuesBL.getDatePromised_Effective(previousCandidate), effectiveValuesBL.getDatePromised_Effective(candidate))
-				|| previousCandidate.getHandOver_Partner_ID() != candidate.getHandOver_Partner_ID()
-				|| previousCandidate.getHandOver_Location_ID() != candidate.getHandOver_Location_ID()
-				|| effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate) != effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate)
-				|| effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate) != effectiveValuesBL.getDropShip_Location_Effective_ID(candidate)
+				|| !Check.equals(effectiveValuesBL.getHandOver_Partner_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
+				|| !Check.equals(effectiveValuesBL.getHandOver_Location_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
+				|| !Check.equals(effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
+				|| !Check.equals(effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
 				|| getPricingSystemId(ctx, previousCandidate, processor, trxName) != getPricingSystemId(ctx, candidate, processor, trxName))
 		{
 			return true;
@@ -880,24 +892,10 @@ public class OLCandBL implements IOLCandBL
 		return value;
 	}
 
-	private void logProcess(final ILoggable process, final String msg)
-	{
-		if (process != null)
-		{
-			process.addLog(msg);
-		}
-	}
-
 	@Override
 	public String mkRelationTypeInternalName(final I_C_OLCandProcessor processor)
 	{
 		return I_C_OLCandProcessor.Table_Name + "_" + processor.getC_OLCandProcessor_ID() + "<=>" + I_C_OLCand.Table_Name;
-	}
-
-	@Override
-	public String mkRelTypeIntNameOlC2Ol()
-	{
-		return "C_OLCand_C_OrderLine";
 	}
 
 	/**
@@ -914,6 +912,7 @@ public class OLCandBL implements IOLCandBL
 		{
 			if (cand.isProcessed() || cand.isError())
 			{
+				logger.debug("Skipping C_OLCand with Processed={} and IsError={}; cand={}", cand.isProcessed(), cand.isError(), cand);
 				continue;
 			}
 			result.add(cand);
@@ -922,7 +921,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	/**
-	 * Returns a list containing only those input candidates which have destination Orders
+	 * Returns a list containing only those input candidates which have no error and {@link I_C_OLCand#COLUMNNAME_AD_DataDestination_ID} pointing to {@link OrderCandidate_Constants#DATA_DESTINATION_INTERNAL_NAME}.
 	 *
 	 * @param ctx
 	 * @param cands
@@ -933,12 +932,11 @@ public class OLCandBL implements IOLCandBL
 	{
 		final List<I_C_OLCand> result = new ArrayList<I_C_OLCand>();
 
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
-						ctx,
-						OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
-						true, // throwEx
-						ITrx.TRXNAME_None);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
+				ctx,
+				OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
+				true, // throwEx
+				ITrx.TRXNAME_None);
 
 		final int processorDataDestinationId = dataDest.getAD_InputDataSource_ID();
 
@@ -949,6 +947,8 @@ public class OLCandBL implements IOLCandBL
 			if (!isValidDataDestination(processorDataDestinationId, cand.getAD_DataDestination_ID())
 					|| isImportedWithIssues(cand))
 			{
+				logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} and IsImportedWithIssues={}; cand={}",
+						processorDataDestinationId, cand.getAD_DataDestination_ID(), cand);
 				continue;
 			}
 			result.add(cand);
@@ -984,8 +984,7 @@ public class OLCandBL implements IOLCandBL
 		model.setRecordSourceId(processor.getC_OLCandProcessor_ID());
 
 		// filter by AD_DataDestination_ID
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
 
 		if (!Check.isEmpty(whereClause, true))
 		{
@@ -1008,8 +1007,7 @@ public class OLCandBL implements IOLCandBL
 				(sourceTabName == null ? "" : sourceTabName + " ")
 						+ processor.getName()
 						+ "<=>"
-						+ olCandTable.getName()
-				);
+						+ olCandTable.getName());
 
 		return model;
 	}
@@ -1026,21 +1024,21 @@ public class OLCandBL implements IOLCandBL
 
 		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
 
-		final MRelationType retrievedRelType = MRelationType.retrieveForInternalName(ctx, model.getRelationTypeInternalName(), null);
+		final I_AD_RelationType retrievedRelType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, model.getRelationTypeInternalName());
 
-		final MRelationType relType;
+		final I_AD_RelationType relType;
 
-		final MReference refSource;
-		final MRefTable refTableSource;
+		final I_AD_Reference refSource;
+		final I_AD_Ref_Table refTableSource;
 
-		final MReference refTarget;
-		final MRefTable refTableTarget;
+		final I_AD_Reference refTarget;
+		final I_AD_Ref_Table refTableTarget;
 
 		final int orgId = 0;
 
 		if (retrievedRelType == null)
 		{
-			relType = new MRelationType(ctx, 0, trxName);
+			relType = InterfaceWrapperHelper.create(ctx, I_AD_RelationType.class, trxName);
 			relType.setInternalName(model.getRelationTypeInternalName());
 
 			refSource = new MReference(ctx, 0, trxName);
@@ -1048,12 +1046,12 @@ public class OLCandBL implements IOLCandBL
 			refSource.setEntityType(entityType);
 			refSource.setName(mkNameOfSourceRef(ctx, model));
 			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
-			refSource.saveEx();
-			relType.setAD_Reference_Source_ID(refSource.get_ID());
+			InterfaceWrapperHelper.save(refSource);
+			relType.setAD_Reference_Source_ID(refSource.getAD_Reference_ID());
 
 			refTableSource = new MRefTable(ctx, 0, trxName);
 			refTableSource.setAD_Org_ID(orgId);
-			refTableSource.setAD_Reference_ID(refSource.get_ID());
+			refTableSource.setAD_Reference_ID(refSource.getAD_Reference_ID());
 			refTableSource.setEntityType(entityType);
 
 			refTarget = new MReference(ctx, 0, trxName);
@@ -1061,28 +1059,27 @@ public class OLCandBL implements IOLCandBL
 			refTarget.setEntityType(entityType);
 			refTarget.setName(mkNameOfTargetRef(ctx, model));
 			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
-			refTarget.saveEx();
-			relType.setAD_Reference_Target_ID(refTarget.get_ID());
+			InterfaceWrapperHelper.save(refTarget);
+			relType.setAD_Reference_Target_ID(refTarget.getAD_Reference_ID());
 
 			refTableTarget = new MRefTable(ctx, 0, trxName);
 			refTableTarget.setAD_Org_ID(orgId);
-			refTableTarget.setAD_Reference_ID(refTarget.get_ID());
+			refTableTarget.setAD_Reference_ID(refTarget.getAD_Reference_ID());
 			refTableTarget.setEntityType(entityType);
 		}
 		else
 		{
 			relType = retrievedRelType;
-			refSource = (MReference)relType.getAD_Reference_Source();
-			refTableSource = MReference.retrieveRefTable(ctx, refSource.get_ID(), trxName);
+			refSource = relType.getAD_Reference_Source();
+			refTableSource = MReference.retrieveRefTable(ctx, refSource.getAD_Reference_ID(), trxName);
 
-			refTarget = (MReference)relType.getAD_Reference_Target();
-			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.get_ID(), trxName);
+			refTarget = relType.getAD_Reference_Target();
+			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.getAD_Reference_ID(), trxName);
 
 		}
-		relType.setIsExplicit(false);
 		relType.setName(model.getRelationTypeName());
 		relType.setIsDirected(model.isRelationTypeDirected());
-		relType.saveEx();
+		InterfaceWrapperHelper.save(relType);
 
 		// source reference
 		refTableSource.setAD_Table_ID(model.getAdTableSourceId());
@@ -1097,7 +1094,7 @@ public class OLCandBL implements IOLCandBL
 		refTableSource.setAD_Display(keyColumnSourceId);
 
 		refTableSource.setWhereClause(keyColumnsSource[0] + "=" + model.getRecordSourceId());
-		refTableSource.saveEx();
+		InterfaceWrapperHelper.save(refTableSource);
 
 		// target reference
 		refTableTarget.setAD_Table_ID(model.getAdTableTargetId());
@@ -1121,7 +1118,7 @@ public class OLCandBL implements IOLCandBL
 			targetWhereClauseToUse = model.getTargetWhereClause();
 		}
 		refTableTarget.setWhereClause(targetWhereClauseToUse);
-		refTableTarget.saveEx();
+		InterfaceWrapperHelper.save(refTableTarget);
 	}
 
 	private String mkNameOfSourceRef(
@@ -1233,7 +1230,7 @@ public class OLCandBL implements IOLCandBL
 	public IPricingResult computePriceActual(final I_C_OLCand olCand, final BigDecimal qtyOverride, final int pricingSystemIdOverride, final Timestamp date)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		
+
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setReferencedObject(olCand);
@@ -1270,10 +1267,9 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl =
-					InterfaceWrapperHelper.create(
-							productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName),
-							I_M_PriceList.class);
+			final I_M_PriceList pl = InterfaceWrapperHelper.create(
+					productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName),
+					I_M_PriceList.class);
 
 			if (pl == null)
 			{

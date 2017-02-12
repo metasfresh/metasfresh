@@ -13,15 +13,14 @@ package de.metas.adempiere.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 /**
  * Helper class to easily invoke {@link Runnable}s wrapping them with UI specific features like:
@@ -39,11 +38,19 @@ public interface IClientUIInvoker
 	enum OnFail
 	{
 		/** Ignore the exceptions. Don't even log it */
-		SilentlyIgnore,
+		SilentlyIgnore,  //
 		/** Show error popup */
-		ShowErrorPopup,
+		ShowErrorPopup,  //
 		/** Propagate the exception */
-		ThrowException,
+		ThrowException,  //
+		/** Use provided exception handler. See {@link IClientUIInvoker#setExceptionHandler(IExceptionHandler)}. */
+		UseHandler,
+	}
+
+	/** Exception handler */
+	public static interface IExceptionHandler
+	{
+		void handleException(Exception e);
 	}
 
 	/**
@@ -88,17 +95,28 @@ public interface IClientUIInvoker
 	 */
 	IClientUIInvoker setOnFail(OnFail onFail);
 
+	IClientUIInvoker setExceptionHandler(final IExceptionHandler exceptionHandler);
+
 	/**
 	 * Advice that given runnable will be a long operation. In case of long operations the Waiting cursor will be shown.
 	 * 
 	 * NOTE: Implementations may open a separate thread for this.
 	 * 
 	 * @param longOperation
+	 * @deprecated Please consider using {@link IClientUI#invokeAsync()}.
 	 */
+	@Deprecated
 	IClientUIInvoker setLongOperation(final boolean longOperation);
 
 	/**
-	 * Advice the UI to call the runnable in a separate UI event.
+	 * Advice the UI to show a glass pane before running the given runnable.
+	 * 
+	 * @param showGlassPane
+	 */
+	IClientUIInvoker setShowGlassPane(boolean showGlassPane);
+
+	/**
+	 * Advice the UI to call the runnable in a separate UI event, EVEN IF this method was called from the UI thread.
 	 * 
 	 * @param invokeLater
 	 */

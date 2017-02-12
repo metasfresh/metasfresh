@@ -13,15 +13,14 @@ package org.adempiere.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
@@ -35,6 +34,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import org.adempiere.util.exceptions.ServicesException;
+import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.IServiceInterceptor;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.reflections.ReflectionUtils;
@@ -48,9 +48,15 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
 /**
- * ADempiere service registry.
+ * The metasfresh service registry.<br>
+ * Under the hood, this registry is a map that associates interfaces which extend either {@link ISingletonService} or {@link IMultitonService} with their respective implementations.<br>
+ * It is possible to explicitly register an implementation for a service by using the method {@link #registerService(Class, ISingletonService)}.<br>
+ * However, usually, a service's implementation class is located and instantiated with the help of a {@link IServiceNameAutoDetectPolicy} that is set via {@link #setServiceNameAutoDetectPolicy(IServiceNameAutoDetectPolicy)}.
+ * <p>
+ * An instance of the respective service interface implementation is obtained using the {@link #get(Class)} method.<br>
+ * Note that instead of returning the actual implementation that was registered or located, the {@link #get(Class)} returns a proxy which allows us to implement <b>caching</b> by using the {@link Cached} annotation.
  *
- * @author ts
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class Services
@@ -131,11 +137,12 @@ public class Services
 	/**
 	 *
 	 * @param serviceInterfaceClass
-	 * @return <ul>
+	 * @return
+	 * 		<ul>
 	 *         <li>if <code>T</code> extends {@link ISingletonService} then this method returns a cached instance of that service implementation
 	 *         <li>If <code>T</code> extends {@link IMultitonService}, then this method returns a NEW instance of that service implementation
 	 *         </ul>
-	 * @throws ServicesException if service was not wound or it could not be instantiated
+	 * @throws ServicesException if a service implementation was not found or could not be instantiated
 	 */
 	public static <T extends IService> T get(final Class<T> serviceInterfaceClass)
 	{

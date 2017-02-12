@@ -34,13 +34,14 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.DocAction;
 
+import de.metas.interfaces.I_C_DocType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 
 /**
  * DAO to support {@link M_InOut_Handler} and {@link M_InOutLine_Handler}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 /* package */class M_InOutLine_HandlerDAO
@@ -65,11 +66,26 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 		filters.addEqualsFilter(I_M_InOutLine.COLUMNNAME_IsInvoiceCandidate, false); // which don't have invoice candidates already generated
 		filters.addOnlyActiveRecordsFilter();
 
-		// if the inout was reversed, and there is no IC yet, don't bother creating one
-		final IQuery<I_M_InOut> inoutQuery = queryBL.createQueryBuilder(I_M_InOut.class, ctx, trxName)
-				.addNotEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Reversed)
-				.create();
-		filters.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, inoutQuery);
+		//
+		// Filter M_InOut
+		{
+			final IQueryBuilder<I_M_InOut> inoutQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class, ctx, trxName);
+	
+			// if the inout was reversed, and there is no IC yet, don't bother creating one
+			inoutQueryBuilder.addNotEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Reversed);
+			
+			// Exclude some DocTypes
+			{
+				final IQuery<I_C_DocType> validDocTypesQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, trxName)
+						// Don't create InvoiceCandidates for DocSubType Saldokorrektur (FRESH-454)
+						.addNotEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, I_C_DocType.DOCSUBTYPE_InOutAmountCorrection)
+						//
+						.create();
+				inoutQueryBuilder.addInSubQueryFilter(I_M_InOut.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, validDocTypesQuery);
+			}
+			
+			filters.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, inoutQueryBuilder.create());
+		}
 
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, ctx, trxName)
 				.filter(filters)

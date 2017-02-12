@@ -30,11 +30,15 @@ import java.sql.ResultSet;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
+import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -112,6 +116,17 @@ public class C_Invoice_Candidate_GridTabSummaryInfoProvider implements IGridTabS
 		{
 			sql.append(" AND (").append(icWhereClause).append(")");
 		}
+		
+		// FRESH-580
+		// Apply the default filter to the SQL
+		
+		final String sqlDefaultFilter = Services.get(IInvoiceCandDAO.class).getSQLDefaultFilter(Env.getCtx());
+		
+		if(!sqlDefaultFilter.isEmpty())
+		{
+			sql.append(" AND (").append(sqlDefaultFilter).append(")");
+		}
+		
 		sql.append(" GROUP BY "
 				+ I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing
 				+ ", "

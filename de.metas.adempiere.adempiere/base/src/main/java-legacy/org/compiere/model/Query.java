@@ -26,7 +26,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.exceptions.DBException;
 
 /**
- * 
+ *
  * @author Low Heng Sin
  * @author Teo Sarca, www.arhipac.ro <li>FR [ 1981760 ] Improve Query class <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue <li>FR [ 2041894 ] Add Query.match() method <li>FR [
  *         2107068 ] Query.setOrderBy should be more error tolerant <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method <li>FR [
@@ -41,6 +41,7 @@ public class Query extends TypedSqlQuery<Object>
 	public Query(Properties ctx, MTable table, String whereClause, String trxName)
 	{
 		super(ctx,
+				Object.class, // modelClass 
 				table == null ? null : table.getTableName(), // NOTE: an exception will be thrown if tableName is null
 				whereClause,
 				trxName);
@@ -49,7 +50,7 @@ public class Query extends TypedSqlQuery<Object>
 	@SuppressWarnings("deprecation")
 	public Query(Properties ctx, String tableName, String whereClause, String trxName)
 	{
-		super(ctx, tableName, whereClause, trxName);
+		super(ctx, Object.class, tableName, whereClause, trxName);
 	}
 
 	@Override

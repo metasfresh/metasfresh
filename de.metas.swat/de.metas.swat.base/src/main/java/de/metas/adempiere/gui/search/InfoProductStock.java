@@ -25,8 +25,6 @@ package de.metas.adempiere.gui.search;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.minigrid.ColumnInfo;
@@ -37,6 +35,9 @@ import org.compiere.swing.CTextArea;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class InfoProductStock implements IInfoProductDetail
 {
@@ -75,9 +76,7 @@ public class InfoProductStock implements IInfoProductDetail
 		ColumnInfo[] s_layoutWarehouse = new ColumnInfo[] {
 				new ColumnInfo(" ", "M_Warehouse_ID", IDColumn.class),
 				new ColumnInfo(Msg.translate(Env.getCtx(), "Warehouse"), "Warehouse", String.class),
-				new ColumnInfo(Msg.translate(Env.getCtx(), "QtyAvailable"), "sum(QtyAvailable)", Double.class),
 				new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOnHand"), "sum(QtyOnHand)", Double.class),
-				new ColumnInfo(Msg.translate(Env.getCtx(), "QtyReserved"), "sum(QtyReserved)", Double.class)
 		};
 		/** From Clause */
 		String s_sqlFrom = " M_PRODUCT_STOCK_V ";

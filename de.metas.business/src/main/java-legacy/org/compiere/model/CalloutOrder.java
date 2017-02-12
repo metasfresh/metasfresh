@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.util.CustomColNames.C_BPartner_Location_ISBILLTO_DEFAULT;
-import static org.adempiere.util.CustomColNames.C_BPartner_Location_ISSHIPTO_DEFAULT;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,308 +23,229 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
-import org.adempiere.model.GridTabWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductPA;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld
  * Lieferadressen nur die Adressen angezeigt, die auch als solche in der Location ausgewiesen sind. Ebenso bei den Rechnungsadressen.
  * <li>Contains proposed <a
  * href="https://sourceforge.net/tracker/index.php?func=detail&aid=1883543&group_id=176962&atid=879332" >BF_1883543</a></li>
- * 
+ *
  * @author Jorg Janke
  * @author Mark Ostermann
  */
 // metas: synched with rev 9749
 public class CalloutOrder extends CalloutEngine
 {
-	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
-	public static final String CTX_DiscountSchema = "DiscountSchema";
+	private static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
+	private static final String CTX_UOMConversion = "UOMConversion";
 
-	public static final String MSG_UnderLimitPrice = "UnderLimitPrice";
+	private static final String MSG_CreditLimitOver = "CreditLimitOver";
+	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
 	/** Debug Steps */
 	private boolean steps = false;
 
-	public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
+	// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
+//	public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
 
 	/**
 	 * Order Header Change - DocType. - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
-	 * 
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param mTab Model Tab
-	 * @param mField Model Field
-	 * @param value The new value
-	 * @return Error message or ""
 	 */
-	public String docType(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String docType(final ICalloutField calloutField)
 	{
-		// 05291
-		final boolean dataCopy = mTab.isDataNewCopy();
-
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
-
-		final int C_DocType_ID = order.getC_DocTypeTarget_ID();
-		if (C_DocType_ID <= 0)
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(order.getC_DocTypeTarget())
+				.setOldDocType_ID(order.getC_DocType_ID())
+				.setOldDocumentNo(order.getDocumentNo())
+				.setDocumentModel(order)
+				.buildOrNull();
+		if (documentNoInfo == null)
 		{
 			return NO_ERROR;
 		}
 
-		// Re-Create new DocNo, if there is a doc number already
-		// and the existing source used a different Sequence number
-		String oldDocNo = order.getDocumentNo();
-		boolean newDocNo = (oldDocNo == null);
-		if (!newDocNo && oldDocNo.startsWith("<") && oldDocNo.endsWith(">"))
-			newDocNo = true;
-		Integer oldC_DocType_ID = order.getC_DocType_ID();
+		// Set Context: Document Sub Type for Sales Orders
+		final String docSubType = documentNoInfo.getDocSubType();
+		order.setOrderType(docSubType);
 
-		String sql = "SELECT d.DocSubType,d.HasCharges,'N'," // 1..3
-				+ "d.IsDocNoControlled,s.CurrentNext,s.CurrentNextSys," // 4..6
-				+ "s.AD_Sequence_ID,d.IsSOTrx, " // 7..8
-				+ "s.StartNewYear, s.DateColumn " // 9..10
-				+ " FROM C_DocType d "
-				+ " LEFT OUTER JOIN AD_Sequence s ON (d.DocNoSequence_ID=s.AD_Sequence_ID)"
-				+ " WHERE C_DocType_ID=?"; // #1
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		// No Drop Ship other than Standard
+		final boolean dataCopy = calloutField.isRecordCopyingMode(); // 05291
+		if (!MOrder.DocSubType_Standard.equals(docSubType) && !dataCopy)
 		{
-			int AD_Sequence_ID = 0;
+			order.setIsDropShip(false);
+		}
 
-			// Get old AD_SeqNo for comparison
-			if (!newDocNo && oldC_DocType_ID.intValue() != 0)
+		//
+		// Delivery Rule
+		if (MOrder.DocSubType_POS.equals(docSubType))
+		{
+			order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
+		}
+		// NOTE: Don't override default configured DeliveryRule (see task 09250)
+		// else
+		// {
+		// if (DocSubType.equals(MOrder.DocSubType_Prepay))
+		// {
+		// order.setDeliveryRule(X_C_Order.DELIVERYRULE_CompleteOrder);
+		// }
+		// else
+		// {
+		// order.setDeliveryRule(X_C_Order.DELIVERYRULE_Availability);
+		// }
+		// }
+
+		// Invoice Rule
+		if (MOrder.DocSubType_POS.equals(docSubType)
+				|| MOrder.DocSubType_Prepay.equals(docSubType)
+				|| MOrder.DocSubType_OnCredit.equals(docSubType))
+		{
+			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
+		}
+		else
+		{
+			order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+		}
+
+		// Payment Rule - POS Order
+		if (MOrder.DocSubType_POS.equals(docSubType))
+		{
+			order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
+		}
+		else
+		{
+			order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+		}
+
+		// Set Context:
+		calloutField.putContext(I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
+
+		// DocumentNo
+		if(documentNoInfo.isDocNoControlled())
+		{
+			order.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+
+
+		//
+		// When BPartner is changed, the Rules are not set if
+		// it is a POS or Credit Order (i.e. defaults from Standard
+		// BPartner)
+		// This re-reads the Rules and applies them.
+		if (MOrder.DocSubType_POS.equals(docSubType)
+				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
+		{
+			// for POS/PrePay
+			;
+		}
+		else
+		{
+			final I_C_BPartner bpartner = order.getC_BPartner();
+			if(bpartner != null && bpartner.getC_BPartner_ID() > 0)
 			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, oldC_DocType_ID.intValue());
-				rs = pstmt.executeQuery();
-				if (rs.next())
-					AD_Sequence_ID = rs.getInt(7);
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
+				final boolean IsSOTrx = documentNoInfo.isSOTrx();
 
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, C_DocType_ID);
-			rs = pstmt.executeQuery();
-			String DocSubType = "";
-			boolean IsSOTrx = true;
-			if (rs.next())  // we found document type
-			{
-				// Set Context: Document Sub Type for Sales Orders
-				DocSubType = rs.getString(1);
-				if (DocSubType == null)
-					DocSubType = "--";
-				order.setOrderType(DocSubType);
-
-				// No Drop Ship other than Standard
-				if (!DocSubType.equals(MOrder.DocSubType_Standard) && !dataCopy)
+				// PaymentRule
 				{
-					order.setIsDropShip(false);
-				}
-
-				//
-				// Delivery Rule
-				if (DocSubType.equals(MOrder.DocSubType_POS))
-				{
-					order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
-				}
-				// NOTE: Don't override default configured DeliveryRule (see task 09250)
-				// else
-				// {
-				// if (DocSubType.equals(MOrder.DocSubType_Prepay))
-				// {
-				// order.setDeliveryRule(X_C_Order.DELIVERYRULE_CompleteOrder);
-				// }
-				// else
-				// {
-				// order.setDeliveryRule(X_C_Order.DELIVERYRULE_Availability);
-				// }
-				// }
-
-				// Invoice Rule
-				if (DocSubType.equals(MOrder.DocSubType_POS)
-						|| DocSubType.equals(MOrder.DocSubType_Prepay)
-						|| DocSubType.equals(MOrder.DocSubType_OnCredit))
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-				}
-				else
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
-				}
-
-				// Payment Rule - POS Order
-				if (DocSubType.equals(MOrder.DocSubType_POS))
-				{
-					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
-				}
-				else
-				{
-					order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
-				}
-
-				// IsSOTrx
-				if ("N".equals(rs.getString(8)))
-				{
-					IsSOTrx = false;
-				}
-
-				// Set Context:
-				Env.setContext(ctx, WindowNo, "HasCharges", rs.getString(2));
-
-				// DocumentNo
-				if (rs.getString(4).equals("Y"))  // IsDocNoControlled
-				{
-					if (!newDocNo && AD_Sequence_ID != rs.getInt(7))
+					String paymentRule = IsSOTrx ? bpartner.getPaymentRule() : bpartner.getPaymentRulePO();
+					if (paymentRule != null && paymentRule.length() != 0)
 					{
-						newDocNo = true;
-					}
-					if (newDocNo)
-					{
-						if (Ini.isPropertyBool(Ini.P_ADEMPIERESYS)
-								&& Env.getAD_Client_ID(Env.getCtx()) < 1000000)
+						if (IsSOTrx
+								// No Cash/Check/Transfer:
+								&& (X_C_Order.PAYMENTRULE_Cash.equals(paymentRule)
+										|| X_C_Order.PAYMENTRULE_Check.equals(paymentRule)
+										|| "U".equals(paymentRule) // FIXME: we no longer have this PaymentRule... so drop it from here
+										)
+							)
 						{
-							order.setDocumentNo("<" + rs.getString(6) + ">");
+							// for SO_Trx
+							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
 						}
-						else
+						if (!IsSOTrx && (X_C_Order.PAYMENTRULE_Cash.equals(paymentRule)))  // No Cash for PO_Trx
 						{
-							if ("Y".equals(rs.getString(9)))
-							{
-								String dateColumn = rs.getString(10);
-								{
-									order.setDocumentNo("<"
-											+ MSequence.getPreliminaryNoByYear(
-													mTab, rs.getInt(7), dateColumn,
-													null)
-											+ ">");
-								}
-							}
-							else
-							{
-								order.setDocumentNo("<" + rs.getString(5) + ">");
-							}
+							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
 						}
+						order.setPaymentRule(paymentRule);
 					}
 				}
 
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-
-				// When BPartner is changed, the Rules are not set if
-				// it is a POS or Credit Order (i.e. defaults from Standard
-				// BPartner)
-				// This re-reads the Rules and applies them.
-				if (DocSubType.equals(MOrder.DocSubType_POS)
-						|| DocSubType.equals(MOrder.DocSubType_Prepay))  // not
-					// for
-					// POS/PrePay
-					;
-				else
+				// Payment Term
 				{
-					sql = "SELECT PaymentRule,C_PaymentTerm_ID," // 1..2
-							+ "InvoiceRule,DeliveryRule," // 3..4
-							+ "FreightCostRule,DeliveryViaRule, " // 5..6
-							+ "PaymentRulePO,PO_PaymentTerm_ID "
-							+ "FROM C_BPartner " + "WHERE C_BPartner_ID=?"; // #1
-					pstmt = DB.prepareStatement(sql, null);
-					int C_BPartner_ID = order.getC_BPartner_ID();
-					Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
-					pstmt.setInt(1, C_BPartner_ID);
-					//
-					rs = pstmt.executeQuery();
-					if (rs.next())
+					final int paymentTermId = IsSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID();
+					if (paymentTermId > 0)
 					{
-						// PaymentRule
-						String s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
-						if (s != null && s.length() != 0)
-						{
-							if (IsSOTrx
-									&& (s.equals("B") || s.equals("S") || s.equals("U")))  // No Cash/Check/Transfer
-								// for SO_Trx
-								s = "P"; // Payment Term
-							if (!IsSOTrx && (s.equals("B")))  // No Cash for PO_Trx
-								s = "P"; // Payment Term
-							order.setPaymentRule(s);
-						}
-						// Payment Term
-						Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
-						if (!rs.wasNull())
-						{
-							order.setC_PaymentTerm_ID(ii);
-						}
-						// InvoiceRule
-						s = rs.getString(3);
-						if (s != null && s.length() != 0)
-						{
-							order.setInvoiceRule(s);
-						}
-						// DeliveryRule
-						s = rs.getString(4);
-						if (s != null && s.length() != 0)
-						{
-							order.setDeliveryRule(s);
-						}
-						// FreightCostRule
-						s = rs.getString(5);
-						if (s != null && s.length() != 0)
-						{
-							order.setFreightCostRule(s);
-						}
-						// DeliveryViaRule
-						s = rs.getString(6);
-						if (s != null && s.length() != 0)
-						{
-							order.setDeliveryViaRule(s);
-						}
+						order.setC_PaymentTerm_ID(paymentTermId);
+					}
+				}
+
+				// InvoiceRule
+				{
+					final String invoiceRule = bpartner.getInvoiceRule();
+					if (invoiceRule != null && invoiceRule.length() != 0)
+					{
+						order.setInvoiceRule(invoiceRule);
+					}
+				}
+
+				// DeliveryRule
+				{
+					final String deliveryRule = bpartner.getDeliveryRule();
+					if (deliveryRule != null && deliveryRule.length() != 0)
+					{
+						order.setDeliveryRule(deliveryRule);
+					}
+				}
+
+				// FreightCostRule
+				{
+					final String freightCostRule = bpartner.getFreightCostRule();
+					if (freightCostRule != null && freightCostRule.length() != 0)
+					{
+						order.setFreightCostRule(freightCostRule);
+					}
+				}
+
+				// DeliveryViaRule
+				{
+					final String deliveryViaRule = bpartner.getDeliveryViaRule();
+					if (deliveryViaRule != null && deliveryViaRule.length() != 0)
+					{
+						order.setDeliveryViaRule(deliveryViaRule);
 					}
 				}
 			}
 		}
 
-		// re-read customer rules
-
-		catch (SQLException e)
-		{
-			log.error(sql, e);
-			return e.getLocalizedMessage();
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		return "";
-	}// docType
+		//
+		return NO_ERROR;
+	}
 
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -335,16 +253,18 @@ public class CalloutOrder extends CalloutEngine
 	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String bPartnerLocation(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String bPartnerLocation(final ICalloutField calloutField)
 	{
+		// FIXME !!!
+
 		// 05291: In case current record is on dataNew phase with Copy option set
 		// then just don't update the Bill fields but let them copy from original record
-		if (mTab.isDataNewCopy())
+		if (calloutField.isRecordCopyingMode())
 		{
 			return NO_ERROR;
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 
 		if (order == null)
 		{
@@ -374,7 +294,7 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -382,16 +302,17 @@ public class CalloutOrder extends CalloutEngine
 	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String bPartner(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String bPartner(final ICalloutField calloutField)
 	{
-		Integer C_BPartner_ID = (Integer)value;
-		if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		final int C_BPartner_ID = order.getC_BPartner_ID();
+		if (C_BPartner_ID <= 0)
 		{
-			return "";
+			return NO_ERROR;
 		}
-		final boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
+		final boolean IsSOTrx = order.isSOTrx();
 		final String defaultUserOrderByClause = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
-		
+
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
 
@@ -444,17 +365,17 @@ public class CalloutOrder extends CalloutEngine
 			if (rs.next())
 			{
 				// metas: Auftragsart aus Kunde
-				Integer docTypeTarget = rs.getInt("SO_DocTypeTarget_ID");
-				if (IsSOTrx && docTypeTarget > 0)
+				Integer docTypeTargetId = rs.getInt("SO_DocTypeTarget_ID");
+				if (IsSOTrx && docTypeTargetId > 0)
 				{
-					mTab.setValue("C_DocTypeTarget_ID", docTypeTarget);
+					order.setC_DocTypeTarget_ID(docTypeTargetId);
 				}
 
 				// Sales Rep - If BP has a default SalesRep then default it
-				Integer salesRep = rs.getInt("SalesRep_ID");
-				if (IsSOTrx && salesRep != 0)
+				Integer salesRepId = rs.getInt("SalesRep_ID");
+				if (IsSOTrx && salesRepId != 0)
 				{
-					mTab.setValue("SalesRep_ID", salesRep);
+					order.setSalesRep_ID(salesRepId);
 				}
 				/*
 				 * // PriceList (indirect: IsTaxIncluded & Currency) Integer ii = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID"); if (!rs.wasNull())
@@ -465,32 +386,34 @@ public class CalloutOrder extends CalloutEngine
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong
 				// to different BP)
-				if (C_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
-					final String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
-					if (loc.length() > 0)
+					final int locFromContextId = calloutField.getTabInfoContextAsInt("C_BPartner_Location_ID");
+					if (locFromContextId > 0)
 					{
 						// metas: before using the location we need to make sure
 						// that it is a shipping location
-						final int locFromContextId = Integer.parseInt(loc);
-						if (new MBPartnerLocation(ctx, locFromContextId, null).isShipTo())
+						if (new MBPartnerLocation(calloutField.getCtx(), locFromContextId, null).isShipTo())
 						{
 							shipTo_ID = locFromContextId;
 						}
 						// metas end
 					}
 				}
-				if (shipTo_ID == 0)
-					mTab.setValue("C_BPartner_Location_ID", null);
-				else
-					mTab.setValue("C_BPartner_Location_ID", shipTo_ID);
+				order.setC_BPartner_Location_ID(shipTo_ID <= 0 ? -1 : shipTo_ID);
 
 				// metas (2009 0027 G1): setting billTo location. Why has it
 				// been selected above when it isn't used?
 				final int billTo_ID = rs.getInt("Bill_Location_ID");
-				mTab.setValue("Bill_Location_ID",  //
-						billTo_ID == 0 ? null : billTo_ID);
-						// metas: end
+				if(billTo_ID <= 0)
+				{
+					order.setBill_Location(null);
+				}
+				else
+				{
+					order.setBill_Location_ID(billTo_ID);
+				}
+				// metas: end
 
 				// metas: Einkaufsgenossenschaft
 				// TODO auskommentiert, weil Aufruf macht nur aus C_OrderLine heraus Sinn
@@ -500,18 +423,18 @@ public class CalloutOrder extends CalloutEngine
 
 				// Contact - overwritten by InfoBP selection
 				int contID = rs.getInt("AD_User_ID");
-				if (C_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
-					String cont = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "AD_User_ID");
-					if (cont.length() > 0)
-						contID = Integer.parseInt(cont);
+					final int tabInfoContactId = calloutField.getTabInfoContextAsInt("AD_User_ID");
+					if (tabInfoContactId > 0)
+						contID = tabInfoContactId;
 				}
-				if (contID == 0)
-					mTab.setValue("AD_User_ID", null);
+				if (contID <= 0)
+					order.setAD_User_ID(-1);
 				else
 				{
-					mTab.setValue("AD_User_ID", contID);
-					mTab.setValue("Bill_User_ID", contID);
+					order.setAD_User_ID(contID);
+					order.setBill_User_ID(contID);
 				}
 
 				// CreditAvailable
@@ -521,14 +444,16 @@ public class CalloutOrder extends CalloutEngine
 					{
 						double CreditAvailable = rs.getDouble("CreditAvailable");
 						if (!rs.wasNull() && CreditAvailable < 0)
-							mTab.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
+						{
+							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
+						}
 					}
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
-					mTab.setValue("POReference", s);
+					order.setPOReference(s);
 				// should not be reset to null if we entered already value!
 				// VHARCQ, accepted YS makes sense that way
 				// TODO: should get checked and removed if no longer needed!
@@ -539,27 +464,24 @@ public class CalloutOrder extends CalloutEngine
 				// SO Description
 				s = rs.getString("SO_Description");
 				if (s != null && s.trim().length() != 0)
-					mTab.setValue("Description", s);
+					order.setDescription(s);
 				// IsDiscountPrinted
 				s = rs.getString("IsDiscountPrinted");
-				if (s != null && s.length() != 0)
-					mTab.setValue("IsDiscountPrinted", s);
-				else
-					mTab.setValue("IsDiscountPrinted", "N");
+				order.setIsDiscountPrinted(DisplayType.toBoolean(s));
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
-				final String OrderType = Env.getContext(ctx, WindowNo, "OrderType");
-				mTab.setValue("InvoiceRule", X_C_Order.INVOICERULE_AfterDelivery);
+				final String OrderType = order.getOrderType();
+				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
-				mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_OnCredit);
-				if (OrderType.equals(MOrder.DocSubType_Prepay))
+				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{
-					mTab.setValue("InvoiceRule", X_C_Order.INVOICERULE_Immediate);
+					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
 					// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				}
-				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
+				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
 				{
-					mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_Cash);
+					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
 				}
 				else
 				{
@@ -571,31 +493,31 @@ public class CalloutOrder extends CalloutEngine
 							s = "P";
 						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No Check/Transfer for SO_Trx
 							s = "P"; // Payment Term
-						mTab.setValue("PaymentRule", s);
+						order.setPaymentRule(s);
 					}
 					// Payment Term
 					Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 					if (!rs.wasNull())
-						mTab.setValue("C_PaymentTerm_ID", ii);
+						order.setC_PaymentTerm_ID(ii);
 					// InvoiceRule
 					s = rs.getString("InvoiceRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue("InvoiceRule", s);
+						order.setInvoiceRule(s);
 					// DeliveryRule
 					s = rs.getString("DeliveryRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue(I_C_Order.COLUMNNAME_DeliveryRule, s);
+						order.setDeliveryRule(s);
 					// FreightCostRule
 					s = rs.getString("FreightCostRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue("FreightCostRule", s);
+						order.setFreightCostRule(s);
 					// DeliveryViaRule
 					s = rs.getString("DeliveryViaRule");
 					if (s != null && s.length() != 0)
 					{
 						if (IsSOTrx)  // task: 06914: for purchase orders, we use another C_BPartner column
 						{
-							mTab.setValue(I_C_Order.COLUMNNAME_DeliveryViaRule, s);
+							order.setDeliveryViaRule(s);
 						}
 					}
 
@@ -613,12 +535,12 @@ public class CalloutOrder extends CalloutEngine
 			rs = null;
 			pstmt = null;
 		}
-		return "";
+		return NO_ERROR;
 	} // bPartner
 
 	/**
 	 * Order Header - Invoice BPartner. - M_PriceList_ID (+ Context) - Bill_Location_ID - Bill_User_ID - POReference - SO_Description - IsDiscountPrinted - InvoiceRule/PaymentRule - C_PaymentTerm_ID
-	 * 
+	 *
 	 * @param ctx Context
 	 * @param WindowNo current Window No
 	 * @param mTab Model Tab
@@ -626,14 +548,14 @@ public class CalloutOrder extends CalloutEngine
 	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String bPartnerBill(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String bPartnerBill(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
-			return "";
-		Integer bill_BPartner_ID = (Integer)value;
-		if (bill_BPartner_ID == null || bill_BPartner_ID == 0)
-			return "";
+			return NO_ERROR;
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
+		final int bill_BPartner_ID = order.getBill_BPartner_ID();
+		if (bill_BPartner_ID <= 0)
+			return NO_ERROR;
 
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
@@ -660,102 +582,93 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
-				+ " ORDER BY " + C_BPartner_Location_ISBILLTO_DEFAULT + " DESC"
+				+ " ORDER BY " + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
 				// metas end
 				; // #1
 
-		boolean IsSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
+		boolean IsSOTrx = order.isSOTrx();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setInt(1, bill_BPartner_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				// PriceList (indirect: IsTaxIncluded & Currency)
-				Integer ii = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
+				final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
 				if (!rs.wasNull())
-					mTab.setValue("M_PriceList_ID", ii);
+				{
+					order.setM_PriceList_ID(priceListId);
+				}
 				else
 				{ // get default PriceList
-					int i = Env.getContextAsInt(ctx, "#M_PriceList_ID");
-					if (i != 0)
-						mTab.setValue("M_PriceList_ID", i);
+					int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
+					if (i > 0)
+						order.setM_PriceList_ID(i);
 				}
 
 				int bill_Location_ID = rs.getInt("Bill_Location_ID");
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong
 				// to differnt BP)
-				if (bill_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (bill_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
-					String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_Location_ID");
-					if (loc.length() > 0)
-						bill_Location_ID = Integer.parseInt(loc);
+					final int tabInfoBPartnerLocationId = calloutField.getTabInfoContextAsInt("C_BPartner_Location_ID");
+					if (tabInfoBPartnerLocationId > 0)
+						bill_Location_ID = tabInfoBPartnerLocationId;
 				}
-				if (bill_Location_ID == 0)
-					mTab.setValue("Bill_Location_ID", null);
+				if (bill_Location_ID <= 0)
+					order.setBill_Location_ID(-1);
 				else
-					mTab.setValue("Bill_Location_ID", bill_Location_ID);
+					order.setBill_Location_ID(bill_Location_ID);
 
 				// Contact - overwritten by InfoBP selection
 				int contID = rs.getInt("AD_User_ID");
-				if (bill_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "C_BPartner_ID")))
+				if (bill_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
-					String cont = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "AD_User_ID");
-					if (cont.length() > 0)
-						contID = Integer.parseInt(cont);
+					final int tabInfoContactId = calloutField.getTabInfoContextAsInt("AD_User_ID");
+					if (tabInfoContactId > 0)
+						contID = tabInfoContactId;
 				}
-				if (contID == 0)
-					mTab.setValue("Bill_User_ID", null);
+				if (contID <= 0)
+					order.setBill_User(null);
 				else
-					mTab.setValue("Bill_User_ID", contID);
+					order.setBill_User_ID(contID);
 
 				// CreditAvailable
 				if (IsSOTrx)
 				{
 					if (isChkCreditLimit(rs, false))
 					{
-						double CreditAvailable = rs
-								.getDouble("CreditAvailable");
+						double CreditAvailable = rs.getDouble("CreditAvailable");
 						if (!rs.wasNull() && CreditAvailable < 0)
-							mTab.fireDataStatusEEvent("CreditLimitOver",
-									DisplayType.getNumberFormat(
-											DisplayType.Amount).format(
-													CreditAvailable),
-									false);
+							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver,DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
 					}
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
-					mTab.setValue("POReference", s);
+					order.setPOReference(s);
 				else
-					mTab.setValue("POReference", null);
+					order.setPOReference(null);
 				// SO Description
 				s = rs.getString("SO_Description");
 				if (s != null && s.trim().length() != 0)
-					mTab.setValue("Description", s);
+					order.setDescription(s);
 				// IsDiscountPrinted
-				s = rs.getString("IsDiscountPrinted");
-				if (s != null && s.length() != 0)
-					mTab.setValue("IsDiscountPrinted", s);
-				else
-					mTab.setValue("IsDiscountPrinted", "N");
+				order.setIsDiscountPrinted(DisplayType.toBoolean(rs.getString("IsDiscountPrinted")));
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
-				String OrderType = Env.getContext(ctx, WindowNo, "OrderType");
-				mTab.setValue("InvoiceRule",
-						X_C_Order.INVOICERULE_AfterDelivery);
-				mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_OnCredit);
-				if (OrderType.equals(MOrder.DocSubType_Prepay))
-					mTab.setValue("InvoiceRule",
-							X_C_Order.INVOICERULE_Immediate);
-				else if (OrderType.equals(MOrder.DocSubType_POS))  // for POS
-					mTab.setValue("PaymentRule", X_C_Order.PAYMENTRULE_Cash);
+				String OrderType = order.getOrderType();
+				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+				if (MOrder.DocSubType_Prepay.equals(OrderType))
+					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
+				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
+					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
 				else
 				{
 					// PaymentRule
@@ -764,21 +677,18 @@ public class CalloutOrder extends CalloutEngine
 					{
 						if (s.equals("B"))  // No Cache in Non POS
 							s = "P";
-						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No
-							// Check/Transfer
-							// for
-							// SO_Trx
+						if (IsSOTrx && (s.equals("S") || s.equals("U"))) // No
 							s = "P"; // Payment Term
-						mTab.setValue("PaymentRule", s);
+						order.setPaymentRule(s);
 					}
 					// Payment Term
-					ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
+					final int paymentTermId = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 					if (!rs.wasNull())
-						mTab.setValue("C_PaymentTerm_ID", ii);
+						order.setC_PaymentTerm_ID(paymentTermId);
 					// InvoiceRule
 					s = rs.getString("InvoiceRule");
 					if (s != null && s.length() != 0)
-						mTab.setValue("InvoiceRule", s);
+						order.setInvoiceRule(s);
 				}
 			}
 		}
@@ -793,22 +703,15 @@ public class CalloutOrder extends CalloutEngine
 			rs = null;
 			pstmt = null;
 		}
-		return "";
+		return NO_ERROR;
 	} // bPartnerBill
 
 	/**
 	 * Order Header - PriceList. (used also in Invoice) - C_Currency_ID - IsTaxIncluded Window Context: - EnforcePriceLimit - StdPrecision - M_PriceList_Version_ID
-	 * 
-	 * @param ctx context
-	 * @param WindowNo current Window No
-	 * @param mTab Grid Tab
-	 * @param mField Grid Field
-	 * @param value New Value
-	 * @return null or error message
 	 */
-	public String priceList(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String priceList(final ICalloutField calloutField)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		final I_M_PriceList priceList = order.getM_PriceList();
 		if (priceList == null || priceList.getM_PriceList_ID() <= 0)
 		{
@@ -818,7 +721,7 @@ public class CalloutOrder extends CalloutEngine
 		// Tax Included
 		order.setIsTaxIncluded(priceList.isTaxIncluded());
 		// Price Limit Enforce
-		Env.setContext(ctx, WindowNo, CTX_EnforcePriceLimit, priceList.isEnforcePriceLimit());
+		calloutField.putContext(CTX_EnforcePriceLimit, priceList.isEnforcePriceLimit());
 		// Currency
 		order.setC_Currency_ID(priceList.getC_Currency_ID());
 
@@ -827,77 +730,61 @@ public class CalloutOrder extends CalloutEngine
 
 	/*************************************************************************
 	 * Order Line - Product. - reset C_Charge_ID / M_AttributeSetInstance_ID - PriceList, PriceStd, PriceLimit, C_Currency_ID, EnforcePriceLimit - UOM Calls Tax
-	 * 
-	 * @param ctx context
-	 * @param WindowNo current Window No
-	 * @param mTab Grid Tab
-	 * @param mField Grid Field
-	 * @param value New Value
-	 * @return null or error message
 	 */
-	public String product(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String product(final ICalloutField calloutField)
 	{
-		Integer M_Product_ID = (Integer)value;
-		if (M_Product_ID == null || M_Product_ID == 0)
-			return "";
+		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
+		final int M_Product_ID = orderLine.getM_Product_ID();
+		if (M_Product_ID <= 0)
+			return NO_ERROR;
 		if (steps)
 			log.warn("init");
-
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
+		
 		//
-		mTab.setValue("C_Charge_ID", null);
+		// Charge: reset
+		orderLine.setC_Charge(null);
+
+		//
+		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
+		final I_M_Product product = orderLine.getM_Product();
+		orderLine.setC_UOM(Services.get(IProductBL.class).getStockingUOM(product));
+		orderLine.setPrice_UOM(null); // reset; will be set when we update pricing
+		
 		// Set Attribute
-		if (Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_Product_ID") == M_Product_ID
-				&& Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID") != 0)
-			mTab.setValue("M_AttributeSetInstance_ID", Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID"));
+		if (calloutField.getTabInfoContextAsInt("M_Product_ID") == M_Product_ID
+				&& calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID") > 0)
+			orderLine.setM_AttributeSetInstance_ID(calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID"));
 		else
-			mTab.setValue("M_AttributeSetInstance_ID", null);
+			orderLine.setM_AttributeSetInstance(null);
 
 		/***** Price Calculation see also qty ****/
 		updatePrices(orderLine); // metas
 
-		mTab.setValue("QtyOrdered", mTab.getValue("QtyEntered"));
+		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
-		// Check/Update Warehouse Setting
-		// int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
-		// "M_Warehouse_ID");
-		// Integer wh = (Integer)mTab.getValue("M_Warehouse_ID");
-		// if (wh != M_Warehouse_ID)
-		// {
-		// mTab.setValue("M_Warehouse_ID", M_Warehouse_ID);
-		// ADialog.warn(,WindowNo, "WarehouseChanged");
-		// }
-
-		if (Env.isSOTrx(ctx, WindowNo))
+		if (orderLine.getC_Order().isSOTrx())
 		{
-			MProduct product = MProduct.get(ctx, M_Product_ID);
-
-			// metas: if we have the respective field, display the product value
-			final GridField fieldValue = mTab.getField("Value");
-			if (fieldValue != null)
-			{
-				mTab.setValue("Value", product.get_Value("Value"));
-			}
 			if (Services.get(IProductBL.class).isStocked(product))
 			{
-				BigDecimal QtyOrdered = (BigDecimal)mTab
-						.getValue("QtyOrdered");
-				int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
-						"M_Warehouse_ID");
-				int M_AttributeSetInstance_ID = Env.getContextAsInt(ctx,
-						WindowNo, "M_AttributeSetInstance_ID");
-				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID,
-						M_Product_ID, M_AttributeSetInstance_ID,
-						null);
-				// metas: if we have the respective field, display the available
-				// qty
-				GridField fieldQtyAvailable = mTab.getField(COLNAME_QTY_AVAIL);
-				if (fieldQtyAvailable != null)
+				BigDecimal QtyOrdered = orderLine.getQtyOrdered();
+				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
+				if(M_Warehouse_ID <= 0)
 				{
-					mTab.setValue(COLNAME_QTY_AVAIL, available);
+					M_Warehouse_ID = orderLine.getC_Order().getM_Warehouse_ID();
 				}
+				int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
+				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
+				
+				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
+//				// metas: if we have the respective field, display the available qty
+//				GridField fieldQtyAvailable = mTab.getField(COLNAME_QTY_AVAIL);
+//				if (fieldQtyAvailable != null)
+//				{
+//					mTab.setValue(COLNAME_QTY_AVAIL, available);
+//				}
+				
 				if (available == null)
-					available = Env.ZERO;
+					available = BigDecimal.ZERO;
 				if (available.signum() == 0)
 				{
 					// metas: disable user message
@@ -911,14 +798,14 @@ public class CalloutOrder extends CalloutEngine
 				}
 				else
 				{
-					Integer C_OrderLine_ID = (Integer)mTab.getValue("C_OrderLine_ID");
-					if (C_OrderLine_ID == null)
+					int C_OrderLine_ID = orderLine.getC_OrderLine_ID();
+					if (C_OrderLine_ID <= 0)
 						C_OrderLine_ID = 0;
-					BigDecimal notReserved = MOrderLine.getNotReserved(ctx,
+					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
 							M_Warehouse_ID, M_Product_ID,
 							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
-						notReserved = Env.ZERO;
+						notReserved = BigDecimal.ZERO;
 					BigDecimal total = available.subtract(notReserved);
 					if (total.compareTo(QtyOrdered) < 0)
 					{
@@ -934,40 +821,32 @@ public class CalloutOrder extends CalloutEngine
 			}
 		}
 		// metas (2008 0030 AP47)
-		handleIndividualDescription(ctx, mTab);
+		handleIndividualDescription(orderLine);
 		//
 		if (steps)
 			log.warn("fini");
-		return tax(ctx, WindowNo, mTab, mField, value);
+		return tax(calloutField);
 	} // product
 
 	/**
 	 * Order Line - Charge. - updates PriceActual from Charge - sets PriceLimit, PriceList to zero Calles tax
-	 * 
-	 * @param ctx context
-	 * @param WindowNo current Window No
-	 * @param mTab Grid Tab
-	 * @param mField Grid Field
-	 * @param value New Value
-	 * @return null or error message
 	 */
-	public String charge(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String charge(final ICalloutField calloutField)
 	{
-		Integer C_Charge_ID = (Integer)value;
-		if (C_Charge_ID == null || C_Charge_ID <= 0)
-			return "";
+		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
+		final int C_Charge_ID = orderLine.getC_Charge_ID();
+		if (C_Charge_ID <= 0)
+			return NO_ERROR;
 		// No Product defined
-		if (mTab.getValue("M_Product_ID") != null)
+		if (orderLine.getM_Product_ID() > 0)
 		{
-			mTab.setValue("C_Charge_ID", null);
+			orderLine.setC_Charge(null);
 			return "ChargeExclusively";
 		}
-		mTab.setValue("M_AttributeSetInstance_ID", null);
-		mTab.setValue("S_ResourceAssignment_ID", null);
-		mTab.setValue("C_UOM_ID", IUOMDAO.C_UOM_ID_Each); // EA
+		orderLine.setM_AttributeSetInstance(null);
+		orderLine.setS_ResourceAssignment_ID(-1);
+		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
 
-		Env.setContext(ctx, WindowNo, CTX_DiscountSchema, "N");
 		String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -978,15 +857,15 @@ public class CalloutOrder extends CalloutEngine
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				mTab.setValue("PriceEntered", rs.getBigDecimal(1));
-				mTab.setValue("PriceActual", rs.getBigDecimal(1));
-				mTab.setValue("PriceLimit", Env.ZERO);
-				mTab.setValue("PriceList", Env.ZERO);
-				mTab.setValue("Discount", Env.ZERO);
-				mTab.setValue(I_C_OrderLine.COLUMNNAME_PriceStd, Env.ZERO); // metas
+				orderLine.setPriceEntered(rs.getBigDecimal(1));
+				orderLine.setPriceActual(rs.getBigDecimal(1));
+				orderLine.setPriceLimit(BigDecimal.ZERO);
+				orderLine.setPriceList(BigDecimal.ZERO);
+				orderLine.setDiscount(BigDecimal.ZERO);
+				orderLine.setPriceStd(BigDecimal.ZERO); // metas
 
 				// metas: also displaying PLV-ID
-				mTab.setValue(I_C_OrderLine.COLUMNNAME_M_PriceList_Version_ID, null);
+				orderLine.setM_PriceList_Version(null);
 				// metas: end
 			}
 		}
@@ -1003,119 +882,92 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		//
-		return tax(ctx, WindowNo, mTab, mField, value);
+		return tax(calloutField);
 	} // charge
 
 	/**
 	 * Order Line - Tax. - basis: Product, Charge, BPartner Location - sets C_Tax_ID Calles Amount
-	 * 
-	 * @param ctx context
-	 * @param WindowNo current Window No
-	 * @param mTab Grid Tab
-	 * @param mField Grid Field
-	 * @param value New Value
-	 * @return null or error message
 	 */
-	public String tax(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String tax(final ICalloutField calloutField)
 	{
-
-		// String subscriptionId = Env.getContext(ctx, WindowNo, mTab.getTabNo(), "C_Subscription_ID");
-		// if (!Util.isEmpty(subscriptionId)) {
-		// mTab.setValue("C_Subscription_ID", Integer.parseInt(subscriptionId));
-		// }
-
-		final I_C_OrderLine ol = GridTabWrapper
-				.create(mTab, I_C_OrderLine.class);
+		final Properties ctx = calloutField.getCtx();
+		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.setPricesIfNotIgnored(ctx, ol,
 				false,  // usePriceUOM
 				null);
 
-		String column = mField.getColumnName();
+		final Object value = calloutField.getValue();
 		if (value == null)
-			return "";
+			return NO_ERROR;
 		if (steps)
 			log.warn("init");
 
 		// Check Product
-		int M_Product_ID = 0;
-		if (column.equals("M_Product_ID"))
-			M_Product_ID = ((Integer)value).intValue();
-		else
-			M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		int C_Charge_ID = 0;
-		if (column.equals("C_Charge_ID"))
-			C_Charge_ID = ((Integer)value).intValue();
-		else
-			C_Charge_ID = Env.getContextAsInt(ctx, WindowNo, "C_Charge_ID");
-		log.debug("Product=" + M_Product_ID + ", C_Charge_ID=" + C_Charge_ID);
-		if (M_Product_ID == 0 && C_Charge_ID == 0)
-			return amt(ctx, WindowNo, mTab, mField, value); //
+		final int M_Product_ID = ol.getM_Product_ID();
+		final int C_Charge_ID = ol.getC_Charge_ID();
+		log.debug("Product={}, C_Charge_ID={}", M_Product_ID, C_Charge_ID);
+		if (M_Product_ID <= 0 && C_Charge_ID <= 0)
+			return amt(calloutField); //
 
 		// Check Partner Location
-		int shipC_BPartner_Location_ID = 0;
-		if (column.equals("C_BPartner_Location_ID"))
-			shipC_BPartner_Location_ID = ((Integer)value).intValue();
-		else
-			shipC_BPartner_Location_ID = Env.getContextAsInt(ctx, WindowNo,
-					"C_BPartner_Location_ID");
-		if (shipC_BPartner_Location_ID == 0)
-			return amt(ctx, WindowNo, mTab, mField, value); //
-		log.debug("Ship BP_Location=" + shipC_BPartner_Location_ID);
+		final I_C_Order order = ol.getC_Order();
+		int shipC_BPartner_Location_ID = ol.getC_BPartner_Location_ID();
+		if(shipC_BPartner_Location_ID <= 0)
+			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
+		if (shipC_BPartner_Location_ID <= 0)
+			return amt(calloutField); //
+		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
 
 		//
-		Timestamp billDate = Env.getContextAsDate(ctx, WindowNo, "DateOrdered");
-		log.debug("Bill Date=" + billDate);
+		Timestamp billDate = ol.getDateOrdered();
+		if(billDate == null)
+			billDate = order.getDateOrdered();
+		log.debug("Bill Date={}", billDate);
 
-		Timestamp shipDate = Env
-				.getContextAsDate(ctx, WindowNo, "DatePromised");
-		log.debug("Ship Date=" + shipDate);
+		Timestamp shipDate = ol.getDatePromised();
+		if(shipDate == null)
+			shipDate = order.getDatePromised();
+		log.debug("Ship Date={}", shipDate);
 
-		int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-		log.debug("Org=" + AD_Org_ID);
+		int AD_Org_ID = ol.getAD_Org_ID();
+		log.debug("Org={}", AD_Org_ID);
 
-		int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
-				"M_Warehouse_ID");
-		log.debug("Warehouse=" + M_Warehouse_ID);
+		int M_Warehouse_ID = ol.getM_Warehouse_ID();
+		if(M_Warehouse_ID <= 0)
+			M_Warehouse_ID = order.getM_Warehouse_ID();
+		log.debug("Warehouse={}", M_Warehouse_ID);
 
-		int billC_BPartner_Location_ID = Env.getContextAsInt(ctx, WindowNo,
-				"Bill_Location_ID");
-		if (billC_BPartner_Location_ID == 0)
+		int billC_BPartner_Location_ID = order.getBill_Location_ID();
+		if (billC_BPartner_Location_ID <= 0)
 			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
-		log.debug("Bill BP_Location=" + billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
 
 		//
 		int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
 				shipDate, AD_Org_ID, M_Warehouse_ID,
-				billC_BPartner_Location_ID, shipC_BPartner_Location_ID, "Y"
-						.equals(Env.getContext(ctx, WindowNo, "IsSOTrx")));
-		log.info("Tax ID=" + C_Tax_ID);
+				billC_BPartner_Location_ID, shipC_BPartner_Location_ID
+				, order.isSOTrx());
+		log.trace("Tax ID={}", C_Tax_ID);
 		//
-		if (C_Tax_ID == 0)
-			mTab.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
+		if (C_Tax_ID <= 0)
+			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		else
-			mTab.setValue("C_Tax_ID", C_Tax_ID);
+			ol.setC_Tax_ID(C_Tax_ID);
 		//
 		if (steps)
 			log.warn("fini");
 
-		return amt(ctx, WindowNo, mTab, mField, value);
+		return amt(calloutField);
 	} // tax
 
 	/**
 	 * Order Line - Amount. - called from QtyOrdered, Discount and PriceActual - calculates Discount or Actual Amount - calculates LineNetAmt - enforces PriceLimit
-	 * 
-	 * @param ctx context
-	 * @param WindowNo current Window No
-	 * @param mTab Grid Tab
-	 * @param mField Grid Field
-	 * @param value New Value
-	 * @return null or error message
 	 */
-	public String amt(Properties ctx, int WindowNo, GridTab mTab, GridField gridField, Object value)
+	public String amt(final ICalloutField calloutField)
 	{
+		final Object value = calloutField.getValue();
 		if (isCalloutActive() || value == null)
 		{
 			return NO_ERROR;
@@ -1124,21 +976,20 @@ public class CalloutOrder extends CalloutEngine
 		if (steps)
 			log.warn("init");
 
-		final String changedColumnName = gridField.getColumnName();
-
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
-
-		final boolean processed = orderLine.isProcessed();
+		final Properties ctx = calloutField.getCtx();
+		final String changedColumnName = calloutField.getColumnName();
+		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
+		final I_C_Order order = orderLine.getC_Order();
 
 		final int C_UOM_To_ID = orderLine.getPrice_UOM_ID();
 		final int M_Product_ID = orderLine.getM_Product_ID();
-		final int M_PriceList_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID");
+		final int M_PriceList_ID = order.getM_PriceList_ID();
 		// final int M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
 		final int StdPrecision = MPriceList.getStandardPrecision(ctx, M_PriceList_ID);
 		// get values
 		final BigDecimal QtyEntered = orderLine.getQtyEntered();
 		final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
-		log.debug("QtyEntered=" + QtyEntered + ", Ordered=" + QtyOrdered + ", UOM=" + C_UOM_To_ID);
+		log.debug("QtyEntered={}, Ordered={}, UOM={}", QtyEntered, QtyOrdered, C_UOM_To_ID);
 		//
 		BigDecimal PriceEntered = orderLine.getPriceEntered();
 		BigDecimal PriceActual = orderLine.getPriceActual();
@@ -1206,7 +1057,7 @@ public class CalloutOrder extends CalloutEngine
 		else
 		{
 			if (PriceList.intValue() == 0)
-				Discount = Env.ZERO;
+				Discount = BigDecimal.ZERO;
 			// metas
 			// else
 			// Discount = new BigDecimal(
@@ -1222,8 +1073,8 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
 
 		// Check Price Limit?
-		if (isEnforcePriceLimit(ctx, WindowNo)
-				&& PriceLimit.doubleValue() != 0.0 && PriceActual.compareTo(PriceLimit) < 0)
+		if (isEnforcePriceLimit(calloutField, order.isSOTrx())
+				&& PriceLimit.signum() != 0 && PriceActual.compareTo(PriceLimit) < 0)
 		{
 			PriceActual = PriceLimit;
 			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, PriceLimit);
@@ -1233,7 +1084,7 @@ public class CalloutOrder extends CalloutEngine
 			orderLine.setPriceActual(PriceActual);
 			// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
 			orderLine.setPriceEntered(PriceEntered);
-			mTab.fireDataStatusEEvent(MSG_UnderLimitPrice, "", false);
+			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, "", false);
 
 			// Repeat Discount calc
 			if (PriceList.intValue() != 0)
@@ -1257,57 +1108,54 @@ public class CalloutOrder extends CalloutEngine
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(PriceActual);
 		if (LineNetAmt.scale() > StdPrecision)
 			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-		log.info("LineNetAmt=" + LineNetAmt);
 		orderLine.setLineNetAmt(LineNetAmt);
 
 		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(ctx, orderLine, ITrx.TRXNAME_None);
 
 		//
-		return "";
+		return NO_ERROR;
 	} // amt
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
-	 * 
-	 * @param ctx context
-	 * @param WindowNo current Window No
-	 * @param mTab Grid Tab
-	 * @param mField Grid Field
-	 * @param value New Value
-	 * @return null or error message
 	 */
-	public String qty(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String qty(final ICalloutField calloutField)
 	{
-		if (isCalloutActive() || value == null)
-			return "";
-		int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
+		if (isCalloutActive() || calloutField.getValue() == null)
+			return NO_ERROR;
+		
+		final String columnName = calloutField.getColumnName();
+		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
+		final int M_Product_ID = orderLine.getM_Product_ID();
 		if (steps)
 			log.warn("init - M_Product_ID=" + M_Product_ID + " - ");
-		BigDecimal QtyOrdered = Env.ZERO;
-		BigDecimal QtyEntered;
 
 		// No Product
 		if (M_Product_ID <= 0)
 		{
-			QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
-			QtyOrdered = QtyEntered;
-			mTab.setValue("QtyOrdered", QtyOrdered);
+			final BigDecimal QtyEntered = orderLine.getQtyEntered();
+			BigDecimal QtyOrdered = QtyEntered;
+			orderLine.setQtyOrdered(QtyOrdered);
+			setUOMConversion(calloutField, false);
 		}
-		// UOM Changed - convert from Entered -> Product
-		else if (mField.getColumnName().equals("C_UOM_ID"))
+		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
-			final int C_UOM_From_ID = ((Integer)mField.getOldValue()).intValue();
-			final int C_UOM_To_ID = ((Integer)value).intValue();
-			QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final I_C_OrderLine orderLineOld = calloutField.getModelBeforeChanges(I_C_OrderLine.class);
+			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
+			final I_C_UOM uomTo = orderLine.getC_UOM();
+			BigDecimal QtyEntered = orderLine.getQtyEntered();
+			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
+			
+			
+			BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
+				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
 				QtyEntered = QtyEntered1;
-				mTab.setValue("QtyEntered", QtyEntered);
+				orderLine.setQtyEntered(QtyEntered);
 			}
 
-			QtyOrdered = MUOMConversion.convert(C_UOM_From_ID, C_UOM_To_ID, QtyEntered, true); // StdPrecision=true
+			BigDecimal QtyOrdered = uomConverter.convertQty(QtyEntered1, uomFrom, uomTo);
 			if (QtyOrdered == null)
 			{
 				QtyOrdered = QtyEntered;
@@ -1323,87 +1171,76 @@ public class CalloutOrder extends CalloutEngine
 			// + " QtyOrdered/PriceEntered=" + QtyOrdered + "/"
 			// + PriceEntered);
 			// metas us1064 end
-			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
-			mTab.setValue("QtyOrdered", QtyOrdered);
+			setUOMConversion(calloutField, conversion);
+			orderLine.setQtyOrdered(QtyOrdered);
 			// metas us1064
 			// mTab.setValue("PriceEntered", PriceEntered);
 			// metas us1064 end
 		}
 		// QtyEntered changed - calculate QtyOrdered
-		else if (mField.getColumnName().equals("QtyEntered"))
+		else if (I_C_OrderLine.COLUMNNAME_QtyEntered.equals(columnName))
 		{
-			int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
-			QtyEntered = (BigDecimal)value;
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx,
-					C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
+			BigDecimal QtyEntered = orderLine.getQtyEntered();
+			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
-				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID
-						+ "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
+				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
 				QtyEntered = QtyEntered1;
-				mTab.setValue("QtyEntered", QtyEntered);
+				orderLine.setQtyEntered(QtyEntered);
 			}
-			QtyOrdered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyEntered);
+			BigDecimal QtyOrdered = MUOMConversion.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
-			log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered
-					+ " -> " + conversion + " QtyOrdered=" + QtyOrdered);
-			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
-			mTab.setValue("QtyOrdered", QtyOrdered);
+			log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered + " -> " + conversion + " QtyOrdered=" + QtyOrdered);
+			setUOMConversion(calloutField, conversion);
+			orderLine.setQtyOrdered(QtyOrdered);
 		}
 		// QtyOrdered changed - calculate QtyEntered (should not happen)
-		else if (mField.getColumnName().equals("QtyOrdered"))
+		else if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(columnName))
 		{
-			int C_UOM_To_ID = Env.getContextAsInt(ctx, WindowNo, "C_UOM_ID");
-			QtyOrdered = (BigDecimal)value;
-			int precision = MProduct.get(ctx, M_Product_ID).getUOMPrecision();
+			int C_UOM_To_ID = orderLine.getC_UOM_ID();
+			BigDecimal QtyOrdered = orderLine.getQtyOrdered();
+			int precision = MProduct.get(calloutField.getCtx(), M_Product_ID).getUOMPrecision();
 			BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
 				log.debug("Corrected QtyOrdered Scale " + QtyOrdered + "->" + QtyOrdered1);
 				QtyOrdered = QtyOrdered1;
-				mTab.setValue("QtyOrdered", QtyOrdered);
+				orderLine.setQtyOrdered(QtyOrdered);
 			}
-			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID,
-					C_UOM_To_ID, QtyOrdered);
+			BigDecimal QtyEntered = MUOMConversion.convertFromProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyOrdered);
 			if (QtyEntered == null)
 				QtyEntered = QtyOrdered;
 			boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
-			log.debug("UOM=" + C_UOM_To_ID + ", QtyOrdered=" + QtyOrdered
-					+ " -> " + conversion + " QtyEntered=" + QtyEntered);
-			Env.setContext(ctx, WindowNo, "UOMConversion", conversion ? "Y" : "N");
-			mTab.setValue("QtyEntered", QtyEntered);
-		}
-		else
-		{
-			// QtyEntered = (BigDecimal)mTab.getValue("QtyEntered");
-			QtyOrdered = (BigDecimal)mTab.getValue("QtyOrdered");
+			log.debug("UOM=" + C_UOM_To_ID + ", QtyOrdered=" + QtyOrdered + " -> " + conversion + " QtyEntered=" + QtyEntered);
+			setUOMConversion(calloutField, conversion);
+			orderLine.setQtyEntered(QtyEntered);
 		}
 
 		// Storage
-		if (M_Product_ID != 0 && Env.isSOTrx(ctx, WindowNo)
+		final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
+		if (M_Product_ID > 0 && orderLine.getC_Order().isSOTrx()
 				&& QtyOrdered.signum() > 0)  // no negative (returns)
 		{
-			MProduct product = MProduct.get(ctx, M_Product_ID);
+			I_M_Product product = orderLine.getM_Product();
 			if (Services.get(IProductBL.class).isStocked(product))
 			{
-				int M_Warehouse_ID = Env.getContextAsInt(ctx, WindowNo,
-						"M_Warehouse_ID");
-				int M_AttributeSetInstance_ID = Env.getContextAsInt(ctx,
-						WindowNo, "M_AttributeSetInstance_ID");
-				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID,
-						M_Product_ID, M_AttributeSetInstance_ID, null);
+				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
+				int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
+				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
 				if (available == null)
-					available = Env.ZERO;
-				// metas: if we have the respective field, display the available
-				// qty
-				GridField fieldQtyAvailable = mTab.getField(COLNAME_QTY_AVAIL);
-				if (fieldQtyAvailable != null)
-				{
-					mTab.setValue(COLNAME_QTY_AVAIL, available);
-				}
+					available = BigDecimal.ZERO;
+				
+				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
+//				// metas: if we have the respective field, display the available qty
+//				GridField fieldQtyAvailable = mTab.getField(COLNAME_QTY_AVAIL);
+//				if (fieldQtyAvailable != null)
+//				{
+//					mTab.setValue(COLNAME_QTY_AVAIL, available);
+//				}
+				
 				if (available.signum() == 0)
 				{
 					// metas: disabling the warnings about insufficient qty
@@ -1417,14 +1254,14 @@ public class CalloutOrder extends CalloutEngine
 				}
 				else
 				{
-					Integer C_OrderLine_ID = (Integer)mTab.getValue("C_OrderLine_ID");
-					if (C_OrderLine_ID == null)
+					int C_OrderLine_ID = orderLine.getC_OrderLine_ID();
+					if (C_OrderLine_ID <= 0)
 						C_OrderLine_ID = 0;
-					BigDecimal notReserved = MOrderLine.getNotReserved(ctx,
+					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
 							M_Warehouse_ID, M_Product_ID,
 							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
-						notReserved = Env.ZERO;
+						notReserved = BigDecimal.ZERO;
 					BigDecimal total = available.subtract(notReserved);
 					if (total.compareTo(QtyOrdered) < 0)
 					{
@@ -1441,37 +1278,37 @@ public class CalloutOrder extends CalloutEngine
 			}
 		}
 		//
-		return "";
+		return NO_ERROR;
 	} // qty
-
-	public String isIndividualDescription(
-			final Properties ctx,
-			final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	
+	private static final void setUOMConversion(final ICalloutField calloutField, final boolean conversion)
 	{
-		if (isCalloutActive() || value == null)
-		{
-			return "";
-		}
+		calloutField.putContext(CTX_UOMConversion, conversion);
+	}
 
-		if (!I_C_OrderLine.COLUMNNAME_IsIndividualDescription.equals(mField.getColumnName()))
+	public String isIndividualDescription(final ICalloutField calloutField)
+	{
+		if (isCalloutActive() || calloutField.getValue() == null)
 		{
-			log.warn("Callout method 'CalloutOrder.isIndiviualDescription' has been call with field " + mField.getColumnName());
 			return NO_ERROR;
 		}
-		handleIndividualDescription(ctx, mTab);
+
+		if (!I_C_OrderLine.COLUMNNAME_IsIndividualDescription.equals(calloutField.getColumnName()))
+		{
+			log.warn("Callout method 'CalloutOrder.isIndiviualDescription' has been call with field " + calloutField.getColumnName());
+			return NO_ERROR;
+		}
+		handleIndividualDescription(calloutField.getModel(I_C_OrderLine.class));
 		return NO_ERROR;
 	}
 
 	/**
-	 * Evaluates the fields {@link I_C_OrderLine#COLUMNNAME_M_Product_ID} and {@link CustomColNames#C_OrderLine_IS_INDIVIDUAL_DESCRIPTION}. If Both are set and isIndividualDescription is true the
-	 * product's description is copied into the order line's {@link CustomColNames#C_OrderLine_PRODUCT_DESC} field.
+	 * Evaluates the fields {@link I_C_OrderLine#COLUMNNAME_M_Product_ID} and {@link I_C_OrderLine#COLUMNNAME_IsIndividualDescription}.
 	 * 
-	 * @param mTab
+	 * If Both are set and isIndividualDescription is true the product's description is copied into the order line's {@link I_C_OrderLine#COLUMNNAME_ProductDescription} field.
 	 */
-	private void handleIndividualDescription(final Properties ctx, final GridTab mTab)
+	private void handleIndividualDescription(final I_C_OrderLine ol)
 	{
-		final I_C_OrderLine ol = GridTabWrapper.create(mTab, I_C_OrderLine.class);
-
 		if (!ol.isIndividualDescription())
 		{
 			ol.setProductDescription("");
@@ -1483,8 +1320,7 @@ public class CalloutOrder extends CalloutEngine
 			return;
 		}
 
-		final IProductPA productPA = Services.get(IProductPA.class);
-		final I_M_Product product = productPA.retrieveProduct(ctx, ol.getM_Product_ID(), true, ITrx.TRXNAME_None);
+		final I_M_Product product = ol.getM_Product();
 		ol.setProductDescription(product.getDescription());
 
 		return;
@@ -1492,7 +1328,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Decides (using the given <code>rs</code> whether the business partner's credit limit should be checked.
-	 * 
+	 *
 	 * @param rs the result set contains the data sued fpr the decision
 	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
 	 * @return
@@ -1505,9 +1341,7 @@ public class CalloutOrder extends CalloutEngine
 		if (evalCreditstatus)
 		{
 			String creditStatus = rs.getString("SOCreditStatus");
-			dontCheck = creditLimit == 0
-					|| X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck
-							.equals(creditStatus);
+			dontCheck = creditLimit == 0 || X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(creditStatus);
 		}
 		else
 		{
@@ -1521,20 +1355,28 @@ public class CalloutOrder extends CalloutEngine
 	{
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 	}
-
-	public String deliveryToBPartnerID(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField mField, final Object value)
+	
+	private static interface DropShipPartnerAware
 	{
+		public int getDropShip_BPartner_ID();
+		public void setDropShip_Location_ID (int DropShip_Location_ID);
+		public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
+		public void setDropShip_User_ID (int DropShip_User_ID);
+		public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
+	}
 
-		Integer C_BPartner_ID = (Integer)value;
-		if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
-			return "";
+	public String deliveryToBPartnerID(final ICalloutField calloutField)
+	{
+		final DropShipPartnerAware dropShipAware = calloutField.getModel(DropShipPartnerAware.class);
+		final int dropShipBPartnerId = dropShipAware.getDropShip_BPartner_ID();
+		if (dropShipBPartnerId <= 0)
+			return NO_ERROR;
 		String sql = "SELECT lship.C_BPartner_Location_ID,c.AD_User_ID "
 				+ " FROM C_BPartner p"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
-				+ " ORDER BY lship." + C_BPartner_Location_ISSHIPTO_DEFAULT
+				+ " ORDER BY lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault
 				+ " DESC"
 				// metas end
 				; // #1
@@ -1543,47 +1385,42 @@ public class CalloutOrder extends CalloutEngine
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_BPartner_ID.intValue());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt.setInt(1, dropShipBPartnerId);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				int shipTo_ID = rs.getInt("C_BPartner_Location_ID");
-				if (C_BPartner_ID.toString().equals(
-						Env.getContext(ctx, WindowNo, Env.TAB_INFO,
-								"DropShip_BPartner_ID")))
+				if (dropShipBPartnerId == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
 				{
-					final String loc = Env.getContext(ctx, WindowNo, Env.TAB_INFO,
-							"DropShip_Location_ID");
-					if (loc.length() > 0)
+					final int locFromContextId = calloutField.getTabInfoContextAsInt("DropShip_Location_ID");
+					if (locFromContextId > 0)
 					{
 						// metas: before using the location we need to make sure
 						// that it is a shipping location
-						final int locFromContextId = Integer.parseInt(loc);
-						if (new MBPartnerLocation(ctx, locFromContextId, null)
-								.isShipTo())
+						if (new MBPartnerLocation(calloutField.getCtx(), locFromContextId, null).isShipTo())
 						{
 							shipTo_ID = locFromContextId;
 						}
 					}
 				}
-				if (shipTo_ID == 0)
-					mTab.setValue("DropShip_Location_ID", null);
+				if (shipTo_ID <= 0)
+					dropShipAware.setDropShip_Location(null);
 				else
-					mTab.setValue("DropShip_Location_ID", shipTo_ID);
+					dropShipAware.setDropShip_Location_ID(shipTo_ID);
 
 				int contID = rs.getInt("AD_User_ID");
-				if (C_BPartner_ID.toString().equals(Env.getContext(ctx, WindowNo, Env.TAB_INFO, "DropShip_BPartner_ID")))
+				if (dropShipBPartnerId == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
 				{
-					String cont = Env.getContext(ctx, WindowNo, Env.TAB_INFO, "DropShip_User_ID");
-					if (cont.length() > 0)
-						contID = Integer.parseInt(cont);
+					final int tabInfoContactId= calloutField.getTabInfoContextAsInt("DropShip_User_ID");
+					if (tabInfoContactId > 0)
+						contID = tabInfoContactId;
 				}
-				if (contID == 0)
-					mTab.setValue("DropShip_User_ID", null);
+				if (contID <= 0)
+					dropShipAware.setDropShip_User(null);
 				else
 				{
-					mTab.setValue("DropShip_User_ID", contID);
+					dropShipAware.setDropShip_User_ID(contID);
 				}
 
 			}
@@ -1599,21 +1436,20 @@ public class CalloutOrder extends CalloutEngine
 			rs = null;
 			pstmt = null;
 		}
-		return "";
+		return NO_ERROR;
 	}
 
 	// 01717
-	public String DropShipPartner(Properties ctx, int WindowNo, GridTab mTab,
-			GridField mField, Object value)
+	public String DropShipPartner(final ICalloutField calloutField)
 	{
-		if (mTab.isDataNewCopy())
+		if(calloutField.isRecordCopyingMode())
 		{
 			// 05291: In case current record is on dataNew phase with Copy option set
 			// then just don't update the DropShip fields, take them as they were copied
 			return NO_ERROR;
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(mTab, I_C_Order.class);
+		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		if (order.isSOTrx())
 		{
 			if (order.isDropShip())
@@ -1633,7 +1469,7 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (!order.isDropShip())
 			{
-				final I_AD_Org org = InterfaceWrapperHelper.create(ctx, order.getAD_Org_ID(), I_AD_Org.class, null);
+				final I_AD_Org org = order.getAD_Org();
 				final I_C_BPartner linkedBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
 				if (null != linkedBPartner)
 				{
@@ -1647,19 +1483,19 @@ public class CalloutOrder extends CalloutEngine
 
 			}
 		}
-		return "";
+		return NO_ERROR;
 	}
 
-	private static boolean isEnforcePriceLimit(final Properties ctx, final int WindowNo)
+	private static boolean isEnforcePriceLimit(final ICalloutField calloutField, final boolean isSOTrx)
 	{
-		final String epl = Env.getContext(ctx, WindowNo, CTX_EnforcePriceLimit);
-		if (!"Y".equals(epl))
+		// We enforce PriceLimit only for sales orders
+		if (!isSOTrx)
 		{
 			return false;
 		}
-
-		// We enforce PriceLimit only for sales orders
-		if (!Env.isSOTrx(ctx, WindowNo))
+		
+		final boolean epl = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
+		if (!epl)
 		{
 			return false;
 		}
@@ -1673,12 +1509,12 @@ public class CalloutOrder extends CalloutEngine
 		return true;
 	}
 
-	public String attributeSetInstance(Properties ctx, int WindowNo, GridTab mTab, GridField gridField, Object value)
+	public String attributeSetInstance(final ICalloutField calloutField)
 	{
 		// 05118 : Also update the prices
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(mTab, I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		updatePrices(orderLine);
 
-		return "";
+		return NO_ERROR;
 	}
 } // CalloutOrder

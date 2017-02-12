@@ -36,7 +36,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 /**
  * Updates the {@link I_C_SubscriptionProgress} record's status on shipment schedule changes.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09869_Enable_subscription_contracts_%28104949638829%29
  */
 @Interceptor(I_M_ShipmentSchedule.class)

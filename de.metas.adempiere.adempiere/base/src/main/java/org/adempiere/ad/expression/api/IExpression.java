@@ -1,29 +1,6 @@
 package org.adempiere.ad.expression.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
@@ -39,6 +16,11 @@ import org.compiere.util.Evaluatee;
 public interface IExpression<V>
 {
 	/**
+	 * @return the type of evaluation result
+	 */
+	Class<V> getValueClass();
+
+	/**
 	 * Gets string representation of underlying expression. Usually this shall be EXACTLY the same as the string from where the expression was compiled
 	 * 
 	 * @return string representation of underlying expression
@@ -50,14 +32,17 @@ public interface IExpression<V>
 	 * 
 	 * @return
 	 */
-	String getFormatedExpressionString();
+	default String getFormatedExpressionString()
+	{
+		return getExpressionString();
+	}
 
 	/**
 	 * Gets the list of parameter names
 	 * 
 	 * @return list of parameter names or empty list; never return NULL
 	 */
-	List<String> getParameters();
+	Set<String> getParameters();
 
 	/**
 	 * Consider using {@link #evaluate(Evaluatee, OnVariableNotFound)}. This method will be deprecated in future.
@@ -66,7 +51,12 @@ public interface IExpression<V>
 	 * @param ignoreUnparsable
 	 * @return
 	 */
-	V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable);
+	default V evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
+	{
+		// backward compatibility
+		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.Empty : OnVariableNotFound.ReturnNoResult;
+		return evaluate(ctx, onVariableNotFound);
+	}
 
 	/**
 	 * Evaluates expression in given context.
@@ -74,13 +64,25 @@ public interface IExpression<V>
 	 * @param ctx
 	 * @param onVariableNotFound
 	 * @return evaluation result
-	 * @throws ExpressionEvaluationException if evaluation fails and we were adviced to throw exception
+	 * @throws ExpressionEvaluationException if evaluation fails and we were advised to throw exception
 	 */
 	V evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 
 	/**
-	 * 
-	 * @return an evaluator instance which is able to evaluate this expression.
+	 * @param result
+	 * @return true if the given <code>result</code> shall be considered as "NO RESULT"
 	 */
-	IExpressionEvaluator<? extends IExpression<V>, V> getEvaluator();
+	default boolean isNoResult(Object result)
+	{
+		return result == null;
+	}
+
+	/**
+	 * @return true if this expression is constant and always evaluated "NO RESULT"
+	 * @see #isNoResult(Object)
+	 */
+	default boolean isNullExpression()
+	{
+		return false;
+	}
 }

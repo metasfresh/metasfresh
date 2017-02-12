@@ -26,7 +26,7 @@ import org.jdesktop.swingx.JXTable;
 /**
  * Advanced search table.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class FindAdvancedSearchTable extends JXTable
@@ -126,7 +126,7 @@ class FindAdvancedSearchTable extends JXTable
 					if (cellEditor.isCellEditorValueChanged() || cellEditor.isCellEditorValueNull())
 					{
 						final FindAdvancedSearchTableModel model = getModel();
-						final FindAdvancedSearchTableModelRow row = model.getRow(rowIndex);
+						final IUserQueryRestriction row = model.getRow(rowIndex);
 						row.setValue(null);
 						row.setValueTo(null);
 						model.fireTableRowsUpdated(rowIndex, rowIndex);

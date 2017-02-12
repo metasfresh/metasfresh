@@ -26,11 +26,6 @@ package de.metas.interfaces;
 
 public interface I_C_BP_BankAccount extends org.compiere.model.I_C_BP_BankAccount
 {
-	// @formatter:off
-	String COLUMNNAME_IsDefault = "IsDefault";
-	void setIsDefault(boolean IsDefault);
-	boolean isDefault();
-	// @formatter:on
 	
 	// @formatter:off
 	String COLUMNNAME_IBAN = "IBAN";

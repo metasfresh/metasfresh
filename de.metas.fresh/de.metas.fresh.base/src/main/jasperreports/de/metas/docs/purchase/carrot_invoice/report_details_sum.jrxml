@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-10-05T17:53:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="b62f017e-3912-43a3-99f6-cb0c797b3e75">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.6105100000000037"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -36,12 +40,12 @@ FROM
 		1 as orderindex
 	FROM
 		C_InvoiceTax it
-		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID
-		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	WHERE
-		t.name NOT ILIKE '%Gebinde%'
+		t.name NOT ILIKE '%Gebinde%' AND it.isActive = 'Y'
 	GROUP BY
 		it.C_Invoice_ID,
 		isPrintTax,
@@ -67,10 +71,11 @@ UNION
 		2 AS orderindex
 	FROM
 		C_InvoiceTax it
-		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID
-		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+		INNER JOIN C_Tax t ON it.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+		INNER JOIN C_Invoice i ON it.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
+	WHERE it.isActive = 'Y'
 	GROUP BY
 		it.C_Invoice_ID, CASE WHEN t.name LIKE '%Gebinde%' THEN 'Y' ELSE 'N' END,
 		isPrintTax,
@@ -91,9 +96,10 @@ UNION
 		3 AS orderindex
 	FROM
 		C_Invoice i
-		INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
-		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+		INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+		INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
+	WHERE i.isActive = 'Y'
 ) a
 WHERE
 	C_Invoice_ID = $P{c_invoice_id}
@@ -118,20 +124,20 @@ ORDER BY
 	</background>
 	<title>
 		<band height="12" splitType="Stretch">
-			<staticText>
-				<reportElement uuid="cb19eece-1866-4b44-abd6-2144693d86c7" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
+			<textField>
+				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="28cac2c6-b6ef-4567-9795-df30f6fd392b"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[Rekapitulation]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="46f8d576-7df0-496c-a030-22165d31cb6e" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
+				<textFieldExpression><![CDATA[$R{Recap}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000" uuid="277b1050-3329-4d0b-b6aa-26e918e09284"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[Betrag]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{linenetamt}]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
@@ -143,17 +149,8 @@ ORDER BY
 	<detail>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 1 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
-			<staticText>
-				<reportElement uuid="e6a9d99f-41af-4a6a-ac63-4bbde0de9688" key="textField-16" x="37" y="0" width="236" height="12" forecolor="#000000">
-					<printWhenExpression><![CDATA[new Boolean ($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="9" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Total ohne MWST = MWST Basis]]></text>
-			</staticText>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -165,20 +162,29 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement uuid="e6a9d99f-41af-4a6a-ac63-4bbde0de9688" key="textField-16" x="37" y="0" width="236" height="12" forecolor="#000000">
+			<textField>
+				<reportElement key="textField-16" x="60" y="0" width="236" height="12" forecolor="#000000" uuid="aa2dcf52-ae97-4f46-a875-0b01cffbeeae">
 					<printWhenExpression><![CDATA[new Boolean ($F{isprinttax}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<text><![CDATA[Total]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="37" y="0" width="236" height="12" forecolor="#000000" uuid="259a8c40-9194-44a3-a091-9e12cc89fa3a">
+					<printWhenExpression><![CDATA[new Boolean ($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{NetTotal}]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "N" ) && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -191,61 +197,54 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="172" y="0" width="24" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="172" y="0" width="24" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae" key="textField-16" x="197" y="0" width="12" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="197" y="0" width="12" height="12" forecolor="#000000" uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<text><![CDATA[%]]></text>
 			</staticText>
-			<staticText>
-				<reportElement uuid="7ec7b2fc-8d1e-42f0-b1a3-84b54622a036" key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000"/>
-				<textElement markup="none">
-					<font size="9" isBold="false"/>
-				</textElement>
-				<text><![CDATA[MWST-Betrag]]></text>
-			</staticText>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="112" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="112" y="0" width="60" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}.floatValue() == 0 ?
-    "MWST-Frei":
-    "Steuersatz"]]></textFieldExpression>
+ $R{TaxFree}:
+    $R{TaxRate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="394c12db-7fcc-4671-be62-1ea27c9c4884"/>
+				<textElement markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{VAT_Amount}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "Y" ))]]></printWhenExpression>
 			<staticText>
-				<reportElement uuid="7ec7b2fc-8d1e-42f0-b1a3-84b54622a036" key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000"/>
-				<textElement markup="none">
-					<font size="9" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Total Gebinde]]></text>
-			</staticText>
-			<staticText>
-				<reportElement uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae" key="textField-16" x="197" y="0" width="12" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="197" y="0" width="12" height="12" forecolor="#000000" uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="172" y="0" width="24" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="172" y="0" width="24" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -258,19 +257,26 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="112" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="112" y="0" width="60" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}.floatValue() == 0 ?
-    "MWST-Frei":
-    "Steuersatz"]]></textFieldExpression>
+    $R{TaxFree}:
+    $R{TaxRate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="1bf2842e-cc3d-45fd-b309-7ae7361b4764"/>
+				<textElement markup="none">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{HUTotal}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 3 )]]></printWhenExpression>
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2" key="textField-16" x="37" y="0" width="261" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -280,12 +286,12 @@ ORDER BY
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Rechnungstotal " + $F{iso_code} + (
-    $F{isprinttax}.equals( 'Y' ) ? " inkl. MWST" : ""
+				<textFieldExpression><![CDATA[$R{InvoiceTotal} + " " + $F{iso_code} + (
+    $F{isprinttax}.equals( 'Y' ) ? $R{VATIncluded} : ""
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

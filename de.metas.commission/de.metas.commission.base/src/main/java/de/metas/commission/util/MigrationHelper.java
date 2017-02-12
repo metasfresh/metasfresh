@@ -28,15 +28,12 @@ package de.metas.commission.util;
 
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MRelationType;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
@@ -44,13 +41,15 @@ import org.compiere.model.MOrg;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_SysConfig;
-import org.compiere.process.SvrProcess;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.document.IDocumentPA;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
@@ -74,7 +73,7 @@ public class MigrationHelper
 	private final String trxName;
 	private boolean isTest;
 
-	private SvrProcess logger;
+	private JavaProcess logger;
 
 	public MigrationHelper(final Properties ctx, final String trxName)
 	{
@@ -92,7 +91,7 @@ public class MigrationHelper
 		return isTest;
 	}
 
-	public void setLogger(final SvrProcess logger)
+	public void setLogger(final JavaProcess logger)
 	{
 		this.logger = logger;
 	}
@@ -144,7 +143,7 @@ public class MigrationHelper
 	{
 		final I_AD_SysConfig cfg = getSysConfigVersion();
 		cfg.setValue("" + version);
-		POWrapper.save(cfg);
+		InterfaceWrapperHelper.save(cfg);
 	}
 
 	private I_AD_SysConfig getSysConfigVersion()
@@ -163,7 +162,7 @@ public class MigrationHelper
 			cfg.setName(MigrationHelper.DE_METAS_COMMISSION_VERSION);
 			cfg.setValue("" + 0);
 			cfg.setIsActive(true);
-			POWrapper.save(cfg);
+			InterfaceWrapperHelper.save(cfg);
 		}
 		return cfg;
 	}
@@ -232,30 +231,29 @@ public class MigrationHelper
 		}
 
 		// first adding an explicit type with very simple references, to record connections between c_invoicelines
-		final MRelationType calcLine2corrLine = new MRelationType(ctx, 0, trxName);
+		final I_AD_RelationType calcLine2corrLine = InterfaceWrapperHelper.create(ctx,  I_AD_RelationType.class, trxName);
 		calcLine2corrLine.setName("Prov.-Abrechnung <=> Korrektur (Positionsebene)");
 		calcLine2corrLine.setIsDirected(false);
 		calcLine2corrLine.setAD_Reference_Source_ID(MigrationHelper.AD_Reference_ID_C_InvoiceLine);
 		calcLine2corrLine.setAD_Reference_Target_ID(MigrationHelper.AD_Reference_ID_C_InvoiceLine);
-		calcLine2corrLine.setIsExplicit(true);
+		//calcLine2corrLine.setIsExplicit(true);
 		calcLine2corrLine.setInternalName("com_calcline2corrline");
 		calcLine2corrLine.setRole_Source("ComCalc");
 		calcLine2corrLine.setRole_Target("ComCorr");
-		calcLine2corrLine.saveEx();
+		InterfaceWrapperHelper.save(calcLine2corrLine);
 
 		log("Created relation type '" + calcLine2corrLine.getName() + "' (internal name='" + calcLine2corrLine.getInternalName() + "')");
 
-		final MRelationType calc2corr = new MRelationType(ctx, 0, trxName);
+		final I_AD_RelationType calc2corr = InterfaceWrapperHelper.create(ctx,  I_AD_RelationType.class, trxName);
 		calc2corr.setName("Prov.-Abrechnung <=> Korrektur (Belegebene)");
 		calc2corr.setIsDirected(false);
 		calc2corr.setAD_Reference_Source_ID(MigrationHelper.AD_REFERENCE_Reltype_Invoice);
 		calc2corr.setAD_Reference_Target_ID(MigrationHelper.AD_REFERENCE_Reltype_Invoice);
-		calc2corr.setIsExplicit(false);
 		calc2corr.setInternalName("com_calc2corr");
 
 		calc2corr.setRole_Source("ComCalc");
 		calc2corr.setRole_Target("ComCorr");
-		calc2corr.saveEx();
+		InterfaceWrapperHelper.save(calc2corr);
 
 		log("Created relation type '" + calc2corr.getName() + "' (internal name='" + calc2corr.getInternalName() + "')");
 	}

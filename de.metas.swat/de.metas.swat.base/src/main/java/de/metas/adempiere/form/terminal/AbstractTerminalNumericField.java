@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,6 @@ import java.text.Format;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -64,7 +63,7 @@ public abstract class AbstractTerminalNumericField
 
 	protected String constraints = SwingTerminalFactory.BUTTON_Constraints;
 
-	private BigDecimal increment = Env.ONE;
+	private BigDecimal increment = BigDecimal.ONE;
 
 	@Override
 	public void setMinusRO(final boolean ro)
@@ -108,6 +107,9 @@ public abstract class AbstractTerminalNumericField
 		}
 	}
 
+	/**
+	 * Note: does not care for "ValueChanged" or "TextChanged" events from our inner text component. That's fine because those are generally coming from within this very component
+	 */
 	private final PropertyChangeListener numberChangeListener = new PropertyChangeListener()
 	{
 		@Override
@@ -142,7 +144,8 @@ public abstract class AbstractTerminalNumericField
 			final String name,
 			final int displayType,
 			final float fontSize,
-			final boolean withButtons, final boolean withLabel,
+			final boolean withButtons,
+			final boolean withLabel,
 			final String constr)
 	{
 		super(tc);
@@ -167,7 +170,7 @@ public abstract class AbstractTerminalNumericField
 
 		initComponents();
 		initUI();
-		setValue(Env.ZERO, false);
+		setValue(BigDecimal.ZERO, false);
 	}
 
 	protected AbstractTerminalNumericField(final ITerminalContext tc, final String name, final int displayType, final boolean withButtons, final boolean withLabel, final String constr)
@@ -282,7 +285,7 @@ public abstract class AbstractTerminalNumericField
 			else
 			{
 				log.info("Invalid Format '{}' to be used to convert text '{}' to BigDecimal. Assuming ZERO.", new Object[] { format, text });
-				return Env.ZERO;
+				return BigDecimal.ZERO;
 			}
 		}
 		catch (final Exception e)
@@ -328,13 +331,13 @@ public abstract class AbstractTerminalNumericField
 	protected final void setFieldValue(final BigDecimal value, final boolean fireEvent)
 	{
 		final BigDecimal valueOld = this._valueOld; // backup for event
-		
+
 		//
 		// Fix value to set
 		final BigDecimal valueNew;
 		if (value == null)
 		{
-			valueNew = Env.ZERO;
+			valueNew = BigDecimal.ZERO;
 		}
 		else
 		{
@@ -353,13 +356,14 @@ public abstract class AbstractTerminalNumericField
 					+ "\n value: " + valueOld + "->" + valueNew
 					+ "\n fireEvent: " + fireEvent
 					+ "\n fNumber: " + fNumber)
-							.throwOrLogWarningIfDeveloperMode(log);
+							.throwIfDeveloperModeOrLogWarningElse(log);
 			return;
 		}
 
 		//
 		// Actually setting the new value
 		fNumber.setText(valueNew.toString());
+
 		this._valueOld = valueNew;
 
 		//
@@ -373,7 +377,7 @@ public abstract class AbstractTerminalNumericField
 			}
 		}
 	}
-	
+
 	private BigDecimal _valueOld = null;
 
 	public void incValue()
@@ -427,33 +431,4 @@ public abstract class AbstractTerminalNumericField
 	{
 		return withLabel;
 	}
-	
-	@Override
-	public void dispose()
-	{
-		super.dispose();
-		
-		if (bMinus != null)
-		{
-			bMinus.dispose();
-			bMinus = null;
-		}
-		if (bPlus != null)
-		{
-			bPlus.dispose();
-			bPlus = null;
-		}
-		if(fNumber != null)
-		{
-			fNumber.removeListener(numberChangeListener);
-			fNumber.dispose();
-			fNumber = null;
-		}
-		if (panel != null)
-		{
-			panel.dispose();
-			panel = null;
-		}
-	}
-
 }

@@ -31,7 +31,7 @@ import de.metas.migration.scanner.IScriptScanner;
 /**
  * Adds a list to {@link IScript}s to be executed before the actual scanner.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PrependScriptDecorator extends AbstractScriptDecoratorAdapter

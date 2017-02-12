@@ -37,8 +37,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.form.AbstractPackingItem;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingHandler;
 import de.metas.fresh.picking.service.IPackingService;
@@ -62,7 +62,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 
 /**
- * Class responsible for allocating given HUs to underlying shipment schedules from {@link FreshPackingItem}.
+ * Class responsible for allocating given HUs to underlying shipment schedules from {@link IFreshPackingItem}.
  * 
  * As a result of an allocation, you shall get:
  * <ul>
@@ -91,7 +91,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	//
 	// Parameters
 	private IPackingContext _packingContext;
-	private FreshPackingItem _itemToPack;
+	private IFreshPackingItem _itemToPack;
 
 	public HU2PackingItemsAllocator()
 	{
@@ -119,12 +119,12 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return _packingContext;
 	}
 
-	public void setItemToPack(final FreshPackingItem itemToPack)
+	public void setItemToPack(final IFreshPackingItem itemToPack)
 	{
 		this._itemToPack = itemToPack;
 	}
 
-	private FreshPackingItem getItemToPack()
+	private IFreshPackingItem getItemToPack()
 	{
 		Check.assumeNotNull(_itemToPack, "itemToPack set");
 		return _itemToPack;
@@ -132,7 +132,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 	private I_M_Product getM_Product()
 	{
-		final FreshPackingItem itemToPack = getItemToPack();
+		final IFreshPackingItem itemToPack = getItemToPack();
 		return itemToPack.getM_Product();
 	}
 
@@ -156,7 +156,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		final I_C_UOM qtyToPackSrcUOM = vhuProductStorage.getC_UOM();
 
 		//
-		final FreshPackingItem itemToPack = getItemToPack();
+		final IFreshPackingItem itemToPack = getItemToPack();
 		final I_C_UOM qtyToPackUOM = itemToPack.getC_UOM();
 		BigDecimal qtyToPack = uomConversionBL.convertQty(product, qtyToPackSrc, qtyToPackSrcUOM, qtyToPackUOM);
 		qtyToPack = adjustQtyToPackConsideringRemaining(qtyToPack, qtyToPackUOM);
@@ -173,7 +173,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		final IPackingHandler itemPackedProcessor = new PackingHandlerAdapter()
 		{
 			@Override
-			public void itemPacked(final AbstractPackingItem itemPacked)
+			public void itemPacked(final IPackingItem itemPacked)
 			{
 				for (final I_M_ShipmentSchedule sched : itemPacked.getShipmentSchedules())
 				{
@@ -202,7 +202,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			return;
 		}
 
-		final FreshPackingItem itemToPack = getItemToPack();
+		final IFreshPackingItem itemToPack = getItemToPack();
 
 		final IPackingContext packingContext = getPackingContext();
 		final IPackingHandler itemPackedProcessor = new PackingHandlerAdapter()
@@ -222,7 +222,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			}
 
 			@Override
-			public void itemPacked(final AbstractPackingItem item)
+			public void itemPacked(final IPackingItem item)
 			{
 				transferQtyToTargetHU(item.getQtys());
 			}

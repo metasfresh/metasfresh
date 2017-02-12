@@ -27,11 +27,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.Random;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -41,13 +38,15 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MMailText;
 import org.compiere.model.X_AD_User;
-import org.compiere.util.EMail;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Client;
-import de.metas.notification.IMailBL;
+import de.metas.email.EMail;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
+import de.metas.logging.LogManager;
 
 public class UserBL implements IUserBL
 {
@@ -106,10 +105,10 @@ public class UserBL implements IUserBL
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
-		final MMailText mText = new MMailText(ctx, client.getPasswordReset_MailText_ID(), ITrx.TRXNAME_None); // TODO: cache
-		final String subject = mText.getMailHeader();
-
 		final IMailBL mailService = Services.get(IMailBL.class);
+		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(client.getPasswordReset_MailText());
+		final String subject = mailTextBuilder.getMailHeader();
+
 		final EMail email = mailService.createEMail(client
 				, CUSTOMTYPE_OrgCompiereUtilLogin // mailCustomType
 				, null // from email
@@ -127,16 +126,16 @@ public class UserBL implements IUserBL
 
 		// Generate new Activation Code:
 		final String passwordResetURL = generatePasswordResetURL(user);
-		mText.setCustomVariable("URL", passwordResetURL);
+		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
 
-		mText.setUser(user);
+		mailTextBuilder.setAD_User(user);
 		if (user.getC_BPartner_ID() > 0)
 		{
-			mText.setBPartner(user.getC_BPartner_ID());
+			mailTextBuilder.setC_BPartner(user.getC_BPartner());
 		}
 
-		final String message = mText.getMailText(true);
-		if (mText.isHtml())
+		final String message = mailTextBuilder.getFullMailText();
+		if (mailTextBuilder.isHtml())
 		{
 			email.setMessageHTML(subject, message);
 		}

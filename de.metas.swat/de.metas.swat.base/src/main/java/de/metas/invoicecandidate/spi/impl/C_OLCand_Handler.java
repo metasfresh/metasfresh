@@ -30,7 +30,6 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -138,7 +137,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		Check.assume(Env.getAD_Client_ID(ctx) == olc.getAD_Client_ID(), "AD_Client_ID of {} and of its Ctx are the same", olc);
 
-		final I_C_Invoice_Candidate ic = POWrapper.create(ctx, I_C_Invoice_Candidate.class, trxName);
+		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		// org id
 		final int orgId = olc.getAD_Org_ID();
@@ -211,7 +210,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				, orgId
 				, warehouse
 				, billLocationId
-				, olc.getC_BPartner_Location_ID()
+				, olCandEffectiveValuesBL.getC_BP_Location_Effective_ID(olc)
 				, isSOTrx
 				, trxName
 				);

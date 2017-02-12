@@ -88,6 +88,13 @@ public class ADRAttributeBL implements IADRAttributeBL
 			else if (attributeAction == AttributeAction.GenerateNew)
 			{
 				final I_M_Attribute adrAttribute = Services.get(IADRAttributeDAO.class).retrieveADRAttribute(partner);
+				
+				//FRESH-559: In case of null adrAttribute, return null
+				if(adrAttribute == null)
+				{
+					return null;
+				}
+				
 				final IAttributeValueGenerator generator = Services.get(IAttributesBL.class).getAttributeValueGenerator(adrAttribute);
 
 				if (generator == null)

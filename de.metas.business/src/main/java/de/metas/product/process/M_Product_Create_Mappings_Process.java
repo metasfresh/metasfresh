@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.process.Param;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductConstants;
 import de.metas.product.model.I_M_Product;
@@ -35,14 +35,14 @@ import de.metas.product.model.I_M_Product_Mapping;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * 
  *         This process creates M_Product_Mappings between 2 products from 2 different organizations.
  *         In case the mapping exists for one of the products, it is set for the other one, too.
  *         In case the current product has a different mapping than the target, it will be set for the target product and all the other products with the same mapping.
  *
  */
-public class M_Product_Create_Mappings_Process extends SvrProcess
+public class M_Product_Create_Mappings_Process extends JavaProcess
 {
 
 	@Param(parameterName = ProductConstants.TARGET_PRODUCT_ID)

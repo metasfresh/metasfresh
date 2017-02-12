@@ -20,23 +20,25 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ClientProcess;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPOrder;
+
+import de.metas.process.Process;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Complete & Print Manufacturing Order
  * @author victor.perez@e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
-public class CompletePrintOrder extends SvrProcess
-implements ClientProcess
+@Process(clientOnly = true)
+public class CompletePrintOrder extends JavaProcess
 {
 	/** The Order */
 	private int p_PP_Order_ID = 0;
@@ -51,7 +53,7 @@ implements ClientProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -166,7 +168,7 @@ implements ClientProcess
 		}
 		// query
 		MQuery query = new MQuery(tableName);
-		query.addRestriction("PP_Order_ID", MQuery.EQUAL, p_PP_Order_ID);
+		query.addRestriction("PP_Order_ID", Operator.EQUAL, p_PP_Order_ID);
 		// Engine
 		PrintInfo info = new PrintInfo(tableName,  adTableId, p_PP_Order_ID);
 		ReportEngine re = new ReportEngine(getCtx(), format, query, info);

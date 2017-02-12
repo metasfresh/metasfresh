@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.context;
 
@@ -13,36 +13,37 @@ package de.metas.adempiere.form.terminal.context;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.WeakWrapper;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.POSKeyLayout;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class TerminalContextFactory
 {
@@ -58,9 +59,15 @@ public class TerminalContextFactory
 	/* Internal list of created terminal contexts, to avoid being GCed */
 	private final IdentityHashSet<ITerminalContext> terminalContexts = new IdentityHashSet<ITerminalContext>();
 
-	public ITerminalContext createContext()
+	/**
+	 * Create a new terminal context and references. to destroy a terminal context, please use {@link #destroy(ITerminalContext)}.
+	 *
+	 * @return both the newly created context and its first (and at this point only one) references instance. Also see {@link ITerminalContext#deleteReferences(ITerminalContextReferences)} on why the caller needs both.
+	 */
+	public IPair<ITerminalContext, ITerminalContextReferences> createContextAndRefs()
 	{
 		final TerminalContext terminalContext = new TerminalContext();
+		final TerminalContextReferences newReferences = terminalContext.newReferences();
 
 		// Set context
 		final Properties ctx = Env.getCtx();
@@ -68,7 +75,7 @@ public class TerminalContextFactory
 
 		//
 		// Setup components factory
-		final ITerminalFactory factory = new SwingTerminalFactory(terminalContext); // TODO: HARDCODED
+		final ITerminalFactory factory = new SwingTerminalFactory(terminalContext); // TODO: support other factory implementations
 		terminalContext.setTerminalFactory(factory);
 
 		// Set logged in user
@@ -89,49 +96,14 @@ public class TerminalContextFactory
 		// Add terminal context to current list of terminal contexts
 		terminalContexts.add(terminalContext);
 
-		// Return it
-		return terminalContext;
+		// Return the references
+		return ImmutablePair.<ITerminalContext, ITerminalContextReferences> of(terminalContext, newReferences);
 	}
 
-	public ITerminalContext copy(final ITerminalContext terminalContext)
-	{
-		Check.assumeNotNull(terminalContext, "terminalContext not null");
-
-		final TerminalContext terminalContextNew = new TerminalContext();
-		copyFrom(terminalContextNew, terminalContextNew);
-
-		//
-		// Add terminal context to current list of terminal contexts
-		terminalContexts.add(terminalContextNew);
-
-		// Return it
-		return terminalContextNew;
-	}
-
-	private final void copyFrom(final TerminalContext terminalContextNew, final ITerminalContext terminalContext)
-	{
-		Check.assumeNotNull(terminalContext, "terminalContext not null");
-
-		terminalContextNew.setCtx(terminalContext.getCtx());
-
-		final ITerminalFactory terminalFactoryNew = terminalContext.getTerminalFactory().copy(terminalContextNew);
-		terminalContextNew.setTerminalFactory(terminalFactoryNew);
-
-		terminalContextNew.setNumericKeyLayout(terminalContext.getNumericKeyLayout());
-		terminalContextNew.setTextKeyLayout(terminalContext.getTextKeyLayout());
-
-		terminalContextNew.setWindowNo(terminalContext.getWindowNo());
-		terminalContextNew.setAD_User_ID(terminalContext.getAD_User_ID());
-
-		terminalContextNew.setDefaultFontSize(terminalContext.getDefaultFontSize());
-
-		terminalContextNew.setScreenResolution(terminalContext.getScreenResolution());
-
-		// services // don't copy them
-		// hardReferences // don't copy them
-		// propertyChangeSupports // don't copy them
-	}
-
+	/**
+	 *
+	 * @param terminalContext the context to be destroyed. If <code>null</code> this method does nothing. This method assumes the context was created with {@link #createContextAndRefs()}.
+	 */
 	public void destroy(final ITerminalContext terminalContext)
 	{
 		if (terminalContext == null)
@@ -141,16 +113,18 @@ public class TerminalContextFactory
 
 		final ITerminalContext terminalContextUnwrapped = WeakWrapper.unwrap(terminalContext);
 		Check.assumeNotNull(terminalContextUnwrapped, "terminalContextUnwrapped not null");
+		Check.assume(terminalContextUnwrapped instanceof TerminalContext, "Param 'terminalContext'={} is instanceof TerminalContext", terminalContext);
 
-		terminalContextUnwrapped.dispose();
+		final TerminalContext tcToUse = (TerminalContext)terminalContext;
+
+		tcToUse.dispose();
 
 		if (!terminalContexts.remove(terminalContextUnwrapped))
 		{
-			if (!terminalContextUnwrapped.isDisposed())
+			if (!tcToUse.isDisposed())
 			{
 				logger.warn("Cannot remove {} from internal terminal contexts list because it was not found."
-						+ "\nCurrent contexts are: {}"
-						, new Object[] { terminalContext, terminalContexts });
+						+ "\nCurrent contexts are: {}", new Object[] { terminalContext, terminalContexts });
 			}
 		}
 	}

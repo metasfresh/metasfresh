@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.fresh.model;
 
@@ -32,7 +16,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1839929653L;
+	private static final long serialVersionUID = 592773067L;
 
     /** Standard Constructor */
     public X_X_MRP_ProductInfo_V (Properties ctx, int X_MRP_ProductInfo_V_ID, String trxName)
@@ -40,6 +24,18 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
       super (ctx, X_MRP_ProductInfo_V_ID, trxName);
       /** if (X_MRP_ProductInfo_V_ID == 0)
         {
+			setFresh_QtyMRP (Env.ZERO);
+// 0
+			setFresh_QtyOnHand_OnDate (Env.ZERO);
+// 0
+			setFresh_QtyOnHand_OnDate_Ind9 (Env.ZERO);
+// 0
+			setFresh_QtyOnHand_OnDate_Stö2 (Env.ZERO);
+// 0
+			setFresh_QtyPromised (Env.ZERO);
+// 0
+			setFresh_QtyPromised_OnDate (Env.ZERO);
+// 0
 			setQtyAvailable (Env.ZERO);
 // 0
 			setQtyMaterialentnahme (Env.ZERO);
@@ -55,18 +51,6 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 			setQtyReserved (Env.ZERO);
 // 0
 			setQtyReserved_OnDate (Env.ZERO);
-// 0
-			setFresh_QtyMRP (Env.ZERO);
-// 0
-			setFresh_QtyOnHand_OnDate (Env.ZERO);
-// 0
-			setFresh_QtyOnHand_OnDate_Ind9 (Env.ZERO);
-// 0
-			setFresh_QtyOnHand_OnDate_Stö2 (Env.ZERO);
-// 0
-			setFresh_QtyPromised (Env.ZERO);
-// 0
-			setFresh_QtyPromised_OnDate (Env.ZERO);
 // 0
         } */
     }
@@ -100,6 +84,120 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	public java.sql.Timestamp getDateGeneral () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
+	}
+
+	/** Set MRP Menge.
+		@param Fresh_QtyMRP MRP Menge	  */
+	@Override
+	public void setFresh_QtyMRP (java.math.BigDecimal Fresh_QtyMRP)
+	{
+		set_ValueNoCheck (COLUMNNAME_Fresh_QtyMRP, Fresh_QtyMRP);
+	}
+
+	/** Get MRP Menge.
+		@return MRP Menge	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyMRP () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyMRP);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zählbestand.
+		@param Fresh_QtyOnHand_OnDate Zählbestand	  */
+	@Override
+	public void setFresh_QtyOnHand_OnDate (java.math.BigDecimal Fresh_QtyOnHand_OnDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate, Fresh_QtyOnHand_OnDate);
+	}
+
+	/** Get Zählbestand.
+		@return Zählbestand	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyOnHand_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Ind9.
+		@param Fresh_QtyOnHand_OnDate_Ind9 Ind9	  */
+	@Override
+	public void setFresh_QtyOnHand_OnDate_Ind9 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Ind9)
+	{
+		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9, Fresh_QtyOnHand_OnDate_Ind9);
+	}
+
+	/** Get Ind9.
+		@return Ind9	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Ind9 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate_Ind9);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Stö2.
+		@param Fresh_QtyOnHand_OnDate_Stö2 Stö2	  */
+	@Override
+	public void setFresh_QtyOnHand_OnDate_Stö2 (java.math.BigDecimal Fresh_QtyOnHand_OnDate_Stö2)
+	{
+		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2, Fresh_QtyOnHand_OnDate_Stö2);
+	}
+
+	/** Get Stö2.
+		@return Stö2	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyOnHand_OnDate_Stö2 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate_Stö2);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar Zählbestand.
+		@param Fresh_QtyPromised Zusagbar Zählbestand	  */
+	@Override
+	public void setFresh_QtyPromised (java.math.BigDecimal Fresh_QtyPromised)
+	{
+		set_ValueNoCheck (COLUMNNAME_Fresh_QtyPromised, Fresh_QtyPromised);
+	}
+
+	/** Get Zusagbar Zählbestand.
+		@return Zusagbar Zählbestand	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyPromised () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyPromised);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar Tag.
+		@param Fresh_QtyPromised_OnDate Zusagbar Tag	  */
+	@Override
+	public void setFresh_QtyPromised_OnDate (java.math.BigDecimal Fresh_QtyPromised_OnDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_Fresh_QtyPromised_OnDate, Fresh_QtyPromised_OnDate);
+	}
+
+	/** Get Zusagbar Tag.
+		@return Zusagbar Tag	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyPromised_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyPromised_OnDate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Eingekauft.
@@ -226,6 +324,28 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zusage Lieferant.
+		@param PMM_QtyPromised_OnDate 
+		Vom Lieferanten per Webapplikation zugesagte Menge
+	  */
+	@Override
+	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_PMM_QtyPromised_OnDate, PMM_QtyPromised_OnDate);
+	}
+
+	/** Get Zusage Lieferant.
+		@return Vom Lieferanten per Webapplikation zugesagte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getPMM_QtyPromised_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PMM_QtyPromised_OnDate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Produktname.
@@ -406,82 +526,6 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	public java.math.BigDecimal getQtyReserved_OnDate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved_OnDate);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set MRP Menge.
-		@param Fresh_QtyMRP MRP Menge	  */
-	@Override
-	public void setFresh_QtyMRP (java.math.BigDecimal Fresh_QtyMRP)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyMRP, Fresh_QtyMRP);
-	}
-
-	/** Get MRP Menge.
-		@return MRP Menge	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyMRP () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyMRP);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Zählbestand.
-		@param Fresh_QtyOnHand_OnDate Zählbestand	  */
-	@Override
-	public void setFresh_QtyOnHand_OnDate (java.math.BigDecimal Fresh_QtyOnHand_OnDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_OnDate, Fresh_QtyOnHand_OnDate);
-	}
-
-	/** Get Zählbestand.
-		@return Zählbestand	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyOnHand_OnDate () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyOnHand_OnDate);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Zusagbar Zählbestand.
-		@param Fresh_QtyPromised Zusagbar Zählbestand	  */
-	@Override
-	public void setFresh_QtyPromised (java.math.BigDecimal Fresh_QtyPromised)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyPromised, Fresh_QtyPromised);
-	}
-
-	/** Get Zusagbar Zählbestand.
-		@return Zusagbar Zählbestand	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyPromised () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyPromised);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Zusagbar Tag.
-		@param Fresh_QtyPromised_OnDate Zusagbar Tag	  */
-	@Override
-	public void setFresh_QtyPromised_OnDate (java.math.BigDecimal Fresh_QtyPromised_OnDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_Fresh_QtyPromised_OnDate, Fresh_QtyPromised_OnDate);
-	}
-
-	/** Get Zusagbar Tag.
-		@return Zusagbar Tag	  */
-	@Override
-	public java.math.BigDecimal getFresh_QtyPromised_OnDate () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyPromised_OnDate);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

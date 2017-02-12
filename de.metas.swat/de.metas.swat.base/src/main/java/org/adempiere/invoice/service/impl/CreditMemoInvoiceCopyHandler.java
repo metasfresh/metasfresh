@@ -10,18 +10,17 @@ package org.adempiere.invoice.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -51,7 +50,7 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocActionBL;
 
 /**
- * 
+ *
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
  * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link de.metas.document.ICopyHandlerBL}.
  * <p>
@@ -64,9 +63,9 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 	private final BigDecimal openAmt;
 	private final String trxName;
 
-	public CreditMemoInvoiceCopyHandler(final Properties ctx, 
-			final IInvoiceCreditContext creditCtx, 
-			final BigDecimal openAmt, 
+	public CreditMemoInvoiceCopyHandler(final Properties ctx,
+			final IInvoiceCreditContext creditCtx,
+			final BigDecimal openAmt,
 			final String trxName)
 	{
 		super();
@@ -126,11 +125,15 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 		// get our currency precision and the smallest possible amount (in most currencies this is 0.01)
 		final int precision = invoice.getC_Currency().getStdPrecision();
-		final BigDecimal smallestAmt = BigDecimal.ONE.setScale(precision, BigDecimal.ROUND_HALF_UP).divide(BigDecimal.TEN.pow(precision));
+		final BigDecimal smallestAmtInCurrency = BigDecimal.ONE.setScale(precision, BigDecimal.ROUND_HALF_UP).divide(BigDecimal.TEN.pow(precision));
 
 		// Compute the factor we can use to get the credit memo amounts from their respective invoice amounts.
 		// Note that by rounding to "floor", the rounded value won't ever be greater than the "correct" value
-		final BigDecimal openfraction = openAmt.setScale(precision * 3, BigDecimal.ROUND_HALF_UP).divide(invoice.getGrandTotal(), RoundingMode.FLOOR);
+		final BigDecimal openfraction = openAmt
+				// gh #448: make sure to choose openfraction's scale such that it's length after the decimal point (it is generally <=1) is in the same order as the size of the numbers which we divide.
+				// this is important to guarantee that the rounding error is not bigger than 'smallestAmtInCurrency'
+				.setScale(openAmt.precision() + invoice.getGrandTotal().precision(), BigDecimal.ROUND_HALF_UP)
+				.divide(invoice.getGrandTotal(), RoundingMode.FLOOR);
 
 		final IInvoiceDAO invoicePA = Services.get(IInvoiceDAO.class);
 
@@ -157,7 +160,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			final BigDecimal taxGrossAmt = invoiceTax.getTaxBaseAmt().add(invoiceTax.getTaxAmt());
 
 			// Note that once again, we round to "floor", so the rounded value won't be greater than the "correct" value
-			// Also note that if 'creditTaxGrossAmt' is less than the "correct" value, the difference is not more than 'smallestAmt'.
+			// Also note that if 'creditTaxGrossAmt' is less than the "correct" value, the difference is never bigger than than 'smallestAmtInCurrency'.
 			final BigDecimal creditTaxGrossAmt = taxGrossAmt.multiply(openfraction).setScale(precision, RoundingMode.FLOOR);
 			creditMemoGrandTotal = creditMemoGrandTotal.add(creditTaxGrossAmt);
 
@@ -178,8 +181,8 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			if (creditMemoGrandTotal.compareTo(openAmt) < 0)
 			{
 				newTaxAmounts.put(invoiceTax,
-						newTaxAmounts.get(invoiceTax).add(smallestAmt));
-				creditMemoGrandTotal = creditMemoGrandTotal.add(smallestAmt);
+						newTaxAmounts.get(invoiceTax).add(smallestAmtInCurrency));
+				creditMemoGrandTotal = creditMemoGrandTotal.add(smallestAmtInCurrency);
 			}
 			else
 			{
@@ -187,7 +190,8 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			}
 		}
 
-		Check.assume(creditMemoGrandTotal.compareTo(openAmt) == 0, "{} = {}", creditMemoGrandTotal, openAmt);
+		// gh #448: in the past this error occurred when openfraction's scale was two low.
+		Check.errorIf(creditMemoGrandTotal.compareTo(openAmt) != 0, "creditMemoGrandTotal={} is different from openAmt={}; openfraction={}", creditMemoGrandTotal, openAmt, openfraction);
 
 		//
 		// Now that we have computed the tax values where we need to end up with our credit memo,
@@ -226,7 +230,11 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 				}
 				else
 				{
-					newLineGrossAmt = newLineNetAmt.multiply(invoiceTax.getC_Tax().getRate().add(Env.ONEHUNDRED).divide(Env.ONEHUNDRED)).setScale(precision, RoundingMode.FLOOR);
+					newLineGrossAmt = newLineNetAmt
+							.multiply(invoiceTax.getC_Tax().getRate()
+									.add(Env.ONEHUNDRED)
+									.divide(Env.ONEHUNDRED))
+							.setScale(precision, RoundingMode.FLOOR);
 				}
 				line2newLineGrossAmt.put(creditMemoLine, newLineGrossAmt);
 				sumPerTax = sumPerTax.add(newLineGrossAmt);
@@ -241,13 +249,13 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 				}
 				if (sumPerTax.compareTo(targetSum) < 0)
 				{
-					line2newLineGrossAmt.put(creditMemoLine, line2newLineGrossAmt.get(creditMemoLine).add(smallestAmt));
-					sumPerTax = sumPerTax.add(smallestAmt);
+					line2newLineGrossAmt.put(creditMemoLine, line2newLineGrossAmt.get(creditMemoLine).add(smallestAmtInCurrency));
+					sumPerTax = sumPerTax.add(smallestAmtInCurrency);
 				}
 				else
 				{
 					Check.errorIf(true, "invoiceTax {} has has targetSum={}, but the credit memo lines for this tax have sumPerTax={} (difference may not be more than {})",
-							invoiceTax, targetSum, sumPerTax, smallestAmt);
+							invoiceTax, targetSum, sumPerTax, smallestAmtInCurrency);
 				}
 			}
 		}
@@ -283,7 +291,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			// nothing left to do
 			return;
 		}
-		
+
 		// make sure the grand total of the credit memo equals the open AMT of the invoice
 		Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 

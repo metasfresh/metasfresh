@@ -35,7 +35,7 @@ import de.metas.materialtracking.model.I_M_InOutLine;
 /**
  * As of now, this service needs to be implemented in <code>de.metas.handlingunits</code>.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPPOrderMInOutLineRetrievalService extends ISingletonService

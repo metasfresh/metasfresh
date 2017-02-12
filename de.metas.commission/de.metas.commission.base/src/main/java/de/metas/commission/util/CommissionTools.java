@@ -29,8 +29,8 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MProductScalePrice;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Constants;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Invoice;
@@ -43,7 +43,6 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.commission.exception.CommissionException;
 import de.metas.commission.interfaces.I_M_ProductPrice;
@@ -51,6 +50,7 @@ import de.metas.commission.interfaces.I_M_ProductScalePrice;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.I_M_DiscountSchema;
+import de.metas.logging.LogManager;
 
 public final class CommissionTools
 {
@@ -83,7 +83,7 @@ public final class CommissionTools
 		final BigDecimal commissionPoints;
 
 		final I_M_ProductScalePrice psp =
-				POWrapper.create(MProductScalePrice.getForPriceList(pl.get_ID(), productId, qty, trxName), I_M_ProductScalePrice.class);
+				InterfaceWrapperHelper.create(MProductScalePrice.getForPriceList(pl.get_ID(), productId, qty, trxName), I_M_ProductScalePrice.class);
 
 		if (psp != null)
 		{
@@ -105,7 +105,7 @@ public final class CommissionTools
 
 			if (pps.length > 0)
 			{
-				commissionPoints = POWrapper.create(pps[0], I_M_ProductPrice.class).getCommissionPoints();
+				commissionPoints = InterfaceWrapperHelper.create(pps[0], I_M_ProductPrice.class).getCommissionPoints();
 				CommissionTools.logger.debug("Got " + commissionPoints + " from product price");
 			}
 			else

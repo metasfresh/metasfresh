@@ -25,11 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISequenceDAO;
@@ -41,6 +37,9 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Sequence Model.
@@ -590,7 +589,7 @@ public class MSequence extends X_AD_Sequence
 					+ "\b Response: " + response;
 			throw new AdempiereException(errmsg, e);
 		}
-		s_log.info("getNextID_HTTP - " + TableName + "=" + response + "(" + retValue + ")");
+		s_log.info("getNextID_HTTP - {}={} ({})", TableName, response, retValue);
 
 		return retValue;
 	}
@@ -650,24 +649,6 @@ public class MSequence extends X_AD_Sequence
 
 		// don't log selects or insert/update for exception tables (i.e. AD_Issue, AD_ChangeLog)
 		return false;
-	}
-
-	/**
-	 * Get preliminary document no by year
-	 * @param tab
-	 * @param AD_Sequence_ID
-	 * @param dateColumn
-	 * @return Preliminary document no
-	 */
-	public static String getPreliminaryNoByYear(GridTab tab, int AD_Sequence_ID, String dateColumn, String trxName) {
-		Date d = (Date)tab.getValue(dateColumn);
-		if (d == null)
-			d = new Date();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-		String calendarYear = sdf.format(d);
-		String sql = "select CurrentNext From AD_Sequence_No Where AD_Sequence_ID = ? and CalendarYear = ?";
-
-		return DB.getSQLValueString(trxName, sql, AD_Sequence_ID, calendarYear);
 	}
 
 	/**

@@ -154,6 +154,35 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_C_UOM>(I_PMM_PurchaseCandidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -182,35 +211,6 @@ public interface I_PMM_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_AD_User>(I_PMM_PurchaseCandidate.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, org.compiere.model.I_C_UOM>(I_PMM_PurchaseCandidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Zugesagter Termin.
@@ -512,6 +512,33 @@ public interface I_PMM_PurchaseCandidate
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set V.
+	 * Vertrag
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setPMM_ContractedPriceOrQty (boolean PMM_ContractedPriceOrQty);
+
+	/**
+	 * Get V.
+	 * Vertrag
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean isPMM_ContractedPriceOrQty();
+
+    /** Column definition for PMM_ContractedPriceOrQty */
+    public static final org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object> COLUMN_PMM_ContractedPriceOrQty = new org.adempiere.model.ModelColumn<I_PMM_PurchaseCandidate, Object>(I_PMM_PurchaseCandidate.class, "PMM_ContractedPriceOrQty", null);
+    /** Column name PMM_ContractedPriceOrQty */
+    public static final String COLUMNNAME_PMM_ContractedPriceOrQty = "PMM_ContractedPriceOrQty";
+
+	/**
 	 * Set Bestellkandidat.
 	 *
 	 * <br>Type: ID
@@ -539,8 +566,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPMM_Trend_InTwoWeeks (java.lang.String PMM_Trend_InTwoWeeks);
 
 	/**
@@ -548,8 +577,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getPMM_Trend_InTwoWeeks();
 
     /** Column definition for PMM_Trend_InTwoWeeks */
@@ -635,8 +666,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProcessing (boolean Processing);
 
 	/**
@@ -644,8 +677,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -708,8 +743,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQtyOrdered_TU_NextWeek (java.math.BigDecimal QtyOrdered_TU_NextWeek);
 
 	/**
@@ -717,8 +754,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getQtyOrdered_TU_NextWeek();
 
     /** Column definition for QtyOrdered_TU_NextWeek */
@@ -731,8 +770,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQtyOrdered_TU_ThisWeek (java.math.BigDecimal QtyOrdered_TU_ThisWeek);
 
 	/**
@@ -740,8 +781,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getQtyOrdered_TU_ThisWeek();
 
     /** Column definition for QtyOrdered_TU_ThisWeek */
@@ -800,8 +843,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQtyPromised_TU_NextWeek (java.math.BigDecimal QtyPromised_TU_NextWeek);
 
 	/**
@@ -809,8 +854,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getQtyPromised_TU_NextWeek();
 
     /** Column definition for QtyPromised_TU_NextWeek */
@@ -823,8 +870,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQtyPromised_TU_ThisWeek (java.math.BigDecimal QtyPromised_TU_ThisWeek);
 
 	/**
@@ -832,8 +881,10 @@ public interface I_PMM_PurchaseCandidate
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getQtyPromised_TU_ThisWeek();
 
     /** Column definition for QtyPromised_TU_ThisWeek */

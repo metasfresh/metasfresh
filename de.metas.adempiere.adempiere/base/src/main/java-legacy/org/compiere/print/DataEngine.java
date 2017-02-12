@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.util.DB;
@@ -40,6 +41,7 @@ import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -348,12 +350,12 @@ public class DataEngine
 
 					if (ColumnSQL.length() > 0)
 					{
-						eSql = MLookupFactory.getLookup_TableDirEmbed(m_language, ColumnName, tableName, "(" + ColumnSQL + ")");
+						eSql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_language), ColumnName, tableName, "(" + ColumnSQL + ")");
 						lookupSQL = ColumnSQL;
 					}
 					else
 					{
-						eSql = MLookupFactory.getLookup_TableDirEmbed(m_language, ColumnName, tableName);
+						eSql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_language), ColumnName, tableName);
 					}
 
 					//	TableName

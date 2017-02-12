@@ -50,7 +50,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.AvailableBins;
 import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -228,9 +228,9 @@ public class Utils
 
 						// create products per box
 						Object obj = child.getUserObject();
-						if (obj instanceof PackingItem)
+						if (obj instanceof LegacyPackingItem)
 						{
-							final PackingItem item = (PackingItem)obj;
+							final LegacyPackingItem item = (LegacyPackingItem)obj;
 							// save items
 							X_M_PackagingTreeItem itemTree = new X_M_PackagingTreeItem(ctx, 0, trxName);
 							itemTree.setM_PackagingTree_ID(tree.get_ID());
@@ -267,9 +267,9 @@ public class Utils
 
 					// get boxes
 					Object userObj = currentChild.getUserObject();
-					if (userObj instanceof PackingItem)
+					if (userObj instanceof LegacyPackingItem)
 					{
-						final PackingItem item = (PackingItem)userObj;
+						final LegacyPackingItem item = (LegacyPackingItem)userObj;
 						X_M_PackagingTreeItem unpacked = new X_M_PackagingTreeItem(ctx, 0, trxName);
 						unpacked.setM_PackagingTree_ID(tree.get_ID());
 						unpacked.setM_Product_ID(item.getProductId());

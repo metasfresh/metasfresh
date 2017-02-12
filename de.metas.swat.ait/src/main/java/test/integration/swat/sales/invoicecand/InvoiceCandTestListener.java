@@ -35,12 +35,10 @@ import java.util.Properties;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_Invoice;
 
-import test.integration.swat.sales.SalesTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.event.TestEvent;
 import de.metas.adempiere.ait.helper.GridWindowHelper;
@@ -52,6 +50,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import test.integration.swat.sales.SalesTestDriver;
 
 public class InvoiceCandTestListener
 {
@@ -93,7 +92,7 @@ public class InvoiceCandTestListener
 				EventType.INVOICE_PAID_REVERSE_AFTER})
 	public void afterInvoiceReverse(final TestEvent evt)
 	{
-		final I_C_Invoice invoice = POWrapper.create(evt.getObj(), I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(evt.getObj(), I_C_Invoice.class);
 
 		final InvoiceCandHelper helper = new InvoiceCandHelper(evt.getSource().getHelper());
 		

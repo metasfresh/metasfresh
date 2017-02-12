@@ -30,10 +30,13 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Image;
+import org.compiere.model.I_AD_InfoColumn;
+import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process;
@@ -41,6 +44,9 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_DocTypeCounter;
+import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -59,6 +65,8 @@ import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
 
 /**
@@ -74,8 +82,18 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		CopyRecordFactory.addOnRecordCopiedListener(new CloneASIListener());
+		
+		// 
+		registerFactories();
 	}
 
+	public void registerFactories()
+	{
+		//
+		// Register notifier
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNotifier(new NotifyAsyncBatch());
+	}
+	
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -95,6 +113,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass(), client); // 04599
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type(), client); // 04599
+		
+		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance, client); // FRESH-727
 
 		//
 		// Currency
@@ -125,14 +145,33 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// Task 09548
 		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
 
-		engine.addModelValidator(de.metas.order.model.validator.OrderModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE, client);
 
+		engine.addModelValidator(de.metas.invoice.model.interceptor.InvoiceModuleInterceptor.INSTANCE, client);
+
+		// gh-issue #288
+		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
+		
+		//
+		// Script/Rule engine
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance, client);
+		
+		//
+		// Request
+		engine.addModelValidator(de.metas.request.model.interceptor.RequestsModuleInterceptor.instance, client);
+		
+		//
+		// BPartner
+		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
 	}
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
+		
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
 	}
 
 	@Override
@@ -199,10 +238,27 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.setTrxLevel(TrxLevel.OutOfTransactionOnly)
 				.register();
 
+		// C_DocType
+		// (#136 FRESH-472)
+		cachingService.createTableCacheConfigBuilder(I_C_DocType.class)
+				.setEnabled(true)
+				.setInitialCapacity(100)
+				.setMaxCapacity(100)
+				.setExpireMinutes(ITableCacheConfig.EXPIREMINUTES_Never)
+				.setCacheMapType(CacheMapType.LRU)
+				.setTrxLevel(TrxLevel.All)
+				.register();
+
 		// task 09304: now that we can, let's also invalidate the cached UOM conversions.
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM_Conversion.Table_Name);
+
+		// (#136 FRESH-472)
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocType.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocType_Sequence.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_DocTypeCounter.Table_Name);
 
 		// Broadcast cache invalidation of AD_Client and AD_Org tables.
 		// This is needed in case there are some configuration changes and we want them to be applied ASAP, without restarting the server.
@@ -230,5 +286,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);
 	}
 }

@@ -46,7 +46,7 @@ import de.metas.currency.ICurrencyDAO;
  * 
  * To create a new builder instance please use {@link #newBuilder(I_GL_JournalBatch)}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GL_Journal_Builder

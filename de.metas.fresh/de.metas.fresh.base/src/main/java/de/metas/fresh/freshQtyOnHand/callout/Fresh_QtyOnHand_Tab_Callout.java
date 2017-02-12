@@ -25,13 +25,12 @@ package de.metas.fresh.freshQtyOnHand.callout;
 
 import java.sql.Timestamp;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.apache.commons.lang3.time.DateUtils;
-import org.compiere.model.GridTab;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 
@@ -49,9 +48,9 @@ import de.metas.fresh.model.I_Fresh_QtyOnHand;
 public class Fresh_QtyOnHand_Tab_Callout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_Fresh_QtyOnHand freshQtyOnHand = InterfaceWrapperHelper.create(gridTab, I_Fresh_QtyOnHand.class);
+		final I_Fresh_QtyOnHand freshQtyOnHand = calloutRecord.getModel(I_Fresh_QtyOnHand.class);
 		final Timestamp dateDoc = freshQtyOnHand.getDateDoc();
 
 		Timestamp dateDocToUse = dateDoc == null ? SystemTime.asTimestamp() : dateDoc;

@@ -2,16 +2,17 @@ package de.metas.banking.bankstatement.match.form;
 
 import java.awt.BorderLayout;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BankStatement;
-import org.compiere.process.ProcessInfo;
 
 import de.metas.banking.bankstatement.match.model.BankStatement;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -37,12 +38,12 @@ import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task 07994 Kontoauszugsimport (109116274972)
  */
 public class BankStatementMatchForm
 		implements FormPanel
-		, ISvrProcessPrecondition
+		, IProcessPrecondition
 {
 	@Override
 	public void init(final int WindowNo, final FormFrame frame) throws Exception
@@ -64,7 +65,7 @@ public class BankStatementMatchForm
 		final ProcessInfo processInfo = frame.getProcessInfo();
 		if (processInfo != null)
 		{
-			final I_C_BankStatement bankStatementPO = processInfo.getRecordIfApplies(I_C_BankStatement.class, ITrx.TRXNAME_None).orNull();
+			final I_C_BankStatement bankStatementPO = processInfo.getRecordIfApplies(I_C_BankStatement.class, ITrx.TRXNAME_None).orElse(null);
 			if (bankStatementPO != null)
 			{
 				final BankStatement bankStatement = BankStatement.of(bankStatementPO);
@@ -85,13 +86,11 @@ public class BankStatementMatchForm
 	}
 
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		// final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(gridTab, I_C_BankStatement.class);
-
 		// TODO Auto-generated method stub
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 }

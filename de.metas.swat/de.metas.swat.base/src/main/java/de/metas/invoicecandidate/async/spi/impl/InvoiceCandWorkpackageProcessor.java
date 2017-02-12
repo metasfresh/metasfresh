@@ -27,11 +27,12 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
+
 import com.google.common.base.Optional;
 
 import de.metas.async.api.IQueueDAO;
@@ -102,12 +103,11 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			updateInvalid(localCtx, candidatesOfPackage, localTrxName);
 
 			// Generate invoices from them
-			final ILoggable loggable = getLoggable();
 			final EventRecorderInvoiceGenerateResult createInvoiceResults = new EventRecorderInvoiceGenerateResult(getInvoiceGenerateResult())
 					.setEventRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator
 			invoiceCandBL.generateInvoices()
 					.setContext(localCtx, localTrxName)
-					.setLoggable(loggable)
+					.setLoggable(Loggables.get())
 					.setCollector(createInvoiceResults)
 					.setInvoicingParams(getInvoicingParams())
 					.setIgnoreInvoiceSchedule(true) // we don't need to check for the invoice schedules because ICs where would be skipped here would already be skipped on enqueue time.
@@ -116,7 +116,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			// Log invoices generation result
 			final String createInvoiceResultsSummary = createInvoiceResults.getSummary(localCtx);
 			logger.info(createInvoiceResultsSummary);
-			loggable.addLog(createInvoiceResultsSummary);
+			Loggables.get().addLog(createInvoiceResultsSummary);
 
 			// invalidate them all at once
 			invoiceCandDAO.invalidateCands(candidatesOfPackage, localTrxName);
@@ -168,7 +168,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// from invoice candidates were changed after validation.
 		// If that's the case, an exception shall be thrown.
 		final InvoiceCandidatesChangesChecker icChangesChecker = new InvoiceCandidatesChangesChecker()
-				.setLogger(getLoggable())
+				.setLogger(Loggables.get())
 				.setBeforeChanges(candidates);
 
 		//

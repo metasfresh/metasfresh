@@ -22,15 +22,16 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.email.EMail;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  *  Asset Model
@@ -776,6 +777,7 @@ public class MAsset extends X_A_Asset
 	/*************************************************************************
 	 * 	Confirm Asset EMail Delivery
 	 *	@param email email sent
+	 * @param emailSentStatus 
 	 * 	@param AD_User_ID recipient
 	 * 	@return asset delivery
 	 */

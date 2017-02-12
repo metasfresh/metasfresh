@@ -101,18 +101,19 @@ public final class VPanelFormFieldBuilder
 				);
 		final GridFieldLayoutConstraints layoutConstraints = fieldVO.getLayoutConstraints();
 		
-		fieldVO.Header = getHeader();
+		fieldVO.setFormField(true);
+		fieldVO.setHeader(getHeader());
 		fieldVO.setIsFieldOnly(false);
-		fieldVO.IsEncryptedField = false;
+		fieldVO.setIsEncryptedField(false);
 		fieldVO.setColumnName(getColumnName());
 		layoutConstraints.setSameLine(isSameLine());
-		fieldVO.IsMandatory = isMandatory();
+		fieldVO.setMandatory(isMandatory());
 		fieldVO.setAutocomplete(isAutocomplete());
 		fieldVO.setDisplayType(getDisplayType());
-		fieldVO.AD_Reference_Value_ID = 0; // otherwise buttons with Column_ID = 0 cause errors in VEditorFactory.getEditor(field, false);
-		fieldVO.AD_Column_ID = getAD_Column_ID();
+		fieldVO.setAD_Reference_Value_ID(0); // otherwise buttons with Column_ID = 0 cause errors in VEditorFactory.getEditor(field, false);
+		fieldVO.setAD_Column_ID(getAD_Column_ID());
 		layoutConstraints.setDisplayLength(displayLength);
-		fieldVO.IsReadOnly = readOnly;
+		fieldVO.setIsReadOnly(readOnly);
 		if (fieldVO.getAD_Column_ID() > 0)
 		{
 			fieldVO.setLookupLoadFromColumn(true);

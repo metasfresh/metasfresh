@@ -27,7 +27,6 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.GridField;
@@ -39,12 +38,12 @@ import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.junit.Assert;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 public class GridWindowHelper
@@ -206,7 +205,7 @@ public class GridWindowHelper
 	public <T> T getGridTabInterface(Class<T> interfaceClass)
 	{
 		Assert.assertNotNull("No current grid tab selected", currentGridTab);
-		return GridTabWrapper.create(currentGridTab, interfaceClass);
+		return InterfaceWrapperHelper.create(currentGridTab, interfaceClass);
 	}
 
 	public GridWindowHelper selectTab(String tableName)

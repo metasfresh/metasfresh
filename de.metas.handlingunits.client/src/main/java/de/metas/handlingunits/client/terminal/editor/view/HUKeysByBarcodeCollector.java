@@ -10,25 +10,27 @@ package de.metas.handlingunits.client.terminal.editor.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
@@ -36,14 +38,22 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.MoreHUKey;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.logging.LogManager;
 
+/**
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 {
+	private static final transient Logger logger = LogManager.getLogger(HUKeysByBarcodeCollector.class);
+
 	private final IQueryFilter<I_M_HU> barcodeFilter;
 
 	private final List<IHUKey> collectedHUKeys = new ArrayList<IHUKey>();
 
-	public HUKeysByBarcodeCollector(final String barcode)
+	public HUKeysByBarcodeCollector(final Properties ctx, final String barcode)
 	{
 		super();
 
@@ -53,6 +63,7 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 		// Barcode matcher
 		barcodeFilter = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
+				.setContext(ctx, ITrx.TRXNAME_None)
 				// Match by our barcode
 				.setOnlyWithBarcode(barcode)
 				// Match any HU, even if is top level or not
@@ -60,12 +71,6 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 				.setOnlyTopLevelHUs(false)
 				// Create our filter
 				.createQueryFilter();
-	}
-
-	@Override
-	public String toString()
-	{
-		return "HUKeysByBarcodeCollector [barcodeFilter=" + barcodeFilter + ", collectedHUKeys=" + collectedHUKeys + "]";
 	}
 
 	@Override
@@ -129,7 +134,13 @@ public class HUKeysByBarcodeCollector extends HUKeyVisitorAdapter
 
 	public List<IHUKey> getCollectedHUKeys()
 	{
+		logger.debug("this-ID={} returning collectedHUKeys={}; this={}", System.identityHashCode(this), collectedHUKeys, this);
 		return collectedHUKeys;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "HUKeysByBarcodeCollector [barcodeFilter=" + barcodeFilter + ", collectedHUKeys=" + collectedHUKeys + "]";
+	}
 }

@@ -53,7 +53,7 @@ import de.metas.adempiere.form.IClientUI;
 /**
  * Container of Favorite shortcuts groups.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class FavoritesGroupContainer

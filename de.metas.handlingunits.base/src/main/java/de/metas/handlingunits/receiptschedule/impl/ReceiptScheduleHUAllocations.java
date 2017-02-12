@@ -10,18 +10,17 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -41,7 +40,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.storage.IProductStorage;
 
 /**
- * Manage HU allocations to a particular {@link I_M_ReceiptSchedule}.
+ * Manage HU allocations to a particular {@link I_M_ReceiptSchedule}. See {@link ReceiptScheduleHUGenerator} for the code that creates those HUs.
  *
  * @author tsa
  *
@@ -79,8 +78,11 @@ public class ReceiptScheduleHUAllocations extends AbstractHUAllocations
 	}
 
 	@Override
-	protected final void createAllocation(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu,
-			final BigDecimal qtyToAllocate, final I_C_UOM uom,
+	protected final void createAllocation(final I_M_HU luHU,
+			final I_M_HU tuHU,
+			final I_M_HU vhu,
+			final BigDecimal qtyToAllocate,
+			final I_C_UOM uom,
 			final boolean deleteOldTUAllocations)
 	{
 		// In case TU is null, consider using VHU as HU (i.e. the case of an VHU on LU, or free VHU)

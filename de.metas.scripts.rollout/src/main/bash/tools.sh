@@ -1,6 +1,7 @@
 #!bin/bash
 #
 # Contains useful methods.
+# IMPORTANT: tools.sh requires bash, so if you source it anywhere, make sure that the script which sources it also uses bash
 #
 
 check_file_exists()
@@ -115,9 +116,25 @@ check_vars_server()
 	trace check_vars_server BEGIN
 
 	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
-	check_var "JAVA_HOME" $JAVA_HOME
-		
+			
 	trace check_vars_server END
+}
+
+check_java_version()
+{
+        trace check_java_version BEGIN
+    
+        if [[ -f "/usr/bin/java" ]]; then
+            local JAVA_VERSION="$(/usr/bin/java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d "." -f2)"
+            if [[ ! $JAVA_VERSION == "8" ]]; then
+                trace check_java_version "[ERROR] JAVA-Version does not match supported version (found Java 1.${JAVA_VERSION})! Only Java 1.8 JDK supported! Check ' http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html ' for more infos and make sure 'java -version' is 1.8.x ! NOTE: you may also need to update to Java-8 on your Clients: ' http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_client.html '"
+                exit 1
+            fi
+        else
+            trace check_java_version "could not find valid /usr/bin/java. assuming Java 1.8 JDK is installed."
+        fi
+        
+        trace check_java_version END
 }
 
 check_rollout_user()
@@ -167,7 +184,6 @@ check_vars_minor()
 	trace check_vars_minor BEGIN
 
 	check_var_fallback "METASFRESH_HOME" ${METASFRESH_HOME:-NOT_SET} "ADEMPIERE_HOME" ${ADEMPIERE_HOME:-NOT_SET}
-	check_var "JAVA_HOME" $JAVA_HOME
 	check_var "PATH" $PATH
 
 	trace check_vars_minor END
@@ -177,10 +193,16 @@ start_metasfresh()
 {
 	trace start_metasfresh BEGIN
 
-	if [ ${SKIP_START_STOP:-false} == "true" ]; then
+	if [ "${SKIP_START_STOP:-false}" == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
-		service metasfresh_server start
+				# jira issue ME-46
+                if [ "$(cat /proc/1/comm)" == "systemd" ]; then
+                        sudo /bin/systemctl start metasfresh_server.service
+                else
+                        service metasfresh_server start
+                fi
+
 	fi
 
 	trace start_metasfresh END
@@ -190,10 +212,15 @@ stop_metasfresh()
 {
 	trace stop_metasfresh BEGIN
 
-	if [ ${SKIP_START_STOP:-false} == "true" ]; then
+	if [ "${SKIP_START_STOP:-false}" == "true" ]; then
 		trace start_metasfresh "SKIP_START_STOP = ${SKIP_START_STOP}, so we skip this"
 	else
-		service metasfresh_server stop
+				# jira issue ME-46
+                if [ "$(cat /proc/1/comm)" == "systemd" ]; then
+                        sudo /bin/systemctl stop metasfresh_server.service
+                else
+                        service metasfresh_server stop
+                fi
 	fi
 		
 	trace stop_metasfresh END

@@ -1,5 +1,9 @@
 package org.adempiere.test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,10 +26,13 @@ package org.adempiere.test;
  * #L%
  */
 
-
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.util.Check;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Watches current test and dumps the database to console in case of failure.
@@ -33,12 +40,17 @@ import org.junit.runner.Description;
  * To include in your tests, you need to declare a public field like this:
  *
  * <pre>
- * @Rule
+ * &#64;Rule
  * public final {@link TestWatcher} testWatcher = new {@link AdempiereTestWatcher}()
  * </pre>
  */
 public class AdempiereTestWatcher extends TestWatcher
 {
+	private static final Logger logger = LogManager.getLogger(AdempiereTestWatcher.class);
+
+	/** Context variables to be printed to screen in case the test fails */
+	private final Map<String, Object> context = new LinkedHashMap<>();
+
 	/**
 	 * Called after a test succeed.
 	 *
@@ -59,8 +71,16 @@ public class AdempiereTestWatcher extends TestWatcher
 	@Override
 	protected void failed(final Throwable e, final Description description)
 	{
-		//org.adempiere.ad.wrapper.POJOLookupMap.get().dumpStatus()
 		POJOLookupMap.get().dumpStatus("After test failed: " + description.getDisplayName());
+
+		//
+		// Dump retained context values
+		for (final Entry<String, Object> entry : context.entrySet())
+		{
+			final String name = entry.getKey();
+			final Object value = entry.getValue();
+			System.out.println("\n" + name + ": " + value);
+		}
 	}
 
 	/**
@@ -73,5 +93,37 @@ public class AdempiereTestWatcher extends TestWatcher
 	protected void finished(final Description description)
 	{
 		POJOLookupMap.get().clear();
+		context.clear();
+	}
+
+	/**
+	 * Put given variable to context.
+	 * 
+	 * In case the test will fail, all context variables will be printed to console.
+	 * 
+	 * @param name
+	 * @param value
+	 */
+	public void putContext(final String name, final Object value)
+	{
+		Check.assumeNotEmpty(name, "name is not empty");
+		context.put(name, value);
+	}
+
+	/**
+	 * Convenient variant for {@link #putContext(String, Object)} which considers value's class name as the context variable <code>name</code>.
+	 * 
+	 * @param value value, not null.
+	 */
+	public void putContext(final Object value)
+	{
+		if (value == null)
+		{
+			logger.error("Cannot put a null value to context. This is a development error. Skipped for now", new Exception("TRACE"));
+			return;
+		}
+
+		final String name = value.getClass().getName();
+		putContext(name, value);
 	}
 }

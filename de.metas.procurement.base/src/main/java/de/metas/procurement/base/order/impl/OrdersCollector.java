@@ -2,7 +2,7 @@ package de.metas.procurement.base.order.impl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -40,8 +40,8 @@ import de.metas.procurement.base.ProcurementConstants;
  * <li>counts generated orders: {@link #getCountOrders()}
  * <li>notifies on event bus that an order was generated
  * </ul>
- * 
- * @author metas-dev <dev@metas-fresh.com>
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class OrdersCollector implements IOrdersCollector
@@ -87,7 +87,7 @@ public class OrdersCollector implements IOrdersCollector
 	@Override
 	public void add(final I_C_Order order)
 	{
-		ILoggable.THREADLOCAL.getLoggable().addLog("@Created@ " + order.getDocumentNo());
+		Loggables.get().addLog("@Created@ " + order.getDocumentNo());
 
 		orderGeneratedNotifier.notify(order, defaultNotificationRecipientId);
 

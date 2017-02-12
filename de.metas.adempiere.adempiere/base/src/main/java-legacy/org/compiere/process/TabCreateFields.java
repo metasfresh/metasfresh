@@ -17,6 +17,7 @@
 package org.compiere.process;
 
 import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -24,6 +25,7 @@ import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -32,6 +34,11 @@ import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MField;
 import org.compiere.model.MTab;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)
@@ -41,8 +48,10 @@ import org.compiere.model.MTab;
  * 
  * @author Teo Sarca <li>BF [ 2827782 ] TabCreateFields process not setting entity type well https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2827782&group_id=176962
  */
-public class TabCreateFields extends SvrProcess
+public class TabCreateFields extends JavaProcess
 {
+	private static final Logger log = LogManager.getLogger(TabCreateFields.class);
+
 	/** AD_Tab_ID */
 	private int p_AD_Tab_ID = -1;
 
@@ -63,7 +72,7 @@ public class TabCreateFields extends SvrProcess
 	protected void prepare()
 	{
 		p_AD_Tab_ID = getRecord_ID();
-		for (final ProcessInfoParameter para : getParameter())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{
@@ -110,10 +119,16 @@ public class TabCreateFields extends SvrProcess
 		int count = 0;
 		for (final I_AD_Column adColumn : retrieveColumns(adTab))
 		{
-			final boolean created = createADField(adTab, adColumn);
-			if (created)
+			try
 			{
+				final I_AD_Field field = createADField(adTab, adColumn, p_EntityType);
+				addLog("@Created@: " + field.getName() + " (@AD_Column_ID@: " + adColumn.getColumnName() + ")");
 				count++;
+			}
+			catch (Exception e)
+			{
+				log.warn("Failed to create field for {}", adColumn, e);
+				addLog("Error creating " + adColumn.getColumnName() + ": " + e.getLocalizedMessage());
 			}
 		}
 
@@ -172,7 +187,7 @@ public class TabCreateFields extends SvrProcess
 				.list(I_AD_Column.class);
 	}
 
-	private boolean createADField(final MTab tab, final I_AD_Column adColumn)
+	public static I_AD_Field createADField(final I_AD_Tab tab, final I_AD_Column adColumn, final String p_EntityType)
 	{
 		final String entityTypeToUse;
 		if (Check.isEmpty(p_EntityType, true))
@@ -193,19 +208,8 @@ public class TabCreateFields extends SvrProcess
 			field.setIsDisplayed(false);
 			field.setIsDisplayedGrid(false);
 		}
-
-		try
-		{
-			field.saveEx();
-			addLog("@Created@: " + field.getName() + " (@AD_Column_ID@: " + adColumn.getColumnName() + ")");
-		}
-		catch (Exception e)
-		{
-			log.warn(e.getLocalizedMessage(), e);
-			addLog("Error creating " + adColumn.getColumnName() + ": " + e.getLocalizedMessage());
-			return false;
-		}
 		
-		return true;
+		InterfaceWrapperHelper.save(field);
+		return field;
 	}
 }	// TabCreateFields

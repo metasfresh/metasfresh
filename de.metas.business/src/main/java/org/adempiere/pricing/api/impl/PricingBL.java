@@ -88,7 +88,7 @@ public class PricingBL implements IPricingBL
 		}
 		else
 		{
-			pricingCtx.setQty(Env.ONE);
+			pricingCtx.setQty(BigDecimal.ONE);
 		}
 		pricingCtx.setSOTrx(isSOTrx);
 		pricingCtx.setC_UOM_ID(C_UOM_ID);
@@ -216,7 +216,7 @@ public class PricingBL implements IPricingBL
 				if (plv != null)
 				{
 					final int priceListVersionId = plv.getM_PriceList_Version_ID();
-					logger.info("Setting to context: M_PriceList_Version_ID={} from M_PriceList={} and PriceDate={}", priceListVersionId, priceList, priceDate);
+					logger.debug("Setting to context: M_PriceList_Version_ID={} from M_PriceList={} and PriceDate={}", priceListVersionId, priceList, priceDate);
 					pricingCtxToUse.setM_PriceList_Version_ID(priceListVersionId);
 				}
 			}
@@ -361,7 +361,7 @@ public class PricingBL implements IPricingBL
 			aggregatedPricingRule.addPricingRule(rule);
 		}
 
-		logger.info("aggregatedPricingRule: " + aggregatedPricingRule);
+		logger.debug("aggregatedPricingRule: {}", aggregatedPricingRule);
 		return aggregatedPricingRule;
 	}
 

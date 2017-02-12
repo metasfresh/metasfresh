@@ -48,7 +48,7 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * @param adValRuleId
 	 * @return
 	 */
-	IValidationRule create(Properties ctx, String tableName, int adValRuleId);
+	IValidationRule create(String tableName, int adValRuleId);
 
 	/**
 	 * Create SQL {@link IValidationRule} for given whereClause
@@ -66,11 +66,9 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * E.g. If we register a validation rule for table "C_BPartner_Location" and we try to retrieve the validation rules for C_Order.Bill_Location_ID, our registered rule will be composed too.
 	 * 
 	 * @param tableName
-	 * @param ruleClass
+	 * @param rule
 	 */
-	void registerTableValidationRule(String tableName, Class<? extends IValidationRule> ruleClass);
-
-	void unregisterTableValidationRule(String tableName, Class<? extends IValidationRule> ruleClass);
+	void registerTableValidationRule(String tableName, IValidationRule rule);
 
 	IValidationContext createValidationContext(Properties ctx, int windowNo, int tabNo, String tableName);
 

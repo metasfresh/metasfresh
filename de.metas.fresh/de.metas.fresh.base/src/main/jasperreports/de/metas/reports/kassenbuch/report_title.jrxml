@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T12:00:37 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="462" pageHeight="842" columnWidth="462" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a6820c4a-3730-4e0f-8743-00afb583c2f0">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -33,11 +37,11 @@
 
 FROM
 	ad_org o
-	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id
-	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id
-	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id
+	JOIN ad_orginfo oi 	   ON o.ad_org_id 	= oi.ad_org_id AND oi.isActive = 'Y'
+	JOIN c_location l 	   ON oi.c_location_id 	= l.c_location_id AND l.isActive = 'Y'
+	JOIN m_transaction t 	   ON o.ad_org_id	= t.ad_org_id AND t.isActive = 'Y'
 WHERE
-	o.ad_org_id = 1000000
+	o.ad_org_id = $P{AD_Org_ID} AND o.isActive = 'Y'
 group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 	</queryString>
 	<field name="orgname" class="java.lang.String"/>
@@ -51,40 +55,39 @@ group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 	<title>
 		<band height="59" splitType="Stretch">
 			<staticText>
-				<reportElement uuid="bdd112f2-98a6-46ab-9213-2d421e2089d5" x="0" y="4" width="240" height="19"/>
+				<reportElement x="0" y="4" width="240" height="19" uuid="bdd112f2-98a6-46ab-9213-2d421e2089d5"/>
 				<textElement>
 					<font size="14" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Kassenbuch]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="611bf337-89fb-4922-865b-fb9c9c8aa368" x="1" y="23" width="87" height="12"/>
+				<reportElement x="1" y="23" width="87" height="12" uuid="611bf337-89fb-4922-865b-fb9c9c8aa368"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Organisation:]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="65f5a918-5fdf-410a-bf50-da90badca2be" x="90" y="23" width="240" height="12"/>
+				<reportElement x="90" y="23" width="240" height="12" uuid="65f5a918-5fdf-410a-bf50-da90badca2be"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="544afc20-fc1e-4300-bb3d-26982ed5bcd4" x="1" y="35" width="89" height="12"/>
-				<textElement/>
+				<reportElement x="1" y="35" width="89" height="12" uuid="544afc20-fc1e-4300-bb3d-26982ed5bcd4"/>
 				<text><![CDATA[Static text]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="ed0c7f14-f7c8-4a09-a59d-f223a5431436" x="0" y="47" width="90" height="12"/>
+				<reportElement x="0" y="47" width="90" height="12" uuid="ed0c7f14-f7c8-4a09-a59d-f223a5431436"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Datum:]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement uuid="e2ce3f3a-6f3e-4898-903b-7971f8da20b5" x="90" y="47" width="100" height="12"/>
+				<reportElement x="90" y="47" width="100" height="12" uuid="e2ce3f3a-6f3e-4898-903b-7971f8da20b5"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>

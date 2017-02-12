@@ -33,15 +33,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -67,12 +63,10 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
@@ -81,6 +75,8 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * {@link I_C_PaySelection} dialog. See {@link #SelectPaySelectionDialog(Frame, String, List)}
@@ -160,7 +156,6 @@ final class SelectPaySelectionDialog
 		this.currencyId = currencyId;
 
 		final Properties ctx = Env.getCtx();
-		final Language language = Env.getLanguage(ctx);
 
 		//
 		// Initialize field(s) which depend on window number
@@ -182,7 +177,6 @@ final class SelectPaySelectionDialog
 					windowNo,
 					paySelectionColumn.getAD_Column_ID(),
 					DisplayType.Search,
-					language,
 					paySelectionColumnName,
 					paySelectionColumn.getAD_Reference_Value_ID(),
 					false, // IsParent,
@@ -312,7 +306,7 @@ final class SelectPaySelectionDialog
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final IContextAware contextProvider = new PlainContextAware(Env.getCtx(), localTrxName);
+				final IContextAware contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), localTrxName);
 				final I_C_PaySelection paySelection = InterfaceWrapperHelper.newInstance(I_C_PaySelection.class, contextProvider);
 
 				final Timestamp currentTimestamp = SystemTime.asTimestamp();

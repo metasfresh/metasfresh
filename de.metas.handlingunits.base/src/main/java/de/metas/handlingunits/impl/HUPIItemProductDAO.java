@@ -10,18 +10,17 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -62,6 +61,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
@@ -173,15 +174,32 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			final String huUnitType,
 			final boolean allowInfiniteCapacity)
 	{
+		final I_M_Product packagingProduct = null;
+		return retrieveMaterialItemProduct(product, bpartner, date, huUnitType, allowInfiniteCapacity, packagingProduct);
+	}
+
+	@Override
+	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
+			final I_M_Product product,
+			final I_C_BPartner bpartner,
+			final Date date,
+			final String huUnitType,
+			final boolean allowInfiniteCapacity,
+			final I_M_Product packagingProduct)
+	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+
 		queryVO.setC_BPartner_ID(bpartner == null ? 0 : bpartner.getC_BPartner_ID()); // guarding against empty partner & product
 		queryVO.setM_Product_ID(product == null ? 0 : product.getM_Product_ID());
 		queryVO.setAllowAnyProduct(false); // 06566
 		queryVO.setDate(date);
 		queryVO.setHU_UnitType(huUnitType);
-		// 07395
-		// also set the isInfiniteCapacity
+
+		// 07395 also set the isInfiniteCapacity
 		queryVO.setAllowInfiniteCapacity(allowInfiniteCapacity);
+
+		// FRESH-386
+		queryVO.setM_Product_Packaging_ID(packagingProduct == null ? 0 : packagingProduct.getM_Product_ID());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
@@ -190,7 +208,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	/**
 	 * WARNING: when using this method make sure queryVO is practically immutable (i.e. you created the instance locally)
-	 * 
+	 *
 	 * @param ctx
 	 * @param queryVO
 	 * @param trxName
@@ -213,8 +231,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(
 			final Properties ctx,
 			final IHUPIItemProductQuery queryVO,
-			final String trxName
-			)
+			final String trxName)
 	{
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
@@ -224,9 +241,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(final Properties ctx, final IHUPIItemProductQuery queryVO)
 	{
-		Check.assumeNotNull(queryVO, "queryVO not null");
+		Check.assumeNotNull(queryVO, "Param 'queryVO' is not null");
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final String trxName = null;
+		final String trxName = ITrx.TRXNAME_None;
 
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> filters = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class);
 		filters.setJoinAnd();
@@ -285,7 +303,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			infiniteCapacityFilter.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMN_IsInfiniteCapacity, false);
 
 			// We accept NoPI or VirtualPI configurations because those needs to be filtered out by other options (e.g. setAllowVirtualPI())
-			infiniteCapacityFilter.addInArrayFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
+			infiniteCapacityFilter.addInArrayOrAllFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
 					NO_HU_PI_Item_Product_ID,
 					VIRTUAL_HU_PI_Item_Product_ID);
 
@@ -319,7 +337,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// BPartner Filtering
-
 		if (!queryVO.isAllowAnyPartner())
 		{
 			if (queryVO.getC_BPartner_ID() > 0)
@@ -340,7 +357,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		}
 
 		//
-		// HU_UnitType filter: accept required UnitType or NULL
+		// HU_UnitType filter: accept a result which has a M_HU_PI_Version with the required UnitType or a NULL unit type
 		final String huUnitType = queryVO.getHU_UnitType();
 		if (!Check.isEmpty(huUnitType, true))
 		{
@@ -358,6 +375,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 							I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID,
 							I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID,
 							piVersionQuery))
+					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
 					.create();
 
 			filters.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, piItemQuery);
@@ -386,6 +404,27 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		else
 		{
 			Check.assume(!queryVO.isAllowDifferentCapacities(), "'AllowDifferentCapacities' shall be false when 'IsOneConfigurationPerPI' is false: {}", queryVO);
+		}
+
+		// FRESH-386: accept PIIPs which have the given packaging product
+		// That means that the PIIP's M_HU_PI_Item has a sibling with type PackingMaterial that in turn references a M_HU_PackingMaterial with our packaging M_Product
+		if (queryVO.getM_Product_Packaging_ID() > 0)
+		{
+
+			final IQuery<I_M_HU_PI_Item> packingMaterialQuery = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, ctx, trxName)
+					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMN_M_Product_ID, queryVO.getM_Product_Packaging_ID())
+					.addOnlyActiveRecordsFilter()
+					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PI_Item.class)
+					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
+					.addOnlyActiveRecordsFilter()
+					// now we have the packaging-M_HU_PI_Item; go up to select packaging item's the M_HU_PI_Version
+					.andCollect(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID)
+					.addOnlyActiveRecordsFilter()
+					// now select all M_HU_PI_Items of the M_HU_PI_Version. This includes the packaging item and it's siblings
+					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, I_M_HU_PI_Item.class)
+					.create();
+
+			filters.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, packingMaterialQuery);
 		}
 
 		return filters;
@@ -418,7 +457,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				// Also it makes no sense to order by M_HU_PI_Item_ID
 				// .addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last)
 
-				// Get specific BPartner first
+		// Get specific BPartner first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
 				// Get specific Product first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, Direction.Descending, Nulls.Last) // Y first, N second
@@ -503,7 +542,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.create()
 				.list(I_M_HU_PI_Item_Product.class);
 	}
-	
+
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx, final I_M_Product cuProduct, final I_C_BPartner bpartner)
 	{
@@ -518,14 +557,13 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		// Filter by given cuProduct and also accept configurations for "any product".
 		queryVO.setAllowAnyProduct(true);
 		queryVO.setM_Product_ID(cuProduct.getM_Product_ID());
-		
+
 		// Filter by BPartner, if there is a BPartner specified.
-		// We expect to get ALL PI Item Product records which match this 
+		// We expect to get ALL PI Item Product records which match this
 		if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
 		{
 			queryVO.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		}
-
 
 		//
 		// Filter out infinite capacity configurations
@@ -554,16 +592,16 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		{
 			final I_M_HU_PI_Item_Product originalHUPIItemProduct = retrieveMaterialItemProduct(cuProduct, bpartner, currentDate, huUnitType,
 					false); // allowInfiniteCapacity = false
-			if (originalHUPIItemProduct != null) // kindda redundant check
+			if (originalHUPIItemProduct != null)     // kindda redundant check
 			{
 				removeDuplicatePIResultsWithoutPartner(originalHUPIItemProduct, availableHUPIItemProducts);
 				availableHUPIItemProducts.add(0, originalHUPIItemProduct); // add original PI at index 0
 			}
 		}
-		
+
 		return availableHUPIItemProducts;
 	}
-	
+
 	/**
 	 * Clear entries if the PI is on the same product, uom, qty & infinite capacity flag
 	 *

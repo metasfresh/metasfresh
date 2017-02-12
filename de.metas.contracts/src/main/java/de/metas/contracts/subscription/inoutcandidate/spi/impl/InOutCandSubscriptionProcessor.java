@@ -30,7 +30,7 @@ import java.util.Properties;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MTable;
@@ -138,7 +138,7 @@ public class InOutCandSubscriptionProcessor implements ICandidateProcessor
 
 			if (MTable.getTable_ID(I_C_SubscriptionProgress.Table_Name) == sched.getAD_Table_ID())
 			{
-				final I_C_SubscriptionProgress sp = POWrapper.create(ctx, sched.getRecord_ID(), I_C_SubscriptionProgress.class, trxName);
+				final I_C_SubscriptionProgress sp = InterfaceWrapperHelper.create(ctx, sched.getRecord_ID(), I_C_SubscriptionProgress.class, trxName);
 				Check.assume(X_C_SubscriptionProgress.STATUS_LieferungOffen.equals(sp.getStatus()),
 						sp + "referenced by " + sched + " doesn't have status " + sp.getStatus());
 				atLeastOneSubscription = true;

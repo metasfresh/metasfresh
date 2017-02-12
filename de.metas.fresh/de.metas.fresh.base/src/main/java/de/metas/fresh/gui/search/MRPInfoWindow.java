@@ -13,11 +13,11 @@ package de.metas.fresh.gui.search;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,6 +54,7 @@ import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
@@ -75,6 +76,10 @@ public class MRPInfoWindow extends InfoSimple
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final String SYSCONFIG_DAYS_RANGE = "de.metas.fresh.MRPProductInfo.dayRange";
+
+	// FRESH-531
+	// Possibility to switch the conference displaying on and off
+	private static final String SYSCONFIG_DisplayConferenceFlag = "de.metas.fresh.MRPProductInfo.DisplayConferenceFlag";
 
 	private static final String MSG_ResetSortFilters = "de.metas.fresh.MRPProductInfo.ResetSortFilters";
 
@@ -131,29 +136,35 @@ public class MRPInfoWindow extends InfoSimple
 		//
 		// Conference Sort Preferences CheckBox
 		{
-			isConferenceSortPreferencesCheckBox = new CCheckBox(msgBL.translate(ctx, I_AD_User_SortPref_Hdr.COLUMNNAME_IsConference));
-			isConferenceSortPreferencesCheckBox.addActionListener(new ActionListener()
+			final boolean isDisplayConference = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DisplayConferenceFlag, false);
+
+			// FRESH-531: Only display the Conference flag if the DisplayConferenceFlag Sys Config's value is on true
+			if (isDisplayConference)
 			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
+				isConferenceSortPreferencesCheckBox = new CCheckBox(msgBL.translate(ctx, I_AD_User_SortPref_Hdr.COLUMNNAME_IsConference));
+				isConferenceSortPreferencesCheckBox.addActionListener(new ActionListener()
 				{
-					//
-					// Set conference mode on/off
-					final Boolean isConferenceSortPreferences = (Boolean)isConferenceSortPreferencesCheckBox.getValue();
-					setConferenceSortPreferences(isConferenceSortPreferences);
+					@Override
+					public void actionPerformed(final ActionEvent e)
+					{
+						//
+						// Set conference mode on/off
+						final Boolean isConferenceSortPreferences = isConferenceSortPreferencesCheckBox.isSelected();
+						setConferenceSortPreferences(isConferenceSortPreferences);
 
-					//
-					// Set initial sorting preferences to conference/user
-					initSortingPreferences(ctx);
+						//
+						// Set initial sorting preferences to conference/user
+						initSortingPreferences(ctx);
 
-					//
-					// Clear and refresh sort options
-					p_table.setReloadOriginalSorting(true); // shall clear user sorting
-					p_table.clearSortCriteria(); // reset possible user sorting and sort by our preferences
-					repaint();
-				}
-			});
-			parameterPanel.add(isConferenceSortPreferencesCheckBox);
+						//
+						// Clear and refresh sort options
+						p_table.setReloadOriginalSorting(true); // shall clear user sorting
+						p_table.clearSortCriteria(); // reset possible user sorting and sort by our preferences
+						repaint();
+					}
+				});
+				parameterPanel.add(isConferenceSortPreferencesCheckBox);
+			}
 		}
 		//
 		// Sort Filters Button
@@ -249,7 +260,7 @@ public class MRPInfoWindow extends InfoSimple
 			final Timestamp datePromised = getDatePromisedParameter();
 
 			final MQuery query = new MQuery(I_Fresh_QtyOnHand.Table_Name);
-			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, MQuery.EQUAL, datePromised);
+			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, Operator.EQUAL, datePromised);
 			query.setRecordCount(1);
 			final int AD_WindowNo = getAD_Window_ID(I_Fresh_QtyOnHand.Table_Name, true);
 			zoom(AD_WindowNo, query);

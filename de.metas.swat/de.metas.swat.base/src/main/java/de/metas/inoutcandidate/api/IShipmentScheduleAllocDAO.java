@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,9 +35,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
 	/**
-	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.
-	 * <p>
+	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.<br>
 	 * Records are ordered by ID. Only active records are returned.
+	 * <br>
+	 * Important: also return records which reference destroyed HUs, since this BL doesn't know or care about HUs.
 	 *
 	 * @param shipmentSchedule
 	 * @param clazz
@@ -83,10 +84,26 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 */
 	List<I_M_ShipmentSchedule> retrieveSchedulesForInOut(org.compiere.model.I_M_InOut inout);
 
+	/**
+	 * Retrieve all shipments schedules that are linked with the given inout line
+	 * 
+	 * @param inoutLine
+	 * @return
+	 */
 	List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(org.compiere.model.I_M_InOutLine inoutLine);
 
 	/**
-	 * Retrieves the summed <code>MovementQty</code>s of all <b>processed</p> <code>M_I_InOutLines</code> which are linkned to the given <code>shipmentSchedule</code> via
+	 * Query which collects M_ShipmentSchedules form I_M_ShipmentSchedule_QtyPicked if they pair with the given inoutline
+	 * 
+	 * @param inoutLine
+	 * @return
+	 */
+	IQueryBuilder<I_M_ShipmentSchedule> retrieveSchedulesForInOutLineQuery(I_M_InOutLine inoutLine);
+
+	/**
+	 * Retrieves the summed <code>MovementQty</code>s of all <b>processed
+	 * </p>
+	 * <code>M_I_InOutLines</code> which are linkned to the given <code>shipmentSchedule</code> via
 	 * <code>M_ShipmentSchedule_QtyPicked</code>.
 	 *
 	 * @param shipmentSchedule

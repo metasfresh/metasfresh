@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -49,6 +47,7 @@ import de.metas.currency.ICurrencyConversionContext;
  */
 class DocLine_Allocation extends DocLine
 {
+
 	/**
 	 * DocLine_Allocation
 	 *
@@ -94,6 +93,11 @@ class DocLine_Allocation extends DocLine
 		{
 			final int C_ConversionType_ID = payment.getC_ConversionType_ID();
 			setC_ConversionType_ID(C_ConversionType_ID);
+			paymentReceipt = payment.isReceipt();
+		}
+		else
+		{
+			paymentReceipt = null;
 		}
 
 		//
@@ -119,6 +123,7 @@ class DocLine_Allocation extends DocLine
 	private final int m_C_Payment_ID;
 	private final I_C_Payment payment;
 	private ICurrencyConversionContext paymentCurrencyConversionCtx;
+	private final Boolean paymentReceipt;
 
 	private final int m_C_CashLine_ID;
 	private final I_C_CashLine cashLine;
@@ -596,6 +601,12 @@ class DocLine_Allocation extends DocLine
 		}
 
 		return getC_BPartner_ID();
+	}
+	
+	public boolean isPaymentReceipt()
+	{
+		Check.assumeNotNull(paymentReceipt, "payment document exists");
+		return paymentReceipt;
 	}
 
 }	// DocLine_Allocation

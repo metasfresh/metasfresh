@@ -31,7 +31,7 @@ import de.metas.procurement.sync.protocol.AbstractSyncModel;
 /**
  * Helper class used to manipulate {@link AbstractSyncModel}s.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class SyncModels

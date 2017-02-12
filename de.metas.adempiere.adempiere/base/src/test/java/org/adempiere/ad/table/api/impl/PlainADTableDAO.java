@@ -10,18 +10,17 @@ package org.adempiere.ad.table.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
@@ -41,10 +40,10 @@ public class PlainADTableDAO extends ADTableDAO
 		I_AD_Column adColumn = super.retrieveColumnOrNull(tableName, columnName);
 
 		//
-		// Automatically create the AD_Column if is missing... there are a couple of tests which are rellying on this feature
+		// Automatically create the AD_Column if is missing... there are a couple of tests which are relying on this feature
 		if (adColumn == null)
 		{
-			final IContextAware context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+			final IContextAware context = PlainContextAware.newWithTrxName(Env.getCtx(), ITrx.TRXNAME_None);
 			final int adTableId = retrieveTableId(tableName);
 
 			adColumn = InterfaceWrapperHelper.newInstance(I_AD_Column.class, context);

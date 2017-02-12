@@ -10,29 +10,30 @@ package org.adempiere.ad.trx.processor.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.Iterator;
 
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 
 /**
- * {@link ITrxItemProcessor} executor.
- * 
+ * {@link ITrxItemProcessor} executor. Ise {@link ITrxItemExecutorBuilder} to get yours.
+ *
  * Implementations of this class is responsible with {@link ITrxItemProcessor} methods invocations, error handling and transaction management.
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <IT> item type
  * @param <RT> result type
  */
@@ -41,28 +42,21 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 	/**
 	 * Default exception handler used.
 	 */
-	ITrxItemExceptionHandler DEFAULT_ExceptionHandler = LogTrxItemExceptionHandler.instance;
+	ITrxItemExceptionHandler DEFAULT_ExceptionHandler = LoggerTrxItemExceptionHandler.instance;
 
 	/**
-	 * Sets exception handler to be used if processing fails.
-	 * 
-	 * If not configured then {@link #DEFAULT_ExceptionHandler} it's used.
-	 * 
-	 * @param exceptionHandler
-	 * @return this
+	 * Default policy for the case that processing one item fails.
 	 */
-	ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(ITrxItemExceptionHandler exceptionHandler);
+	OnItemErrorPolicy DEFAULT_OnItemErrorPolicy = OnItemErrorPolicy.CancelChunkAndRollBack;
 
 	/**
-	 * Sets if the executor shall use transaction savepoints internally.
-	 * 
-	 * @param useTrxSavepoints
+	 * default: true - backward compatibility;
 	 */
-	ITrxItemProcessorExecutor<IT, RT> setUseTrxSavepoints(final boolean useTrxSavepoints);
+	boolean DEFAULT_UseTrxSavepoints = true;
 
 	/**
 	 * Process given items.
-	 * 
+	 *
 	 * @param items
 	 * @return result
 	 */
@@ -70,9 +64,27 @@ public interface ITrxItemProcessorExecutor<IT, RT>
 
 	/**
 	 * Gets used item processor.
-	 * 
+	 *
 	 * @return item processor
 	 */
 	ITrxItemProcessor<IT, RT> getProcessor();
+
+	/**
+	 * Instead of setting the exception handler here, you can also use {@link ITrxItemExecutorBuilder#setExceptionHandler(ITrxItemExceptionHandler)}.
+	 *
+	 * @param trxItemExceptionHandler
+	 * @deprecated please use {@link ITrxItemExecutorBuilder#setExceptionHandler(ITrxItemExceptionHandler)} instead.
+	 */
+	@Deprecated
+	ITrxItemProcessorExecutor<IT, RT> setExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
+
+	/**
+	 * See {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)}.
+	 *
+	 * @param useTrxSavepoints
+	 * @deprecated please use {@link ITrxItemExecutorBuilder#setUseTrxSavepoints(boolean)} instead.
+	 */
+	@Deprecated
+	ITrxItemProcessorExecutor<IT, RT> setUseTrxSavepoints(boolean useTrxSavepoints);
 
 }

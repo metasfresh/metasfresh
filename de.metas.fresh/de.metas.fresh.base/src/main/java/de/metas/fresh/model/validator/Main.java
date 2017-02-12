@@ -109,7 +109,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
-		Services.get(INotificationBL.class).addCtxProvider(new C_Order_MFGWarehouse_Report_NotificationCtxProvider());
+		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_NotificationCtxProvider.instance);
 	}
 
 	@Override
@@ -128,8 +128,11 @@ public class Main extends AbstractModuleInterceptor
 		// task 09421
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client);
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
+		
+		// task FRESH-905: work with M_Transaction to update on each storage change
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE, client);
+		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
+		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
 
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.PMM_PurchaseCandidate.INSTANCE, client); // task FRESH-86
 	}

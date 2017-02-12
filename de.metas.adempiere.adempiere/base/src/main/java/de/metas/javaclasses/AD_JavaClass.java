@@ -30,7 +30,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 /**
  * This annotation can be used to further annutate a class that is supposed to be handled in the context of {@link I_AD_JavaClass}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public @interface AD_JavaClass

@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Component;
@@ -40,8 +39,6 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -51,21 +48,25 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.JTextComponent;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.images.Images;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.swing.CButton;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Formatted Text field with on-screen keyboard support
@@ -96,7 +97,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	 * Used to display the soft-keyboard after {@link #KEYBOARD_ShowDelayMillis}.
 	 * <p>
 	 * Note: the timer is reusable, i.e it's not required to recreate it after it was used. See http://www.math.uni-hamburg.de/doc/java/tutorial/uiswing/misc/timer.html
-	 * 
+	 *
 	 * @see #showKeyboardDelayed()
 	 */
 	private Timer timer = new Timer(KEYBOARD_ShowDelayMillis, new ActionListener()
@@ -225,7 +226,6 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	private class TextFieldValueChangedListener implements PropertyChangeListener
 	{
-
 		@Override
 		public void propertyChange(final PropertyChangeEvent evt)
 		{
@@ -284,12 +284,12 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			final JTextArea textArea = new JTextArea();
 			// textArea.setColumns(columns); // info not available
 			textArea.setRows(4); // NOTE: atm we are hardcoding this
-			
+
 			// NOTE: having the LineWrap=true will cause weird resizing issues with MigLayout, each time when we set a new value.
 			textArea.setLineWrap(false);
-			
-			// NOTE: if we want vertical scroll bars here, we shall use JScrollPane 
-			
+
+			// NOTE: if we want vertical scroll bars here, we shall use JScrollPane
+
 			this.textComponent = textArea;
 		}
 		else
@@ -306,7 +306,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 				textComponent = new JFormattedTextField(formatter);
 			}
 			textComponent.addPropertyChangeListener("value", textFieldValueChangedListener);
-			
+
 			panel = null;
 		}
 
@@ -365,6 +365,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	@Override
 	public String getText()
 	{
+		// task #857
+		// TODO: why not calling getFieldValue ... or move the code from field value here and call getText() from getFieldValue() ?!
+		// Not suitable at the moment because of the Date fields, which are JFormattedTextField, with defined formatter but have nothing
+		// in the Value, only in the Text.
+		// See implementation of de.metas.adempiere.form.terminal.swing.SwingTerminalTextField.getFieldValue()
 		return textComponent.getText();
 	}
 
@@ -435,16 +440,39 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		return textComponent.isFocusOwner();
 	}
 
+	/**
+	 * Call {@link JTextComponent#setText(String)} on our <code>textComponent</code> member.
+	 * <p>
+	 * Note that if our <code>textComponent</code> is a {@link JFormattedTextField}, then the value with we set here is the displayed one, but might be different from the field's <i>value</i>,
+	 * see the <a href="http://docs.oracle.com/javase/tutorial/uiswing/components/formattedtextfield.html">How to Use Formatted Text Fields</a> tutorial for details.<br>
+	 * Quote: "A formatted text field's text and its value are two different properties, and the value often lags behind the text."
+	 */
 	@Override
 	public void setText(final String text)
 	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("text=" + text);
-		}
-
 		final String textOld = textComponent.getText();
+
+		logger.debug("this-ID={}, name={}, text={}, textOld={}, isEventDispatchThread={}; calling setText() on textComponent={}; this={}",
+				System.identityHashCode(this), getName(), text, textOld, SwingUtilities.isEventDispatchThread(), textComponent, this);
+
 		textComponent.setText(text);
+
+		// TODO: gh #370: remove the commitEdit call (also un-edit the javadoc!) if this change doesn't help either
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final boolean commit = sysConfigBL.getBooleanValue("de.metas.adempiere.form.terminal.swing.SwingTerminalTextField.directCommitEditOnSetText", true);
+		if (commit)
+		{
+			try
+			{
+				commitEdit();
+			}
+			catch (final ParseException e)
+			{
+				// don't do anything about the error. we just want to make sure that *if* the text is set from the outside and *if* that's successful, *then* the value is directly updated too.
+				logger.debug("this-ID={}, name={}, text={}, textOld={}, isEventDispatchThread={}; commitEdit() after setText() failed with exception={}, errorOffSet={} on textComponent={}; this={}",
+						System.identityHashCode(this), getName(), text, textOld, SwingUtilities.isEventDispatchThread(), e, e.getErrorOffset(), textComponent, this);
+			}
+		}
 		firePropertyChanged(ITerminalTextField.PROPERTY_TextChanged, textOld, text);
 	}
 
@@ -473,12 +501,13 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	}
 
 	/**
-	 * Not implemented with <code>fireEvent</code>
+	 * Sets the "inner" value of our <code>textComponent</code> member. Also see {@link #setText(String)}.
 	 */
 	@Override
 	protected void setFieldValue(final String value, final boolean fireEvent)
 	{
-		logger.debug("value={}", value);
+		logger.debug("this-ID={}, setFieldValue with value={}, fireEvent={}, isEventDispatchThread={}, on this={}",
+				System.identityHashCode(this), value, fireEvent, SwingUtilities.isEventDispatchThread(), this);
 
 		if (textComponent instanceof JFormattedTextField)
 		{
@@ -498,6 +527,9 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 			{
 				logger.info("Error parsing text: " + value, e);
 			}
+
+			logger.debug("this-ID={}, name={}, value={}, fireEvent={}, valueToUse={}, isEventDispatchThread={}; in method setFieldValue(), calling setValue() on textComponent={}; this={}",
+					System.identityHashCode(this), getName(), value, fireEvent, valueToUse, SwingUtilities.isEventDispatchThread(), textComponent, this);
 			((JFormattedTextField)textComponent).setValue(valueToUse);
 
 			if (fireEvent)
@@ -507,6 +539,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		}
 		else
 		{
+			logger.debug("this-ID={}, name={}, value={}, fireEvent={}, isEventDispatchThread={}; in method setFieldValue(), calling setText() on textComponent={}; this={}",
+					System.identityHashCode(this), getName(), value, fireEvent, SwingUtilities.isEventDispatchThread(), textComponent, this);
 			setText(value == null ? null : value.toString());
 		}
 	}
@@ -679,6 +713,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 	/**
 	 * Execute focus lost event: commit edit, set text and fire {@link ITerminalTextField#PROPERTY_FocusLost}.
+	 *
 	 */
 	private final void onFocusLost()
 	{

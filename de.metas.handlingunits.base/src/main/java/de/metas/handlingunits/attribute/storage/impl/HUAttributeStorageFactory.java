@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,10 +31,13 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheIgnore;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 
 public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFactory<I_M_HU, HUAttributeStorage>
 {
+	private IHUContext huContext;
+
 	@Override
 	public boolean isHandled(final Object model)
 	{
@@ -56,7 +59,7 @@ public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFact
 	@Override
 	protected final ArrayKey mkKey(final I_M_HU model)
 	{
-		return Util.mkKey((Object)model.getM_HU_ID());
+		return Util.mkKey(model.getClass().getName(), model.getM_HU_ID());
 	}
 
 	@Override
@@ -77,5 +80,10 @@ public class HUAttributeStorageFactory extends AbstractModelAttributeStorageFact
 	{
 		final HUAttributeStorage storage = new HUAttributeStorage(this, hu);
 		return storage;
-	}	 
+	}
+
+	public IHUContext getHUContext()
+	{
+		return huContext;
+	}
 }

@@ -13,11 +13,11 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,19 +38,37 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 public class QueryBL implements IQueryBL
 {
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
-			final Properties ctx,
-			final String trxName)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, final String trxName)
 	{
-		return new QueryBuilder<T>(modelClass)
+		return new QueryBuilder<>(modelClass, null)
 				.setContext(ctx, trxName);
 	}
 
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass,
-			final Object contextProvider)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Object contextProvider)
 	{
-		return new QueryBuilder<T>(modelClass)
+		return new QueryBuilder<>(modelClass, null)
+				.setContext(contextProvider);
+	}
+
+	@Override
+	public <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider)
+	{
+		return new QueryBuilder<>(modelClass, tableName)
+				.setContext(contextProvider);
+	}
+
+	@Override
+	public IQueryBuilder<Object> createQueryBuilder(final String modelTableName, final Properties ctx, final String trxName)
+	{
+		return QueryBuilder.createForTableName(modelTableName)
+				.setContext(ctx, trxName);
+	}
+
+	@Override
+	public IQueryBuilder<Object> createQueryBuilder(final String modelTableName, final Object contextProvider)
+	{
+		return QueryBuilder.createForTableName(modelTableName)
 				.setContext(contextProvider);
 	}
 
@@ -58,13 +76,13 @@ public class QueryBL implements IQueryBL
 	@Override
 	public <T> IQueryOrderByBuilder<T> createQueryOrderByBuilder()
 	{
-		return new QueryOrderByBuilder<T>();
+		return new QueryOrderByBuilder<>();
 	}
 
 	@Override
 	public <T> IQueryOrderByBuilder<T> createQueryOrderByBuilder(final Class<T> modelClass)
 	{
-		return new QueryOrderByBuilder<T>();
+		return new QueryOrderByBuilder<>();
 	}
 
 	@Override
@@ -76,13 +94,19 @@ public class QueryBL implements IQueryBL
 	@Override
 	public <T> ICompositeQueryFilter<T> createCompositeQueryFilter(final Class<T> modelClass)
 	{
-		return new CompositeQueryFilter<T>(modelClass);
+		return new CompositeQueryFilter<>(modelClass);
+	}
+
+	@Override
+	public ICompositeQueryFilter<Object> createCompositeQueryFilter(final String modelTableName)
+	{
+		return new CompositeQueryFilter<>(modelTableName);
 	}
 
 	@Override
 	public <T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(final Class<T> modelClass)
 	{
-		return new CompositeQueryUpdater<T>(modelClass);
+		return new CompositeQueryUpdater<>(modelClass);
 	}
 
 	@Override
@@ -109,7 +133,7 @@ public class QueryBL implements IQueryBL
 			return Collections.emptyList();
 		}
 
-		final List<IQueryFilter<T>> result = new ArrayList<IQueryFilter<T>>();
+		final List<IQueryFilter<T>> result = new ArrayList<>();
 
 		result.add(filter);
 

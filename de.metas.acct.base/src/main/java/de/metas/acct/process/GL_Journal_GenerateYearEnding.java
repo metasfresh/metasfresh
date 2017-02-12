@@ -26,8 +26,9 @@ import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.X_C_ElementValue;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.model.X_GL_JournalBatch;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.TimeUtil;
+
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -54,10 +55,10 @@ import org.compiere.util.TimeUtil;
 /**
  * Process used to create year ending bookings.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class GL_Journal_GenerateYearEnding extends SvrProcess
+public class GL_Journal_GenerateYearEnding extends JavaProcess
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -195,7 +196,7 @@ public class GL_Journal_GenerateYearEnding extends SvrProcess
 	{
 		final IQuery<I_C_ElementValue> expenseAndRevenueAccountsQuery = queryBL.createQueryBuilder(I_C_ElementValue.class, this)
 				.addOnlyContextClient()
-				.addInArrayFilter(I_C_ElementValue.COLUMN_AccountType, X_C_ElementValue.ACCOUNTTYPE_Expense, X_C_ElementValue.ACCOUNTTYPE_Revenue)
+				.addInArrayOrAllFilter(I_C_ElementValue.COLUMN_AccountType, X_C_ElementValue.ACCOUNTTYPE_Expense, X_C_ElementValue.ACCOUNTTYPE_Revenue)
 				.create();
 
 		final IQueryAggregateBuilder<I_Fact_Acct, I_C_ElementValue> aggregateOnAccountBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, this)

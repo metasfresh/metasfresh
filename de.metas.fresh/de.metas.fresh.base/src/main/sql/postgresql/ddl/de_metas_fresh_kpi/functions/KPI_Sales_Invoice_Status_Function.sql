@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION KPI_Sales_Invoice_Status_Function (IN C_Invoice_ID numeric) 
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Sales_Invoice_Status_Function (IN C_Invoice_ID numeric) 
 RETURNS TABLE 
 (
 	

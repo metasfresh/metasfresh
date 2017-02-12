@@ -10,36 +10,43 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
 import org.adempiere.util.Check;
+import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 
-import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 
+/**
+ * An attribute storage that wraps an {@link IHUKey}.
+ *
+ * Note: instances shall be created by {@link HUKeyAttributeStorageFactory}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 /* package */class HUKeyAttributeStorage extends AbstractHUAttributeStorage
 {
 	public static final HUKeyAttributeStorage cast(final IAttributeStorage attributeStorage)
@@ -53,17 +60,18 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			return (HUKeyAttributeStorage)attributeStorage;
 		}
-
 		return null;
 	}
 
 	private final String id;
 	private final IHUKey huKey;
 	private final I_M_HU hu;
+
 	private boolean disposed = false;
+	private Exception disposedStackTrace = null;
 	private long disposedTS = 0;
 
-	public HUKeyAttributeStorage(final IAttributeStorageFactory attributesStorageFactory, final IHUKey huKey)
+	/* package */ HUKeyAttributeStorage(final IAttributeStorageFactory attributesStorageFactory, final IHUKey huKey)
 	{
 		super(attributesStorageFactory);
 
@@ -99,8 +107,14 @@ import de.metas.handlingunits.model.I_M_HU;
 				.add("id", id)
 				.add("huKey", huKey)
 				.add("hu", hu)
-				.add("objectId", System.identityHashCode(this));
+				.add("objectId", System.identityHashCode(this))
+				.add("disposed", disposed);
 
+		if (disposed)
+		{
+			stringHelper.add("disposedTS", disposedTS);
+			stringHelper.add("disposedStackTrace", Util.dumpStackTraceToString(disposedStackTrace));
+		}
 	}
 
 	@Override
@@ -122,13 +136,14 @@ import de.metas.handlingunits.model.I_M_HU;
 		return parentAttributeStorage;
 	}
 
+	/**
+	 * Iterates the children of the {@link IHUKey} which this instance wraps and returns the respective attribute storages of those children.
+	 */
 	@Override
-	public List<IAttributeStorage> getChildAttributeStorages()
+	public List<IAttributeStorage> getChildAttributeStorages(final boolean loadIfNeeded)
 	{
-		assertNotDisposed();
-
 		final List<IAttributeStorage> children = new ArrayList<IAttributeStorage>();
-		for (final IHUKey childKey : getChildren(huKey))
+		for (final IHUKey childKey : getChildren(huKey, loadIfNeeded))
 		{
 			final IAttributeStorage childAttributeStorage = childKey.getAttributeSet();
 			if (childAttributeStorage == null)
@@ -188,7 +203,7 @@ import de.metas.handlingunits.model.I_M_HU;
 		return parentHUKey;
 	}
 
-	private static List<IHUKey> getChildren(final IHUKey key)
+	private static List<IHUKey> getChildren(final IHUKey key, final boolean loadIfNeeded)
 	{
 		if (key == null)
 		{
@@ -197,11 +212,13 @@ import de.metas.handlingunits.model.I_M_HU;
 
 		final List<IHUKey> result = new ArrayList<>();
 
-		for (final IHUKey childKey : key.getChildren())
+		final List<IHUKey> children = loadIfNeeded ? key.getChildren() : key.getChildrenNoLoad();
+
+		for (final IHUKey childKey : children)
 		{
 			if (isGroupingKey(childKey))
 			{
-				final List<IHUKey> childOfChildKeys = getChildren(childKey);
+				final List<IHUKey> childOfChildKeys = getChildren(childKey, loadIfNeeded);
 				result.addAll(childOfChildKeys);
 			}
 			else
@@ -222,6 +239,7 @@ import de.metas.handlingunits.model.I_M_HU;
 
 		this.disposed = true;
 		this.disposedTS = System.currentTimeMillis();
+		this.disposedStackTrace = new Exception("Stacktrace for markDisposed()");
 		fireAttributeStorageDisposed();
 	}
 
@@ -230,18 +248,16 @@ import de.metas.handlingunits.model.I_M_HU;
 	{
 		if (disposed)
 		{
-			final HUException ex = new HUException("Accessing an already disposed HUKeyAttributeStorage shall not be allowed"
-					+ "\n Storage: " + this
-					+ "\n Disposed on: " + (disposedTS > 0 ? new Date(disposedTS).toString() : ""));
-			if (HUConstants.isAttributeStorageFailOnDisposed())
+			// because otherwise we might end in a StackOverflow, if throwOrLogDisposedException throes to access this instance (for diag-info) in ways that cause another assertNotDisposed() invoaction
+			disposed = false;
+			try
 			{
-				throw ex;
+				throwOrLogDisposedException(disposedTS);
 			}
-			else
+			finally
 			{
-				logger.warn(ex.getLocalizedMessage(), ex);
+				disposed = true;
 			}
-
 			return false; // already disposed
 		}
 

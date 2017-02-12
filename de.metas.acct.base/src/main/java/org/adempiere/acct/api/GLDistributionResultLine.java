@@ -31,7 +31,7 @@ import org.adempiere.util.lang.ObjectUtils;
 /**
  * Result line of a {@link GLDistributionBuilder} run.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GLDistributionResultLine

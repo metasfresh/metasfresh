@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.select.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -42,18 +42,17 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.adempiere.util.collections.FilterUtils;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModel.SelectionMode;
 import de.metas.adempiere.form.terminal.table.ITerminalTableModelListener;
@@ -106,6 +105,8 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	 * Lines which are filtered and displayed to user
 	 */
 	private List<IPOSTableRow> _lines = Collections.emptyList();
+
+	private boolean disposed = false;
 
 	/**
 	 * Creates the filtering predicate for which lines are displayed.
@@ -202,13 +203,13 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	/**
 	 * Refresh current lines
 	 *
-	 * @param forceRefresh if true then always refresh (even if is not needed)
+	 * @param forceRefresh if <code>true</code> then always refresh (even if is not needed)
 	 */
 	public void refreshLines(final boolean forceRefresh)
 	{
 		Services.get(IClientUI.class).invoke()
 				.setLongOperation(true)
-				.setParentComponentByWindowNo(_terminalContext.getWindowNo())
+				.setParentComponentByWindowNo(getTerminalContext().getWindowNo())
 				.setRunnable(new Runnable()
 				{
 					@Override
@@ -219,7 +220,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 				})
 				.invoke();
 	}
-	
+
 	private void refreshLines0(final boolean forceRefresh)
 	{
 		final int warehouseId = getM_Warehouse_ID();
@@ -247,7 +248,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		{
 			// Update BPartner Key Layout:
 			final List<I_C_BPartner> bpartners = service.getBPartners(_lines);
-			vendorKeyLayout.setKeysFromBPartners(bpartners);
+			vendorKeyLayout.createAndSetKeysFromBPartners(bpartners);
 
 			// Update other custom key layouts
 			loadKeysFromLines(_lines);
@@ -263,18 +264,10 @@ public abstract class AbstractHUSelectModel implements IDisposable
 
 		//
 		// Reselect old rows if possible
-		final List<IPOSTableRow> newSelectedRows = FilterUtils.filter(_lines, new Predicate<IPOSTableRow>()
-		{
-			@Override
-			public boolean evaluate(final IPOSTableRow value)
-			{
-				if (oldSelectedRows.contains(value))
-				{
-					return true;
-				}
-				return false;
-			}
-		});
+		final List<IPOSTableRow> newSelectedRows = _lines.stream()
+				.filter(value -> oldSelectedRows.contains(value))
+				.collect(Collectors.toList());
+
 		rowsTableModel.setSelectedRows(newSelectedRows);
 	}
 
@@ -582,21 +575,21 @@ public abstract class AbstractHUSelectModel implements IDisposable
 			throw new AdempiereException("@" + AbstractHUSelectModel.MSG_ErrorNoDocumentLineSelected + "@");
 		}
 
-		//
-		// Create HU Editor Model
-		final HUEditorModel huEditorModel = createHUEditorModel(selectedRows, editorCallback);
-		if (huEditorModel == null)
+		try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 		{
-			// NOTE: we consider that "createHUEditorModel" explicitly said that we shall do nothing
-			return;
-		}
+			//
+			// Create HU Editor Model
+			final HUEditorModel huEditorModel = createHUEditorModel(selectedRows, editorCallback);
+			if (huEditorModel == null)
+			{
+				// NOTE: we consider that "createHUEditorModel" explicitly said that we shall do nothing
+				return;
+			}
 
-		try
-		{
 			//
 			// Call the actual UI Editor and wait for it's answer
 			final boolean edited = editorCallback.editHUs(huEditorModel);
-			
+
 			// Make sure everything that was in the cache it's flushed. We do this because:
 			// * the processing is happending outside of our HUKeys (in most of the cases)
 			// * we want to have fresh data from this point on!
@@ -604,7 +597,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 			{
 				getTerminalContext().getService(IHUKeyFactory.class).clearCache();
 			}
-	
+
 			//
 			// If user actually edited something, try processing selected rows/lines
 			if (edited)
@@ -612,16 +605,17 @@ public abstract class AbstractHUSelectModel implements IDisposable
 				processRows(selectedRows, huEditorModel);
 			}
 		}
-		finally
+		catch (Exception e)
 		{
-			// Dispose the HU Editor model even if there was some error, because from this point on it's not needed anymore.
-			// More, this will make sure all listeners will be decoupled.
-			huEditorModel.dispose();
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		//
-		// Refresh lines (even if user canceled the editing)
-		refreshLines(true);
+		// Do not refresh the lines here, because this code is run within "AbstractHUSelect*Panel*.doProcessSelectedLines()"
+		// and that panel's doProcessSelectedLines() method is running within its own terminal references that are destroyed after that panel's doProcessSelectedLines() finished.
+		// This means, that *if* refreshLines() creates any buttons and stuffs, they will be disposed really soon
+		// refreshLines(true);
+
 	}
 
 	protected void processRows(final Set<IPOSTableRow> selectedRows, final HUEditorModel huEditorModel)
@@ -635,7 +629,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 
 	/**
 	 * Creates and configures {@link HUEditorModel} to be used when {@link #doProcessSelectedLines(IHUEditorCallback)}.
-	 * 
+	 *
 	 * NOTE: never call this method directly.
 	 *
 	 * @param rows
@@ -687,8 +681,8 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		// 06472 : We take the warehouses from the filtering service and keep only the ones allowed in the POS profile.
 		final List<I_M_Warehouse> warehousesAll = service.retrieveWarehouses(getCtx());
 		final List<I_M_Warehouse> warehouses = posAccessBL.filterWarehousesByProfile(getCtx(), warehousesAll);
-		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found");
-		warehouseKeyLayout.setKeysFromWarehouses(warehouses);
+		Check.assumeNotEmpty(warehouses, "At least one warehouse shall be found. Check your POS profile.");
+		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehouses);
 	}
 
 	protected final void setLayoutsEnabled(final boolean enabled)
@@ -724,7 +718,6 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		pcs.clear();
 		_lines = Collections.emptyList();
 		_linesAll = Collections.emptyList();
 
@@ -735,10 +728,14 @@ public abstract class AbstractHUSelectModel implements IDisposable
 				rowsTableModel.removeTerminalTableModelListener(rowTableModelListener);
 				rowTableModelListener = null;
 			}
-			rowsTableModel = DisposableHelper.dispose(rowsTableModel);
 		}
+		disposed = true;
+	}
 
-		DisposableHelper.disposeAll(warehouseKeyLayout, vendorKeyLayout);
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	/**

@@ -28,8 +28,6 @@ import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -44,11 +42,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.X_M_DiscountSchemaLine;
+import org.slf4j.Logger;
+
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_ProductPrice;
+import de.metas.logging.LogManager;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IAttributePricingDAO;
 import de.metas.pricing.attributebased.IProductPriceAttributeAware;
@@ -73,19 +74,19 @@ public class AttributePricing extends PricingRuleAdapter
 	{
 		if (result.isCalculated())
 		{
-			logger.info("Not applying because already calculated: {}", result);
+			logger.debug("Not applying because already calculated: {}", result);
 			return false;
 		}
 
 		if (pricingCtx.getM_Product_ID() <= 0)
 		{
-			logger.info("Not applying because no product: {}", pricingCtx);
+			logger.debug("Not applying because no product: {}", pricingCtx);
 			return false;
 		}
 
 		if (!getAttributeSetInstanceAware(pricingCtx).isPresent())
 		{
-			logger.info("Not applying because not ASI aware: {}", pricingCtx);
+			logger.debug("Not applying because not ASI aware: {}", pricingCtx);
 			return false;
 		}
 
@@ -95,7 +96,7 @@ public class AttributePricing extends PricingRuleAdapter
 		final Optional<? extends I_M_ProductPrice_Attribute> productPriceAttribute = getProductPriceAttribute(pricingCtx);
 		if (!productPriceAttribute.isPresent())
 		{
-			logger.info("Not applying because no product attribute pricing found: {}" + pricingCtx);
+			logger.debug("Not applying because no product attribute pricing found: {}" + pricingCtx);
 			return false;
 		}
 
@@ -265,14 +266,14 @@ public class AttributePricing extends PricingRuleAdapter
 		final int attributeSetInstanceId = getM_AttributeSetInstance_ID(pricingCtx);
 		if (attributeSetInstanceId <= 0)
 		{
-			logger.info("No M_AttributeSetInstance_ID found: {}", pricingCtx);
+			logger.debug("No M_AttributeSetInstance_ID found: {}", pricingCtx);
 			return Optional.absent();
 		}
 
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv == null)
 		{
-			logger.info("No M_PriceList_Version found: {}", pricingCtx);
+			logger.debug("No M_PriceList_Version found: {}", pricingCtx);
 			return Optional.absent();
 		}
 
@@ -284,7 +285,7 @@ public class AttributePricing extends PricingRuleAdapter
 
 		if (null == productPriceAttribute || productPriceAttribute.getM_ProductPrice_Attribute_ID() <= 0)
 		{
-			logger.info("No product attribute pricing found: {}", pricingCtx);
+			logger.debug("No product attribute pricing found: {}", pricingCtx);
 			return Optional.absent(); // no matching
 		}
 

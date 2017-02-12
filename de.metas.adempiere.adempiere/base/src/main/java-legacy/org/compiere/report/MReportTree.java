@@ -22,9 +22,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
@@ -32,6 +31,9 @@ import org.compiere.model.MTreeNode;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Report Tree Model
@@ -51,7 +53,7 @@ public class MReportTree
 	public static MReportTree get (Properties ctx, int PA_Hierarchy_ID, String ElementType)
 	{
 		String key = PA_Hierarchy_ID + ElementType;
-		MReportTree tree = (MReportTree)s_trees.get(key);
+		MReportTree tree = s_trees.get(key);
 		if (tree == null)
 		{
 			tree = new MReportTree (ctx, PA_Hierarchy_ID, ElementType);
@@ -120,7 +122,13 @@ public class MReportTree
 				+ ", PA_Hierarchy_ID=" + PA_Hierarchy_ID);
 		//
 		boolean clientTree = true;
-		m_tree = new MTree (ctx, AD_Tree_ID, true, clientTree, null);  // include inactive and empty summary nodes
+		m_tree = MTree.builder()
+				.setCtx(ctx)
+				.setTrxName(ITrx.TRXNAME_None)
+				.setAD_Tree_ID(AD_Tree_ID)
+				.setEditable(true)
+				.setClientTree(clientTree)
+				.build();
 		// remove summary nodes without children
 		m_tree.trimTree();
 	}	//	MReportTree
@@ -304,6 +312,7 @@ public class MReportTree
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("MReportTree[ElementType=");

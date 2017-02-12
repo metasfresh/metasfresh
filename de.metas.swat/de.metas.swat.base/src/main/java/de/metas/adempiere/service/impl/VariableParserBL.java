@@ -1,5 +1,10 @@
 package de.metas.adempiere.service.impl;
 
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,10 +29,6 @@ package de.metas.adempiere.service.impl;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import org.adempiere.util.Services;
-import org.compiere.model.PO;
 
 import de.metas.adempiere.model.TableColumnPathException;
 import de.metas.adempiere.service.ITableColumnPathBL;
@@ -44,17 +45,21 @@ public class VariableParserBL implements IVariableParserBL
 	}
 
 	@Override
-	public Object resolveVariable(String variable, PO po, Object defaultValue)
+	public Object resolveVariable(String variable, Object model, Object defaultValue)
 	{
-		int index = po.get_ColumnIndex(variable);
-		if (index >= 0)
-			return po.get_Value(index);
+		if (InterfaceWrapperHelper.hasModelColumnName(model, variable))
+		{
+			return InterfaceWrapperHelper.getValue(model, variable).orNull();
+		}
 
 		// Check if is a TableColumnPath
-		ITableColumnPathBL tcpathBL = Services.get(ITableColumnPathBL.class);
+		final ITableColumnPathBL tcpathBL = Services.get(ITableColumnPathBL.class);
 		try
 		{
-			return tcpathBL.getValueByPath(po.getCtx(), po.get_TableName(), po.get_ID(), variable);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(model);
+			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+			final int id = InterfaceWrapperHelper.getId(model);
+			return tcpathBL.getValueByPath(ctx, tableName, id, variable);
 		}
 		catch (TableColumnPathException e)
 		{

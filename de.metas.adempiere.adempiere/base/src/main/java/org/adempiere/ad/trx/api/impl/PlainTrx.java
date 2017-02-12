@@ -10,18 +10,17 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,31 +33,34 @@ import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * Plain implementation of {@link ITrx}.
- * 
+ *
  * It does almost nothing, but please note that some checkings are still performed:
  * <ul>
  * <li>makes sure savepoints are consistent
  * </ul>
- * 
+ * Hint: if you actually want to test trx related behavior, then you might use {@link MockedTrxManager} and {@link MockedTrx} instead.
+ *
  * @author tsa
- * 
+ *
  */
 public class PlainTrx extends AbstractTrx
 {
 	private final List<ITrxSavepoint> activeSavepoints = new ArrayList<ITrxSavepoint>();
 
-	public PlainTrx(final ITrxManager trxManager, final String trxName)
+	public PlainTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super(trxManager, trxName);
+		super(trxManager, trxName, autoCommit);
 	}
 
 	public PlainTrxManager getPlainTrxManager()
 	{
 		return (PlainTrxManager)super.getTrxManager();
 	}
-	
+
 	@Override
 	public boolean start()
 	{
@@ -122,7 +124,7 @@ public class PlainTrx extends AbstractTrx
 
 		return true;
 	}
-	
+
 	public boolean hasActiveSavepoints()
 	{
 		return !activeSavepoints.isEmpty();
@@ -132,11 +134,12 @@ public class PlainTrx extends AbstractTrx
 	protected boolean rollbackNative(final boolean throwException) throws SQLException
 	{
 		if (getPlainTrxManager().isFailRollbackIfTrxNotStarted())
-			assertActive("Transaction shall be started before");
+		{
+			assertActive("Transaction shall be started before rollbackNative; this=" + this);
+		}
 
 		// Clear all savepoints
 		activeSavepoints.clear();
-
 		return true;
 	}
 
@@ -144,8 +147,9 @@ public class PlainTrx extends AbstractTrx
 	protected boolean rollbackNative(final ITrxSavepoint savepoint)
 	{
 		if (getPlainTrxManager().isFailRollbackIfTrxNotStarted())
-			assertActive("Transaction shall be started before");
-
+		{
+			assertActive("Transaction shall be started before rollbackNative; this=" + this);
+		}
 		removeUntilSavepoint(savepoint);
 
 		return true;
@@ -155,8 +159,9 @@ public class PlainTrx extends AbstractTrx
 	protected boolean commitNative(final boolean throwException) throws SQLException
 	{
 		if (getPlainTrxManager().isFailCommitIfTrxNotStarted())
+		{
 			assertActive("Transaction shall be started before");
-
+		}
 		// Clear all savepoints
 		activeSavepoints.clear();
 
@@ -182,6 +187,11 @@ public class PlainTrx extends AbstractTrx
 	protected final void assertActive(final String errmsg)
 	{
 		assertActive(true, errmsg);
+	}
+
+	public List<ITrxSavepoint> getActiveSavepoints()
+	{
+		return ImmutableList.copyOf(activeSavepoints);
 	}
 
 	protected final void assertNotActive(final String errmsg)

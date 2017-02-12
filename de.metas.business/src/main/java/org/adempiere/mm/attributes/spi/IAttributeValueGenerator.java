@@ -28,15 +28,15 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.spi.impl.StaticAttributeValuesProvider;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
 /**
  * Attribute handler: implementations of this interface are used for attributes handling.
  * 
- * If the implementation it is also implementing {@link IAttributeValuesProvider} then it will be used for managing attribute values. If not, and attribute is of type List,
- * {@link StaticAttributeValuesProvider} will be used.
+ * If the implementation it is also implementing {@link IAttributeValuesProviderFactory} then it will be used to create the {@link IAttributeValuesProvider}.
+ * If not, and attribute is of type List, {@link DefaultAttributeValuesProvider} will be used.
  * 
  * If possible, instead of implementing this interface, please consider extending the {@link AbstractAttributeValueGenerator}.
  * 

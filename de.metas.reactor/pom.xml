@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.metas.reactor</groupId>
 	<artifactId>de.metas.reactor</artifactId>
-	
+	<version>1.0.0</version>
 
 	<description>all projects that are required for a customer rollout</description>
 
@@ -20,9 +20,6 @@
 
 	<modules>
 		<module>../de.metas.assemblies</module>
-
-		<!-- FRESH-271: de.metas.parent now has this reactor pom as module, so to avoid a loop, we cannot have it as module anymore -->
-		<!-- module>../de.metas.parent</module -->
 
 		<module>../de.metas.migration</module>
 		<module>../de.metas.scripts.rollout</module>
@@ -49,6 +46,12 @@
 		<module>../de.metas.aggregation</module>
 
 		<module>../de.metas.dimension</module> <!-- task 08681 -->
+		
+		<module>../de.metas.dlm</module>
+		
+		<module>../de.metas.elasticsearch</module>
+		<module>../de.metas.elasticsearch.server</module>
+		
 		<module>../de.metas.storage</module>
 
 		<module>../de.metas.swat</module>
@@ -89,6 +92,8 @@
 		
 		<module>../de.metas.procurement.sync-api</module>
 		<module>../de.metas.procurement.base</module>
+		
+		<module>../de.metas.rfq</module>
 	</modules>
 			
 	  <build>
@@ -98,7 +103,6 @@
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-enforcer-plugin</artifactId>
 			<!-- see the plugin management section in de.metas.parent on why we don't use 1.4.1 -->
-			<version>1.3.1</version>
 			<executions>
 			  <execution>
 				<id>enforce-banned-dependencies</id>

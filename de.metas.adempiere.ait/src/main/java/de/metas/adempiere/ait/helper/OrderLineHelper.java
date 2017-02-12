@@ -29,7 +29,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.MOrder;
@@ -267,7 +266,7 @@ public class OrderLineHelper
 		}
 		else
 		{
-			final MOrder orderPO = (MOrder)POWrapper.getPO(order);
+			final MOrder orderPO = (MOrder)InterfaceWrapperHelper.getPO(order);
 			final MOrderLine orderLinePO = new MOrderLine(orderPO);
 
 			orderLinePO.setM_Product_ID(product.getM_Product_ID());

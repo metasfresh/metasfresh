@@ -236,29 +236,6 @@ public interface I_PMM_Balance
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Monatserster.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMonthDate (java.sql.Timestamp MonthDate);
-
-	/**
-	 * Get Monatserster.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMonthDate();
-
-    /** Column definition for MonthDate */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, Object> COLUMN_MonthDate = new org.adempiere.model.ModelColumn<I_PMM_Balance, Object>(I_PMM_Balance.class, "MonthDate", null);
-    /** Column name MonthDate */
-    public static final String COLUMNNAME_MonthDate = "MonthDate";
-
-	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -286,6 +263,29 @@ public interface I_PMM_Balance
     public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_M_Product>(I_PMM_Balance.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Monatserster.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMonthDate (java.sql.Timestamp MonthDate);
+
+	/**
+	 * Get Monatserster.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMonthDate();
+
+    /** Column definition for MonthDate */
+    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, Object> COLUMN_MonthDate = new org.adempiere.model.ModelColumn<I_PMM_Balance, Object>(I_PMM_Balance.class, "MonthDate", null);
+    /** Column name MonthDate */
+    public static final String COLUMNNAME_MonthDate = "MonthDate";
 
 	/**
 	 * Set PMM balance.

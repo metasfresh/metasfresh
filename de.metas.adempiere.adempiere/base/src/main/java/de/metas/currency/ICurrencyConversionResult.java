@@ -28,7 +28,7 @@ import java.util.Date;
 /**
  * The result of a currency conversion.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ICurrencyConversionResult

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.swing;
 
@@ -13,18 +13,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -38,23 +37,20 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 /**
  * @author cg
- * 
+ *
  */
 public class TerminalTree implements ITerminalTree, IComponentSwing
 {
 	private final ITerminalContext tc;
 	private final JTree tree;
 
-	public TerminalTree(ITerminalContext tc, Object[] value)
-	{
-		this.tc = tc;
-		this.tree = new JTree(value);
-	}
+	private boolean disposed = false;
 
 	public TerminalTree(ITerminalContext tc)
 	{
 		this.tc = tc;
 		this.tree = new JTree();
+		tc.addToDisposableComponents(this);
 	}
 
 	public Dimension getSize()
@@ -131,11 +127,18 @@ public class TerminalTree implements ITerminalTree, IComponentSwing
 		return tc;
 	}
 
+	/**
+	 * Does nothing, only sets our internal disposed flag.
+	 */
 	@Override
 	public void dispose()
 	{
-		// TODO Auto-generated method stub
-		
+		disposed = true;
 	}
 
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
+	}
 }

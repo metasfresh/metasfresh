@@ -20,8 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,6 +28,9 @@ import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Location (Address)
@@ -652,8 +653,8 @@ public class MLocation extends X_C_Location
 	{
 		//	Value/Name change in Account
 		if (!newRecord
-			&& ("Y".equals(Env.getContext(getCtx(), "$Element_LF")) 
-				|| "Y".equals(Env.getContext(getCtx(), "$Element_LT")))
+			&& ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom)) 
+				|| "Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo)))
 			&& (is_ValueChanged("Postal") || is_ValueChanged("City"))
 			)
 			MAccount.updateValueDescription(getCtx(), 

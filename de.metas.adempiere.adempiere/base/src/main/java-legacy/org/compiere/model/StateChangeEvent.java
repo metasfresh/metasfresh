@@ -15,48 +15,55 @@ package org.compiere.model;
 
 import java.util.EventObject;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * 
  * @author Low Heng Sin
  *
  */
-public class StateChangeEvent extends EventObject
+@SuppressWarnings("serial")
+public final class StateChangeEvent extends EventObject
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8536782772491762290L;
-	
-	// Metas start: R.Craciunescu@metas.ro: 02280
-	private final int eventType;
-	// Metas end: R.Craciunescu@metas.ro: 02280
+	public static enum StateChangeEventType
+	{
+		DATA_REFRESH_ALL, DATA_REFRESH, DATA_NEW, DATA_DELETE, DATA_SAVE, DATA_IGNORE
+	}
+
+	private final StateChangeEventType eventType;
 
 	/**
 	 * 
 	 * @param source
 	 * @param eventType
 	 */
-	public StateChangeEvent(Object source, int eventType)
+	public StateChangeEvent(final GridTab source, final StateChangeEventType eventType)
 	{
 		super(source);
 		this.eventType = eventType;
 	}
-	
-	public final static int DATA_REFRESH_ALL = 0;
-	public final static int DATA_REFRESH = 1;
-	public final static int DATA_NEW = 2;
-	public final static int DATA_DELETE = 3;
-	public final static int DATA_SAVE = 4;
-	public final static int DATA_IGNORE = 5;
 
-	// Metas start: R.Craciunescu@metas.ro: 02280
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("eventType", eventType)
+				.add("source", source)
+				.toString();
+	}
+
+	@Override
+	public GridTab getSource()
+	{
+		return (GridTab)super.getSource();
+	}
+
 	/**
 	 * 
 	 * @return event type (DATA_*)
 	 */
-	public int getEventType()
+	public StateChangeEventType getEventType()
 	{
 		return eventType;
 	}
-	// Metas end: R.Craciunescu@metas.ro: 02280
 }

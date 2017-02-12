@@ -35,7 +35,7 @@ import de.metas.inout.model.I_M_InOutLine;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09548_Avoid_FK-constraint_violation_when_a_packaging-iol-is_deleted_%28106784154474%29
  */
 @Interceptor(I_M_InOutLine.class)

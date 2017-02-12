@@ -1,11 +1,11 @@
 package de.metas.jax.rs.process;
 
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -31,12 +31,12 @@ import de.metas.process.Process;
 /**
  * Calls either {@link IJaxRsBL#createClientEndPoints(java.util.Properties)} or {@link IJaxRsBL#destroyServerEndPoints()}, based on the process parameter's value.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09848_enable_metasfresh_to_provide_jax-rs_services_%28101763395402%29
  *
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class AD_JAXRS_Endpoint_ManageServerEndpoints extends SvrProcess
+public class AD_JAXRS_Endpoint_ManageServerEndpoints extends JavaProcess
 {
 	private static final String PARAM_START = "start";
 

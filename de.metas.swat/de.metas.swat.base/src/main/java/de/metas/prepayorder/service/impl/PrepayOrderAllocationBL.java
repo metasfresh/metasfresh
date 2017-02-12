@@ -33,7 +33,6 @@ import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -55,11 +54,11 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 import de.metas.prepayorder.interfaces.I_C_PaymentAllocate;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.prepayorder.service.IPrepayOrderBL;
@@ -96,7 +95,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			// check if the allocation lines that have just been created need to be augmented with C_Order_ID
 			for (final MPaymentAllocate paPO : MPaymentAllocate.get(payment))
 			{
-				final I_C_PaymentAllocate pa = POWrapper.create(paPO, I_C_PaymentAllocate.class);
+				final I_C_PaymentAllocate pa = InterfaceWrapperHelper.create(paPO, I_C_PaymentAllocate.class);
 				final int orderId = pa.getC_PrepayOrder_ID();
 				if (orderId <= 0)
 				{

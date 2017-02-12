@@ -24,7 +24,7 @@ package de.metas.flatrate.modelvalidator;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -84,7 +84,7 @@ public class C_OrderLine implements ModelValidator
 	{
 		if (type == TYPE_BEFORE_DELETE)
 		{
-			final I_C_OrderLine ol = POWrapper.create(po, I_C_OrderLine.class);
+			final I_C_OrderLine ol = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
 
 			if (ol.isProcessed())
 			{

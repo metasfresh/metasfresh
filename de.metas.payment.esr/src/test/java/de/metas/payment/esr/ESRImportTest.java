@@ -1494,12 +1494,13 @@ public class ESRImportTest extends ESRTestBase
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
-		assertThat(esrImportLine.isValid(), is(false));
-		assertThat(esrImportLine.isProcessed(), is(false));
-		assertThat(esrImportLine.getC_Invoice(), nullValue());
-		assertThat(esrImportLine.getC_BPartner_ID(), is(partner.getC_BPartner_ID()));
-		assertThat(esrImportLine.getC_Payment(), Matchers.notNullValue());
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		final String msg = "Invalid (errmsg=" + esrImportLine.getErrorMsg() + ")";
+		assertThat(msg, esrImportLine.isValid(), is(false));
+		assertThat(msg, esrImportLine.isProcessed(), is(false));
+		assertThat(msg, esrImportLine.getC_Invoice(), nullValue());
+		assertThat(msg, esrImportLine.getC_BPartner_ID(), is(partner.getC_BPartner_ID()));
+		assertThat(msg, esrImportLine.getC_Payment(), Matchers.notNullValue());
+		assertThat(msg, esrImportLine.getErrorMsg(), Matchers.notNullValue());
 
 	}
 

@@ -10,12 +10,12 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,16 +28,20 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.ASIAttributeStorageFactory;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 
@@ -77,37 +81,42 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 	public HUAttributeExpectation<ParentExpectationType> assertExpected(final String message, final I_M_HU_Attribute huAttribute)
 	{
-		final String prefix = (message == null ? "" : message)
-				+ "\n HU Attribute: " + huAttribute
-				+ "\n\nInvalid ";
+		assertExpected(newErrorMessage(message), huAttribute);
+		return this;
+	}
 
-		Assert.assertNotNull(prefix + "huAttribute is null", huAttribute);
+	public HUAttributeExpectation<ParentExpectationType> assertExpected(final ErrorMessage message, final I_M_HU_Attribute huAttribute)
+	{
+		final ErrorMessage messageActual = ErrorMessage.derive(message)
+				.addContextInfo("HU Attribute", huAttribute);
+
+		assertNotNull(messageActual.expect("huAttribute is null"), huAttribute);
 
 		if (attribute != null)
 		{
-			assertModelEquals(prefix + "M_Attribute_ID", attribute, huAttribute.getM_Attribute());
+			assertModelEquals(messageActual.expect("M_Attribute_ID"), attribute, huAttribute.getM_Attribute());
 		}
 		if (attributeKey != null)
 		{
 			final I_M_Attribute attributeActual = huAttribute.getM_Attribute();
-			Assert.assertNotNull(prefix + "M_Attribute_ID is null", attributeActual);
-			Assert.assertEquals(prefix + "M_Attribute.Value", attributeKey, attributeActual.getValue());
+			assertNotNull(messageActual.expect("M_Attribute_ID is null"), attributeActual);
+			assertEquals(messageActual.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
 		}
 		if (piAttribute != null)
 		{
-			assertModelEquals(prefix + "M_HU_PI_Attribute_ID", piAttribute, huAttribute.getM_HU_Attribute_ID());
+			assertModelEquals(messageActual.expect("M_HU_PI_Attribute_ID"), piAttribute, huAttribute.getM_HU_PI_Attribute());
 		}
 		if (valueStringSet)
 		{
-			Assert.assertEquals(prefix + "ValueString", valueString, huAttribute.getValue());
+			assertEquals(messageActual.expect("ValueString"), valueString, huAttribute.getValue());
 		}
 		if (valueNumberSet)
 		{
-			assertEquals(prefix + "ValueNumber", valueNumber, huAttribute.getValueNumber());
+			assertEquals(messageActual.expect("ValueNumber"), valueNumber, huAttribute.getValueNumber());
 		}
 		if (valueDateSet)
 		{
-			Assert.assertEquals(prefix + "ValueDate", valueDate, huAttribute.getValueDate());
+			assertEquals(messageActual.expect("ValueDate"), valueDate, huAttribute.getValueDate());
 		}
 
 		return this;
@@ -176,7 +185,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		final String prefix = (message == null ? "" : message)
 				+ "\nTU Attribute Storage: " + tuAttributeStorage
 				+ "\n\n";
-		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages();
+		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages(true);
 		Assert.assertNotNull(prefix + "No VHU storages found on TU", vhuAttributeStorages);
 		Assert.assertFalse(prefix + "No VHU storages found on TU", vhuAttributeStorages.isEmpty());
 
@@ -208,7 +217,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 		//
 		// Get VHU attribute storages
-		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages();
+		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages(true);
 		Assert.assertNotNull(prefix + "No VHU storages found on TU", vhuAttributeStorages);
 		Assert.assertFalse(prefix + "No VHU storages found on TU", vhuAttributeStorages.isEmpty());
 
@@ -296,5 +305,33 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		// Fail
 		Assert.fail(messageIfNotFound.toString());
 		return null; // shall not reach this point
+	}
+
+	public I_M_HU_Attribute createHUAttribute(I_M_HU hu)
+	{
+		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, getContext());
+		huAttribute.setM_HU(hu);
+		huAttribute.setAD_Org_ID(hu.getAD_Org_ID());
+
+		huAttribute.setM_Attribute(getAttributeNotNull());
+
+		Check.assumeNotNull(piAttribute, "piAttribute not null");
+		huAttribute.setM_HU_PI_Attribute(piAttribute);
+
+		if (valueStringSet)
+		{
+			huAttribute.setValue(valueString);
+		}
+		if (valueNumberSet)
+		{
+			huAttribute.setValueNumber(valueNumber);
+		}
+		if (valueDateSet)
+		{
+			huAttribute.setValueDate(TimeUtil.asTimestamp(valueDate));
+		}
+
+		InterfaceWrapperHelper.save(huAttribute);
+		return huAttribute;
 	}
 }

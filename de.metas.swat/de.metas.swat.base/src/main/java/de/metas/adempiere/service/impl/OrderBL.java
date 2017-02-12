@@ -27,8 +27,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,34 +35,29 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.ListUtils;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderTax;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MPricingSystem;
-import org.compiere.model.PO;
-import org.compiere.model.Query;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IOrderBL;
@@ -73,44 +66,45 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductPA;
 
 public class OrderBL implements IOrderBL
 {
 	public static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
-	private static final String MSG_NO_PO_PRICELIST_FOUND = "NoPOPriceListFound";
-	private static final String MSG_NO_SO_PRICELIST_FOUND = "NoSOPriceListFound";
 
-	private static final Logger logger = LogManager.getLogger(OrderBL.class);
+	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
 
 	@Override
-	public String checkFreightCost(final Properties ctx, final I_C_Order order, final boolean nullIfOk, final String trxName)
+	public void checkFreightCost(final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{
-			OrderBL.logger.debug("{} is no SO", order);
-			return nullIfOk ? null : "";
+			logger.debug("{} is no SO", order);
+			return;
 		}
 
 		final int bPartnerId = order.getC_BPartner_ID();
 		final int bPartnerLocationId = order.getC_BPartner_Location_ID();
 		final int shipperId = order.getM_Shipper_ID();
 
-		if (bPartnerId == 0 || bPartnerLocationId == 0 || shipperId == 0)
+		if (bPartnerId <= 0 || bPartnerLocationId <= 0 || shipperId <= 0)
 		{
-			OrderBL.logger.debug("Can't check cause freight cost info is not yet complete for " + order);
-			return nullIfOk ? null : "";
+			logger.debug("Can't check cause freight cost info is not yet complete for {}", order);
+			return;
 		}
 
 		final IFreightCostBL freightCostBL = Services.get(IFreightCostBL.class);
 		final de.metas.adempiere.model.I_C_Order o = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
 		if (freightCostBL.checkIfFree(o))
 		{
-			OrderBL.logger.debug("No freight cost for " + order);
-			return nullIfOk ? null : "";
+			logger.debug("No freight cost for {}", order);
+			return;
 		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 		final MFreightCost freightCost =
 				MFreightCost.retrieveFor(ctx,
 						bPartnerId,
@@ -119,110 +113,155 @@ public class OrderBL implements IOrderBL
 						order.getAD_Org_ID(),
 						order.getDateOrdered(),
 						trxName);
-
 		if (freightCost == null)
 		{
-			return Services.get(IMsgBL.class).getMsg(ctx, OrderBL.MSG_NO_FREIGHT_COST_DETAIL);
+			throw new AdempiereException("@" + MSG_NO_FREIGHT_COST_DETAIL + "@");
 		}
-		return nullIfOk ? null : "";
 	}
 
 	@Override
-	public String setPricingSystemId(final I_C_Order order, final boolean nullIfOk, final String trxName)
+	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystem)
 	{
-		if (order.getM_PricingSystem_ID() > 0)
+		final int previousPricingSystemId = order.getM_PricingSystem_ID();
+		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
-			OrderBL.logger.debug("order " + order.getDocumentNo() + " already has a pricing system. Doing nothing");
-			return nullIfOk ? null : "";
+			final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+			final int bPartnerId = bpartnerAndLocation.getC_BPartner_ID();
+			if (bPartnerId <= 0)
+			{
+				logger.debug("Order {} has no C_BPartner_ID. Doing nothing", order);
+				return;
+			}
+	
+			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+			final String trxName = InterfaceWrapperHelper.getTrxName(order);
+			final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
+			final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, order.isSOTrx(), trxName);
+	
+			order.setM_PricingSystem_ID(pricingSysId);
 		}
-		final int bPartnerId = order.getC_BPartner_ID();
-		if (bPartnerId <= 0)
+
+		//
+		// Update the M_PriceList_ID only if:
+		// * overridePricingSystem is true => this is also covering the case when pricing system was not changed but for some reason the price list could be a different one (Date changed etc)
+		// * pricing system really changed => we need to set to correct price list
+		// Cases we want to avoid:
+		// * overridePriceSystem is false and M_PricingSystem_ID was not changed: in this case we shall NOT update the price list because it might be that we were called for a completed Order and we don't want to change the data. 
+		if(overridePricingSystem || previousPricingSystemId != order.getM_PricingSystem_ID())
 		{
-			OrderBL.logger.debug("order " + order.getDocumentNo() + " has no C_BPartner_ID. Doing nothing");
-			return nullIfOk ? null : "";
+			setPriceList(order);
 		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, order.isSOTrx(), trxName);
-
-		order.setM_PricingSystem_ID(pricingSysId);
-
-		return setPriceList(order, nullIfOk, pricingSysId, trxName);
 	}
 
 	@Override
-	public String setPriceList(final I_C_Order order,
-			final boolean nullIfOk, final int pricingSysId, final String trxName)
+	public void setPriceList(final I_C_Order order)
 	{
-		// metas: When PricingSystem is set, PriceList needs to be set, too.
-		final int bPartnerLocId = order.getC_BPartner_Location_ID();
-
-		if (bPartnerLocId <= 0 || pricingSysId <= 0)
+		final int pricingSystemId = order.getM_PricingSystem_ID();
+		if (pricingSystemId <= 0)
 		{
-			return nullIfOk ? null : "";
+			logger.debug("order {} has no M_PricingSystem_ID. Doing nothing", order);
+			return;
 		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final IProductPA productPA = Services.get(IProductPA.class);
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(
-				ctx, pricingSysId, bPartnerLocId, order.isSOTrx(), trxName);
-
-		if (priceList != null)
+		
+		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+		if (bpartnerAndLocation.getC_BPartner_Location_ID() <= 0)
 		{
-			order.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		}
-		else
-		{
-			// return error message
-			final String adMsg = order.isSOTrx() ? OrderBL.MSG_NO_SO_PRICELIST_FOUND : OrderBL.MSG_NO_PO_PRICELIST_FOUND;
-			final MPricingSystem pricingSystem = new MPricingSystem(Env.getCtx(), pricingSysId, trxName);
-
-			final Object[] args = { pricingSystem.getName() };
-
-			return Services.get(IMsgBL.class).getMsg(Env.getCtx(), adMsg, args);
-		}
-		// metas: end
-
-		return nullIfOk ? null : "";
-	}
-
-	@Override
-	public void checkForPriceList(final I_C_Order order, final String trxName)
-	{
-		final int bPartnerLocId = order.getC_BPartner_Location_ID();
-		final int pricingSysId = order.getM_PricingSystem_ID();
-
-		if (bPartnerLocId <= 0 || pricingSysId <= 0)
-		{
+			logger.debug("order {} has no C_BPartner_Location_ID. Doing nothing", order);
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
+		if(priceList == null)
+		{
+			// Fail if no price list found
+			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(Env.getCtx(), pricingSystemId, I_M_PricingSystem.class, ITrx.TRXNAME_None);
+			final String pricingSystemName = pricingSystem == null ? "-" : pricingSystem.getName();
+			throw new PriceListNotFoundException(pricingSystemName, order.isSOTrx());
+		}
 
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSysId, bPartnerLocId, order.isSOTrx(), trxName);
+		order.setM_PriceList(priceList);
+	}
 
+	@Override
+	public void checkForPriceList(final I_C_Order order)
+	{
+		final int pricingSysId = order.getM_PricingSystem_ID();
+		if (pricingSysId <= 0)
+		{
+			return;
+		}
+		
+		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+		if (bpartnerAndLocation.getC_BPartner_Location_ID() <= 0)
+		{
+			return;
+		}
+		
+		final I_M_PriceList pl = retrievePriceListOrNull(order, bpartnerAndLocation);
 		if (pl == null)
 		{
 			final I_M_PricingSystem pricingSystem = order.getM_PricingSystem();
 			final String pricingSystemName = pricingSystem == null ? "-" : pricingSystem.getName();
-			final String adMessage = order.isSOTrx() ? OrderBL.MSG_NO_SO_PRICELIST_FOUND : OrderBL.MSG_NO_PO_PRICELIST_FOUND;
-			throw new AdempiereException(ctx, adMessage, new Object[]{pricingSystemName});
+			throw new PriceListNotFoundException(pricingSystemName, order.isSOTrx());
 		}
 	}
-
+	
 	@Override
-	public BigDecimal retrieveTaxAmt(final I_C_Order order)
+	public int retrievePriceListId(final I_C_Order order)
 	{
-		final PO po = InterfaceWrapperHelper.getPO(order);
-		final Properties ctx = po == null ? Env.getCtx() : po.getCtx();
-		final String trxName = po == null ? null : po.get_TrxName();
+		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
+		return priceList == null ? 0 : priceList.getM_PriceList_ID();
+	}
+	
+	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BPartnerAndLocation bpartnerAndLocation)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 
-		return new Query(ctx, I_C_OrderTax.Table_Name, I_C_OrderTax.COLUMNNAME_C_Order_ID + "=?", trxName)
-				.setParameters(order.getC_Order_ID())
-				.setOnlyActiveRecords(true)
-				.aggregate(I_C_OrderTax.COLUMNNAME_TaxAmt, IQuery.AGGREGATE_SUM);
+		final int C_BPartner_Location_ID = bpartnerAndLocation.getC_BPartner_Location_ID();
+		if (C_BPartner_Location_ID <= 0)
+		{
+			return null;
+		}
+		
+		final IProductPA productPA = Services.get(IProductPA.class);
+		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
+		final boolean isSOTrx = order.isSOTrx();
+		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, M_PricingSystem_ID, C_BPartner_Location_ID, isSOTrx, trxName);
+		return pl;
+	}
+	
+	private BPartnerAndLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
+	{
+		// TODO: shall we also consider Bill_BPartner_ID and Dropship_BPartner_ID?
+		final int bpartnerId = order.getC_BPartner_ID();
+		final int bpartnerLocationId = order.getC_BPartner_Location_ID();
+		
+		return new BPartnerAndLocation(bpartnerId, bpartnerLocationId);
+	}
+	
+	private static class BPartnerAndLocation
+	{
+		private final int C_BPartner_ID;
+		private final int C_BPartner_Location_ID;
+
+		private BPartnerAndLocation(final int C_BPartner_ID, final int C_BPartner_Location_ID)
+		{
+			super();
+			this.C_BPartner_ID = C_BPartner_ID;
+			this.C_BPartner_Location_ID = C_BPartner_Location_ID;
+		}
+		
+		public int getC_BPartner_ID()
+		{
+			return C_BPartner_ID;
+		}
+		
+		public int getC_BPartner_Location_ID()
+		{
+			return C_BPartner_Location_ID;
+		}
 	}
 
 	@Override
@@ -280,70 +319,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setM_PricingSystem_ID(final I_C_Order order)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-
-		int pricingSysId = order.getM_PricingSystem_ID();
-		if (pricingSysId <= 0)
-		{
-			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-			pricingSysId = bPartnerDAO.retrievePricingSystemId(ctx, order.getBill_BPartner_ID(), order.isSOTrx(), trxName);
-		}
-		order.setM_PricingSystem_ID(pricingSysId);
-		order.setM_PriceList_ID(retrievePriceListId(order));
-	}
-
-	@Override
-	public int retrievePriceListId(final I_C_Order order)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-
-		return retrievePriceListId(
-				ctx,
-				order.getC_BPartner_Location_ID(),
-				order.getBill_Location_ID(),
-				order.getM_PricingSystem_ID(),
-				order.isSOTrx(),
-				trxName);
-	}
-
-	/* package */int retrievePriceListId(
-			final Properties ctx,
-			final int C_BPartner_Location_ID,
-			final int Bill_Location_ID,
-			final int M_PricingSystem_ID,
-			final boolean isSOTrx,
-			final String trxName)
-	{
-		final int pricingSysId = M_PricingSystem_ID;
-
-		final int bPartnerLocationId = C_BPartner_Location_ID;
-		if (bPartnerLocationId == 0)
-		{
-			// fallback
-			// order.getBill_Location_ID();
-			// TODO: why is not setting bPartnerLocationId to Bill_Location_ID?
-		}
-		final IProductPA productPA = Services.get(IProductPA.class);
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSysId, bPartnerLocationId, isSOTrx, trxName);
-		if (pl != null)
-		{
-			return pl.getM_PriceList_ID();
-		}
-		return 0;
-	}
-
-	@Override
 	public void setDocTypeTargetId(final I_C_Order order)
 	{
 		final int clientId = order.getAD_Client_ID();
 
 		if (order.isSOTrx()) // SO = Std Order
 		{
-			setDocTypeTargetId(order, MOrder.DocSubType_Standard);
+			setDocTypeTargetId(order, X_C_DocType.DOCSUBTYPE_StandardOrder);
 			return;
 		}
 		// PO
@@ -676,7 +658,7 @@ public class OrderBL implements IOrderBL
 
 		if (!foundLoc)
 		{
-			logger.error("MOrder.setBPartner - Has no Ship To Address: " + bp);
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
 		}
 	}
 
@@ -808,42 +790,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setOrder(final org.compiere.model.I_C_OrderLine orderLine, final I_C_Order order, final String trxName)
-	{
-		orderLine.setC_Order_ID(order.getC_Order_ID());
-
-		Services.get(IPOService.class).copyClientOrg(order, orderLine);
-
-		orderLine.setC_BPartner_ID(order.getC_BPartner_ID());
-		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		orderLine.setM_Warehouse_ID(order.getM_Warehouse_ID());
-		orderLine.setDateOrdered(order.getDateOrdered());
-		orderLine.setDatePromised(order.getDatePromised());
-		orderLine.setC_Currency_ID(order.getC_Currency_ID());
-	}
-
-	@Override
-	public void setProduct(final org.compiere.model.I_C_OrderLine orderLine, final I_M_Product product)
-	{
-		if (product != null)
-		{
-			orderLine.setM_Product_ID(product.getM_Product_ID());
-			orderLine.setC_UOM_ID(product.getC_UOM_ID());
-		}
-		else
-		{
-			orderLine.setM_Product_ID(0);
-			orderLine.setC_UOM_ID(0);
-		}
-		orderLine.setM_AttributeSetInstance_ID(0);
-	}
-
-	@Override
 	public int getPrecision(final org.compiere.model.I_C_Order order)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		return Services.get(ICurrencyDAO.class)
-				.getStdPrecision(ctx, order.getC_Currency_ID());
+		return Services.get(ICurrencyDAO.class).getStdPrecision(ctx, order.getC_Currency_ID());
 	}
 
 	@Override
@@ -900,7 +850,8 @@ public class OrderBL implements IOrderBL
 		//
 		// Update qty reservation
 		final I_C_Order order = orderLine.getC_Order();
-		Services.get(IOrderPA.class).reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
+		final IOrderPA orderPA = Services.get(IOrderPA.class);
+		orderPA.reserveStock(order, orderLine);
 
 	}
 

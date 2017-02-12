@@ -1,5 +1,7 @@
 package de.metas.inout.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package de.metas.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,23 +65,27 @@ public class InOutBL implements IInOutBL
 	{
 		Check.assumeNotNull(inOutLine, "Param 'inOutLine' is not null");
 
+		final IProductPA productPA = Services.get(IProductPA.class);
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inOutLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(inOutLine);
 
 		final I_M_InOut inOut = inOutLine.getM_InOut();
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		boolean isSOTrx = inOut.isSOTrx();
 
-		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createInitialContext(inOutLine.getM_Product_ID(), inOut.getC_BPartner_ID(), inOutLine.getC_UOM_ID(),
-				inOutLine.getQtyEntered(), isSOTrx);
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(inOutLine.getM_Product_ID(),
+				inOut.getC_BPartner_ID(),
+				inOutLine.getC_UOM_ID(),
+				inOutLine.getQtyEntered(),
+				isSOTrx);
 
 		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, isSOTrx);
 
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-
 		if (pricingSystem == null)
 		{
-
 			if (inOutBL.isReturnMovementType(inOut.getMovementType()))
 			{
 				// 08358
@@ -88,7 +93,6 @@ public class InOutBL implements IInOutBL
 				// we are allowed to take the pricing system from the other opposite SOTrx, since the boxes have the same prices
 				// either they are bought or sold
 				isSOTrx = !isSOTrx;
-
 				pricingSystem = getPricingSystemOrNull(inOut, isSOTrx);
 			}
 		}
@@ -96,6 +100,7 @@ public class InOutBL implements IInOutBL
 		if (pricingSystem == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
+					+ "\n @M_InOut_ID@: " + inOut
 					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner().getValue());
 		}
 
@@ -103,7 +108,7 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
 
-		final I_M_PriceList priceList = Services.get(IProductPA.class).retrievePriceListByPricingSyst(ctx, pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx, trxName);
+		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx, trxName);
 
 		Check.errorIf(priceList == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.IsSOTrx={}",
@@ -121,7 +126,8 @@ public class InOutBL implements IInOutBL
 	@Override
 	public IPricingResult getProductPrice(final IPricingContext pricingCtx)
 	{
-		final IPricingResult result = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
 		if (!result.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, -1);
@@ -280,6 +286,32 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public BigDecimal getEffectiveStorageChange(final I_M_InOutLine iol)
+	{
+
+		final String movementType = iol.getM_InOut().getMovementType();
+		final BigDecimal multiplier;
+
+		if (X_M_InOut.MOVEMENTTYPE_CustomerReturns.equals(movementType)
+				|| X_M_InOut.MOVEMENTTYPE_VendorReceipts.equals(movementType))
+		{
+			multiplier = BigDecimal.ONE; // storage increase
+		}
+		else if (X_M_InOut.MOVEMENTTYPE_CustomerShipment.equals(movementType)
+				|| X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(movementType))
+		{
+			multiplier = BigDecimal.ONE.negate(); // storage decrease
+		}
+		else
+		{
+			Check.errorIf(true, "iol={} has an M_InOut with Unexpected MovementType={}", iol, movementType);
+			return BigDecimal.ZERO; // won't normally be reached.
+		}
+
+		return iol.getMovementQty().multiply(multiplier);
+	}
+
+	@Override
 	public List<I_M_InOutLine> sortLines(final I_M_InOut inOut)
 	{
 		//
@@ -317,7 +349,7 @@ public class InOutBL implements IInOutBL
 						? nextLine.getC_OrderLine().getC_Order_ID()
 						: 0;
 
-				if (nextID != 0) // If this is a valid ID, put it into the Map.
+				if (nextID != 0)   // If this is a valid ID, put it into the Map.
 				{
 					valueIdToUse = nextID;
 					break;
@@ -393,7 +425,6 @@ public class InOutBL implements IInOutBL
 			InterfaceWrapperHelper.delete(matchInv);
 		}
 	}
-
 
 	@Override
 	public void deleteMatchInvsForInOutLine(final I_M_InOutLine iol)

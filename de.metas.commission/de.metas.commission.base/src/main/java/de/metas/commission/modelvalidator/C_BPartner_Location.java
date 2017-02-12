@@ -24,7 +24,7 @@ package de.metas.commission.modelvalidator;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -62,7 +62,7 @@ public class C_BPartner_Location implements ModelValidator
 	@Override
 	public String modelChange(final PO po, final int type) throws Exception
 	{
-		final I_C_BPartner_Location address = POWrapper.create(po, I_C_BPartner_Location.class);
+		final I_C_BPartner_Location address = InterfaceWrapperHelper.create(po, I_C_BPartner_Location.class);
 		checkDefaults(address, po, type);
 		return null;
 	}

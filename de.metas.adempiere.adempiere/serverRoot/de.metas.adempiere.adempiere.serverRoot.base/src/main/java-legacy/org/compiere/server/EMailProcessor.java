@@ -32,8 +32,9 @@ import javax.mail.Session;
 import javax.mail.Store;
 
 import org.compiere.model.MClient;
-import org.compiere.util.EMailAuthenticator;
 import org.slf4j.Logger;
+
+import de.metas.email.MailAuthenticator;
 import de.metas.logging.LogManager;
 
 /**
@@ -134,16 +135,16 @@ public class EMailProcessor
 			return m_session;
 		
 		//	Session
-		Properties props = System.getProperties();
+		final Properties props = new Properties(System.getProperties());
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", m_host);
 		props.put("mail.smtp.auth","true");
-		EMailAuthenticator auth = new EMailAuthenticator (m_user, m_pass);
+		MailAuthenticator auth = MailAuthenticator.of(m_user, m_pass);
 		//
 		m_session = Session.getDefaultInstance(props, auth);
 		m_session.setDebug(LogManager.isLevelFinest());
-		log.debug("getSession - " + m_session);
+		log.debug("getSession - {}", m_session);
 		return m_session;
 	}	//	getSession
 	

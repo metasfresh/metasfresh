@@ -116,7 +116,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 		//
 		// Start queuing events and register a transaction listener which will disable it after commit.
 		queueEvents();
-		trxManager.getTrxListenerManager(trxName)
+		trxManager.getTrxListenerManagerOrAutoCommit(trxName) // NOTE: ask for OrAutoCommit to cover the when trxName=ThreadInherited but does not exist
 				.registerListener(new TrxListenerAdapter()
 				{
 					/** Flush queued events and stop queuing */

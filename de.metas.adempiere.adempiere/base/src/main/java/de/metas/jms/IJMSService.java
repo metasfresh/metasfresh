@@ -28,7 +28,7 @@ import org.compiere.db.CConnection;
  */
 /**
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IJMSService extends ISingletonService

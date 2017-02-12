@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.aggregate.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import java.util.Set;
 import org.adempiere.util.Services;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalComboboxField;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -61,7 +60,6 @@ public final class AggregateHUEditorPanel extends HUEditorPanel
 
 	private PropertyChangeListener onHUKeySelectionChangedListener = new PropertyChangeListener()
 	{
-
 		@Override
 		public void propertyChange(final PropertyChangeEvent evt)
 		{
@@ -82,9 +80,7 @@ public final class AggregateHUEditorPanel extends HUEditorPanel
 	public void dispose()
 	{
 		super.dispose();
-
 		onHUKeySelectionChangedListener = null;
-		fShipperTransportation = DisposableHelper.dispose(fShipperTransportation);
 	}
 
 	@Override
@@ -101,7 +97,7 @@ public final class AggregateHUEditorPanel extends HUEditorPanel
 		fShipperTransportation.addListener(new UIPropertyChangeListener(fShipperTransportation)
 		{
 			@Override
-			protected void propertyChangeEx(final PropertyChangeEvent evt) throws Exception
+			protected void propertyChangeEx(final PropertyChangeEvent evt)
 			{
 				if (ITerminalField.ACTION_ValueChanged.equals(evt.getPropertyName()))
 				{

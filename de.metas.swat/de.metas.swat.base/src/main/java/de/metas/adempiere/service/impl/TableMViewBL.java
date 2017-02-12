@@ -37,15 +37,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -57,12 +55,14 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.engine.MViewMetadata;
 import de.metas.adempiere.model.I_AD_Table_MView;
 import de.metas.adempiere.service.ITableMViewBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -195,15 +195,15 @@ public class TableMViewBL implements ITableMViewBL
 		if (mview.isValid())
 		{
 			mview.setIsValid(false);
-			POWrapper.save(mview);
+			InterfaceWrapperHelper.save(mview);
 		}
 		mview.setIsValid(true);
-		POWrapper.save(mview);
+		InterfaceWrapperHelper.save(mview);
 	}
 
 	private void updateComplete(I_AD_Table_MView mview)
 	{
-		updatePartial(mview, (PO)null, POWrapper.getTrxName(mview));
+		updatePartial(mview, (PO)null, InterfaceWrapperHelper.getTrxName(mview));
 	}
 
 	private void updatePartial(final I_AD_Table_MView mview, final PO sourcePO, final String trxName)
@@ -213,7 +213,7 @@ public class TableMViewBL implements ITableMViewBL
 
 	private void updatePartial(final I_AD_Table_MView mview, final List<PO> sourcePOs, final String trxName)
 	{
-		final Properties ctx = POWrapper.getCtx(mview);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(mview);
 
 		if (LogManager.isLevelFine())
 			log.debug("Starting: " + getSummary(mview) + ", sources=" + sourcePOs + ", trxName=" + trxName);
@@ -223,7 +223,7 @@ public class TableMViewBL implements ITableMViewBL
 		{
 			log.warn("No metadata found for " + getSummary(mview) + " [STOP]");
 			mview.setIsValid(false);
-			POWrapper.save(mview);
+			InterfaceWrapperHelper.save(mview);
 			return;
 		}
 
@@ -391,7 +391,7 @@ public class TableMViewBL implements ITableMViewBL
 		tableMView.setIsStaled(false);
 		tableMView.setStaledSinceDate(null);
 		tableMView.setLastRefreshDate(SystemTime.asTimestamp());
-		POWrapper.save(tableMView);
+		InterfaceWrapperHelper.save(tableMView);
 		if (log.isInfoEnabled())
 			log.info("" + getSummary(mview) + ": Updated INSERT/UPDATE/DELETE=" + stat_insertsNo + "/" + stat_updatesNo + "/" + stat_deletesNo);
 	}
@@ -491,7 +491,7 @@ public class TableMViewBL implements ITableMViewBL
 		{
 			mview.setIsStaled(true);
 			mview.setStaledSinceDate(SystemTime.asTimestamp());
-			POWrapper.save(mview);
+			InterfaceWrapperHelper.save(mview);
 		}
 		else
 		{

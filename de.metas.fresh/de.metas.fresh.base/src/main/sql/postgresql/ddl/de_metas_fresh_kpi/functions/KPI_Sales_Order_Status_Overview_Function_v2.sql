@@ -2,9 +2,9 @@
 
 -- task http://dewiki908/mediawiki/index.php/09881_Purchase_Order_Status_Overview_KPI_%28102412092136%29
 
-DROP FUNCTION IF EXISTS  KPI_Sales_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) ;
+DROP FUNCTION IF EXISTS  de_metas_fresh_kpi.KPI_Sales_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) ;
 
-CREATE OR REPLACE FUNCTION KPI_Sales_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) 
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Sales_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) 
 
 RETURNS TABLE 
 (
@@ -53,7 +53,7 @@ FROM
 
 
 WITH result AS (
- SELECT o.*, KPI_Sales_Order_Status_Function(o.C_Order_ID) AS OrderStatus
+ SELECT o.*, de_metas_fresh_kpi.KPI_Sales_Order_Status_Function(o.C_Order_ID) AS OrderStatus
    FROM C_Order o
    WHERE o.DateOrdered >= $1 AND o.DateOrdered <= $2 AND o.IsSOTrx = 'Y'
 

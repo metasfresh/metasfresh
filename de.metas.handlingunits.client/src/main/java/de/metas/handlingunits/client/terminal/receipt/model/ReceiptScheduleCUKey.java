@@ -50,7 +50,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysHandler;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 
 /**
  * CU Key based on a given receipt schedule.
@@ -75,7 +75,7 @@ public class ReceiptScheduleCUKey extends CUKey
 		receiptScheduleRow = row;
 		receiptSchedule = row.getM_ReceiptSchedule();
 
-		final BigDecimal qtyToMove = Services.get(IReceiptScheduleQtysHandler.class).getQtyToMove(receiptSchedule);
+		final BigDecimal qtyToMove = Services.get(IReceiptScheduleQtysBL.class).getQtyToMove(receiptSchedule);
 		setSuggestedQty(qtyToMove.signum() >= 0 ? qtyToMove : BigDecimal.ZERO);
 
 		uom = receiptSchedule.getC_UOM();

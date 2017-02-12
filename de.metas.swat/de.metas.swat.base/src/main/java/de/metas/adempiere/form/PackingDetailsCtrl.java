@@ -44,20 +44,20 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
 import org.compiere.grid.ed.VNumber;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.NoContainerException;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -144,9 +144,9 @@ public class PackingDetailsCtrl
 
 	private void updatePackingItemPanel(final DefaultMutableTreeNode piNode)
 	{
-		final PackingItem pi = (PackingItem)piNode.getUserObject();
+		final LegacyPackingItem pi = (LegacyPackingItem)piNode.getUserObject();
 
-		final I_M_Product product = pi.retrieveProduct(null);
+		final I_M_Product product = pi.getM_Product();
 
 		model.setPiLocation("???");
 
@@ -162,7 +162,7 @@ public class PackingDetailsCtrl
 		model.setPiWeightEditable(productHasNoWeightInfo);
 		model.setPiWeight(pi.computeWeight());
 
-		final I_C_OrderLine ol = POWrapper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
 		if (ol.isIndividualDescription())
 		{
 			model.setPiOlProdDesc(ol.getProductDescription());
@@ -213,6 +213,7 @@ public class PackingDetailsCtrl
 
 		view.addTreeSelectionListener(new TreeSelectionListener()
 		{
+			@Override
 			public void valueChanged(final TreeSelectionEvent e)
 			{
 				final DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)e.getPath().getLastPathComponent();
@@ -248,7 +249,7 @@ public class PackingDetailsCtrl
 				{
 					updateUsedBinPanel(ctx, selectedNode);
 				}
-				else if (selectedUserObj instanceof PackingItem)
+				else if (selectedUserObj instanceof LegacyPackingItem)
 				{
 					updatePackingItemPanel(selectedNode);
 				}
@@ -261,16 +262,19 @@ public class PackingDetailsCtrl
 
 		view.addPackingTreeListener(new IPackingTreeListener()
 		{
+			@Override
 			public void usedBinRemoved(DefaultMutableTreeNode usedBinNode)
 			{
 				model.getPackingTreeModel().removeUsedBin(ctx, usedBinNode);
 			}
 
+			@Override
 			public void usedBinAdded(DefaultMutableTreeNode availbinNode, int qty)
 			{
 				model.getPackingTreeModel().addUsedBins(ctx, availbinNode, qty);
 			}
 
+			@Override
 			public void packedItemRemoved(
 					DefaultMutableTreeNode packedItemNode,
 					DefaultMutableTreeNode oldUsedBin,
@@ -279,6 +283,7 @@ public class PackingDetailsCtrl
 				model.getPackingTreeModel().removePackedItem(ctx, packedItemNode, oldUsedBin, qty, true);
 			}
 
+			@Override
 			public void packedItemAdded(
 					DefaultMutableTreeNode packedItemNode,
 					DefaultMutableTreeNode newUsedBin,
@@ -288,6 +293,7 @@ public class PackingDetailsCtrl
 				model.getPackingTreeModel().movePackItem(packedItemNode, newUsedBin, qty);
 			}
 
+			@Override
 			public void packedItemMoved(
 					DefaultMutableTreeNode itemNode,
 					DefaultMutableTreeNode oldUsedBin,
@@ -300,6 +306,7 @@ public class PackingDetailsCtrl
 
 		view.setConfirmPanelListener(new ActionListener()
 		{
+			@Override
 			public void actionPerformed(final ActionEvent e)
 			{
 				if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
@@ -319,6 +326,7 @@ public class PackingDetailsCtrl
 
 		view.addShipperListener(new ActionListener()
 		{
+			@Override
 			public void actionPerformed(ActionEvent e)
 			{
 				final VComboBox fShipper = (VComboBox)e.getSource();
@@ -337,9 +345,9 @@ public class PackingDetailsCtrl
 				final VNumber weightField = (VNumber)evt.getSource();
 				final BigDecimal weight = (BigDecimal)weightField.getValue();
 				final Object selectedUserObj = model.getPackingTreeModel().getSelectedNode().getUserObject();
-				assert selectedUserObj instanceof PackingItem;
+				assert selectedUserObj instanceof LegacyPackingItem;
 
-				final PackingItem pi = (PackingItem)selectedUserObj;
+				final LegacyPackingItem pi = (LegacyPackingItem)selectedUserObj;
 				if (model.getPiQty().signum() != 0)
 				{
 					pi.setWeightSingle(weight.divide(model.getPiQty(), RoundingMode.HALF_UP));
@@ -355,6 +363,7 @@ public class PackingDetailsCtrl
 
 		view.addRecomputeListener(new ActionListener()
 		{
+			@Override
 			public void actionPerformed(ActionEvent e)
 			{
 				recompute(ctx);
@@ -372,9 +381,9 @@ public class PackingDetailsCtrl
 		{
 			final DefaultMutableTreeNode node = enu.nextElement();
 			final Object userObj = node.getUserObject();
-			if (userObj instanceof PackingItem)
+			if (userObj instanceof LegacyPackingItem)
 			{
-				final PackingItem pi = (PackingItem)userObj;
+				final LegacyPackingItem pi = (LegacyPackingItem)userObj;
 				if (pi.computeWeight().signum() <= 0)
 				{
 					weightsOk = false;

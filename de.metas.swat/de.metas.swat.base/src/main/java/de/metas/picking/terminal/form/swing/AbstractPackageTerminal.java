@@ -40,9 +40,9 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.IPackingDetailsModel;
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -199,9 +199,9 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	 * @param pck
 	 * @return
 	 */
-	abstract public BigDecimal getQtyUnpacked(AbstractPackingItem pck);
+	abstract public BigDecimal getQtyUnpacked(IPackingItem pck);
 
-	public boolean isUnpacked(PackingItem pck)
+	public boolean isUnpacked(LegacyPackingItem pck)
 	{
 		BigDecimal qty = getQtyUnpacked(pck);
 		if (qty.compareTo(BigDecimal.ZERO) > 0)

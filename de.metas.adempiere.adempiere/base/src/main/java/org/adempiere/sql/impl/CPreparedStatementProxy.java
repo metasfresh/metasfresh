@@ -10,18 +10,17 @@ package org.adempiere.sql.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -56,10 +55,8 @@ import org.compiere.util.CPreparedStatement;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
 
-/* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement> implements CPreparedStatement
+/* package */class CPreparedStatementProxy extends AbstractCStatementProxy<PreparedStatement>implements CPreparedStatement
 {
-	// private static final transient Logger log = CLogMgt.getLogger(CPreparedStatementDelegate.class);
-
 	public CPreparedStatementProxy(final int resultSetType, final int resultSetConcurrency, final String sql0, final String trxName)
 	{
 		super(createVO(resultSetType, resultSetConcurrency, sql0, trxName));
@@ -75,8 +72,8 @@ import org.compiere.util.DB;
 			throw new DBNoConnectionException();
 		}
 
-		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, database.convertStatement(sql0));
-		vo.setTrxName(trxName);
+		final String sqlConverted = database.convertStatement(sql0);
+		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, sqlConverted, trxName);
 
 		return vo;
 	}
@@ -94,7 +91,7 @@ import org.compiere.util.DB;
 				vo.getResultSetConcurrency());
 		return pstmt;
 	}
-	
+
 	@Override
 	public final RowSet getRowSet()
 	{
@@ -104,14 +101,13 @@ import org.compiere.util.DB;
 		try
 		{
 			rs = pstmt.executeQuery();
-			rowSet = CCachedRowSet.getRowSet(rs);						
+			rowSet = CCachedRowSet.getRowSet(rs);
 		}
 		catch (Exception ex)
 		{
-			final CStatementVO vo = getVO();
-			final String sql = vo == null ? null : vo.getSql();
+			final String sql = getSql();
 			throw new DBException(ex, sql);
-		}		
+		}
 		finally
 		{
 			DB.close(rs);
@@ -119,7 +115,6 @@ import org.compiere.util.DB;
 		return rowSet;
 
 	}
-
 
 	@Override
 	public final ResultSet executeQuery() throws SQLException

@@ -10,12 +10,12 @@ package de.metas.adempiere.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,28 +24,30 @@ package de.metas.adempiere.modelvalidator;
 
 
 import java.math.BigDecimal;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
+import org.slf4j.Logger;
+
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.modelvalidator.SwatValidator;
-import de.metas.order.model.validator.C_OrderLine;
+import de.metas.order.model.interceptor.C_OrderLine;
 
 /**
  * Makes sure that there are no negative QtyReserved values.
- * 
+ *
  * Note: This model validator is not registered by {@link SwatValidator}, because we want the option to disable it
  * without code change if required
- * 
+ *
  * @author ts
- * 
+ *
  */
 public class ProhibitNegativeQtyReserved implements ModelValidator
 {
@@ -105,10 +107,11 @@ public class ProhibitNegativeQtyReserved implements ModelValidator
 			if (st.getQtyReserved().signum() < 0)
 			{
 				st.setQtyReserved(BigDecimal.ZERO);
-
-				final AdempiereException ex = new AdempiereException("@" + C_OrderLine.ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
-						+ "\nStorage: " + st);
-				logger.warn(ex.getLocalizedMessage(), ex);
+// no need for the warning & stacktrace for now.
+//				final AdempiereException ex = new AdempiereException("@" + C_OrderLine.ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
+//						+ "\nStorage: " + st);
+//				logger.warn(ex.getLocalizedMessage(), ex);
+				logger.info(Services.get(IMsgBL.class).getMsg(po.getCtx(), "@" + C_OrderLine.ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO." + "\nStorage: " + st));
 				return null;
 			}
 		}

@@ -1,5 +1,7 @@
 package org.adempiere.ad.ui.api;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,11 +27,10 @@ package org.adempiere.ad.ui.api;
 
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.GridTab;
 import org.compiere.model.StateChangeEvent;
 
 /**
- * Creates and registers {@link GridTab}'s {@link ITabCallout}s.
+ * Creates and registers {@link ICalloutRecord}'s {@link ITabCallout}s.
  * 
  * @author tsa
  *
@@ -39,14 +40,14 @@ public interface ITabCalloutFactory extends ISingletonService
 	/**
 	 * Creates new {@link ITabCallout} instances from registered callouts of given tab.
 	 * 
-	 * This method will make sure to intercept {@link GridTab}'s {@link StateChangeEvent}s and call the right callout methods.
+	 * This method will make sure to intercept {@link ICalloutRecord}'s {@link StateChangeEvent}s and call the right callout methods.
 	 * 
 	 * @return instantiated tab callouts.
 	 */
-	ITabCallout createAndInitialize(GridTab gridTab);
+	ITabCallout createAndInitialize(ICalloutRecord calloutRecord);
 
 	/**
-	 * Programatically registers a {@link ITabCallout} to all {@link GridTab}s which are about given <code>tableName</code>.
+	 * Programmatically registers a {@link ITabCallout} to all {@link ICalloutRecord}s which are about given <code>tableName</code>.
 	 * 
 	 * @param tableName
 	 * @param tabCalloutClass

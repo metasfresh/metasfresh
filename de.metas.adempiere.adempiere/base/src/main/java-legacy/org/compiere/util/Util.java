@@ -41,8 +41,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
+import javax.annotation.concurrent.Immutable;
 import javax.mail.internet.MimeUtility;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -55,8 +55,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
+import org.slf4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import de.metas.logging.LogManager;
 
 /**
  * General Utilities
@@ -809,6 +812,55 @@ public class Util
 	}
 
 	/**
+	 * Loads the class with <code>classname</code> and makes sure that it's implementing given <code>interfaceClazz</code>.
+	 * 
+	 * @param interfaceClazz
+	 * @param classname
+	 * @return loaded class
+	 * 
+	 * @see #setClassInstanceProvider(IClassInstanceProvider)
+	 */
+	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
+	{
+		Check.assumeNotNull(classname, "className is not null");
+		try
+		{
+			final Class<?> instanceClazz = classInstanceProvider.provideClass(classname);
+			
+			Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
+
+			@SuppressWarnings("unchecked")
+			final Class<? extends T> instanceClassCasted = (Class<? extends T>)instanceClazz;
+			return instanceClassCasted;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + classname + "' implementing " + interfaceClazz, e);
+		}
+	}
+
+	/**
+	 * Creates a new instance of given <code>instanceClazz</code>.
+	 * Also it makes sure that it's implementing given <code>interfaceClass</code>.
+	 * 
+	 * @param interfaceClazz
+	 * @param instanceClazz
+	 * @return instance
+	 * @see #setClassInstanceProvider(IClassInstanceProvider)
+	 */
+	public static final <T> T newInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz)
+	{
+		try
+		{
+			return classInstanceProvider.provideInstance(interfaceClazz, instanceClazz);
+		}
+		catch (ReflectiveOperationException e)
+		{
+			throw new AdempiereException("Unable to instantiate '" + instanceClazz + "' implementing " + interfaceClazz, e);
+		}
+	}
+
+	/**
 	 * Create an instance of given className.
 	 * <p>
 	 * This method works exactly like {@link #getInstanceOrNull(Class, String)} but it also throws and {@link AdempiereException} if class was not found.
@@ -842,7 +894,7 @@ public class Util
 		}
 		catch (ReflectiveOperationException e)
 		{
-			throw new AdempiereException("Unable to instantiate '" + className + "'", e);
+			throw new AdempiereException("Unable to instantiate '" + className + "' implementing " + interfaceClazz, e);
 		}
 	}
 
@@ -956,7 +1008,7 @@ public class Util
 	 */
 	public static ArrayKey mkKey(final Object... input)
 	{
-		return new ArrayKey(input);
+		return ArrayKey.of(input);
 	}
 
 	/**
@@ -964,7 +1016,7 @@ public class Util
 	 */
 	public static ArrayKeyBuilder mkKey()
 	{
-		return new ArrayKeyBuilder();
+		return ArrayKey.builder();
 	}
 
 	/**
@@ -976,8 +1028,19 @@ public class Util
 	 * @author ts
 	 *
 	 */
+	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
+		public static final ArrayKey of(final Object...input)
+		{
+			return new ArrayKey(input);
+		}
+		
+		public static final ArrayKeyBuilder builder()
+		{
+			return new ArrayKeyBuilder();
+		}
+		
 		private final Object[] array;
 		private String _stringBuilt = null;
 
@@ -1339,6 +1402,17 @@ public class Util
 	{
 		return value1 == null ? value2 : value1;
 	}
+	
+	/**
+	 * @return first not null value from list
+	 * @see #coalesce(Object...)
+	 */
+	// NOTE: this method is optimized for common usage
+	public static final <T> T coalesce(final T value1, final T value2, final T value3)
+	{
+		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+	}
+
 
 	/**
 	 *

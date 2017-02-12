@@ -1,5 +1,7 @@
 package org.adempiere.ad.callout.api.impl;
 
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,38 +24,28 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
-
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Column;
-import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CalloutExecutorTest
 {
-	private MockedCalloutFactory calloutFactory;
-	private CalloutExecutor calloutExecutor;
-	private PlainCalloutField field;
+	private MockedCalloutProvider calloutProvider;
+	private MockedCalloutField field;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		calloutFactory = new MockedCalloutFactory();
+		this.field = MockedCalloutField.createNewField();
 
-		calloutExecutor = new CalloutExecutor(Env.getCtx(), 0);
-		calloutExecutor.setCalloutFactory(calloutFactory);
-
-		this.field = new PlainCalloutField();
-		field.setAD_Column_ID(POJOLookupMap.get().nextId(I_AD_Column.Table_Name));
+		calloutProvider = new MockedCalloutProvider();
 	}
 
 	@Test
@@ -63,7 +55,7 @@ public class CalloutExecutorTest
 		final MockedCallout callout2 = createAndRegisterMockedCallout(field);
 		final MockedCallout callout3 = createAndRegisterMockedCallout(field);
 
-		calloutExecutor.execute(field);
+		newExecutor().execute(field);
 
 		Assert.assertTrue("Callout1 was not called", callout1.isCalled());
 		Assert.assertTrue("Callout2 was not called", callout2.isCalled());
@@ -73,18 +65,25 @@ public class CalloutExecutorTest
 	@Test
 	public void test_NoCallouts()
 	{
-		calloutExecutor.execute(field);
+		final ICalloutExecutor calloutExecutor = newExecutor();
+		
+		// We expect the NullCalloutExecutor
+		Assert.assertSame(NullCalloutExecutor.instance, calloutExecutor);
+		
+		calloutExecutor.execute(field); // shall do nothing
 	}
 
 	@Test
 	public void test_FailingCallout_CalloutInitException()
 	{
 		final MockedCallout callout1 = createAndRegisterMockedCallout(field);
-		callout1.setOnExecuteFailException(new CalloutInitException("test"));
+		callout1.setOnExecuteFailException(() -> new CalloutInitException("test"));
+
+		final ICalloutExecutor calloutExecutor = newExecutor();
 
 		//
 		// First run
-		assertExceptionOnExecute(field, CalloutInitException.class);
+		assertExceptionOnExecute(calloutExecutor, field, CalloutInitException.class);
 		Assert.assertTrue("Callout1 was not called", callout1.isCalled());
 		Assert.assertFalse("Callout shall be removed from active callouts list",
 				calloutExecutor.hasCallouts(field));
@@ -99,20 +98,22 @@ public class CalloutExecutorTest
 	@Test
 	public void test_FailingCallout_CalloutExecutionException()
 	{
-		final MockedCallout callout1 = createAndRegisterMockedCallout(field);
-		callout1.setOnExecuteFailException(new CalloutExecutionException("test"));
+		final MockedCallout callout1 = createAndRegisterMockedCallout(field)
+				.setOnExecuteFailException(() -> new CalloutExecutionException("test"));
+
+		final ICalloutExecutor calloutExecutor = newExecutor();
 
 		//
 		// First run
-		assertExceptionOnExecute(field, CalloutExecutionException.class);
+		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
 		Assert.assertTrue("Callout1 was not called", callout1.isCalled());
 		Assert.assertTrue("Callout shall NOT be removed from active callouts list",
 				calloutExecutor.hasCallouts(field));
 
 		//
-		// Second run - callout shall not be called again
+		// Second run - callout shall BE called again
 		callout1.setCalled(false);
-		assertExceptionOnExecute(field, CalloutExecutionException.class);
+		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
 		Assert.assertTrue("Callout1 shall be called again", callout1.isCalled());
 	}
 
@@ -120,27 +121,34 @@ public class CalloutExecutorTest
 	public void test_StopExecutionOnFirstFailingCallout()
 	{
 		final MockedCallout callout1 = createAndRegisterMockedCallout(field);
-		final MockedCallout callout2 = createAndRegisterMockedCallout(field);
-		callout2.setOnExecuteFailException(new CalloutExecutionException("test"));
+		final MockedCallout callout2 = createAndRegisterMockedCallout(field)
+				.setOnExecuteFailException(() -> new RuntimeException("test"));
 		final MockedCallout callout3 = createAndRegisterMockedCallout(field);
 
-		assertExceptionOnExecute(field, CalloutExecutionException.class);
+		final ICalloutExecutor calloutExecutor = newExecutor();
+		assertExceptionOnExecute(calloutExecutor, field, CalloutExecutionException.class);
 
 		Assert.assertTrue("Callout1 shall be called again", callout1.isCalled());
 		Assert.assertTrue("Callout2 shall be called again", callout2.isCalled());
 		Assert.assertFalse("Callout3 shall be called again", callout3.isCalled());
 	}
 
+	private ICalloutExecutor newExecutor()
+	{
+		return CalloutExecutor.builder()
+				.setTableName(field.getTableName())
+				.setCalloutProvider(calloutProvider)
+				.build();
+	}
+
 	private MockedCallout createAndRegisterMockedCallout(final ICalloutField field)
 	{
 		final MockedCallout callout = new MockedCallout();
-		final DefaultCalloutInstance calloutInstance = new DefaultCalloutInstance(callout);
-		calloutFactory.regiterCallout(field, calloutInstance);
-
+		calloutProvider.regiterCallout(field, callout);
 		return callout;
 	}
 
-	private <T extends Exception> T assertExceptionOnExecute(final ICalloutField field, Class<T> expectedExceptionClass)
+	private <T extends Exception> T assertExceptionOnExecute(final ICalloutExecutor calloutExecutor, final ICalloutField field, Class<T> expectedExceptionClass)
 	{
 		Exception exception = null;
 		try
@@ -154,8 +162,12 @@ public class CalloutExecutorTest
 
 		Assert.assertNotNull("No exception was thrown", exception);
 
-		Assert.assertTrue("Exception " + expectedExceptionClass + " was expected but we got " + exception,
-				expectedExceptionClass.isAssignableFrom(exception.getClass()));
+		final boolean gotExpectedException = expectedExceptionClass.isAssignableFrom(exception.getClass());
+		if (!gotExpectedException)
+		{
+			exception.printStackTrace();
+		}
+		Assert.assertTrue("Exception " + expectedExceptionClass + " was expected but we got " + exception, gotExpectedException);
 
 		@SuppressWarnings("unchecked")
 		final T exceptionCasted = (T)exception;
@@ -163,12 +175,12 @@ public class CalloutExecutorTest
 		if (exceptionCasted instanceof CalloutException)
 		{
 			final CalloutException calloutException = (CalloutException)exceptionCasted;
-			assertCalloutExceptionIsFilled(calloutException, field);
+			assertCalloutExceptionIsFilled(calloutException, calloutExecutor, field);
 		}
 		return exceptionCasted;
 	}
 
-	private void assertCalloutExceptionIsFilled(final CalloutException exception, final ICalloutField field)
+	private void assertCalloutExceptionIsFilled(final CalloutException exception, final ICalloutExecutor calloutExecutor, final ICalloutField field)
 	{
 		Assert.assertSame("Invalid executor for " + exception, calloutExecutor, exception.getCalloutExecutor());
 		Assert.assertSame("Invalid field for " + exception, field, exception.getCalloutField());

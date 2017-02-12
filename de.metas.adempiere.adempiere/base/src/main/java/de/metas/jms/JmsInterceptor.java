@@ -8,6 +8,7 @@ import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -37,7 +38,7 @@ import de.metas.logging.LogManager;
  * <p>
  * This interceptor needs its own record in {@link org.compiere.model.I_AD_ModelValidator} and its own entitytype, because there shall never be an embedded broker when we run in minimal mode.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class JmsInterceptor extends AbstractModuleInterceptor
@@ -58,10 +59,11 @@ public class JmsInterceptor extends AbstractModuleInterceptor
 		startEmbeddedBrokerIfRequired();
 	}
 
-	/** Start embedded server if running in server mode and we were asked for embedded server */
+	/** Start embedded server if running in server mode or we were asked for embedded server */
 	private void startEmbeddedBrokerIfRequired()
 	{
-		if ((Ini.getRunMode() == RunMode.BACKEND && JmsConstants.isUseEmbeddedBroker())
+		final boolean serverMode = Ini.getRunMode() == RunMode.BACKEND;
+		if ((serverMode && JmsConstants.isUseEmbeddedBroker())
 				|| CConnection.isServerEmbedded())
 		{
 			logger.warn(

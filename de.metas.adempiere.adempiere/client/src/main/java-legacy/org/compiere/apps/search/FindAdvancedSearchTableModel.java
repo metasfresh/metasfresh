@@ -5,21 +5,27 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.apps.search.FindAdvancedSearchTableModelRow.Join;
+import org.compiere.apps.search.IUserQueryRestriction.Join;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
 
 /**
  * Advanced search table model.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 class FindAdvancedSearchTableModel extends AbstractTableModel
 {
 	private static final long serialVersionUID = -4525032877936896927L;
+	
+	public static final FindAdvancedSearchTableModel cast(final TableModel model)
+	{
+		return (FindAdvancedSearchTableModel)model;
+	}
 
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -37,7 +43,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 	//
 	private static final int COLUMNS_COUNT = 5;
 
-	private final List<FindAdvancedSearchTableModelRow> rows = new ArrayList<>();
+	private final List<IUserQueryRestriction> rows = new ArrayList<>();
 
 	private Collection<FindPanelSearchField> availableSearchFields = null;
 
@@ -98,7 +104,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 		}
 	}
 
-	public final FindAdvancedSearchTableModelRow getRow(final int rowIndex)
+	public final IUserQueryRestriction getRow(final int rowIndex)
 	{
 		return rows.get(rowIndex);
 	}
@@ -106,7 +112,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 	@Override
 	public Object getValueAt(final int rowIndex, final int columnIndex)
 	{
-		final FindAdvancedSearchTableModelRow row = getRow(rowIndex);
+		final IUserQueryRestriction row = getRow(rowIndex);
 		if (INDEX_JOIN == columnIndex)
 		{
 			return row.getJoin();
@@ -136,7 +142,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex)
 	{
-		final FindAdvancedSearchTableModelRow row = getRow(rowIndex);
+		final IUserQueryRestriction row = getRow(rowIndex);
 		if (INDEX_JOIN == columnIndex)
 		{
 			return rowIndex > 0;
@@ -167,7 +173,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 	@Override
 	public void setValueAt(final Object value, final int rowIndex, final int columnIndex)
 	{
-		final FindAdvancedSearchTableModelRow row = getRow(rowIndex);
+		final IUserQueryRestriction row = getRow(rowIndex);
 		if (INDEX_JOIN == columnIndex)
 		{
 			final Join join = (Join)value;
@@ -175,12 +181,12 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 		}
 		else if (INDEX_COLUMNNAME == columnIndex)
 		{
-			final FindPanelSearchField searchField = (FindPanelSearchField)value;
+			final IUserQueryField searchField = (IUserQueryField)value;
 			row.setSearchField(searchField);
 		}
 		else if (INDEX_OPERATOR == columnIndex)
 		{
-			final ValueNamePair operator = (ValueNamePair)value;
+			final Operator operator = Operator.cast(value);
 			row.setOperator(operator);
 		}
 		else if (INDEX_VALUE == columnIndex)
@@ -210,7 +216,7 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 		fireTableRowsDeleted(0, lastRow);
 	}
 
-	public void setRows(final List<FindAdvancedSearchTableModelRow> rowsToSet)
+	public void setRows(final List<IUserQueryRestriction> rowsToSet)
 	{
 		rows.clear();
 
@@ -222,12 +228,12 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 		fireTableDataChanged();
 	}
 
-	public List<FindAdvancedSearchTableModelRow> getRows()
+	public List<IUserQueryRestriction> getRows()
 	{
 		return new ArrayList<>(rows);
 	}
 
-	private final void addRow(final FindAdvancedSearchTableModelRow rowToAdd)
+	private final void addRow(final IUserQueryRestriction rowToAdd)
 	{
 		rows.add(rowToAdd);
 
@@ -235,9 +241,9 @@ class FindAdvancedSearchTableModel extends AbstractTableModel
 		fireTableRowsInserted(rowIndex, rowIndex);
 	}
 
-	public FindAdvancedSearchTableModelRow newRow()
+	public IUserQueryRestriction newRow()
 	{
-		final FindAdvancedSearchTableModelRow row = new FindAdvancedSearchTableModelRow();
+		final IUserQueryRestriction row = IUserQueryRestriction.newInstance();
 		addRow(row);
 		return row;
 	}

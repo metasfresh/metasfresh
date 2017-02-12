@@ -22,14 +22,17 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -40,10 +43,16 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.wrapper.CompositeInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.GridTabInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.IInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.POInterfaceWrapperHelper;
+import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -56,6 +65,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -63,6 +73,7 @@ import de.metas.logging.LogManager;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
+ * It internally relates on a {@link CompositeInterfaceWrapperHelper} which in turn supports all the types that are supported by this class.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -71,7 +82,10 @@ public class InterfaceWrapperHelper
 {
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
 
-	public static final String COLUMNNAME_SUFFIX_Override = "_Override";
+	private static final CompositeInterfaceWrapperHelper helpers = new CompositeInterfaceWrapperHelper()
+			.addFactory(new POInterfaceWrapperHelper())
+			.addFactory(new GridTabInterfaceWrapperHelper())
+			.addFactory(new POJOInterfaceWrapperHelper());
 
 	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
@@ -86,6 +100,11 @@ public class InterfaceWrapperHelper
 	private static final boolean isInMemoryDatabaseOnly()
 	{
 		return org.compiere.Adempiere.isUnitTestMode();
+	}
+
+	public static final void registerHelper(IInterfaceWrapperHelper helper)
+	{
+		helpers.addFactory(helper);
 	}
 
 	/**
@@ -109,7 +128,10 @@ public class InterfaceWrapperHelper
 	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
 	 * @param cl
-	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)
+	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
+	 *            <p>
+	 *            IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
+	 *            <i>if</i> the given <code>contextProvider</code> permits it. See {@link IContextAware#isAllowThreadInherited()}.
 	 * @param useClientOrgFromProvider if {@code true}, then the context used to create the new instance will have the {@code contextProvider}'s {@code AD_Client_ID} and {@code AD_Org_ID} as
 	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
@@ -118,7 +140,6 @@ public class InterfaceWrapperHelper
 	{
 		Check.assumeNotNull(contextProvider, "contextProvider not null");
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
-
 		//
 		// Get transaction name from contextProvider.
 		// If contextProvider's transaction name is NULL and we have a thread inherited transaction, then let's use that one
@@ -126,13 +147,16 @@ public class InterfaceWrapperHelper
 		String trxName = getTrxName(contextProvider);
 		if (trxManager.isNull(trxName))
 		{
-			final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
-			if (trxThreadInherited != null)
+			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(contextProvider);
+			if (ctxAware.isAllowThreadInherited())  // it's ok to check and if there is a thread inherited trx, use that.
 			{
-				trxName = ITrx.TRXNAME_ThreadInherited;
+				final ITrx trxThreadInherited = trxManager.get(ITrx.TRXNAME_ThreadInherited, OnTrxMissingPolicy.ReturnTrxNone);
+				if (trxThreadInherited != null)
+				{
+					trxName = ITrx.TRXNAME_ThreadInherited;
+				}
 			}
 		}
-
 		return create(ctx, cl, trxName);
 	}
 
@@ -182,7 +206,7 @@ public class InterfaceWrapperHelper
 	 * See {@link #create(Object, Class)} for additional infos.
 	 *
 	 * @param model
-	 * @param cl model class
+	 * @param modelClass model class
 	 * @param useOldValues
 	 *            <ul>
 	 *            <li>true if old values shall be used
@@ -197,59 +221,21 @@ public class InterfaceWrapperHelper
 	 *             </ul>
 	 */
 	@Deprecated
-	public static <T> T create(final Object model, final Class<T> cl, final boolean useOldValues)
+	public static <T> T create(final Object model, final Class<T> modelClass, final boolean useOldValues)
 	{
 		if (model == null)
 		{
 			return null;
 		}
-		else if (cl.isInstance(model) && !useOldValues)
+		else if (modelClass.isInstance(model) && !useOldValues)
 		{
 			@SuppressWarnings("unchecked")
 			final T modelCasted = (T)model;
 			return modelCasted;
 		}
-		else if (POWrapper.isHandled(model))
-		{
-			if (useOldValues)
-			{
-				return POWrapper.create(model, cl, true);
-			}
-			else
-			{
-				// preserve "old values" flag
-				return POWrapper.create(model, cl);
-			}
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			if (useOldValues)
-			{
-				return GridTabWrapper.create(model, cl, true);
-			}
-			else
-			{
-				// preserve "old values" flag
-				return GridTabWrapper.create(model, cl);
-			}
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			if (useOldValues)
-			{
-				return POJOWrapper.create(model, cl, true);
-			}
-			else
-			{
-				// preserve "old values" flag
-				return POJOWrapper.create(model, cl);
-			}
-		}
 		else
 		{
-			throw new AdempiereException("Model wrapping is not supported for " + model
-					+ "\n Class: " + (model == null ? null : model.getClass())
-					+ "\n useOldValues: " + useOldValues);
+			return helpers.wrap(model, modelClass, useOldValues);
 		}
 	}
 
@@ -304,7 +290,9 @@ public class InterfaceWrapperHelper
 	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
 	 * <p>
-	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
+	 * Notes:
+	 * <li>this method might or might not benefit from caching, depending on how {@link IModelCacheService} was configured.
+	 * <li>if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
 	 *
 	 * @param ctx
@@ -338,14 +326,23 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 
-		final List<T> result = new ArrayList<T>(list.size());
-		for (final S model : list)
-		{
-			final T modelConv = create(model, clazz);
-			result.add(modelConv);
-		}
+		final List<T> result = list.stream()
+				.map(item -> create(item, clazz))
+				.collect(Collectors.toList());
 
 		return result;
+	}
+
+	public static <T, S> List<T> wrapToImmutableList(final List<S> list, final Class<T> clazz)
+	{
+		if (list == null || list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return list.stream()
+				.map(model -> create(model, clazz))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public static void refresh(final Object model)
@@ -370,7 +367,7 @@ public class InterfaceWrapperHelper
 
 		for (final Object model : models)
 		{
-			InterfaceWrapperHelper.refresh(model);
+			refresh(model);
 		}
 	}
 
@@ -389,7 +386,7 @@ public class InterfaceWrapperHelper
 
 		for (final Object model : models)
 		{
-			InterfaceWrapperHelper.refresh(model, trxName);
+			refresh(model, trxName);
 		}
 	}
 
@@ -414,22 +411,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void refresh(final Object model, final boolean discardChanges)
 	{
-		if (GridTabWrapper.isHandled(model))
-		{
-			GridTabWrapper.refresh(model);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			POWrapper.refresh(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			POJOWrapper.refresh(model, discardChanges, POJOWrapper.getTrxName(model));
-		}
-		else
-		{
-			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
-		}
+		helpers.refresh(model, discardChanges);
 	}
 
 	/**
@@ -440,23 +422,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void refresh(final Object model, final String trxName)
 	{
-		if (GridTabWrapper.isHandled(model))
-		{
-			GridTabWrapper.refresh(model);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			POWrapper.refresh(model, trxName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final boolean discardChanges = false;
-			POJOWrapper.refresh(model, discardChanges, trxName);
-		}
-		else
-		{
-			throw new AdempiereException("Unsupported model " + model + " (class:" + model.getClass() + ")");
-		}
+		helpers.refresh(model, trxName);
 	}
 
 	public static void setTrxName(final Object model, final String trxName)
@@ -475,18 +441,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
 	{
-		if (POWrapper.isHandled(model))
-		{
-			POWrapper.setTrxName(model, trxName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			POJOWrapper.setTrxName(model, trxName);
-		}
-		else if (!ignoreIfNotHandled)
-		{
-			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
-		}
+		helpers.setTrxName(model, trxName, ignoreIfNotHandled);
 	}
 
 	private static ITrxManager getTrxManager()
@@ -518,7 +473,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static void setThreadInheritedTrxNameMarker(final Object model)
 	{
-		InterfaceWrapperHelper.setTrxName(model, ITrx.TRXNAME_ThreadInherited);
+		setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -635,23 +590,9 @@ public class InterfaceWrapperHelper
 		{
 			return (Properties)model; // this *is* already the ctx
 		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return Env.getCtx();
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getCtx(model, useClientOrgFromModel);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getCtx(model, useClientOrgFromModel);
-		}
 		else
 		{
-			final AdempiereException ex = new AdempiereException("Cannot get context from object: " + model + ". Returning global context.");
-			logger.warn(ex.getLocalizedMessage(), ex);
-			return Env.getCtx();
+			return helpers.getCtx(model, useClientOrgFromModel);
 		}
 	}
 
@@ -682,24 +623,10 @@ public class InterfaceWrapperHelper
 		{
 			return ITrx.TRXNAME_None;
 		}
-		else if (GridTabWrapper.isHandled(model))
+		else
 		{
-			return ITrx.TRXNAME_None;
+			return helpers.getTrxName(model, ignoreIfNotHandled);
 		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getTrxName(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getTrxName(model);
-		}
-		else if (!ignoreIfNotHandled)
-		{
-			final AdempiereException ex = new AdempiereException("Cannot get trxName from object: " + model + ". Returning null.");
-			logger.warn(ex.getLocalizedMessage(), ex);
-		}
-		return ITrx.TRXNAME_None;
 	}
 
 	public static IContextAware getContextAware(final Object model)
@@ -739,11 +666,14 @@ public class InterfaceWrapperHelper
 	 */
 	public static <T extends PO> T getPO(final Object model)
 	{
-		if (Adempiere.isUnitTestMode())
-		{
-			throw new UnsupportedOperationException("Getting PO from '" + model + "' is not supported in JUnit testing mode");
-		}
-		return POWrapper.getPO(model);
+		final boolean strict = false;
+		return helpers.getPO(model, strict);
+	}
+
+	public static <T extends PO> T getStrictPO(final Object model)
+	{
+		final boolean strict = true;
+		return helpers.getPO(model, strict);
 	}
 
 	public static int getId(final Object model)
@@ -752,37 +682,13 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
-		else if (POWrapper.isHandled(model))
-		{
-			final PO po = POWrapper.getPO(model, false);
-			if (po == null)
-			{
-				return -1;
-			}
-
-			final String[] keyColumns = po.get_KeyColumns();
-			if (keyColumns == null || keyColumns.length != 1)
-			{
-				return -1;
-			}
-
-			return po.get_ID();
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getId(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getWrapper(model).getId();
-		}
 		else if (model instanceof ITableRecordReference)
 		{
 			return ((ITableRecordReference)model).getRecord_ID();
 		}
 		else
 		{
-			throw new AdempiereException("Not supported model " + model + " (class:" + model.getClass() + ")");
+			return helpers.getId(model);
 		}
 	}
 
@@ -790,13 +696,30 @@ public class InterfaceWrapperHelper
 	 * Introducing this exception to be thrown instead of ADempiereException. Reason: It's a pain if you have a breakpoint on "AdempiereException" and the debugger stops every 2 seconds because
 	 * InterfaceWrapperHelper throws it.
 	 */
-	/* package */static class MissingTableNameException extends AdempiereException
+	/* package */@SuppressWarnings("serial")
+	static class MissingTableNameException extends AdempiereException
 	{
-		private static final long serialVersionUID = 6469196469943285793L;
-
-		private MissingTableNameException(final Class<?> clazz)
+		private static final MissingTableNameException notFound(final Class<?> modelClass)
 		{
-			super("@NotFound@ @TableName@ (class=" + clazz + ")");
+			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
+		}
+
+		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
+		{
+			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
+		}
+
+		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
+		{
+			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
+					+ "\n modelClass=" + modelClass
+					+ "\n modelClassTableName=" + modelClassTableName
+					+ "\n expectedTableName=" + expectedTableName);
+		}
+
+		private MissingTableNameException(final String message)
+		{
+			super(message);
 		}
 	}
 
@@ -814,14 +737,14 @@ public class InterfaceWrapperHelper
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
-	public static String getTableName(final Class<?> clazz) throws AdempiereException
+	public static String getTableName(final Class<?> modelClass) throws AdempiereException
 	{
-		final String tableName = getTableNameOrNull(clazz);
-		if (tableName == null)
+		final String modelClassTableName = getTableNameOrNull(modelClass);
+		if (modelClassTableName == null)
 		{
-			throw new MissingTableNameException(clazz);
+			throw MissingTableNameException.notFound(modelClass);
 		}
-		return tableName;
+		return modelClassTableName;
 	}
 
 	/**
@@ -838,6 +761,52 @@ public class InterfaceWrapperHelper
 			return null;
 		}
 		return modelClassInfo.getTableName();
+	}
+
+	/**
+	 * Extracts the table name from given modelClass.
+	 * If the modelClass does not have a table name it will return <code>expectedTableName</code> if that's not null.
+	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
+	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
+	 * 
+	 * @param modelClass
+	 * @param expectedTableName
+	 * @return model table name; never returns null
+	 */
+	public static String getTableName(final Class<?> modelClass, @Nullable final String expectedTableName)
+	{
+		final String modelClassTableName = getTableNameOrNull(modelClass);
+
+		// Case: there is no expected/default table name
+		// => fail if modelClass has no table name either.
+		if (expectedTableName == null)
+		{
+			if (modelClassTableName == null)
+			{
+				throw MissingTableNameException.notFound(modelClass, expectedTableName);
+			}
+
+			return modelClassTableName;
+		}
+		// Case: there is an expected/default table name
+		else
+		{
+			// Sub-case: no model class table name => return the default/expected one
+			if (modelClassTableName == null)
+			{
+				return expectedTableName;
+			}
+			// Sub-case: model class table name matches the expected one => perfect, return it
+			else if (modelClassTableName.equals(expectedTableName))
+			{
+				return modelClassTableName;
+			}
+			// Sub-case: model class table name DOES NOT match the expected one => fail
+			else
+			{
+				throw MissingTableNameException.notMatching(modelClass, modelClassTableName, expectedTableName);
+			}
+		}
 	}
 
 	public static final boolean isModelInterface(final Class<?> modelClass)
@@ -882,11 +851,25 @@ public class InterfaceWrapperHelper
 		return getKeyColumnName(tableName);
 	}
 
+	/**
+	 * Returns <code>tableName + "_ID"</code>.
+	 * <p>
+	 * Hint: if you need a method that does not just assume, but actually verifies the key column name, use {@link de.metas.adempiere.service.IColumnBL#getSingleKeyColumn(String)}.
+	 *
+	 * @param tableName
+	 * @return
+	 */
 	public static final String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
 		return keyColumnName;
+	}
+
+	public static final String getModelKeyColumnName(final Object model)
+	{
+		final String tableName = getModelTableName(model);
+		return getKeyColumnName(tableName);
 	}
 
 	/**
@@ -943,25 +926,13 @@ public class InterfaceWrapperHelper
 		{
 			return null;
 		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getGridTab(model).getTableName();
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getPO(model).get_TableName();
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getWrapper(model).getTableName();
-		}
 		else if (model instanceof ITableRecordReference)
 		{
 			return ((ITableRecordReference)model).getTableName();
 		}
 		else
 		{
-			return null;
+			return helpers.getModelTableNameOrNull(model);
 		}
 	}
 
@@ -1005,26 +976,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static boolean isNull(final Object model, final String columnName)
 	{
-		if (model == null)
-		{
-			return true;
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.isNull(model, columnName);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isNull(model, columnName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isNull(model, columnName);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.isNull(model, columnName);
 	}
 
 	/**
@@ -1055,23 +1007,7 @@ public class InterfaceWrapperHelper
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
 
-		if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.hasColumnName(model, columnName);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.hasModelColumnName(model, columnName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
-			return wrapper.hasColumnName(columnName);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.hasModelColumnName(model, columnName);
 	}
 
 	public static boolean hasColumnName(final Class<?> modelClass, final String columnName)
@@ -1112,7 +1048,7 @@ public class InterfaceWrapperHelper
 		}
 		else if (POWrapper.isHandled(model))
 		{
-			final PO po = POWrapper.getPO(model, false);
+			final PO po = POWrapper.getStrictPO(model);
 			@SuppressWarnings("unchecked")
 			final T value = (T)po.get_ValueOfColumn(adColumnId);
 			return value;
@@ -1166,146 +1102,7 @@ public class InterfaceWrapperHelper
 			final boolean throwExIfColumnNotFound,
 			final boolean useOverrideColumnIfAvailable)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assumeNotNull(columnName, "columnName is not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			if (useOverrideColumnIfAvailable)
-			{
-				final IModelInternalAccessor modelAccessor = POWrapper.getModelInternalAccessor(model);
-				final T value = getValueOverrideOrNull(modelAccessor, columnName);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-			//
-			final PO po = POWrapper.getPO(model, false);
-			final int idxColumnName = po.get_ColumnIndex(columnName);
-			if (idxColumnName < 0)
-			{
-				if (throwExIfColumnNotFound)
-				{
-					throw new AdempiereException("No columnName " + columnName + " found for " + model);
-				}
-				else
-				{
-					return null;
-				}
-			}
-			@SuppressWarnings("unchecked")
-			final T value = (T)po.get_Value(idxColumnName);
-			return value;
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			final GridTab gridTab = GridTabWrapper.getGridTab(model);
-			if (useOverrideColumnIfAvailable)
-			{
-				final IModelInternalAccessor modelAccessor = GridTabWrapper.getModelInternalAccessor(model);
-				final T value = getValueOverrideOrNull(modelAccessor, columnName);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-			//
-			final GridField gridField = gridTab.getField(columnName);
-			if (gridField == null)
-			{
-				if (throwExIfColumnNotFound)
-				{
-					throw new AdempiereException("No field with ColumnName=" + columnName + " found in " + gridTab + " for " + model);
-				}
-				else
-				{
-					return null;
-				}
-			}
-
-			@SuppressWarnings("unchecked")
-			final T value = (T)gridField.getValue();
-			return value;
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
-			if (useOverrideColumnIfAvailable)
-			{
-				final IModelInternalAccessor modelAccessor = wrapper.getModelInternalAccessor();
-				final T value = getValueOverrideOrNull(modelAccessor, columnName);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-			//
-			if (!wrapper.hasColumnName(columnName))
-			{
-				if (throwExIfColumnNotFound)
-				{
-					throw new AdempiereException("No columnName " + columnName + " found for " + model);
-				}
-				else
-				{
-					return null;
-				}
-			}
-			@SuppressWarnings("unchecked")
-			final T value = (T)wrapper.getValuesMap().get(columnName);
-			return value;
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
-	}
-
-	/**
-	 * Gets columnName's override value or null
-	 *
-	 * @param modelAccessor
-	 * @param columnName
-	 * @return
-	 */
-	private static final <T> T getValueOverrideOrNull(final IModelInternalAccessor modelAccessor, final String columnName)
-	{
-		//
-		// Try ColumnName_Override
-		// e.g. for "C_Tax_ID", the C_Tax_ID_Override" will be checked
-		{
-			final String overrideColumnName = columnName + COLUMNNAME_SUFFIX_Override;
-			if (modelAccessor.hasColumnName(overrideColumnName))
-			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)modelAccessor.getValue(overrideColumnName, Object.class);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-		}
-
-		//
-		// Try ColumnName_Override_ID
-		// e.g. for "C_Tax_ID", the C_Tax_Override_ID" will be checked
-		if (columnName.endsWith("_ID"))
-		{
-			final String overrideColumnName = columnName.substring(0, columnName.length() - 3) + COLUMNNAME_SUFFIX_Override + "_ID";
-			if (modelAccessor.hasColumnName(overrideColumnName))
-			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)modelAccessor.getValue(overrideColumnName, Object.class);
-				if (value != null)
-				{
-					return value;
-				}
-			}
-		}
-
-		// No override values found => return null
-		return null;
+		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
 	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
@@ -1373,71 +1170,7 @@ public class InterfaceWrapperHelper
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
 
-		if (GridTabWrapper.isHandled(model))
-		{
-			final GridTab gridTab = GridTabWrapper.getGridTab(model);
-			final GridField gridField = gridTab.getField(columnName);
-			if (gridField == null)
-			{
-				final AdempiereException ex = new AdempiereException("No field with ColumnName=" + columnName + " found in " + gridTab + " for " + model);
-				if (throwExIfColumnNotFound)
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn(ex.getLocalizedMessage(), ex);
-					return false;
-				}
-			}
-
-			gridTab.setValue(gridField, value);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			final PO po = POWrapper.getPO(model, false);
-			final int idx = po.get_ColumnIndex(columnName);
-			if (idx < 0)
-			{
-				final AdempiereException ex = new AdempiereException("No columnName " + columnName + " found for " + model);
-				if (throwExIfColumnNotFound)
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn(ex.getLocalizedMessage(), ex);
-					return false;
-				}
-			}
-
-			po.set_ValueOfColumn(columnName, value);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final POJOWrapper wrapper = POJOWrapper.getWrapper(model);
-			if (!wrapper.hasColumnName(columnName))
-			{
-				final AdempiereException ex = new AdempiereException("No columnName " + columnName + " found for " + model);
-				if (throwExIfColumnNotFound)
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn(ex.getLocalizedMessage(), ex);
-					return false;
-				}
-			}
-
-			wrapper.setValue(columnName, value);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
-
-		return true;
+		return helpers.setValue(model, columnName, value, throwExIfColumnNotFound);
 	}
 
 	/**
@@ -1462,7 +1195,7 @@ public class InterfaceWrapperHelper
 	{
 		if (POWrapper.isHandled(model))
 		{
-			final PO po = POWrapper.getPO(model, false);
+			final PO po = POWrapper.getStrictPO(model);
 			po.markColumnChanged(columnName);
 		}
 
@@ -1479,24 +1212,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			return POWrapper.setDynAttribute(model, attributeName, value);
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getWrapper(model).setDynAttribute(attributeName, value);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.setDynAttribute(model, attributeName, value);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.setDynAttribute(model, attributeName, value);
 	}
 
 	/**
@@ -1508,25 +1224,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
-		if (POWrapper.isHandled(model))
-		{
-			final T value = POWrapper.getDynAttribute(model, attributeName);
-			return value;
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			final T value = GridTabWrapper.getWrapper(model).getDynAttribute(attributeName);
-			return value;
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			final T value = POJOWrapper.getDynAttribute(model, attributeName);
-			return value;
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.getDynAttribute(model, attributeName);
 	}
 
 	/**
@@ -1647,23 +1345,7 @@ public class InterfaceWrapperHelper
 	 */
 	public static boolean isNew(final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-		if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.isNew(model);
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isNew(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isNew(model);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.isNew(model);
 	}
 
 	/**
@@ -1674,7 +1356,7 @@ public class InterfaceWrapperHelper
 	{
 		if (POWrapper.isHandled(model))
 		{
-			return POWrapper.getPO(model, false).is_JustCreated();
+			return POWrapper.getStrictPO(model).is_JustCreated();
 		}
 		else if (POJOWrapper.isHandled(model))
 		{
@@ -1730,43 +1412,29 @@ public class InterfaceWrapperHelper
 
 	public static boolean isValueChanged(final Object model, final String columnName)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isValueChanged(model, columnName);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isValueChanged(model, columnName);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.isValueChanged(model, columnName);
 	}
 
 	/**
 	 * @param model
 	 * @param columnNames
-	 * @return true if any of given column names where changed
+	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
-		Check.assumeNotNull(model, "model not null");
+		return helpers.isValueChanged(model, columnNames);
+	}
 
-		if (POWrapper.isHandled(model))
+	@Deprecated
+	public static boolean isPOValueChanged(final Object model, final String columnName)
+	{
+		final PO po = POWrapper.getStrictPO(model);
+		if (po == null)
 		{
-			return POWrapper.isValueChanged(model, columnNames);
+			return false;
 		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isValueChanged(model, columnNames);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+
+		return POWrapper.isValueChanged(po, columnName);
 	}
 
 	public static boolean hasChanges(final Object model)
@@ -1798,7 +1466,7 @@ public class InterfaceWrapperHelper
 
 		if (POWrapper.isHandled(model))
 		{
-			return POWrapper.getPO(model).getLoadCount();
+			return POWrapper.getStrictPO(model).getLoadCount();
 		}
 		else if (POJOWrapper.isHandled(model))
 		{
@@ -1812,31 +1480,7 @@ public class InterfaceWrapperHelper
 
 	public static Evaluatee getEvaluatee(final Object model)
 	{
-		if (model == null)
-		{
-			return null;
-		}
-		else if (model instanceof Evaluatee)
-		{
-			final Evaluatee evaluatee = (Evaluatee)model;
-			return evaluatee;
-		}
-		else if (POWrapper.isHandled(model))
-		{
-			return POWrapper.getPO(model);
-		}
-		else if (GridTabWrapper.isHandled(model))
-		{
-			return GridTabWrapper.getGridTab(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.getWrapper(model).asEvaluatee();
-		}
-		else
-		{
-			throw new AdempiereException("Evaluatee not supported for " + model + " (class:" + model.getClass() + ")");
-		}
+		return helpers.getEvaluatee(model);
 	}
 
 	/**
@@ -1958,5 +1602,16 @@ public class InterfaceWrapperHelper
 	}
 
 	public static final ModelDynAttributeAccessor<Object, Boolean> ATTR_ReadOnlyColumnCheckDisabled = new ModelDynAttributeAccessor<>(InterfaceWrapperHelper.class.getName(), "ReadOnlyColumnCheckDisabled", Boolean.class);
+
+	public static int getFirstValidIdByColumnName(final String columnName)
+	{
+		return POWrapper.getFirstValidIdByColumnName(columnName);
+	}
+
+	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
+	public static final Object checkZeroIdValue(final String columnName, final Object value)
+	{
+		return POWrapper.checkZeroIdValue(columnName, value);
+	}
 
 }

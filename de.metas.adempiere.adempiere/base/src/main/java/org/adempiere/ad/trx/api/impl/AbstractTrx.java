@@ -10,27 +10,24 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -42,28 +39,35 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 
+import de.metas.logging.LogManager;
+
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public abstract class AbstractTrx implements ITrx
 {
 	/** Logger */
-	private final Logger log = LogManager.getLogger(getClass());
+	private static final transient Logger log = LogManager.getLogger(AbstractTrx.class);
 
 	private final ITrxManager trxManager;
 	private final String m_trxName;
 
+	/**
+	 * set to <code>true</code> by {@link #start()}.
+	 */
 	private boolean m_active = false;
 	private long m_startTime;
 
-	private Map<String, Object> properties = null;
-	private ReentrantLock propertiesLock = new ReentrantLock();
+	private final boolean autoCommit;
+
+	private volatile ConcurrentHashMap<String, Object> _properties = null;
 
 	//
 	// Debug info
@@ -73,16 +77,17 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Transaction Constructor
-	 * 
+	 *
 	 * @param trxName unique name
 	 */
-	public AbstractTrx(final ITrxManager trxManager, final String trxName)
+	public AbstractTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
 	{
-		super();
 		// log.info(trxName);
 
 		Check.assumeNotNull(trxManager, "trxManager not null");
 		this.trxManager = trxManager;
+
+		this.autoCommit = autoCommit;
 
 		if (!trxManager.isValidTrxName(trxName))
 		{
@@ -96,13 +101,13 @@ public abstract class AbstractTrx implements ITrx
 		{
 			debugCreateStacktrace = new Exception("Create stacktrace");
 		}
-	}	// Trx
+	}
 
 	@Override
-	public String getTrxName()
+	public final String getTrxName()
 	{
 		return m_trxName;
-	}	// getName
+	}
 
 	private final void validateTrxSavepoint(final ITrxSavepoint savepoint)
 	{
@@ -141,11 +146,17 @@ public abstract class AbstractTrx implements ITrx
 		return m_active;
 	}	// isActive
 
+	@Override
+	public boolean isAutoCommit()
+	{
+		return autoCommit;
+	}
+
 	/**
 	 * Returns true if the transaction was just started but no actual actions were performed on this transaction.
-	 * 
+	 *
 	 * NOTE: This method shall be overwritten by actual transaction implementations and it's used for optimizations.
-	 * 
+	 *
 	 * @return true if the transaction was just started
 	 */
 	protected boolean isJustStarted()
@@ -177,7 +188,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback implementation.
-	 * 
+	 *
 	 * @param throwException
 	 * @return
 	 * @throws SQLException
@@ -218,7 +229,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback to savepoint implementation
-	 * 
+	 *
 	 * @param savepointNative
 	 * @return
 	 * @throws SQLException
@@ -257,7 +268,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) commit implementation
-	 * 
+	 *
 	 * @param throwException
 	 * @return
 	 * @throws SQLException
@@ -285,6 +296,11 @@ public abstract class AbstractTrx implements ITrx
 		return savepoint;
 	}
 
+	/**
+	 * @param name
+	 * @return savepoint or return <code>null</code> if no connection could be obtained of if we have an autoCommit connection.
+	 * @throws Exception
+	 */
 	protected abstract ITrxSavepoint createTrxSavepointNative(String name) throws Exception;
 
 	@Override
@@ -310,7 +326,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Release native savepoint
-	 * 
+	 *
 	 * @param savepointNative
 	 * @return true if released or if it was already realeased
 	 */
@@ -318,7 +334,7 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Commit
-	 * 
+	 *
 	 * @return true if success
 	 */
 	public boolean commit()
@@ -374,23 +390,23 @@ public abstract class AbstractTrx implements ITrx
 			m_active = false;
 
 			Services.get(IOpenTrxBL.class).onClose(this); // metas 02367
-			
+
 			getTrxListenerManager(false).fireAfterClose(this);
 
-			log.debug(getTrxName());
+			log.debug("Closed: {}", getTrxName());
 		}
 	}
 
 	/**
 	 * Native (actual) transaction close implementation
-	 * 
+	 *
 	 * @return true on success
 	 */
 	protected abstract boolean closeNative();
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -399,7 +415,7 @@ public abstract class AbstractTrx implements ITrx
 		final StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[")
 				.append(getTrxName())
 				.append(", Active=").append(isActive());
-		
+
 		final long lastStartTime = m_startTime;
 		if (lastStartTime > 0)
 		{
@@ -426,19 +442,19 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Current {@link ITrxListenerManager}
-	 * 
+	 *
 	 * @task 04265
 	 */
 	private ITrxListenerManager trxListenerManager = null;
 
 	/**
 	 * Gets the {@link ITrxListenerManager} associated with this transaction.
-	 * 
+	 *
 	 * If no {@link ITrxListenerManager} was already created and <code>create</code> is true, a new transaction listener manager will be created and returned
-	 * 
+	 *
 	 * @param create
 	 * @return
-	 * 
+	 *
 	 * @task 04265
 	 */
 	private ITrxListenerManager getTrxListenerManager(final boolean create)
@@ -468,75 +484,80 @@ public abstract class AbstractTrx implements ITrx
 	{
 		return trxManager;
 	}
+	
+	private final Map<String, Object> getPropertiesMap()
+	{
+		if(_properties == null)
+		{
+			synchronized (this)
+			{
+				if(_properties == null)
+				{
+					_properties = new ConcurrentHashMap<>();
+				}
+			}
+		}
+		return _properties;
+	}
+	
+	private final Map<String, Object> getPropertiesMapOrNull()
+	{
+		synchronized (this)
+		{
+			return _properties;
+		}
+	}
 
 	@Override
 	public final <T> T setProperty(final String name, final Object value)
 	{
-		propertiesLock.lock();
-		try
+		Check.assumeNotEmpty(name, "name is not empty");
+		
+		// Handle null value case
+		if(value == null)
 		{
-			if (properties == null)
+			final Map<String, Object> properties = getPropertiesMapOrNull();
+			if(properties == null)
 			{
-				properties = new HashMap<String, Object>();
+				return null;
 			}
-
+			
 			@SuppressWarnings("unchecked")
-			final T valueOld = (T)properties.put(name, value);
+			final T valueOld = (T)properties.remove(name);
 			return valueOld;
 		}
-		finally
+		else
 		{
-			propertiesLock.unlock();
+			@SuppressWarnings("unchecked")
+			final T valueOld = (T)getPropertiesMap().put(name, value);
+			return valueOld;
 		}
 	}
 
 	@Override
 	public final <T> T getProperty(final String name)
 	{
-		propertiesLock.lock();
-		try
-		{
-			if (properties == null)
-			{
-				return null;
-			}
-
-			@SuppressWarnings("unchecked")
-			final T value = (T)properties.get(name);
-			return value;
-		}
-		finally
-		{
-			propertiesLock.unlock();
-		}
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().get(name);
+		return value;
 	}
 
 	@Override
 	public <T> T getProperty(final String name, final Supplier<T> valueInitializer)
 	{
-		propertiesLock.lock();
-		try
-		{
-			if (properties == null)
-			{
-				properties = new HashMap<String, Object>();
-			}
-
-			@SuppressWarnings("unchecked")
-			T value = (T)properties.get(name);
-			if (value == null)
-			{
-				value = valueInitializer.get();
-				properties.put(name, value);
-			}
-			return value;
-		}
-		finally
-		{
-			propertiesLock.unlock();
-		}
-
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.get());
+		return value;
 	}
+	
+	@Override
+	public <T> T getProperty(final String name, final Function<ITrx, T> valueInitializer)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
+		return value;
+	}
+
 
 	protected final void setDebugConnectionBackendId(final String debugConnectionBackendId)
 	{

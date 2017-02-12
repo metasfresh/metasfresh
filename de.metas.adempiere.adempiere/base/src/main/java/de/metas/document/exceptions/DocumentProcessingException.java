@@ -34,13 +34,9 @@ import org.compiere.process.DocAction;
  * @author tsa
  *
  */
+@SuppressWarnings("serial")
 public class DocumentProcessingException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3112131389799089484L;
-
 	public DocumentProcessingException(final DocAction document, final String docAction, final Throwable cause)
 	{
 		super(buildMsg((String)null, document, docAction, cause), cause);
@@ -51,12 +47,12 @@ public class DocumentProcessingException extends AdempiereException
 		super(buildMsg((String)null, document, docAction, (Throwable)null));
 	}
 
-	public DocumentProcessingException(final String message, final DocAction document, final String docAction)
+	public DocumentProcessingException(final String message, final Object documentObj, final String docAction)
 	{
-		super(buildMsg(message, document, docAction, (Throwable)null));
+		super(buildMsg(message, documentObj, docAction, (Throwable)null));
 	}
 
-	private static final String buildMsg(final String message, final DocAction document, final String docAction, final Throwable cause)
+	private static final String buildMsg(final String message, final Object documentObj, final String docAction, final Throwable cause)
 	{
 		final StringBuilder msg = new StringBuilder();
 		if (Check.isEmpty(message, true))
@@ -67,9 +63,32 @@ public class DocumentProcessingException extends AdempiereException
 		{
 			msg.append(message.trim());
 		}
-		msg.append("\n@Document@: ").append(document.getDocumentInfo());
+		
+		final String documentInfo;
+		final String processMsg;
+		if (documentObj == null)
+		{
+			// shall not happen
+			documentInfo = "no document";
+			processMsg = null;
+		}
+		else if(documentObj instanceof DocAction)
+		{
+			documentInfo = ((DocAction)documentObj).getDocumentInfo();
+			processMsg = ((DocAction)documentObj).getProcessMsg();
+		}
+		else
+		{
+			documentInfo = documentObj.toString();
+			processMsg = null;
+		}
+		
+		msg.append("\n@Document@: ").append(documentInfo);
 		msg.append("\n@DocAction@: ").append(docAction);
-		msg.append("\n@ProcessMsg@: ").append(document.getProcessMsg());
+		if(!Check.isEmpty(processMsg, true))
+		{
+			msg.append("\n@ProcessMsg@: ").append(processMsg);
+		}
 
 		if (cause != null)
 		{

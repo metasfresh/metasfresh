@@ -25,7 +25,8 @@ package de.metas.commission.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -37,7 +38,7 @@ import de.metas.commission.service.IInstanceTriggerBL;
 
 public class InvoiceLine extends CalloutEngine
 {
-	private static final String TRX_NAME = null;
+	private static final String TRX_NAME = ITrx.TRXNAME_None;
 
 
 	/** When this Flag is set to false, override previous points with default (If available take 
@@ -60,7 +61,7 @@ public class InvoiceLine extends CalloutEngine
 		String retVal = "";
 		if(!(Boolean)value)
 		{
-			final I_C_InvoiceLine il = GridTabWrapper.create(mTab, I_C_InvoiceLine.class);
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(mTab, I_C_InvoiceLine.class);
 			final IInstanceTriggerBL instanceTriggerBL = Services.get(IInstanceTriggerBL.class);
 			
 			retVal = instanceTriggerBL.setCommissionPoints(ctx, il, false, TRX_NAME);
@@ -93,7 +94,7 @@ public class InvoiceLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_InvoiceLine il = GridTabWrapper.create(mTab, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(mTab, I_C_InvoiceLine.class);
 
 		final IInstanceTriggerBL instanceTriggerBL = Services.get(IInstanceTriggerBL.class);
 		return instanceTriggerBL.setCommissionPointsSum(ctx, il, false, TRX_NAME);
@@ -117,7 +118,7 @@ public class InvoiceLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_InvoiceLine il = GridTabWrapper.create(mTab, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(mTab, I_C_InvoiceLine.class);
 
 		Services.get(IInstanceTriggerBL.class).updateCommissionPointsNet(il);
 
@@ -142,7 +143,7 @@ public class InvoiceLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_InvoiceLine il = GridTabWrapper.create(mTab, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(mTab, I_C_InvoiceLine.class);
 
 		return Services.get(IInstanceTriggerBL.class).setCommissionPointsSum(ctx, il, false, TRX_NAME);
 	}
@@ -165,7 +166,7 @@ public class InvoiceLine extends CalloutEngine
 			return "";
 		}
 
-		final I_C_InvoiceLine il = GridTabWrapper.create(mTab, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine il = InterfaceWrapperHelper.create(mTab, I_C_InvoiceLine.class);
 
 		return Services.get(IInstanceTriggerBL.class).setCommissionPoints(ctx, il, false, TRX_NAME);
 	}

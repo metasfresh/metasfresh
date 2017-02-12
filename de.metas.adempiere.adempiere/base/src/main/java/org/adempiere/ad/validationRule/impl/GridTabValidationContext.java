@@ -24,8 +24,6 @@ package org.adempiere.ad.validationRule.impl;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -35,6 +33,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 import org.compiere.util.Env.Scope;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 public class GridTabValidationContext implements IValidationContext
 {
@@ -45,6 +46,7 @@ public class GridTabValidationContext implements IValidationContext
 	private final int tabNo;
 	private final String contextTableName;
 	private final String tableName;
+
 
 	public GridTabValidationContext(final Properties ctx, final int windowNo, final int tabNo, final String tableName)
 	{
@@ -81,21 +83,9 @@ public class GridTabValidationContext implements IValidationContext
 	}
 
 	@Override
-	public String getContextTableName()
-	{
-		return contextTableName;
-	}
-
-	@Override
 	public String getTableName()
 	{
 		return tableName;
-	}
-
-	@Override
-	public int getWindowNo()
-	{
-		return windowNo;
 	}
 
 	/**
@@ -105,6 +95,11 @@ public class GridTabValidationContext implements IValidationContext
 	public String get_ValueAsString(final String variableName)
 	{
 		Check.assumeNotNull(variableName, "variableName not null");
+		
+		if(PARAMETER_ContextTableName.equals(variableName))
+		{
+			return contextTableName;
+		}
 
 		// only checking the window scope; global scope might contain default values (e.g. #C_DocTypeTarget_ID) that might confuse a validation rule
 		final String value = Env.getContext(ctx, windowNo, tabNo, variableName, Scope.Window);

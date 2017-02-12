@@ -27,7 +27,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 /**
  * This interface will have Listener implementations in projects different than de.metas.swat, so the qtys of the shipment schedules can be modified based on new logics.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IShipmentScheduleQtyUpdateListener

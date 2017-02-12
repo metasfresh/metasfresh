@@ -1,5 +1,7 @@
 package de.metas.handlingunits.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,9 +26,7 @@ package de.metas.handlingunits.callout;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -35,9 +35,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 public class M_HU_PI_Version_Callout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(gridTab, I_M_HU_PI_Version.class);
+		final I_M_HU_PI_Version version = calloutRecord.getModel(I_M_HU_PI_Version.class);
 		final I_M_HU_PI huPI = version.getM_HU_PI();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -55,9 +55,9 @@ public class M_HU_PI_Version_Callout extends TabCalloutAdapter
 	}
 
 	@Override
-	public void onSave(final GridTab gridTab)
+	public void onSave(final ICalloutRecord calloutRecord)
 	{
 		// NOTE: because the data was not refreshed in the window after the code form the index was called
-		gridTab.dataRefreshAll();
+		calloutRecord.dataRefreshAll();
 	}
 }

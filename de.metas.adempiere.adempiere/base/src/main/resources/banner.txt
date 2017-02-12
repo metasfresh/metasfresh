@@ -5,3 +5,9 @@
 | | | | | |  __/ || (_| \__ \ | | | |  __/\__ \ | | |
 |_| |_| |_|\___|\__\__,_|___/_| |_|  \___||___/_| |_|
                                                      
+METASFRESH-INFO: ${application.title} | ${application.formatted-version} | SpringBoot version ${spring-boot.formatted-version}
+BUILD-INFO: build [${info.build.ciBuildNo:local}], tag [${info.build.ciBuildTag:none}], job [${info.build.ciJobName:none}]
+            ${info.build.ciBuildUrl:}
+
+
+

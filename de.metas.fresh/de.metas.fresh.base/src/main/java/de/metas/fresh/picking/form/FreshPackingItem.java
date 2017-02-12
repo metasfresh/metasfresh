@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.picking.form;
 
@@ -13,18 +13,17 @@ package de.metas.fresh.picking.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -41,6 +40,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -50,33 +50,45 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Item to be packed.
- * 
- * @author cg
- * 
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
-public class FreshPackingItem extends AbstractPackingItem
+public class FreshPackingItem extends AbstractPackingItem implements IFreshPackingItem
 {
 	private I_C_BPartner partner; // lazy loaded
 	private I_C_BPartner_Location bpLocation; // lazy loaded
 
+	FreshPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
+	{
+		super(scheds2Qtys);
+	}
+
 	/**
-	 * Copy constructor
-	 * 
-	 * @param orig
+	 * Copy constructor.
+	 *
+	 * @param item must be <code>instanceof</code> {@link FreshPackingItem}.
 	 */
-	public FreshPackingItem(final AbstractPackingItem orig)
+	FreshPackingItem(final IPackingItem item)
 	{
-		this(orig.getQtys(), orig.getGroupingKey(), orig.getTrxName());
+		super(item);
+
+		final FreshPackingItem itemCasted = cast(item);
+		partner = itemCasted.partner;
+		bpLocation = itemCasted.bpLocation;
 	}
 
-	public FreshPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final String trxName)
+	/**
+	 * Similar to {@link #FreshPackingItem(IPackingItem)}, but updates this existing instance instead of creawting a new one.
+	 *
+	 * @param item must be <code>instanceof</code> {@link FreshPackingItem}.
+	 */
+	public void updateFrom(final IFreshPackingItem item)
 	{
-		super(scheds2Qtys, trxName);
-	}
-
-	private FreshPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey, final String trxName)
-	{
-		super(scheds2Qtys, groupingKey, trxName);
+		super.updateFrom(item);
+		final FreshPackingItem itemCasted = cast(item);
+		partner = itemCasted.partner;
+		bpLocation = itemCasted.bpLocation;
 	}
 
 	@Override
@@ -86,11 +98,12 @@ public class FreshPackingItem extends AbstractPackingItem
 		return Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched, includeBPartner).hashCode();
 	}
 
+	@Override
 	public I_C_BPartner getC_BPartner()
 	{
 		if (partner == null)
 		{
-			final int partnerId = getBpartnerId();
+			final int partnerId = getC_BPartner_ID();
 			if (partnerId > 0)
 			{
 				partner = InterfaceWrapperHelper.create(Env.getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
@@ -99,7 +112,8 @@ public class FreshPackingItem extends AbstractPackingItem
 		return partner;
 	}
 
-	public int getBpartnerId()
+	@Override
+	public int getC_BPartner_ID()
 	{
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -107,10 +121,11 @@ public class FreshPackingItem extends AbstractPackingItem
 			return -1;
 		}
 
-		// all scheds must have the same partner
+		// all scheds must have the same partner, so it's enough to only look at the first one
 		return shipmentSchedules.iterator().next().getC_BPartner_ID();
 	}
 
+	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
@@ -121,7 +136,7 @@ public class FreshPackingItem extends AbstractPackingItem
 
 		// all scheds must have the same pip
 		final de.metas.handlingunits.model.I_M_ShipmentSchedule ss = InterfaceWrapperHelper.create(shipmentSchedules.iterator().next(), de.metas.handlingunits.model.I_M_ShipmentSchedule.class);
-		I_M_HU_PI_Item_Product pip = ss.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product pip = ss.getM_HU_PI_Item_Product();
 		if (pip != null)
 		{
 			return pip;
@@ -132,11 +147,12 @@ public class FreshPackingItem extends AbstractPackingItem
 		return ol.getM_HU_PI_Item_Product();
 	}
 
+	@Override
 	public I_C_BPartner_Location getC_BPartner_Location()
 	{
 		if (bpLocation == null)
 		{
-			final int partnerLocId = getBpartnerLocationId();
+			final int partnerLocId = getC_BPartner_Location_ID();
 			if (partnerLocId > 0)
 			{
 				bpLocation = InterfaceWrapperHelper.create(Env.getCtx(), partnerLocId, I_C_BPartner_Location.class, ITrx.TRXNAME_None);
@@ -145,7 +161,8 @@ public class FreshPackingItem extends AbstractPackingItem
 		return bpLocation;
 	}
 
-	public int getBpartnerLocationId()
+	@Override
+	public int getC_BPartner_Location_ID()
 	{
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -153,10 +170,15 @@ public class FreshPackingItem extends AbstractPackingItem
 			return -1;
 		}
 
-		// all scheds must have the same partner
-		return shipmentSchedules.iterator().next().getC_BPartner_Location_ID();
+		// all scheds must have the same partner, so it's enough to only look at the first one
+
+		// #100 FRESH-435: use the schedule's *effective* location, just as everywhere else.
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedules.iterator().next());
+		return bpartnerLocationId;
 	}
 
+	@Override
 	public Set<I_M_Warehouse> getWarehouses()
 	{
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
@@ -189,6 +211,7 @@ public class FreshPackingItem extends AbstractPackingItem
 		return warehouses;
 	}
 
+	@Override
 	public Set<Integer> getWarehouseIds()
 	{
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
@@ -216,20 +239,17 @@ public class FreshPackingItem extends AbstractPackingItem
 		return warehouseIds;
 	}
 
-	/**
-	 * Subtracts the given quantity from this packing item and create a new packing item with it.
-	 * 
-	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate
-	 * @return
-	 */
-	public FreshPackingItem subtractToPackingItem(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
+	@Override
+	public IFreshPackingItem subtractToPackingItem(
+			final BigDecimal subtrahent,
+			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		final Map<I_M_ShipmentSchedule, BigDecimal> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
-		return new FreshPackingItem(sched2qty, getTrxName());
+		return FreshPackingItemHelper.create(sched2qty);
 	}
 
-	public FreshPackingItem copy()
+	@Override
+	public IFreshPackingItem copy()
 	{
 		return new FreshPackingItem(this);
 	}
@@ -237,8 +257,26 @@ public class FreshPackingItem extends AbstractPackingItem
 	@Override
 	public String toString()
 	{
-		return "FreshPackingItem [partner=" + partner + ", bpLocation=" + bpLocation + ", isClosed()=" + isClosed() + ", getQtySum()=" + getQtySum() + ", getM_Product()=" + getM_Product()
+		return "FreshPackingItem [partner=" + partner
+				+ ", bpLocation=" + bpLocation
+				+ ", isClosed()=" + isClosed()
+				+ ", getQtySum()=" + getQtySum()
+				+ ", getM_Product()=" + getM_Product()
 				+ ", getC_UOM()=" + getC_UOM() + "]";
 	}
 
+	/**
+	 *
+	 * @param item
+	 * @return
+	 * @throws IllegalArgumentException if the given <code>item</code> is not a {@link FreshPackingItem}
+	 */
+	private static final FreshPackingItem cast(final IPackingItem item)
+	{
+		if (!(item instanceof FreshPackingItem))
+		{
+			throw new IllegalArgumentException("Item " + item + " does not implement " + FreshPackingItem.class);
+		}
+		return (FreshPackingItem)item;
+	}
 }

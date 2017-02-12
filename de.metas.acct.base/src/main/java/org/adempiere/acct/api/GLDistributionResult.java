@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * The result of a {@link GLDistributionBuilder} run.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class GLDistributionResult

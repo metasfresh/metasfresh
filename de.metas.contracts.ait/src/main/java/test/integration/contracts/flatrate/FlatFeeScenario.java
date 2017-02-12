@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.MOrderLine;
@@ -43,9 +43,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
 
-import test.integration.contracts.ContractsHelper;
-import test.integration.contracts.ContractsTestConfig;
-import test.integration.swat.sales.invoicecand.InvoiceCandHelper;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.helper.GridWindowHelper;
@@ -60,9 +57,12 @@ import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.process.C_FlatrateTerm_Extend;
-import de.metas.flatrate.process.C_FlatrateTerm_Prepare_Closing;
+import de.metas.flatrate.process.C_Flatrate_Term_Extend;
+import de.metas.flatrate.process.C_Flatrate_Term_Prepare_Closing;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import test.integration.contracts.ContractsHelper;
+import test.integration.contracts.ContractsTestConfig;
+import test.integration.swat.sales.invoicecand.InvoiceCandHelper;
 
 public class FlatFeeScenario
 {
@@ -283,9 +283,9 @@ public class FlatFeeScenario
 		assertThat(dataEntry + " has wrong C_Invoice_Candidate_Corr_ID", dataEntry.getC_Invoice_Candidate_Corr_ID(), is(0));
 
 		// invoice cand(s) should have been deleted
-		final I_C_Invoice_Candidate icAfterReactivation = POWrapper.create(driver.getCtx(), icBeforeReactivation.getC_Invoice_Candidate_ID(), I_C_Invoice_Candidate.class, driver.getTrxName());
+		final I_C_Invoice_Candidate icAfterReactivation = InterfaceWrapperHelper.create(driver.getCtx(), icBeforeReactivation.getC_Invoice_Candidate_ID(), I_C_Invoice_Candidate.class, driver.getTrxName());
 		assertThat(icAfterReactivation, nullValue());
-		final I_C_Invoice_Candidate icCorrAfterReactivation = POWrapper.create(driver.getCtx(), icCorrBeforeReactivation.getC_Invoice_Candidate_ID(), I_C_Invoice_Candidate.class, driver.getTrxName());
+		final I_C_Invoice_Candidate icCorrAfterReactivation = InterfaceWrapperHelper.create(driver.getCtx(), icCorrBeforeReactivation.getC_Invoice_Candidate_ID(), I_C_Invoice_Candidate.class, driver.getTrxName());
 		assertThat(icCorrAfterReactivation, nullValue());
 
 		//
@@ -400,7 +400,7 @@ public class FlatFeeScenario
 		final MPeriod closingPeriod = MPeriod.findByCalendar(driver.getCtx(), term.getEndDate(), fc.getC_Flatrate_Transition().getC_Calendar_Contract_ID(), driver.getTrxName());
 
 		helper.mkProcessHelper()
-				.setProcessClass(C_FlatrateTerm_Prepare_Closing.class)
+				.setProcessClass(C_Flatrate_Term_Prepare_Closing.class)
 				.setPO(term)
 				.setParameter(I_C_Period.COLUMNNAME_C_Period_ID, closingPeriod.getC_Period_ID())
 				.run();
@@ -476,7 +476,7 @@ public class FlatFeeScenario
 		final I_C_Flatrate_Term term = termAndOrder.term;
 
 		helper.mkProcessHelper()
-				.setProcessClass(C_FlatrateTerm_Extend.class)
+				.setProcessClass(C_Flatrate_Term_Extend.class)
 				.setPO(term)
 				.setParameter(I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, "Y")
 				.run();
@@ -512,7 +512,7 @@ public class FlatFeeScenario
 
 		for (final I_C_Invoice_Candidate cand : cands)
 		{
-			POWrapper.refresh(cand);
+			InterfaceWrapperHelper.refresh(cand);
 			assertThat(cand + " has wrong 'Processed' status", cand.isProcessed(), is(true));
 		}
 	}

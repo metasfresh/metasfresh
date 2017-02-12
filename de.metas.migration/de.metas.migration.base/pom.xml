@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.migration</groupId>
 		<artifactId>de.metas.migration</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.migration.base</artifactId>
@@ -17,10 +17,11 @@
 			<version>2.1</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.2-1003-jdbc4</version>
+		    <groupId>org.postgresql</groupId>
+		    <artifactId>postgresql</artifactId>
+		    <version>9.4.1209.jre7</version>
 		</dependency>
 
 		<dependency>
@@ -31,7 +32,6 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
 		</dependency>
 		
 	</dependencies>

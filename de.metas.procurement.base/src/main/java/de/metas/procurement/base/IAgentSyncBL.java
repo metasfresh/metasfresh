@@ -33,7 +33,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
 /**
  * Note that we don't have an implementation in metasfresh. Instead, we use the framework, to get a jax-rs client proxy which we then register in {@link org.adempiere.util.Services}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IAgentSyncBL extends IAgentSync, ISingletonService

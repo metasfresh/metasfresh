@@ -7,8 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.compiere.process.SvrProcess;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -19,12 +17,12 @@ import org.compiere.process.SvrProcess;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,9 +31,10 @@ import org.compiere.process.SvrProcess;
 
 
 /**
- * Used to annotate that {@link SvrProcess#prepare()} or {@link SvrProcess#doIt()} shall be executed out of transaction.
- *
- * If {@link SvrProcess#doIt()} is annotated then {@link SvrProcess#prepare()} will be executed out of transaction too.
+ * Used to annotate that {@link JavaProcess#prepare()} or {@link JavaProcess#doIt()} shall be executed out of transaction.
+ * One use case for this annotation is a long-running process that takes care of its own
+ * <p>
+ * If {@link JavaProcess#doIt()} is annotated then {@link JavaProcess#prepare()} will be executed out of transaction too.
  */
 @Inherited
 @Documented

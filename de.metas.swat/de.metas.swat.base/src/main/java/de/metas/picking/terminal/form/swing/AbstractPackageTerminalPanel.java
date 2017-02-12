@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,23 +33,18 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.apps.ProcessCtl;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IPackingDetailsModel;
-import de.metas.adempiere.form.PackingDetailsMd;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -64,17 +59,20 @@ import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessExecutor;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Packing window panel (second window)
- * 
+ *
  * @author cg
- * 
+ *
  */
 public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel, PropertyChangeListener
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	
+
 	private final ITerminalContext tc;
 	private final AbstractPackageTerminal parentPackageTerminal;
 
@@ -95,9 +93,9 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	protected ITerminalSplitPane split;
 
 	private FormFrame frame;
-	private SwingPackageBoxesItems productKeysPanel;
-	private AbstractPackageDataPanel pickingData;
-	private ITerminalKeyPanel packingMaterialsPanel;
+	private final SwingPackageBoxesItems productKeysPanel;
+	private final AbstractPackageDataPanel pickingData;
+	private final ITerminalKeyPanel packingMaterialsPanel;
 
 	private PackingItemsMap packItems;
 	private Map<Integer, DefaultMutableTreeNode> boxes;
@@ -107,7 +105,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 
 	/**
 	 * create Package Terminal with link to the parent - Package terminal
-	 * 
+	 *
 	 * @param parent
 	 */
 	public AbstractPackageTerminalPanel(final ITerminalContext terminalContext, final AbstractPackageTerminal parent)
@@ -139,6 +137,8 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		SwingTerminalFactory.getUI(panelCenter).setLayout(new MigLayout("ins 5 5 5 5", // Layout Constraints
 				"[grow][shrink 10]", // Column constraints
 				"[grow][shrink 10]"));
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	public List<DefaultMutableTreeNode> getAvailBoxes()
@@ -163,7 +163,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 
 	/**
 	 * get panel Package dat panel is the panel which contains infos about the product, partner, the left, middle panel
-	 * 
+	 *
 	 * @return
 	 */
 	public AbstractPackageDataPanel getPickingData()
@@ -204,17 +204,24 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	{
 		final IKeyLayout packingMaterialsLayout = createPackingMaterialsKeyLayout();
 		packingMaterialsLayout.setBasePanel(this);
+		getTerminalContext().addToDisposableComponents(packingMaterialsLayout);
+
 		final ITerminalKeyPanel packingMaterialsLayoutPanel = getTerminalFactory()
 				.createTerminalKeyPanel(packingMaterialsLayout, terminalKeyListener2keyPressed);
 
 		return packingMaterialsLayoutPanel;
 	}
 
+	/**
+	 * Note: the result is added to the terminal context's disposable components by the caller.
+	 *
+	 * @return
+	 */
 	protected abstract IKeyLayout createPackingMaterialsKeyLayout();
 
 	/**
 	 * retrieve the panel which contains the boxes and the products
-	 * 
+	 *
 	 * @return
 	 */
 	public SwingPackageBoxesItems getProductKeysPanel()
@@ -267,6 +274,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		}
 	}
 
+	@Override
 	public final boolean isDisposed()
 	{
 		return disposing || disposed;
@@ -283,24 +291,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		disposing = true;
 		try
 		{
-			if (productKeysPanel != null)
-			{
-				productKeysPanel.dispose();
-				productKeysPanel = null;
-			}
-
-			if (pickingData != null)
-			{
-				pickingData.dispose();
-				pickingData = null;
-			}
-
-			if (packingMaterialsPanel != null)
-			{
-				packingMaterialsPanel.dispose();
-				packingMaterialsPanel = null;
-			}
-
 			if (frame != null)
 			{
 				frame.dispose();
@@ -396,7 +386,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 
 	/**
 	 * reset new kartons, boxes, products
-	 * 
+	 *
 	 * @param resetNewKartons
 	 * @param resetBoxes
 	 * @param resetProducts
@@ -435,9 +425,13 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		}
 	}
 
-	public ProcessCtl processPackingDetails()
+	public ProcessExecutor processPackingDetails()
 	{
-		final SwingPickingOKPanel pickingOKPanel = (SwingPickingOKPanel)getParent().getPickingOKPanel();
-		return pickingOKPanel.invokeProcess((PackingDetailsMd)this.model);
+		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
+		// NOTE assume this is not called
+		throw new UnsupportedOperationException();
+//
+//		final SwingPickingOKPanel pickingOKPanel = (SwingPickingOKPanel)getParent().getPickingOKPanel();
+//		return pickingOKPanel.invokeProcess(this.model);
 	}
 }

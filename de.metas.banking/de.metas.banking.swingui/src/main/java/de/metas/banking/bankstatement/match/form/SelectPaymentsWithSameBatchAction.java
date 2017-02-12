@@ -36,7 +36,7 @@ import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 /**
  * Popup action used to select the {@link IPayment}s which have the same {@link IPaymentBatch} like the one on which user right-clicked.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class SelectPaymentsWithSameBatchAction extends AbstractPaymentTableAction

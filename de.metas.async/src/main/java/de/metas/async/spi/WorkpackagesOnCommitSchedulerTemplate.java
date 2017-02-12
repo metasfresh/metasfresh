@@ -1,9 +1,13 @@
 package de.metas.async.spi;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
@@ -13,7 +17,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 
@@ -30,11 +36,11 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,7 +48,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 /**
  * Template class for implementing algorithms which are collecting items, group them in workpackages and submit the workpackages when the transaction is committed.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <ItemType> item type to be collected.
  */
@@ -56,7 +62,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		final boolean collectModels = false;
 		return new ModelsScheduler<ModelType>(workpackageProcessorClass, modelType, collectModels);
 	}
-	
+
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit based on a given {@link IContextAware} */
 	public static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
 	{
@@ -64,8 +70,18 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return new ModelsScheduler<>(workpackageProcessorClass, IContextAware.class, collectModels);
 	}
 
+	/** Convenient method to create an instance which IS COLLECTING models and schedules a workpackage on transaction commit. */
+	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
+			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
+			final Class<ModelType> modelType)
+	{
+		final boolean collectModels = true;
+		return new ModelsScheduler<ModelType>(workpackageProcessorClass, modelType, collectModels);
+	}
+
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
 	private final String trxPropertyName;
+	private final AtomicBoolean createOneWorkpackagePerModel = new AtomicBoolean(false);
 
 	/**
 	 *
@@ -101,6 +117,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		scheduleFactory.collect(item);
 	}
 
+	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerModel(final boolean createOneWorkpackagePerModel)
+	{
+		this.createOneWorkpackagePerModel.set(createOneWorkpackagePerModel);
+		return this;
+	}
+
 	protected final Class<? extends IWorkpackageProcessor> getWorkpackageProcessorClass()
 	{
 		return workpackageProcessorClass;
@@ -119,7 +141,21 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	}
 
 	/**
-	 * Extracts and returns the context to be used from given item.
+	 * Returns a map of parameters to be added to the workpackage for the given item. This implementation returns an empty map.
+	 * <p>
+	 * <b>Important:</b> this method is called for each item and the parameter names for different items need have different names! Otherwise, there will be an exception.
+	 *
+	 * @param item
+	 * @return an empty map. Overwrite as required
+	 * @task https://github.com/metasfresh/metasfresh/issues/409
+	 */
+	protected Map<String, Object> extractParametersFromItem(final ItemType item)
+	{
+		return Collections.emptyMap();
+	}
+
+	/**
+	 * Extract and return the context to be used from given item.
 	 *
 	 * The context is used to create the internal {@link IWorkPackageBuilder}.
 	 *
@@ -145,7 +181,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 */
 	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);
 
-	/** @return true if the workpackage shall be enqueued even if there are no models collected to it. */
+	/**
+	 * @return true if the workpackage shall be enqueued even if there are no models collected to it.
+	 */
 	protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
 	{
 		return false;
@@ -171,6 +209,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		{
 			final Properties ctx = WorkpackagesOnCommitSchedulerTemplate.this.extractCtxFromItem(firstItem);
 			final Collector collector = new Collector(ctx);
+			collector.setCreateOneWorkpackagePerModel(WorkpackagesOnCommitSchedulerTemplate.this.createOneWorkpackagePerModel.get());
 			return collector;
 		}
 
@@ -178,6 +217,16 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		protected void collectItem(final Collector collector, final ItemType item)
 		{
 			collector.addItem(item);
+			final Map<String, Object> params = extractParametersFromItem(item);
+			if (params == null)
+			{
+				return; // guard against NPE
+			}
+
+			for (final Entry<String, Object> param : params.entrySet())
+			{
+				collector.setParameter(param.getKey(), param.getValue());
+			}
 		}
 
 		@Override
@@ -190,13 +239,14 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	/**
 	 * Collector class responsible to collecting items and enqueuing a workpackage which will process the collected items.
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 */
 	protected final class Collector
 	{
 		private final Properties ctx;
 		private final LinkedHashSet<Object> models = new LinkedHashSet<>();
 		private final Map<String, Object> parameters = new LinkedHashMap<>();
+		private boolean createOneWorkpackagePerModel = false;
 
 		private boolean processed = false;
 
@@ -234,7 +284,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			assertNotProcessed();
 			Check.assumeNotEmpty(parameterName, "parameterName not empty");
 
-			parameters.put(parameterName, parameterValue);
+			final Object oldValue = parameters.put(parameterName, parameterValue);
+			Check.errorIf(oldValue != null
+					// gh #409: it's ok if an equal value is added more than once. This for example happens if an inout is reversed, because there the counter doc's model interceptor is fired twice within the same transaction.
+					&& !oldValue.equals(parameterValue),
+					"Illegal attempt to overwrite parameter name={} with newValue={}; it was already set to oldValue={}",
+					parameterName, parameterValue, oldValue);
 
 			return this;
 		}
@@ -246,6 +301,18 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return parameterValue;
 		}
 
+		public final Collector setCreateOneWorkpackagePerModel(final boolean createOneWorkpackagePerModel)
+		{
+			assertNotProcessed();
+			this.createOneWorkpackagePerModel = createOneWorkpackagePerModel;
+			return this;
+		}
+
+		private final boolean isCreateOneWorkpackagePerModel()
+		{
+			return createOneWorkpackagePerModel;
+		}
+
 		public final void createAndSubmitWorkpackage()
 		{
 			markAsProcessed();
@@ -255,10 +322,27 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 				return;
 			}
 
-			Services.get(IWorkPackageQueueFactory.class)
+			final IWorkPackageBlockBuilder blockBuilder = Services.get(IWorkPackageQueueFactory.class)
 					.getQueueForEnqueuing(ctx, workpackageProcessorClass)
 					.newBlock()
-					.setContext(ctx)
+					.setContext(ctx);
+
+			if (isCreateOneWorkpackagePerModel())
+			{
+				for (final Object model : models)
+				{
+					createAndSubmitWorkpackage(blockBuilder, ImmutableList.of(model));
+				}
+			}
+			else
+			{
+				createAndSubmitWorkpackage(blockBuilder, models);
+			}
+		}
+
+		private final void createAndSubmitWorkpackage(final IWorkPackageBlockBuilder blockBuilder, final Collection<Object> modelsToEnqueue)
+		{
+			blockBuilder
 					.newWorkpackage()
 					//
 					// Workpackage Parameters
@@ -267,7 +351,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 					.end()
 					//
 					// Workpackage elements
-					.addElements(models)
+					.addElements(modelsToEnqueue)
 					//
 					// Build & enqueue
 					.build();

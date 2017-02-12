@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -43,9 +44,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -64,6 +67,7 @@ import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
@@ -84,8 +88,6 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest
 {
 	// Services
-	// private IHUShipmentScheduleBL huShipmentScheduleBL;
-	// private IHUShipmentScheduleDAO huShipmentScheduleDAO;
 	protected IHUShipperTransportationBL huShipperTransportationBL;
 	protected IHUPackageDAO huPackageDAO;
 
@@ -123,13 +125,35 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	protected IAttributeStorageFactory attributeStorageFactory;
 
 	@Override
+	protected HUTestHelper createHUTestHelper()
+	{
+		return new HUTestHelper() {
+			@Override
+			protected String createAndStartTransaction()
+			{
+				return ITrx.TRXNAME_None;
+			}
+
+		};
+	}
+
+	@Override
 	protected void initialize()
 	{
+		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
+
 		//
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
 
-		huContext = helper.createMutableHUContextForProcessing(trxName);
+		if(Services.get(ITrxManager.class).isNull(trxName))
+		{
+			huContext = helper.createMutableHUContextOutOfTransaction();
+		}
+		else
+		{
+			huContext = helper.createMutableHUContextForProcessing(trxName);
+		}
 		huStorageFactory = huContext.getHUStorageFactory();
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 
@@ -155,9 +179,16 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Handling Units Definition
 		piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
+			// PM
+			// don't create the PM item, because if we do, the HUPackingPaterialsCollector will try to do its thing.
+			// this won't work, unless we also give each HU a locator and set up a distribution network 
+			// helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO);
+			
+			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
 			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
+			
 		}
 
 		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -185,8 +216,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	@Test
 	public void test()
 	{
-		// Assume.assumeFalse("Skipping this test because fresh_QuickShipment flag is active.", HUConstants.isfresh_QuickShipment());
-
 		//
 		// Create shipment schedules
 		shipmentSchedules = null;
@@ -240,7 +269,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Aggregates Picked TUs ({@link #afterAggregation_HUExpectations}) and creates Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 * 
+	 *
 	 * NOTE: in most of the cases they are LUs but not necesary.
 	 *
 	 * Also allocates the aggregated HUs to original shipment schedules ({@link #afterAggregation_ShipmentScheduleQtyPickedExpectations}).
@@ -322,7 +351,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		// Make sure we are working with valid candidates
 		final GenerateInOutFromHU processor = new GenerateInOutFromHU();
-		final Iterator<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates(workpackage, ITrx.TRXNAME_None);
+		final Iterator<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_None);
 
 		//
 		// Important!
@@ -365,7 +394,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 				.assertExpected_ShipmentScheduleWithHUs("after split IShipmentScheduleWithHU candidates", candidatesSorted);
-		
+
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAnSubscribe();
 
 		// Process the workpackage

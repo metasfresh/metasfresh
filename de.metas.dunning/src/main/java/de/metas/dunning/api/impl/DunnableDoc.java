@@ -16,15 +16,14 @@ package de.metas.dunning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -43,6 +42,8 @@ public class DunnableDoc implements IDunnableDoc
 {
 	private final String tableName;
 	private final int record_id;
+	// FRESH-504: DocumentNo
+	private final String documentNo;
 	private final int AD_Client_ID;
 	private final int AD_Org_ID;
 	private final int C_BPartner_ID;
@@ -73,13 +74,15 @@ public class DunnableDoc implements IDunnableDoc
 	 */
 	public DunnableDoc( // NOPMD by tsa on 3/20/13 8:44 PM, allow long parameters list
 			final String tableName, final int record_id,
+			final String documentNo, // FRESH-504: Also add the documentNo
 			final int adClientId, final int adOrgId,
 			final int C_BPartner_ID, final int C_BPartner_Location_ID, final int Contact_ID,
 			final int C_Currency_ID,
 			final BigDecimal totalAmt, final BigDecimal openAmt,
 			final Date dueDate, final Date graceDate,
 			final int daysDue,
-			boolean isInDispute)
+			boolean isInDispute
+			)
 	{
 		Check.assume(!Check.isEmpty(tableName, true), "tableName not empty");
 		Check.assume(record_id > 0, "record_id > 0");
@@ -95,6 +98,7 @@ public class DunnableDoc implements IDunnableDoc
 
 		this.tableName = tableName;
 		this.record_id = record_id;
+		this.documentNo = documentNo; // FRESH-504: Add documentNo
 		this.AD_Client_ID = adClientId;
 		this.AD_Org_ID = adOrgId;
 		this.C_BPartner_ID = C_BPartner_ID;
@@ -107,6 +111,7 @@ public class DunnableDoc implements IDunnableDoc
 		this.graceDate = graceDate;
 		this.daysDue = daysDue;
 		this.inDispute = isInDispute;
+	
 	}
 
 	@Override
@@ -203,6 +208,12 @@ public class DunnableDoc implements IDunnableDoc
 		return "DunnableDoc [tableName=" + tableName + ", record_id=" + record_id + ", C_BPartner_ID=" + C_BPartner_ID + ", C_BPatner_Location_ID=" + C_BPatner_Location_ID + ", Contact_ID="
 				+ Contact_ID + ", C_Currency_ID=" + C_Currency_ID + ", totalAmt=" + totalAmt + ", openAmt=" + openAmt + ", dueDate=" + dueDate + ", graceDate=" + graceDate + ", daysDue=" + daysDue
 				+ ", inDispute=" + inDispute + "]";
+	}
+
+	@Override
+	public String getDocumentNo()
+	{
+		return documentNo;
 	}
 
 }

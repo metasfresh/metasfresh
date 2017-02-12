@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * <li>you still need to add a record to <code>AD_Process</code></li>
  * </ul>
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Inherited
 @Documented
@@ -50,4 +50,7 @@ public @interface Process
 	 * The default value is <code>true</code>, for backward compatibility.
 	 */
 	boolean requiresCurrentRecordWhenCalledFromGear() default true;
+
+	/** true if this process shall be always executed on client side */
+	boolean clientOnly() default false;
 }

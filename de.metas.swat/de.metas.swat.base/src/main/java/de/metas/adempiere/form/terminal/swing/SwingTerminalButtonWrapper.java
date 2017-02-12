@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal.swing;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,8 +32,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
@@ -45,13 +43,16 @@ import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.MImage;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
- * 
+ *
  */
 /* package */class SwingTerminalButtonWrapper
 		extends SwingTerminalComponentWrapper
@@ -94,9 +95,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 		super(terminalContext, button);
 
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
-
 		button.addActionListener(buttonActionListener);
-
 	}
 
 	public SwingTerminalButtonWrapper(final ITerminalContext terminalContext, final AppsAction action)
@@ -190,7 +189,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	{
 		getComponent().setText(text);
 	}
-	
+
 	@Override
 	public String getText()
 	{
@@ -273,14 +272,15 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 	@Override
 	public String toString()
 	{
-		return "SwingTerminalButtonWrapper [listeners=" + listeners + ", getComponent()=" + getComponent() + ", getWidth()=" + getWidth() + ", getHeight()=" + getHeight() + "]";
+		return "SwingTerminalButtonWrapper [listeners=" + listeners 
+				+ ", getComponent()=" + getComponent() 
+				+ ", getWidth()=" + getWidth() 
+				+ ", getHeight()=" + getHeight() + "]";
 	}
 
 	@Override
 	public void dispose()
 	{
-		listeners.clear();
-
 		final AbstractButton button = getComponent();
 		if (button != null)
 		{

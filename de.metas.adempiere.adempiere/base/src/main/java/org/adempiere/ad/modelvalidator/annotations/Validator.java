@@ -10,12 +10,12 @@ package org.adempiere.ad.modelvalidator.annotations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,10 +29,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used to mark ModelValidator classes
- * 
+ * Same as {@link Interceptor}
+ *
  * WARNING: this annotation is about to be deprecated. Please consider using {@link Interceptor}.
- * 
+ *
  * @author tsa
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -41,8 +41,8 @@ import java.lang.annotation.Target;
 public @interface Validator
 {
 	/**
-	 * Interface class on which this model validator will be bound
-	 * 
+	 * Same as {@link Interceptor#value()}
+	 *
 	 * @return
 	 */
 	public Class<?> value();

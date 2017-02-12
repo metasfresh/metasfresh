@@ -1,5 +1,7 @@
 package de.metas.acct.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,8 +26,6 @@ package de.metas.acct.callout;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 
@@ -35,9 +35,9 @@ import org.compiere.model.I_GL_JournalBatch;
 public class GL_Journal_TabCallout extends TabCalloutAdapter
 {
 	@Override
-	public void onNew(final GridTab gridTab)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_GL_Journal glJournal = InterfaceWrapperHelper.create(gridTab, I_GL_Journal.class);
+		final I_GL_Journal glJournal = calloutRecord.getModel(I_GL_Journal.class);
 
 		//
 		// 07569: copy description from glJournalBatch to glJournal

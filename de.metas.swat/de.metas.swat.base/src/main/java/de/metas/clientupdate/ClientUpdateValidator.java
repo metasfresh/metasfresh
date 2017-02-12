@@ -27,8 +27,6 @@ package de.metas.clientupdate;
 
 
 import java.text.MessageFormat;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JOptionPane;
 
@@ -43,6 +41,9 @@ import org.compiere.model.MSystem;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * This model validator starts a thread which check if the Client Application is up2date.
@@ -54,7 +55,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	/**
 	 * The "raw" unsubstituted version string from /de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties
 	 */
-	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_NUMBER}";
+	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_VERSION}";
 
 	public static final String PROP_adempiereJNLP = "adempiereJNLP";
 
@@ -133,14 +134,15 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	}
 
 	/**
-	 * @see DB#isBuildOK(java.util.Properties)
+	 *
 	 */
 	private final void checkImplementationVersion()
 	{
 		final String clientVersion = Adempiere.getImplementationVersion();
 		Check.assumeNotNull(clientVersion, "Adempiere.getImplementationVersion() is not null");
 		if (clientVersion.endsWith(CLIENT_VERSION_UNPROCESSED)
-				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
+				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD)
+				|| clientVersion.endsWith(Adempiere.CLIENT_BRANCH_LOCAL_BUILD))
 		{
 			log.info("Adempiere ImplementationVersion=" + clientVersion + "! Not checking against DB");
 			return;

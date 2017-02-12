@@ -27,7 +27,6 @@ package test.integration.commission.bPartner;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -85,7 +84,7 @@ public class BPartnerLocationTest extends AIntegrationTestDriver
 		address2.setIsActive(true);
 		try
 		{
-			POWrapper.delete(address2);
+			InterfaceWrapperHelper.delete(address2);
 			Assert.fail("The address was not saved.");
 		}
 		catch (AdempiereException e)

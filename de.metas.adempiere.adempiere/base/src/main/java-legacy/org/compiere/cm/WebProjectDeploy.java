@@ -18,6 +18,7 @@ package org.compiere.cm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.compiere.model.MCStage;
 import org.compiere.model.MContainer;
 import org.compiere.model.MMedia;
@@ -27,9 +28,10 @@ import org.compiere.model.MTreeNode;
 import org.compiere.model.MTree_NodeCMC;
 import org.compiere.model.MTree_NodeCMS;
 import org.compiere.model.MWebProject;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * 	Deploy Web Project
@@ -37,7 +39,7 @@ import org.compiere.util.AdempiereUserError;
  *  @author Jorg Janke
  *  @version $Id: WebProjectDeploy.java,v 1.10 2006/09/04 21:21:31 comdivision Exp $
  */
-public class WebProjectDeploy extends SvrProcess
+public class WebProjectDeploy extends JavaProcess
 {
 	/**	WebProject					*/
 	private int		p_CM_WebProject_ID = 0;
@@ -53,9 +55,10 @@ public class WebProjectDeploy extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -73,6 +76,7 @@ public class WebProjectDeploy extends SvrProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt ()
 		throws Exception
 	{
@@ -95,7 +99,13 @@ public class WebProjectDeploy extends SvrProcess
 			m_map.put(new Integer(stages[i].getCM_CStage_ID()), stages[i]);
 		
 		//	Copy Stage Tree
-		MTree treeS = new MTree (getCtx(), m_project.getAD_TreeCMS_ID(), false, false, get_TrxName());
+		final MTree treeS = MTree.builder()
+				.setCtx(getCtx())
+				.setTrxName(getTrxName())
+				.setAD_Tree_ID(m_project.getAD_TreeCMS_ID())
+				.setEditable(false)
+				.setClientTree(false)
+				.build();
 		MTreeNode root = treeS.getRoot();
 		copyStage(root, "/");
 		

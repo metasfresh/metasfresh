@@ -27,7 +27,7 @@ package org.adempiere.plaf;
  * 
  * If you are looking for the collapsible component which is used to wrap the find panel in standard windows, check {@link AdempiereTaskPaneUI}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class FindPanelUI

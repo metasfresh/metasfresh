@@ -56,4 +56,6 @@ public interface IExpressionFactory extends ISingletonService
 	 * @return compiled string expression; never returns null
 	 */
 	<V, ET extends IExpression<V>> ET compileOrDefault(String expressionStr, ET defaultExpr, final Class<ET> expressionType);
+
+	<V, ET extends IExpression<V>> ET compile(String expressionStr, Class<ET> expressionType, ExpressionContext context);
 }

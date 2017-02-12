@@ -1,8 +1,8 @@
 
 
-DROP FUNCTION IF EXISTS KPI_ProjectedCash_Function (numeric, date, date);
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_ProjectedCash_Function (numeric, date, date);
 
-CREATE OR REPLACE FUNCTION KPI_ProjectedCash_Function (IN AD_Client_ID numeric,  IN DateFrom date, IN DateTo date)
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_ProjectedCash_Function (IN AD_Client_ID numeric,  IN DateFrom date, IN DateTo date)
 RETURNS TABLE 
 (
 	ProjectedCashDifference numeric 

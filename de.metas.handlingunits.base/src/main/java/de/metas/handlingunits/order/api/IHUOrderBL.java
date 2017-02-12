@@ -24,10 +24,13 @@ package de.metas.handlingunits.order.api;
 
 import java.util.Date;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
 
 /**
@@ -57,7 +60,7 @@ public interface IHUOrderBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param ol
-	 * @param columnName optional, may be <code>null</code>, can be used to explicitly state a column has been changed (for using the method in invoice).
+	 * @param columnName optional, may be <code>null</code>. Can be used to explicitly state a column has been changed (for using the method in invoice).
 	 */
 	void updateOrderLine(I_C_OrderLine ol, String columnName);
 
@@ -105,4 +108,15 @@ public interface IHUOrderBL extends ISingletonService
 	 * @return
 	 */
 	boolean hasTUs(Properties ctx, int bpartnerId, int productId, Date date);
+
+	/**
+	 * Find best matching {@link I_M_HU_PI_Item_Product} for given <code>product</code> and <code>order</code>.
+	 * 
+	 * If an {@link I_M_HU_PI_Item_Product} was found, the consumer fill be called.
+	 * 
+	 * @param order
+	 * @param product
+	 * @param pipConsumer {@link I_M_HU_PI_Item_Product} consumer
+	 */
+	void findM_HU_PI_Item_Product(org.compiere.model.I_C_Order order, I_M_Product product, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
 }

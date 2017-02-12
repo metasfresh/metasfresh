@@ -29,7 +29,7 @@ package de.metas.adempiere.form;
 import java.util.Properties;
 
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -117,7 +117,7 @@ public class UsedBin
 		if (product == null)
 		{
 			final IProductPA productPA = Services.get(IProductPA.class);
-			product = POWrapper.create(productPA.retrieveProduct(ctx, packagingContainer.getM_Product_ID(), true, trxName), I_M_Product.class);
+			product = InterfaceWrapperHelper.create(productPA.retrieveProduct(ctx, packagingContainer.getM_Product_ID(), true, trxName), I_M_Product.class);
 		}
 		return product;
 	}

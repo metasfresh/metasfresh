@@ -13,11 +13,11 @@ package de.metas.banking.payment.paymentallocation.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -91,9 +91,9 @@ import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationForm
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.form.CreateInvoiceCandidateDialog;
-import de.metas.invoicecandidate.form.InvoiceGenerate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.model.I_C_Payment_Request;
 
@@ -441,6 +441,10 @@ final class ReadPaymentForm
 		readPaymentDocumentDialog.setTitle(msgBL.getMsg(ctx, PROPERTY_ReadPaymentStringButton));
 
 		final ReadPaymentDocumentPanel dialogComponent = readPaymentDocumentDialog.getDialogComponent();
+
+		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		dialogComponent.setContextBPartner_ID(getC_BPartner_ID());
+
 		readPaymentDocumentDialog.pack();
 		readPaymentDocumentDialog.addWindowListener(new WindowAdapter()
 		{
@@ -508,7 +512,7 @@ final class ReadPaymentForm
 				final List<I_C_Invoice_Candidate> candidates = getSelectedInvoiceCandidates();
 				if (candidates.isEmpty())
 				{
-					throw new AdempiereException("@" + InvoiceGenerate.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+					throw new AdempiereException("@" + IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
 				}
 
 				//
@@ -567,7 +571,7 @@ final class ReadPaymentForm
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
+				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
 
 		final Iterator<I_C_Invoice_Candidate> invoiceCandidatesIt = invoiceCandDAO.retrieveInvoiceCandidates(queryBuilder);
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Lists.newArrayList(invoiceCandidatesIt);
@@ -743,6 +747,7 @@ final class ReadPaymentForm
 
 	/**
 	 * task 09643
+	 * 
 	 * @returns the latest accounting date of all selected invoice candidates.
 	 */
 	@Override

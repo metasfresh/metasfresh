@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -38,8 +39,10 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
 public interface IQuery<T>
@@ -92,6 +95,18 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
+	
+	/**
+	 * Same as {@link #list(Class)} but returns an {@link ImmutableList}.
+	 * 
+	 * @param clazz
+	 * @return {@link ImmutableList}
+	 * @throws DBException
+	 */
+	default <ET extends T> ImmutableList<ET> listImmutable(Class<ET> clazz) throws DBException
+	{
+		return ImmutableList.copyOf(list(clazz));
+	}
 
 	/**
 	 * Same as {@link #list(Class)} but instead of returning a list it will return a Map indexed by model's ID.
@@ -126,7 +141,7 @@ public interface IQuery<T>
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be thrown.
+	 * Return first model that match query criteria. If there are more records that match criteria an exception will be thrown.
 	 * 
 	 * @return first PO or null.
 	 * @throws DBMoreThenOneRecordsFoundException
@@ -231,6 +246,12 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<AT> AT aggregate(String columnName, String sqlFunction, Class<AT> returnType) throws DBException;
+
+	default <AT> AT aggregate(final ModelColumn<T, ?> column, final String sqlFunction, final Class<AT> returnType) throws DBException
+	{
+		final String columnName = column.getColumnName();
+		return aggregate(columnName, sqlFunction, returnType);
+	}
 
 	/**
 	 * Turn on/off the data access filter.
@@ -398,7 +419,7 @@ public interface IQuery<T>
 	 * @param keyFunction key function used to provide the key used to split the returned records.
 	 * @return collection of record groups.
 	 */
-	<K, ET extends T> Collection<Collection<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> Collection<List<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
 
 	/**
 	 * Adds SQL query to be joined as UNION ALL/DISTINCT.
@@ -432,4 +453,27 @@ public interface IQuery<T>
 	 * @return executor which will assist you with the INSERT.
 	 */
 	<ToModelType> IQueryInsertExecutor<ToModelType, T> insertDirectlyInto(Class<ToModelType> toModelClass);
+
+	/**
+	 * Return a stream of all records that match the query criteria.
+	 * 
+	 * @return Stream
+	 * @throws DBException
+	 */
+	default Stream<T> stream() throws DBException
+	{
+		return list().stream();
+	}
+
+	/**
+	 * Return a stream of all records that match the query criteria.
+	 * 
+	 * @param clazz all resulting models will be converted to this interface
+	 * @return Stream
+	 * @throws DBException
+	 */
+	default <ET extends T> Stream<ET> stream(final Class<ET> clazz) throws DBException
+	{
+		return list(clazz).stream();
+	}
 }

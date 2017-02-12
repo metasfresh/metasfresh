@@ -168,7 +168,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 				+ " AND EXISTS (SELECT 1 FROM C_CashLine cl, C_AllocationLine al "
 				+ "where cl.C_Cash_ID=? and al.C_CashLine_ID=cl.C_CashLine_ID "
 				+ "and C_AllocationHdr.C_AllocationHdr_ID=al.C_AllocationHdr_ID)";
-		final Query query = MTable.get(ctx, I_C_AllocationHdr.Table_ID)
+		final Query query = MTable.get(ctx, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 				.createQuery(whereClause, trxName);
 		query.setParameters(new Object[] { C_Cash_ID });
 		final List<MAllocationHdr> list = query.list();
@@ -584,7 +584,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Reverse_Correct); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 

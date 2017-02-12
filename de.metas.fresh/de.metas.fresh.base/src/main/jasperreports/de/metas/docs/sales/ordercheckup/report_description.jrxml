@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-12-20T18:01:42 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="170" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.6105100000000023"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -25,7 +28,8 @@
 	r.document_no,
 	r.WarehouseName,
 	r.PlantName,
-	r.ReportDocumentTypeName
+	r.ReportDocumentTypeName,
+	r.DatePromised
 FROM report.RV_C_Order_MFGWarehouse_Report_Description r
 WHERE
 	CASE
@@ -48,6 +52,7 @@ LIMIT 1
 	<field name="warehousename" class="java.lang.String"/>
 	<field name="plantname" class="java.lang.String"/>
 	<field name="reportdocumenttypename" class="java.lang.String"/>
+	<field name="datepromised" class="java.sql.Timestamp"/>
 	<variable name="docno" class="java.lang.String">
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA["Auftragsbestätigung"]]></initialValueExpression>
@@ -68,7 +73,7 @@ LIMIT 1
 		<band height="170" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ( $P{RECORD_ID} != null )]]></printWhenExpression>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="365" y="47" width="135" height="13" forecolor="#000000"/>
+				<reportElement key="textField-1" x="365" y="74" width="135" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -81,28 +86,28 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1" key="textField-6" x="365" y="35" width="135" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="365" y="62" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Kd.-Bestellnummer]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="44c496d6-bc82-4c9a-b96b-db76a659ebd7" key="textField-6" x="365" y="63" width="97" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="365" y="90" width="97" height="13" forecolor="#000000" uuid="44c496d6-bc82-4c9a-b96b-db76a659ebd7"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Lieferung an:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="343b743c-921e-474a-a8eb-12320275ef79" key="textField-6" x="90" y="63" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="90" y="63" width="218" height="13" forecolor="#000000" uuid="343b743c-921e-474a-a8eb-12320275ef79"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Abw. Anlieferort]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="90" y="75" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-1" x="90" y="75" width="218" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -115,14 +120,14 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{handoverlocation}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="2d94c569-3bc2-49b0-a3c8-c3b965d541fb" key="textField-6" x="90" y="8" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="90" y="8" width="218" height="13" forecolor="#000000" uuid="2d94c569-3bc2-49b0-a3c8-c3b965d541fb"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[AnsprechpartnerIn / Telefon]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="90" y="20" width="218" height="13" forecolor="#000000">
+				<reportElement key="textField-1" x="90" y="20" width="218" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf">
 					<printWhenExpression><![CDATA[new Boolean( $F{cont_name} != null && $F{cont_phone} != null )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -137,7 +142,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{cont_name} + " / " + $F{cont_phone}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="90" y="47" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-1" x="90" y="47" width="218" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -150,21 +155,21 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{cont_fax}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="0efbbf25-8d77-49c0-b29d-e6c0ef6c1198" key="textField-6" x="90" y="35" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="90" y="35" width="218" height="13" forecolor="#000000" uuid="0efbbf25-8d77-49c0-b29d-e6c0ef6c1198"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Fax-Nr.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement uuid="343b743c-921e-474a-a8eb-12320275ef79" key="textField-6" x="90" y="90" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="90" y="90" width="218" height="13" forecolor="#000000" uuid="343b743c-921e-474a-a8eb-12320275ef79"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Abfahrts- / Abholzeit]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy / HH:mm " isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="90" y="102" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-1" x="90" y="102" width="218" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -177,14 +182,14 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{preparationdate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1" key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<text><![CDATA[Auftragsnummer]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="365" y="20" width="135" height="13" forecolor="#000000"/>
+				<reportElement key="textField-1" x="365" y="20" width="135" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -197,7 +202,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{document_no}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-7" x="90" y="125" width="218" height="13" forecolor="#000000"/>
+				<reportElement key="textField-7" x="90" y="125" width="218" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +215,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{reportdocumenttypename}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-8" x="90" y="138" width="103" height="13" forecolor="#000000"/>
+				<reportElement key="textField-8" x="90" y="138" width="103" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -223,7 +228,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA["Produktionsstätte: "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-9" x="90" y="151" width="103" height="13" forecolor="#000000">
+				<reportElement key="textField-9" x="90" y="151" width="103" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf">
 					<printWhenExpression><![CDATA[$F{warehousename} != null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -238,7 +243,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA["Lager: "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-10" x="193" y="138" width="307" height="13" forecolor="#000000"/>
+				<reportElement key="textField-10" x="193" y="138" width="307" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -251,7 +256,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$F{plantname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-11" x="193" y="151" width="307" height="13" forecolor="#000000"/>
+				<reportElement key="textField-11" x="193" y="151" width="307" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -263,11 +268,22 @@ LIMIT 1
 				</textElement>
 				<textFieldExpression><![CDATA[$F{warehousename}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="365" y="35" width="135" height="13" uuid="bd34a761-a5df-4c31-aafe-7a140e1101fa"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Zugesagter Termin]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyyy / HH:mm">
+				<reportElement x="365" y="48" width="135" height="13" uuid="39e8a0f7-fcc6-40fa-aa95-987d777aa9d1"/>
+				<textFieldExpression><![CDATA[$F{datepromised}]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="170">
 			<printWhenExpression><![CDATA[new Boolean ( $P{C_BPartner_ID} != null && $P{DatePromised} != null )]]></printWhenExpression>
 			<textField pattern="dd.MM.yyy" isBlankWhenNull="true">
-				<reportElement uuid="ce743195-413e-4016-8405-428ac8e84baf" key="textField-1" x="365" y="20" width="135" height="13" forecolor="#000000"/>
+				<reportElement key="textField-1" x="365" y="20" width="135" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -280,7 +296,7 @@ LIMIT 1
 				<textFieldExpression><![CDATA[$P{DatePromised}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1" key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000"/>
+				<reportElement key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
 					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>

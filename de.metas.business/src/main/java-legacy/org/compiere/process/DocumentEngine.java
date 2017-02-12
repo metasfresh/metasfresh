@@ -23,15 +23,12 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -84,7 +81,7 @@ public class DocumentEngine implements DocAction
 	private String m_action = null;
 
 	/** Logger */
-	private static Logger logger = LogManager.getLogger(DocumentEngine.class);
+	private static final transient Logger logger = LogManager.getLogger(DocumentEngine.class);
 
 	/**
 	 * Get Doc Status
@@ -248,7 +245,7 @@ public class DocumentEngine implements DocAction
 		{
 			if (m_document != null)
 			{
-				m_document.get_Logger().info("**** No Action (Prc=" + processAction + "/Doc=" + docAction + ") " + m_document);
+				m_document.get_Logger().debug("**** No Action (Prc={}/Doc={}) {}", processAction, docAction, m_document);
 			}
 			return true;
 		}
@@ -259,12 +256,12 @@ public class DocumentEngine implements DocAction
 		}
 		if (m_document != null)
 		{
-			m_document.get_Logger().info("**** Action=" + m_action + " (Prc=" + processAction + "/Doc=" + docAction + ") " + m_document);
+			m_document.get_Logger().debug("**** Action={} (Prc={}/Doc={}) {}", m_action, processAction, docAction, m_document);
 		}
 		final boolean success = processIt(m_action);
 		if (m_document != null)
 		{
-			m_document.get_Logger().debug("**** Action=" + m_action + " - Success=" + success);
+			m_document.get_Logger().debug("**** Action={} - Success={}", m_action, success);
 		}
 		return success;
 	}	// process
@@ -1032,23 +1029,6 @@ public class DocumentEngine implements DocAction
 	public File createPDF()
 	{
 		return null;
-	}
-
-	/**
-	 * Checks the access rights of the given role/client for the given document actions.
-	 *
-	 * @param optionsCtx
-	 * @param adClientId
-	 * @param adRoleId
-	 * @return number of valid actions in the ctx options
-	 */
-	public static int checkActionAccess(final IDocActionOptionsContext optionsCtx,
-			final int adClientId,
-			final int adRoleId)
-	{
-		final Properties ctx = optionsCtx.getCtx();
-		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-		return role.getActionAccess(optionsCtx, adClientId);
 	}
 
 	@Override

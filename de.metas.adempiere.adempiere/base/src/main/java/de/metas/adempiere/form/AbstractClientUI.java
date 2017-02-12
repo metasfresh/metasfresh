@@ -29,6 +29,7 @@ package de.metas.adempiere.form;
 import java.io.InputStream;
 
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -158,6 +159,12 @@ public abstract class AbstractClientUI implements IClientUI
 	public IClientUIInvoker invoke()
 	{
 		return getCurrentInstance().invoke();
+	}
+	
+	@Override
+	public IClientUIAsyncInvoker invokeAsync()
+	{
+		return getCurrentInstance().invokeAsync();
 	}
 
 	@Override

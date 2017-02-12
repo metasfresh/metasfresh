@@ -10,18 +10,17 @@ package org.adempiere.ad.validationRule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.Check;
@@ -38,24 +37,6 @@ public class EvaluateeValidationContext implements IValidationContext
 	}
 
 	/**
-	 * @return always 0
-	 */
-	@Override
-	public int getWindowNo()
-	{
-		return 0;
-	}
-
-	/**
-	 * @return null
-	 */
-	@Override
-	public String getContextTableName()
-	{
-		return null;
-	}
-
-	/**
 	 * @return null
 	 */
 	@Override
@@ -65,9 +46,21 @@ public class EvaluateeValidationContext implements IValidationContext
 	}
 
 	@Override
-	public String get_ValueAsString(String variableName)
+	public String get_ValueAsString(final String variableName)
 	{
 		return evaluatee.get_ValueAsString(variableName);
+	}
+
+	@Override
+	public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+	{
+		return evaluatee.get_ValueAsInt(variableName, defaultValue);
+	}
+
+	@Override
+	public Boolean get_ValueAsBoolean(final String variableName, final Boolean defaultValue)
+	{
+		return evaluatee.get_ValueAsBoolean(variableName, defaultValue);
 	}
 
 }

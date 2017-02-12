@@ -13,16 +13,17 @@ package de.metas.document.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -30,11 +31,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -131,7 +136,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getFilters();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, adClientId);
-		filters.addInArrayFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
+		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
 
 		if (docSubType != DOCSUBTYPE_Any)
@@ -154,4 +159,34 @@ public class DocTypeDAO implements IDocTypeDAO
 				.create()
 				.list(I_C_DocType.class);
 	}
+
+	@Override
+	public String retrieveDocBaseTypeCounter(final Properties ctx, final String docBaseType)
+	{
+		final Map<String, String> docBaseTypePairs = retrieveDocBaseTypeCountersMap(ctx);
+
+		return docBaseTypePairs.get(docBaseType);
+	}
+
+	@Cached(cacheName = I_C_DocBaseType_Counter.Table_Name)
+	public Map<String, String> retrieveDocBaseTypeCountersMap(@CacheCtx final Properties ctx)
+	{
+		// load the existing info from the table C_DocBaseType_Counter in an immutable map
+		ImmutableMap.Builder<String, String> docBaseTypeCounters = ImmutableMap.builder();
+
+		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_DocBaseType_Counter.class, ctx, ITrx.TRXNAME_None);
+
+		queryBuilder.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
+
+		final List<I_C_DocBaseType_Counter> docBaseTypeCountersList = queryBuilder.create().list();
+
+		for (final I_C_DocBaseType_Counter docBaseTypeCounter : docBaseTypeCountersList)
+		{
+			docBaseTypeCounters.put(docBaseTypeCounter.getDocBaseType(), docBaseTypeCounter.getCounter_DocBaseType());
+		}
+
+		return docBaseTypeCounters.build();
+	}
+
 }

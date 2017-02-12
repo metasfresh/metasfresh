@@ -24,7 +24,6 @@ FROM (
 	WHERE qoh.Processed='Y' AND qoh.IsActive='Y' AND qohl.IsActive='Y'
 	UNION -- FRESH-86
 	SELECT pc.M_Product_ID, pc.M_AttributeSetInstance_ID, pc.DatePromised::Date
-	
 	FROM PMM_PurchaseCandidate pc
 	WHERE pc.IsActive='Y'
 ) data

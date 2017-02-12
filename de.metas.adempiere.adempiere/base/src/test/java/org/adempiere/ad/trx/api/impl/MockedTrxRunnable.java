@@ -22,7 +22,6 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -89,7 +88,21 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 	public void assertExecutedUsingTrxName(final String expectedLastTrxName)
 	{
 		assertExecuted();
-		Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, this.lastTrxName);
+
+		if (expectedLastTrxName == null)
+		{
+			Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, getLastTrxName());
+		}
+		else
+		{
+			// NOTE: until we get rid of "TrxCallableWithTrxName" our Runnables will get the "effective" localTrxName instead of ThreadInherited.
+			// Assert.assertEquals("Runnable was executed using expected trxName: " + this, ITrx.TRXNAME_ThreadInherited, getLastTrxName());
+			Assert.assertNotNull(TrxCallableWithTrxName.class); // non-sense, but we just want to have a reference here for future refactoring
+			Assert.assertEquals("Runnable was executed using expected trxName: " + this, expectedLastTrxName, getLastTrxName());
+
+			final String lastTrxNameEffective = getLastTrxNameEffective();
+			Assert.assertEquals("Runnable was executed using expected EFFECTIVE trxName: " + this, expectedLastTrxName, lastTrxNameEffective);
+		}
 	}
 
 	/**
@@ -115,6 +128,11 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 	public String getLastTrxName()
 	{
 		return lastTrxName;
+	}
+
+	public String getLastTrxNameEffective()
+	{
+		return lastTrx != null ? lastTrx.getTrxName() : ITrx.TRXNAME_None;
 	}
 
 	public ITrx getLastTrx()

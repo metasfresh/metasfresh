@@ -9,12 +9,12 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.SvrProcess;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest_Source_v;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -41,11 +41,11 @@ import de.metas.process.Process;
 /**
  * Populates {@link I_Fact_Acct_ActivityChangeRequest} table by filtering from {@link I_Fact_Acct_ActivityChangeRequest_Source_v}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09110_Konten_KST_Pflicht_%28105477200774%29
  */
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class Fact_Acct_ActivityChangeRequest_Populate extends SvrProcess
+public class Fact_Acct_ActivityChangeRequest_Populate extends JavaProcess
 {
 	@Param(parameterName = "C_Period_ID")
 	private int p_C_Period_ID;
@@ -157,7 +157,7 @@ public class Fact_Acct_ActivityChangeRequest_Populate extends SvrProcess
 			}
 			Check.assumeNotEmpty(adTableIds, "Some supported tables shall be defined, but there are none"); // shall not happen
 
-			queryBuilder.addInArrayFilter(I_Fact_Acct_ActivityChangeRequest_Source_v.COLUMN_AD_Table_ID, adTableIds);
+			queryBuilder.addInArrayOrAllFilter(I_Fact_Acct_ActivityChangeRequest_Source_v.COLUMN_AD_Table_ID, adTableIds);
 		}
 
 		return queryBuilder;

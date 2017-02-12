@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -47,12 +46,18 @@ public interface IShipmentScheduleBL extends ISingletonService
 	public static final String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
-	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns: <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyDeliverable} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status} <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt} <li>
+	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns:
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyDeliverable}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
+	 * <li>
+	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
+	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
 	 *
 	 * To actually set those values, this method calls the registered {@link ICandidateProcessor}.
@@ -88,7 +93,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Create grouping key for given shipment schedule
 	 *
 	 * @param sched
-	 * @param includeBPartner if true, C_BPartner_ID shall be included in grouping key too
+	 * @param includeBPartner if <code>true</code>, the effective <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> shall be included in grouping key too.
 	 * @return key
 	 */
 	ArrayKey mkKeyForGrouping(I_M_ShipmentSchedule sched, boolean includeBPartner);
@@ -114,19 +119,19 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Returns the UOM of QtyOrdered, QtyToDelvier, QtyPicked etc
-	 * 
+	 *
 	 * @param sched
 	 * @return
 	 */
 	I_C_UOM getC_UOM(I_M_ShipmentSchedule sched);
 
 	/**
-	 * 
+	 *
 	 * <strike>Return the UOM of the orderLine, which is also the UOM of both the order line's and the shipment line's QtyEntered.</strike>
-	 * 
+	 *
 	 * Return the UOM of the prospective shipment line's QtyEntered. Note that currently this is the internal stocking-UOM because that's what our EDI-customer expects the UOM to be. they order
 	 * in UOM "TU", but want a CU-UOM to be returned.
-	 * 
+	 *
 	 * @param sched
 	 * @return
 	 */
@@ -150,14 +155,14 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return the previous <code>QtyOrdered</code> value of the schedule
-	 * <li> NOTE: This returned value is never used. Maybe we shall change this method to return void.
+	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
 	 * @task 08255
 	 */
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
-	
+
 	/**
 	 * Registers <code>ShipmentScheduleQtyUpdateListener</code> for given table name.
 	 *
@@ -167,4 +172,13 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param listener
 	 */
 	void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener);
+
+	/**
+	 * Close the given Shipment Schedule.
+	 *
+	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
+	 *
+	 * @param schedule
+	 */
+	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
 }

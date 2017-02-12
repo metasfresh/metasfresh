@@ -4,20 +4,20 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.GridTab;
 import org.compiere.process.DocAction;
-import org.compiere.process.SvrProcess;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -45,12 +45,12 @@ import de.metas.order.process.impl.CreatePOFromSOsAggregator;
  * Creates pruchase order(s) from sales order(s).
  * This process is to replace the old org.compiere.process.OrderPOCreate.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
 public class C_Order_CreatePOFromSOs
-		extends SvrProcess
-		implements ISvrProcessPrecondition
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 
 	private Timestamp p_DatePromised_From;
@@ -133,16 +133,16 @@ public class C_Order_CreatePOFromSOs
 	 * @return <code>true</code> if the given gridTab is a completed sales order.
 	 */
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (!I_C_Order.Table_Name.equals(gridTab.getTableName()))
+		if (!I_C_Order.Table_Name.equals(context.getTableName()))
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(gridTab, I_C_Order.class);
-		return order.isSOTrx()
-				&& DocAction.STATUS_Completed.equals(order.getDocStatus());
+		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+		return ProcessPreconditionsResolution.acceptIf(order.isSOTrx()
+				&& DocAction.STATUS_Completed.equals(order.getDocStatus()));
 	}
 
 }

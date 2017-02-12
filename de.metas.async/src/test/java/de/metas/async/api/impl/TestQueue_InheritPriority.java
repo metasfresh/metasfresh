@@ -52,7 +52,7 @@ import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 /**
  * See {@link #test_forwardWorkPackagePrio()}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class TestQueue_InheritPriority

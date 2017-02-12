@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_RV_C_OrderLine_Overview;
 import org.compiere.apps.form.FormFrame;
@@ -55,6 +53,8 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CollapsiblePanel;
 import org.compiere.util.Env;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author tsa
@@ -152,7 +152,7 @@ public class OrderOverview implements FormPanel
 
 	private static List<GridTab> getGridTabs(Properties ctx, int windowNo, int AD_Window_ID)
 	{
-		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID, 0);
+		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
 		if (wVO == null)
 		{
 			MWindow w = new MWindow(Env.getCtx(), AD_Window_ID, null);

@@ -13,24 +13,25 @@ package de.metas.fresh.gui.search;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -40,11 +41,14 @@ import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
+import org.compiere.model.I_AD_InfoColumn;
+import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.dimension.IDimensionspecDAO;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.logging.LogManager;
 
 /**
@@ -100,18 +104,55 @@ public class MRPInfoWindowAttribGroups
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final Properties ctx = Env.getCtx();
 
-		final ColumnInfo[] s_layoutAttribValues = new ColumnInfo[] {
-				new ColumnInfo(msgBL.translate(ctx, " "), "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"),
-				// new ColumnInfo(msgBL.translate(ctx, "ProductValue"), "(select p.Value from M_Product p where p.M_Product_ID=" + TABLE_NAME + ".M_Product_ID)", String.class),
-				new ColumnInfo(msgBL.translate(ctx, "ValueAggregateName"), "GroupName", String.class).setColumnName("GroupName"),
-				new ColumnInfo(msgBL.translate(ctx, "PMM_QtyPromised_OnDate"), "PMM_QtyPromised_OnDate", Double.class), // FRESH-86
-				new ColumnInfo(msgBL.translate(ctx, "qtyreserved_ondate"), "qtyreserved_ondate", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "qtyordered_ondate"), "qtyordered_ondate", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "qtymaterialentnahme"), "qtymaterialentnahme", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "fresh_qtyonhand_ondate"), "fresh_qtyonhand_ondate", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "fresh_qtypromised"), "fresh_qtypromised", Double.class),
-				new ColumnInfo(msgBL.translate(ctx, "fresh_qtymrp"), "fresh_qtymrp", Double.class)
-		};
+		//
+		// gh #213: get individual AD_InfoColumns and check if they are active. Only add respective ColumnInfos to the mini-table if they are active
+		final IADInfoWindowDAO adInfoWindowDAO = Services.get(IADInfoWindowDAO.class);
+		final I_AD_InfoWindow infoWindow = adInfoWindowDAO.retrieveInfoWindowByTableName(ctx, I_X_MRP_ProductInfo_V.Table_Name);
+
+		final List<ColumnInfo> s_layoutAttribValues = new ArrayList<ColumnInfo>();
+
+		s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, " "), "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"));
+		s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, "ValueAggregateName"), "GroupName", String.class).setColumnName("GroupName"));
+
+		final I_AD_InfoColumn qtyOnHandColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOnHand); // gh #213: new column as of this task
+		if (qtyOnHandColumn != null && qtyOnHandColumn.isActive())
+		{
+			s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOnHand), I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOnHand, Double.class));
+		}
+
+		final I_AD_InfoColumn pmmQtyPromisedOnDateColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_PMM_QtyPromised_OnDate);
+		if (pmmQtyPromisedOnDateColumn != null && pmmQtyPromisedOnDateColumn.isActive())
+		{
+			s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, I_X_MRP_ProductInfo_V.COLUMNNAME_PMM_QtyPromised_OnDate), I_X_MRP_ProductInfo_V.COLUMNNAME_PMM_QtyPromised_OnDate, Double.class)); // FRESH-86
+		}
+
+		s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, "qtyreserved_ondate"), "qtyreserved_ondate", Double.class));
+		s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, "qtyordered_ondate"), "qtyordered_ondate", Double.class));
+
+		final I_AD_InfoColumn qtyMaterialentnahmeColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyMaterialentnahme);
+		if (qtyMaterialentnahmeColumn != null && qtyMaterialentnahmeColumn != null && qtyMaterialentnahmeColumn.isActive())
+		{
+			s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, I_X_MRP_ProductInfo_V.COLUMNNAME_QtyMaterialentnahme), I_X_MRP_ProductInfo_V.COLUMNNAME_QtyMaterialentnahme, Double.class));
+		}
+
+		final I_AD_InfoColumn freshQtyOnHandOnDate = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyOnHand_OnDate);
+		if (freshQtyOnHandOnDate != null && freshQtyOnHandOnDate.isActive())
+		{
+			s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyOnHand_OnDate), I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyOnHand_OnDate, Double.class));
+		}
+
+		final I_AD_InfoColumn freshQtyPromisedColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyPromised);
+		if (freshQtyPromisedColumn != null && freshQtyPromisedColumn.isActive())
+		{
+			s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyPromised), I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyPromised, Double.class));
+		}
+
+		final I_AD_InfoColumn freshQtyMRPColumn = adInfoWindowDAO.retrieveInfoColumnByColumnName(infoWindow, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP);
+		if (freshQtyMRPColumn != null && freshQtyMRPColumn.isActive())
+		{
+			s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP), I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP, Double.class));
+		}
+
 		/** From Clause */
 		final String s_sqlFrom = FUNCTION_NAME + "('@DateGeneral@'::DATE, ?)";
 		/** Where Clause */
@@ -119,7 +160,7 @@ public class MRPInfoWindowAttribGroups
 
 		final boolean multiSelection = false;
 		final boolean addAccessSQL = false; // doesn't work with a function
-		m_sqlDimensions = dimensionsTbl.prepareTable(s_layoutAttribValues, s_sqlFrom, s_sqlWhere, multiSelection, FUNCTION_NAME, addAccessSQL);
+		m_sqlDimensions = dimensionsTbl.prepareTable(s_layoutAttribValues.toArray(new ColumnInfo[0]), s_sqlFrom, s_sqlWhere, multiSelection, FUNCTION_NAME, addAccessSQL);
 
 		m_sqlDimensions += " ORDER BY GroupName";
 		dimensionsTbl.setMultiSelection(false);
@@ -155,9 +196,9 @@ public class MRPInfoWindowAttribGroups
 	{
 		final String sql = Env.parseContext(getCtx(), getWindowNo(),
 				m_sqlDimensions,
-				false, // onlyWindow,
+				false,             // onlyWindow,
 				false // ignoreUnparsable
-				);
+		);
 		if (Check.isEmpty(sql, true))
 		{
 			dimensionsTbl.clear();

@@ -16,7 +16,13 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import java.util.Objects;
+
 import javax.annotation.concurrent.Immutable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * (String) Value Name Pair
@@ -27,10 +33,17 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class ValueNamePair extends NamePair
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -8315081335749462163L;
+
+	@JsonCreator
+	public static final ValueNamePair of(@JsonProperty("v") final String value, @JsonProperty("n") final String name)
+	{
+		if (Objects.equals(value, EMPTY.getValue()) && Objects.equals(name, EMPTY.getName()))
+		{
+			return EMPTY;
+		}
+		return new ValueNamePair(value, name);
+	}
 
 	public static final ValueNamePair EMPTY = new ValueNamePair("", "");
 
@@ -54,6 +67,7 @@ public final class ValueNamePair extends NamePair
 	 *
 	 * @return Value
 	 */
+	@JsonProperty("v")
 	public String getValue()
 	{
 		return m_value;
@@ -65,29 +79,25 @@ public final class ValueNamePair extends NamePair
 	 * @return Value
 	 */
 	@Override
+	@JsonIgnore
 	public String getID()
 	{
 		return m_value;
 	}	// getID
 
-	/**
-	 * Equals
-	 *
-	 * @param obj Object
-	 * @return true, if equal
-	 */
 	@Override
 	public boolean equals(final Object obj)
 	{
+		if(obj == this)
+		{
+			return true;
+		}
+		
 		if (obj instanceof ValueNamePair)
 		{
-			final ValueNamePair pp = (ValueNamePair)obj;
-			if (pp.getName() != null && pp.getValue() != null &&
-					pp.getName().equals(getName()) && pp.getValue().equals(m_value))
-			{
-				return true;
-			}
-			return false;
+			final ValueNamePair other = (ValueNamePair)obj;
+			return Objects.equals(this.m_value, other.m_value)
+					&& Objects.equals(this.getName(), other.getName());
 		}
 		return false;
 	}	// equals

@@ -1,31 +1,10 @@
 package de.metas.adempiere.service;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_FreightCostDetail;
+import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -34,7 +13,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
+
+import de.metas.order.IOrderPA;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -42,25 +22,27 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Checks if {@link I_C_Order#FREIGHTCOSTRULE_Versandkostenpauschale} is selected as the order's freight cost rule. If yes, it checks if there are {@link I_M_FreightCostDetail} records for the
 	 * given BPartner, Location and Shipper.
-	 * <p>
-	 * <b>Important: Implementors may not assume that the given order is instanceof PO.<b>
 	 *
 	 * @param order
-	 * @return
 	 *
 	 * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
+	 * 
+	 * @throws AdempiereException in case of failure
 	 */
-	String checkFreightCost(Properties ctx, I_C_Order order, boolean nullIfOk, String trxName);
-
-	String setPricingSystemId(I_C_Order order, boolean nullIfOk, String trxName);
+	void checkFreightCost(I_C_Order order);
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
 	 *
-	 * @param mTab
-	 * @return
+	 * This method does nothing if:
+	 * <ul>
+	 * <li>pricing system is not set
+	 * <li>partner location is not set
+	 * </ul>
+	 * 
+	 * @throws PriceListNotFoundException if no price list was found
 	 */
-	String setPriceList(I_C_Order order, boolean nullIfOk, int pricingSysId, String trxName);
+	void setPriceList(I_C_Order order);
 
 	/**
 	 * Gets the corresponding priceListVersion for the given <code>order</code>, using
@@ -109,24 +91,14 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
-	 * 
+	 *
 	 * In case there is any error, this method will throw an exception.
-	 * 
+	 *
 	 * NOTE: in case the bpartner location or the pricing system is not set, this method will skip the validation and no exception will be thrown.
 	 *
 	 * @param order
-	 * @param trxName
 	 */
-	void checkForPriceList(I_C_Order order, String trxName);
-
-	/**
-	 * Retrieve total tax amount for this order
-	 *
-	 * @param order
-	 * @param trxName
-	 * @return
-	 */
-	BigDecimal retrieveTaxAmt(I_C_Order order);
+	void checkForPriceList(I_C_Order order);
 
 	boolean updateFreightAmt(Properties ctx, I_C_Order order, String trxName);
 
@@ -146,8 +118,9 @@ public interface IOrderBL extends ISingletonService
 	 * </ul>
 	 *
 	 * @param order
+	 * @param overridePricingSystem true if pricing system shall be set even if is already set
 	 */
-	void setM_PricingSystem_ID(I_C_Order order);
+	void setM_PricingSystem_ID(I_C_Order order, boolean overridePricingSystem);
 
 	/**
 	 *
@@ -190,10 +163,6 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setBPartner(I_C_Order order, I_C_BPartner bp);
 
-	void setOrder(I_C_OrderLine orderLine, I_C_Order order, String trxName);
-
-	void setProduct(I_C_OrderLine orderLine, I_M_Product product);
-
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner
 	 * & Bill location, then look into the order's BP_Relations for it. Note that this method does not save the given order.
@@ -230,7 +199,8 @@ public interface IOrderBL extends ISingletonService
 	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
 
 	/**
-	 * Close given order line (i.e. set QtyOrdered=QtyDelivered) and update reservations.
+	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
+	 * Also update the order line's reservation via {@link IOrderPA#reserveStock(I_C_Order, I_C_OrderLine...)}.
 	 *
 	 * This method is saving the order line.
 	 *

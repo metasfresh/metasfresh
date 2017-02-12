@@ -28,12 +28,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 
 public interface IUserDAO extends ISingletonService
 {
-	int SYSTEM_USER_ID = 0;
+	int SYSTEM_USER_ID = Env.CTXVALUE_AD_User_ID_System;
 	int SUPERUSER_USER_ID = 100;
 	
 	String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";

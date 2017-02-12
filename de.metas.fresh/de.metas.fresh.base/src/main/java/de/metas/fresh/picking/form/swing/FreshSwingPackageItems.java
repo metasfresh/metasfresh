@@ -13,18 +13,17 @@ package de.metas.fresh.picking.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -42,7 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.PackingMd;
@@ -52,12 +51,14 @@ import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.fresh.picking.FreshProductLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.PickingSlotKeyGroup;
 import de.metas.fresh.picking.PickingSlotLayout;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsRequest;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsResult;
 import de.metas.fresh.picking.model.DistributeQtyToNewHUsResultExecutorTemplate;
@@ -66,12 +67,8 @@ import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.handlingunits.IHUAware;
-import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
-import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
-import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.exceptions.HULoadException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -306,7 +303,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				// e.g. de.metas.shipping.process.M_ShippingPackage_CreateFromPickingSlots
 				throw new AdempiereException(FreshSwingPackageItems.ERR_NO_OPEN_HU_FOUND);
 			}
-			final FreshPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
+			final IFreshPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
 			packItemToHU(unallocPackingItem, newQty, hu);
 
 			//
@@ -357,7 +354,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 			//
 			// Remote Qty from HU
-			final AbstractPackingItem pckItem = selectedProduct.getPackingItem();
+			final IPackingItem pckItem = selectedProduct.getPackingItem();
 			removeProductQty(pckItem, selectedPickingSlotKey.getM_HU(), qtyToRemove);
 
 			// FIXME: reset the qty field, remove button etc
@@ -386,17 +383,17 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		return getProductsKeyLayout().getKeys(FreshProductKey.class);
 	}
 
-	public List<AbstractPackingItem> createUnpackedForBpAndBPLoc(final List<AbstractPackingItem> packingItems, final PickingSlotKey pickingSlotKey)
+	public List<IPackingItem> createUnpackedForBpAndBPLoc(final List<IPackingItem> packingItems, final PickingSlotKey pickingSlotKey)
 	{
 		if (packingItems == null || packingItems.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		final List<AbstractPackingItem> result = new ArrayList<>();
-		for (final AbstractPackingItem apck : packingItems)
+		final List<IPackingItem> result = new ArrayList<>();
+		for (final IPackingItem apck : packingItems)
 		{
-			final FreshPackingItem packingItem = (FreshPackingItem)apck;
+			final IFreshPackingItem packingItem = FreshPackingItemHelper.cast(apck);
 
 			// Skip those which are not compatible with our picking slot
 			if (!pickingSlotKey.isCompatible(packingItem))
@@ -420,8 +417,8 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		final PackingItemsMap map = getPackageTerminalPanel().getPackItems();
 		final int key = pickingSlotKey.getM_PickingSlot().getM_PickingSlot_ID();
-		final List<AbstractPackingItem> packedItems = map.get(key);
-		final List<AbstractPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(map.get(PackingItemsMap.KEY_UnpackedItems), pickingSlotKey);
+		final List<IPackingItem> packedItems = map.get(key);
+		final List<IPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(map.get(PackingItemsMap.KEY_UnpackedItems), pickingSlotKey);
 
 		if (unpackedItems == null || unpackedItems.isEmpty())
 		{
@@ -433,13 +430,13 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			return PackingStates.unpacked;
 		}
 
-		final List<AbstractPackingItem> allQtyremainingitems = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> allQtyremainingitems = new ArrayList<IPackingItem>();
 
-		final List<AbstractPackingItem> partialQtyremainingitems = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> partialQtyremainingitems = new ArrayList<IPackingItem>();
 
-		for (final AbstractPackingItem upItem : unpackedItems)
+		for (final IPackingItem upItem : unpackedItems)
 		{
-			for (final AbstractPackingItem pItem : packedItems)
+			for (final IPackingItem pItem : packedItems)
 			{
 				if (pItem.getGroupingKey() == upItem.getGroupingKey())
 				{
@@ -500,7 +497,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 	}
 
-	private void packItemToHU(final FreshPackingItem itemToPack, final BigDecimal qtyToPack, final I_M_HU targetHU)
+	private void packItemToHU(final IFreshPackingItem itemToPack, final BigDecimal qtyToPack, final I_M_HU targetHU)
 	{
 		Check.assumeNotNull(targetHU, "targetHU not null");
 
@@ -536,10 +533,10 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// fresh_06178: Allocate picking slot on the newly packed item
-		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getBpartnerId(), itemToPack.getBpartnerLocationId());
+		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getC_BPartner_ID(), itemToPack.getC_BPartner_Location_ID());
 	}
 
-	private void removeProductQty(final AbstractPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
+	private void removeProductQty(final IPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
 	{
 		final FreshSwingPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
 
@@ -547,17 +544,17 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
 		final PackingItemsMap packItems = terminalPanel.getPackItems().copy();
 
-		List<AbstractPackingItem> itemsUnpacked = packItems.get(0);
+		List<IPackingItem> itemsUnpacked = packItems.get(PackingItemsMap.KEY_UnpackedItems);
 
-		AbstractPackingItem itemUnpacked = null;
+		IPackingItem itemUnpacked = null;
 		if (itemsUnpacked == null)
 		{
-			itemsUnpacked = new ArrayList<AbstractPackingItem>();
-			packItems.put(0, itemsUnpacked);
+			itemsUnpacked = new ArrayList<IPackingItem>();
+			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemsUnpacked);
 		}
 		else
 		{
-			for (final AbstractPackingItem item : itemsUnpacked)
+			for (final IPackingItem item : itemsUnpacked)
 			{
 				if (item.getGroupingKey() == pckItem.getGroupingKey())
 				{
@@ -570,20 +567,20 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final I_M_PickingSlot pickingSlot = selectedPickingSlotKey.getM_PickingSlot();
 		final int key = pickingSlot.getM_PickingSlot_ID();
 		// we need to remove the recently unpacked item from packed
-		final List<AbstractPackingItem> itemsPacked = packItems.remove(key);
+		final List<IPackingItem> itemsPacked = packItems.remove(key);
 		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={}", key);
 
-		final List<AbstractPackingItem> itemsPackedRemaining = new ArrayList<AbstractPackingItem>();
+		final List<IPackingItem> itemsPackedRemaining = new ArrayList<IPackingItem>();
 
-		for (final AbstractPackingItem itemPacked : itemsPacked)
+		for (final IPackingItem itemPacked : itemsPacked)
 		{
-			if (pckItem != itemPacked)
+			if (!pckItem.isSameAs(itemPacked))
 			{
 				itemsPackedRemaining.add(itemPacked);
 			}
 			else
 			{
-				final FreshPackingItem itemPackedNew = new FreshPackingItem(itemPacked);
+				final IFreshPackingItem itemPackedNew = FreshPackingItemHelper.copy(itemPacked);
 
 				//
 				// take out qtyToRemove from our packing item
@@ -609,7 +606,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				}
 				else
 				{
-					final FreshPackingItem newPi = new FreshPackingItem(qtyToRemoveAlloc, pckItem.getTrxName());
+					final IFreshPackingItem newPi = FreshPackingItemHelper.create(qtyToRemoveAlloc);
 					itemsUnpacked.add(newPi);
 				}
 
@@ -718,7 +715,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 	/**
 	 * Checks is the {@value #ACTION_DistributeQtyToNewHUs} shall be available.
-	 * 
+	 *
 	 * @return true if it shall be available
 	 */
 	private boolean isDistributeQtyToNewHUsAvailable()
@@ -758,7 +755,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 	/**
 	 * Distribute the user entered Qty to a specified number of TUs.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08754_Kommissionierung_Erweiterung_Verteilung_%28103380135151%29
 	 */
 	private void onDistributeQtyToNewHUs()
@@ -811,7 +808,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			@Override
 			protected void loadQtyToHU(final I_M_HU hu, final BigDecimal qty)
 			{
-				final FreshPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
+				final IFreshPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
 				packItemToHU(itemToPack, qty, hu);
 			}
 
@@ -833,7 +830,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 *
 	 * It will:
 	 * <ul>
-	 * <li>open the HU Editor, let user to select some HUs
+	 * <li>open the HU Editor, let user select some HUs
 	 * <li>will allocate those HUs to selected product key's shipment schedules
 	 * <li>will move those selected HUs directly in picking slot's queue.
 	 * </ul>
@@ -865,59 +862,46 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 
 		//
-		// Retrieve available HUs
-		final List<I_M_HU> hus = productKey.findAvailableHUs();
-
-		if (hus.isEmpty())
-		{
-			throw new HUException("@NotFound@ @M_HU@: " + productKey.getM_Product());
-		}
-		// Check.assumeNotEmpty(hus, "hus not null");
-
-		//
 		// Get HUKeyFactory
 		final ITerminalContext terminalContext = getTerminalContext();
-		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
 
 		//
 		// Clear (attribute) cache before opening editor
+		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
 		huKeyFactory.clearCache();
 
-		//
-		// Create Root HUKey and add all our available HUs beneath
-		final IHUKey rootHUKey = huKeyFactory.createRootKey();
-		final List<IHUKey> huKeys = huKeyFactory.createKeys(hus, NullHUDocumentLineFinder.instance); // documentLine = null
-		rootHUKey.addChildren(huKeys);
+		// the selected HUs are set from the HU-Editor within the following try-with-resources block
+		final Set<I_M_HU> husSelected;
 
-		//
-		// Create HU Editor Model
-		final HUEditorModel huEditorModel = new HUEditorModel(terminalContext);
-		huEditorModel.setRootHUKey(rootHUKey);
-		if (selectedHU != null)
+		try (final ITerminalContextReferences refs = terminalContext.newReferences())
 		{
-			huEditorModel.setSelected(selectedHU);
+			//
+			// Create HU Editor Model
+			final PickingHUEditorModel huEditorModel = new PickingHUEditorModel(
+					terminalContext // context
+					, selectedHU // default HU to select after query
+					, productKey::findAvailableHUs // HUs provider
+			);
+			huEditorModel.setConsiderAttributes(true); // the default
+
+			// Create HU Editor UI Panel
+			final HUEditorPanel huEditorPanel = new PickingHUEditorPanel(huEditorModel);
+
+			// Wrap our HU Editor Panel with a model dialog
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", huEditorPanel);
+			editorDialog.setSize(terminalContext.getScreenResolution());
+
+			// Activate editor dialog and wait for user
+			editorDialog.activate();
+
+			if (editorDialog.isCanceled())
+			{
+				return; // nothing to do
+			}
+
+			husSelected = huEditorModel.getSelectedHUs();
 		}
 
-		//
-		// Create HU Editor UI Panel
-		final HUEditorPanel huEditorPanel = new HUEditorPanel(huEditorModel);
-
-		//
-		// Wrap our HU Editor Panel with a model dialog
-		final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, "Edit", huEditorPanel);
-		editorDialog.setSize(terminalContext.getScreenResolution());
-
-		// Activate editor dialog and wait for user
-		editorDialog.activate();
-
-		if (editorDialog.isCanceled())
-		{
-			// nothing to do
-			return;
-		}
-
-		//
-		final Set<I_M_HU> husSelected = huEditorModel.getSelectedHUs();
 		if (husSelected.isEmpty())
 		{
 			// nothing selected, nothing to do
@@ -926,10 +910,10 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// Get the selected shipment sched's C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
-		final FreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
+		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
-		final int bPartnerId = unallocatedPackingItem.getBpartnerId();
-		final int bPartnerLocationId = unallocatedPackingItem.getBpartnerLocationId();
+		final int bPartnerId = unallocatedPackingItem.getC_BPartner_ID();
+		final int bPartnerLocationId = unallocatedPackingItem.getC_BPartner_Location_ID();
 
 		//
 		// Make sure the picking slot (this is necessary if it's a dynamic one) is allocated to them (fresh_06974)
@@ -950,7 +934,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 * @param itemToPack
 	 * @param hus HUs on which the quantity will be allocated
 	 */
-	private void allocateItemToHUs(final FreshPackingItem itemToPack, final Collection<I_M_HU> hus)
+	private void allocateItemToHUs(final IFreshPackingItem itemToPack, final Collection<I_M_HU> hus)
 	{
 		//
 		// Create packing context (i.e. workfile to work on)

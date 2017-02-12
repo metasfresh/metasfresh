@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.esb</groupId>
 		<artifactId>de.metas.esb</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.esb/pom.xml</relativePath>
 	</parent>
 
@@ -29,7 +29,7 @@
 			<dependency>
 				<groupId>de.metas.esb</groupId>
 				<artifactId>de.metas.esb</artifactId>
-				<version>${metasfresh-dependency.version}</version>
+				<version>1.0.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -224,7 +224,6 @@
 				<artifactId>jaxb2-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>xjc</id>
 						<goals>
 							<goal>xjc</goal>
 						</goals>
@@ -232,29 +231,9 @@
 				</executions>
 				<configuration>
 					<packageName>${jaxb.packageName}</packageName>
-					<sources>
-						<source>src/main/xsd/schema.xsd</source>
-					</sources>
 				</configuration>
-
-				<dependencies>
-					<dependency>
-						<groupId>org.jvnet.jaxb2_commons</groupId>
-						<artifactId>jaxb2-basics</artifactId>
-						<version>0.6.5</version>
-					</dependency>
-					<dependency>
-						<!-- explicitly using this version because if the plugin runs with 
-							e.g. xerces 2.6.2, we get this error: org.xml.sax.SAXNotRecognizedException: 
-							Feature 'http://javax.xml.XMLConstants/feature/secure-processing' is not 
-							recognized. -->
-						<groupId>xerces</groupId>
-						<artifactId>xercesImpl</artifactId>
-						<version>2.9.1</version>
-					</dependency>
-				</dependencies>
-
 			</plugin>
+
 		</plugins>
 	</build>
 

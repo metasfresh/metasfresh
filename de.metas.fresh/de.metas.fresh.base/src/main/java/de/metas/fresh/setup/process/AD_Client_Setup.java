@@ -1,35 +1,14 @@
 package de.metas.fresh.setup.process;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.process.ISvrProcessDefaultParametersProvider;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.CacheMgt;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Process used to quick setup the metas Fresh installation.
@@ -37,7 +16,7 @@ import de.metas.interfaces.I_C_BPartner;
  * @author tsa
  * @task 09250
  */
-public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultParametersProvider
+public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParametersProvider
 {
 	private static final String PARAM_CompanyName = I_C_BPartner.COLUMNNAME_CompanyName;
 	private static final String PARAM_VATaxID = I_C_BPartner.COLUMNNAME_VATaxID;
@@ -62,8 +41,10 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 	private ClientSetup _clientSetup;
 
 	@Override
-	public Object getParameterDefaultValue(final String name)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter field)
 	{
+		final String name = field.getColumnName();
+
 		final ClientSetup clientSetup = getClientSetup();
 		if (PARAM_CompanyName.equalsIgnoreCase(name))
 		{
@@ -157,7 +138,7 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 		{
 			final ClientSetup clientSetup = getClientSetup();
 
-			for (final ProcessInfoParameter para : getParameter())
+			for (final ProcessInfoParameter para : getParametersAsArray())
 			{
 				if (para.getParameter() == null)
 				{
@@ -247,7 +228,7 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 			return MSG_OK;
 		}
 	}
-	
+
 	@Override
 	protected void postProcess(final boolean success)
 	{
@@ -255,7 +236,7 @@ public class AD_Client_Setup extends SvrProcess implements ISvrProcessDefaultPar
 		{
 			return;
 		}
-		
+
 		// Fully reset the cache
 		CacheMgt.get().reset();
 	}

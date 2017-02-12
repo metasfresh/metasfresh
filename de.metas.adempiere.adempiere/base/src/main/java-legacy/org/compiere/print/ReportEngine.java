@@ -33,8 +33,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.print.DocFlavor;
 import javax.print.StreamPrintService;
@@ -68,14 +66,13 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_RfQResponse;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MClient;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -85,8 +82,11 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 /**
  *	Report Engine.
@@ -370,7 +370,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	public void print ()
 	{
-		log.info(m_info.toString());
+		log.info("print: {}", m_info);
+		
 		if (m_layout == null)
 			layout();
 
@@ -565,7 +566,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		try
 		{
 			String cssPrefix = extension != null ? extension.getClassPrefix() : null;
-			if (cssPrefix != null && cssPrefix.trim().length() == 0)
+			if(Check.isEmpty(cssPrefix, true))
 				cssPrefix = null;
 
 			table table = new table();
@@ -712,7 +713,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	 *  @param language translation language
 	 * 	@return true if success
 	 */
-	public boolean createCSV (Writer writer, char delimiter, Language language)
+	private boolean createCSV (Writer writer, char delimiter, Language language)
 	{
 		final PrintData m_printData = getPrintData();
 
@@ -790,7 +791,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	private void createCSVvalue (StringBuffer sb, char delimiter, String content)
 	{
 		//	nothing to add
-		if (content == null || content.length() == 0)
+		if (content == null || content.isEmpty())
 			return;
 		//
 		boolean needMask = false;
@@ -1116,7 +1117,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			rs = null; pstmt = null;
 		}
 		//	Nothing found
-		if (AD_ReportView_ID == 0)
+		if (AD_ReportView_ID <= 0)
 		{
 			//	Check Print format in Report Directly
 			sql = "SELECT t.AD_Table_ID,t.TableName, pf.AD_PrintFormat_ID, pf.IsForm "
@@ -1148,10 +1149,9 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
-			if (AD_PrintFormat_ID == 0)
+			if (AD_PrintFormat_ID <= 0)
 			{
-				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID()
-					+ ",AD_Client_ID=" + AD_Client_ID);
+				log.error("Report Info NOT found AD_PInstance_ID=" + pi.getAD_PInstance_ID() + ",AD_Client_ID=" + AD_Client_ID);
 				return null;
 			}
 		}
@@ -1169,7 +1169,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 
 		// metas 03915
-		if (query.getRestrictionCount() == 0 && pi.getRecord_ID() != 0)
+		if (query.getRestrictionCount() == 0 && pi.getRecord_ID() > 0)
 		{
 			final MTable table = MTable.get(ctx, pi.getTable_ID());
 			final String[] keyColumns = table.getKeyColumns();
@@ -1177,7 +1177,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			{
 				String infoName = Msg.translate(ctx, keyColumns[0]);
 				String infoDisplay = String.valueOf(pi.getRecord_ID());
-				query.addRestriction(keyColumns[0], MQuery.EQUAL, pi.getRecord_ID(), infoName, infoDisplay);
+				query.addRestriction(keyColumns[0], Operator.EQUAL, pi.getRecord_ID(), infoName, infoDisplay);
 			}
 		} // metas end
 
@@ -1186,11 +1186,8 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			query.addRestriction(whereClause);
 
 		//	Get Print Format
-		MPrintFormat format = null;
-		Object so = pi.getSerializableObject();
-		if (so instanceof MPrintFormat)
-			format = (MPrintFormat)so;
-		if (format == null && AD_PrintFormat_ID != 0)
+		MPrintFormat format = pi.getResult().getPrintFormat();
+		if (format == null && AD_PrintFormat_ID > 0)
 		{
 			//	We have a PrintFormat with the correct Client
 			if (Client_ID == AD_Client_ID)
@@ -1226,8 +1223,6 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	public static final int		INVOICE = 2;
 	/** Project = 3				*/
 	public static final int		PROJECT = 3;
-	/** RfQ = 4					*/
-	public static final int		RFQ = 4;
 	/** Remittance = 5			*/
 	public static final int		REMITTANCE = 5;
 	/** Check = 6				*/
@@ -1239,25 +1234,16 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	/** Distribution Order = 9  */
 	public static final int		DISTRIBUTION_ORDER = 9;
 
-
-//	private static final String[]	DOC_TABLES = new String[] {
-//		"C_Order_Header_v", "M_InOut_Header_v", "C_Invoice_Header_v", "C_Project_Header_v",
-//		"C_RfQResponse_v",
-//		"C_PaySelection_Check_v", "C_PaySelection_Check_v",
-//		"C_DunningRunEntry_v","PP_Order_Header_v","DD_Order_Header_v" };
 	private static final String[]	DOC_BASETABLES = new String[] {
 		"C_Order", "M_InOut", "C_Invoice", "C_Project",
-		"C_RfQResponse",
 		"C_PaySelectionCheck", "C_PaySelectionCheck",
 		"C_DunningRunEntry","PP_Order", "DD_Order"};
 	private static final String[]	DOC_IDS = new String[] {
 		"C_Order_ID", "M_InOut_ID", "C_Invoice_ID", "C_Project_ID",
-		"C_RfQResponse_ID",
 		"C_PaySelectionCheck_ID", "C_PaySelectionCheck_ID",
 		"C_DunningRunEntry_ID" , "PP_Order_ID" , "DD_Order_ID" };
 	private static final int[]	DOC_TABLE_ID = new int[] {
 		I_C_Order.Table_ID, I_M_InOut.Table_ID, I_C_Invoice.Table_ID, I_C_Project.Table_ID,
-		I_C_RfQResponse.Table_ID,
 		I_C_PaySelectionCheck.Table_ID,
 		I_C_DunningRunEntry.Table_ID,
 		Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
@@ -1286,15 +1272,21 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	public static ReportEngine get (Properties ctx, int type, int Record_ID, String trxName)
 	{
 		 final int adPrintFormatToUseId = -1; // auto-detect
-		return get(ctx, type, Record_ID, adPrintFormatToUseId, trxName);
+		 final int pInstanceId = -1;
+		return get(ctx, type, Record_ID, pInstanceId, adPrintFormatToUseId, trxName);
+	}
+	
+	public static ReportEngine get (Properties ctx, int type, int Record_ID, int pInstanceId ,String trxName)
+	{
+		 final int adPrintFormatToUseId = -1; // auto-detect
+		return get(ctx, type, Record_ID,  pInstanceId, adPrintFormatToUseId, trxName);
 	}
 	// metas: added adPrintFormatToUseId parameter
-	public static ReportEngine get (Properties ctx, int type, int Record_ID, final int adPrintFormatToUseId, String trxName)
+	public static ReportEngine get (final Properties ctx, int type, int Record_ID, final int pInstanceId, final int adPrintFormatToUseId, final String trxName)
 	{
 		if (Record_ID < 1)
 		{
-			log.warn("No PrintFormat for Record_ID=" + Record_ID
-					+ ", Type=" + type);
+			log.warn("No PrintFormat for Record_ID=" + Record_ID + ", Type=" + type);
 			return null;
 		}
 		//	Order - Print Shipment or Invoice
@@ -1383,19 +1375,6 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 							+ " AND (dt.C_DocType_ID=bppf_ddorder.C_DocType_ID) " // Distribution Order
 				+ "WHERE d.DD_Order_ID=?"					//	info from PrintForm
 				+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) ORDER BY pf.AD_Org_ID DESC";
-		else if (type == RFQ)
-			sql = "SELECT COALESCE(t.AD_PrintFormat_ID, pf.AD_PrintFormat_ID),"
-				+ " c.IsMultiLingualDocument,bp.AD_Language,bp.C_BPartner_ID,rr.Name "
-				+ "FROM C_RfQResponse rr"
-				+ " INNER JOIN C_RfQ r ON (rr.C_RfQ_ID=r.C_RfQ_ID)"
-				+ " INNER JOIN C_RfQ_Topic t ON (r.C_RfQ_Topic_ID=t.C_RfQ_Topic_ID)"
-				+ " INNER JOIN AD_Client c ON (rr.AD_Client_ID=c.AD_Client_ID)"
-				+ " INNER JOIN C_BPartner bp ON (rr.C_BPartner_ID=bp.C_BPartner_ID),"
-				+ " AD_PrintFormat pf "
-				+ "WHERE pf.AD_Client_ID IN (0,rr.AD_Client_ID)"
-				+ " AND pf.AD_Table_ID=725 AND pf.IsTableBased='N'"	//	from RfQ PrintFormat
-				+ " AND rr.C_RfQResponse_ID=? "				//	Info from RfQTopic
-				+ "ORDER BY t.AD_PrintFormat_ID, pf.AD_Client_ID DESC, pf.AD_Org_ID DESC";
 		// Fix [2574162] Priority to choose invoice print format not working
 		else if (type == ORDER || type == INVOICE)
 			sql = "SELECT COALESCE (bppf_order.AD_PrintFormat_ID,pf.Order_PrintFormat_ID),"					//	1
@@ -1439,6 +1418,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) "
 				+ "ORDER BY pf.AD_Org_ID DESC";
 		else	//	Get PrintFormat from Org or 0 of document client
+		{
 			sql = "SELECT COALESCE (bppf_order.AD_PrintFormat_ID,pf.Order_PrintFormat_ID),"					//	1
 				+ " COALESCE (bppf_ship.AD_PrintFormat_ID,pf.Shipment_PrintFormat_ID),"						//	2
 				//	Prio: 1. C_BP_PrintFormat 2. BPartner 3. DocType, 4. PrintFormat (Org)	//	see InvoicePrint
@@ -1491,6 +1471,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 				+ "WHERE d." + DOC_IDS[type] + "=?"			//	info from PrintForm
 				+ " AND pf.AD_Org_ID IN (0,d.AD_Org_ID) "
 				+ "ORDER BY pf.AD_Org_ID DESC";
+		}
 		//
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1502,7 +1483,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			if (rs.next())	//	first record only
 			{
 				if (type == CHECK || type == DUNNING || type == REMITTANCE
-					|| type == PROJECT || type == RFQ || type == MANUFACTURING_ORDER || type == DISTRIBUTION_ORDER)
+					|| type == PROJECT || type == MANUFACTURING_ORDER || type == DISTRIBUTION_ORDER)
 				{
 					AD_PrintFormat_ID = rs.getInt(1);
 					copies = 1;
@@ -1552,7 +1533,7 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		}
 		// metas: end
 
-		if (AD_PrintFormat_ID == 0)
+		if (AD_PrintFormat_ID <= 0)
 		{
 			log.error("No PrintFormat found for Type=" + type + ", Record_ID=" + Record_ID);
 			return null;
@@ -1565,10 +1546,12 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 			format.setTranslationLanguage(language);
 		//	query
 		MQuery query = new MQuery(format.getAD_Table_ID());
-		query.addRestriction(DOC_IDS[type], MQuery.EQUAL, Record_ID);
+		query.addRestriction(DOC_IDS[type], Operator.EQUAL, Record_ID);
 	//	log.info( "ReportCtrl.startDocumentPrint - " + format, query + " - " + language.getAD_Language());
 		//
-		if (DocumentNo == null || DocumentNo.length() == 0)
+		
+		
+		if (DocumentNo == null || DocumentNo.isEmpty())
 			DocumentNo = "DocPrint";
 		PrintInfo info = new PrintInfo(
 			DocumentNo,
@@ -1578,6 +1561,8 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		info.setCopies(copies);
 		info.setDocumentCopy(false);		//	true prints "Copy" on second
 		info.setPrinterName(format.getPrinterName());
+		
+		info.setAD_PInstance_ID(pInstanceId);
 
 		//	Engine
 		ReportEngine re = new ReportEngine(ctx, format, query, info, trxName);
@@ -1685,53 +1670,26 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 	 * 	@param type document type
 	 * 	@param Record_ID record id
 	 */
-	public static void printConfirm (int type, int Record_ID)
+	public static void printConfirm (final int type, final int Record_ID)
 	{
-		StringBuffer sql = new StringBuffer();
+		final StringBuilder sql = new StringBuilder();
 		if (type == ORDER || type == SHIPMENT || type == INVOICE)
+		{
 			sql.append("UPDATE ").append(DOC_BASETABLES[type])
 				.append(" SET DatePrinted=now(), IsPrinted='Y' WHERE ")
 				.append(DOC_IDS[type]).append("=").append(Record_ID);
+		}
+		
 		//
 		if (sql.length() > 0)
 		{
-			int no = DB.executeUpdate(sql.toString(), null);
+			final int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_None);
 			if (no != 1)
-				log.error("Updated records=" + no + " - should be just one");
+			{
+				log.error("Updated records={} - should be just one for SQL={}", no, sql);
+			}
 		}
 	}	//	printConfirm
-
-
-	/*************************************************************************
-	 * 	Test
-	 * 	@param args args
-	 */
-	public static void main(String[] args)
-	{
-		org.compiere.Adempiere.startupEnvironment(true);
-		//
-		int AD_Table_ID = 100;
-		MQuery q = new MQuery("AD_Table");
-		q.addRestriction("AD_Table_ID", "<", 108);
-		//
-		MPrintFormat f = MPrintFormat.createFromTable(Env.getCtx(), AD_Table_ID);
-		PrintInfo i = new PrintInfo("test", AD_Table_ID, 108, 0);
-		i.setAD_Table_ID(AD_Table_ID);
-		ReportEngine re = new ReportEngine(Env.getCtx(), f, q, i);
-		re.layout();
-		/**
-		re.createCSV(new File("C:\\Temp\\test.csv"), ',', Language.getLanguage());
-		re.createHTML(new File("C:\\Temp\\test.html"), false, Language.getLanguage());
-		re.createXML(new File("C:\\Temp\\test.xml"));
-		re.createPS(new File ("C:\\Temp\\test.ps"));
-		re.createPDF(new File("C:\\Temp\\test.pdf"));
-		/****/
-		re.print();
-	//	re.print(true, 1, false, "Epson Stylus COLOR 900 ESC/P 2");		//	Dialog
-	//	re.print(true, 1, false, "HP LaserJet 3300 Series PCL 6");		//	Dialog
-	//	re.print(false, 1, false, "Epson Stylus COLOR 900 ESC/P 2");	//	Dialog
-		System.exit(0);
-	}	//	main
 
 	public void setWhereExtended(String whereExtended) {
 		m_whereExtended = whereExtended;

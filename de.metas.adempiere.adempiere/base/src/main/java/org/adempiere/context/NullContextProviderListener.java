@@ -1,5 +1,7 @@
 package org.adempiere.context;
 
+import java.io.Serializable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,7 +27,8 @@ package org.adempiere.context;
 
 import java.util.Properties;
 
-public final class NullContextProviderListener implements IContextProviderListener
+@SuppressWarnings("serial")
+public final class NullContextProviderListener implements IContextProviderListener, Serializable
 {
 	public static final transient NullContextProviderListener instance = new NullContextProviderListener();
 

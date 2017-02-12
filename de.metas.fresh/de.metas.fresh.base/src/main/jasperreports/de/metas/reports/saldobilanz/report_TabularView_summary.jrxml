@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-10T14:09:34 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
+	<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+	<property name="net.sf.jasperreports.export.xls.white.page.background" value="false"/>
+	<property name="net.sf.jasperreports.export.xls.detect.cell.type" value="true"/>
+	<property name="net.sf.jasperreports.export.xls.password" value=""/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="Date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="defaultAcc" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showCurrencyExchange" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncludePostingTypeStatistical" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_org_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="consistency_check" class="java.lang.Boolean"/>
+	<parameter name="ExcludeYearEndBooking" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.saldobilanz_summary_Report (
+$P{Date},
+$P{defaultAcc},
+$P{showCurrencyExchange},
+$P{ad_org_id},
+$P{IncludePostingTypeStatistical},
+$P{ExcludeYearEndBooking}
+);]]>
+	</queryString>
+	<field name="parentname1" class="java.lang.String"/>
+	<field name="parentvalue1" class="java.lang.String"/>
+	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="unionorder" class="java.lang.Integer"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="90">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement x="88" y="22" width="259" height="13" uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="62" width="50" height="14" uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="88" y="62" width="259" height="14" uuid="21c2a674-61a4-4668-b689-b0264221a282">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="348" y="62" width="102" height="14" uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="88" y="36" width="259" height="12" uuid="15cb15a1-6dd2-4b73-a4f6-8f0fbce298ae">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{CurrencyCHF}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="348" y="22" width="102" height="13" uuid="68f3a29c-8833-4395-b12e-542c09097be4">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="88" y="49" width="259" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="37" y="77" width="50" height="12" uuid="fc3c5559-b52f-4e48-9dc4-e40c7c70efb2">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="88" y="77" width="259" height="12" uuid="3eb145e0-41a5-495e-b0d8-bc61afa011c8">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="348" y="77" width="102" height="12" uuid="e1c29348-0166-4630-807c-5641a7e8486d">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="49" width="50" height="12" uuid="13af5c3b-73a1-4992-aabd-c037f4ca096c">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="88" y="9" width="259" height="12" uuid="ef712ef6-a91d-484a-b3fc-f392ad4a1432">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="9" width="50" height="12" uuid="e37bdb6d-2eab-4d40-a8a9-9bfc91c4dea8">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="348" y="9" width="102" height="12" uuid="3ce54fde-7939-44f1-b584-83d82444847d"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="451" y="77" width="102" height="12" uuid="9743477c-0071-40ef-a3de-80f7866508d9">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="451" y="62" width="102" height="14" uuid="ab2600bc-e057-445b-8972-d31b89a01130">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 1)]]></printWhenExpression>
+			<textField pattern="#,##0.00">
+				<reportElement x="348" y="0" width="102" height="14" uuid="4f6c34ca-cfa5-45fe-91f5-9f5b226917bf">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="451" y="0" width="102" height="14" uuid="f48222ff-5f4f-4a64-8aa8-c80da92700b5">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="88" y="0" width="259" height="14" uuid="cb9623ff-e112-488f-b551-0db839cc73e5">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{parentname1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="0" width="50" height="14" uuid="8f5d025b-00cf-4521-8a58-2afb00cc3aa6">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{parentvalue1}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="14">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 2)]]></printWhenExpression>
+			<textField>
+				<reportElement x="88" y="0" width="259" height="14" isRemoveLineWhenBlank="true" uuid="c478b323-f35e-4874-aebe-71171c1e942d">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="348" y="0" width="102" height="14" isRemoveLineWhenBlank="true" uuid="c736b19e-df7a-4125-8045-ae1ab228ab57">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="451" y="0" width="102" height="14" isRemoveLineWhenBlank="true" uuid="949d1719-aba6-4365-8a19-d734014b0c81">
+					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

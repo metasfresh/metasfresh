@@ -21,12 +21,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -37,10 +34,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.comparator.AccessorComparator;
-import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -49,17 +43,18 @@ import org.compiere.model.I_AD_Ref_List;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.wf.MWFActivity;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.DefaultDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.logging.LogManager;
 
 /**
  * Displays valid Document Action Options based on context
@@ -83,22 +78,22 @@ public class VDocAction extends CDialog
 	 * 
 	 * @param WindowNo window no
 	 * @param mTab tab
-	 * @param button button
 	 * @param Record_ID record id
 	 */
-	public VDocAction(final int WindowNo, final GridTab mTab, final VButton button, final int Record_ID)
+	public VDocAction(final int WindowNo, final GridTab mTab, final int Record_ID)
 	{
 		super(Env.getWindow(WindowNo), Services.get(IMsgBL.class).translate(Env.getCtx(), "DocAction"), true);
 		log.info("");
 		m_WindowNo = WindowNo;
 		m_mTab = mTab;
+		m_AD_Table_ID = mTab.getAD_Table_ID();
+		
 		//
 		try
 		{
 			jbInit();
 
 			// dynamic init preparation
-			m_AD_Table_ID = Env.getContextAsInt(Env.getCtx(), WindowNo, "BaseTable_ID");
 			if (s_value == null)
 				readReference();
 			//
@@ -113,18 +108,21 @@ public class VDocAction extends CDialog
 	}	// VDocAction
 
 	//
-	private int m_WindowNo = 0;
-	private int m_AD_Table_ID;
+	private final int m_WindowNo;
+	private final int m_AD_Table_ID;
+	private final GridTab m_mTab;
+	
 	private boolean m_OKpressed = false;
 	private final boolean batchProcessingEnabled = false; // metas-tsa: we disabled it because it's buggy
 	private boolean m_batch = false;
-	private GridTab m_mTab;
+	
 	//
 	private static String[] s_value = null;
 	private static String[] s_name;
 	private static String[] s_description;
+	
 	/** Logger */
-	private static Logger log = LogManager.getLogger(VDocAction.class);
+	private static final transient Logger log = LogManager.getLogger(VDocAction.class);
 	//
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
@@ -218,9 +216,9 @@ public class VDocAction extends CDialog
 		String DocStatus = (String)m_mTab.getValue("DocStatus");
 		String DocAction = (String)m_mTab.getValue("DocAction");
 		//
-		Object Processing = m_mTab.getValue("Processing");
-		String OrderType = Env.getContext(Env.getCtx(), m_WindowNo, "OrderType");
-		String IsSOTrx = Env.getContext(Env.getCtx(), m_WindowNo, "IsSOTrx");
+		final boolean Processing = DisplayType.toBoolean(m_mTab.getValue("Processing"));
+		final String OrderType = Env.getContext(Env.getCtx(), m_WindowNo, "OrderType");
+		final boolean IsSOTrx = DisplayType.toBoolean(Env.getContext(Env.getCtx(), m_WindowNo, "IsSOTrx"));
 
 		if (DocStatus == null)
 		{
@@ -232,9 +230,6 @@ public class VDocAction extends CDialog
 				+ ", DocAction=" + DocAction + ", OrderType=" + OrderType
 				+ ", IsSOTrx=" + IsSOTrx + ", Processing=" + Processing
 				+ ", AD_Table_ID=" + m_AD_Table_ID + ", Record_ID=" + Record_ID);
-		//
-		String[] options = new String[s_value.length];
-		int index = 0;
 
 		/**
 		 * Check Existence of Workflow Activities
@@ -256,9 +251,10 @@ public class VDocAction extends CDialog
 		/*******************
 		 * General Actions
 		 */
+		final Set<String> docActions;
 		{
 			Integer docTypeId = (Integer)m_mTab.getValue("C_DocType_ID");
-			if (docTypeId == null || docTypeId.intValue() == 0)
+			if (docTypeId == null || docTypeId.intValue() <= 0)
 			{
 				docTypeId = (Integer)m_mTab.getValue("C_DocTypeTarget_ID");
 			}
@@ -266,17 +262,15 @@ public class VDocAction extends CDialog
 
 			final Properties ctx = Env.getCtx();
 			final IDocActionOptionsContext optionsCtx = DefaultDocActionOptionsContext.builder(ctx)
-					.setAD_Table_ID(m_AD_Table_ID)
-					.setRecord_ID(Record_ID)
+					.setTableName(m_mTab.getTableName())
 					.setDocStatus(DocStatus)
-					.setDocAction(DocAction)
 					.setC_DocType_ID(docTypeId)
-					.setProcessing(((Processing instanceof Boolean) ? (Boolean)Processing : "Y".equals(Processing)))
+					.setProcessing(Processing)
 					.setOrderType(OrderType)
-					.setIsSOTrx("Y".equals(IsSOTrx))
+					.setIsSOTrx(IsSOTrx)
 					.build();
-			index = Services.get(IDocActionOptionsBL.class).getDocActionIndex(optionsCtx);
-			options = optionsCtx.getOptions().toArray(options);
+			Services.get(IDocActionOptionsBL.class).updateDocActions(optionsCtx);
+			docActions = optionsCtx.getDocActions();
 
 			// metas
 			// DocAction = optionsCtx.getDocActionToUse();
@@ -285,16 +279,15 @@ public class VDocAction extends CDialog
 		/**
 		 * Fill actionCombo
 		 */
-		for (int i = 0; i < index; i++)
+		for (final String docAction : docActions)
 		{
 			// Search for option and add it
-			boolean added = false;
-			for (int j = 0; j < s_value.length && !added; j++)
+			for (int j = 0; j < s_value.length; j++)
 			{
-				if (options[i].equals(s_value[j]))
+				if (docAction.equals(s_value[j]))
 				{
 					actionCombo.addItem(s_name[j]);
-					added = true;
+					break;
 				}
 			}
 		}

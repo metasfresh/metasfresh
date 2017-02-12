@@ -1,37 +1,13 @@
 package de.metas.handlingunits.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,13 +17,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.drp.api.IDistributionNetworkDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUContext;
@@ -67,9 +43,9 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IEmptiesMovementBuilder;
@@ -77,6 +53,7 @@ import de.metas.handlingunits.movement.api.impl.EmptiesMovementBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.logging.LogManager;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -237,8 +214,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					huTrxBL.setParentHU(huContext,
 							null, // New Parent = null
 							currentHU, // HU which we are changing
-							destroyOldParentIfEmptyStorage
-							);
+							destroyOldParentIfEmptyStorage);
 					//
 					// Mark current HU as destroyed
 					markDestroyed(huContext, currentHU);
@@ -321,8 +297,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder()
-				.setM_HU(hu);
+		return new HUDisplayNameBuilder(hu);
 	}
 
 	@Override
@@ -566,6 +541,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public String getItemType(final I_M_HU_Item huItem)
 	{
 		Check.assumeNotNull(huItem, "huItem not null");
+		final String itemType = huItem.getItemType();
+		if (itemType != null)
+		{
+			return itemType;
+		}
+
+		// FIXME: remove it after we migrate all HUs
 		return huItem.getM_HU_PI_Item().getItemType();
 	}
 
@@ -745,59 +727,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return lastTU;
 	}
 
-	/**
-	 * Iterates the given <code>piVersion</code>'s active packing material items and sums of the weights of the attached <code>M_Product</code>s (if any).
-	 * <p>
-	 * NOTE: does <b>not</b> descent into sub-HUs, which is good, because this value is used in bottom-up/top-down propagation, i.e. the childrens' tare values are added during propagation.
-	 */
-	@Override
-	public BigDecimal getWeightTare(final I_M_HU_PI_Version piVersion)
-	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		BigDecimal weightTareTotal = BigDecimal.ZERO;
-
-		final I_C_BPartner partner = null; // FIXME: get context C_BPartner
-
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partner))
-		{
-			final String itemType = piItem.getItemType();
-			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
-			{
-				continue;
-			}
-
-			final I_M_HU_PackingMaterial huPackingMaterial = piItem.getM_HU_PackingMaterial();
-			if (huPackingMaterial == null)
-			{
-				continue;
-			}
-
-			final BigDecimal weightTare = getWeightTare(huPackingMaterial);
-			weightTareTotal = weightTareTotal.add(weightTare);
-		}
-
-		return weightTareTotal;
-	}
-
-	private BigDecimal getWeightTare(final I_M_HU_PackingMaterial huPackingMaterial)
-	{
-		if (!huPackingMaterial.isActive())
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final I_M_Product product = huPackingMaterial.getM_Product();
-		if (product == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal weightTare = product.getWeight();
-
-		return weightTare;
-	}
-
 	@Override
 	public boolean isPhysicalHU(final String huStatus)
 	{
@@ -823,6 +752,46 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// we consider the rest of the statuses to be physical
 		// (Active and picked)
 		return true;
+	}
+
+	@Override
+	public boolean isAggregateHU(final I_M_HU hu)
+	{
+		if (hu == null)
+		{
+			return false;
+		}
+
+		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
+		if (parentItem == null)
+		{
+			return false;
+		}
+
+		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
+	}
+
+	@Override
+	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
+	{
+		if (!isAggregateHU(hu))
+		{
+			return hu.getM_HU_PI_Version();
+		}
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		// note: if hu is an aggregate HU, then there won't be an NPE here.
+		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+
+		if (parentPIItem == null)
+		{
+			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
+		}
+		
+		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
+
+		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
 	}
 
 	@Override
@@ -874,7 +843,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// gebindelager is done only when needed
 		final String initialHUStatus = hu.getHUStatus();
 
-		if (Check.equals(huStatus, initialHUStatus))
+		if (Objects.equals(huStatus, initialHUStatus))
 		{
 			// do nothing
 			return;
@@ -901,14 +870,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			{
 				// collect the "destroyed" HUs in case they were already physical (active)
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.addHURecursively(hu, null);
 			}
 			else
 			{
 				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.removeHURecursively(hu);
 			}
 		}
@@ -924,14 +893,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			if (initialHUStatus == null)
 			{
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.removeHURecursively(hu);
 			}
 			// only collect the destroyed HUs in case they were already physical (active)
 			else if (isPhysicalHU(initialHUStatus))
 			{
 				huContext
-						.getDestroyedHUPackingMaterialsCollector()
+						.getHUPackingMaterialsCollector()
 						.addHURecursively(hu, null);
 			}
 			else

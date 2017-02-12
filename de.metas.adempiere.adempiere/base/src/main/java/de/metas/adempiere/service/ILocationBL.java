@@ -81,6 +81,9 @@ public interface ILocationBL extends ISingletonService
 	 */
 	String mkAddress(I_C_Location location, String bPartnerBlock, String userBlock);
 
+	/** Same as {@link #mkAddress(I_C_Location, String, String)} but bpartner and user blocks are empty */
+	String mkAddress(I_C_Location location);
+
 	I_C_Postal getC_Postal(com.akunagroup.uk.postcode.AddressInterface address);
 
 	/**

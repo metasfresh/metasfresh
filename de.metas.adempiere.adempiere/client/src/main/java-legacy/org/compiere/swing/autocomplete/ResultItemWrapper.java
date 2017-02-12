@@ -29,7 +29,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 /**
  * An {@link ResultItem} implementation which wraps a given object.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @param <ValueType>
  */

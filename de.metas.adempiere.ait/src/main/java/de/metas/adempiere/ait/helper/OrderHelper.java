@@ -40,7 +40,6 @@ import java.util.Properties;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PricingSystem;
@@ -48,9 +47,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.junit.Assert;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.ait.helper.ProductPriceVO.LineType;
 import de.metas.adempiere.model.I_C_Order;
@@ -60,6 +58,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.interfaces.I_M_Shipper;
+import de.metas.logging.LogManager;
 
 public class OrderHelper
 {
@@ -440,8 +439,8 @@ public class OrderHelper
 		if (orderLines != null && !requery)
 			return orderLines;
 
-		Properties ctx = POWrapper.getCtx(order);
-		String trxName = POWrapper.getTrxName(order);
+		Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		String trxName = InterfaceWrapperHelper.getTrxName(order);
 		orderLines = new Query(ctx, I_C_OrderLine.Table_Name, I_C_OrderLine.COLUMNNAME_C_Order_ID + "=?", trxName)
 				.setParameters(order.getC_Order_ID())
 				.setOrderBy(I_C_OrderLine.COLUMNNAME_Line)
@@ -460,14 +459,14 @@ public class OrderHelper
 		}
 		else
 		{
-			POWrapper.save(order);
+			InterfaceWrapperHelper.save(order);
 		}
 		assertTrue("C_Order_ID shall be set", order.getC_Order_ID() > 0);
 	}
 
 	public MOrder getOrderPO(I_C_Order order)
 	{
-		MOrder orderPO = POWrapper.getPO(order);
+		MOrder orderPO = InterfaceWrapperHelper.getPO(order);
 		if (orderPO == null)
 		{
 			orderPO = new MOrder(helper.getCtx(), order.getC_Order_ID(), helper.getTrxName());
@@ -549,7 +548,7 @@ public class OrderHelper
 			order.setDeliveryRule(deliveryRule.toString());
 		}
 		// Shipper:
-		final I_M_Shipper shipper = POWrapper.create(Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), trxName), I_M_Shipper.class);
+		final I_M_Shipper shipper = InterfaceWrapperHelper.create(Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), trxName), I_M_Shipper.class);
 		if (shipper != null)
 		{
 			order.setM_Shipper_ID(shipper.getM_Shipper_ID());

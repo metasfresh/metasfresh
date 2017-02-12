@@ -1,5 +1,7 @@
 package de.metas.inout;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,20 +12,21 @@ package de.metas.inout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.ISingletonService;
@@ -41,14 +44,24 @@ import org.compiere.model.I_M_PricingSystem;
 public interface IInOutBL extends ISingletonService
 {
 	/**
-	 * Create the pricing context for the given inoutline The pricing context contain information about pricing system, pricelist, discount, currency etc
+	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 *
-	 * For picking the fit pricing system, first the code searches for the one with the SOTrx of the inoutLine's inout, looking in the C_BPartner entry. In case this one is not found, in case the
-	 * inout is of type returning, the opposite SOTrx pricing is also allowed but this is only a corner case. An AdempiereException is thrown if the pricing system was not found. After the pricing
-	 * system is chosen, the pricelist is searched for. In case there is no pricelist to fit the inout line, and AdempiereException is also thrown.
+	 * When picking the pricing system, first check if the given <code>inOutLine</code>'s <code>M_InOut</code>'s bpartner has an pricingsystem set directly in its <code>C_BPartner</code> record that matches the <code>M_InOut.IsSOTrx</code>.
+	 * <p>
+	 * If the bpartner's <code>C_BPartner.M_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='Y'</code>) or <code>C_BPartner.PO_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='N'</code>) is <code>NULL</code>,<br>
+	 * <i>and</i> if <code>M_OnOut.MovementType</code> is a "returning-type" (see {@link #isReturnMovementType(String)}),<br>
+	 * then also check for the opposite pricing system of the BPartner.
+	 * <p>
+	 * For example, if a bpartner is both customer and vendor, has <b>no</b> <code>M_PricingSystem</code>,<br>
+	 * but does have a <code>PO_PricingSystem</code> set in its <code>C_BPartner</code> record,<br>
+	 * <b>and</b> if the <code>M_InOut</code> in question is a customer return (that means <code>M_InOut.IsSOTrx='Y'</code>),<br>
+	 * then go with the customer's <code>PO_PricingSystem</code>.
+	 * <p>
+	 * After the pricing system is picked, look for the fitting price list using <code>M_InOut.C_BPartner_Location_ID</code>.
 	 *
 	 * @param inOutLine
-	 * @return the pricing context, populated with the information that was found (pricing system, pricelist, discount, currency)
+	 * @return the pricing context, populated with the information that was found (pricing system, price list, discount, currency)
+	 * @throws AdempiereException in case there is no price list to fit the given <code>inOutLine</code>.
 	 */
 	IPricingContext createPricingCtx(org.compiere.model.I_M_InOutLine inOutLine);
 
@@ -60,7 +73,7 @@ public interface IInOutBL extends ISingletonService
 	 * @param inOut
 	 * @return the pricing system fir for the inout,
 	 *         Otherwise, throws exception when throwEx = true and return null if it is false
-	 * 
+	 *
 	 */
 	I_M_PricingSystem getPricingSystem(I_M_InOut inOut, boolean throwEx);
 
@@ -129,16 +142,23 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
-	 * 
+	 *
 	 * @param inout
 	 */
 	void deleteMatchInvs(I_M_InOut inout);
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
-	 * 
+	 *
 	 * @param iol
 	 */
 	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
+
+	/**
+	 *
+	 * @param iol
+	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
+	 */
+	BigDecimal getEffectiveStorageChange(I_M_InOutLine iol);
 
 }

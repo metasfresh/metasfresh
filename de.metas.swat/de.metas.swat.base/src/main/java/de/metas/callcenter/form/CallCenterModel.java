@@ -29,11 +29,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
@@ -43,15 +41,16 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MGroup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.callcenter.model.BundleUtil;
 import de.metas.callcenter.model.CallCenterValidator;
@@ -60,6 +59,7 @@ import de.metas.callcenter.model.I_R_Group_Prospect;
 import de.metas.callcenter.model.I_R_Request;
 import de.metas.callcenter.model.I_R_RequestUpdate;
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -112,7 +112,6 @@ public class CallCenterModel
 		{
 			return m_bundlesLookup;
 		}
-		Language language = Env.getLanguage(m_ctx);
 		final String validationCode =
 			// All bundles that are not Done or Close
 			"R_Group."+BundleUtil.R_Group_CCM_Bundle_Status+" NOT IN ("
@@ -125,7 +124,6 @@ public class CallCenterModel
 			m_bundlesLookup = MLookupFactory.get(m_ctx, m_windowNo,
 					0,								// Column_ID,
 					DisplayType.Table,				//AD_Reference_ID,
-					language,						// Language
 					c.getColumnName(),				// ColumnName
 					c.getAD_Reference_Value_ID(),	// AD_Reference_Value_ID,
 					false,							// IsParent,
@@ -167,7 +165,7 @@ public class CallCenterModel
 	{
 		if (m_mTabOtherRequests != null)
 			return m_mTabOtherRequests;
-		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_Request.Table_ID, true);
+		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), InterfaceWrapperHelper.getTableId(I_R_Request.class), true);
 		return m_mTabOtherRequests;
 	}
 	
@@ -183,7 +181,7 @@ public class CallCenterModel
 	{
 		if (refresh)
 			m_mTab.dataRefresh();
-		I_RV_R_Group_Prospect contact = GridTabWrapper.create(m_mTab, I_RV_R_Group_Prospect.class);
+		I_RV_R_Group_Prospect contact = InterfaceWrapperHelper.create(m_mTab, I_RV_R_Group_Prospect.class);
 		return contact;
 	}
 	
@@ -202,7 +200,7 @@ public class CallCenterModel
 		MQuery query = new MQuery(m_mTab.getTableName());
 		if (m_R_Group_ID != R_Group_AllBundles)
 		{
-			query.addRestriction(I_RV_R_Group_Prospect.COLUMNNAME_R_Group_ID, MQuery.EQUAL, m_R_Group_ID);
+			query.addRestriction(I_RV_R_Group_Prospect.COLUMNNAME_R_Group_ID, Operator.EQUAL, m_R_Group_ID);
 		}
 		if (m_isShowOnlyDue)
 		{
@@ -231,7 +229,7 @@ public class CallCenterModel
 			//
 			if (contact != null)
 			{
-				query.addRestriction(I_R_RequestUpdate.COLUMNNAME_R_Request_ID, MQuery.EQUAL, contact.getR_Request_ID());
+				query.addRestriction(I_R_RequestUpdate.COLUMNNAME_R_Request_ID, Operator.EQUAL, contact.getR_Request_ID());
 			}
 			else
 			{
@@ -248,9 +246,9 @@ public class CallCenterModel
 			//
 			if (contact != null)
 			{
-				query.addRestriction(I_R_Request.COLUMNNAME_C_BPartner_ID, MQuery.EQUAL, contact.getC_BPartner_ID());
-				query.addRestriction(I_R_Request.COLUMNNAME_R_Request_ID, MQuery.NOT_EQUAL, contact.getR_Request_ID());
-				query.addRestriction(I_R_Request.COLUMNNAME_R_RequestType_ID, MQuery.EQUAL, getDefault_RequestType_ID());
+				query.addRestriction(I_R_Request.COLUMNNAME_C_BPartner_ID, Operator.EQUAL, contact.getC_BPartner_ID());
+				query.addRestriction(I_R_Request.COLUMNNAME_R_Request_ID, Operator.NOT_EQUAL, contact.getR_Request_ID());
+				query.addRestriction(I_R_Request.COLUMNNAME_R_RequestType_ID, Operator.EQUAL, getDefault_RequestType_ID());
 			}
 			else
 			{
@@ -267,8 +265,8 @@ public class CallCenterModel
 			MQuery query = new MQuery(m_mTabInterestArea.getTableName());
 			if (contact != null)
 			{
-				query.addRestriction(I_R_ContactInterest.COLUMNNAME_AD_User_ID, MQuery.EQUAL, contact.getAD_User_ID());
-				query.addRestriction(I_R_ContactInterest.COLUMNNAME_IsActive, MQuery.EQUAL, "Y");
+				query.addRestriction(I_R_ContactInterest.COLUMNNAME_AD_User_ID, Operator.EQUAL, contact.getAD_User_ID());
+				query.addRestriction(I_R_ContactInterest.COLUMNNAME_IsActive, Operator.EQUAL, "Y");
 			}
 			else
 			{

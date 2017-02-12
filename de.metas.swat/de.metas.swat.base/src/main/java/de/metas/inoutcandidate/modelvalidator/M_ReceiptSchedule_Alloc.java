@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysHandler;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 
 @Validator(I_M_ReceiptSchedule_Alloc.class)
@@ -37,18 +37,18 @@ public class M_ReceiptSchedule_Alloc
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void updateQtyMovedAdd(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc)
 	{
-		Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleAdded(receiptScheduleAlloc);
+		Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleAdded(receiptScheduleAlloc);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
 	public void updateQtyMovedChange(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc)
 	{
-		Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleUpdated(receiptScheduleAlloc);
+		Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleUpdated(receiptScheduleAlloc);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void updateQtyMovedSubtract(final I_M_ReceiptSchedule_Alloc receiptScheduleAlloc)
 	{
-		Services.get(IReceiptScheduleQtysHandler.class).onReceiptScheduleDeleted(receiptScheduleAlloc);
+		Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleDeleted(receiptScheduleAlloc);
 	}
 }

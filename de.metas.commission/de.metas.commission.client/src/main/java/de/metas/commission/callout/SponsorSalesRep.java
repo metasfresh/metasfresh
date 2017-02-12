@@ -25,7 +25,7 @@ package de.metas.commission.callout;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.CalloutEngine;
@@ -51,7 +51,7 @@ public class SponsorSalesRep extends CalloutEngine
 			return "";
 		}
 
-		final I_C_Sponsor_SalesRep ssr = GridTabWrapper.create(mTab, I_C_Sponsor_SalesRep.class);
+		final I_C_Sponsor_SalesRep ssr = InterfaceWrapperHelper.create(mTab, I_C_Sponsor_SalesRep.class);
 		if (ssr.getC_Sponsor_ID() <= 0)
 		{
 			// without the sponsor, we can't do anything
@@ -110,7 +110,7 @@ public class SponsorSalesRep extends CalloutEngine
 			return "";
 		}
 
-		final I_C_Sponsor_SalesRep ssr = GridTabWrapper.create(mTab, I_C_Sponsor_SalesRep.class);
+		final I_C_Sponsor_SalesRep ssr = InterfaceWrapperHelper.create(mTab, I_C_Sponsor_SalesRep.class);
 		if (ssr.getValidTo() == null)
 		{
 			ssr.setValidTo(CommissionConstants.VALID_RANGE_MAX);

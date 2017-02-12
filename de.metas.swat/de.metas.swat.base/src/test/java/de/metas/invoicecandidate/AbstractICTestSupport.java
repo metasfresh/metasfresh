@@ -13,16 +13,17 @@ package de.metas.invoicecandidate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +36,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.pricing.model.I_M_PriceList_Version;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -55,6 +57,7 @@ import org.compiere.model.MPricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
@@ -119,6 +122,17 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected I_C_Tax tax_Default;
 	protected I_C_Tax tax_NotFound;
 
+	/**
+	 * Currently used for both {@link #priceListVersion_SO} and {@link #priceListVersion_PO}.
+	 */
+	public final Timestamp plvDate = TimeUtil.getDay(2015, 01, 15);
+
+	protected I_M_PricingSystem pricingSystem_SO;
+	protected I_M_PriceList_Version priceListVersion_SO;
+
+	protected I_M_PricingSystem pricingSystem_PO;
+	protected I_M_PriceList_Version priceListVersion_PO;
+
 	// task 07442
 	protected I_AD_Org org;
 	protected I_M_Product product;
@@ -177,7 +191,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 					ICLineAggregationKeyBuilder_OLD.instance);
 		}
 
-		//
 		// Setup taxes
 		config_Taxes();
 
@@ -352,6 +365,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final Properties ctx = Env.getCtx();
 		final PlainContextAware context = new PlainContextAware(ctx);
 
+		//
+		// create the "none" PS and PL
 		final I_M_PricingSystem pricingSystem_None = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class, context);
 		pricingSystem_None.setM_PricingSystem_ID(MPricingSystem.M_PricingSystem_ID_None);
 		pricingSystem_None.setName("None");
@@ -364,6 +379,40 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		priceList_None.setIsSOPriceList(true);
 		priceList_None.setC_Country_ID(country_DE.getC_Country_ID());
 		InterfaceWrapperHelper.save(priceList_None);
+
+		final int currencyPrecision = currencyConversionBL.getBaseCurrency(ctx).getStdPrecision();
+
+		//
+		// create a sales PS and PLV
+		pricingSystem_SO = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
+		InterfaceWrapperHelper.save(pricingSystem_SO);
+
+		final I_M_PriceList pl_so = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
+		pl_so.setM_PricingSystem(pricingSystem_SO);
+		pl_so.setIsSOPriceList(true);
+		pl_so.setPricePrecision(currencyPrecision);
+		InterfaceWrapperHelper.save(pl_so);
+
+		priceListVersion_SO = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
+		priceListVersion_SO.setM_PriceList_ID(pl_so.getM_PriceList_ID());
+		priceListVersion_SO.setValidFrom(plvDate);
+		InterfaceWrapperHelper.save(priceListVersion_SO);
+
+		//
+		// create a purchase PS and PLV
+		pricingSystem_PO = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
+		InterfaceWrapperHelper.save(pricingSystem_PO);
+
+		final I_M_PriceList pl_po = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
+		pl_po.setM_PricingSystem(pricingSystem_PO);
+		pl_po.setIsSOPriceList(false);
+		pl_po.setPricePrecision(currencyPrecision);
+		InterfaceWrapperHelper.save(pl_po);
+
+		priceListVersion_PO = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
+		priceListVersion_PO.setM_PriceList_ID(pl_po.getM_PriceList_ID());
+		priceListVersion_PO.setValidFrom(plvDate);
+		InterfaceWrapperHelper.save(priceListVersion_PO);
 	}
 
 	protected final C_Invoice_Candidate_Builder createInvoiceCandidate()

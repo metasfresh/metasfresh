@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.document.model.IDocumentLocation;
@@ -39,7 +40,9 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	// @formatter:off
 	public static final String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 	public void setM_PriceList_Version_ID(int plvId);
+	public void setM_PriceList_Version(I_M_PriceList_Version plv);
 	public int getM_PriceList_Version_ID();
+	public I_M_PriceList_Version getM_PriceList_Version();
 	// @formatter:on
 
 	// @formatter:off
@@ -102,12 +105,6 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	public BigDecimal getOrderDiscount();
 	@Override
 	public void setOrderDiscount(BigDecimal OrderDiscount);
-	// @formatter:on
-
-	// @formatter:off
-	public static final String COLUMNNAME_IsIndividualPOSchedule="IsIndividualPOSchedule";
-	public boolean isIndividualPOSchedule();
-	public void setIsIndividualPOSchedule(boolean IsIndividualPOSchedule);
 	// @formatter:on
 
 	// @formatter:off

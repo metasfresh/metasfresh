@@ -5,10 +5,12 @@ import java.util.List;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.procurement.sync.IAgentSync;
+import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
 import de.metas.procurement.sync.protocol.SyncConfirmation;
 import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.procurement.sync.protocol.SyncRfQ;
 
 /*
  * #%L
@@ -23,11 +25,11 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,7 +37,7 @@ import de.metas.procurement.sync.protocol.SyncProductsRequest;
 /**
  * An mocked implementation which only prints the requests to System.out.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class NullAgentSync implements IAgentSync
@@ -71,4 +73,15 @@ public class NullAgentSync implements IAgentSync
 		System.out.println("confirm: " + ObjectUtils.toString(syncConfirmations));
 	}
 
+	@Override
+	public void syncRfQs(final List<SyncRfQ> syncRfqs)
+	{
+		System.out.println("syncRfQs: " + ObjectUtils.toString(syncRfqs));
+	}
+
+	@Override
+	public void closeRfQs(List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	{
+		System.out.println("closeRfQs: " + ObjectUtils.toString(syncRfQCloseEvents));
+	}
 }

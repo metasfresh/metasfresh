@@ -27,16 +27,16 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList_Version;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.commission.interfaces.I_M_DiscountSchemaLine;
 import de.metas.commission.service.IPriceListBL;
+import de.metas.logging.LogManager;
 
 public class PriceListBL implements IPriceListBL
 {
@@ -51,7 +51,7 @@ public class PriceListBL implements IPriceListBL
 	{
 		final StringBuilder resultMsg = new StringBuilder();
 
-		final int plCountryId = POWrapper.create(plv.getM_PriceList(), I_M_PriceList.class).getC_Country_ID();
+		final int plCountryId = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class).getC_Country_ID();
 		final boolean subtractVAT;
 		if (plCountryId <= 0)
 		{
@@ -169,7 +169,7 @@ public class PriceListBL implements IPriceListBL
 			final int adPinstanceId,
 			final String trxName)
 	{
-		final int plCountryId = POWrapper.create(plv.getM_PriceList(), I_M_PriceList.class).getC_Country_ID();
+		final int plCountryId = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class).getC_Country_ID();
 		final boolean subtractVAT;
 		if (plCountryId <= 0)
 		{

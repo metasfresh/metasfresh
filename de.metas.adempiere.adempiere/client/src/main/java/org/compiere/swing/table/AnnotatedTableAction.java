@@ -34,7 +34,7 @@ import org.adempiere.util.Check;
  *
  * To be used with {@link AnnotatedTableFactory#addPopupAction(javax.swing.Action)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public abstract class AnnotatedTableAction extends AbstractAction

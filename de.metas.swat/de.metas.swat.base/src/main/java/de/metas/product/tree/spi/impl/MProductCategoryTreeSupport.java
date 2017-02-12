@@ -30,7 +30,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.model.tree.spi.impl.DefaultPOTreeSupport;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_M_Product_Category;
@@ -58,7 +57,7 @@ public class MProductCategoryTreeSupport extends DefaultPOTreeSupport
 	{
 		if (I_M_Product_Category.Table_Name.equals(po.get_TableName()))
 		{
-			I_M_Product_Category pc = POWrapper.create(po, I_M_Product_Category.class);
+			I_M_Product_Category pc = InterfaceWrapperHelper.create(po, I_M_Product_Category.class);
 			return pc.getM_Product_Category_Parent_ID();
 		}
 		return UNKNOWN_ParentID;

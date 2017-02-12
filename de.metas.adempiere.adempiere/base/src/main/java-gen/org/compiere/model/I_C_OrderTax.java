@@ -98,34 +98,27 @@ public interface I_C_OrderTax
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Date this record was created
+	 * Set Order Tax.
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderTax, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OrderTax, Object>(I_C_OrderTax.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	public void setC_OrderTax_ID (int C_OrderTax_ID);
 
 	/**
-	 * Get Erstellt durch.
-	 * User who created this records
+	 * Get Order Tax.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	public int getC_OrderTax_ID();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderTax, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_OrderTax, org.compiere.model.I_AD_User>(I_C_OrderTax.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for C_OrderTax_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderTax, Object> COLUMN_C_OrderTax_ID = new org.adempiere.model.ModelColumn<I_C_OrderTax, Object>(I_C_OrderTax.class, "C_OrderTax_ID", null);
+    /** Column name C_OrderTax_ID */
+    public static final String COLUMNNAME_C_OrderTax_ID = "C_OrderTax_ID";
 
 	/**
 	 * Set Steuer.
@@ -155,6 +148,36 @@ public interface I_C_OrderTax
     public static final org.adempiere.model.ModelColumn<I_C_OrderTax, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_OrderTax, org.compiere.model.I_C_Tax>(I_C_OrderTax.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
     /** Column name C_Tax_ID */
     public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderTax, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OrderTax, Object>(I_C_OrderTax.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderTax, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_OrderTax, org.compiere.model.I_AD_User>(I_C_OrderTax.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Aktiv.

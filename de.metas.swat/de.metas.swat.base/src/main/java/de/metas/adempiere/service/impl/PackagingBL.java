@@ -43,7 +43,6 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -62,10 +61,9 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IPackagingBL;
@@ -92,23 +90,18 @@ public class PackagingBL implements IPackagingBL
 	@Override
 	public Lookup createPackgagingContainerLookup()
 	{
-		final Language language = Env.getLanguage(Env.getCtx());
-
 		final MColumn c = MTable.get(Env.getCtx(), Table_ID).getColumn(COLUMNNAME_M_PackagingContainer_ID);
 
-		return createLookup(language, c);
+		return createLookup(c);
 	}
 
 	@Override
 	public Lookup createShipperLookup()
 	{
-
-		final Language language = Env.getLanguage(Env.getCtx());
-
 		final MColumn c =
 				MTable.get(Env.getCtx(), I_M_Shipper.Table_ID).getColumn(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 
-		return createLookup(language, c);
+		return createLookup(c);
 	}
 	
 	@Override
@@ -174,7 +167,7 @@ public class PackagingBL implements IPackagingBL
 
 			while (packLineNodes.hasMoreElements())
 			{
-				final PackingItem pi = (PackingItem)packLineNodes.nextElement().getUserObject();
+				final LegacyPackingItem pi = (LegacyPackingItem)packLineNodes.nextElement().getUserObject();
 				
 				for (final I_M_ShipmentSchedule sched : pi.getShipmentSchedules())
 				{
@@ -185,7 +178,7 @@ public class PackagingBL implements IPackagingBL
 									 + " WHERE " + I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + " = ?";
 					final int warehouseDest_ID = DB.getSQLValueEx(trxName, sql, ol.getC_OrderLine_ID());
 					
-					final I_C_Order order = POWrapper.create(ol.getC_Order(), I_C_Order.class);
+					final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 					final int bp_loc_id = sched.getC_BP_Location_Override_ID() > 0 ?  sched.getC_BP_Location_Override_ID() : ol.getC_BPartner_Location_ID();
 					
 					if (!Utils.disableSavePickingTree) // cg : task 05659 Picking Terminal: Disable Persistency
@@ -265,7 +258,7 @@ public class PackagingBL implements IPackagingBL
 					I_M_InOutLine il = olId2il.get(sched.getC_OrderLine_ID());
 					 if (il == null) 
 					{
-						il = InterfaceWrapperHelper.create(inOutPA.createNewLine(POWrapper.create(inOut, I_M_InOut.class), trxName), I_M_InOutLine.class);
+						il = InterfaceWrapperHelper.create(inOutPA.createNewLine(InterfaceWrapperHelper.create(inOut, I_M_InOut.class), trxName), I_M_InOutLine.class);
 						il.setM_Product_ID(sched.getM_Product_ID());
 						inOutPA.setLineOrderLine(il, ol, 0, BigDecimal.ZERO);
 
@@ -310,11 +303,11 @@ public class PackagingBL implements IPackagingBL
 			// create inOut lines for our non-items
 			for (final I_M_ShipmentSchedule nonItem : nonItems)
 			{
-				final I_C_OrderLine ol = POWrapper.create(nonItem.getC_OrderLine(), I_C_OrderLine.class);
+				final I_C_OrderLine ol = InterfaceWrapperHelper.create(nonItem.getC_OrderLine(), I_C_OrderLine.class);
 
 				if (inOut == null)
 				{
-					final I_C_Order order = POWrapper.create(ol.getC_Order(), I_C_Order.class);
+					final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
 					inOut = mkInOut(ctx, shipperId, nonItem, ol, order, trxName);
 					result.put(inOut, new ArrayList<MPackage>());
@@ -373,7 +366,7 @@ public class PackagingBL implements IPackagingBL
 		return inOut;
 	}
 
-	private static Lookup createLookup(final Language language, final I_AD_Column c)
+	private static Lookup createLookup(final I_AD_Column c)
 	{
 		try
 		{
@@ -381,7 +374,6 @@ public class PackagingBL implements IPackagingBL
 					-1, // WindowNo
 					0, // Column_ID,
 					DisplayType.Table, // AD_Reference_ID,
-					language, // Language
 					c.getColumnName(), // ColumnName
 					c.getAD_Reference_Value_ID(), // AD_Reference_Value_ID,
 					false, // IsParent,

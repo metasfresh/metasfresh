@@ -831,7 +831,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 	/**
 	 * Calendar dialog builder
 	 * 
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	public static final class Builder
@@ -937,7 +937,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 
 	/**
 	 * Day button
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 */
 	private static final class DayButton extends CButton 
 	{

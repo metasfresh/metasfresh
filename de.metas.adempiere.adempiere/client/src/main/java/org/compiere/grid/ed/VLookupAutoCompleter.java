@@ -39,8 +39,11 @@ import java.util.Properties;
 
 import javax.swing.text.JTextComponent;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -58,8 +61,10 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import de.metas.autocomplete.model.I_AD_Table;
+import de.metas.logging.LogManager;
 
 /**
  *
@@ -68,6 +73,8 @@ import de.metas.autocomplete.model.I_AD_Table;
  */
 /* package */class VLookupAutoCompleter extends FieldAutoCompleter
 {
+	private static final Logger log = LogManager.getLogger(VLookupAutoCompleter.class);
+	
 	private final VLookup editor;
 	private final MLookupInfo lookupInfo;
 	// private final MLookup lookup;
@@ -87,17 +94,8 @@ import de.metas.autocomplete.model.I_AD_Table;
 		final MTable table = MTable.get(ctx, tableName);
 
 		this.autocompleterValidationRule = createAutoCompleterValidationRule(table, lookupInfo);
-
-		//
-		// Init Complete validationRule
-		{
-			final CompositeValidationRule validationRule = new CompositeValidationRule();
-			validationRule.addValidationRule(lookupInfo.getValidationRule());
-			validationRule.addValidationRule(autocompleterValidationRule);
-			this.validationRule = validationRule;
-
-			// validationCtx = lookup.getValidationContext();
-		}
+		this.validationRule = CompositeValidationRule.compose(lookupInfo.getValidationRule(), autocompleterValidationRule);
+		// validationCtx = lookup.getValidationContext();
 
 		//
 		// Set Popup Mininum Chars:
@@ -208,9 +206,9 @@ import de.metas.autocomplete.model.I_AD_Table;
 			}
 
 			// Full generated identifier search
-			if (!Check.isEmpty(lookupInfo.getDisplayColumnSQL(), true))
+			if (!Check.isEmpty(lookupInfo.getDisplayColumnSqlAsString(), true))
 			{
-				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSQL()) + ")"
+				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSqlAsString()) + ")"
 						+ " LIKE UPPER(" + DBConstants.FUNC_unaccent_string("?") + ")");
 				paramsTemplate.add(VLookupAutoCompleterValidationRule.SEARCHSQL_PLACEHOLDER);
 			}
@@ -232,7 +230,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 	}
 
 	@Override
-	protected Object fetchUserObject(ResultSet rs) throws SQLException
+	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
 		final String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
 
@@ -249,7 +247,8 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 
 		// Validate the result
-		if (!validationRule.accept(getValidationContext(), item))
+		final INamePairPredicate postQueryFilter = validationRule.getPostQueryFilter();
+		if (!postQueryFilter.accept(getValidationContext(), item))
 		{
 			return null;
 		}
@@ -287,10 +286,10 @@ import de.metas.autocomplete.model.I_AD_Table;
 	{
 		final String searchSQL = getSearchStringSQL(searchInput, caretPosition);
 
-		final String sqlSelect = lookupInfo.getSelectSqlPart();
+		final String sqlSelect = lookupInfo.getSelectSqlPartAsString();
 		if (Check.isEmpty(sqlSelect, true))
 		{
-			log.warn("Empty SELECT SQL found for: " + lookupInfo);
+			log.warn("Empty SELECT SQL found for: {}", lookupInfo);
 			return null;
 		}
 
@@ -304,8 +303,9 @@ import de.metas.autocomplete.model.I_AD_Table;
 				sqlWhere.append("(").append(lookupInfo.getWhereClauseSqlPart()).append(")");
 			}
 
-			final String sqlWhereValRule = validationRule.getPrefilterWhereClause(getValidationContext());
-			if (sqlWhereValRule == IValidationRule.WHERECLAUSE_ERROR)
+			final IStringExpression sqlWhereValRuleExpr = validationRule.getPrefilterWhereClause();
+			final String sqlWhereValRule = sqlWhereValRuleExpr.evaluate(getValidationContext(), OnVariableNotFound.ReturnNoResult);
+			if(sqlWhereValRuleExpr.isNoResult(sqlWhereValRule))
 			{
 				return null;
 			}
@@ -342,7 +342,7 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 		else
 		{
-			sqlFinal = Env.getUserRolePermissions().addAccessSQL(sqlBuilder.toString(), lookupInfo.TableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			sqlFinal = Env.getUserRolePermissions().addAccessSQL(sqlBuilder.toString(), lookupInfo.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
 		}
 
 		//
@@ -350,16 +350,10 @@ import de.metas.autocomplete.model.I_AD_Table;
 	}
 
 	@Override
-	public boolean isEnabled()
+	public void setUserObject(final Object userObject)
 	{
-		return this.textBox.hasFocus();
-	}
-
-	@Override
-	public void setUserObject(Object userObject)
-	{
-		String textOld = textBox.getText();
-		int caretPosition = textBox.getCaretPosition();
+		final String textOld = getText();
+		final int caretPosition = getTextCaretPosition();
 		//
 		super.setUserObject(userObject);
 		// Object valueOld = editor.getValue();
@@ -380,14 +374,14 @@ import de.metas.autocomplete.model.I_AD_Table;
 		}
 		else
 		{
-			log.warn("Not supported - " + userObject + ", class=" + userObject.getClass());
+			log.warn("Not supported - {}, class={}", userObject, userObject.getClass());
 			return;
 		}
 		editor.actionCombo(value);
 		if (value == null)
 		{
-			textBox.setText(textOld);
-			textBox.setCaretPosition(caretPosition);
+			setText(textOld);
+			setTextCaretPosition(caretPosition);
 		}
 	}
 

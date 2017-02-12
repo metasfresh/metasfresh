@@ -489,6 +489,8 @@ public class PriceListDAO implements IPriceListDAO
 			final Date date,
 			final Boolean processed)
 	{
+		Check.assumeNotNull(date, "Param 'date' is not null; other params: priceListId={}, processed={}, ctx={}", priceListId, processed, ctx);
+
 		final IQueryBuilder<I_M_PriceList_Version> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class, ctx, ITrx.TRXNAME_None)
 				// Same pricelist

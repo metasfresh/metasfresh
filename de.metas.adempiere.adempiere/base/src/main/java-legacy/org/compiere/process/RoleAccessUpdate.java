@@ -27,6 +27,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
+import org.compiere.util.CacheMgt;
+
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Update Role Access
@@ -34,7 +38,7 @@ import org.compiere.model.I_AD_Role;
  * @author Jorg Janke
  * @version $Id: RoleAccessUpdate.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
-public class RoleAccessUpdate extends SvrProcess
+public class RoleAccessUpdate extends JavaProcess
 {
 	/** Update Role */
 	private int p_AD_Role_ID = 0;
@@ -47,7 +51,7 @@ public class RoleAccessUpdate extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -82,6 +86,10 @@ public class RoleAccessUpdate extends SvrProcess
 		{
 			updateAllRoles(getCtx(), this, p_AD_Client_ID);
 		}
+
+		//
+		// Reset role related cache (i.e. UserRolePermissions)
+		CacheMgt.get().reset(I_AD_Role.Table_Name);
 
 		return MSG_OK;
 	}	// doIt

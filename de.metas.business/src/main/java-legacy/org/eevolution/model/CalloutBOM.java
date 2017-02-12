@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -56,7 +56,7 @@ public class CalloutBOM extends CalloutEngine
 		if (M_Product_ID <= 0)
 			return "";
 		
-		I_PP_Product_BOMLine bomLine = GridTabWrapper.create(mTab, I_PP_Product_BOMLine.class);
+		I_PP_Product_BOMLine bomLine = InterfaceWrapperHelper.create(mTab, I_PP_Product_BOMLine.class);
         I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
         if (bom.getM_Product_ID() ==  bomLine.getM_Product_ID())
         {                                                                               
@@ -75,7 +75,7 @@ public class CalloutBOM extends CalloutEngine
 		if (isCalloutActive() || value == null)
 			return "";
 
-		final I_PP_Order_BOMLine bomLine = GridTabWrapper.create(mTab, I_PP_Order_BOMLine.class);
+		final I_PP_Order_BOMLine bomLine = InterfaceWrapperHelper.create(mTab, I_PP_Order_BOMLine.class);
 		final int M_Product_ID = bomLine.getM_Product_ID();
 		final String columnName = mField.getColumnName();
 		
@@ -133,7 +133,7 @@ public class CalloutBOM extends CalloutEngine
 			return "";
 		
         I_M_Product product =  MProduct.get(ctx, M_Product_ID);
-        I_PP_Product_BOM bom = GridTabWrapper.create(mTab, I_PP_Product_BOM.class);
+        I_PP_Product_BOM bom = InterfaceWrapperHelper.create(mTab, I_PP_Product_BOM.class);
         bom.setValue(product.getValue());
         bom.setName(product.getName());
         bom.setDescription(product.getDescription());

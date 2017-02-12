@@ -330,6 +330,7 @@ public class TestDunning extends DunningTestBase
 	{
 		final IDunnableDoc dunnableDoc = new DunnableDocBuilder()
 				.setRecord(invoice)
+				.setDocumentNo(invoice.getDocumentNo())
 				.setC_BPartner_ID(invoice.getC_BPartner_ID())
 				.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID())
 				.setContact_ID(invoice.getAD_User_ID())

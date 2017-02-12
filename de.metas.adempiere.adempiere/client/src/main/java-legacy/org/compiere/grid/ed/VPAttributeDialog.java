@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
@@ -81,9 +79,9 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MLot;
 import org.compiere.model.MLotCtl;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSerNoCtl;
 import org.compiere.swing.CButton;
-import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CEditor;
@@ -91,15 +89,17 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -233,8 +233,6 @@ public class VPAttributeDialog extends CDialog
 	private final int m_AD_Column_ID;
 	/** Enter Product Attributes */
 	private final boolean m_productWindow;
-	/** Change */
-	// private boolean m_changed = false;
 
 	/** Row Counter */
 	private int m_row = 0;
@@ -243,7 +241,6 @@ public class VPAttributeDialog extends CDialog
 	/** Length of Instance value (40) */
 	private static final int INSTANCE_VALUE_LENGTH = 40;
 
-	private CCheckBox cbNewEdit = new CCheckBox();
 	private CButton bSelectExistingASI = new CButton(Images.getImageIcon2("PAttribute16"));
 	// Lot
 	private VString fieldLotString = new VString("Lot", false, false, true, 20, 20, null, null);
@@ -262,9 +259,7 @@ public class VPAttributeDialog extends CDialog
 	//
 	private CTextField fieldDescription = new CTextField(20);
 	//
-	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel centerPanel = new CPanel();
-	private ALayout centerLayout = new ALayout(5, 5, true);
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
@@ -274,10 +269,10 @@ public class VPAttributeDialog extends CDialog
 	 */
 	private void jbInit() throws Exception
 	{
-		this.getContentPane().setLayout(mainLayout);
+		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(centerPanel, BorderLayout.CENTER);
 		this.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
-		centerPanel.setLayout(centerLayout);
+		centerPanel.setLayout(new ALayout(5, 5, true));
 		//
 		confirmPanel.setActionListener(this);
 	}	// jbInit
@@ -407,16 +402,10 @@ public class VPAttributeDialog extends CDialog
 		// Show Select existing ASI (if allowed)
 		if (allowSelectExistingASI)
 		{
-			// New/Edit - Selection
-			if (isASITemplateNew)		// new ASI
-				cbNewEdit.setText(msgBL.getMsg(ctx, "NewRecord"));
-			else
-				cbNewEdit.setText(msgBL.getMsg(ctx, "EditRecord"));
-			cbNewEdit.addActionListener(this);
-			centerPanel.add(cbNewEdit, new ALayoutConstraint(m_row++, 0));
+			// Select existing ASI button
 			bSelectExistingASI.setText(msgBL.getMsg(ctx, "SelectExisting"));
 			bSelectExistingASI.addActionListener(this);
-			centerPanel.add(bSelectExistingASI, null);
+			centerPanel.add(bSelectExistingASI, new ALayoutConstraint(m_row++, 1));
 		}
 
 		//
@@ -578,8 +567,7 @@ public class VPAttributeDialog extends CDialog
 		// New/Edit Window
 		if (allowSelectExistingASI)
 		{
-			cbNewEdit.setSelected(isASITemplateNew);
-			cmd_newEdit();
+			setReadWrite(true);
 		}
 
 		//
@@ -813,11 +801,6 @@ public class VPAttributeDialog extends CDialog
 			cmd_select();
 			return;
 		}
-		// New/Edit
-		else if (e.getSource() == cbNewEdit)
-		{
-			cmd_newEdit();
-		}
 		// Select Lot from existing
 		else if (e.getSource() == fieldLot)
 		{
@@ -947,12 +930,11 @@ public class VPAttributeDialog extends CDialog
 	}	// cmd_select
 
 	/**
-	 * Update which fields status (read-only/read-write) based on New ASI/Edit ASI checkbox.
+	 * Update which fields status (read-only/read-write).
 	 */
-	private final void cmd_newEdit()
+	private final void setReadWrite(final boolean rw)
 	{
-		final boolean rw = cbNewEdit.isSelected();
-		log.info("R/W=" + rw + " " + asiTemplate);
+		log.info("R/W={} {}", rw, asiTemplate);
 
 		// Lot
 		final boolean isNewLot = asiTemplate == null || asiTemplate.getM_Lot_ID() <= 0;
@@ -987,7 +969,7 @@ public class VPAttributeDialog extends CDialog
 		if (pp != null)
 			M_Lot_ID = pp.getKey();
 		MQuery zoomQuery = new MQuery("M_Lot");
-		zoomQuery.addRestriction("M_Lot_ID", MQuery.EQUAL, M_Lot_ID);
+		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1136,7 +1118,7 @@ public class VPAttributeDialog extends CDialog
 			{
 				final VString editorString = (VString)editor;
 				final String value = editorString.getText();
-				if (attribute.isMandatory() && Check.isEmpty(value, false))
+				if (attribute.isMandatory() && Check.isEmpty(value, true))
 				{
 					mandatory.add(attribute.getName());
 				}

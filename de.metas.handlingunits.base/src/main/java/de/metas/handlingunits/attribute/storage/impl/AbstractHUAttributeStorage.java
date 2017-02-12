@@ -13,22 +13,23 @@ package de.metas.handlingunits.attribute.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -40,6 +41,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
@@ -51,14 +53,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.storage.HUStorageChangeEvent;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.handlingunits.storage.IHUStorageListener;
 
 public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
-		, IHUStorageListener // TODO: i think we can safely remove this
 {
 	// Services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -75,7 +74,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	 *
 	 * @param saveOnChange if true, attribute values will be saved to database on each change
 	 */
-	protected void setSaveOnChange(final boolean saveOnChange)
+	@Override
+	public final void setSaveOnChange(final boolean saveOnChange)
 	{
 		//
 		// Iterate existing attribute values and set "saveOnChange" option to them.
@@ -154,10 +154,12 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		Check.assumeNotNull(hu, "hu not null");
 
 		final IHUPIAttributesDAO huPIAttributesDAO = getHUPIAttributesDAO();
-
+		
 		//
 		// Retrieve M_HU_PI_Attributes
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		// gh #460: in case of an aggregate HU which is created right now, we need to get the pi version the HUBuilder was invoked with.
+		// note that we can't yet get it from the HU's parent item itself, because that item is not yet finalized.
+		final I_M_HU_PI_Version piVersion = IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu, hu.getM_HU_PI_Version());
 		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(piVersion);
 
 		//
@@ -222,9 +224,14 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 						final BigDecimal valueBD = generator.generateNumericValue(ctx, this, attribute);
 						valueGenerated = valueBD;
 					}
+					else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(valueType))
+					{
+						final Date valueDate = generator.generateDateValue(ctx, this, attribute);
+						valueGenerated = valueDate;
+					}
 					else
 					{
-						throw new UnsupportedOperationException("ValueType not supported: " + valueType);
+						throw new UnsupportedOperationException("ValueType not supported: " + valueType + "(attribute=" + attribute + ", generator=" + generator + ")");
 					}
 					attributeValue.setValue(attributesCtx, valueGenerated);
 				}
@@ -234,8 +241,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 				// FIXME: don't control the flow by throwing exceptions
 				logger.info("Skip generating value because is not supported."
 						+ "\nM_HU_Attribute=" + huAttribute
-						+ "\nGenerator=" + generator
-						, e);
+						+ "\nGenerator=" + generator, e);
 			}
 		}
 
@@ -346,37 +352,6 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		else
 		{
 			throw new AdempiereException("Attribute value " + fromAttributeValue + " is not valid for this storage (" + this + ")");
-		}
-	}
-
-	@Override
-	public final void onQtyChanged(final HUStorageChangeEvent event)
-	{
-		try
-		{
-			onQtyChanged0(event);
-		}
-		finally
-		{
-			event.setAttributeStorage(null);
-			event.setAttributeValue(null);
-		}
-	}
-
-	private void onQtyChanged0(final HUStorageChangeEvent event)
-	{
-		for (final IAttributeValue attributeValue : getAttributeValues())
-		{
-			final IAttributeValueCallout callout = attributeValue.getAttributeValueCallout();
-			if (!(callout instanceof IHUStorageListener))
-			{
-				continue;
-			}
-
-			final IHUStorageListener delegate = (IHUStorageListener)callout;
-			event.setAttributeStorage(this);
-			event.setAttributeValue(attributeValue);
-			delegate.onQtyChanged(event);
 		}
 	}
 

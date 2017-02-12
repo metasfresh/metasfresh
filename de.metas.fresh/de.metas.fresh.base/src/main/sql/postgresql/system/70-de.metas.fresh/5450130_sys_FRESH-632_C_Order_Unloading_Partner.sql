@@ -1,0 +1,35 @@
+-- Sep 2, 2016 10:05 AM
+-- URL zum Konzept
+UPDATE AD_Field SET DisplayLogic='@IsUseHandOver_Location@=''Y''',Updated=TO_TIMESTAMP('2016-09-02 10:05:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553693
+;
+
+-- Sep 2, 2016 10:06 AM
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNo=414,Updated=TO_TIMESTAMP('2016-09-02 10:06:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553692
+;
+
+-- Sep 2, 2016 10:06 AM
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNo=413,Updated=TO_TIMESTAMP('2016-09-02 10:06:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553693
+;
+
+-- Sep 2, 2016 10:06 AM
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNo=412,Updated=TO_TIMESTAMP('2016-09-02 10:06:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553694
+;
+
+-- Sep 2, 2016 10:06 AM
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNoGrid=120,Updated=TO_TIMESTAMP('2016-09-02 10:06:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553694
+;
+
+-- Sep 2, 2016 10:07 AM
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNoGrid=130,Updated=TO_TIMESTAMP('2016-09-02 10:07:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553692
+;
+
+-- Sep 2, 2016 10:07 AM
+-- URL zum Konzept
+UPDATE AD_Field SET SeqNoGrid=118,Updated=TO_TIMESTAMP('2016-09-02 10:07:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=1083
+;
+

@@ -2,9 +2,14 @@ package de.metas.notification.spi.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.slf4j.Logger;
 
+import com.google.common.base.Optional;
+
+import de.metas.logging.LogManager;
 import de.metas.notification.spi.INotificationCtxProvider;
 
 /*
@@ -17,14 +22,14 @@ import de.metas.notification.spi.INotificationCtxProvider;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,13 +37,16 @@ import de.metas.notification.spi.INotificationCtxProvider;
 /**
  * task 09833
  * Composite to gather all the registered notification ctx providers and return the most fit message from them
- * 
- * @author metas-dev <dev@metas-fresh.com>
+ *
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class CompositePrintingNotificationCtxProvider implements INotificationCtxProvider
 {
+	private static final Logger logger = LogManager.getLogger(CompositePrintingNotificationCtxProvider.class);
+
 	private final CopyOnWriteArrayList<INotificationCtxProvider> ctxProviders = new CopyOnWriteArrayList<>();
+	private INotificationCtxProvider defaultCtxProvider = NullNotificationCtxProvider.instance;
 
 	public final void addCtxProvider(final INotificationCtxProvider ctxProvider)
 	{
@@ -46,50 +54,36 @@ public class CompositePrintingNotificationCtxProvider implements INotificationCt
 		ctxProviders.addIfAbsent(ctxProvider);
 	}
 
-	@Override
-	public boolean appliesFor(final ITableRecordReference referencedRecord)
+	public void setDefaultCtxProvider(final INotificationCtxProvider defaultCtxProvider)
 	{
-		// the appliesFor will come from the specific ctx providers
-		return true;
+		Check.assumeNotNull(defaultCtxProvider, "defaultCtxProvider not null");
+		this.defaultCtxProvider = defaultCtxProvider;
 	}
 
 	@Override
-	public String getTextMessageOrNull(final ITableRecordReference referencedRecord)
+	public Optional<String> getTextMessageIfApplies(final ITableRecordReference referencedRecord)
 	{
-		INotificationCtxProvider defaultCtxProvider = null;
-
 		// take the providers one by one and see if any of them applies to the given referenced record
 		for (final INotificationCtxProvider ctxProvider : ctxProviders)
 		{
-			if (ctxProvider.appliesFor(referencedRecord))
+			final Optional<String> textMessage = ctxProvider.getTextMessageIfApplies(referencedRecord);
+			if (textMessage == null || !textMessage.isPresent())
 			{
-				// in case there is a ctx provider that is not default and fits the reference record, return its text message
-				if (!ctxProvider.isDefault())
-				{
-					return ctxProvider.getTextMessageOrNull(referencedRecord);
-				}
-				else
-				{
-					// if the default was found, keep it
-					defaultCtxProvider = ctxProvider;
-				}
+				continue;
 			}
+
+			return textMessage;
 		}
 
-		// no specific context provider was found. If there is a default one, use it.
-		if (defaultCtxProvider != null)
+		// Fallback to default provider
+		final Optional<String> textMessage = defaultCtxProvider.getTextMessageIfApplies(referencedRecord);
+		// guard against development issues (usually the text message shall never be null)
+		if (textMessage == null)
 		{
-			return defaultCtxProvider.getTextMessageOrNull(referencedRecord);
+			new AdempiereException("Possible development issue. " + defaultCtxProvider + " returned null for " + referencedRecord)
+					.throwIfDeveloperModeOrLogWarningElse(logger);
+			return Optional.absent();
 		}
-
-		// return null if no ctx provider was found.
-		return null;
-	}
-
-	@Override
-	public boolean isDefault()
-	{
-		// not default
-		return false;
+		return textMessage;
 	}
 }

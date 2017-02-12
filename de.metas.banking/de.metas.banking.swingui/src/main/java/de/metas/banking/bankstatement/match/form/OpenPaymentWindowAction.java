@@ -34,7 +34,7 @@ import de.metas.banking.bankstatement.match.model.IPayment;
 /**
  * Opens the payment window for currently selected payment.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class OpenPaymentWindowAction extends AbstractPaymentTableAction

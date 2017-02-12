@@ -1,7 +1,7 @@
-DROP FUNCTION IF EXISTS KPI_Purchase_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) ;
+DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Purchase_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) ;
 
 
-CREATE OR REPLACE FUNCTION KPI_Purchase_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) 
+CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Purchase_Order_Status_Overview_Function_v2 (IN DateFrom date, IN DateTo date) 
 
 RETURNS TABLE 
 (
@@ -50,7 +50,7 @@ FROM
 
 
 WITH result AS (
- SELECT o.*, KPI_Purchase_Order_Status_Function(o.C_Order_ID) AS OrderStatus
+ SELECT o.*, de_metas_fresh_kpi.KPI_Purchase_Order_Status_Function(o.C_Order_ID) AS OrderStatus
    FROM C_Order o
    WHERE o.DateOrdered >= $1 AND o.DateOrdered <= $2 AND o.IsSoTrx = 'N'
 

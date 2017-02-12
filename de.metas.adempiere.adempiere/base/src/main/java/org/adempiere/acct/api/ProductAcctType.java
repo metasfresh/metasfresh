@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Product Account Type
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public enum ProductAcctType

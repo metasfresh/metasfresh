@@ -13,11 +13,11 @@ package de.metas.ordercandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -166,10 +166,13 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	/**
 	 * Returns, falling back to the next if not set:
 	 * <ul>
+	 * <li><code>DropShip_BPartner_Override_ID</code></li>
 	 * <li><code>DropShip_BPartner_ID</code></li>
 	 * <li><code>C_BPartner_Override_ID</code></li>
 	 * <li><code>C_BPartner_ID</code></li>
 	 * </ul>
+	 *
+	 * #100 FRESH-435: even if the (effective) DropShip_BPartner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0
 	 *
 	 * @param olCand
 	 * @return
@@ -179,10 +182,13 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	/**
 	 * Returns, falling back to the next if not set:
 	 * <ul>
+	 * <li><code>DropShip_Location_Override_ID</code></li>
 	 * <li><code>DropShip_Location_ID</code></li>
 	 * <li><code>C_BP_Location_Override_ID</code></li>
 	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * </ul>
+	 *
+	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
 	 *
 	 * @param olCand
 	 * @return
@@ -251,5 +257,56 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 	I_C_UOM getC_UOM_Effective(I_C_OLCand olCand);
 
+	/**
+	 * Returns, falling back to the next if not set:
+	 *
+	 * <ul>
+	 * <li><code>HandOver_Partner_Override_ID</code></li>
+	 * <li><code>HandOver_Partner_ID</code></li>
+ 	 * <li><code>C_BPartner_Override_ID</code></li>
+ 	 * <li><code>C_BPartner_ID</code></li>
+	 * </ul>
+	 *
+	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
+	 *
+	 * @param olCand
+	 * @return
+	 */
+	int getHandOver_Partner_Effective_ID(I_C_OLCand olCand);
+
+	/**
+	 * Like {@link #getHandOver_Partner_Effective_ID(I_C_OLCand)}, but returns the actual partner.
+	 *
+	 * @param olCand
+	 * @return
+	 */
+	I_C_BPartner getHandOver_Partner_Effective(I_C_OLCand olCand);
+
+	/**
+	 *
+	 * Returns, falling back to the next if not set:
+	 * <ul>
+	 * <li><code>HandOver_Location_Override_ID</code></li>
+	 * <li><code>HandOver_Location_ID</code></li>
+	 * <li><code>C_BPartner_Location_Override_ID</code></li>
+	 * <li><code>C_BPartner_Location_ID</code></li>
+	 * </ul>
+	 *
+	 * #100 FRESH-435: even if the (effective) HandOver_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
+	 *
+	 * @param olCand
+	 * @return
+	 */
+
+	int getHandOver_Location_Effective_ID(I_C_OLCand olCand);
+
+	/**
+	 * Like {@link #getHandOver_Location_Effective_ID(I_C_OLCand)}, but returns the actual location.
+	 *
+	 * @param olCand
+	 * @return
+	 */
+
+	I_C_BPartner_Location getHandOver_Location_Effective(I_C_OLCand olCand);
 
 }

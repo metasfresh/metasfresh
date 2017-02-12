@@ -74,10 +74,10 @@ public class ProductQtyOrderFastInputHandler implements IOrderFastInputHandler
 	}
 
 	@Override
-	public IGridTabRowBuilder createLineBuilderFromHeader(GridTab gridTab)
+	public IGridTabRowBuilder createLineBuilderFromHeader(final Object model)
 	{
 		final OrderLineProductQtyGridRowBuilder builder = new OrderLineProductQtyGridRowBuilder();
-		builder.setSource(gridTab);
+		builder.setSource(model);
 		return builder;
 	}
 }

@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -31,7 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.SwingUtilities;
+
 import org.compiere.util.NamePair;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -40,15 +42,21 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.logging.LogManager;
 
 /**
  * Class used to aggregate together {@link IPropertiesPanelModel}s and behave like on single {@link IPropertiesPanelModel}.
- * 
+ * <p>
+ * Note that there is just one child model per property name.<br>
+ * E.g. when the method {@link #setPropertyValue(String, Object)} is called, then there is one child {@link IPropertiesPanel} instance for the given <code>propertyName</code>.
+ *
  * @author tsa
  *
  */
 public final class CompositePropertiesPanelModel extends AbstractPropertiesPanelModel
 {
+	private static final transient Logger logger = LogManager.getLogger(CompositePropertiesPanelModel.class);
+
 	/** Current children (indexed) */
 	private IndexedChildren _children = IndexedChildren.NULL;
 	private final ReentrantLock _childrenLock = new ReentrantLock();
@@ -78,8 +86,17 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 			firePropertyChanged(propertyName, valueOld, valueNew);
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "CompositePropertiesPanelModel[ childModelsListener ]";};
+		// @formatter:on
 	};
 
+	/**
+	 * Note: the super-constructor registers itself as disposable component.
+	 *
+	 * @param terminalContext
+	 */
 	public CompositePropertiesPanelModel(final ITerminalContext terminalContext)
 	{
 		super(terminalContext);
@@ -87,9 +104,9 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Sets if {@link IPropertiesPanelModel#commitEdit()} shall be called automatically when a child is removed from this composite.
-	 * 
+	 *
 	 * NOTE: child models won't be commited when disposing.
-	 * 
+	 *
 	 * @param saveChildrenOnRemove
 	 */
 	public void setSaveChildrenOnRemove(final boolean saveChildrenOnRemove)
@@ -99,7 +116,7 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Sets if we shall automatically dispose the child model when it's removed from this composite.
-	 * 
+	 *
 	 * @param disposeChildrenOnRemove
 	 */
 	public void setDisposeChildrenOnRemove(final boolean disposeChildrenOnRemove)
@@ -109,7 +126,7 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Replace all existing child models (if any) with given ones instead.
-	 * 
+	 *
 	 * @param childModels
 	 */
 	public void setChildModels(final Supplier<Collection<IPropertiesPanelModel>> childModelsSupplier)
@@ -124,8 +141,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			final IndexedChildren childrenNew = IndexedChildren.of(childModelsSupplier == null ? null : childModelsSupplier.get());
 
 			// Prepare child models to be added to our composite
+			int counter = 0;
 			for (final IPropertiesPanelModel childModel : childrenNew.getChildModels())
 			{
+				logger.debug("this-ID={}, isEventDispatchThread={}; within setChildModels() with childModel #{} = {}; this={}",
+						System.identityHashCode(this), SwingUtilities.isEventDispatchThread(), counter++, childModel, this);
 				onBeforeChildAdd(childModel);
 			}
 
@@ -201,11 +221,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Called before a child is removed.
-	 * 
+	 *
 	 * It is removing the listeners, commit the changes (if asked), dispose the child (if asked).
-	 * 
+	 *
 	 * Please keep in mind that after calling this method it might be that the child is disposed.
-	 * 
+	 *
 	 * @param childModel
 	 */
 	private final void onBeforeChildRemove(final IPropertiesPanelModel childModel)
@@ -322,7 +342,7 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 
 	/**
 	 * Contains a collection of {@link IPropertiesPanelModel} children which is indexed by PropertyName.
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */
@@ -402,7 +422,9 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			return childModel;
 		}
 
-		/** @return a new instance having all children re-indexed */
+		/**
+		 * @return a new instance having all children re-indexed
+		 */
 		public final IndexedChildren rebuild()
 		{
 			if (this == NULL)
@@ -412,5 +434,11 @@ public final class CompositePropertiesPanelModel extends AbstractPropertiesPanel
 			return new IndexedChildren(this._childModels);
 		}
 
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CompositePropertiesPanelModel [_children=" + _children + ", _childrenLock=" + _childrenLock + ", saveChildrenOnRemove=" + saveChildrenOnRemove + ", disposeChildrenOnRemove=" + disposeChildrenOnRemove + ", childModelsListener=" + childModelsListener + "]";
 	}
 }

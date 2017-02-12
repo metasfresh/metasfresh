@@ -28,24 +28,21 @@ package de.metas.invoicecandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.process.JavaProcess;
 
 /**
  * @author tsa
  *
  */
-public class C_Invoice_Candidate_GenerateInvoice_From_Queue extends SvrProcess
+public class C_Invoice_Candidate_GenerateInvoice_From_Queue extends JavaProcess
 {
 	@Override
 	protected void prepare()
@@ -59,10 +56,7 @@ public class C_Invoice_Candidate_GenerateInvoice_From_Queue extends SvrProcess
 		final IInvoiceCandBL service = Services.get(IInvoiceCandBL.class);
 
 		final Properties ctx = getCtx();
-		final String trxName = ITrx.TRXNAME_None; // AD_PInstance can be fetched only out of trx
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, getAD_PInstance_ID(), I_AD_PInstance.class, trxName);
-
-		final IInvoiceGenerateResult result = service.generateInvoicesFromQueue(adPInstance);
+		final IInvoiceGenerateResult result = service.generateInvoicesFromQueue(ctx);
 
 		final ADHyperlinkBuilder linkHelper = new ADHyperlinkBuilder();
 

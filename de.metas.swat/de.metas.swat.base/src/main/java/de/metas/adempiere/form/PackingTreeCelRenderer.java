@@ -55,7 +55,7 @@ public class PackingTreeCelRenderer extends DefaultTreeCellRenderer
 		{
 
 		}
-		else if (value instanceof PackingItem)
+		else if (value instanceof LegacyPackingItem)
 		{
 
 		}

@@ -36,8 +36,6 @@ import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.service.impl.ValuePreferenceBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
@@ -58,9 +56,6 @@ import org.compiere.util.Splash;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
@@ -86,9 +81,11 @@ public class Adempiere
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
 	/**
-	 * The version string set by maven if not run on jenkins. Keep in sync with the de.metas.endcustomer.xxxx.base project pom.xml
+	 * The version string set by maven if run locally (as opposed to the CI system). Please keep it in sync with the <code>build-version-env-missing</code> profile de.metas.parent project <code>pom.xml</code>.
 	 */
-	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-BUILD";
+	public static final String CLIENT_VERSION_LOCAL_BUILD = "1.0.0";
+
+	public static final String CLIENT_BRANCH_LOCAL_BUILD = "LOCAL-BUILD";
 
 	/** Main Version String */
 	private static String _mainVersion = "";
@@ -126,6 +123,7 @@ public class Adempiere
 	// Product License
 	private static String _productLicenseURL = null;
 	private static final String DEFAULT_ProductLicenseResourceName = "org/adempiere/license.html";
+
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
 	/** Logging */
@@ -499,9 +497,9 @@ public class Adempiere
 	 *
 	 * @return Home directory
 	 */
-	public static String getAdempiereHome()
+	public static String getMetasfreshHome()
 	{
-		return Ini.getAdempiereHome();
+		return Ini.getMetasfreshHome();
 	}
 
 	/**
@@ -587,9 +585,13 @@ public class Adempiere
 		{
 			Env.setContextProvider(new SwingContextProvider());
 		}
-		else
+		else if (RunMode.BACKEND == runMode)
 		{
 			Env.setContextProvider(new ThreadLocalContextProvider());
+		}
+		else
+		{
+			// don't set the context provider but assume it was already configured.
 		}
 		Env.initContextProvider();
 
@@ -711,9 +713,9 @@ public class Adempiere
 			String className = system.getEncryptionKey();
 			if (className == null || className.length() == 0)
 			{
-				className = System.getProperty(SecureInterface.ADEMPIERE_SECURE);
+				className = System.getProperty(SecureInterface.METASFRESH_SECURE);
 				if (className != null && className.length() > 0
-						&& !className.equals(SecureInterface.ADEMPIERE_SECURE_DEFAULT))
+						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
 				{
 					SecureEngine.init(className);	// test it
 					system.setEncryptionKey(className);
@@ -756,7 +758,6 @@ public class Adempiere
 
 		// metas: begin
 		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IValuePreferenceBL.class, ValuePreferenceBL.instance);
 		Services.registerService(IWarehouseAdvisor.class, new WarehouseAdvisor());
 		// metas: end
 
@@ -772,10 +773,6 @@ public class Adempiere
 			}
 		}
 
-		if (runMode == RunMode.BACKEND)
-		{
-			DB.updateMail();
-		}
 		return true;
 	}	// startupEnvironment
 
@@ -874,39 +871,4 @@ public class Adempiere
 	}
 
 	private static boolean unitTestMode = false;
-
-	/**
-	 * @return if running on server side and the ZK webui server is enabled
-	 */
-	public static boolean isZkWebUIServerEnabled()
-	{
-		final Boolean enabled = zkWebUIServerEnabledSupplier.get();
-		return enabled != null && enabled.booleanValue();
-	}
-
-	private static final Supplier<Boolean> zkWebUIServerEnabledSupplier = Suppliers.memoize(new Supplier<Boolean>()
-	{
-		@Override
-		public Boolean get()
-		{
-			if (Ini.isClient())
-			{
-				return false;
-			}
-
-			try
-			{
-				Thread.currentThread().getContextClassLoader()
-						.loadClass("org.adempiere.webui.AdempiereWebUI");
-				return true;
-			}
-			catch (Throwable e)
-			{
-				// ignore any exception
-			}
-
-			return false;
-		}
-	});
-
 }	// Adempiere

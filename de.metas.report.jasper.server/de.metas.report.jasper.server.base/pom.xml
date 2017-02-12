@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>de.metas.report.jasper.server</artifactId>
 		<groupId>de.metas.report.jasper.server</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>de.metas.report.jasper.server.base</artifactId>
@@ -75,12 +75,13 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.report.jasper.commons</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.barcode4j</groupId>
@@ -93,12 +94,10 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
-			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
-			<version>1.7</version>
 		</dependency>
 
 		<dependency>
@@ -135,12 +134,15 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.jxls</groupId>
 			<artifactId>jxls-poi</artifactId>
 			<version>1.0.9</version>
+		</dependency>
+			<!-- 
 			<exclusions>
-				<!-- exclude those because jasperreports already brings them -->
+				- exclude those because jasperreports already brings them -
 				<exclusion>
 					<groupId>org.apache.poi</groupId>
 					<artifactId>poi</artifactId>
@@ -151,6 +153,7 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 				</exclusion>
 			</exclusions>
 		</dependency>
+		 -->
 	</dependencies>
 
 	<build>

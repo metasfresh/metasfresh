@@ -1,15 +1,15 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2008 SC ARHIPAC SERVICE SRL. All Rights Reserved.            *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2008 SC ARHIPAC SERVICE SRL. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.adempiere.exceptions;
 
@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Services;
@@ -31,20 +32,21 @@ import de.metas.logging.MetasfreshLastError;
 
 /**
  * Any exception that occurs inside the Adempiere core
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-public class AdempiereException extends RuntimeException implements IIssueReportableAware
+public class AdempiereException extends RuntimeException
+		implements IIssueReportableAware
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1813037338765245293L;
 
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
 	 * Note that this method also tries to pick the most specific adempiere exception (work in progress).
-	 * 
+	 *
 	 * @param throwable
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
@@ -73,16 +75,41 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 
 		// default
-		return new AdempiereException(cause.getLocalizedMessage(), cause);
+		return new AdempiereException(extractMessage(cause), cause);
+	}
+
+	/**
+	 * Extracts throwable message.
+	 *
+	 * @param throwable
+	 * @return message; never return null
+	 */
+	public static final String extractMessage(final Throwable throwable)
+	{
+		// guard against NPE, shall not happen
+		if (throwable == null)
+		{
+			return "null";
+		}
+
+		String message = throwable.getLocalizedMessage();
+
+		// If throwable message is null or it's very short then it's better to use throwable.toString()
+		if (message == null || message.length() < 4)
+		{
+			message = throwable.toString();
+		}
+
+		return message;
 	}
 
 	/**
 	 * Extract cause exception from those exceptions which are only about wrapping the real cause (e.g. ExecutionException, InvocationTargetException).
-	 * 
+	 *
 	 * @param throwable
 	 * @return cause or throwable; never returns null
 	 */
-	protected static final Throwable extractCause(final Throwable throwable)
+	public static final Throwable extractCause(final Throwable throwable)
 	{
 		final Throwable cause = throwable.getCause();
 		if (cause == null)
@@ -91,6 +118,10 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 
 		if (throwable instanceof ExecutionException)
+		{
+			return cause;
+		}
+		if (throwable instanceof com.google.common.util.concurrent.UncheckedExecutionException)
 		{
 			return cause;
 		}
@@ -105,7 +136,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Convenient method to suppress a given exception if there is an already main exception which is currently thrown.
-	 * 
+	 *
 	 * @param exceptionToSuppress
 	 * @param mainException
 	 * @throws AdempiereException if mainException was null. It will actually be the exceptionToSuppress, wrapped to AdempiereException if it was needed.
@@ -212,7 +243,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Gets original message
-	 * 
+	 *
 	 * @return original message
 	 */
 	protected final String getOriginalMessage()
@@ -222,14 +253,14 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Build error message (if needed) and return it.
-	 * 
+	 *
 	 * By default this method is returning initial message, but extending classes could override it.
-	 * 
+	 *
 	 * WARNING: to avoid recursion, please never ever call {@link #getMessage()} or {@link #getLocalizedMessage()} but
 	 * <ul>
 	 * <li>call {@link #getOriginalMessage()}
 	 * <li>or store the error message in a separate field and use it</li>
-	 * 
+	 *
 	 * @return built detail message
 	 */
 	protected String buildMessage()
@@ -239,7 +270,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Reset the build message. Next time when the message is needed, it will be re-builded first ({@link #buildMessage()}).
-	 * 
+	 *
 	 * Call this method from each setter which would change your message.
 	 */
 	protected final void resetMessageBuilt()
@@ -290,7 +321,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Convenient method to throw this exception or just log it as {@link Level#ERROR}.
-	 * 
+	 *
 	 * @param throwIt <code>true</code> if the exception shall be thrown
 	 * @param logger
 	 * @return always returns <code>false</code>.
@@ -302,7 +333,7 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 
 	/**
 	 * Convenient method to throw this exception or just log it as {@link Level#WARN}.
-	 * 
+	 *
 	 * @param throwIt <code>true</code> if the exception shall be thrown
 	 * @param logger
 	 * @return always returns <code>false</code>.
@@ -311,14 +342,14 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 	{
 		return throwOrLog(throwIt, Level.WARN, logger);
 	}
-	
+
 	/**
 	 * Convenient method to throw this exception if developer mode is enabled or just log it as {@link Level#WARNING}.
-	 * 
+	 *
 	 * @param logger
 	 * @return always returns <code>false</code>.
 	 */
-	public final boolean throwOrLogWarningIfDeveloperMode(final Logger logger)
+	public final boolean throwIfDeveloperModeOrLogWarningElse(final Logger logger)
 	{
 		final boolean throwIt = Services.get(IDeveloperModeBL.class).isEnabled();
 		return throwOrLog(throwIt, Level.WARN, logger);
@@ -332,19 +363,41 @@ public class AdempiereException extends RuntimeException implements IIssueReport
 		}
 		else if (logger != null)
 		{
+			LoggingHelper.log(logger, logLevel, "this is logged, no Exception thrown (throwIt=false, logger!=null):", this);
 			LoggingHelper.log(logger, logLevel, getLocalizedMessage(), this);
 			return false;
 		}
 		else
 		{
+			System.err.println(this.getClass().getSimpleName() + "throwOrLog: this is written to std-err, no Exception thrown (throwIt=false, logger=null):");
 			this.printStackTrace();
 			return false;
 		}
 	}
 
 	/**
+	 * If developer mode is active, it logs a warning with given exception.
+	 *
+	 * If the developer mode is not active, this method does nothing
+	 *
+	 * @param logger
+	 * @param exceptionSupplier {@link AdempiereException} supplier
+	 */
+	public static final void logWarningIfDeveloperMode(final Logger logger, Supplier<? extends AdempiereException> exceptionSupplier)
+	{
+		if (!Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return;
+		}
+
+		final boolean throwIt = false;
+		final AdempiereException exception = exceptionSupplier.get();
+		exception.throwOrLog(throwIt, Level.WARN, logger);
+	}
+
+	/**
 	 * Sets if {@link #getLocalizedMessage()} shall parse the translations.
-	 * 
+	 *
 	 * @param parseTranslation
 	 */
 	protected final void setParseTranslation(final boolean parseTranslation)

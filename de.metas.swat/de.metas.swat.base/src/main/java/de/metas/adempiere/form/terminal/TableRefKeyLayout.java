@@ -36,7 +36,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.Query;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -97,7 +96,6 @@ public class TableRefKeyLayout extends KeyLayout
 					getTerminalContext().getWindowNo(), // WindowNo,
 					0, // Column_ID,
 					DisplayType.Table, // AD_Reference_ID,
-					Env.getLanguage(getCtx()), // language
 					"Record_ID", // ColumnName,
 					adReferenceId, // AD_Reference_Value_ID,
 					false, // IsParent,

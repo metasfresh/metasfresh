@@ -53,8 +53,15 @@ public class InArrayQueryFilterTest
 				"MyColumnName",
 				Arrays.<Object> asList("Value1"),
 				// Expected output
-				"MyColumnName IN (?)",
+				"MyColumnName=?",
 				Arrays.<Object> asList("Value1"));
+		assertFilter(
+				// Input
+				"MyColumnName",
+				Arrays.<Object> asList((Object)null),
+				// Expected output
+				"MyColumnName IS NULL",
+				Collections.emptyList());
 
 		assertFilter(
 				// Input

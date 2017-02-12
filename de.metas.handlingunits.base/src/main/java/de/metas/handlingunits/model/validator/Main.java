@@ -10,18 +10,17 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -43,6 +42,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
@@ -55,6 +55,7 @@ import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate_GridTabSummaryInfoProvider;
+import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
 import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -135,7 +136,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Storage(), client);
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE, client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
@@ -203,7 +204,10 @@ public final class Main extends AbstractModuleInterceptor
 		// Warm-up our cache
 		// NOTE: We are calling this on user login and not "onInit" because after logout, cache is reseted.
 		// On server side, it's not so important to warm-up cache, because it will be warmed up much more quickly
-		cacheWarmUp();
+		if (Ini.isClient())
+		{
+			cacheWarmUp();
+		}
 	}
 
 	private void setupTableCacheConfig()
@@ -221,12 +225,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Setup tables for InTransaction only caching
 		for (final String tableName : Arrays.asList(
-				I_M_HU.Table_Name
-				, I_M_HU_Storage.Table_Name
-				, I_M_HU_Item.Table_Name
-				, I_M_HU_Item_Storage.Table_Name
-				, I_M_HU_Attribute.Table_Name
-				))
+				I_M_HU.Table_Name, I_M_HU_Storage.Table_Name, I_M_HU_Item.Table_Name, I_M_HU_Item_Storage.Table_Name, I_M_HU_Attribute.Table_Name))
 		{
 			cachingService.createTableCacheConfigBuilder(tableName)
 					.setEnabled(true)
@@ -244,34 +243,41 @@ public final class Main extends AbstractModuleInterceptor
 	{
 		//
 		// de.metas.storage: Register HU storage engine (07991)
-		Services.get(IStorageEngineService.class).registerStorageEngine(de.metas.storage.spi.hu.impl.HUStorageEngine.instance);
+		Services.get(IStorageEngineService.class)
+				.registerStorageEngine(de.metas.storage.spi.hu.impl.HUStorageEngine.instance);
+
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		//
+		// aggregate material items
+		{
+			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
+		}
 
 		//
 		// Weights Attributes
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(WeightGenerateHUTrxListener.instance);
+			huTrxBL.addListener(WeightGenerateHUTrxListener.instance);
 		}
 
 		//
 		// Receipt schedule
 		{
 			Services.get(IReceiptScheduleProducerFactory.class)
-					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class);
+					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class)
+					.registerWarehouseDestProvider(QualityInspectionWarehouseDestProvider.instance);
 			Services.get(IReceiptScheduleBL.class)
 					.addReceiptScheduleListener(HUReceiptScheduleListener.instance);
 			Services.get(IHUDocumentFactoryService.class)
 					.registerHUDocumentFactory(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleHUDocumentFactory());
 
-			Services.get(IHUTrxBL.class)
-					.addListener(ReceiptScheduleHUTrxListener.instance);
+			huTrxBL.addListener(ReceiptScheduleHUTrxListener.instance);
 		}
 
 		//
 		// Shipment Schedule
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(ShipmentScheduleHUTrxListener.instance);
+			huTrxBL.addListener(ShipmentScheduleHUTrxListener.instance);
 
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IInOutCandHandlerBL.class)
@@ -281,8 +287,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Manufacturing
 		{
-			Services.get(IHUTrxBL.class)
-					.addListener(PPOrderBOMLineHUTrxListener.instance);
+			huTrxBL.addListener(PPOrderBOMLineHUTrxListener.instance);
 		}
 
 		// Order - Fast Input

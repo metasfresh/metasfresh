@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Component;
 
@@ -41,15 +40,22 @@ public class SwingTerminalComponentWrapper implements IComponent, IComponentSwin
 	private final ITerminalContext _terminalContext;
 	private IExecuteBeforePainingSupport _executeBeforePainingSupport;
 
+	private boolean disposed = false;
+
+	/**
+	 *
+	 * @param terminalContext
+	 * @param component
+	 */
 	public SwingTerminalComponentWrapper(final ITerminalContext terminalContext, final Component component)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this._terminalContext = terminalContext;
 
 		Check.assumeNotNull(component, "component not null");
 		this._component = component;
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -70,18 +76,28 @@ public class SwingTerminalComponentWrapper implements IComponent, IComponentSwin
 		return getTerminalContext().getTerminalFactory();
 	}
 
+	/**
+	 * Does nothing besides setting the internal disposed flag.
+	 */
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
 		// nothing at this level
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	/**
 	 * Gets {@link IExecuteBeforePainingSupport}.
-	 * 
+	 *
 	 * If underyling component does not have this support then {@link DirectExecuteBeforePainingSupport} will be returned.
-	 * 
+	 *
 	 * @return {@link IExecuteBeforePainingSupport}; never return <code>null</code>.
 	 */
 	private final IExecuteBeforePainingSupport getExecuteBeforePainingSupport()
@@ -114,4 +130,13 @@ public class SwingTerminalComponentWrapper implements IComponent, IComponentSwin
 		getExecuteBeforePainingSupport().clearExecuteBeforePaintingQueue();
 	}
 
+	@Override
+	public String toString()
+	{
+		return "SwingTerminalComponentWrapper [_component=" + _component
+				+ ", disposed=" + disposed
+				+ ", _terminalContext=" + _terminalContext
+				+ ", _executeBeforePainingSupport=" + _executeBeforePainingSupport
+				+ "]";
+	}
 }

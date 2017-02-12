@@ -43,7 +43,7 @@ import de.metas.materialtracking.model.I_PP_Order;
  * Creates invoice candidates for {@link I_PP_Order}s that reference a {@link I_M_Material_Tracking}.<br>
  * for this, it makes use of {@link PPOrder2InvoiceCandidatesProducer}
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateHandler

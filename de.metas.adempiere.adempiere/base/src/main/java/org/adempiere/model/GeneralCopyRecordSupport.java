@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -55,11 +53,15 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.CompositeEvaluatee;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Evaluator;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * @author Cristina Ghita, METAS.RO
@@ -564,10 +566,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		{
 			String sql = defaultLogic.substring(5); // w/o tag
 
-			CompositeEvaluatee evaluatee = new CompositeEvaluatee(po);
-			if (getParentPO() != null)
-				evaluatee.addEvaluatee(getParentPO());
-
+			final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, getParentPO());
 			sql = Evaluator.parseContext(evaluatee, sql);
 			if (sql.equals(""))
 			{
@@ -623,10 +622,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 					return new Timestamp(System.currentTimeMillis());
 				else if (defStr.indexOf('@') != -1) // it is a variable
 				{
-					CompositeEvaluatee evaluatee = new CompositeEvaluatee(po);
-					if (getParentPO() != null)
-						evaluatee.addEvaluatee(getParentPO());
-
+					final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, getParentPO());
 					defStr = Evaluator.parseContext(evaluatee, defStr.trim());
 				}
 				else if (defStr.indexOf("'") != -1) // it is a 'String'

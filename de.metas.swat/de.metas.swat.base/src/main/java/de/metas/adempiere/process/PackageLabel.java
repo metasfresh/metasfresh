@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -38,13 +37,13 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MPackage;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Package;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 
 import de.metas.adempiere.service.IPackageInfoService;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class PackageLabel extends SvrProcess
+public class PackageLabel extends JavaProcess
 {
 
 	private static final String PARAM_SERVICE_CODE_OVERRIDE = "ServiceCode";
@@ -66,7 +65,7 @@ public class PackageLabel extends SvrProcess
 	protected String doIt() throws Exception
 	{
 
-		final I_M_InOut inOut = POWrapper.create(retrieveInOut(), I_M_InOut.class);
+		final I_M_InOut inOut = InterfaceWrapperHelper.create(retrieveInOut(), I_M_InOut.class);
 		final IPackageInfoService packageInfoService = Services.get(IPackageInfoService.class);
 
 		if (M_Shipper_ID != null && pack != null)
@@ -162,7 +161,7 @@ public class PackageLabel extends SvrProcess
 	protected void prepare()
 	{
 
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++)
 		{

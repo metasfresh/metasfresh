@@ -113,10 +113,14 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	public boolean isDirectDeposit()
 	{
 		if (!isACH())
+		{
 			return false;
+		}
 		String s = getBPBankAcctUse();
 		if (s == null)
+		{
 			return true;
+		}
 		return (s.equals(BPBANKACCTUSE_Both) || s.equals(BPBANKACCTUSE_DirectDeposit));
 	}	//	isDirectDeposit
 	
@@ -127,10 +131,14 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	public boolean isDirectDebit()
 	{
 		if (!isACH())
+		{
 			return false;
+		}
 		String s = getBPBankAcctUse();
 		if (s == null)
+		{
 			return true;
+		}
 		return (s.equals(BPBANKACCTUSE_Both) || s.equals(BPBANKACCTUSE_DirectDebit));
 	}	//	isDirectDebit
 	

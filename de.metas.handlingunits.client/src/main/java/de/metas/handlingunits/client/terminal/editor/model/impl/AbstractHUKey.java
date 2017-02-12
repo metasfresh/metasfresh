@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -92,6 +91,10 @@ import de.metas.handlingunits.model.I_M_HU;
 			final boolean buildNow = false;
 			updateName(reset, buildNow);
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "AbstractHUKey[<anonymous PropertyChangeListener>]"; };
+		// @formatter:on
 	};
 
 	/**
@@ -101,12 +104,13 @@ import de.metas.handlingunits.model.I_M_HU;
 	 * <li>mark current display name as stale (the UI will react and it will reload it)
 	 * </ul>
 	 */
-	private IAttributeStorageListener attributeStorageListener = new AttributeStorageListenerAdapter()
+	private final IAttributeStorageListener attributeStorageListener = new AttributeStorageListenerAdapter()
 	{
 		@Override
 		public void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue, final Object valueOld)
 		{
 			final IHUKeyNameBuilder nameBuilder = getHUKeyNameBuilder();
+
 			// Notify name builder that an attribute value was changed
 			// and let it reset only those HTML parts which are affected by this attribute
 			nameBuilder.notifyAttributeValueChanged(attributeValue);
@@ -116,6 +120,10 @@ import de.metas.handlingunits.model.I_M_HU;
 			final boolean buildNow = false;
 			updateName(reset, buildNow);
 		}
+
+		// @formatter:off
+		@Override public String toString() { return "AbstractHUKey[<anonymous AttributeStorageListenerAdapter>]"; };
+		// @formatter:on
 	};
 
 	public AbstractHUKey(final IHUKeyFactory keyFactory)
@@ -135,35 +143,20 @@ import de.metas.handlingunits.model.I_M_HU;
 		_nameBuilder = NullHUKeyNameBuilder.instance;
 
 		//
-		// Iterate all children and remove them
-		// We are doing like this because we want to unregister any listener from them
-		final List<IHUKey> childrenLoaded = children.getChildrenNoLoad();
-		for (final IHUKey child : new ArrayList<>(childrenLoaded))
-		{
-			removeChild(child);
-		}
-		children.clear();
-
-		//
 		// Clear properties
 		properties.clear();
 
 		//
-		// Unlink from parent
-		setParent(null);
-
-		//
-		// Set listener to null
-		// NOTE: attribute storage listeners are registered weakly, so it shall be fine
-		attributeStorageListener = null;
+		// Unlink from parent, but just unset the reference. setParent(null) causes a lot of listeners etc being fired and properties being update that we don't need.
+		// this.parent is also an IHUKey (i.e. IDisposable), so be can assume that it will be disposed too, and we don't have to try to ensure it from here.
+		// setParent(null);
+		this.parent = null;
 	}
 
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "["
-				+ getValue()
-				+ "]";
+		return getClass().getSimpleName() + "[" + getValue() + "]";
 	}
 
 	@Override
@@ -390,34 +383,34 @@ import de.metas.handlingunits.model.I_M_HU;
 			children.remove(child);
 			child.removeListener(PROPERTY_Name, childNameListener);
 			child.setParent(null);
-
 			//
 			// NOTE: when a child is removed it most of the cases the Key Label shall be updated because the Label can be based on what child it has
 			final IHUKeyNameBuilder nameBuilder = getHUKeyNameBuilder();
 			nameBuilder.notifyChildChanged(child);
 			updateName(false, false); // reset=false, buildNow=false
 
-			//
 			// Notify parent if necessary that this grouping key is no longer necessary
 			if (isGrouping())
 			{
 				final List<IHUKey> currentKeyChildren = new ArrayList<>(getChildren()); // copy children in new list
 				if (currentKeyChildren.size() > 1)
 				{
-					return; // true;
+					// this grouping key still has more than one children.
+					return;
 				}
 
-				final IHUKey groupParent = getParent();
-				for (final IHUKey groupChild : currentKeyChildren)
+				// this grouping key only has one child left. move the child upwards to this grouping key's parent
+				final IHUKey groupParent = getParent(); // note that during disposal, the parent might already be disposed and its reference be set to null
+				if (groupParent != null)
 				{
-					groupParent.addChild(groupChild);
+					for (final IHUKey groupChild : currentKeyChildren)
+					{
+						groupParent.addChild(groupChild);
+					}
 				}
-
 				setParent(null);
-
 				fireGroupingRemoved();
 			}
-
 			fireChildrenChanged();
 		}
 		finally
@@ -474,14 +467,6 @@ import de.metas.handlingunits.model.I_M_HU;
 		{
 			return children;
 		}
-
-		// NOTE: it seems these listeners are not longer used, for a long time now... so we keep them commented out
-		// // Add listener to just retrieved children
-		// for (final IHUKey childKey : children)
-		// {
-		// childKey.addListener(PROPERTY_Name, childNameListener);
-		// }
-
 		return children;
 	}
 
@@ -548,12 +533,14 @@ import de.metas.handlingunits.model.I_M_HU;
 	@Override
 	public IAttributeStorage getAttributeSet()
 	{
+		assertNotDisposed();
+
 		final IAttributeStorageFactory attributeStorageFactory = getKeyFactory().getAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(this);
 
 		//
 		// Make sure listener is added
-		// NOTE: we assume the listener is not added twice
+		// NOTE: we assume that attributeStorage's listener makes sure it is not added twice.
 		attributeStorage.addListener(attributeStorageListener);
 
 		return attributeStorage;
@@ -666,7 +653,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	@Override
 	public void refresh()
 	{
-		children.clear(); // reset children, they need to be reloaded
+		children.dispose(); // reset children, they need to be reloaded
 
 		updateName(true, true); // reset, buildNow
 

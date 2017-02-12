@@ -16,7 +16,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -208095971L;
+	private static final long serialVersionUID = -328862649L;
 
     /** Standard Constructor */
     public X_PMM_Balance (Properties ctx, int PMM_Balance_ID, String trxName)
@@ -26,8 +26,8 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
         {
 			setC_BPartner_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
-			setMonthDate (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
+			setMonthDate (new Timestamp( System.currentTimeMillis() ));
 			setPMM_Balance_ID (0);
 			setQtyDelivered (Env.ZERO);
 // 0
@@ -199,22 +199,6 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		return ii.intValue();
 	}
 
-	/** Set Monatserster.
-		@param MonthDate Monatserster	  */
-	@Override
-	public void setMonthDate (java.sql.Timestamp MonthDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_MonthDate, MonthDate);
-	}
-
-	/** Get Monatserster.
-		@return Monatserster	  */
-	@Override
-	public java.sql.Timestamp getMonthDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MonthDate);
-	}
-
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -250,6 +234,22 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Monatserster.
+		@param MonthDate Monatserster	  */
+	@Override
+	public void setMonthDate (java.sql.Timestamp MonthDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_MonthDate, MonthDate);
+	}
+
+	/** Get Monatserster.
+		@return Monatserster	  */
+	@Override
+	public java.sql.Timestamp getMonthDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MonthDate);
 	}
 
 	/** Set PMM balance.

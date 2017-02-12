@@ -25,9 +25,7 @@ package de.metas.ordercandidate.callout;
 
 import java.util.Properties;
 
-import org.adempiere.misc.service.IProcessPA;
-import org.adempiere.model.GridTabWrapper;
-import org.adempiere.model.MRelationType;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -36,8 +34,9 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_AD_Scheduler;
-import org.compiere.model.MProcessPara;
 import org.compiere.model.MQuery;
 import org.compiere.model.MSchedulerPara;
 import org.compiere.model.X_AD_Scheduler;
@@ -47,6 +46,8 @@ import org.compiere.util.Msg;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.process.ProcessOLCands;
+import de.metas.process.IADProcessDAO;
+import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.relation.grid.VRelationTarget;
 
@@ -67,7 +68,7 @@ public class OLCandProcessor extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OLCandProcessor processor = GridTabWrapper.create(mTab, I_C_OLCandProcessor.class);
+		final I_C_OLCandProcessor processor = InterfaceWrapperHelper.create(mTab, I_C_OLCandProcessor.class);
 
 		if (processor.getC_OLCandProcessor_ID() <= 0)
 		{
@@ -102,14 +103,14 @@ public class OLCandProcessor extends CalloutEngine
 			return "";
 		}
 
-		final I_C_OLCandProcessor processor = GridTabWrapper.create(mTab, I_C_OLCandProcessor.class);
+		final I_C_OLCandProcessor processor = InterfaceWrapperHelper.create(mTab, I_C_OLCandProcessor.class);
 		if (processor.getC_OLCandProcessor_ID() <= 0)
 		{
 			return "";
 		}
 
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-		final MRelationType relType = MRelationType.retrieveForInternalName(ctx, olCandBL.mkRelationTypeInternalName(processor), null);
+		final I_AD_RelationType relType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, olCandBL.mkRelationTypeInternalName(processor));
 
 		if (relType == null)
 		{
@@ -150,10 +151,10 @@ public class OLCandProcessor extends CalloutEngine
 		final GridTab tab = schedulerFrame.getAPanel().getCurrentTab();
 		if (schedulerId <= 0)
 		{
-			final IProcessPA processPA = Services.get(IProcessPA.class);
+			final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class); 
 
-			final int adProcessId = processPA.retrieveProcessId(ProcessOLCands.class, trxName);
-			final MProcessPara processPara = processPA.retrieveProcessPara(ctx, adProcessId, trxName);
+			final int adProcessId = adProcessDAO.retriveProcessIdByClassIfUnique(ctx, ProcessOLCands.class);
+			final I_AD_Process_Para processPara = adProcessDAO.retriveProcessParameter(ctx, adProcessId, ProcessOLCands.PARAM_C_OLCandProcessor_ID);
 
 			tab.dataNew(DataNewCopyMode.NoCopy);
 			tab.setValue(I_AD_Scheduler.COLUMNNAME_Name, Msg.translate(ctx, I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID) + " \"" + processor.getName() + "\"");
@@ -178,7 +179,7 @@ public class OLCandProcessor extends CalloutEngine
 
 			final MSchedulerPara newPara = new MSchedulerPara(ctx, 0, trxName);
 			newPara.setAD_Scheduler_ID(schedulerIdToUse);
-			newPara.setAD_Process_Para_ID(processPara.get_ID());
+			newPara.setAD_Process_Para(processPara);
 			newPara.setParameterDefault(Integer.toString(processor.getC_OLCandProcessor_ID()));
 			newPara.saveEx();
 		}

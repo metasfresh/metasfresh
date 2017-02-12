@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -45,7 +44,6 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MDiscountSchema;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.commission.custom.type.ICommissionType;
 import de.metas.commission.custom.type.ISalesRefFactCollector;
@@ -63,6 +61,7 @@ import de.metas.commission.service.IOrderLineBL;
 import de.metas.commission.service.ISalesRepFactBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 
 public class OrderLineBL implements IOrderLineBL
@@ -192,7 +191,7 @@ public class OrderLineBL implements IOrderLineBL
 						// if the ol has already been stored, don't add its points again
 						continue;
 					}
-					final I_C_OrderLine currentCommissionOl = POWrapper.create(currentOlPO, I_C_OrderLine.class);
+					final I_C_OrderLine currentCommissionOl = InterfaceWrapperHelper.create(currentOlPO, I_C_OrderLine.class);
 					sumFromOrder = sumFromOrder.add(getPoints(currentCommissionOl, srfCollector));
 				}
 
@@ -254,7 +253,7 @@ public class OrderLineBL implements IOrderLineBL
 				ignore(currentOl.getC_OrderLine_ID());
 				swatOrderLineBL.ignore(currentOl.getC_OrderLine_ID());
 
-				POWrapper.save(currentOl);
+				InterfaceWrapperHelper.save(currentOl);
 
 				swatOrderLineBL.unignore(currentOl.getC_OrderLine_ID());
 				unignore(currentOl.getC_OrderLine_ID());

@@ -206,18 +206,18 @@ public class AggregateHUSelectPanel extends InventoryHUSelectPanel<AggregateHUSe
 		final AggregateHUSelectModel model = getHUSelectModel();
 
 		final MQuery draftedShipmentsQuery = new MQuery(I_M_InOut.Table_Name);
-		draftedShipmentsQuery.addRestriction(I_M_InOut.COLUMNNAME_DocStatus, Operator.EQUAL.getSql(), X_M_InOut.DOCSTATUS_Drafted); // filter DR (drafted, prepared) documents
+		draftedShipmentsQuery.addRestriction(I_M_InOut.COLUMNNAME_DocStatus, Operator.EQUAL.asMQueryOperator(), X_M_InOut.DOCSTATUS_Drafted); // filter DR (drafted, prepared) documents
 		draftedShipmentsQuery.setForceSOTrx(true); // force open the SO window
 
 		// Filter by BPartner
 		final int bpartnerId = model.getC_BPartner_ID(true); // having a BPartner selected is mandatory
-		draftedShipmentsQuery.addRestriction(I_M_InOut.COLUMNNAME_C_BPartner_ID, Operator.EQUAL.getSql(), bpartnerId); // filter by BPartner
+		draftedShipmentsQuery.addRestriction(I_M_InOut.COLUMNNAME_C_BPartner_ID, Operator.EQUAL.asMQueryOperator(), bpartnerId); // filter by BPartner
 
 		// Filter by BPartner Location (optional)
 		final int bpartnerLocationId = model.getC_BPartner_Location_ID();
 		if (bpartnerLocationId > 0)
 		{
-			draftedShipmentsQuery.addRestriction(I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, Operator.EQUAL.getSql(), bpartnerLocationId);
+			draftedShipmentsQuery.addRestriction(I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, Operator.EQUAL.asMQueryOperator(), bpartnerLocationId);
 		}
 
 		//

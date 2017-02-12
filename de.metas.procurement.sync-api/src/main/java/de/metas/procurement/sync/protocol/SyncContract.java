@@ -17,11 +17,11 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,11 +31,15 @@ public class SyncContract extends AbstractSyncModel
 	private Date dateFrom;
 	private Date dateTo;
 	private List<SyncContractLine> contractLines = new ArrayList<>();
+	private String rfq_uuid; // optional
 
 	@Override
 	public String toString()
 	{
-		return "SyncContract [dateFrom=" + dateFrom + ", dateTo=" + dateTo + ", contractLines=" + contractLines + "]";
+		return "SyncContract ["
+				+ "dateFrom=" + dateFrom + ", dateTo=" + dateTo
+				+ ", rfq_uuid=" + rfq_uuid
+				+ ", contractLines=" + contractLines + "]";
 	}
 
 	public Date getDateFrom()
@@ -56,6 +60,16 @@ public class SyncContract extends AbstractSyncModel
 	public void setDateTo(Date dateTo)
 	{
 		this.dateTo = dateTo;
+	}
+	
+	public void setRfq_uuid(String rfq_uuid)
+	{
+		this.rfq_uuid = rfq_uuid;
+	}
+	
+	public String getRfq_uuid()
+	{
+		return rfq_uuid;
 	}
 
 	public List<SyncContractLine> getContractLines()

@@ -35,6 +35,7 @@ import org.adempiere.ad.security.permissions.Permission;
 import org.adempiere.ad.security.permissions.ResourceAsPermission;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Optional;
 
@@ -55,6 +56,7 @@ public interface IUserRolePermissions
 	Permission PERMISSION_ChangeLog = ResourceAsPermission.ofName("IsChangeLog");
 	Permission PERMISSION_MenuAvailable = ResourceAsPermission.ofName("IsMenuAvailable");
 	Permission PERMISSION_AllowLoginDateOverride = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowLoginDateOverride);
+	Permission PERMISSION_UseBetaFunctions = ResourceAsPermission.ofName("UseBetaFunctions");
 	//
 	Permission PERMISSION_InfoWindow_Product = InfoWindowPermission.ofInfoWindowKey("InfoProduct");
 	Permission PERMISSION_InfoWindow_BPartner = InfoWindowPermission.ofInfoWindowKey("InfoBPartner");
@@ -96,6 +98,8 @@ public interface IUserRolePermissions
 	int getAD_Client_ID();
 
 	int getAD_User_ID();
+	
+	boolean isSystemAdministrator();
 
 	/**
 	 * @return all AD_Role_IDs. It will contain:
@@ -124,22 +128,50 @@ public interface IUserRolePermissions
 	 */
 	String addAccessSQL(String SQL, String TableNameIn, boolean fullyQualified, boolean rw);
 
+	Boolean checkWindowAccess(int AD_Window_ID);
+	Boolean getWindowAccess(int AD_Window_ID);
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);
 	Boolean getWorkflowAccess(int AD_Workflow_ID);
 	Boolean checkFormAccess(int AD_Form_ID);
 	Boolean getFormAccess(int AD_Form_ID);
 	Boolean checkTaskAccess(int AD_Task_ID);
 	Boolean getTaskAccess(int AD_Task_ID);
+	
+	//
+	// Process
+	// @formatter:off
 	Boolean checkProcessAccess(int AD_Process_ID);
+	default boolean checkProcessAccessRW(final int AD_Process_ID) { return isReadWriteAccess(checkProcessAccess(AD_Process_ID)); }
 	Boolean getProcessAccess(int AD_Process_ID);
-	Boolean checkWindowAccess(int AD_Window_ID);
-	Boolean getWindowAccess(int AD_Window_ID);
-
-	int getActionAccess(IDocActionOptionsContext optionsCtx, int adClientId);
+	// @formatter:on
+	
+	void applyActionAccess(IDocActionOptionsContext optionsCtx);
 
 	boolean canView(TableAccessLevel tableAcessLevel);
+	
+	/**
+	 * Checks if given record can be viewed by this role.
+	 *
+	 * @param AD_Client_ID record's AD_Client_ID
+	 * @param AD_Org_ID record's AD_Org_ID
+	 * @param AD_Table_ID record table
+	 * @param Record_ID record id
+	 * @return true if you can view
+	 **/
+	boolean canView(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID);
 
+	/**
+	 * Checks if given record can be updated by this role.
+	 *
+	 * @param AD_Client_ID record's AD_Client_ID
+	 * @param AD_Org_ID record's AD_Org_ID
+	 * @param AD_Table_ID record table
+	 * @param Record_ID record id
+	 * @param saveWarning true if a warning shall be logged and saved (AccessTableNoUpdate).
+	 * @return true if you can update
+	 **/
 	boolean canUpdate(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID, boolean createError);
+	
 	boolean isRecordAccess(int AD_Table_ID, int Record_ID, boolean ro);
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, boolean ro);
 	boolean isTableAccess(int AD_Table_ID, boolean ro);
@@ -162,10 +194,16 @@ public interface IUserRolePermissions
 	String getOrgWhere(boolean rw);
 	String getOrgWhere(String tableName, boolean rw);
 	String getAD_Org_IDs_AsString();
+	
+	//FRESH-560: Retrieve the org IDs also as a list
+	Set<Integer> getAD_Org_IDs_AsSet();
 
+	Set<KeyNamePair> getLoginClients();
 	Set<OrgResource> getLoginOrgs();
 
 	int getOrg_Tree_ID();
+	
+	int getMenu_Tree_ID();
 
 	boolean isShowPreference();
 	UserPreferenceLevelConstraint getPreferenceLevel();
@@ -189,4 +227,12 @@ public interface IUserRolePermissions
 	boolean isAllow_Info_CashJournal();
 	boolean isAllow_Info_Resource();
 	boolean isAllow_Info_Asset();
+	
+	//
+	// Static Helpers
+	//
+	static boolean isReadWriteAccess(final Boolean access)
+	{
+		return access != null && access.booleanValue();
+	}
 }

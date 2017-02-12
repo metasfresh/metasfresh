@@ -1,5 +1,7 @@
 package de.metas.procurement.base.order.callout;
 
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.ui.spi.IStatefulTabCallout;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetFilterable;
@@ -36,7 +38,7 @@ import de.metas.procurement.base.order.facet.IPurchaseCandidateFacetCollectorFac
  * #L%
  */
 
-public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter
+public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter implements IStatefulTabCallout
 {
 	private FacetExecutor<I_PMM_PurchaseCandidate> gridTabFacetExecutor;
 
@@ -46,8 +48,14 @@ public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter
 	private PMM_CreatePurchaseOrders_Action action_CreatePurchaseOrders = null;
 
 	@Override
-	public void onInit(final GridTab gridTab)
+	public void onInit(final ICalloutRecord calloutRecord)
 	{
+		final GridTab gridTab = GridTab.fromCalloutRecordOrNull(calloutRecord);
+		if(gridTab == null)
+		{
+			return;
+		}
+		
 		final ISideActionsGroupsListModel sideActionsGroupsModel = gridTab.getSideActionsGroupsModel();
 
 		//
@@ -79,13 +87,13 @@ public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter
 	}
 
 	@Override
-	public void onAfterQuery(final GridTab gridTab)
+	public void onAfterQuery(final ICalloutRecord calloutRecord)
 	{
-		updateFacets(gridTab);
+		updateFacets(calloutRecord);
 	}
 
 	@Override
-	public void onRefreshAll(final GridTab gridTab)
+	public void onRefreshAll(final ICalloutRecord calloutRecord)
 	{
 		// NOTE: we are not updating the facets on refresh all because following case would fail:
 		// Case: user is pressing the "Refresh" toolbar button to refresh THE content of the grid,
@@ -96,9 +104,9 @@ public class PMM_PurchaseCandidate_TabCallout extends TabCalloutAdapter
 	/**
 	 * Retrieve facets from current grid tab rows and add them to window side panel
 	 *
-	 * @param gridTab
+	 * @param calloutRecord
 	 */
-	private void updateFacets(final GridTab gridTab)
+	private void updateFacets(final ICalloutRecord calloutRecord)
 	{
 		//
 		// If user asked to approve for invoicing some ICs, the grid will be asked to refresh all,

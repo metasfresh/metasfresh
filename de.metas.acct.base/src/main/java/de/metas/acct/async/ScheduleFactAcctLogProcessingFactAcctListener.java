@@ -30,7 +30,7 @@ import de.metas.acct.model.I_Fact_Acct_Log;
 /**
  * Listens {@link I_Fact_Acct} records and schedules {@link I_Fact_Acct_Log} processing (async).
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ScheduleFactAcctLogProcessingFactAcctListener implements IFactAcctListener

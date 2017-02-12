@@ -34,7 +34,7 @@ import de.metas.printing.esb.camel.processor.route.TransactionIdProcessor;
 /**
  * Sets up the cxf endpoint and decides to which specific routes the request shall be forwarded.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PRTRestServiceRoute extends RouteBuilder

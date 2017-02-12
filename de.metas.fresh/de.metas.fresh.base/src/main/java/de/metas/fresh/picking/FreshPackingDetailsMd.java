@@ -37,11 +37,12 @@ import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
 
-import de.metas.adempiere.form.AbstractPackingItem;
 import de.metas.adempiere.form.IPackingDetailsModel;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.model.I_M_PickingSlot;
 
@@ -53,14 +54,14 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 {
 	private final transient WeakPropertyChangeSupport pcs;
 
-	private final Collection<AbstractPackingItem> unallocatedLines;
+	private final Collection<IPackingItem> unallocatedLines;
 
 	private final List<I_M_ShipmentSchedule> nonItemScheds;
 	private final List<PickingSlotKey> availablePickingSlots;
 	private final List<PackingMaterialKey> availablePackingMaterialKeys;
 
 	public FreshPackingDetailsMd(final ITerminalContext terminalContext,
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
 		super();
@@ -71,7 +72,7 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 
 		Check.assumeNotNull(unallocatedLines, "unallocatedLines not null");
 		Check.assume(!unallocatedLines.isEmpty(), "unallocatedLines not empty");
-		this.unallocatedLines = Collections.unmodifiableCollection(new ArrayList<AbstractPackingItem>(unallocatedLines));
+		this.unallocatedLines = Collections.unmodifiableCollection(new ArrayList<IPackingItem>(unallocatedLines));
 
 		Check.assumeNotNull(nonItemScheds, "nonItemScheds not null");
 		this.nonItemScheds = nonItemScheds;
@@ -79,14 +80,13 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 		final Date date = SystemTime.asDayTimestamp();
 		final PackingMaterialKeyBuilder packingMaterialKeysBuilder = new PackingMaterialKeyBuilder(terminalContext, date);
 		final PickingSlotKeyBuilder pickingSlotKeysBuilder = new PickingSlotKeyBuilder(terminalContext);
-		for (final AbstractPackingItem pi : unallocatedLines)
+		for (final IPackingItem pi : unallocatedLines)
 		{
-			Check.assumeInstanceOf(pi, FreshPackingItem.class, "pi");
-			final FreshPackingItem freshPackingItem = (FreshPackingItem)pi;
+			final IFreshPackingItem freshPackingItem = FreshPackingItemHelper.cast(pi);
 
 			final int productId = freshPackingItem.getProductId();
-			final int bpartnerId = freshPackingItem.getBpartnerId();
-			final int bpartnerLocationId = freshPackingItem.getBpartnerLocationId();
+			final int bpartnerId = freshPackingItem.getC_BPartner_ID();
+			final int bpartnerLocationId = freshPackingItem.getC_BPartner_Location_ID();
 			final Set<Integer> warehouseIds = freshPackingItem.getWarehouseIds();
 
 			//
@@ -117,7 +117,7 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 	 * 
 	 * @return unallocated lines (read-only collection)
 	 */
-	public Collection<AbstractPackingItem> getUnallocatedLines()
+	public Collection<IPackingItem> getUnallocatedLines()
 	{
 		return unallocatedLines;
 	}

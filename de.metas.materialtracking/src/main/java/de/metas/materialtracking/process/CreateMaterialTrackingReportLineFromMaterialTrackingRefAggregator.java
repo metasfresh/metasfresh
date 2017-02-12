@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
@@ -79,7 +79,7 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefAggregator e
 		}
 		catch (final Throwable t)
 		{
-			ILoggable.THREADLOCAL.getLoggable().addLog("@Error@: " + t);
+			Loggables.get().addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 

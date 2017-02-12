@@ -10,21 +10,21 @@ package de.metas.handlingunits.attribute.storage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,10 +35,13 @@ import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
 
+import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.propagation.impl.NullHUAttributePropagator;
+import de.metas.handlingunits.attribute.storage.impl.AbstractAttributeStorage;
+import de.metas.handlingunits.attribute.storage.impl.CompositeAttributeStorageListener;
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
@@ -47,7 +50,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 
 /**
- * Defines a Attribute Storage pool
+ * Defines a Attribute Storage pool. Use e.g. {@link IAttributeStorageFactory#getAttributeStorage(Object)} do get an instance.
  *
  * @author tsa
  *
@@ -57,7 +60,7 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Get's storage unique identifier.
 	 *
-	 * This identifier it's used to uniquely identify an {@link IAttributeStorage} in children {@link IAttributeStorage} collection (internally).
+	 * This identifier is used to uniquely identify an {@link IAttributeStorage} in children {@link IAttributeStorage} collection (internally).
 	 *
 	 * @return ID
 	 */
@@ -68,8 +71,9 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * NOTEs:
 	 * <ul>
-	 * <li>listener is registered as a weak reference, so make sure you keep a reference to this listener in our object.
-	 * <li>a listener won't be registered twice
+	 * <li>listener is registered using {@link CompositeAttributeStorageListener}.
+	 * This might mean that it's stored as a weak reference. so make sure you keep a reference to this listener in our object.</li>
+	 * <li>a listener won't be registered twice</li>
 	 * </ul>
 	 *
 	 * @param listener
@@ -78,9 +82,9 @@ public interface IAttributeStorage extends IAttributeSet
 
 	/**
 	 * Unregisters given storage listener.
-	 * 
+	 *
 	 * If listener was not already registered, it will silently ignore it.
-	 * 
+	 *
 	 * @param listener
 	 */
 	void removeListener(IAttributeStorageListener listener);
@@ -124,9 +128,10 @@ public interface IAttributeStorage extends IAttributeSet
 	IAttributeStorage getParentAttributeStorage();
 
 	/**
+	 * @param loadIfNeeded if <code>false</code> and the children were not loaded yet, then return an empty collection.
 	 * @return collection of child attribute storages
 	 */
-	Collection<IAttributeStorage> getChildAttributeStorages();
+	Collection<IAttributeStorage> getChildAttributeStorages(boolean loadIfNeeded);
 
 	/**
 	 * Generate initial storage attributes
@@ -233,6 +238,12 @@ public interface IAttributeStorage extends IAttributeSet
 	@Override
 	BigDecimal getValueAsBigDecimal(I_M_Attribute attribute);
 
+	@Override
+	Date getValueAsDate(I_M_Attribute attribute);
+
+	@Override
+	String getValueAsString(I_M_Attribute attribute);
+
 	/**
 	 * @param attribute
 	 * @return name of given attribute current value (aka. valueName)
@@ -251,7 +262,7 @@ public interface IAttributeStorage extends IAttributeSet
 
 	/**
 	 * Same as {@link #getValueInitial(I_M_Attribute)} but returns a {@link BigDecimal}.
-	 * 
+	 *
 	 * @see #getValueInitial(I_M_Attribute)
 	 */
 	BigDecimal getValueInitialAsBigDecimal(I_M_Attribute attribute);
@@ -262,7 +273,7 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Method called by API when a child storage was added (e.g. a child HU was included to the HU that owns this storage).
 	 *
-	 * NOTE: don't call it directly, the API will.
+	 * NOTE: don't call it directly, the API will make the call, e.g. if a child HU was added to aparent HU.
 	 *
 	 * @param childAttributeStorage
 	 */
@@ -281,7 +292,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * Push up attributes: force propagating attributes from this storage to its parent's storages. Propagates all <code>this</code> storage's attribute values using
 	 * {@link X_M_HU_PI_Attribute#PROPAGATIONTYPE_BottomUp}.
 	 *
-	 * NOTE: don't call it directly. It's called by API only
+	 * NOTE: don't call it directly. It's called by API ({@link #onChildAttributeStorageAdded(IAttributeStorage)}) only
 	 */
 	void pushUp();
 
@@ -308,6 +319,14 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	void saveChangesIfNeeded();
 
+	/**
+	 * Enables/Disables automatic saving when an attribute value is changed
+	 * 
+	 * @param saveOnChange
+	 * @throws UnsupportedOperationException in case the operation is not supported
+	 */
+	void setSaveOnChange(final boolean saveOnChange);
+
 	IAttributeStorageFactory getHUAttributeStorageFactory();
 
 	/**
@@ -328,15 +347,27 @@ public interface IAttributeStorage extends IAttributeSet
 	boolean isVirtual();
 
 	/**
-	 * Asserts this storage was not disposed.
-	 * 
-	 * NOTE to implementors: Method called before any method which is accessing or changing the data from this attribute storage.
+	 * Assert this storage was not disposed.
+	 *
+	 * NOTEs to implementors:
+	 * <ul>
+	 * <li>Method called before any method which is accessing or changing the data from this attribute storage.
 	 * To be implemented on higher level if you want to implement destroy/dispose functionality and you want to make sure the storage is not used after that.
-	 * If you don't care, just return <code>true</code>.
-	 * 
-	 * @return true if NOT disposed (i.e. still alive); false if IT IS disposed
-	 * @throws HUException if it's disposed (but this depends on implementation)
+	 * If you don't care, just return <code>true</code>.</li>
+	 * <li>in your implementation, don't check if possible child storages are disposed, because for that we have {@link #assertNotDisposedTree()}</li>
+	 * <li>please have a look at {@link AbstractAttributeStorage#throwOrLogDisposedException(Long)} and use it if your particular instance is disposed.</li>
+	 * </ul>
+	 *
+	 * @return <code>true</code> if NOT disposed (i.e. still alive); <code>false</code> if IT IS disposed
+	 * @throws HUException if it's disposed (but this depends on implementation, see {@link HUConstants#isAttributeStorageFailOnDisposed()}).
 	 */
 	boolean assertNotDisposed();
 
+	/**
+	 * Assert that neither this storage nor any of its children are disposed. This method does <b>not</b> load any children, but just validates existing ones.
+	 *
+	 * @return <code>true</code> if no storage is disposed.
+	 * @throws HUException if any storage is disposed
+	 */
+	boolean assertNotDisposedTree();
 }

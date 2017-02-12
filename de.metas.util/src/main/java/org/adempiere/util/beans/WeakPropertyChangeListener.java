@@ -168,4 +168,10 @@ import org.adempiere.util.StringUtils;
 		delegate.propertyChange(evtNew);
 	}
 
+	@Override
+	public String toString()
+	{
+		return "WeakPropertyChangeListener [delegate=" + delegate + "]";
+	}
+
 }

@@ -32,7 +32,7 @@ import de.metas.banking.service.BankStatementListenerAdapter;
 /**
  * Listens to bank statement events and manages the relation with pay selections.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class PaySelectionBankStatementListener extends BankStatementListenerAdapter

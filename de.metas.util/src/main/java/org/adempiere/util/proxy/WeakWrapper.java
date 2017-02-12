@@ -10,12 +10,12 @@ package org.adempiere.util.proxy;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,9 +33,9 @@ import org.adempiere.util.Check;
 
 /**
  * Wraps a given object, all method calls will be forwarded to that object but inside we will keep a weak reference to the wrapped object.
- * 
+ *
  * In case the weak reference expires, an exception is thrown on any method call.
- * 
+ *
  * @author tsa
  *
  * @param <T> wrapped object's interface type
@@ -159,5 +159,11 @@ public final class WeakWrapper<T> implements InvocationHandler
 			// because we don't give a fuck about the exception from reflections API (that's only noise).
 			throw ex.getCause();
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return "WeakWrapper [delegateClass=" + delegateClass + ", delegateRef=" + delegateRef + "]";
 	}
 }

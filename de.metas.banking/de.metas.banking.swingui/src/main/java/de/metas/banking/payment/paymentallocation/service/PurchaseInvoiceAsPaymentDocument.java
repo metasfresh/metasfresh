@@ -30,7 +30,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument

@@ -28,12 +28,12 @@ package de.metas.shipping.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,10 +43,8 @@ package de.metas.shipping.model;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -57,11 +55,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
-import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.shipping.api.IShipperTransportationBL;
 
 /**
@@ -69,10 +65,10 @@ import de.metas.shipping.api.IShipperTransportationBL;
  *
  * @author Carlos Ruiz
  */
-public class MMShipperTransportation extends X_M_ShipperTransportation implements DocAction, DocOptions
+public class MMShipperTransportation extends X_M_ShipperTransportation implements DocAction
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8883936122691193136L;
 
@@ -115,7 +111,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -128,7 +124,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -151,7 +147,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -196,7 +192,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Schliessen);
+		setDocAction(DOCACTION_Reaktivieren); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 
@@ -311,7 +307,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -324,7 +320,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -373,7 +369,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -415,7 +411,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -428,7 +424,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -450,7 +446,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Reverse Correction
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -472,7 +468,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -485,7 +481,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -575,63 +571,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		list.toArray(m_lines);
 		return m_lines;
 	}	// getLines
-
-	/**
-	 * Customize Valid Actions
-	 * 
-	 * @param docStatus
-	 * @param processing
-	 * @param orderType
-	 * @param isSOTrx
-	 * @param AD_Table_ID
-	 * @param docAction
-	 * @param options
-	 * @return Number of valid options
-	 */
-	@Override
-	public int customizeValidActions(final IDocActionOptionsContext optionsCtx)
-	{
-		final Set<String> optionsSet = optionsCtx.getOptions();
-		final String[] options = optionsSet.toArray(new String[optionsSet.size()]);
-
-		int index = (options.length <= 0) ? 0 : options.length - 1;
-
-		final String docStatus = optionsCtx.getDocStatus();
-		if (docStatus.equals(DocumentEngine.STATUS_Drafted))
-		{
-			// remove the void option when Drafted
-			int idxVoid = -1;
-			for (int i = 0; i < options.length; i++)
-			{
-				if (options[i].equals(DocumentEngine.ACTION_Void))
-				{
-					idxVoid = i;
-					break;
-				}
-			}
-			if (idxVoid >= 0)
-			{
-				for (int i = idxVoid + 1; i < options.length; i++)
-				{
-					options[i - 1] = options[i];
-				}
-				options[options.length - 1] = null;
-				index--;
-			}
-
-		}
-		// Complete .. CO
-		else if (docStatus.equals(DocumentEngine.STATUS_Completed))
-		{
-			options[index++] = DocumentEngine.ACTION_ReActivate;
-		}
-
-		//
-		// Correct options
-		optionsCtx.setOptions(Arrays.asList(options));
-
-		return index;
-	}
 
 	/**
 	 * Before Delete

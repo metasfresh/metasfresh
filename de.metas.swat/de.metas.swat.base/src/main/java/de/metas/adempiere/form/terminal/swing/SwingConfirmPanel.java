@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,8 +30,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.swing.CButton;
@@ -44,10 +42,11 @@ import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import net.miginfocom.swing.MigLayout;
 
 public class SwingConfirmPanel extends ConfirmPanel
 {
-	private org.compiere.apps.ConfirmPanel panel;
+	private final org.compiere.apps.ConfirmPanel panel;
 	private final ButtonsActionListener buttonsActionListener;
 	private String buttonSize = "";
 
@@ -131,14 +130,14 @@ public class SwingConfirmPanel extends ConfirmPanel
 	@Override
 	public ITerminalButton addButton(final String action, final boolean toogle)
 	{
-		final AbstractButton buttonSwing = (AbstractButton)panel.addButton(action, null, null, toogle);
+		final AbstractButton buttonSwing = panel.addButton(action, null, null, toogle);
 		buttonSwing.addActionListener(buttonsActionListener);
 		// Button shall be not focusable so it doesn't interfere with components which need permanent focus
 		buttonSwing.setFocusable(false);
-		
+
 		final String buttonText = Services.get(IMsgBL.class).translate(Env.getCtx(), action);
 		buttonSwing.setText(buttonText);
-		
+
 		panel.add(buttonSwing, "dock west, " + buttonSize);
 
 		final ITerminalButton button = new SwingTerminalButtonWrapper(getTerminalContext(), buttonSwing);
@@ -162,11 +161,18 @@ public class SwingConfirmPanel extends ConfirmPanel
 	public void dispose()
 	{
 		super.dispose();
-		
+
 		if (panel != null)
 		{
 			panel.dispose();
-			panel = null;
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return "SwingConfirmPanel [panel=" + panel 
+				+ ", buttonsActionListener=" + buttonsActionListener
+				+ ", buttonSize=" + buttonSize + "]";
 	}
 }

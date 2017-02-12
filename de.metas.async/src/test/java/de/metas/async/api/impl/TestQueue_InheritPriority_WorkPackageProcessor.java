@@ -41,7 +41,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 /**
  * Works together with {@link TestQueue_InheritPriority}. can't be an inner class of that test class because of reflection-instantiation problems.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class TestQueue_InheritPriority_WorkPackageProcessor implements IWorkpackageProcessor

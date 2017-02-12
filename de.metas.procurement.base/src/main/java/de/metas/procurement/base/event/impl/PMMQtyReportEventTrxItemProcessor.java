@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
@@ -16,6 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
+import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
@@ -53,7 +54,7 @@ import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
 /**
  * Processes {@link I_PMM_QtyReport_Event}s and creates/updates {@link I_PMM_PurchaseCandidate}s.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_QtyReport_Event, Void>
@@ -66,6 +67,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 	private final transient IPMMBalanceChangeEventProcessor pmmBalanceEventProcessor = Services.get(IPMMBalanceChangeEventProcessor.class);
 	private final transient IPMMPricingBL pmmPricingBL = Services.get(IPMMPricingBL.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
+	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
 
 	private final AtomicInteger countProcessed = new AtomicInteger(0);
 	private final AtomicInteger countErrors = new AtomicInteger(0);
@@ -88,10 +90,10 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				.setM_AttributeSetInstance_ID(event.getM_AttributeSetInstance_ID())
 				.setC_Flatrate_DataEntry_ID(event.getC_Flatrate_DataEntry_ID())
 				.build();
-		
+
 		final Timestamp datePromised = event.getDatePromised();
 		I_PMM_PurchaseCandidate candidate;
-		
+
 		//
 		// Weekly planning
 		if (event.isPlanning())
@@ -213,10 +215,15 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		final Timestamp datePromised = qtyReportEvent.getDatePromised();
 
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pmmContractsDAO.retrieveFlatrateDataEntry(flatrateTerm, datePromised);
-		if (dataEntryForProduct == null
-				|| dataEntryForProduct.getFlatrateAmtPerUOM() == null
-				|| dataEntryForProduct.getFlatrateAmtPerUOM().signum() <= 0)
+		if (dataEntryForProduct == null)
 		{
+			return;
+		}
+
+		// Skip setting the data entry if it does not have the price or the qty set (FRESH-568)
+		if (!pmmContractsBL.hasPriceOrQty(dataEntryForProduct))
+		{
+			logger.debug("Skip setting {} to {} because the data entry does not have a price or qty set", dataEntryForProduct, qtyReportEvent);
 			return;
 		}
 
@@ -251,7 +258,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		event.setProcessed(false);
 		InterfaceWrapperHelper.save(event);
 
-		getLoggable().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
+		Loggables.get().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
 
 		countErrors.incrementAndGet();
 	}
@@ -263,7 +270,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 		if (errorMsg != null)
 		{
-			getLoggable().addLog("Event " + event + " skipped: " + errorMsg);
+			Loggables.get().addLog("Event " + event + " skipped: " + errorMsg);
 		}
 		countSkipped.incrementAndGet();
 
@@ -283,11 +290,6 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 		}
 
 		return false;
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
 	}
 
 	public String getProcessSummary()
@@ -315,7 +317,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 				//
 				.build();
 		logger.trace("Created event {} from {}", event, qtyReportEvent);
-		
+
 		return event;
 	}
 }

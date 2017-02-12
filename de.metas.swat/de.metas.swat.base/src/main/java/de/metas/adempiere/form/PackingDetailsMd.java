@@ -136,7 +136,7 @@ public class PackingDetailsMd implements IPackingDetailsModel
 
 	private final List<I_M_ShipmentSchedule> nonItems;
 
-	public Collection<AbstractPackingItem> unallocatedLines;
+	public Collection<IPackingItem> unallocatedLines;
 	public Collection<AvailableBins> avalaiableContainers;
 
 	/**
@@ -147,7 +147,7 @@ public class PackingDetailsMd implements IPackingDetailsModel
 	private int validState;
 
 	public PackingDetailsMd(
-			final Collection<AbstractPackingItem> unallocatedLines,
+			final Collection<IPackingItem> unallocatedLines,
 			final Collection<AvailableBins> avalaiableContainers,
 			final boolean useShipper,
 			final List<I_M_ShipmentSchedule> nonItems,
@@ -260,6 +260,7 @@ public class PackingDetailsMd implements IPackingDetailsModel
 		return piWeight;
 	}
 
+	@Override
 	public int getValidState()
 	{
 		return validState;
@@ -364,6 +365,7 @@ public class PackingDetailsMd implements IPackingDetailsModel
 		this.validState = validState;
 	}
 
+	@Override
 	public List<I_M_ShipmentSchedule> getNonItems()
 	{
 		return nonItems;

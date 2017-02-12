@@ -21,16 +21,11 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Window;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -42,27 +37,25 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.util.Check;
-import org.adempiere.util.EvaluateeCtx;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_Language;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MLookupCache;
 import org.compiere.model.MSession;
-import org.compiere.model.PO;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -103,7 +96,10 @@ public final class Env
 	public static void setContextProvider(final ContextProvider provider)
 	{
 		Check.assumeNotNull(provider, "provider not null");
+
+		final ContextProvider providerOld = contextProvider;
 		contextProvider = provider;
+		s_log.info("Changed context provider: {} -> {}", providerOld, contextProvider);
 
 		// metas: 03362: Configure context's language only if we have a database connection
 		if (DB.isConnected())
@@ -138,6 +134,8 @@ public final class Env
 	 */
 	public static void exitEnv(final int status)
 	{
+		s_log.info("Exiting environment with status={}", status);
+
 		// hengsin, avoid unncessary query of session when exit without log in
 		if (DB.isConnected())
 		{
@@ -148,7 +146,6 @@ public final class Env
 		}
 		//
 		reset(true);	// final cache reset
-		s_log.info("");
 		//
 		LogManager.shutdown();
 		//
@@ -172,9 +169,6 @@ public final class Env
 			session.logout();
 		//
 		reset(true);	// final cache reset
-		//
-
-		CConnection.get().setAppServerCredential(null, null);
 	}
 
 	/**
@@ -184,7 +178,7 @@ public final class Env
 	 */
 	public static void reset(final boolean finalCall)
 	{
-		s_log.info("finalCall=" + finalCall);
+		s_log.info("Reseting environment (finalCall={})", finalCall);
 		if (Ini.isClient())
 		{
 			closeWindows();
@@ -251,8 +245,6 @@ public final class Env
 	public static final int WINDOW_MAIN = 0;
 	/** WindowNo for Find */
 	public static final int WINDOW_FIND = 1110;
-	/** WinowNo for MLookup */
-	public static final int WINDOW_MLOOKUP = 1111;
 	/** WindowNo for PrintCustomize */
 	public static final int WINDOW_CUSTOMIZE = 1112;
 	/** WindowNo for PrintCustomize */
@@ -262,6 +254,7 @@ public final class Env
 	public static final int TAB_INFO = 1113;
 
 	public static final String CTXNAME_AD_Client_ID = "#AD_Client_ID";
+	public static final String CTXNAME_AD_Client_Name = "#AD_Client_Name";
 	public static final int CTXVALUE_AD_Client_ID_System = IClientDAO.SYSTEM_CLIENT_ID;
 
 	public static final String CTXNAME_AD_Org_ID = "#AD_Org_ID";
@@ -291,6 +284,7 @@ public final class Env
 	public static final String CTXNAME_AD_User_ID = "#AD_User_ID";
 	public static final String CTXNAME_AD_User_Name = "#AD_User_Name";
 	public static final String CTXNAME_SalesRep_ID = "#SalesRep_ID";
+	public static final int CTXVALUE_AD_User_ID_System = 0;
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
@@ -306,6 +300,7 @@ public final class Env
 	public static final String CTXNAME_WindowName = "WindowName";
 	public static final String CTXNAME_Printer = "#Printer";
 	public static final String CTXNAME_ShowAcct = "#ShowAcct";
+	public static final String CTXNAME_AcctSchemaElementPrefix = "$Element_";
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system. The value is loaded into the context on login.
@@ -471,21 +466,14 @@ public final class Env
 		final String nullValue = getNullPropertyValue(key);
 		ctx.setProperty(key, nullValue);
 
-		if (s_log.isTraceEnabled())
-		{
-			s_log.trace("Unset " + key + "==" + nullValue);
-		}
-
+		s_log.trace("Unset {}=={}", key, nullValue);
 	}
 
 	private static final void setProperty(final Properties ctx, final String key, final String value)
 	{
-		if (s_log.isTraceEnabled())
-		{
-			s_log.trace("Set " + key + "==" + value);
-		}
-
 		ctx.setProperty(key, value);
+
+		s_log.trace("Set {}=={}", key, value);
 	}
 
 	private static final void removeContextForPrefix(final Properties ctx, final String keyPrefix)
@@ -522,7 +510,7 @@ public final class Env
 			ctx.remove(key);
 
 			// If the key we just removed exists on underlying "defaults", we are just setting it here using null marker.
-			if (ctx.getProperty(key, null) != null)
+			if (getProperty(ctx, key) != null)
 			{
 				final String nullValue = getNullPropertyValue(key);
 				ctx.setProperty(key, nullValue);
@@ -559,7 +547,7 @@ public final class Env
 	 * @param context context key
 	 * @param value context value
 	 */
-	public static void setContext(final Properties ctx, final String context, final Timestamp value)
+	public static void setContext(final Properties ctx, final String context, final Date value)
 	{
 		if (ctx == null || context == null)
 		{
@@ -640,7 +628,7 @@ public final class Env
 	 * @param context context key
 	 * @param value context value
 	 */
-	public static void setContext(final Properties ctx, final int WindowNo, final String context, final Timestamp value)
+	public static void setContext(final Properties ctx, final int WindowNo, final String context, final Date value)
 	{
 		if (ctx == null || context == null)
 		{
@@ -901,7 +889,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -926,7 +914,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -952,7 +940,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -978,7 +966,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return 0;
 	}	// getContextAsInt
@@ -1083,7 +1071,9 @@ public final class Env
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if SO (default)
+	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
 	 */
+	@Deprecated
 	public static boolean isSOTrx(Properties ctx, int WindowNo)
 	{
 		final Boolean soTrx = getSOTrxOrNull(ctx, WindowNo);
@@ -1096,7 +1086,9 @@ public final class Env
 	 * @param ctx context
 	 * @param WindowNo window no
 	 * @return true if {@link CTXNAME_IsSOTrx} = <code>Y</code>, false if {@link CTXNAME_IsSOTrx} = <code>N</code> and <code>null</code> if {@link CTXNAME_IsSOTrx} is not set.
+	 * @deprecated Please consider fetching the actual model and then calling it's <code>isSOTrx()</code> method
 	 */
+	@Deprecated
 	public static Boolean getSOTrxOrNull(final Properties ctx, final int WindowNo)
 	{
 		final String s = getContext(ctx, WindowNo, CTXNAME_IsSOTrx, true);
@@ -1105,7 +1097,7 @@ public final class Env
 			return null;
 		}
 
-		return "Y".equals(s);
+		return DisplayType.toBoolean(s);
 	}	// isSOTrx
 
 	/**
@@ -1140,8 +1132,9 @@ public final class Env
 		if (timestamp == null)
 		{
 			// metas: tsa: added a dummy exception to be able to track it quickly
-			s_log.error("No value for '" + context + "' or value '" + timestampStr + "' could not be parsed", new Exception());
-			return SystemTime.asTimestamp();
+			final Timestamp sysDate = SystemTime.asTimestamp();
+			s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
+			return sysDate;
 		}
 
 		return timestamp;
@@ -1191,6 +1184,11 @@ public final class Env
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}	// getAD_Role_ID
 
+//	public static void setAD_Role_ID(Properties ctx, final int adRoleId)
+//	{
+//		Env.setContext(ctx, CTXNAME_AD_Role_ID, adRoleId);
+//	}	// getAD_Role_ID
+
 	public static IUserRolePermissions getUserRolePermissions()
 	{
 		final Properties ctx = getCtx();
@@ -1199,12 +1197,21 @@ public final class Env
 
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
-		final int adRoleId = Env.getAD_Role_ID(ctx);
-		final int adUserId = Env.getAD_User_ID(ctx);
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final Date date = Env.getDate(ctx);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(adRoleId, adUserId, adClientId, date);
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
+
+	public static IUserRolePermissions getUserRolePermissions(final UserRolePermissionsKey key)
+	{
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
+	}
+
+	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
+	{
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+	}
+
 
 	public static void resetUserRolePermissions()
 	{
@@ -1241,30 +1248,31 @@ public final class Env
 		//
 		if (!system)         	// User Preferences
 		{
-			retValue = ctx.getProperty(createPreferenceName(AD_Window_ID, context));// Window Pref
+			retValue = getProperty(ctx, createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
-				retValue = ctx.getProperty(createPreferenceName(0, context));  			// Global Pref
+				retValue = getProperty(ctx, createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
 		}
 		else
 		// System Preferences
 		{
-			retValue = ctx.getProperty("#" + context);   				// Login setting
+			retValue = getProperty(ctx, "#" + context);   				// Login setting
 			if (retValue == null)
-				retValue = ctx.getProperty("$" + context);   			// Accounting setting
+				retValue = getProperty(ctx, "$" + context);   			// Accounting setting
 		}
 		//
 		return (retValue == null ? "" : retValue);
 	}	// getPreference
 
-	public static void setPreference(final Properties ctx, final int AD_Window_ID, final String name, final String value)
+	public static void setPreference(final Properties ctx, final IUserValuePreference userValuePreference)
 	{
-		final String preferenceName = createPreferenceName(AD_Window_ID, name);
-		setContext(ctx, preferenceName, value);
+		final String preferenceName = createPreferenceName(userValuePreference.getAD_Window_ID(), userValuePreference.getName());
+		final String preferenceValue = userValuePreference.getValue();
+		setContext(ctx, preferenceName, preferenceValue);
 	}
 
 	private static final String createPreferenceName(final int AD_Window_ID, final String baseName)
 	{
-		if (AD_Window_ID <= 0)
+		if (AD_Window_ID <= 0 || AD_Window_ID == IUserValuePreference.AD_WINDOW_ID_NONE)
 		{
 			return "P|" + baseName;
 		}
@@ -1420,76 +1428,42 @@ public final class Env
 	/**
 	 * Verify Language. Check that language is supported by the system
 	 *
-	 * @param ctx might be updated with new AD_Language
 	 * @param language language
 	 */
-	public static void verifyLanguage(final Properties ctx, final Language language)
+	public static void verifyLanguage(final Language language)
 	{
-		// metas: method changed for Global Language Support
-		ArrayList<String> AD_Languages = new ArrayList<String>();
-		String sql = "SELECT "
-				+ " " + I_AD_Language.COLUMNNAME_AD_Language
-				+ " FROM " + I_AD_Language.Table_Name
-				+ " WHERE IsActive='Y'"
-				+ " AND (" + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y' OR " + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y')"
-				+ " ORDER BY " + I_AD_Language.COLUMNNAME_IsBaseLanguage + " DESC"
-				+ ", " + I_AD_Language.COLUMNNAME_IsSystemLanguage + " DESC"
-				+ ", " + I_AD_Language.COLUMNNAME_AD_Language;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				String AD_Language = rs.getString(1);
-				if (AD_Language.equals(language.getAD_Language()))
-				{
-					return;
-				}
-				AD_Languages.add(AD_Language);
-			}
-		}
-		catch (SQLException e)
-		{
-			s_log.error("", e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
+		Check.assumeNotNull(language, "Parameter language is not null");
+		final String searchAD_Language = language.getAD_Language();
 
-		// No Language - set to System
-		if (AD_Languages.size() == 0)
+		//
+		// Get available languages, having BaseLanguage first and then System Language
+		final List<String> AD_Languages = Services.get(ILanguageDAO.class).retrieveAvailableAD_LanguagesForMatching(getCtx());
+
+		//
+		// Check if we have a perfect match
+		if(AD_Languages.contains(searchAD_Language))
 		{
-			s_log.warn("NO System Language - Set to Base " + Language.getBaseAD_Language());
-			language.setAD_Language(Language.getBaseAD_Language());
 			return;
 		}
 
-		for (int i = 0; i < AD_Languages.size(); i++)
+		//
+		// Pick a similar language (with different country code and/or variant)
+		final String searchLangPart = searchAD_Language.substring(0, 2);
+		for (final String AD_Language : AD_Languages)
 		{
-			String AD_Language = AD_Languages.get(i);	// en_US
-			String lang = AD_Language.substring(0, 2);			// en
-			//
-			String langCompare = language.getAD_Language().substring(0, 2);
-			if (lang.equals(langCompare))
+			final String lang = AD_Language.substring(0, 2); // en
+			if (lang.equals(searchLangPart))
 			{
-				s_log.debug("Found similar Language " + AD_Language);
+				s_log.debug("Found similar Language {} for {}", AD_Language, language);
 				language.setAD_Language(AD_Language);
 				return;
 			}
 		}
 
-		// We found same language
-		// if (!"0".equals(Msg.getMsg(AD_Language, "0")))
-
-		s_log.warn("Not System Language=" + language
-				+ " - Set to Base Language " + Language.getBaseAD_Language());
-		language.setAD_Language(Language.getBaseAD_Language());
+		// No Language - set to Base Language
+		final String baseAD_Language = Language.getBaseAD_Language();
+		s_log.warn("Not System/Base Language={} - Set to Base Language: {}", language, baseAD_Language);
+		language.setAD_Language(baseAD_Language);
 	}   // verifyLanguage
 
 	/**************************************************************************
@@ -1581,9 +1555,6 @@ public final class Env
 		final String ctxWindowPrefix = WindowNo + "|";
 		removeContextForPrefix(ctx, ctxWindowPrefix);
 
-		// Clear Lookup Cache
-		MLookupCache.cacheReset(WindowNo);
-		// MLocator.cacheReset(WindowNo);
 		//
 		if (Ini.isClient())
 			removeWindow(WindowNo);
@@ -1603,14 +1574,14 @@ public final class Env
 	 */
 	public static String parseContext(Properties ctx, int WindowNo, String value, boolean onlyWindow, boolean ignoreUnparsable)
 	{
-		final Evaluatee evalCtx = new EvaluateeCtx(ctx, WindowNo, onlyWindow);
+		final Evaluatee evalCtx = Evaluatees.ofCtx(ctx, WindowNo, onlyWindow);
 		final String valueParsed = parseContext(evalCtx, value, ignoreUnparsable);
 		return valueParsed;
 	}
 
 	public static String parseContext(final Properties ctx, final int WindowNo, final IStringExpression expression, final boolean onlyWindow, final boolean ignoreUnparsable)
 	{
-		final Evaluatee evalCtx = new EvaluateeCtx(ctx, WindowNo, onlyWindow);
+		final Evaluatee evalCtx = Evaluatees.ofCtx(ctx, WindowNo, onlyWindow);
 		final String valueParsed = parseContext(evalCtx, expression, ignoreUnparsable);
 		return valueParsed;
 	}
@@ -1647,107 +1618,6 @@ public final class Env
 		return parseContext(ctx, WindowNo, expression, onlyWindow, ignoreUnparsable);
 	}	// parseContext
 
-	/**
-	 * Parse expression, replaces global or PO properties @tag@ with actual value.
-	 *
-	 * @param expression
-	 * @param po
-	 * @param trxName
-	 * @return String
-	 */
-	public static String parseVariable(String expression, PO po, String trxName, boolean keepUnparseable)
-	{
-		if (expression == null || expression.length() == 0)
-			return "";
-
-		String token;
-		String inStr = new String(expression);
-		StringBuilder outStr = new StringBuilder();
-
-		int i = inStr.indexOf('@');
-		while (i != -1)
-		{
-			outStr.append(inStr.substring(0, i));			// up to @
-			inStr = inStr.substring(i + 1, inStr.length());	// from first @
-
-			int j = inStr.indexOf('@');						// next @
-			if (j < 0)
-			{
-				s_log.error("No second tag: " + inStr);
-				return "";						// no second tag
-			}
-
-			token = inStr.substring(0, j);
-
-			// format string
-			String format = "";
-			int f = token.indexOf('<');
-			if (f > 0 && token.endsWith(">"))
-			{
-				format = token.substring(f + 1, token.length() - 1);
-				token = token.substring(0, f);
-			}
-
-			if (token.startsWith("#") || token.startsWith("$"))
-			{
-				// take from context
-				Properties ctx = po != null ? po.getCtx() : Env.getCtx();
-				String v = Env.getContext(ctx, token);
-				if (v != null && v.length() > 0)
-					outStr.append(v);
-				else if (keepUnparseable)
-					outStr.append("@" + token + "@");
-			}
-			else if (po != null)
-			{
-				// take from po
-				Object v = po.get_Value(token);
-				if (v != null)
-				{
-					if (format != null && format.length() > 0)
-					{
-						if (v instanceof Integer && token.endsWith("_ID"))
-						{
-							int tblIndex = format.indexOf(".");
-							String table = tblIndex > 0 ? format.substring(0, tblIndex) : token.substring(0, token.length() - 3);
-							String column = tblIndex > 0 ? format.substring(tblIndex + 1) : format;
-							outStr.append(DB.getSQLValueString(trxName,
-									"select " + column + " from  " + table + " where " + table + "_id = ?", (Integer)v));
-						}
-						else if (v instanceof Date)
-						{
-							SimpleDateFormat df = new SimpleDateFormat(format);
-							outStr.append(df.format((Date)v));
-						}
-						else if (v instanceof Number)
-						{
-							DecimalFormat df = new DecimalFormat(format);
-							outStr.append(df.format(((Number)v).doubleValue()));
-						}
-						else
-						{
-							MessageFormat mf = new MessageFormat(format);
-							outStr.append(mf.format(v));
-						}
-					}
-					else
-					{
-						outStr.append(v.toString());
-					}
-				}
-				else if (keepUnparseable)
-				{
-					outStr.append("@" + token + "@");
-				}
-			}
-
-			inStr = inStr.substring(j + 1, inStr.length());	// from second @
-			i = inStr.indexOf('@');
-		}
-		outStr.append(inStr);						// add the rest of the string
-
-		return outStr.toString();
-	}
 
 	/*************************************************************************/
 
@@ -1833,17 +1703,17 @@ public final class Env
 			return null;
 		}
 
-		JFrame retValue = null;
 		try
 		{
-			retValue = getFrame(s_windows.get(WindowNo));
+			return getFrame(s_windows.get(WindowNo));
 		}
 		catch (Exception e)
 		{
-			s_log.error(e.toString());
+			s_log.error("Failed getting frame for windowNo={}", WindowNo, e);
 		}
-		return retValue;
-	}	// getWindow
+
+		return null;
+	}
 
 	/**
 	 * Remove window from active list
@@ -1950,7 +1820,7 @@ public final class Env
 	 */
 	public static void startBrowser(String url)
 	{
-		s_log.info(url);
+		s_log.info("Starting browser using url={}", url);
 		Services.get(IClientUI.class).showURL(url);
 	}   // startBrowser
 
@@ -1996,16 +1866,17 @@ public final class Env
 		for (int i = 0; i < s_hiddenWindows.size(); i++)
 		{
 			CFrame hidden = s_hiddenWindows.get(i);
-			s_log.info(i + ": " + hidden);
+			s_log.info("Checking hidden window {}: {}", i, hidden);
 			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 				return false;	// already there
 		}
-		if (window.getAD_Window_ID() != 0)         	// workbench
+
+		if (window.getAD_Window_ID() > 0)         	// workbench
 		{
 			if (s_hiddenWindows.add(window))
 			{
 				window.setVisible(false);
-				s_log.info(window.toString());
+				s_log.info("Added to hidden windows list: {}", window);
 				// window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_ICONIFIED));
 				if (s_hiddenWindows.size() > 10)
 				{
@@ -2040,7 +1911,7 @@ public final class Env
 			if (hidden.getAD_Window_ID() == AD_Window_ID)
 			{
 				s_hiddenWindows.remove(i); // NOTE: we can safely remove here because we are also returning (no future iterations)
-				s_log.info(hidden.toString());
+				s_log.info("Showing window: {}", hidden);
 				hidden.setVisible(true);
 				// De-iconify window - teo_sarca [ 1707221 ]
 				int state = hidden.getExtendedState();
@@ -2074,18 +1945,18 @@ public final class Env
 	 *
 	 * @param sec seconds
 	 */
-	public static void sleep(int sec)
+	public static void sleep(final int sec)
 	{
-		s_log.info("Start - Seconds=" + sec);
+		s_log.debug("Sleeping for {} seconds", sec);
 		try
 		{
 			Thread.sleep(sec * 1000);
 		}
 		catch (Exception e)
 		{
-			s_log.warn("", e);
+			s_log.warn("Failed sleeping for {} seconds", sec, e);
 		}
-		s_log.info("End");
+		s_log.debug("Sleeping done");
 	}	// sleep
 
 	/**
@@ -2155,7 +2026,7 @@ public final class Env
 
 			if (key.startsWith("#") || key.startsWith("$"))
 			{
-				final String value = ctx.getProperty(key, null);
+				final String value = getProperty(ctx, key);
 				if (!isPropertyValueNull(key, value))
 				{
 					ctxLight.put(key, value);
@@ -2170,10 +2041,22 @@ public final class Env
 	 * Static Variables
 	 */
 
-	/** Big Decimal 0 */
+	/**
+	 * Big Decimal 0.
+	 *
+	 * @deprecated please use {@link BigDecimal#ZERO} instead.
+	 */
+	@Deprecated
 	static final public BigDecimal ZERO = new BigDecimal(0.0);
-	/** Big Decimal 1 */
+
+	/**
+	 * Big Decimal 1
+	 *
+	 * @deprecated please use {@link BigDecimal#ONE} instead.
+	 */
+	@Deprecated
 	static final public BigDecimal ONE = new BigDecimal(1.0);
+
 	/** Big Decimal 100 */
 	static final public BigDecimal ONEHUNDRED = new BigDecimal(100.0);
 
@@ -2228,22 +2111,9 @@ public final class Env
 	 */
 	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final Scope scope)
 	{
-		final CtxName name = CtxName.parse(context);
-		return getContext(ctx, WindowNo, TabNo, name, scope);
-	}
-
-	/**
-	 *
-	 * @param ctx
-	 * @param WindowNo
-	 * @param TabNo
-	 * @param name
-	 * @param scope
-	 * @return value or {@link #CTXVALUE_NullString}
-	 */
-	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final CtxName name, final Scope scope)
-	{
 		Check.assumeNotNull(ctx, "ctx not null");
+
+		final CtxName name = CtxName.parse(context);
 		Check.assumeNotNull(name, "name not null");
 
 		boolean isExplicitGlobal = name.isExplicitGlobal();
@@ -2339,6 +2209,11 @@ public final class Env
 		}
 	}
 
+	/**
+	 * @param ctx
+	 * @param context
+	 * @return string value or <code>null</code> if it does not exist
+	 */
 	private static final String getProperty(final Properties ctx, final String context)
 	{
 		if (ctx == null || context == null)
@@ -2390,7 +2265,7 @@ public final class Env
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.error("No value for: " + context);
+			s_log.error("No value for: {}", context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
@@ -2407,13 +2282,13 @@ public final class Env
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
-			s_log.error("No value for: " + context);
+			s_log.error("No value for: {}", context);
 			return new Timestamp(System.currentTimeMillis());
 		}
 		return parseTimestamp(s);
 	}	// getContextAsDate
 
-	public static void setContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, Timestamp value)
+	public static void setContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, Date value)
 	{
 		if (ctx == null || context == null)
 			return;
@@ -2439,7 +2314,7 @@ public final class Env
 		}
 		catch (NumberFormatException e)
 		{
-			s_log.error("(" + context + ") = " + s, e);
+			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
 		return CTXVALUE_NoValueInt;
 	}
@@ -2614,6 +2489,16 @@ public final class Env
 	}
 
 	/**
+	 * Helper method to bind <code>@Autowire</code> annotated properties of given bean using current Spring Application Context.
+	 *
+	 * @param bean
+	 */
+	public static void autowireBean(final Object bean)
+	{
+		Adempiere.getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+	}
+
+	/**
 	 * Gets Login/System date
 	 *
 	 * @param ctx
@@ -2622,6 +2507,16 @@ public final class Env
 	public static Timestamp getDate(final Properties ctx)
 	{
 		return getContextAsDate(ctx, WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	/**
+	 * @return value or <code>null</code> if the value was not present and value initializer was null
+	 */
+	public static <V> V get(final Properties ctx, final String propertyName)
+	{
+		@SuppressWarnings("unchecked")
+		final V value = (V)ctx.get(propertyName);
+		return value;
 	}
 
 	/**

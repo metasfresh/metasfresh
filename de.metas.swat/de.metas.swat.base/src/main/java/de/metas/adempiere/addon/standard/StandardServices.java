@@ -37,13 +37,9 @@ import org.adempiere.invoice.service.impl.InvoiceBL;
 import org.adempiere.invoice.service.impl.InvoiceDAO;
 import org.adempiere.misc.service.IClientOrgPA;
 import org.adempiere.misc.service.IPOService;
-import org.adempiere.misc.service.IPrintPA;
-import org.adempiere.misc.service.IProcessPA;
 import org.adempiere.misc.service.ITablePA;
 import org.adempiere.misc.service.impl.ClientOrgPA;
 import org.adempiere.misc.service.impl.POService;
-import org.adempiere.misc.service.impl.PrintPA;
-import org.adempiere.misc.service.impl.ProcessPA;
 import org.adempiere.misc.service.impl.TablePA;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.impl.PriceListDAO;
@@ -66,7 +62,6 @@ import de.metas.adempiere.service.IParameterBL;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.service.ITableColumnPathBL;
-import de.metas.adempiere.service.IVariableParserBL;
 import de.metas.adempiere.service.impl.CalendarDAO;
 import de.metas.adempiere.service.impl.GlobalLockSystem;
 import de.metas.adempiere.service.impl.OrderBL;
@@ -74,13 +69,12 @@ import de.metas.adempiere.service.impl.ParameterBL;
 import de.metas.adempiere.service.impl.PrinterRoutingBL;
 import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
-import de.metas.adempiere.service.impl.VariableParserBL;
 import de.metas.dpd.service.RoutingService;
 
 /**
  * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class StandardServices implements IAddOn
@@ -99,8 +93,6 @@ public class StandardServices implements IAddOn
 		//
 		// misc services
 		Services.registerService(IAddonService.class, new AddonService());
-		Services.registerService(IBPartnerBL.class, new BPartnerBL());
-		Services.registerService(IBPartnerDAO.class, new BPartnerDAO());
 		Services.registerService(IClientOrgPA.class, new ClientOrgPA());
 		Services.registerService(IDatabaseBL.class, new DatabaseBL());
 		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());
@@ -110,10 +102,8 @@ public class StandardServices implements IAddOn
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
 		Services.registerService(IPOService.class, new POService());
 		Services.registerService(IPriceListDAO.class, new PriceListDAO());
-		Services.registerService(IPrintPA.class, new PrintPA());
 		Services.registerService(IProcessEventSupport.class, new ProcessEventSupport());
 		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IProcessPA.class, new ProcessPA());
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 		Services.registerService(ITablePA.class, new TablePA());
@@ -121,7 +111,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(IGlobalLockSystem.class, new GlobalLockSystem());
 		Services.registerService(IAppDictionaryBL.class, new AppDictionaryBL());
 		Services.registerService(ITableColumnPathBL.class, new TableColumnPathBL());
-		Services.registerService(IVariableParserBL.class, new VariableParserBL());
 
 		// us316: Printer Routing Service
 		// NOTE: we need to register this service here because we need it before any database connection

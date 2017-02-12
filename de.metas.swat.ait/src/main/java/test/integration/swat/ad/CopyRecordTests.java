@@ -30,8 +30,7 @@ import java.util.List;
 
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.GridTabWrapper;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.TableInfoVO;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -75,7 +74,7 @@ public class CopyRecordTests extends AIntegrationTestDriver
 
 	private GridTab openGridTab(Object model)
 	{
-		final PO po = POWrapper.getPO(model);
+		final PO po = InterfaceWrapperHelper.getPO(model);
 		final String tableName = po.get_TableName();
 		String keyColumn = po.get_KeyColumns()[0];
 		final int recordId = po.get_ID();
@@ -106,7 +105,7 @@ public class CopyRecordTests extends AIntegrationTestDriver
 
 	private <T> T copyRecordWithDetails(GridTab gridTab, T model, Class<T> interfaceClass, boolean save)
 	{
-		final PO po = POWrapper.getPO(model);
+		final PO po = InterfaceWrapperHelper.getPO(model);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(gridTab.getTableName());
 		final List<TableInfoVO> suggestedChildren = new ArrayList<TableInfoVO>();
@@ -126,7 +125,7 @@ public class CopyRecordTests extends AIntegrationTestDriver
 		}
 		else
 		{
-			return GridTabWrapper.create(gridTab, interfaceClass);
+			return InterfaceWrapperHelper.create(gridTab, interfaceClass);
 		}
 	}
 
@@ -141,7 +140,7 @@ public class CopyRecordTests extends AIntegrationTestDriver
 		final int newRecordId = (Integer)gridTab.getValue(keyColumn);
 		Assert.assertNotNull("New " + keyColumn + " not set", newRecordId > 0);
 
-		T modelNew = POWrapper.create(getHelper().getCtx(), newRecordId, interfaceClass, null);
+		T modelNew = InterfaceWrapperHelper.create(getHelper().getCtx(), newRecordId, interfaceClass, null);
 		return modelNew;
 	}
 
@@ -226,7 +225,7 @@ public class CopyRecordTests extends AIntegrationTestDriver
 		{
 			cnt++;
 			line.setLine(1000000 * cnt);
-			POWrapper.save(line);
+			InterfaceWrapperHelper.save(line);
 		}
 
 		//

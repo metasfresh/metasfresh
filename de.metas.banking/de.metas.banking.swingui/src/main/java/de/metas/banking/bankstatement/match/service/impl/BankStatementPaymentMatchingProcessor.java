@@ -50,7 +50,7 @@ import de.metas.banking.service.IBankStatementBL;
 /**
  * Process {@link IBankStatementPaymentMatching}s and creates {@link I_C_BankStatementLine_Ref}s.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class BankStatementPaymentMatchingProcessor

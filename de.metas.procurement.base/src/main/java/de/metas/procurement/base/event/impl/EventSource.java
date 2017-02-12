@@ -39,7 +39,7 @@ import de.metas.lock.api.LockOwner;
  * #L%
  */
 
-class EventSource<ET> implements Iterator<ET>, IAutoCloseable
+public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 {
 	private static final String COLUMNNAME_Processed = "Processed";
 	
@@ -95,7 +95,7 @@ class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 		if (_iterator == null)
 		{
 			final ILock lock = getOrAcquireLock();
-			final Object contextProvider = PlainContextAware.createUsingThreadInheritedTransaction(ctx);
+			final Object contextProvider = PlainContextAware.newWithThreadInheritedTrx(ctx);
 			_iterator = queryBL.createQueryBuilder(eventTypeClass, contextProvider)
 					.filter(lockManager.getLockedByFilter(eventTypeClass, lock))
 					//

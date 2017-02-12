@@ -18,15 +18,16 @@ package org.compiere.wf;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Check;
 import org.compiere.model.DocWorkflowMgr;
 import org.compiere.model.PO;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 
 /**
@@ -78,9 +79,12 @@ public class DocWorkflowManager implements DocWorkflowMgr
 	 *	@param AD_Table_ID table
 	 *	@return true if WF started
 	 */
-	public boolean process (PO document, int AD_Table_ID)
+	@Override
+	public boolean process (final PO document)
 	{
 		m_noCalled++;
+		
+		final int AD_Table_ID = document.get_Table_ID();
 		MWorkflow[] wfs = MWorkflow.getDocValue (document.getCtx(), 
 			document.getAD_Client_ID(), AD_Table_ID
 			, document.get_TrxName() // Bug 1568766 Trx should be kept all along the road	
@@ -89,45 +93,48 @@ public class DocWorkflowManager implements DocWorkflowMgr
 			return false;
 		
 		boolean started = false;
-		for (int i = 0; i < wfs.length; i++)
+		for (final MWorkflow wf : wfs)
 		{
-			MWorkflow wf = wfs[i];
 			//	We have a Document Workflow
-			String logic = wf.getDocValueLogic();
-			if (logic == null || logic.length() == 0)
+			final String logic = wf.getDocValueLogic();
+			if(Check.isEmpty(logic, true))
 			{
-				log.error("Workflow has no Logic - " + wf.getName());
+				log.error("Workflow has no Logic - {}", wf);
 				continue;
 			}
 		
 			//	Re-check: Document must be same Client as workflow
 			if (wf.getAD_Client_ID() != document.getAD_Client_ID())
+			{
 				continue;
+			}
 		
 			//	Check Logic
-			boolean sql = logic.startsWith("SQL=");
+			final boolean sql = logic.startsWith("SQL=");
 			if (sql && !testStart(wf, document))
 			{
-				log.debug("SQL Logic evaluated to false (" + logic + ")");
+				log.debug("SQL Logic evaluated to false ({})", logic);
 				continue;
 			}
 			if (!sql && !Evaluator.evaluateLogic(document, logic))
 			{
-				log.debug("Logic evaluated to false (" + logic + ")");
+				log.debug("Logic evaluated to false ({})", logic);
 				continue;
 			}
 		
 			//	Start Workflow
 			log.debug(logic);
-			int AD_Process_ID = 305;		//	HARDCODED
-			ProcessInfo pi = new ProcessInfo (wf.getName(), AD_Process_ID, 
-				AD_Table_ID, document.get_ID());
-			pi.setAD_User_ID (Env.getAD_User_ID(document.getCtx()));
-			pi.setAD_Client_ID(document.getAD_Client_ID());
+			final ProcessInfo pi = ProcessInfo.builder()
+					.setCtx(document.getCtx())
+					.setAD_Process_ID(305) // FIXME HARDCODED
+					.setAD_Client_ID(document.getAD_Client_ID())
+					.setTitle(wf.getName())
+					.setRecord(AD_Table_ID, document.get_ID())
+					.build();
 			//
-			if (wf.start(pi, document.get_TrxName()) != null)
+			if (wf.start(pi) != null)
 			{
-				log.info(wf.getName());
+				log.info("Workflow {} started for {}", wf, document);
 				m_noStarted++;
 				started = true;
 			}
@@ -200,6 +207,7 @@ public class DocWorkflowManager implements DocWorkflowMgr
 	* 	String Representation
 	*	@return info
 	*/
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("DocWorkflowManager[");

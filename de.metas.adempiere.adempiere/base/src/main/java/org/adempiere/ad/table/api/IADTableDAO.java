@@ -13,11 +13,11 @@ package org.adempiere.ad.table.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,9 +25,11 @@ package org.adempiere.ad.table.api;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 
 public interface IADTableDAO extends ISingletonService
@@ -43,9 +45,16 @@ public interface IADTableDAO extends ISingletonService
 	I_AD_Column retrieveColumn(String tableName, String columnName);
 
 	/**
+	 *
+	 * @param columnName
+	 * @return the element with the given <code>columnName</code> or <code>null</code>. Note that {@link I_AD_Element#COLUMNNAME_ColumnName} is unique.
+	 */
+	I_AD_Element retrieveElement(String columnName);
+
+	/**
 	 * @param tableName
 	 * @param columnName
-	 * @return {@link I_AD_Column} if column was found, or null otherwise
+	 * @return {@link I_AD_Column} if column was found, or <code>null</code> otherwise
 	 *
 	 * @throws AdempiereException if table was not found
 	 */
@@ -61,6 +70,12 @@ public interface IADTableDAO extends ISingletonService
 	boolean hasColumnName(String tableName, String columnName);
 
 	/**
+	 * @param adColumnId
+	 * @return ColumnName or null
+	 */
+	String retrieveColumnName(int adColumnId);
+
+	/**
 	 *
 	 * @param adTableId
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
@@ -68,7 +83,7 @@ public interface IADTableDAO extends ISingletonService
 	String retrieveTableName(int adTableId);
 
 	/**
-	 * @param tableName
+	 * @param tableName, can be case insensitive
 	 * @return AD_Table_ID or -1
 	 */
 	int retrieveTableId(String tableName);
@@ -90,7 +105,9 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	boolean isTableId(String tableName, int adTableId);
 
-	/** @return true if given table name really exist */
+	/**
+	 * @return true if given table name really exist
+	 */
 	boolean isExistingTable(String tableName);
 
 	/**
@@ -108,4 +125,24 @@ public interface IADTableDAO extends ISingletonService
 	 * @param table
 	 */
 	void onTableNameRename(final I_AD_Table table);
+
+	/**
+	 * REtrieves a query builder for the given parameters (case insensitive!) that can be refined further.
+	 *
+	 * @param tableName case insensitive
+	 * @param columnName case insensitive
+	 * @param trxname may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
+	 * @return
+	 */
+	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
+
+	/**
+	 * Return the table with the given name. Use {@link org.compiere.model.MTable} under the hood,
+	 * because tables are a bit sensitive and using the {@link org.adempiere.ad.dao.impl.QueryBL} and {@link org.adempiere.util.proxy.Cached} does not work under all circumstances.
+	 *
+	 *
+	 * @param tableName can be case-insensitive
+	 * @return
+	 */
+	I_AD_Table retrieveTable(String tableName);
 }

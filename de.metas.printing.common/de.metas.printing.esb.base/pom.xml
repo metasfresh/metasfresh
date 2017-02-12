@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.printing</groupId>
 		<artifactId>de.metas.printing.common</artifactId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.api</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
@@ -55,16 +55,6 @@
 				</executions>
 				<configuration>
 					<packageName>${jaxb.packageName}</packageName>
-
-					<sources>
-						<!-- Having the schema file in a sub directory if this module does not work when the project is build on maven.
-						F*** knows why. It works from the windows cmd line, but not when jenkins runs the build
-						(maven-3.0.5 and 3.1.0, plugin version 2.1)
-						That's why i finally moved the xsd file to the parent directory.
-						<source>./src/main/xsd/schema.xsd</source>  -->
-						<source>../src/main/xsd/schema.xsd</source>
-					</sources>
-
 				</configuration>
 			</plugin>
 		</plugins>

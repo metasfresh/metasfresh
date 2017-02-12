@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -30,14 +30,10 @@ import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -50,11 +46,13 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
+import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -65,18 +63,19 @@ import org.compiere.grid.ed.Calendar;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Splash;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 
 /**
@@ -107,16 +106,7 @@ public final class AEnv
 		else
 		{
 			// NOTE: if we are not invokingLater, then the window it's moved to front for ~1sec then it's moved back again
-			EventQueue.invokeLater(new Runnable()
-			{
-
-				@Override
-				public void run()
-				{
-					showWindowNow(window);
-				}
-
-			});
+			EventQueue.invokeLater(() -> showWindowNow(window));
 		}
 	}
 
@@ -440,7 +430,7 @@ public final class AEnv
 		final JMenu menu = new JMenu();
 		String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), AD_Message);
 		final int pos = text.indexOf('&');
-		if (pos != -1 && text.length() > pos)	// We have a nemonic
+		if (pos != -1 && text.length() > pos)   	// We have a nemonic
 		{
 			final char ch = text.toUpperCase().charAt(pos + 1);
 			if (ch != ' ')
@@ -542,10 +532,6 @@ public final class AEnv
 		{
 			showCenterScreen(new org.compiere.grid.ed.Editor(Env.getFrame(c)));
 		}
-		else if (actionCommand.equals("Script"))
-		{
-			new BeanShellEditor(Env.getFrame(c));
-		}
 		else if (actionCommand.equals("Preference"))
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions();
@@ -589,7 +575,7 @@ public final class AEnv
 			return;
 		}
 		final int pos = text.indexOf('&');
-		if (pos != -1)					// We have a nemonic
+		if (pos != -1)   					// We have a nemonic
 		{
 			final char ch = text.charAt(pos + 1);
 			b.setMnemonic(ch);
@@ -622,30 +608,12 @@ public final class AEnv
 	 */
 	public static void zoom(final int AD_Table_ID, final int Record_ID)
 	{
-		String TableName = null;
-		int AD_Window_ID = 0;
-		int PO_Window_ID = 0;
-		final String sql = "SELECT TableName, AD_Window_ID, PO_Window_ID FROM AD_Table WHERE AD_Table_ID=?";
-		try
+		if (AD_Table_ID <= 0)
 		{
-			final PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Table_ID);
-			final ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				TableName = rs.getString(1);
-				AD_Window_ID = rs.getInt(2);
-				PO_Window_ID = rs.getInt(3);
-			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
+			return;
 		}
 
-		zoom(TableName, Record_ID, AD_Window_ID, PO_Window_ID);
+		zoom(RecordZoomWindowFinder.newInstance(AD_Table_ID, Record_ID));
 	}
 
 	/**
@@ -661,58 +629,37 @@ public final class AEnv
 			final int PO_Window_ID)
 	{
 		// Nothing to Zoom to
-		if (TableName == null || AD_Window_ID == 0)
+		if (TableName == null || AD_Window_ID <= 0)
 		{
 			return;
 		}
 
-		final int windowIdToUse;
+		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
+				.setSO_Window_ID(AD_Window_ID)
+				.setPO_Window_ID(PO_Window_ID));
+	}
 
-		// PO Zoom ?
-		final boolean isSOTrx;
-		if (PO_Window_ID != 0)
+	private static final void zoom(final RecordZoomWindowFinder zoomInfo)
+	{
+		final int windowIdToUse = zoomInfo.findAD_Window_ID();
+		if (windowIdToUse <= 0)
 		{
-			final String whereClause = TableName + "_ID=" + Record_ID;
-			isSOTrx = DB.isSOTrx(TableName, whereClause);
-		}
-		else
-		{
-			isSOTrx = true;
-		}
-
-		if (isSOTrx)
-		{
-			windowIdToUse = AD_Window_ID;
-		}
-		else
-		{
-			windowIdToUse = PO_Window_ID;
-		}
-
-		log.info(TableName + " - Record_ID=" + Record_ID + " (IsSOTrx=" + isSOTrx + ")");
-		AWindow frame = new AWindow();
-		// metas: begin: 01880
-		final MQuery query = new MQuery(TableName);
-		query.addRestriction(TableName + "_ID", MQuery.EQUAL, Record_ID);
-		query.setZoomTableName(TableName);
-		query.setZoomColumnName(TableName + "_ID");
-		query.setZoomValue(Record_ID);
-		query.setRecordCount(1); // metas: notify FindPanel that only one record will be expected
-		// metas: end: 01880
-		if (!frame.initWindow(windowIdToUse, query))
-		{
+			log.warn("No AD_Window_ID found to zoom for {}", zoomInfo);
 			return;
 		}
-		addToWindowManager(frame);
-		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
-		{
-			showMaximized(frame);
-		}
-		else
-		{
-			showCenterScreen(frame);
-		}
-		frame = null;
+
+		final MQuery query = zoomInfo.createZoomQuery();
+
+		// task #797 Make sure the window is displayed by the AWT event dispatching thread. The current thread might not be able to do it right.
+		SwingUtilities.invokeLater(() -> {
+			final AWindow frame = new AWindow();
+			if (!frame.initWindow(windowIdToUse, query))
+			{
+				return;
+			}
+			addToWindowManager(frame);
+			showCenterScreenOrMaximized(frame);
+		});
 	}
 
 	/**
@@ -726,90 +673,9 @@ public final class AEnv
 		{
 			return;
 		}
-		final String TableName = query.getTableName();
-		int AD_Window_ID = 0;
-		int PO_Window_ID = 0;
-		final String sql = "SELECT AD_Window_ID, PO_Window_ID FROM AD_Table WHERE TableName=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setString(1, TableName);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				AD_Window_ID = rs.getInt(1);
-				PO_Window_ID = rs.getInt(2);
-			}
-			rs.close();
-			pstmt.close();
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
 
-		//
-		// Figure out which window we shall use, based on IsSOTrx flag
-		final int adWindowIdToUse;
-		// PO Zoom ?
-		Boolean isSOTrx = query.isSOTrxOrNull();
-		if (isSOTrx == null && PO_Window_ID > 0)
-		{
-			isSOTrx = DB.isSOTrx(TableName, query.getWhereClause(false));
-			if (isSOTrx)
-			{
-				adWindowIdToUse = AD_Window_ID;
-			}
-			else
-			{
-				adWindowIdToUse = PO_Window_ID;
-			}
-		}
-		else if (isSOTrx == null) // but PO_Window_ID <=0
-		{
-			adWindowIdToUse = AD_Window_ID;
-		}
-		else if (isSOTrx) // sales trx window
-		{
-			adWindowIdToUse = AD_Window_ID;
-		}
-		else
-		// !isSOTrx
-		{
-			adWindowIdToUse = PO_Window_ID > 0 ? PO_Window_ID : AD_Window_ID;
-		}
-
-		// Nothing to Zoom to
-		if (adWindowIdToUse <= 0)
-		{
-			return;
-		}
-
-		log.info(query + " (IsSOTrx=" + isSOTrx + ")");
-		AWindow frame = new AWindow();
-		if (!frame.initWindow(adWindowIdToUse, query))
-		{
-			return;
-		}
-		addToWindowManager(frame);
-		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
-		{
-			showMaximized(frame);
-		}
-		else
-		{
-			showCenterScreen(frame);
-		}
-		frame = null;
-	}	// zoom
+		zoom(RecordZoomWindowFinder.newInstance(query));
+	}
 
 	/**
 	 * Track open frame in window manager
@@ -934,8 +800,8 @@ public final class AEnv
 		if (AD_Table_ID != 0 && Record_ID != 0)
 		{
 			query = new MQuery("AD_WF_Process");
-			query.addRestriction("AD_Table_ID", MQuery.EQUAL, AD_Table_ID);
-			query.addRestriction("Record_ID", MQuery.EQUAL, Record_ID);
+			query.addRestriction("AD_Table_ID", Operator.EQUAL, AD_Table_ID);
+			query.addRestriction("Record_ID", Operator.EQUAL, Record_ID);
 		}
 		//
 		AWindow frame = new AWindow();
@@ -981,7 +847,7 @@ public final class AEnv
 		}
 
 		// Try to connect
-		//CLogMgt.enable(false);
+		// CLogMgt.enable(false);
 		try
 		{
 			s_serverTries++;
@@ -998,7 +864,7 @@ public final class AEnv
 		}
 		finally
 		{
-			//CLogMgt.enable(true);
+			// CLogMgt.enable(true);
 		}
 		//
 		return ok;
@@ -1033,7 +899,7 @@ public final class AEnv
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
-		if (AD_Window_ID != 0 && Ini.isCacheWindow())	// try cache
+		if (AD_Window_ID != 0 && Ini.isCacheWindow())   	// try cache
 		{
 			mWindowVO = s_windows.get(AD_Window_ID);
 			if (mWindowVO != null)
@@ -1048,23 +914,24 @@ public final class AEnv
 		if (mWindowVO == null)
 		{
 			log.info("create local");
-			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID);
+			final boolean loadAllLanguages = false;
+			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID, loadAllLanguages);
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(AD_Window_ID, mWindowVO);
-		}	// from Client
+		}   	// from Client
 
 		// Check (remote) context
-		if (!mWindowVO.ctx.equals(Env.getCtx()))
+		if (!mWindowVO.getCtx().equals(Env.getCtx()))
 		{
 			// Remote Context is called by value, not reference
 			// Add Window properties to context
-			final Enumeration<?> keyEnum = mWindowVO.ctx.keys();
+			final Enumeration<?> keyEnum = mWindowVO.getCtx().keys();
 			while (keyEnum.hasMoreElements())
 			{
 				final String key = (String)keyEnum.nextElement();
 				if (key.startsWith(WindowNo + "|"))
 				{
-					final String value = mWindowVO.ctx.getProperty(key);
+					final String value = mWindowVO.getCtx().getProperty(key);
 					Env.setContext(Env.getCtx(), key, value);
 				}
 			}
@@ -1075,7 +942,8 @@ public final class AEnv
 	}   // getWindow
 
 	/**
-	 * Post Immediate.
+	 * Post Immediate. This method is usually triggered from the UI. However, the posting might still be executed on the server,
+	 * depending on the {@link ClientAccountingStatus} which can be configured via <code>AD_SysConfig</code> or startup parameter.
 	 *
 	 * If there is any error, an error dialog will be displayed to user.
 	 *
@@ -1184,12 +1052,13 @@ public final class AEnv
 	}
 
 	/**
+	 * Searches for nearest parent of <code>comp</code> which implements given <code>parentType</code>.
 	 *
-	 * @param comp
+	 * @param comp component or null
 	 * @param parentType
-	 * @return parent component which implements given type
+	 * @return parent component which implements given type or <code>null</code>
 	 */
-	public static final <T> T getParentComponent(final Component comp, final Class<T> parentType)
+	public static final <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
 	{
 		if (comp == null)
 		{

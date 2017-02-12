@@ -14,7 +14,7 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1667045028L;
+	private static final long serialVersionUID = -1607210081L;
 
     /** Standard Constructor */
     public X_AD_Archive (Properties ctx, int AD_Archive_ID, String trxName)
@@ -88,6 +88,43 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public java.lang.String getAD_Language () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_PInstance getAD_PInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
+	}
+
+	@Override
+	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
+	}
+
+	/** Set Prozess-Instanz.
+		@param AD_PInstance_ID 
+		Instanz eines Prozesses
+	  */
+	@Override
+	public void setAD_PInstance_ID (int AD_PInstance_ID)
+	{
+		if (AD_PInstance_ID < 1) 
+			set_Value (COLUMNNAME_AD_PInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PInstance_ID, Integer.valueOf(AD_PInstance_ID));
+	}
+
+	/** Get Prozess-Instanz.
+		@return Instanz eines Prozesses
+	  */
+	@Override
+	public int getAD_PInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javax.activation.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,13 +47,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IAttachmentDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.compiere.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
 
 /**
  *	Attachment Model.
@@ -302,10 +303,35 @@ public class MAttachment extends X_AD_Attachment
 		if (m_items == null)
 			loadLOBData();
 		boolean retValue = m_items.add(item);
-		log.debug(item.toStringX());
+		if(log.isDebugEnabled())
+		{
+			log.debug(item.toStringX());
+		}
 		addTextMsg(" ");	//	otherwise not saved
 		return retValue;
 	}	//	addEntry
+	
+	public boolean addEntry (final DataSource dataSource)
+	{
+		if (dataSource == null)
+		{
+			log.warn("Skip adding DataSource entry because it's null");
+			return false;
+		}
+
+		try
+		{
+			final String name = dataSource.getName();
+			final byte[] data = Util.readBytes(dataSource.getInputStream());
+			return addEntry(new MAttachmentEntry(name, data));
+		}
+		catch (Exception ex)
+		{
+			log.warn("Failed adding DataSource {}", dataSource, ex);
+			return false;
+		}
+	}
+
 
 	/**
 	 * 	Get Attachment Entry
@@ -480,7 +506,7 @@ public class MAttachment extends X_AD_Attachment
 		ZipOutputStream zip = new ZipOutputStream(out);
 		zip.setMethod(ZipOutputStream.DEFLATED);
 		zip.setLevel(Deflater.BEST_COMPRESSION);
-		zip.setComment("adempiere");
+		zip.setComment("metasfresh");
 		//
 		try
 		{

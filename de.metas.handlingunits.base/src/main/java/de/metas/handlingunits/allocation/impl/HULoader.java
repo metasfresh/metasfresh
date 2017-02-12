@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -71,6 +70,7 @@ public class HULoader
 	private boolean allowPartialUnloads = false;
 	private boolean allowPartialLoads = false;
 	private boolean forceLoad = false;
+	private boolean skipAttributesTransfer = false;
 
 	/**
 	 * The current executor. Will be <code>null</code> while no loading is taking place.
@@ -90,7 +90,7 @@ public class HULoader
 		this.source = source;
 		this.destination = destination;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -126,7 +126,7 @@ public class HULoader
 
 	/**
 	 *
-	 * @param allowPartialLoads true if partial loads are allowed (i.e. destination can not accept all qty that was unloaded from source)
+	 * @param allowPartialLoads true if partial loads are allowed (i.e. if it is OK in case the destination can not accept all qty that was unloaded from source).
 	 */
 	public void setAllowPartialLoads(final boolean allowPartialLoads)
 	{
@@ -187,7 +187,7 @@ public class HULoader
 	 * <ul>
 	 * <li>managing database transaction</li>
 	 * <li>collecting and automatically processing {@link IHUTransactionAttribute}s</li>
-	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getDestroyedHUPackingMaterialsCollector()})</li>
+	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
 	 *
 	 * @param huContext
@@ -234,8 +234,12 @@ public class HULoader
 
 	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>.
+	 * <p>
+	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransaction}s are created).<br>
+	 * If not all from the given {@code unloadRequest} is unloaded, then the it will only try to load the lesser qtys which were unloaded.<br>
+	 * However, in the end, only the stuff that will be "accepted" by the {@link IAllocationDestination} will really be moved.<br>
 	 *
-	 * NOTE:
+	 * NOTEs:
 	 * <ul>
 	 * <li>that transactions from result will be already processed.
 	 * <li>context's trxName will be used, no transaction management will be performed (see {@link #load(IAllocationRequest)} which is doing the magic)
@@ -280,7 +284,7 @@ public class HULoader
 
 		//
 		// Notify listeners that load was completed
-		huContext.getTrxListeners().afterLoad(huContext, Collections.<IAllocationResult> singletonList(finalResult));
+		huContext.getTrxListeners().afterLoad(huContext, Collections.singletonList(finalResult));
 
 		//
 		// Notify our source that the unload was completed
@@ -290,7 +294,9 @@ public class HULoader
 	}
 
 	/**
-	 * Loads everything from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s.
+	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s trx candidates.
+	 * For each trx candidates, the code will attempts to loadto the {@link IAllocationDestination}.
+	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransaction}s will be created based of what was actually loaded to the destination.
 	 *
 	 * After running this method:
 	 * <ul>
@@ -361,15 +367,20 @@ public class HULoader
 			// Iterate each load transaction:
 			// * create it's counterpart unload transaction (taking properties from unloadTrx)
 			// * transfer attributes
-			final List<IHUTransaction> loadTransactions = loadResult.getTransactions();
+			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
+			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
 
 			BigDecimal qtyUnloaded = BigDecimal.ZERO;
-			for (final IHUTransaction loadTrx : loadTransactions)
+			for (final IHUTransaction loadTrx : aggregatedLoadTransactions)
 			{
 				final IHUTransaction unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
 				unloadTrxPartial.pair(loadTrx);
 
-				transferAttributes(huContext, unloadTrxPartial, loadTrx, qtyUnloaded); // qtyUnloaded will be assumed before actual unload so that we know to decrease from inside the HUStorage
+				// Transfer attributes if allowed
+				if (!isSkipAttributesTransfer())
+				{
+					transferAttributes(huContext, unloadTrxPartial, loadTrx, qtyUnloaded); // qtyUnloaded will be assumed before actual unload so that we know to decrease from inside the HUStorage
+				}
 
 				// Notify the listeners that we performed an unload/load transaction
 				huContext.getTrxListeners().onUnloadLoadTransaction(huContext, unloadTrxPartial, loadTrx);
@@ -401,11 +412,12 @@ public class HULoader
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = getTrxAttributesBuilder();
 			final List<IHUTransactionAttribute> attributeTrxs = trxAttributesBuilder.getAndClearTransactions();
 			final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
-					loadResult.getQtyToAllocate(), // qtyToAllocate
-					loadResult.getQtyAllocated(), // qtyAllocated
-					trxs, // transactions
+					loadResult.getQtyToAllocate(),   // qtyToAllocate
+					loadResult.getQtyAllocated(),   // qtyAllocated
+					trxs, //
 					attributeTrxs // attribute transactions
-					);
+			);
+
 			huTrxBL.createTrx(huContext, result);
 
 			//
@@ -446,8 +458,8 @@ public class HULoader
 
 		return new HUTransaction(
 				unloadTrx.getReferencedModel(),
-				unloadTrx.getM_HU_Item(), // HU Item
-				unloadTrx.getVHU_Item(), // VHU Item
+				unloadTrx.getM_HU_Item(),   // HU Item
+				unloadTrx.getVHU_Item(),   // VHU Item
 				unloadTrx_Product,
 				qtyUnloadPartial,
 				unloadTrx.getDate());
@@ -585,5 +597,23 @@ public class HULoader
 				return null;
 			}
 		});
+	}
+
+	/**
+	 * Advises the {@link HULoader} to skip transferring the attributes.
+	 * 
+	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
+	 */
+	public void setSkipAttributesTransfer(final boolean skipAttributesTransfer)
+	{
+		this.skipAttributesTransfer = skipAttributesTransfer;
+	}
+
+	/**
+	 * @return true if attributes shall NOT be transferred
+	 */
+	public boolean isSkipAttributesTransfer()
+	{
+		return skipAttributesTransfer;
 	}
 }

@@ -13,15 +13,14 @@ package de.metas.document.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.adempiere.util.CustomColNames.C_Invoice_BPARTNERADDRESS;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_AD_Org_ID;
@@ -36,7 +35,7 @@ import java.util.Properties;
 
 import org.adempiere.db.IDBService;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.MDocType;
@@ -51,56 +50,57 @@ import de.metas.document.IDocumentPA;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_DocType;
 
-public final class DocumentPA implements IDocumentPA
+public class DocumentPA implements IDocumentPA
 {
 
 	// private static final Logger logger = CLogMgt.getLogger(DocumentPA.class);
 	private static final String ERR_DocTypeNotSelected = "DocTypeNotSelected";
 
 	public static final String UPDATE_ORDERS_BILL_LOCATION = //
-	"UPDATE C_Order o" //
-			+ " SET " + I_C_Order.COLUMNNAME_BillToAddress
-			+ "= l."
-			+ I_C_BPartner_Location.COLUMNNAME_Address //
-			+ " FROM C_BPartner_Location l " //
-			+ " WHERE "//
-			+ "    o.Bill_Location_ID=? " //
-			+ "    AND o.Bill_Location_ID=l.C_BPartner_Location_ID " //
-			+ "    AND o." + I_C_Order.COLUMNNAME_IsUseBillToAddress + "='N'";
+			"UPDATE C_Order o" //
+					+ " SET " + I_C_Order.COLUMNNAME_BillToAddress
+					+ "= l."
+					+ I_C_BPartner_Location.COLUMNNAME_Address //
+					+ " FROM C_BPartner_Location l " //
+					+ " WHERE "//
+					+ "    o.Bill_Location_ID=? " //
+					+ "    AND o.Bill_Location_ID=l.C_BPartner_Location_ID " //
+					+ "    AND o." + I_C_Order.COLUMNNAME_IsUseBillToAddress + "='N'";
 
 	public static final String UPDATE_ORDERS_BPARTNER_LOCATION = //
-	"UPDATE C_Order o" //
-			+ " SET " + I_C_Order.COLUMNNAME_BPartnerAddress
-			+ "= l."
-			+ I_C_BPartner_Location.COLUMNNAME_Address //
-			+ " FROM C_BPartner_Location l " //
-			+ " WHERE "//
-			+ "    o.C_BPartner_Location_ID=? " //
-			+ "    AND o.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
-			+ "    AND o." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
+			"UPDATE C_Order o" //
+					+ " SET " + I_C_Order.COLUMNNAME_BPartnerAddress
+					+ "= l."
+					+ I_C_BPartner_Location.COLUMNNAME_Address //
+					+ " FROM C_BPartner_Location l " //
+					+ " WHERE "//
+					+ "    o.C_BPartner_Location_ID=? " //
+					+ "    AND o.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
+					+ "    AND o." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
 
 	public static final String UPDATE_INVOICE_BPARTNER_LOCATION = //
-	"UPDATE C_Invoice i" //
-			+ " SET " + C_Invoice_BPARTNERADDRESS
-			+ "= l."
-			+ I_C_BPartner_Location.COLUMNNAME_Address //
-			+ " FROM C_BPartner_Location l " //
-			+ " WHERE "//
-			+ "    i.C_BPartner_Location_ID=? " //
-			+ "    AND i.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
-			+ "    AND i." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
+			"UPDATE C_Invoice i" //
+					+ " SET " + C_Invoice_BPARTNERADDRESS
+					+ "= l."
+					+ I_C_BPartner_Location.COLUMNNAME_Address //
+					+ " FROM C_BPartner_Location l " //
+					+ " WHERE "//
+					+ "    i.C_BPartner_Location_ID=? " //
+					+ "    AND i.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
+					+ "    AND i." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
 
 	public static final String UPDATE_INOUT_BPARTNER_LOCATION = //
-	"UPDATE M_InOut i" //
-			+ " SET " + I_M_InOut.COLUMNNAME_BPartnerAddress
-			+ "= l."
-			+ I_C_BPartner_Location.COLUMNNAME_Address //
-			+ " FROM C_BPartner_Location l " //
-			+ " WHERE "//
-			+ "    i.C_BPartner_Location_ID=? " //
-			+ "    AND i.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
-			+ "    AND i." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
+			"UPDATE M_InOut i" //
+					+ " SET " + I_M_InOut.COLUMNNAME_BPartnerAddress
+					+ "= l."
+					+ I_C_BPartner_Location.COLUMNNAME_Address //
+					+ " FROM C_BPartner_Location l " //
+					+ " WHERE "//
+					+ "    i.C_BPartner_Location_ID=? " //
+					+ "    AND i.C_BPartner_Location_ID=l.C_BPartner_Location_ID " //
+					+ "    AND i." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
 
+	@Override
 	public String retrieveDocBaseType(final int docTypeId, final String trxName)
 	{
 
@@ -115,6 +115,7 @@ public final class DocumentPA implements IDocumentPA
 		return docType.getDocBaseType();
 	}
 
+	@Override
 	public int retriveDocTypeId(final Properties ctx, final int adOrgId, final String docBaseType)
 	{
 
@@ -138,6 +139,7 @@ public final class DocumentPA implements IDocumentPA
 						+ ", but there are " + docTypes.length + ": " + docTypes);
 	}
 
+	@Override
 	public int retriveDocTypeIdForDocSubtype(final Properties ctx, final String docBaseType, final String docSubType)
 	{
 
@@ -146,7 +148,7 @@ public final class DocumentPA implements IDocumentPA
 
 		for (final MDocType docType : docTypes)
 		{
-			if (docSubType.equals(String.valueOf(docType.getC_DocType_ID())))
+			if (docSubType.equals(docType.getDocSubType()))
 			{
 				return docType.getC_DocType_ID();
 			}
@@ -155,6 +157,7 @@ public final class DocumentPA implements IDocumentPA
 		throw new AdempiereException("@" + ERR_DocTypeNotSelected + "@");
 	}
 
+	@Override
 	public int updateDocumentAddresses(final int bPartnerLocationId,
 			final String trxName)
 	{
@@ -198,7 +201,7 @@ public final class DocumentPA implements IDocumentPA
 		}
 	}
 
-	@Cached
+	@Cached(cacheName = Table_Name + "#by#" + COLUMNNAME_AD_Org_ID + "#" + COLUMNNAME_DocBaseType + "#" + COLUMNNAME_DocSubType + "#" + COLUMNNAME_IsDefault)
 	@Override
 	public I_C_DocType retrieve(
 			final @CacheCtx Properties ctx,
@@ -212,13 +215,12 @@ public final class DocumentPA implements IDocumentPA
 
 		final String orderBy = COLUMNNAME_AD_Org_ID + " DESC, " + COLUMNNAME_IsDefault + " DESC";
 
-		final I_C_DocType type =
-				new Query(ctx, Table_Name, wc, trxName)
-						.setParameters(adOrgId, docBaseType, docSubType)
-						.setOnlyActiveRecords(true)
-						.setClient_ID()
-						.setOrderBy(orderBy)
-						.first(I_C_DocType.class);
+		final I_C_DocType type = new Query(ctx, Table_Name, wc, trxName)
+				.setParameters(adOrgId, docBaseType, docSubType)
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.setOrderBy(orderBy)
+				.first(I_C_DocType.class);
 
 		if (type == null && throwEx)
 		{
@@ -299,7 +301,7 @@ public final class DocumentPA implements IDocumentPA
 		}
 		dt.setIsSOTrx();
 
-		final I_C_DocType result = POWrapper.create(dt, I_C_DocType.class);
+		final I_C_DocType result = InterfaceWrapperHelper.create(dt, I_C_DocType.class);
 		result.setEntityType(entityType);
 
 		return result;

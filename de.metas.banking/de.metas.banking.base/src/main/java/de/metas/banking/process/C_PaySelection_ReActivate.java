@@ -1,13 +1,13 @@
 package de.metas.banking.process;
 
-import org.adempiere.ad.process.ISvrProcessPrecondition;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.process.SvrProcess;
 
 import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -34,21 +34,21 @@ import de.metas.banking.payment.IPaySelectionBL;
 /**
  * Re-activate the selected payment selection.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class C_PaySelection_ReActivate extends SvrProcess implements ISvrProcessPrecondition
+public class C_PaySelection_ReActivate extends JavaProcess implements IProcessPrecondition
 {
 	@Override
-	public boolean isPreconditionApplicable(final GridTab gridTab)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(gridTab, I_C_PaySelection.class);
+		final I_C_PaySelection paySelection = context.getSelectedModel(I_C_PaySelection.class);
 		if (!paySelection.isProcessed())
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("not processed");
 		}
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -434,6 +434,20 @@ public class TimeUtil
 		//
 		return false;
 	}	// isAllDay
+
+	/**
+	 * Calculate the number of hours between start and end.
+	 * 
+	 * @param start start date
+	 * @param end end date
+	 * @return number of hours (0 = same)
+	 */
+	public static long getHoursBetween(Date date1, Date date2)
+	{
+
+		final int MILLI_TO_HOUR = 1000 * 60 * 60;
+		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
+	}
 
 	/**
 	 * Calculate the number of days between start and end.
@@ -880,7 +894,12 @@ public class TimeUtil
 	 * @return next day with 00:00
 	 */
 	// metas: changed dayTime type from Timestamp to Date
-	static public Timestamp trunc(Date dayTime, String trunc)
+	public static Timestamp trunc(final Date dayTime, final String trunc)
+	{
+		return new Timestamp(truncToMillis(dayTime, trunc));
+	}
+
+	public static long truncToMillis(Date dayTime, final String trunc)
 	{
 		if (dayTime == null)
 			dayTime = new Timestamp(System.currentTimeMillis());
@@ -894,37 +913,37 @@ public class TimeUtil
 		// S - Second
 		if (TRUNC_SECOND.equals(trunc))
 		{
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.SECOND, 0);
 
 		// M - Minute
 		if (TRUNC_MINUTE.equals(trunc))
 		{
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.MINUTE, 0);
 
 		// H - Hour
 		if (TRUNC_HOUR.equals(trunc))
 		{
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		// D
 		if (trunc == null || trunc.equals(TRUNC_DAY))
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		// W
 		if (trunc.equals(TRUNC_WEEK))
 		{
 			cal.setFirstDayOfWeek(Calendar.MONDAY);
 			cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		// MM
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		if (trunc.equals(TRUNC_MONTH))
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		// Q
 		if (trunc.equals(TRUNC_QUARTER))
 		{
@@ -938,11 +957,16 @@ public class TimeUtil
 			else
 				mm = 10;
 			cal.set(Calendar.MONTH, mm);
-			return new Timestamp(cal.getTimeInMillis());
+			return cal.getTimeInMillis();
 		}
 		cal.set(Calendar.DAY_OF_YEAR, 1);
-		return new Timestamp(cal.getTimeInMillis());
+		return cal.getTimeInMillis();
 	}	// trunc
+
+	public static final Timestamp truncToDay(final Date dayTime)
+	{
+		return dayTime == null ? null : trunc(dayTime, TRUNC_DAY);
+	}
 
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the
@@ -1082,4 +1106,56 @@ public class TimeUtil
 	{
 		return timestamp == null ? null : new Timestamp(timestamp.getTime());
 	}
+
+	/**
+	 * Get the week of year number for the given Date
+	 * 
+	 * The logic for calculating the week number is based on the ISO week date conventions.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getWeekNumber(final Date date)
+	{
+		// make sure the timing is not taken into account. The Timestamp will be set on the first millisecond of the given date.
+		final Calendar cal = asCalendar(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		// According to international standard ISO 8601, Monday is the first day of the week.
+		cal.setFirstDayOfWeek(Calendar.MONDAY);
+
+		// FIXME: This shall be taken from Locale, but Locale it is not reliable (doesn't always work the same way)
+		// It is the first week with a majority (4 or more) of its days in January.
+		cal.setMinimalDaysInFirstWeek(4);
+
+		final int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
+		return weekOfYear;
+	}
+
+	/**
+	 * Get the day of the week for the given date.
+	 * First day of the week is considered Monday, due to ISO 8601.
+	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getDayOfWeek(final Date date)
+	{
+		final int dayOfWeek = asCalendar(date).get(Calendar.DAY_OF_WEEK);
+
+		// According to international standard ISO 8601, Monday is the first day of the week.
+		// The Calendar considers it to be Sunday, so this adjustment is needed.
+		// see java.util.Calendar.MONDAY
+		if (dayOfWeek == 1)
+		{
+			return 7;
+		}
+		return dayOfWeek - 1;
+	}
+
 }	// TimeUtil

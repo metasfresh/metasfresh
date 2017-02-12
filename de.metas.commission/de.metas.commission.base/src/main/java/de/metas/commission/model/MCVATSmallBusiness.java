@@ -27,7 +27,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
@@ -72,9 +72,9 @@ public class MCVATSmallBusiness extends X_C_VAT_SmallBusiness
 	public static boolean retrieveIsTaxExempt(final I_C_BPartner bPartner, final Timestamp date)
 	{
 
-		final Properties ctx = POWrapper.getCtx(bPartner);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final int bPartnerId = bPartner.getC_BPartner_ID();
-		final String trxName = POWrapper.getTrxName(bPartner);
+		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
 
 		return retrieveIsTaxExempt(ctx, bPartnerId, date, trxName);
 

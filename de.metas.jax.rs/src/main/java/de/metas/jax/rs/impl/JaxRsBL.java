@@ -13,8 +13,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.apache.cxf.endpoint.Server;
@@ -162,7 +162,15 @@ public class JaxRsBL implements IJaxRsBL
 		svrFactory.getFeatures().add(createJMSConfigFeature(
 				request.getRequestQueue(),
 				request.getResponseQueue()));
-		svrFactory.getFeatures().add(loggingFeature);
+
+		if (loggingFeature != null)
+		{
+			svrFactory.getFeatures().add(loggingFeature);
+		}
+		else
+		{
+			logger.warn("Skip adding {} because is null", LoggingFeature.class);
+		}
 
 		svrFactory.setAddress("/");
 		svrFactory.setTransportId("http://cxf.apache.org/transports/jms");
@@ -266,7 +274,7 @@ public class JaxRsBL implements IJaxRsBL
 							? X_AD_JAXRS_Endpoint.ENDPOINTTYPE_Client
 							: X_AD_JAXRS_Endpoint.ENDPOINTTYPE_Server);
 					InterfaceWrapperHelper.save(newEp);
-					ILoggable.THREADLOCAL.getLoggable().addLog(
+					Loggables.get().addLog(
 							"Created new AD_JAXRS_Endpoint record {} for AD_JavaClass {} (class {})",
 							newEp, epClass, epClass.getClassname());
 				}
@@ -275,7 +283,7 @@ public class JaxRsBL implements IJaxRsBL
 					// activate
 					existingEp.setIsActive(true);
 					InterfaceWrapperHelper.save(existingEp);
-					ILoggable.THREADLOCAL.getLoggable().addLog(
+					Loggables.get().addLog(
 							"Reactived AD_JAXRS_Endpoint record {} for AD_JavaClass {} (class {})",
 							existingEp, epClass, epClass.getClassname());
 				}
@@ -286,7 +294,7 @@ public class JaxRsBL implements IJaxRsBL
 				{
 					existingEp.setIsActive(false);
 					InterfaceWrapperHelper.save(existingEp);
-					ILoggable.THREADLOCAL.getLoggable().addLog(
+					Loggables.get().addLog(
 							"Deactived AD_JAXRS_Endpoint record {} for inactive AD_JavaClass {} (class {})",
 							existingEp, epClass, epClass.getClassname());
 				}
@@ -298,7 +306,7 @@ public class JaxRsBL implements IJaxRsBL
 			// deactivate the stale ones
 			staleEp.setIsActive(false);
 			InterfaceWrapperHelper.save(staleEp);
-			ILoggable.THREADLOCAL.getLoggable().addLog(
+			Loggables.get().addLog(
 					"Deactived AD_JAXRS_Endpoint record {}",
 					staleEp);
 		}
@@ -349,10 +357,21 @@ public class JaxRsBL implements IJaxRsBL
 
 		for (final Class<T> endPointclass : request.getEndpointClasses())
 		{
+			final List<Feature> features;
+			if (loggingFeature == null)
+			{
+				logger.warn("No logging feature was wired for {}. Going without it", LoggingFeature.class);
+				features = Collections.emptyList();
+			}
+			else
+			{
+				features = Collections.singletonList((Feature)loggingFeature);
+			}
+
 			final T client = JAXRSClientFactory.create(clientURL,
 					endPointclass,
 					Collections.singletonList(jacksonJaxbJsonProvider),
-					Collections.singletonList((Feature)loggingFeature),
+					features,
 					null); // not providing a particular configLocation);
 
 			WebClient.client(client)

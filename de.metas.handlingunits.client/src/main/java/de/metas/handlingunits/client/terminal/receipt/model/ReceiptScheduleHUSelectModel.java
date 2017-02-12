@@ -3,62 +3,29 @@
  */
 package de.metas.handlingunits.client.terminal.receipt.model;
 
-/*
- * #%L
- * de.metas.handlingunits.client
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.apps.ProcessCtl;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.MPInstance;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Language;
-import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -80,6 +47,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
+import de.metas.process.ProcessInfo;
 
 /**
  * Wareneingang (POS).
@@ -93,6 +61,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String PARA_C_Orderline_ID = " C_Orderline_ID";
+	private static final String PARA_AD_Table_ID = "AD_Table_ID";
 	private static final String PROPERTY_JasperButtonEnabled = "JasperButtonEnabled";
 
 	private static final String SYSCONFIG_ReceiptScheduleHUPOSJasperProcess = "ReceiptScheduleHUPOSJasperProcess";
@@ -120,7 +89,6 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		purchaseOrderKeyLayout.addTerminalKeyListener(new TerminalKeyListenerAdapter()
 		{
-
 			@Override
 			public void keyReturned(final ITerminalKey key)
 			{
@@ -164,12 +132,15 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		return purchaseOrderKey.getC_Order_ID();
 	}
 
+	/**
+	 * Loads purchase order keys from the given <code>line</code>.
+	 */
 	@Override
 	protected void loadKeysFromLines(final List<IPOSTableRow> lines)
 	{
 		final IPOSFiltering service = getService();
 		final List<I_C_Order> purchaseOrders = service.getOrders(lines);
-		purchaseOrderKeyLayout.setKeysFromOrders(purchaseOrders);
+		purchaseOrderKeyLayout.createAndSetKeysFromOrders(purchaseOrders);
 	}
 
 	@Override
@@ -257,41 +228,42 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Create HU generator
-		final ReceiptScheduleHUGenerator huGenerator = new ReceiptScheduleHUGenerator();
-		huGenerator.setContext(getTerminalContext());
-		final I_M_ReceiptSchedule schedule = service.getReferencedObject(row);
-		huGenerator.addM_ReceiptSchedule(schedule);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(getTerminalContext())
+				.addM_ReceiptSchedule(service.getReferencedObject(row));
 
 		//
 		// Get/Create and Edit LU/TU configuration
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager.createAndEdit(new Converter<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration>()
-		{
 
-			@Override
-			public I_M_HU_LUTU_Configuration convert(final I_M_HU_LUTU_Configuration lutuConfiguration)
-			{
-				final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
+		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.createAndEdit(lutuConfiguration -> {
+						final List<I_M_HU_LUTU_Configuration> altConfigurations = lutuConfigurationManager.getCurrentLUTUConfigurationAlternatives();
 
-				//
-				// Ask user to edit the configuration
-				final LUTUConfigurationEditorModel lutuConfigurationModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
-				if (!editorCallback.editLUTUConfiguration(lutuConfigurationModel))
-				{
-					// User cancelled => do nothing
-					return null;
-				}
+						//
+						// Ask user to edit the configuration in another dialog
+						try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+						{
+							final LUTUConfigurationEditorModel lutuConfigurationEditorModel = createLUTUConfigurationEditorModel(lutuConfiguration, altConfigurations);
 
-				//
-				// Update the LU/TU configuration on which we are working using what user picked
-				lutuConfigurationModel.save(lutuConfiguration); // FIXME: pick the config which was edited
-				return lutuConfiguration;
-			}
-		});
+							if (!editorCallback.editLUTUConfiguration(lutuConfigurationEditorModel))
+							{
+								return null;// User cancelled => do nothing
+							}
+
+							//
+							// Update the LU/TU configuration on which we are working using what user picked
+							lutuConfigurationEditorModel.save(lutuConfiguration); // FIXME: pick the config which was edited
+						}
+						catch (Exception e)
+						{
+							throw AdempiereException.wrapIfNeeded(e);
+						}
+
+						return lutuConfiguration;
+				});
 
 		//
 		// No configuration => user cancelled => don't open editor
-		if (lutuConfiguration == null)
+		if (lutuConfigurationEffective == null)
 		{
 			return null;
 		}
@@ -302,7 +274,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
+			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
 
@@ -329,50 +301,58 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		final ITerminalContext terminalContext = getTerminalContext();
 		final ReceiptScheduleFiltering service = getService();
 
-		//
-		// Create LU/TU configuration panel
-		// NOTE: we will create one CU Key for each receipt schedule
-		final LUTUConfigurationEditorModel lutuConfigurationEditingModel = new LUTUConfigurationEditorModel(terminalContext);
-		lutuConfigurationEditingModel.setQtyCUReadonly(false);
-		final List<ReceiptScheduleCUKey> cuKeys = new ArrayList<>();
-		Integer bpartnerId = null;
-		for (final IPOSTableRow row : rows)
-		{
-			final ReceiptScheduleTableRow receiptScheduleRow = service.getReceiptScheduleTableRow(row);
+		final List<I_M_HU> hus = new ArrayList<>(); // this will hold the LUTU-Editor's result
 
-			// Make sure all receipt schedules are about same BPartner
-			final int receiptScheduleBPartnerId = receiptScheduleRow.getC_BPartner_ID();
-			if (bpartnerId != null && bpartnerId != receiptScheduleBPartnerId)
+		try (final ITerminalContextReferences refs = getTerminalContext().newReferences())
+		{
+			//
+			// Create LU/TU configuration panel
+			// NOTE: we will create one CU Key for each receipt schedule
+			final LUTUConfigurationEditorModel lutuConfigurationEditingModel = new LUTUConfigurationEditorModel(terminalContext);
+			lutuConfigurationEditingModel.setQtyCUReadonly(false);
+			final List<ReceiptScheduleCUKey> cuKeys = new ArrayList<>();
+			Integer bpartnerId = null;
+			for (final IPOSTableRow row : rows)
 			{
-				throw new TerminalException("@NotMatched@: @C_BPartner_ID@");
+				final ReceiptScheduleTableRow receiptScheduleRow = service.getReceiptScheduleTableRow(row);
+
+				// Make sure all receipt schedules are about same BPartner
+				final int receiptScheduleBPartnerId = receiptScheduleRow.getC_BPartner_ID();
+				if (bpartnerId != null && bpartnerId != receiptScheduleBPartnerId)
+				{
+					throw new TerminalException("@NotMatched@: @C_BPartner_ID@");
+				}
+				bpartnerId = receiptScheduleBPartnerId;
+
+				// Create CUKey for receipt schedule
+				final ReceiptScheduleCUKey cuKey = new ReceiptScheduleCUKey(terminalContext, receiptScheduleRow);
+				cuKeys.add(cuKey);
 			}
-			bpartnerId = receiptScheduleBPartnerId;
+			lutuConfigurationEditingModel.setCUKeys(cuKeys);
 
-			// Create CUKey for receipt schedule
-			final ReceiptScheduleCUKey cuKey = new ReceiptScheduleCUKey(terminalContext, receiptScheduleRow);
-			cuKeys.add(cuKey);
-		}
-		lutuConfigurationEditingModel.setCUKeys(cuKeys);
-
-		//
-		// Ask the user to customize it
-		final boolean edited = editorCallback.editLUTUConfiguration(lutuConfigurationEditingModel);
-		if (!edited)
-		{
-			// User cancelled => do nothing
-			return null;
-		}
-
-		//
-		// Create one VHU for each CU Key were user entered some quantity
-		final List<I_M_HU> hus = new ArrayList<>();
-		for (final ReceiptScheduleCUKey cuKey : cuKeys)
-		{
-			final I_M_HU vhu = cuKey.createVHU();
-			if (vhu != null)
+			//
+			// Ask the user to customize it
+			final boolean edited = editorCallback.editLUTUConfiguration(lutuConfigurationEditingModel);
+			if (!edited)
 			{
-				hus.add(vhu);
+				// User cancelled => do nothing
+				return null;
 			}
+
+			//
+			// Create one VHU for each CU Key were user entered some quantity
+			for (final ReceiptScheduleCUKey cuKey : cuKeys)
+			{
+				final I_M_HU vhu = cuKey.createVHU();
+				if (vhu != null)
+				{
+					hus.add(vhu);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		//
@@ -444,11 +424,10 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		Check.assumeNotNull(reportConfigValue, "Report SysConfig value not null for {}", SYSCONFIG_ReceiptScheduleHUPOSJasperProcess);
 
 		final int reportProcessId = Integer.parseInt(reportConfigValue);
-		final I_AD_Process reportProcess = InterfaceWrapperHelper.create(getCtx(), reportProcessId, I_AD_Process.class, ITrx.TRXNAME_None);
 
 		//
 		// Print report
-		doJasperPrint0(reportProcess, orderLine);
+		doJasperPrint0(reportProcessId, orderLine);
 	}
 
 	/**
@@ -462,68 +441,28 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 		return getRowsSelected().size() == 1;
 	}
 
-	private void doJasperPrint0(final I_AD_Process process, final I_C_OrderLine orderLine)
+	private void doJasperPrint0(final int reportProcessId, final I_C_OrderLine orderLine)
 	{
-		final ITrxManager trxManagerService = Services.get(ITrxManager.class);
-
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		final int orderLineId = orderLine.getC_OrderLine_ID();
 		final I_C_Order order = orderLine.getC_Order();
 		final Language bpartnerLaguage = Services.get(IBPartnerBL.class).getLanguage(getCtx(), order.getC_BPartner_ID());
 
 		//
-		// Create AD_PInstance
-		final I_AD_PInstance pinstance = new MPInstance(getCtx(), process.getAD_Process_ID(), 0, 0);
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID());
-		pi.setReportLanguage(bpartnerLaguage);
-
-		// 07055: we need to commit the process parameters before calling the reporting process, because that process might in the end call the adempiereJasper server which won't have access to this
-		// transaction.
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				pinstance.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
-				pinstance.setRecord_ID(orderLineId);
-				InterfaceWrapperHelper.save(pinstance);
-
+		// Create ProcessInfo
+		ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Process_ID(reportProcessId)
+				// .setAD_PInstance_ID() // NO AD_PInstance => we want a new instance
+				.setRecord(I_C_OrderLine.Table_Name, orderLineId)
+				.setWindowNo(getTerminalContext().getWindowNo())
+				.setReportLanguage(bpartnerLaguage)
+				.addParameter(PARA_C_Orderline_ID, orderLineId)
+				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 				//
-				// Parameter: M_HU_ID
-				final I_AD_PInstance_Para para_M_HU_ID = InterfaceWrapperHelper.newInstance(I_AD_PInstance_Para.class, pinstance);
-				para_M_HU_ID.setAD_PInstance_ID(pinstance.getAD_PInstance_ID()); // have to manually set this
-				para_M_HU_ID.setSeqNo(10);
-				para_M_HU_ID.setParameterName(PARA_C_Orderline_ID);
-				para_M_HU_ID.setP_Number(BigDecimal.valueOf(orderLineId));
-				InterfaceWrapperHelper.save(para_M_HU_ID);
-
-				//
-				// ProcessInfo
-				pi.setTableName(org.compiere.model.I_C_OrderLine.Table_Name);
-				pi.setRecord_ID(orderLineId);
-				pi.setTitle(process.getName());
-				pi.setAD_PInstance_ID(pinstance.getAD_PInstance_ID());
-			}
-		});
-
-		final ITerminalContext terminalContext = getTerminalContext();
-
-		//
-		// Execute report in a new transaction
-		trxManagerService.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final ITrx localTrx = trxManagerService.get(localTrxName, false); // createNew=false
-				ProcessCtl.process(
-						null,  // ASyncProcess parent
-						terminalContext.getWindowNo(),
-						null,  // IProcessParameter
-						pi,
-						localTrx);
-			}
-		});
+				// Execute report in a new AD_PInstance
+				.buildAndPrepareExecution()
+				.executeSync();
 	}
 
 	@Override
@@ -563,10 +502,8 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	}
 
 	@Override
-	public void dispose()
+	public String toString()
 	{
-		super.dispose();
-
-		DisposableHelper.disposeAll(purchaseOrderKeyLayout);
+		return "ReceiptScheduleHUSelectModel [purchaseOrderKeyLayout=" + purchaseOrderKeyLayout + ", rowsFilter=" + rowsFilter + "]";
 	}
 }

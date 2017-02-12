@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,10 +33,9 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
@@ -82,8 +81,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @param recomputeTag
 	 * @param trxName
 	 * @return
-	 *
-	 * @see #tagRecomputeMarkers(I_AD_PInstance, String)
 	 */
 	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, InvoiceCandRecomputeTag recomputeTag, String trxName);
 
@@ -92,7 +89,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	InvoiceCandRecomputeTag generateNewRecomputeTag();
 
-	/** @return new tagger used to tag invoice candidates which were scheduled to be recomputed. */
+	/**
+	 * @return new tagger used to tag invoice candidates which were scheduled to be recomputed.
+	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
 	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
@@ -137,13 +136,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 * 
+	 *
 	 * @param icQuery
 	 */
 	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
-	 * Invalidates just the given candidate.
+	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
 	 *
 	 * @param ic
 	 */
@@ -352,19 +351,24 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void save(I_C_Invoice_Candidate invoiceCandidate);
 
 	/**
-	 * Returns all invoice candidates that have Processed='N'
+	 * Return all invoice candidates that have Processed='N'
 	 *
-	 * @param plainContextAware
+	 * @param contextAware
 	 * @return
 	 */
-	Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(PlainContextAware plainContextAware);
+	Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(IContextAware contextAware);
 
+	/**
+	 * Invalidate all ICs that have the given <code>aggregation</code> as either their <code>HeaderAggregationKeyBuilder_ID</code> or <code>LineAggregationKeyBuilder_ID</code>.
+	 *
+	 * @param aggregation
+	 */
 	void invalidateCandsForAggregationBuilder(I_C_Aggregation aggregation);
 
 	int deleteInvoiceDetails(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Deletes given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
+	 * Delete given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
 	 *
 	 * @param ic
 	 */
@@ -377,4 +381,32 @@ public interface IInvoiceCandDAO extends ISingletonService
 	boolean isAvoidRecreate(I_C_Invoice_Candidate ic);
 
 	List<I_C_Invoice_Detail> retrieveInvoiceDetails(I_C_Invoice_Candidate ic);
+
+	/**
+	 * Add default filter for retrieving invoice candidates.
+	 *
+	 * Default filters until now:
+	 * <li>Only retrieve invoice candidates the user and role have access to
+	 *
+	 * To be kept in sync with {@link #getSQLDefaultFilter(Properties)}
+	 *
+	 * @param queryBuilder
+	 * @return
+	 */
+	IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder);
+
+	/**
+	 * Return the default filter to be applied for retrieving invoice candidates, in String format.<br>
+	 * This string is to be used in the hard-coded sql queries, in where clauses.<br>
+	 * Note that this string does not start with "AND", but directly with the condition.<br>
+	 *
+	 * Default filters until now:
+	 * <li>Only retrieve invoice candidates the user and role have access to.
+	 *
+	 * To be kept in sync with {{@link #applyDefaultFilter(IQueryBuilder)}
+	 *
+	 * @param ctx
+	 * @return
+	 */
+	String getSQLDefaultFilter(Properties ctx);
 }

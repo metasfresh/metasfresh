@@ -10,12 +10,12 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,13 +23,13 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  */
 
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -37,6 +37,7 @@ import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
@@ -47,7 +48,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  * <p>
  * <b>Important:</b> this listener does nothing, unless the given request's {@link MTLinkRequest#getParams()} has {@link HUConstants#PARAM_CHANGE_HU_MAterial_Tracking_ID} <code>=true</code>.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
  */
 public class HUDocumentLineLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
@@ -90,7 +91,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 	 * <li>updates the given HU's M_Matrial_Tracking_ID HU_Attribute
 	 * <li>checks if the HU was issued to a PP_Order and updates the PP_Order's M_Material_Tracking_Refs
 	 * </ul>
-	 * 
+	 *
 	 * @param hu
 	 * @param request
 	 */
@@ -108,7 +109,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 		//
 		// check if the HU is assigned to a PP_Order and also update that PP_Order's material tracking reference
 		{
-			final ILoggable loggable = ILoggable.THREADLOCAL.getLoggableOr(ILoggable.NULL);
+			final ILoggable loggable = Loggables.get();
 
 			final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 			final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);

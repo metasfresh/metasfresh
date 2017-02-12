@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>de.metas.esb</groupId>
 		<artifactId>de.metas.esb</artifactId>
-		<version>1.0_IT-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../de.metas.esb/pom.xml</relativePath>
 	</parent>
 

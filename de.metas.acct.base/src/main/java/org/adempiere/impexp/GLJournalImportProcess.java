@@ -51,7 +51,7 @@ import org.compiere.util.TimeUtil;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.
  */

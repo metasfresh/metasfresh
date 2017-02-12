@@ -13,22 +13,23 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -41,9 +42,15 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Status;
+import de.metas.handlingunits.model.X_M_HU_Item;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
+	/**
+	 * Save the given {@code hu}
+	 * 
+	 * @param hu
+	 */
 	void saveHU(I_M_HU hu);
 
 	void delete(I_M_HU hu);
@@ -70,6 +77,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	int getVirtual_HU_PI_Item_ID();
 
+	/**
+	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
+	 * 
+	 * @param huContext
+	 * @return
+	 */
 	IHUBuilder createHUBuilder(IHUContext huContext);
 
 	// Handling Unit Retrieval
@@ -87,13 +100,22 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void setParentItem(I_M_HU hu, I_M_HU_Item parentItem);
 
 	/**
-	 * Creates and saves {@link I_M_HU_Item}
+	 * Creates and saves a {@link I_M_HU_Item} for the given {@code hu}, using the given {@code piItem} as its template.
 	 *
 	 * @param hu
 	 * @param piItem
 	 * @return created HU item
 	 */
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	/**
+	 * Similar to {@link #createHUItem(I_M_HU, I_M_HU_PI_Item)}, but do not use any {@link I_M_HU_PI_Item} as template.<br>
+	 * Instead, create new item with {@link X_M_HU_Item#ITEMTYPE_HUAggregate} as its {@link I_M_HU_Item#COLUMN_ItemType}.
+	 * 
+	 * @param hu the HU which the new item shall reference.
+	 * @return
+	 */
+	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
 
 	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
 
@@ -105,10 +127,15 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	// Handling Unit PI Retrieval
 
-	I_M_HU_PI retrievePIHandlingUnit(final Properties ctx, final int handlingUnitId, final String trxName);
+	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnitPI, final I_C_BPartner partner);
 
-	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final I_C_BPartner partner);
-
+	/**
+	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
+	 * 
+	 * @param version mandatory. Only return items that reference this version.
+	 * @param partner optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMN_C_BPartner_ID}.
+	 * @return
+	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner);
 
 	/**
@@ -160,6 +187,16 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
 
 	/**
+	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
+	 * 
+	 * @param parentHU
+	 * @param piOfChildHU
+	 * @param ctx
+	 * @return
+	 */
+	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
+
+	/**
 	 * Retrieve first parent item if more are defined.
 	 *
 	 * @param huPI
@@ -168,6 +205,15 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
+
+	/**
+	 * Retrieves the default LU.
+	 * 
+	 * @param ctx
+	 * @param adOrgId
+	 * @return default LU or <code>null</code>.
+	 */
+	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
 	/**
 	 *
@@ -191,6 +237,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param hu
 	 * @return
 	 */
+	// TODO: i think we shall drop this method because is no longer valid!!!
 	I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu);
 
 	I_M_HU retrieveVirtualHU(I_M_HU_Item itemMaterial);
@@ -206,19 +253,18 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	IHUQueryBuilder createHUQueryBuilder();
 
 	/**
-	 * Retrieve the packing materials of a given HU.
+	 * Retrieve the packing materials of the given {@code hu}.<br>
+	 * Also takes into account the case that the given {@code hu} is an aggregate VHU (gh #460).
 	 *
 	 * NOTE
 	 * <ul>
-	 * <li>this method will return packing material(s) of this HU only and not for it's included HUs.</li>
-	 * <li>teoretically you can assign to an HU as many packing materials as you want, but in practice, in most of the cases we will have only one (e.g. an IFCO will have only the plastic IFCO packing
-	 * material, a Palette will have only the wonden palette etc)</li>
+	 * <li>this method will return packing material(s) of this HU only and not for its included HUs.</li>
 	 * </ul>
 	 *
 	 * @param hu
-	 * @return packing materials
+	 * @return packing material and quantity pairs
 	 */
-	List<I_M_HU_PackingMaterial> retrievePackingMaterials(I_M_HU hu);
+	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
 
 	/**
 	 * The special network distribution that is defined for empties (gebinde) It contains lines that link the non-empties warehouses with the empties ones that the packing materials shall be moved to
@@ -249,4 +295,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return all available (i.e. active) HU PIs from system, for the given org_id and for org 0
 	 */
 	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
+
+	/**
+	 * 
+	 * @param hu
+	 * @param piItem
+	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
+	 */
+	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 }

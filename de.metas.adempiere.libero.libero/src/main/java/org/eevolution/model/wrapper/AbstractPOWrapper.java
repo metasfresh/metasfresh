@@ -245,7 +245,7 @@ public abstract class AbstractPOWrapper {
 	 */
 	public void set_ValueOfColumn(int AD_Column_ID, Object value) {
 		
-		po.set_ValueOfColumn(AD_Column_ID, value); //  setValueOfColumn
+		po.set_ValueOfAD_Column_ID(AD_Column_ID, value);
 	}
 
 	/**

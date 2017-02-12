@@ -1,35 +1,9 @@
 package org.adempiere.ad.security.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -40,6 +14,7 @@ import org.adempiere.ad.security.IRolesTreeNode;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsBuilder;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.Access;
 import org.adempiere.ad.security.permissions.ElementPermission;
@@ -60,6 +35,7 @@ import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.TableResource;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.proxy.Cached;
@@ -87,10 +63,12 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
@@ -177,21 +155,22 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public IUserRolePermissions retrieveUserRolePermissions(final int adRoleId, final int adUserId, final int adClientId, final Date date)
 	{
-		// Make sure we are we are caching only on day level, else would make no sense,
-		// and performance penalty would be quite big
-		// (i.e. retrieve and load and aggregate the whole shit everything we need to check something in permissions)
-		final Timestamp dateDay = TimeUtil.trunc(date, TimeUtil.TRUNC_DAY);
-		if (!dateDay.equals(date))
-		{
-			logger.warn("For performance purpose, make sure you providing a date which is truncated on day level: {}", date);
-		}
+		final long dateMillis = UserRolePermissionsKey.normalizeDate(date);
+		return retrieveUserRolePermissionsCached(adRoleId, adUserId, adClientId, dateMillis);
+	}
 
-		return retrieveUserRolePermissionsCached(adRoleId, adUserId, adClientId, dateDay);
+	@Override
+	public IUserRolePermissions retrieveUserRolePermissions(final UserRolePermissionsKey key)
+	{
+		Check.assumeNotNull(key, "Parameter key is not null");
+		return retrieveUserRolePermissionsCached(key.getAD_Role_ID(), key.getAD_User_ID(), key.getAD_Client_ID(), key.getDateMillis());
 	}
 
 	@Cached(cacheName = I_AD_Role.Table_Name + "#AggregatedRolePermissions", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public IUserRolePermissions retrieveUserRolePermissionsCached(final int adRoleId, final int adUserId, final int adClientId, final Date date)
+	public IUserRolePermissions retrieveUserRolePermissionsCached(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
 	{
+		final Date date = new Date(dateMillis);
+		
 		try
 		{
 			final IRolesTreeNode rootRole = Services.get(IRoleDAO.class).retrieveRolesTree(adRoleId, adUserId, date);

@@ -23,13 +23,15 @@ import org.compiere.model.MStore;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
+import de.metas.process.JavaProcess;
+
 /**
  *	Client EMail Test
  *	
  *  @author Jorg Janke
  *  @version $Id: EMailTest.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class EMailTest extends SvrProcess
+public class EMailTest extends JavaProcess
 {
 	/** Client Parameter			*/
 	protected int	p_AD_Client_ID = 0;
@@ -37,6 +39,7 @@ public class EMailTest extends SvrProcess
 	/**
 	 * 	Get Parameters
 	 */
+	@Override
 	protected void prepare ()
 	{
 		p_AD_Client_ID = getRecord_ID();
@@ -48,14 +51,17 @@ public class EMailTest extends SvrProcess
 	 * 	Process - Test EMail
 	 *	@return info
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
-		MClient client = MClient.get (getCtx(), p_AD_Client_ID);
-		log.info(client.toString());
-		
-		//	 Test Client Mail
-		String clientTest = client.testEMail();
-		addLog(0, null, null, client.getName() + ": " + clientTest);
+		final MClient client = MClient.get (getCtx(), p_AD_Client_ID);
+
+		//
+		// Test Client Mail
+		{
+			String clientTest = client.testEMail();
+			addLog(client.getName() + ": " + clientTest);
+		}
 		
 		//	Test Client DocumentDir
 		if (!Ini.isClient())
@@ -65,20 +71,20 @@ public class EMailTest extends SvrProcess
 				documentDir = ".";
 			File file = new File (documentDir);
 			if (file.exists() && file.isDirectory())
-				addLog(0, null, null, "Found Directory: " + client.getDocumentDir());
+				addLog("Found Directory: " + client.getDocumentDir());
 			else
-				addLog(0, null, null, "Not Found Directory: " + client.getDocumentDir());
+				addLog("Not Found Directory: " + client.getDocumentDir());
 		}
 
-		MStore[] wstores = MStore.getOfClient(client);
-		for (int i = 0; i < wstores.length; i++)
+		//
+		// Test WebStores
+		for (final MStore store : MStore.getOfClient(client))
 		{
-			MStore store = wstores[i];
 			String test = store.testEMail();
 			addLog(0, null, null, store.getName() + ": " + test);
 		}
 		
-		return clientTest;
+		return MSG_OK;
 	}	//	doIt
 	
 }	//	EMailTest

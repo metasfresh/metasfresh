@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,7 +39,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
@@ -53,7 +54,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.lock.api.ILock;
 
-/* package*/class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
+/* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
 	// services
 	// private final transient Logger logger = InvoiceCandidate_Constants.getLogger();
@@ -66,7 +67,7 @@ import de.metas.lock.api.ILock;
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 	private static final String SYSCONFIG_ItemsPerBatch = "de.metas.invoicecandidate.api.impl.InvoiceCandInvalidUpdater.ItemsPerBatch";
-	private static final int DEFAULT_ItemsPerBatch = 50;
+	private static final int DEFAULT_ItemsPerBatch = 100;
 
 	//
 	// Parameters
@@ -100,7 +101,7 @@ import de.metas.lock.api.ILock;
 		try
 		{
 			updateTagged();
-	
+
 			//
 			// Remove from "invoice candidates to recompute" all those which were tagged with our tag
 			// because now we consider them valid
@@ -153,8 +154,16 @@ import de.metas.lock.api.ILock;
 			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
 					.setItemsPerBatch(itemsPerBatch)
-					.setUseTrxSavepoints(false) // optimization: don't use trx savepoints because they are expensive and does not help us here
+
+					// Don't use trx savepoints because they are expensive and we are not going to rollback anyways (OnItemErrorPolicy.ContinueChunkAndCommit)
+					// Note that if our trx is null, then this doesn't matter anyways.
+					.setUseTrxSavepoints(false)
+
 					.setExceptionHandler(new ICTrxItemExceptionHandler(result))
+
+					// issue #302: ICTrxItemExceptionHandler will deal with problems, so we just continue if they happen.
+					.setOnItemErrorPolicy(OnItemErrorPolicy.ContinueChunkAndCommit)
+
 					.setProcessor(new TrxItemChunkProcessorAdapter<I_C_Invoice_Candidate, ICUpdateResult>()
 					{
 						/** the invoice candidates which were updated in current batch/chunk */
@@ -182,7 +191,11 @@ import de.metas.lock.api.ILock;
 							return result;
 						}
 
-						/** Always return true and let the caller to decide when to close the chunk (based on ItemsPerBatch setting) */
+						/**
+						 * Always return <code>true</code> and let the caller decide when to close the chunk (based on ItemsPerBatch setting).
+						 * We do this because in fact, each IC is independent from each other.
+						 * On the other hand, we don't want the overhead of dealing with each IC independently (trx-commit etc).
+						 */
 						@Override
 						public boolean isSameChunk(final I_C_Invoice_Candidate item)
 						{
@@ -209,8 +222,7 @@ import de.metas.lock.api.ILock;
 
 		//
 		// Log the result
-		final ILoggable loggable = getLoggable();
-		loggable.addLog("Update invalid result: {}", result.getSummary());
+		Loggables.get().addLog("Update invalid result: {}", result.getSummary());
 	}
 
 	private final void updateInvalid(final I_C_Invoice_Candidate ic)
@@ -407,11 +419,6 @@ import de.metas.lock.api.ILock;
 		return _trxName;
 	}
 
-	private final ILoggable getLoggable()
-	{
-		return ILoggable.THREADLOCAL.getLoggable();
-	}
-
 	@Override
 	public IInvoiceCandInvalidUpdater setLockedBy(final ILock lockedBy)
 	{
@@ -476,7 +483,7 @@ import de.metas.lock.api.ILock;
 	/**
 	 * IC update result.
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private static final class ICUpdateResult
@@ -509,7 +516,7 @@ import de.metas.lock.api.ILock;
 	/**
 	 * IC update exception handler
 	 *
-	 * @author metas-dev <dev@metas-fresh.com>
+	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
 	private final class ICTrxItemExceptionHandler extends FailTrxItemExceptionHandler
@@ -523,6 +530,9 @@ import de.metas.lock.api.ILock;
 			this.result = result;
 		}
 
+		/**
+		 * Resets the given IC to its old values, and sets an error flag in it.
+		 */
 		@Override
 		public void onItemError(final Exception e, final Object item)
 		{
@@ -530,7 +540,13 @@ import de.metas.lock.api.ILock;
 
 			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(item, I_C_Invoice_Candidate.class);
 
-			invoiceCandBL.discardChangesAndSetError(ic, e);
+			// gh #428: don't discard changes that were already made, because they might include a change of QtyInvoice.
+			// in that case, a formerly Processed IC might need to be flagged as unprocessed.
+			// if we discard all changes in this case, then we will have IsError='Y' and also an error message in the IC,
+			// but the user will probably ignore it, because the IC is still flagged as processed.
+			invoiceCandBL.setError(ic, e);
+			//invoiceCandBL.discardChangesAndSetError(ic, e);
+
 			invoiceCandDAO.save(ic);
 		}
 	}

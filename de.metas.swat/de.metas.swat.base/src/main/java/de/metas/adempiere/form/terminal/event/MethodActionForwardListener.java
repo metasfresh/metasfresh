@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.reflections.ReflectionUtils;
 
@@ -103,7 +104,7 @@ public final class MethodActionForwardListener extends UIPropertyChangeListener
 	}
 
 	@Override
-	protected void propertyChangeEx(final PropertyChangeEvent evt) throws Exception
+	protected void propertyChangeEx(final PropertyChangeEvent evt)
 	{
 		final IComponent component = getParent();
 		if (component == null)
@@ -111,7 +112,14 @@ public final class MethodActionForwardListener extends UIPropertyChangeListener
 			// component reference already expired
 			return;
 		}
-		actionMethod.invoke(component);
+		try
+		{
+			actionMethod.invoke(component);
+		}
+		catch (Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
 }

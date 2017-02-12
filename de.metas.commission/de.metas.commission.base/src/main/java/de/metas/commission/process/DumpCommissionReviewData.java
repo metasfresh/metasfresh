@@ -42,7 +42,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -54,8 +53,9 @@ import de.metas.commission.model.MCAdvCommissionPayrollLine;
 import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.IHierarchyBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.process.JavaProcess;
 
-public class DumpCommissionReviewData extends SvrProcess
+public class DumpCommissionReviewData extends JavaProcess
 {
 	private final static String EOL = System.getProperty("line.separator");
 
@@ -161,7 +161,7 @@ public class DumpCommissionReviewData extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		final Object[] params = DumpTree.readParameters(getCtx(), getParameter());
+		final Object[] params = DumpTree.readParameters(getCtx(), getParametersAsArray());
 		orgId = (Integer)params[0];
 		period = (MPeriod)params[1];
 		outputFile = (File)params[2];

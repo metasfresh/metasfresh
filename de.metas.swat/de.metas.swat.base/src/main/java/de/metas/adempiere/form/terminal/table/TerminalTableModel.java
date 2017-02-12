@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.table;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -76,6 +76,8 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 	// Selection
 	private SelectionMode selectionMode = SelectionMode.SINGLE;
 
+	private boolean disposed = false;
+
 	/**
 	 * Constructs a <code>RowTableModel</code> with the row class.
 	 *
@@ -87,8 +89,6 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 	 */
 	public TerminalTableModel(final ITerminalContext terminalContext, final Class<T> beanClass)
 	{
-		super();
-
 		Check.assumeNotNull(beanClass, "beanClass not null");
 		this.beanClass = beanClass;
 
@@ -102,6 +102,7 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 		{
 			throw new RuntimeException("Error while loading info from " + beanClass, e);
 		}
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	private Properties getCtx()
@@ -300,7 +301,7 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 		}
 		return lookupColumnName;
 	}
-	
+
 	private String getPrototypeValue(final PropertyDescriptor pd)
 	{
 		String prototypeValue = getPrototypeValue(pd.getReadMethod());
@@ -310,7 +311,7 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 		}
 
 		return prototypeValue;
-		
+
 	}
 
 	private String getPrototypeValue(final Method method)
@@ -874,7 +875,7 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 	public void setSelectedRows(final Collection<T> selectedRows)
 	{
 		rowsSelected.clear();
-		
+
 		if (selectedRows != null && !selectedRows.isEmpty())
 		{
 			rowsSelected.addAll(selectedRows);
@@ -912,7 +913,7 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 		{
 			return false;
 		}
-		
+
 		final int selectedRowsCount = getSelectedRows().size();
 		return selectedRowsCount == rowsCount;
 	}
@@ -938,9 +939,16 @@ public class TerminalTableModel<T> implements ITerminalTableModel<T>
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		listeners.dispose();
 		rows.clear();
 		rowsSelected.clear();
+
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed  ;
 	}
 
 	@Override

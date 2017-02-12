@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
@@ -59,12 +58,12 @@ import org.junit.Assert;
 import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.commission.custom.type.ICommissionType;
+import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.interfaces.I_C_Invoice;
 import de.metas.commission.interfaces.I_M_ProductPrice;
 import de.metas.commission.model.I_C_AdvComSystem_Type;
 import de.metas.commission.model.I_C_AdvCommissionFact;
 import de.metas.commission.model.I_C_AdvCommissionFactCand;
-import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.model.MCAdvCommissionFact;
 import de.metas.commission.model.MCAdvCommissionFactCand;
 import de.metas.commission.model.X_C_AdvCommissionFact;
@@ -137,9 +136,9 @@ public class Helper extends de.metas.adempiere.ait.helper.HelperDelegator
 	{
 		super.createOrder_checkOrderLine(orderLine, priceActualBD, pp);
 
-		de.metas.commission.interfaces.I_C_OrderLine comOrderLine = POWrapper.create(orderLine,
+		de.metas.commission.interfaces.I_C_OrderLine comOrderLine = InterfaceWrapperHelper.create(orderLine,
 				de.metas.commission.interfaces.I_C_OrderLine.class);
-		de.metas.commission.interfaces.I_M_ProductPrice comPP = POWrapper.create(pp,
+		de.metas.commission.interfaces.I_M_ProductPrice comPP = InterfaceWrapperHelper.create(pp,
 				de.metas.commission.interfaces.I_M_ProductPrice.class);
 
 		Assert.assertEquals("order line commision points not match - " + orderLine,
@@ -270,7 +269,7 @@ public class Helper extends de.metas.adempiere.ait.helper.HelperDelegator
 	{
 		Assert.assertNotNull("referencedPOModel is null", referencedPOModel);
 
-		PO referencedPO = POWrapper.getPO(referencedPOModel);
+		PO referencedPO = InterfaceWrapperHelper.getPO(referencedPOModel);
 		Assert.assertNotNull("No PO found for " + referencedPOModel, referencedPO);
 
 		final List<MCAdvCommissionFactCand> candsForPO = MCAdvCommissionFactCand.retrieveForPO(referencedPO, null);
@@ -601,12 +600,12 @@ public class Helper extends de.metas.adempiere.ait.helper.HelperDelegator
 
 			for (final I_C_AdvCommissionFact fact : facts)
 			{
-				final I_C_InvoiceLine il = POWrapper.create(MCAdvCommissionFact.retrievePO(fact), I_C_InvoiceLine.class);
+				final I_C_InvoiceLine il = InterfaceWrapperHelper.create(MCAdvCommissionFact.retrievePO(fact), I_C_InvoiceLine.class);
 				if (commissionInvoices.containsKey(il.getC_Invoice_ID()))
 				{
 					continue;
 				}
-				final I_C_Invoice invoice = POWrapper.create(il.getC_Invoice(), I_C_Invoice.class);
+				final I_C_Invoice invoice = InterfaceWrapperHelper.create(il.getC_Invoice(), I_C_Invoice.class);
 				Check.assume(!invoice.isSOTrx(), "Commission invoice " + invoice + " has SOTrx='N'");
 
 				final I_C_DocType docType = invoice.getC_DocType();
@@ -617,7 +616,7 @@ public class Helper extends de.metas.adempiere.ait.helper.HelperDelegator
 						CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC.equals(docType.getDocSubType()),
 						"Commission invoice " + invoice + " has DocSubType=" + CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC);
 
-				commissionInvoices.put(il.getC_Invoice_ID(), POWrapper.create(invoice, I_C_Invoice.class));
+				commissionInvoices.put(il.getC_Invoice_ID(), InterfaceWrapperHelper.create(invoice, I_C_Invoice.class));
 			}
 		}
 	}

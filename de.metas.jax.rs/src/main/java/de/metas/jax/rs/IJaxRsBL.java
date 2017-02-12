@@ -35,7 +35,7 @@ import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
  * <p>
  * Note that we currently only have endpoints that use JMS as the transport.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IJaxRsBL extends ISingletonService

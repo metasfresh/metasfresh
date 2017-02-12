@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -13,36 +13,41 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeListener;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.logging.LogManager;
 
 /**
  * Abstract {@link ITerminalKey} implementation.
- * 
+ *
  * @author cg
- * 
+ *
  */
 public abstract class TerminalKey implements ITerminalKey, IDisposable
 {
+	private static final transient Logger logger = LogManager.getLogger(TerminalKey.class);
+
 	private final ITerminalContext terminalContext;
 	protected final transient WeakPropertyChangeSupport listeners;
 
@@ -52,28 +57,53 @@ public abstract class TerminalKey implements ITerminalKey, IDisposable
 	private int guiWidth;
 	private int guiHeight;
 
+	private boolean disposed = false;
+	private Exception constructorStackTrace;
+	private Exception disposeStackTrace;
+
+	/**
+	 * Adds itself to the disposable components of the given <code>terminalContext</code>.
+	 *
+	 * @param terminalContext
+	 */
 	public TerminalKey(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 		this.listeners = terminalContext.createPropertyChangeSupport(this);
-	}
-	
-	@Override
-	protected void finalize() throws Throwable
-	{
-		dispose();
+		this.constructorStackTrace = new Exception("TerminalKey constructor invocation's stacktrace");
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void dispose()
 	{
-		listeners.clear();
+		disposed = true;
+		disposeStackTrace = new Exception("TerminalKey disposed() stacktrace");
+
+		logger.debug("dispose(): this-ID={}: dispose called; this={}",
+				System.identityHashCode(this), this);
 	}
-	
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
+	}
+
+	public void assertNotDisposed()
+	{
+		if (!disposed)
+		{
+			return; // fine; nothing to do
+		}
+		final String msg = StringUtils.formatJavaTextFormatMessage("assertNotDisposed: {} is disposed.\nPrinting dispose() and constructor stacktrace:\n\tdispose() stacktrace:\n{}\n\tConstructor stacktrace:\n{}",
+				this, Util.dumpStackTraceToString(disposeStackTrace), Util.dumpStackTraceToString(constructorStackTrace));
+		Check.errorIf(true, msg);
+	}
+
 	public final ITerminalContext getTerminalContext()
 	{
 		return terminalContext;
@@ -197,10 +227,7 @@ public abstract class TerminalKey implements ITerminalKey, IDisposable
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "["
-				+ "name=" + getName()
-				+ ", id=" + getId()
-				+ "]";
+		return getClass().getSimpleName() + "[" + "name=" + getName() + ", id=" + getId() + "]";
 	}
 
 	@Override

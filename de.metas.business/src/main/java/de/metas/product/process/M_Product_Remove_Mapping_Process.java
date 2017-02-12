@@ -1,8 +1,8 @@
 package de.metas.product.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.process.SvrProcess;
 
+import de.metas.process.JavaProcess;
 import de.metas.product.model.I_M_Product;
 
 /*
@@ -28,12 +28,12 @@ import de.metas.product.model.I_M_Product;
  */
 
 /**
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  *         This process removes the M_Product_Mapping reference from the current product.
  *         The rest of the products from other organizations that have the same M_Product_Mapping_ID are not touched.
  */
-public class M_Product_Remove_Mapping_Process extends SvrProcess
+public class M_Product_Remove_Mapping_Process extends JavaProcess
 {
 
 	@Override

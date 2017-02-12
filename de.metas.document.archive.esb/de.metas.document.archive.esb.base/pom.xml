@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>de.metas.document.archive.esb</artifactId>
 		<groupId>de.metas.document.archive.esb</groupId>
-		<version>3-development-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -22,19 +22,18 @@
 		<dependency>
 			<groupId>de.metas.document.archive</groupId>
 			<artifactId>de.metas.document.archive.api</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${metasfresh-dependency.version}</version>
+			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
 
 	<build>
-		<defaultGoal>install</defaultGoal>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -47,7 +46,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<extension>true</extension>
 					<packageName>${jaxb.packageName}</packageName>
 				</configuration>
 			</plugin>

@@ -10,18 +10,17 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -31,31 +30,36 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.util.Check;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 
 public abstract class TerminalDialog implements ITerminalDialog
 {
 	private ITerminalFactory terminalFactory;
-	private ITerminalContext terminalContext;
 	private IComponent parent;
-	private IComponent content;
+	private final IComponent content;
 
-	private ITerminalContextReferences contextReferences;
 	private IConfirmPanel confirmPanel;
+
 	private boolean canceled = false;
-	private final CompositeTerminalDialogListener listeners = new CompositeTerminalDialogListener();
+	private final CompositeTerminalDialogListener listeners;
 	private boolean initialized = false;
 
-	public TerminalDialog(final ITerminalFactory terminalFactory, final IComponent parent, final IComponent content)
+	/**
+	 *
+	 * @param terminalFactory
+	 * @param parent
+	 * @param content
+	 */
+	public TerminalDialog(final ITerminalFactory terminalFactory,
+			final IComponent parent,
+			final IComponent content)
 	{
-		super();
-
 		Check.assumeNotNull(terminalFactory, "terminalFactory not null");
 		this.terminalFactory = terminalFactory;
-		terminalContext = terminalFactory.getTerminalContext();
-
 		this.parent = parent;
 		this.content = content;
+
+		final ITerminalContext terminalContext = terminalFactory.getTerminalContext();
+		this.listeners = new CompositeTerminalDialogListener(terminalContext);
 	}
 
 	private final void init()
@@ -65,11 +69,6 @@ public abstract class TerminalDialog implements ITerminalDialog
 			return;
 		}
 		initialized = true;
-
-		//
-		// Create a new set of references from this point, to be able to destroy them when the dialog closes.
-		// In this way we can avoid memory leaks right from this Dialog and from components, listeners etc that were created will using this dialog.
-		contextReferences = terminalContext.newReferences();
 
 		confirmPanel = terminalFactory.createConfirmPanel(true, ""); // withCancel=true
 		confirmPanel.addListener(new PropertyChangeListener()
@@ -190,6 +189,8 @@ public abstract class TerminalDialog implements ITerminalDialog
 
 	boolean cancelDispose = false;
 
+	private boolean disposed = false;
+
 	@Override
 	public final void cancelDispose()
 	{
@@ -203,21 +204,18 @@ public abstract class TerminalDialog implements ITerminalDialog
 		if (!cancelDispose)
 		{
 			disposeUI();
-
-			confirmPanel = DisposableHelper.dispose(confirmPanel);
-			content = DisposableHelper.dispose(content); // NOTE: we are also disposing the given content automatically
-			listeners.dispose();
 			parent = null;
 
-			if (terminalContext != null)
-			{
-				terminalContext.deleteReferences(contextReferences);
-				terminalContext = null;
-			}
-			contextReferences = null;
 			terminalFactory = null;
 		}
 		cancelDispose = false;
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
 	}
 
 	protected abstract void disposeUI();

@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,7 +25,7 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.WeakReference;
+import org.adempiere.util.lang.ImmutableReference;
 
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
@@ -39,7 +39,7 @@ public abstract class AbstractHUKeyNameBuilder<T extends IHUKey> implements IHUK
 		super();
 
 		Check.assumeNotNull(key, "key not null");
-		this.keyRef = new WeakReference<T>(key);
+		this.keyRef = ImmutableReference.<T>valueOf(key);
 	}
 
 	/**

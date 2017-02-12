@@ -33,7 +33,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 /**
  * Result of {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)}.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class InvoiceCandidateGenerateResult

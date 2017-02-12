@@ -23,12 +23,12 @@ package org.compiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,21 +39,21 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.proxy.Cached;
-
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheIgnore;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.util.Services;
+import org.compiere.util.DisplayType;
 
 /**
- * 
- * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and
- *         RelationTypes
- * 
+ * Note: maybe what you are looking for is here: {@link DisplayType}.
+ *
+ * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
+ *
  */
 public class MReference extends X_AD_Reference {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3298182955450711914L;
 
@@ -65,26 +65,21 @@ public class MReference extends X_AD_Reference {
 		super(ctx, rs, trxName);
 	}
 
-	public MRefTable retrieveRefTable() {
-
-		return retrieveRefTable(getCtx(), getAD_Reference_ID(), get_TrxName());
-	}
-
-	@Cached
-	public static MRefTable retrieveRefTable(
-			@CacheCtx final Properties ctx,
-			final int referenceId,
-			@CacheIgnore final String trxName)
+	/**
+	 * @param ctx
+	 * @param referenceId
+	 * @param trxName
+	 * @return MRefTable
+	 * @deprecated Please consider using {@link ILookupDAO#retrieveTableRefInfo(int)}
+	 */
+	@Deprecated
+	public static I_AD_Ref_Table retrieveRefTable(final Properties ctx, final int referenceId, final String trxName)
 	{
-
-		final Object[] params = { referenceId };
-
-		final MRefTable refTable = new Query(ctx, I_AD_Ref_Table.Table_Name,
-				COLUMNNAME_AD_Reference_ID + "=?", trxName).setParameters(
-				params).firstOnly();
-
-		return refTable;
-
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Ref_Table.class, ctx, trxName)
+				.addEqualsFilter(I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID, referenceId)
+				.create()
+				.firstOnly(I_AD_Ref_Table.class);
 	}
 
 }

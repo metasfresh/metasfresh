@@ -41,7 +41,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 /**
  * Note: this class is both an interceptor and a callout.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Interceptor(I_AD_JavaClass_Type.class)

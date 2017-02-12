@@ -43,7 +43,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
  * @author tsa
  *
  */
-class HUAttributeValue extends AbstractHUAttributeValue
+final class HUAttributeValue extends AbstractHUAttributeValue
 {
 	private final I_M_HU_Attribute huAttribute;
 	private boolean saveOnChange;
@@ -53,7 +53,11 @@ class HUAttributeValue extends AbstractHUAttributeValue
 
 	public HUAttributeValue(final AbstractHUAttributeStorage attributeStorage, final I_M_HU_Attribute huAttribute, final boolean saveOnChange)
 	{
-		super(attributeStorage, huAttribute.getM_HU_PI_Attribute());
+		super( //
+				attributeStorage //
+				, huAttribute.getM_HU_PI_Attribute() //
+				, (Boolean)null // isTemplateAttribute = don't know; it will be evaluated when needed
+		);
 
 		this.huAttribute = huAttribute;
 		this.valueString = huAttribute.getValue();

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -28,9 +28,9 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -38,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.print.ReportEngine;
@@ -83,7 +82,6 @@ import de.metas.tax.api.ITaxBL;
  */
 public class MOrder extends X_C_Order implements DocAction
 {
-	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
 
 	/**
 	 *
@@ -465,7 +463,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Deprecated
 	public void setC_DocTypeTarget_ID()
 	{
-		if (isSOTrx()) 		// SO = Std Order
+		if (isSOTrx())  		// SO = Std Order
 		{
 			setC_DocTypeTarget_ID(DocSubType_Standard);
 			return;
@@ -626,6 +624,17 @@ public class MOrder extends X_C_Order implements DocAction
 			final boolean copyASI,
 			final MOrderLine fromLine)
 	{
+		// only copy the line if it should be copied in a counter document
+		if (counter)
+		{
+			final boolean copyCounter = Services.get(IOrderLineBL.class).isAllowedCounterLineCopy(fromLine);
+			
+			if (!copyCounter)
+			{
+				return 0;
+			}
+		}
+
 		final MOrderLine line = new MOrderLine(this);
 		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID()); // note: this copies *all* columns, also those with IsCalculated='Y'
 		line.setC_Order_ID(getC_Order_ID());
@@ -644,27 +653,8 @@ public class MOrder extends X_C_Order implements DocAction
 		}
 		if (counter)
 		{
-			line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
-			if (line.getM_Product_ID() > 0)  // task 09700
-			{
-				final IProductDAO productDAO = Services.get(IProductDAO.class);
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
+			Services.get(IOrderLineBL.class).copyOrderLineCounter(line, fromLine);
 
-				final I_M_Product lineProduct = line.getM_Product();
-				if (lineProduct.getAD_Org_ID() != 0)
-				{
-					// task 09700 the product from the original order is org specific, so we need to substitute it with the product from the counter-org.
-					final I_M_Product counterProduct = productDAO.retrieveMappedProductOrNull(lineProduct, getAD_Org());
-					if (counterProduct == null)
-					{
-						final String msg = msgBL.getMsg(getCtx(),
-								MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
-								new Object[] { lineProduct.getValue(), lineProduct.getAD_Org().getName(), getAD_Org().getName() });
-						throw new AdempiereException(msg);
-					}
-					line.setM_Product(counterProduct);
-				}
-			}
 		}
 		else
 		{
@@ -692,7 +682,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (counter)
 		{
 			fromLine.setRef_OrderLine_ID(line.getC_OrderLine_ID());
-			fromLine.saveEx(get_TrxName());
+			InterfaceWrapperHelper.save(fromLine);
 		}
 
 		return 1;
@@ -723,8 +713,29 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String getDocumentInfo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		return dt.getName() + " " + getDocumentNo();
+		final StringBuilder documentInfo = new StringBuilder();
+		
+		//
+		// DocType
+		I_C_DocType docType = getC_DocType();
+		if(docType == null)
+		{
+			docType = getC_DocTypeTarget();
+		}
+		if(docType != null)
+		{
+			documentInfo.append(docType.getName());
+		}
+		
+		//
+		// DocumentNo
+		if(documentInfo.length() > 0)
+		{
+			documentInfo.append(" ");
+		}
+		documentInfo.append(getDocumentNo());
+		
+		return documentInfo.toString();
 	}	// getDocumentInfo
 
 	/**
@@ -1060,20 +1071,25 @@ public class MOrder extends X_C_Order implements DocAction
 		if (getBill_Location_ID() == 0)
 			setBill_Location_ID(getC_BPartner_Location_ID());
 
+		//
 		// Default Price List
 		// metas: bpartner's pricing system (instead of price list)
-		Services.get(IOrderBL.class).setM_PricingSystem_ID(InterfaceWrapperHelper.create(this, de.metas.adempiere.model.I_C_Order.class));
+		Services.get(IOrderBL.class).setM_PricingSystem_ID(this, false); // overridePricingSystem=false
 
-		// metas end
+		//
 		// Default Currency
-		if (getC_Currency_ID() == 0)
+		if (getC_Currency_ID() <= 0)
 		{
-			String sql = "SELECT C_Currency_ID FROM M_PriceList WHERE M_PriceList_ID=?";
-			int ii = DB.getSQLValue(null, sql, getM_PriceList_ID());
-			if (ii != 0)
-				setC_Currency_ID(ii);
+			final I_M_PriceList priceList = getM_PriceList();
+			final int currencyId = priceList == null ? -1 : priceList.getC_Currency_ID();
+			if (currencyId > 0)
+			{
+				setC_Currency_ID(currencyId);
+			}
 			else
+			{
 				setC_Currency_ID(Env.getContextAsInt(getCtx(), "#C_Currency_ID"));
+			}
 		}
 
 		// Default Sales Rep
@@ -1081,7 +1097,7 @@ public class MOrder extends X_C_Order implements DocAction
 		// This is not a mandatory field, so leave it like it is.
 
 		// Default Document Type
-		if (getC_DocTypeTarget_ID() == 0)
+		if (getC_DocTypeTarget_ID() <= 0)
 			setC_DocTypeTarget_ID(DocSubType_Standard);
 
 		// Default Payment Term
@@ -1257,7 +1273,9 @@ public class MOrder extends X_C_Order implements DocAction
 		log.debug(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
+		{
 			return DocAction.STATUS_Invalid;
+		}
 		MDocType dt = MDocType.get(getCtx(), getC_DocTypeTarget_ID());
 
 		// Std Period open?
@@ -1298,7 +1316,7 @@ public class MOrder extends X_C_Order implements DocAction
 			{
 				MDocType dtOld = MDocType.get(getCtx(), getC_DocType_ID());
 				if (MDocType.DOCSUBTYPE_StandardOrder.equals(dtOld.getDocSubType())		// From SO
-						&& !MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType())) 	// To !SO
+						&& !MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType()))  	// To !SO
 				{
 					for (int i = 0; i < lines.length; i++)
 					{
@@ -1331,7 +1349,7 @@ public class MOrder extends X_C_Order implements DocAction
 					return DocAction.STATUS_Invalid;
 				}
 			}
-		} 	// convert DocType
+		}  	// convert DocType
 
 		// Mandatory Product Attribute Set Instance
 		String mandatoryType = "='Y'";	// IN ('Y','S')
@@ -1385,10 +1403,10 @@ public class MOrder extends X_C_Order implements DocAction
 				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-				final I_C_BPartner_Stats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 
-				final BigDecimal totalOpenBalance = bpartnerStatsBL.getTotalOpenBalance(stats);
-				final String soCreditStatus = bpartnerStatsBL.getSOCreditStatus(stats);
+				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+				final String soCreditStatus = stats.getSOCreditStatus();
 
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{
@@ -1408,9 +1426,9 @@ public class MOrder extends X_C_Order implements DocAction
 						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
 						getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 
-				final String calculateSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
+				final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
 
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculateSOCreditStatus))
+				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 				{
 					m_processMsg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance + ", @GrandTotal@=" + grandTotal
@@ -1545,26 +1563,37 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	// metas: make reserveStock visible from MOrderLine to allow un-reservation
 	// of stocks before delete.
-	public boolean reserveStock(MDocType dt, MOrderLine[] lines)
+	public boolean reserveStock(MDocType docType, MOrderLine[] lines)
 	{
-		if (dt == null)
-			dt = MDocType.get(getCtx(), getC_DocType_ID());
+		if (docType == null)
+		{
+			docType = MDocType.get(getCtx(), getC_DocType_ID());
+		}
 
 		// Binding
-		boolean binding = !dt.isProposal();
+		boolean binding = docType != null && !docType.isProposal();
+		final String docSubType = docType == null ? null : docType.getDocSubType();
+
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())
 				// Closing Binding Quotation
-				|| (MDocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType())
-						&& DOCACTION_Close.equals(getDocAction())))  // || isDropShip() )
+				|| (MDocType.DOCSUBTYPE_Quotation.equals(docSubType)
+						&& DOCACTION_Close.equals(getDocAction())))   // || isDropShip() )
+		{
+
 			binding = false;
+		}
 		boolean isSOTrx = isSOTrx();
+
 		log.debug("Binding=" + binding + " - IsSOTrx=" + isSOTrx);
+
 		// Force same WH for all but SO/PO
 		int header_M_Warehouse_ID = getM_Warehouse_ID();
-		if (MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType())
-				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType()))
+		if (MDocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
+				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(docSubType))
+		{
 			header_M_Warehouse_ID = 0;		// don't enforce
+		}
 
 		BigDecimal Volume = Env.ZERO;
 		BigDecimal Weight = Env.ZERO;
@@ -1578,10 +1607,10 @@ public class MOrder extends X_C_Order implements DocAction
 			final int lineWarehouseIdAdviced = lineWarehouseAdviced == null ? -1 : lineWarehouseAdviced.getM_Warehouse_ID();
 
 			// Check/set WH/Org
-			if (header_M_Warehouse_ID != 0) 	// enforce WH
+			if (header_M_Warehouse_ID != 0)  	// enforce WH
 			{
 				if (header_M_Warehouse_ID != lineWarehouseIdAdviced
-						&& lineWarehouseIdAdviced != MOrgInfo.get(getCtx(), getAD_Org_ID(), get_TrxName()).getDropShip_Warehouse_ID())  // metas 01658 removing 'isDropShip' flag
+						&& lineWarehouseIdAdviced != MOrgInfo.get(getCtx(), getAD_Org_ID(), get_TrxName()).getDropShip_Warehouse_ID())   // metas 01658 removing 'isDropShip' flag
 				{
 					line.setM_Warehouse_ID(header_M_Warehouse_ID);
 				}
@@ -1622,7 +1651,7 @@ public class MOrder extends X_C_Order implements DocAction
 					final int lineWarehouseId = (line.getM_Warehouse_ID() > 0 ? line.getM_Warehouse_ID() : Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line).getM_Warehouse_ID());
 					int M_Locator_ID = 0;
 					// Get Locator to reserve
-					if (line.getM_AttributeSetInstance_ID() != 0) 	// Get existing Location
+					if (line.getM_AttributeSetInstance_ID() != 0)  	// Get existing Location
 					{
 						M_Locator_ID = MStorage.getM_Locator_ID(line.getM_Warehouse_ID(),
 								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
@@ -1662,7 +1691,7 @@ public class MOrder extends X_C_Order implements DocAction
 							reserved,
 							ordered,
 							get_TrxName());
-				} 	// stockec
+				}  	// stockec
 				// update line
 
 				// task 09358: get rid of this; instead, update qtyReserved only in IOrderLineBL.
@@ -1672,8 +1701,8 @@ public class MOrder extends X_C_Order implements DocAction
 				//
 				Volume = Volume.add(product.getVolume().multiply(line.getQtyOrdered()));
 				Weight = Weight.add(product.getWeight().multiply(line.getQtyOrdered()));
-			} 	// product
-		} 	// reverse inventory
+			}  	// product
+		}  	// reverse inventory
 
 		setVolume(Volume);
 		setWeight(Weight);
@@ -1882,7 +1911,7 @@ public class MOrder extends X_C_Order implements DocAction
 			String msg = shipment.getProcessMsg();
 			if (msg != null && msg.length() > 0)
 				info.append(" (").append(msg).append(")");
-		} 	// Shipment
+		}  	// Shipment
 
 		// Create SO Invoice - Always invoice complete Order
 		if (MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)
@@ -1896,7 +1925,7 @@ public class MOrder extends X_C_Order implements DocAction
 			String msg = invoice.getProcessMsg();
 			if (msg != null && msg.length() > 0)
 				info.append(" (").append(msg).append(")");
-		} 	// Invoice
+		}  	// Invoice
 
 		// User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -1915,7 +1944,7 @@ public class MOrder extends X_C_Order implements DocAction
 		setProcessed(true);
 		m_processMsg = info.toString();
 		//
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Re_Activate); // issue #347
 		return DocAction.STATUS_Completed;
 	}	// completeIt
 
@@ -1935,7 +1964,7 @@ public class MOrder extends X_C_Order implements DocAction
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
@@ -1978,7 +2007,7 @@ public class MOrder extends X_C_Order implements DocAction
 			int M_Locator_ID = MStorage.getM_Locator_ID(warehouseId,
 					oLine.getM_Product_ID(), oLine.getM_AttributeSetInstance_ID(),
 					MovementQty, get_TrxName());
-			if (M_Locator_ID == 0) 		// Get default Location
+			if (M_Locator_ID == 0)  		// Get default Location
 			{
 				MWarehouse wh = MWarehouse.get(getCtx(), warehouseId);
 				M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
@@ -2208,7 +2237,7 @@ public class MOrder extends X_C_Order implements DocAction
 				if (ship.voidIt())
 					ship.setDocStatus(MInOut.DOCSTATUS_Voided);
 			}
-			else if (ship.reverseCorrectIt()) 	// completed shipment
+			else if (ship.reverseCorrectIt())  	// completed shipment
 			{
 				ship.setDocStatus(MInOut.DOCSTATUS_Reversed);
 				info.append(" ").append(ship.getDocumentNo());
@@ -2220,7 +2249,7 @@ public class MOrder extends X_C_Order implements DocAction
 			}
 			ship.setDocAction(MInOut.DOCACTION_None);
 			ship.save(get_TrxName());
-		} 	// for all shipments
+		}  	// for all shipments
 
 		// Reverse All *Invoices*
 		info.append(" - @C_Invoice_ID@:");
@@ -2241,7 +2270,7 @@ public class MOrder extends X_C_Order implements DocAction
 				if (invoice.voidIt())
 					invoice.setDocStatus(MInvoice.DOCSTATUS_Voided);
 			}
-			else if (invoice.reverseCorrectIt()) 	// completed invoice
+			else if (invoice.reverseCorrectIt())  	// completed invoice
 			{
 				invoice.setDocStatus(MInvoice.DOCSTATUS_Reversed);
 				info.append(" ").append(invoice.getDocumentNo());
@@ -2253,7 +2282,7 @@ public class MOrder extends X_C_Order implements DocAction
 			}
 			invoice.setDocAction(MInvoice.DOCACTION_None);
 			invoice.save(get_TrxName());
-		} 	// for all shipments
+		}  	// for all shipments
 
 		m_processMsg = info.toString();
 		return true;
@@ -2447,7 +2476,7 @@ public class MOrder extends X_C_Order implements DocAction
 		// Reverse Direct Documents
 		else if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)	// (W)illCall(I)nvoice
 				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
-				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType)) 			// (W)alkIn(R)eceipt
+				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType))  			// (W)alkIn(R)eceipt
 		{
 			if (!createReversals())
 				return false;

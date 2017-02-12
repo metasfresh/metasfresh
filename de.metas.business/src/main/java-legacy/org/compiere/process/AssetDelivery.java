@@ -20,18 +20,22 @@ import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MAsset;
 import org.compiere.model.MAssetDelivery;
 import org.compiere.model.MClient;
-import org.compiere.model.MMailText;
 import org.compiere.model.MProductDownload;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
-import org.compiere.util.EMail;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.IMailBL;
+import de.metas.email.IMailTextBuilder;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  *	Deliver Assets Electronically
@@ -40,7 +44,7 @@ import org.compiere.util.EMail;
  * 	@version 	$Id: AssetDelivery.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  * 	@author 	Michael Judd BF [ 2736995 ] - toURL() in java.io.File has been deprecated
  */
-public class AssetDelivery extends SvrProcess
+public class AssetDelivery extends JavaProcess
 {
 	private MClient		m_client = null;
 
@@ -52,15 +56,16 @@ public class AssetDelivery extends SvrProcess
 	private int			m_NoGuarantee_MailText_ID = 0;
 	private boolean		m_AttachAsset = false;
 	//
-	private MMailText	m_MailText = null;
+	private IMailTextBuilder m_MailText;
 
 
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -94,6 +99,7 @@ public class AssetDelivery extends SvrProcess
 	 *  @return Message to be translated
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		log.info("");
@@ -200,16 +206,17 @@ public class AssetDelivery extends SvrProcess
 		MUser user = new MUser (getCtx(), asset.getAD_User_ID(), get_TrxName());
 		if (user.getEMail() == null || user.getEMail().length() == 0)
 			return "** No Asset User Email";
+		
 		if (m_MailText == null || m_MailText.getR_MailText_ID() != R_MailText_ID)
-			m_MailText = new MMailText (getCtx(), R_MailText_ID, get_TrxName());
+			m_MailText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), R_MailText_ID);
 		if (m_MailText.getMailHeader() == null || m_MailText.getMailHeader().length() == 0)
 			return "** No Subject";
 
 		//	Create Mail
 		EMail email = m_client.createEMail(user.getEMail(), null, null);
-		m_MailText.setPO(user);
-		m_MailText.setPO(asset);
-		String message = m_MailText.getMailText(true);
+		m_MailText.setAD_User(user);
+		m_MailText.setRecord(asset);
+		String message = m_MailText.getFullMailText();
 		if (m_MailText.isHtml())
 			email.setMessageHTML(m_MailText.getMailHeader(), message);
 		else
@@ -217,10 +224,10 @@ public class AssetDelivery extends SvrProcess
 			email.setSubject (m_MailText.getMailHeader());
 			email.setMessageText (message);
 		}
-		String msg = email.send();
-		new MUserMail(m_MailText, asset.getAD_User_ID(), email).save();
-		if (!EMail.SENT_OK.equals(msg))
-			return "** Not delivered: " + user.getEMail() + " - " + msg;
+		final EMailSentStatus emailSentStatus = email.send();
+		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email, emailSentStatus).save();
+		if (!emailSentStatus.isSentOK())
+			return "** Not delivered: " + user.getEMail() + " - " + emailSentStatus.getSentMsg();
 		//
 		return user.getEMail();
 	}	//	sendNoGuaranteeMail
@@ -245,7 +252,9 @@ public class AssetDelivery extends SvrProcess
 		if (asset.getProductR_MailText_ID() == 0)
 			return "** Product Mail Text";
 		if (m_MailText == null || m_MailText.getR_MailText_ID() != asset.getProductR_MailText_ID())
-			m_MailText = new MMailText (getCtx(), asset.getProductR_MailText_ID(), get_TrxName());
+		{
+			m_MailText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), asset.getProductR_MailText_ID());
+		}
 		if (m_MailText.getMailHeader() == null || m_MailText.getMailHeader().length() == 0)
 			return "** No Subject";
 
@@ -257,11 +266,9 @@ public class AssetDelivery extends SvrProcess
 			asset.setIsActive(false);
 			return "** Invalid EMail: " + user.getEMail();
 		}
-		if (m_client.isSmtpAuthorization())
-			email.createAuthenticator(m_client.getRequestUser(), m_client.getRequestUserPW());
-		m_MailText.setUser(user);
-		m_MailText.setPO(asset);
-		String message = m_MailText.getMailText(true);
+		m_MailText.setAD_User(user);
+		m_MailText.setRecord(asset);
+		String message = m_MailText.getFullMailText();
 		if (m_MailText.isHtml() || m_AttachAsset)
 			email.setMessageHTML(m_MailText.getMailHeader(), message);
 		else
@@ -284,10 +291,10 @@ public class AssetDelivery extends SvrProcess
 			else
 				log.warn("No DowloadURL for A_Asset_ID=" + A_Asset_ID);
 		}
-		String msg = email.send();
-		new MUserMail(m_MailText, asset.getAD_User_ID(), email).save();
-		if (!EMail.SENT_OK.equals(msg))
-			return "** Not delivered: " + user.getEMail() + " - " + msg;
+		final EMailSentStatus emailSentStatus = email.send();
+		new MUserMail(getCtx(), m_MailText.getR_MailText_ID(), asset.getAD_User_ID(), email, emailSentStatus).save();
+		if (!emailSentStatus.isSentOK())
+			return "** Not delivered: " + user.getEMail() + " - " + emailSentStatus.getSentMsg();
 
 		MAssetDelivery ad = asset.confirmDelivery(email, user.getAD_User_ID());
 		ad.save();

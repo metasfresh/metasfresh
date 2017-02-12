@@ -1,15 +1,15 @@
 /******************************************************************************
- * Copyright (C) 2009 Low Heng Sin                                            *
- * Copyright (C) 2009 Idalica Corporation                                     *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Copyright (C) 2009 Low Heng Sin *
+ * Copyright (C) 2009 Idalica Corporation *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package de.metas.banking.payment.paymentallocation.form;
 
@@ -26,15 +26,14 @@ package de.metas.banking.payment.paymentallocation.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -55,8 +54,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.BorderFactory;
@@ -75,6 +72,7 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
@@ -89,7 +87,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.plaf.CompiereColor;
-import org.compiere.process.ProcessInfo;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.table.AnnotatedTableFactory;
 import org.compiere.swing.table.AnnotatedTableModel;
@@ -119,13 +116,11 @@ import de.metas.banking.payment.paymentallocation.service.WriteOffAmountTooBigPa
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.process.ProcessInfo;
 
 public class PaymentAllocationForm
 		extends AbstractPaymentAllocationForm
-		implements FormPanel
-		, ActionListener
-		, TableModelListener
-		, VetoableChangeListener
+		implements FormPanel, ActionListener, TableModelListener, VetoableChangeListener
 {
 	// Services
 	private final IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
@@ -138,7 +133,6 @@ public class PaymentAllocationForm
 	 */
 	private final String SPECIALVENDORID_ALLOWMULTIPLEDOCSALLOCATION_PREFIX = "de.metas.banking.SpecialVendorID_";
 
-
 	/** This AD_Form_ID */
 	public static final int AD_FORM_ID = 104;
 
@@ -148,6 +142,8 @@ public class PaymentAllocationForm
 	private static final String PROPERTY_C_Currency_ID = "C_Currency_ID";
 	private static final String PROPERTY_RefreshButton = "Refresh";
 	private final List<Object> componentList = new ArrayList<>();
+
+	private static final String ERR_PaymentAllocationForm_WriteOffPayments_NoAllocation = "PaymentAllocationForm_WriteOffPayments_NoAllocation";
 
 	// sys config vars
 	private static final String SYSCONFIG_HideIsmultiCurrencyField = "PaymentAllocation.HideIsmultiCurrencyField";
@@ -185,7 +181,7 @@ public class PaymentAllocationForm
 			final ProcessInfo processInfo = frame.getProcessInfo();
 			if (processInfo != null)
 			{
-				final I_C_PaySelectionLine paySelectionLine = processInfo.getRecordIfApplies(I_C_PaySelectionLine.class, ITrx.TRXNAME_None).orNull();
+				final I_C_PaySelectionLine paySelectionLine = processInfo.getRecordIfApplies(I_C_PaySelectionLine.class, ITrx.TRXNAME_None).orElse(null);
 				if (paySelectionLine != null)
 				{
 					final int bpartnerId = paySelectionLine.getC_BPartner_ID();
@@ -779,6 +775,28 @@ public class PaymentAllocationForm
 		m_frame.setBusy(true);
 		try
 		{
+			// FRESH-523: In case some of the selected payment lines have a discount set (are to be written off) the user is not allowed to allocate them if no invoice lines are selected
+			boolean isWriteOff = false;
+
+			if (getInvoiceRowsSelectedCount() <= 0)
+			{
+				for (final IPaymentRow payment : getPaymentRowsSelected())
+				{
+					if (payment.getDiscountAmt().signum() != 0)
+					{
+						isWriteOff = true;
+
+						break;
+					}
+				}
+			}
+
+			if (isWriteOff)
+			{
+				final String errorMsg = Services.get(IMsgBL.class).getMsg(getCtx(), ERR_PaymentAllocationForm_WriteOffPayments_NoAllocation);
+				throw new AdempiereException("@" + MSG_PREFIX + "@" + errorMsg);
+			}
+
 			final List<IPayableDocument> payableDocuments = new ArrayList<>();
 			for (final IInvoiceRow invoice : getInvoiceRowsSelected())
 			{
@@ -1084,17 +1102,17 @@ public class PaymentAllocationForm
 		}
 
 		final boolean reloadTables;
-		if (name.equals(organisationField.getColumnName())) // Organization
+		if (name.equals(organisationField.getColumnName()))  // Organization
 		{
 			setAD_Org_ID(((Integer)value).intValue());
 			reloadTables = true; // re-query rows because our filtering criteria was changed and we could get more/less rows now
 		}
-		else if (name.equals(bpartnerField.getColumnName())) // BPartner
+		else if (name.equals(bpartnerField.getColumnName()))  // BPartner
 		{
 			setC_BPartner_ID(((Integer)value).intValue());
 			reloadTables = true; // re-query rows because our filtering criteria was changed and we could get more/less rows now
 		}
-		else if (name.equals(currencyField.getColumnName())) // Currency
+		else if (name.equals(currencyField.getColumnName()))  // Currency
 		{
 			setC_Currency_ID(((Integer)value).intValue());
 			reloadTables = true; // re-query rows because our filtering criteria was changed and we could get more/less rows now
@@ -1236,6 +1254,9 @@ public class PaymentAllocationForm
 	{
 		final ReadPaymentDocumentDialog readPaymentDocumentDialog = ReadPaymentDocumentDialog.create(getCtx(), m_frame, getAD_Org_ID());
 		final ReadPaymentDocumentPanel readPaymentDocumentPanel = readPaymentDocumentDialog.getDialogComponent();
+
+		// gh #781: provide the invoice's bPartner so the panel can filter matching accounts by relevance
+		readPaymentDocumentPanel.setContextBPartner_ID(getC_BPartner_ID());
 
 		readPaymentDocumentDialog.addWindowListener(new ReadPaymentDialogWindowAdapter(readPaymentDocumentPanel)
 		{

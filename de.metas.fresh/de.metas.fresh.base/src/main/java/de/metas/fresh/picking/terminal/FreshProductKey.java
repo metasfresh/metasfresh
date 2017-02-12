@@ -16,15 +16,14 @@ package de.metas.fresh.picking.terminal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -46,9 +45,10 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
+import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshPackingItem;
+import de.metas.fresh.picking.form.FreshPackingItemHelper;
+import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -102,11 +102,11 @@ public class FreshProductKey extends ProductKey
 	 */
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		final FreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
-		final FreshPackingItem allocatedPackingItem = getPackingItem();
+		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
+		final IFreshPackingItem allocatedPackingItem = getPackingItem();
 		if (allocatedPackingItem != null || unallocatedPackingItem != null)
 		{
-			final FreshPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
+			final IFreshPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
 
 			final I_M_HU_PI_Item_Product pip = pck.getM_HU_PI_Item_Product();
 			return pip;
@@ -118,14 +118,14 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * this is the packing item which contains unallocated scheds and unallocated qty
 	 */
-	private FreshPackingItem _unallocatedPackingItem;
+	private IFreshPackingItem _unallocatedPackingItem;
 
-	public FreshProductKey(final ITerminalContext terminalContext, final FreshPackingItem pck, final int boxNo)
+	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck, final int boxNo)
 	{
 		super(terminalContext,
 				pck,
 				boxNo,
-				pck.getC_BPartner(), // BPartner
+				pck.getC_BPartner(),   // BPartner
 				pck.getC_BPartner_Location() // BPartner Location
 		);
 	}
@@ -133,7 +133,7 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * @return packing item for unallocated quantity; never returns <code>null</code>
 	 */
-	public FreshPackingItem getUnAllocatedPackingItem()
+	public IFreshPackingItem getUnAllocatedPackingItem()
 	{
 		if (_unallocatedPackingItem == null)
 		{
@@ -145,20 +145,20 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * @return packing item for unallocated quantity or <code>null</code>
 	 */
-	private final FreshPackingItem getUnAllocatedPackingItemOrNull()
+	private final IFreshPackingItem getUnAllocatedPackingItemOrNull()
 	{
 		return _unallocatedPackingItem;
 	}
 
-	public void setUnAllocatedPackingItem(FreshPackingItem pck)
+	public void setUnAllocatedPackingItem(IFreshPackingItem pck)
 	{
 		this._unallocatedPackingItem = pck;
 	}
 
 	@Override
-	public FreshPackingItem getPackingItem()
+	public IFreshPackingItem getPackingItem()
 	{
-		return (FreshPackingItem)super.getPackingItem();
+		return FreshPackingItemHelper.cast(super.getPackingItem());
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class FreshProductKey extends ProductKey
 
 	public BigDecimal getQtyUnallocated()
 	{
-		final AbstractPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
+		final IPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
 		if (unallocPackingItem == null)
 		{
 			return BigDecimal.ZERO;
@@ -206,7 +206,7 @@ public class FreshProductKey extends ProductKey
 
 	public I_C_UOM getQtyUnallocatedUOM()
 	{
-		final AbstractPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
+		final IPackingItem unallocPackingItem = getUnAllocatedPackingItemOrNull();
 		Check.assumeNotNull(unallocPackingItem, "unallocPackingItem not null");
 		return unallocPackingItem.getC_UOM();
 	}
@@ -250,19 +250,31 @@ public class FreshProductKey extends ProductKey
 	}
 
 	/**
-	 * Search for available HUs to be picked
+	 * Search for available HUs to be picked.
 	 * 
-	 * @return list of HUs; might return null
+	 * @return matching HUs
 	 */
 	public List<I_M_HU> findAvailableHUs()
+	{
+		final boolean considerAttributes = true;
+		return findAvailableHUs(considerAttributes);
+	}
+
+	/**
+	 * Search for available HUs to be picked.
+	 * 
+	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
+	 * @return matching HUs
+	 */
+	public List<I_M_HU> findAvailableHUs(final boolean considerAttributes)
 	{
 		//
 		// Create storage queries from shipment schedules
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
-		final FreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
+		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
 		for (final I_M_ShipmentSchedule shipmentSchedule : unallocatedPackingItem.getShipmentSchedules())
 		{
-			final IStorageQuery storageQuery = createStorageQuery(shipmentSchedule);
+			final IStorageQuery storageQuery = createStorageQuery(shipmentSchedule, considerAttributes);
 			storageQueries.add(storageQuery);
 		}
 
@@ -316,12 +328,19 @@ public class FreshProductKey extends ProductKey
 		return new ArrayList<>();
 	}
 
-	private IStorageQuery createStorageQuery(final I_M_ShipmentSchedule sched)
+	/**
+	 * Creates "HUs available to be picked" storage query.
+	 * 
+	 * @param sched
+	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
+	 * @return query
+	 */
+	private IStorageQuery createStorageQuery(final I_M_ShipmentSchedule sched, final boolean considerAttributes)
 	{
 		final IStorageEngine storageEngine = getStorageEngine();
 
 		//
-		// Create stoarge query
+		// Create storage query
 		final I_M_Product product = sched.getM_Product();
 		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
@@ -332,11 +351,14 @@ public class FreshProductKey extends ProductKey
 		storageQuery.addPartner(bpartner);
 
 		// Add query attributes
-		final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
-		if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+		if (considerAttributes)
 		{
-			final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
-			storageQuery.addAttributes(attributeSet);
+			final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
+			if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+			{
+				final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
+				storageQuery.addAttributes(attributeSet);
+			}
 		}
 
 		return storageQuery;

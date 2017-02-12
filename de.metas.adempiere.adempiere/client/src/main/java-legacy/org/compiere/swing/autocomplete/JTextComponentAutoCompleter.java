@@ -60,7 +60,7 @@ import com.jgoodies.looks.Options;
 /**
  * Auto-complete support for a {@link JTextComponent}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class JTextComponentAutoCompleter
 {

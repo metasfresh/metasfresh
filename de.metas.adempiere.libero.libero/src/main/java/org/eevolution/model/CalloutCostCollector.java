@@ -42,7 +42,7 @@ package org.eevolution.model;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -60,7 +60,7 @@ public class CalloutCostCollector extends CalloutEngine
 		Integer PP_Order_ID = (Integer)value;
 		if (PP_Order_ID == null || PP_Order_ID <= 0)
 			return "";
-		I_PP_Cost_Collector cc = GridTabWrapper.create(mTab, I_PP_Cost_Collector.class);
+		I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(mTab, I_PP_Cost_Collector.class);
 		//
 		MPPOrder pp_order =  new MPPOrder(ctx, PP_Order_ID, null);
 		MPPCostCollector.setPP_Order(cc, pp_order);
@@ -73,7 +73,7 @@ public class CalloutCostCollector extends CalloutEngine
 		Integer PP_Order_Node_ID = (Integer)value;
 		if (PP_Order_Node_ID == null || PP_Order_Node_ID <= 0)
 			return "";
-		I_PP_Cost_Collector cc = GridTabWrapper.create(mTab, I_PP_Cost_Collector.class);
+		I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(mTab, I_PP_Cost_Collector.class);
 		//
 		MPPOrderNode node = getPP_Order_Node(ctx, PP_Order_Node_ID);
 		cc.setS_Resource_ID(node.getS_Resource_ID());
@@ -87,7 +87,7 @@ public class CalloutCostCollector extends CalloutEngine
 	
 	public String duration (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_PP_Cost_Collector cc = GridTabWrapper.create(mTab, I_PP_Cost_Collector.class);
+		I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(mTab, I_PP_Cost_Collector.class);
 		if (cc.getPP_Order_Node_ID() <= 0)
 			return "";
 		

@@ -31,7 +31,7 @@ import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 /**
  * Creates {@link IPaymentBatch}es.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPaymentBatchFactory extends ISingletonService

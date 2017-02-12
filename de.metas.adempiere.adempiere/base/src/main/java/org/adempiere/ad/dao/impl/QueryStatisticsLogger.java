@@ -1,168 +1,144 @@
 package org.adempiere.ad.dao.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
+import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
-import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLogger;
-import org.adempiere.ad.dao.jmx.JMXQueryStatisticsLoggerMBean;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.db.util.AbstractResultSetBlindIterator;
+import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.Check;
+import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.util.CStatementVO;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
 
-public class QueryStatisticsLogger implements IQueryStatisticsLogger
+import com.google.common.base.Stopwatch;
+
+@Service
+@ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
+public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStatisticsCollector
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
+	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
 
 	private boolean enabled = false;
-	private final Map<String, QueryStatistics> sql2statistics = new HashMap<String, QueryStatistics>();
-	private final ReentrantLock lock = new ReentrantLock();
+	private final ConcurrentHashMap<String, QueryStatistics> sql2statistics = new ConcurrentHashMap<>();
 	private Date validFrom = null;
 	private String filterBy = null;
+
+	private boolean traceSqlQueries = false;
+	private static final AtomicInteger traceSqlQueries_Count = new AtomicInteger(0);
 
 	public QueryStatisticsLogger()
 	{
 		super();
-
-		registerJMX();
-	}
-
-	private void registerJMX()
-	{
-		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		final JMXQueryStatisticsLoggerMBean jmxBean = new JMXQueryStatisticsLogger();
-		final String jmxName = getClass().getName() + ":type=Statistics";
-
-		final ObjectName name;
-		try
-		{
-			name = new ObjectName(jmxName);
-		}
-		catch (final MalformedObjectNameException e)
-		{
-			logger.warn("Unable to create ObjectName: " + jmxName, e);
-			return;
-		}
-
-		try
-		{
-			if (!mbs.isRegistered(name))
-			{
-				mbs.registerMBean(jmxBean, name);
-			}
-		}
-		catch (final InstanceAlreadyExistsException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
-		catch (final MBeanRegistrationException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
-		catch (final NotCompliantMBeanException e)
-		{
-			logger.warn("Unable to register JMX Bean: " + jmxBean, e);
-			return;
-		}
 	}
 
 	@Override
-	public void collect(final String sql)
+	public void collect(final CStatementVO vo, final Stopwatch duration)
 	{
 		if (!enabled)
 		{
 			return;
 		}
 
-		lock.lock();
-		try
+		final String sql = vo == null ? null : vo.getSql();
+		final Map<Integer, Object> sqlParams = vo == null ? null : vo.getDebugSqlParams();
+		collect(sql, sqlParams, duration);
+	}
+
+	@Override
+	public void collect(final String sql, final Stopwatch duration)
+	{
+		if (!enabled)
 		{
-			//
-			// Do not log if we're filtering
-			if (isFilterBy() && !sql.contains(filterBy)) // TODO filter by RegEx?
-			{
-				return;
-			}
-
-			QueryStatistics queryStatistics = sql2statistics.get(sql);
-			if (queryStatistics == null)
-			{
-				queryStatistics = new QueryStatistics(sql);
-				sql2statistics.put(sql, queryStatistics);
-			}
-
-			queryStatistics.incrementCounter();
+			return;
 		}
-		finally
+
+		final Map<Integer, Object> sqlParams = null;
+		collect(sql, sqlParams, duration);
+	}
+
+	private void collect(final String sql, final Map<Integer, Object> sqlParams, final Stopwatch durationStopwatch)
+	{
+		if (!enabled)
 		{
-			lock.unlock();
+			return;
+		}
+
+		// Snapshot the duration as soon as possible
+		final long durationValue = durationStopwatch.elapsed(TIMEUNIT_Internal);
+
+		//
+		// Do not log if we're filtering
+		if (!isSqlAccepted(sql))
+		{
+			return;
+		}
+
+		final QueryStatistics queryStatistics = sql2statistics.computeIfAbsent(sql, (sqlKey) -> new QueryStatistics(sqlKey));
+		final CountAndDuration duration = queryStatistics.incrementAndGet(durationValue);
+
+		if (traceSqlQueries)
+		{
+			traceSqlQuery(sql, sqlParams, duration);
 		}
 	}
 
 	@Override
+	@ManagedOperation(description = "Enables statistics collector")
 	public void enable()
 	{
-		if (enabled)
-		{
-			return;
-		}
+		enabled = false;
 
 		reset();
 		enabled = true;
+		StatementsFactory.instance.enableSqlQueriesTracing(this);
 	}
 
 	@Override
+	@ManagedOperation(description = "Enables statistics collector and console tracing of executed SQLs")
+	public void enableWithSqlTracing()
+	{
+		enable();
+
+		final boolean traceSqlQueriesOld = traceSqlQueries;
+		traceSqlQueries = enabled;
+
+		final int countPrev = traceSqlQueries_Count.get();
+		traceSqlQueries_Count.set(0);
+
+		System.err.println("\n");
+		System.err.println("*********************************************************************************************");
+		System.err.println("*** Enabled SQL Tracing in " + getClass());
+		System.err.println("");
+		System.err.println("Before calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled"));
+		System.err.println("Previous SQLs counter was " + countPrev + " and now was reset to ZERO.");
+		System.err.println("*********************************************************************************************");
+		System.err.println("\n");
+	}
+
+	@Override
+	@ManagedOperation(description = "Disables statistics collector (and tracing)")
 	public void disable()
 	{
-		if (!enabled)
-		{
-			return;
-		}
-
 		enabled = false;
+
+		traceSqlQueries = false;
+		StatementsFactory.instance.disableSqlQueriesTracing();
 	}
 
 	@Override
+	@ManagedOperation(description = "Resets currently collected statistics and counters")
 	public void reset()
 	{
 		sql2statistics.clear();
@@ -170,6 +146,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger
 	}
 
 	@Override
+	@ManagedOperation(description = "Sets a filter for SQLs which are collected for statistics. NOTE: this is not affecting the SQL tracing.")
 	public void setFilterBy(final String filterBy)
 	{
 		if (Check.equals(this.filterBy, filterBy))
@@ -180,96 +157,346 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger
 		}
 
 		reset();
-		this.filterBy = filterBy;
+
+		this.filterBy = Check.isEmpty(filterBy, true) ? null : filterBy;
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets the SQL query filter")
 	public String getFilterBy()
 	{
 		return filterBy;
 	}
 
 	@Override
+	@ManagedOperation(description = "Clears the current SQL query filter, if any")
 	public void clearFilterBy()
 	{
 		setFilterBy(null);
 	}
 
-	private boolean isFilterBy()
+	private final boolean isSqlAccepted(final String sql)
 	{
-		return !Check.isEmpty(filterBy);
+		if (sql == null)
+		{
+			// shall not happen
+			return false;
+		}
+
+		final String filterBy = this.filterBy;
+		if (filterBy == null)
+		{
+			return true;
+		}
+
+		// TODO filter by RegEx?
+		return sql.contains(filterBy);
 	}
 
 	@Override
+	@ManagedOperation(description = "Gets the timestamp from when we started to collect the statistics")
 	public Date getValidFrom()
 	{
 		return validFrom;
 	}
 
-	private List<QueryStatistics> getQueryStatistics()
+	private final void traceSqlQuery(final String sql, final Map<Integer, Object> sqlParams, final CountAndDuration duration)
 	{
-		lock.lock();
-		try
+		final Thread thread = Thread.currentThread();
+		final String threadName = thread.getName();
+		final StackTraceElement[] stacktrace = thread.getStackTrace();
+		final String durationStr = duration.getLastDurationAsString(TIMEUNIT_Display) + " (Avg. " + duration.getAverageDurationAsString(TIMEUNIT_Display) + ")";
+
+		final int count = traceSqlQueries_Count.incrementAndGet();
+		final String prefix = "-- SQL[" + count + "]-" + threadName + "-";
+		final String prefixSQL = "                 ";
+		final String nl = "\r\n";
+
+		final StringBuilder message = new StringBuilder();
+
+		//
+		// Duration
+		message.append("-- Duration: " + durationStr);
+
+		//
+		// Dump the stacktrace as short as possible
+		final String stackTraceStr = toOnLineString(stacktrace);
+		message.append(nl + "-- Stacktrace: ").append(stackTraceStr);
+
+		//
+		// SQL query
+		if (sql == null)
 		{
-			return new ArrayList<QueryStatistics>(sql2statistics.values());
+			message.append(nl + "<NO SQL QUERY>");
 		}
-		finally
+		else
 		{
-			lock.unlock();
+			final String sqlNorm = sql
+					.trim()
+					.replace(nl, "\n").replace("\n", nl); // make sure we always have \r\n
+			message.append(nl + sqlNorm);
 		}
+
+		//
+		// SQL query parameters
+		if (sqlParams != null && !sqlParams.isEmpty())
+		{
+			message.append(nl + "-- Parameters[" + sqlParams.size() + "]: " + sqlParams);
+		}
+
+		//
+		// Print the message
+		System.err.println("");
+		System.err.println(prefix + "-begin---------------------------------------------------------------------------");
+		System.err.println(prefixSQL + message.toString().replaceAll("\n", prefixSQL));
+		System.err.println(prefix + "-end-----------------------------------------------------------------------------");
+		System.err.println("");
+	}
+
+	private static final String toOnLineString(final StackTraceElement[] stacktrace)
+	{
+		final StringBuilder stackTraceStr = new StringBuilder();
+		int ste_Considered = 0;
+		boolean ste_lastSkipped = false;
+		for (final StackTraceElement ste : stacktrace)
+		{
+			if (ste_Considered >= 100)
+			{
+				stackTraceStr.append("...");
+				break;
+			}
+
+			String classname = ste.getClassName();
+			final String methodName = ste.getMethodName();
+
+			// Skip some irrelevant stack trace elements
+			if (classname.startsWith("java.") || classname.startsWith("javax.") || classname.startsWith("sun.")
+					|| classname.startsWith("com.google.")
+					|| classname.startsWith("org.springframework.")
+					|| classname.startsWith("org.apache.")
+					|| classname.startsWith(QueryStatisticsLogger.class.getPackage().getName())
+					//
+					|| classname.startsWith(StatementsFactory.class.getPackage().getName())
+					|| classname.startsWith(AbstractResultSetBlindIterator.class.getPackage().getName())
+					|| classname.startsWith(ITrxManager.class.getPackage().getName())
+					|| classname.startsWith(org.adempiere.ad.persistence.TableModelLoader.class.getPackage().getName())
+					//
+					|| classname.startsWith(JavaAssistInterceptor.class.getPackage().getName())
+					|| classname.indexOf("_$$_jvstdca_") >= 0 // javassist proxy
+					|| methodName.startsWith("access$")
+			//
+			)
+			{
+				ste_lastSkipped = true;
+				continue;
+			}
+
+			final int lastDot = classname.lastIndexOf(".");
+			if (lastDot >= 0)
+			{
+				classname = classname.substring(lastDot + 1);
+			}
+
+			if (ste_lastSkipped || stackTraceStr.length() > 0)
+			{
+				stackTraceStr.append(ste_lastSkipped ? " <~~~ " : " <- ");
+			}
+
+			stackTraceStr.append(classname).append(".").append(methodName);
+
+			final int lineNumber = ste.getLineNumber();
+			if (lineNumber > 0)
+			{
+				stackTraceStr.append(":").append(lineNumber);
+			}
+
+			ste_lastSkipped = false;
+			ste_Considered++;
+		}
+
+		return stackTraceStr.toString();
+	}
+
+	/**
+	 * @author com.google.common.base.Stopwatch.abbreviate(TimeUnit)
+	 */
+	private static String abbreviate(final TimeUnit unit)
+	{
+		switch (unit)
+		{
+			case NANOSECONDS:
+				return "ns";
+			case MICROSECONDS:
+				return "\u03bcs"; // Î¼s
+			case MILLISECONDS:
+				return "ms";
+			case SECONDS:
+				return "s";
+			case MINUTES:
+				return "min";
+			case HOURS:
+				return "h";
+			case DAYS:
+				return "d";
+			default:
+				throw new AssertionError();
+		}
+	}
+
+	private static final double convert(final double duration, final TimeUnit fromUnit, final TimeUnit unit)
+	{
+		final double durationConv = duration / fromUnit.convert(1, unit);
+		return durationConv;
+	}
+
+	private static final String format(final double duration, final TimeUnit fromUnit, final TimeUnit toUnit)
+	{
+		final double durationConv = convert(duration, fromUnit, toUnit);
+		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
 	}
 
 	@Override
-	public String[] getTopQueriesAsString()
+	@ManagedOperation(description = "Gets top SQL queries ordered by their total summed executon time (descending)")
+	public String[] getTopTotalDurationQueriesAsString()
 	{
-		final List<QueryStatistics> queryStatisticsList = getQueryStatistics();
-		Collections.sort(queryStatisticsList, new Comparator<QueryStatistics>()
-		{
-
-			@Override
-			public int compare(final QueryStatistics o1, final QueryStatistics o2)
-			{
-				return (o1.getCount() - o2.getCount()) * -1;
-			}
-		});
-
-		final String[] result = new String[queryStatisticsList.size()];
-		for (int i = 0; i < queryStatisticsList.size(); i++)
-		{
-			final QueryStatistics queryStatistics = queryStatisticsList.get(i);
-			final String queryStatisticsStr = queryStatistics.toString();
-			result[i] = queryStatisticsStr;
-		}
-
-		return result;
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getTotalDuration));
 	}
 
-	private static class QueryStatistics
+	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their execution count (descending)")
+	public String[] getTopCountQueriesAsString()
+	{
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getCount));
+	}
+
+	@Override
+	@ManagedOperation(description = "Gets top SQL queries ordered by their average execution time (descending)")
+	public String[] getTopAverageDurationQueriesAsString()
+	{
+		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getAverageDuration));
+	}
+
+	private String[] getTopQueriesAsString(final Comparator<QueryStatistics> comparing)
+	{
+		return sql2statistics.values()
+				.stream()
+				.sorted(comparing.reversed())
+				.map(stat -> stat.toString())
+				.toArray(size -> new String[size]);
+	}
+
+
+	private static final class CountAndDuration
+	{
+		public static final CountAndDuration ZERO = new CountAndDuration(0, 0, 0);
+
+		private final long count;
+		private final long durationTotal;
+		private final long durationLast;
+
+		private CountAndDuration(final long count, final long durationTotal, final long durationLast)
+		{
+			this.count = count;
+			this.durationTotal = durationTotal;
+			this.durationLast = durationLast;
+		}
+
+		@Override
+		public String toString()
+		{
+			return getAverageDurationAsString(TIMEUNIT_Display)
+					+ ", Total " + getTotalDurationAsString(TIMEUNIT_Display);
+		}
+
+		public String getAverageDurationAsString(final TimeUnit timeUnit)
+		{
+			return format(getAverageDuration(), TIMEUNIT_Internal, timeUnit) + " / " + count + " executions";
+		}
+
+		public String getLastDurationAsString(final TimeUnit timeUnit)
+		{
+			return format(durationLast, TIMEUNIT_Internal, timeUnit);
+		}
+
+		public String getTotalDurationAsString(final TimeUnit timeUnit)
+		{
+			return format(durationTotal, TIMEUNIT_Internal, timeUnit);
+		}
+
+		public CountAndDuration newIncrement(final long durationToAdd)
+		{
+			if (durationToAdd == 0)
+			{
+				return this;
+			}
+
+			return new CountAndDuration(count + 1, durationTotal + durationToAdd, durationToAdd);
+		}
+
+		public long getCount()
+		{
+			return count;
+		}
+
+		private double getAverageDuration()
+		{
+			if (count == 0)
+			{
+				return count;
+			}
+
+			return durationTotal / count;
+		}
+
+		private long getTotalDuration()
+		{
+			return durationTotal;
+		}
+	}
+
+	private static final class QueryStatistics
 	{
 		private final String sql;
-		private int count = 0;
+		private final AtomicReference<CountAndDuration> countAndDurationRef;
 
 		public QueryStatistics(final String sql)
 		{
 			super();
 			this.sql = sql;
+			this.countAndDurationRef = new AtomicReference<>(CountAndDuration.ZERO);
 		}
 
 		@Override
 		public String toString()
 		{
 			return "SQL: " + sql
-					+ "\nCount: " + count;
+					+ "\n-- " + countAndDurationRef.get();
 		}
 
-		public void incrementCounter()
+		public CountAndDuration incrementAndGet(final long duration)
 		{
-			count++;
+			return countAndDurationRef.updateAndGet(countAndDuration -> countAndDuration.newIncrement(duration));
 		}
 
-		public int getCount()
+		@SuppressWarnings("unused")
+		public String getSql()
 		{
-			return count;
+			return sql;
+		}
+
+		public long getCount()
+		{
+			return countAndDurationRef.get().getCount();
+		}
+
+		public long getTotalDuration()
+		{
+			return countAndDurationRef.get().getTotalDuration();
+		}
+
+		private double getAverageDuration()
+		{
+			return countAndDurationRef.get().getAverageDuration();
 		}
 	}
 }

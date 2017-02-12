@@ -13,15 +13,14 @@ package de.metas.banking.payment.paymentallocation.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -33,6 +32,9 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.swing.AbstractAction;
@@ -42,6 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,6 +54,8 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
@@ -64,11 +69,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.banking.payment.IPaymentString;
@@ -76,7 +77,7 @@ import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
-import de.metas.logging.LogManager;
+import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.LogManager;
 import de.metas.payment.model.I_C_Payment_Request;
 import net.miginfocom.swing.MigLayout;
@@ -143,6 +144,8 @@ class ReadPaymentDocumentPanel
 	private final JLabel amountLabel = new JLabel();
 	private final VNumber amountField;
 
+	private int contextBPartner_ID;
+
 	/**
 	 * @param window
 	 * @param AD_Org_ID
@@ -178,19 +181,16 @@ class ReadPaymentDocumentPanel
 		// Load partner lookup column
 		final I_AD_Column bpartnerColumn = adTableDAO.retrieveColumn(I_C_BPartner.Table_Name, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 
-		final Language language = Env.getLanguage(ctx);
 		final String validationCode = I_C_BPartner.Table_Name + "." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = " + AD_Org_ID;
 		final Lookup bpartnerLookup = MLookupFactory.get(
 				Env.getCtx(),
 				WindowNo,
 				bpartnerColumn.getAD_Column_ID(),
 				DisplayType.Search,
-				language,
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 				138, // C_BPartner (trx)
 				false,
-				validationCode
-				);
+				validationCode);
 
 		bpartnerField = new VLookup(I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 				true, // mandatory
@@ -218,6 +218,20 @@ class ReadPaymentDocumentPanel
 				msgBL.translate(ctx, I_C_Payment_Request.COLUMNNAME_Amount));
 
 		init();
+	}
+
+	/**
+	 * Optionally set the ID of a bPartner that needs to have a relation to the payment document which we are reading.<br>
+	 * If set, and the system finds an existing {@link I_C_BP_BankAccount}, then that bank account is only used
+	 * if it belongs to the given {@code contextBPartner} or to a second bPartner who has a {@code RemitTo} {@link I_C_BP_Relation} with the given {@code contextPartner}.
+	 *
+	 * @param contextBPartner_ID
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/781
+	 */
+	public void setContextBPartner_ID(final int contextBPartner_ID)
+	{
+		this.contextBPartner_ID = contextBPartner_ID;
 	}
 
 	public Component getComponent()
@@ -369,6 +383,7 @@ class ReadPaymentDocumentPanel
 	private final void parsePaymentString(final Properties ctx)
 	{
 		updateCurrentPaymentString();
+
 		if (Check.isEmpty(currentPaymentString, true))
 		{
 			return; // do nothing if it's empty
@@ -388,7 +403,7 @@ class ReadPaymentDocumentPanel
 
 		final IPaymentString paymentString = dataProvider.getPaymentString();
 
-		final I_C_BP_BankAccount bpBankAccountExisting = dataProvider.getC_BP_BankAccountOrNull();
+		final I_C_BP_BankAccount bpBankAccountExisting = getAndVerifyBPartnerAccount(dataProvider);
 		if (bpBankAccountExisting != null)
 		{
 			setC_BPartner_ID(bpBankAccountExisting.getC_BPartner_ID());
@@ -411,7 +426,7 @@ class ReadPaymentDocumentPanel
 			}
 			else
 			{
-				final IContextAware contextProvider = new PlainContextAware(ctx);
+				final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
 
 				//
 				// Let the user edit for now
@@ -426,6 +441,65 @@ class ReadPaymentDocumentPanel
 		setAmount(amount);
 
 		currentParsedPaymentString = paymentString;
+	}
+
+	/**
+	 * Calls {@link IPaymentStringDataProvider#getC_BP_BankAccounts()} and
+	 * <li>filters out accounts where {@link #validateAgainstContextBPartner(I_C_BP_BankAccount)} returned a {@code 3}
+	 * <li>orders by the result of {@link #validateAgainstContextBPartner(I_C_BP_BankAccount)}, i.e. prefers 1s order 2s
+	 * <li>returns the first match.
+	 *
+	 * @param dataProvider
+	 * @return
+	 */
+	private I_C_BP_BankAccount getAndVerifyBPartnerAccount(final IPaymentStringDataProvider dataProvider)
+	{
+		final Optional<I_C_BP_BankAccount> firstBankAccount = dataProvider.getC_BP_BankAccounts().stream()
+				.map(bankAccount -> ImmutablePair.of(bankAccount, validateAgainstContextBPartner(bankAccount)))
+				.filter(pair -> pair.getRight() < 3)
+				.sorted(Comparator.comparing(IPair::getRight))
+				.map(pair -> pair.getLeft())
+				.findFirst();
+
+		return firstBankAccount.orElse(null);
+	}
+
+	/**
+	 * Checks the given {@code bpBankAccount} against the partner that was set via {@link #setContextBPartner_ID(I_C_BPartner)} (if any) and returns:
+	 * <li>{@code 1} if no {@link #setContextBPartner_ID(I_C_BPartner)} was set, or if the given {@code bpBankAccount}'s bPartner is the one that was set
+	 * <li>{@code 2} else, if the given {@code bpBankAccount}'s bPartner is a {@code RemitTo} partner of the {@link #setContextBPartner_ID(I_C_BPartner)} partner
+	 * <li>{@code 3} else
+	 *
+	 * @param bpBankAccount
+	 * @return
+	 */
+	private int validateAgainstContextBPartner(final I_C_BP_BankAccount bpBankAccount)
+	{
+		if (contextBPartner_ID <= 0)
+		{
+			// we have no BPartner-Context-Info, so we can't verify the bank account.
+			return 1;
+		}
+
+		if (contextBPartner_ID == bpBankAccount.getC_BPartner_ID())
+		{
+			// the BPartner from the account we looked up is thae one from context
+			return 1;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final boolean existsRelation = queryBL.createQueryBuilder(I_C_BP_Relation.class, bpBankAccount)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsRemitTo, true)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, contextBPartner_ID)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, bpBankAccount.getC_BPartner_ID())
+				.create()
+				.match();
+		if (existsRelation)
+		{
+			return 2;
+		}
+		return 3;
 	}
 
 	public IPaymentString getParsedPaymentStringOrNull()
@@ -485,7 +559,7 @@ class ReadPaymentDocumentPanel
 	private boolean isPaymentStringChanging()
 	{
 		final Object paymentStringValue = paymentStringField.getValue();
-		return !Check.equals(currentPaymentString, paymentStringValue);
+		return !Objects.equals(currentPaymentString, paymentStringValue);
 	}
 
 	/**
@@ -498,7 +572,7 @@ class ReadPaymentDocumentPanel
 	 */
 	private void onDialogOk()
 	{
-		final IContextAware contextProvider = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(Env.getCtx());
 
 		//
 		// Create it, but do not save it!
@@ -641,7 +715,7 @@ class ReadPaymentDocumentPanel
 		if (paymentRequestTemplate == null)
 		{
 			// dialog was cancelled => nothing to do
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		final ReadPaymentPanelResult.Builder resultBuilder = ReadPaymentPanelResult.builder();
@@ -671,7 +745,7 @@ class ReadPaymentDocumentPanel
 		final IPaymentString parsedPaymentString = getParsedPaymentStringOrNull();
 		if (parsedPaymentString == null)
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 		final String reference = parsedPaymentString.getReferenceNoComplete();
 		paymentRequestTemplate.setReference(reference);

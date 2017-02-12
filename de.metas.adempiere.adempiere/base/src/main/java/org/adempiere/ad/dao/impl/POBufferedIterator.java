@@ -10,18 +10,17 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.List;
@@ -37,9 +36,9 @@ import de.metas.logging.LogManager;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <ET> model interface
  */
 /* package */final class POBufferedIterator<T, ET extends T> implements Iterator<ET>
@@ -48,22 +47,34 @@ import de.metas.logging.LogManager;
 
 	private final TypedSqlQuery<T> query;
 	private final Class<ET> clazz;
+	private final String rowNumberColumn;
 
 	private int bufferSize = 50;
-	private int offset = 0;
-	// private List<ET> buffer;
+	private int offset = 0; // in the DB, line is set via the row_number() window function wich starts at 1
+
 	private Iterator<ET> bufferIterator;
 
 	/**
 	 * Buffer was fully loaded? True when buffer contains as much data as it was required. If this flag is false then it's a good indicator that we are on last page.
-	 * 
+	 *
 	 */
 	private boolean bufferFullyLoaded = false;
 
-	/* package */POBufferedIterator(final TypedSqlQuery<T> query, final Class<ET> clazz)
+	/**
+	 *
+	 * @param query
+	 * @param clazz
+	 * @param rowNumberColumn optional, may be <code>null</code>.
+	 *            If a column is given, then this iterator will not use offset, but assume that the column contain a row number that starts at 1,
+	 *            as created by the <code>row_nbumber()</code> window function. This class will then use this column by not paging with offset, but with in the where-clause "rowNumberColumn > offset".
+	 *            Thanks to http://use-the-index-luke.com/no-offset.
+	 *
+	 */
+	/* package */ POBufferedIterator(
+			final TypedSqlQuery<T> query,
+			final Class<ET> clazz,
+			final String rowNumberColumn)
 	{
-		super();
-
 		// Make sure database paging is supported
 		if (!DB.getDatabase().isPagingSupported())
 		{
@@ -86,15 +97,16 @@ import de.metas.logging.LogManager;
 
 		// Check.assume(clazz != null, "clazz != null"); // class can be null
 		this.clazz = clazz;
+		this.rowNumberColumn = rowNumberColumn;
 	}
 
 	/**
 	 * Build standard ORDER BY clause (by Key Columns).
-	 * 
+	 *
 	 * @param tableName
 	 * @return ORDER BY clause or ""
 	 */
-	private String buildOrderBy(final String tableName)
+	private static String buildOrderBy(final String tableName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 
@@ -153,10 +165,22 @@ import de.metas.logging.LogManager;
 
 	private void loadNextPage()
 	{
-		query.setLimit(bufferSize, offset);
-		final List<ET> buffer = query.list(clazz);
+		final TypedSqlQuery<T> queryToUse;
+
+		query.setLimit(bufferSize);
+		if (Check.isEmpty(rowNumberColumn, true))
+		{
+			query.setLimit(bufferSize, offset);
+			queryToUse = query;
+		}
+		else
+		{
+			query.setLimit(bufferSize);
+			queryToUse = query.addWhereClause(true, rowNumberColumn + " > " + offset);
+		}
+		final List<ET> buffer = queryToUse.list(clazz);
 		bufferIterator = buffer.iterator();
-		
+
 		final int bufferSizeActual = buffer.size();
 		bufferFullyLoaded = bufferSizeActual >= bufferSize;
 
@@ -170,7 +194,7 @@ import de.metas.logging.LogManager;
 
 	/**
 	 * Sets buffer/page size, i.e. the number of rows to be loaded by this iterator at a time.
-	 * 
+	 *
 	 * @param bufferSize
 	 * @see Query#OPTION_IteratorBufferSize
 	 */

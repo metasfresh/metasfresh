@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * A source for providing result items for {@link JTextComponentAutoCompleter}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  * @see JTextComponentAutoCompleter#setSource(ResultItemSource)
  */

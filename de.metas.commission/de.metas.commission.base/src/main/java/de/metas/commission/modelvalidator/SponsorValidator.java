@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -39,10 +38,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
 import org.eevolution.model.MHREmployee;
+import org.slf4j.Logger;
 
 import de.metas.commission.exception.CommissionException;
 import de.metas.commission.interfaces.I_C_BPartner;
@@ -52,6 +50,7 @@ import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.MCAdvComSystem;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.logging.LogManager;
 
 /**
  * 
@@ -162,7 +161,7 @@ public final class SponsorValidator implements ModelValidator
 
 	String bPartnerChange(final MBPartner bPartnerPO, final int type)
 	{
-		final I_C_BPartner bPartner = POWrapper.create(bPartnerPO, I_C_BPartner.class);
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnerPO, I_C_BPartner.class);
 
 		final Properties ctx = bPartnerPO.getCtx();
 		final String trxName = bPartnerPO.get_TrxName();
@@ -219,7 +218,7 @@ public final class SponsorValidator implements ModelValidator
 				final int newParentSponsorId = bPartnerPO.get_ValueAsInt(I_C_BPartner.COLUMNNAME_C_Sponsor_Parent_ID);
 
 				ssrs.get(0).setC_Sponsor_Parent_ID(newParentSponsorId);
-				POWrapper.save(ssrs.get(0));
+				InterfaceWrapperHelper.save(ssrs.get(0));
 			}
 			if (bPartnerPO.is_ValueChanged(org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep))
 			{

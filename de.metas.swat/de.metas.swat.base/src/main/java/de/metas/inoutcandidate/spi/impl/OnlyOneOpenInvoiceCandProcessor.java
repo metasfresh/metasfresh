@@ -27,15 +27,13 @@ import java.math.BigDecimal;
 
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner_Stats;
-import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 import de.metas.inout.model.I_M_InOut;
@@ -81,16 +79,15 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 			final IShipmentCandidates candidates,
 			final I_M_InOutLine inOutLine, final String trxName, int removeCount)
 	{
-		final IBPartnerStatsBL bpartnerStatBL = Services.get(IBPartnerStatsBL.class);
-
-		final I_C_BPartner billPartner = POWrapper.create(inOutLine.getC_OrderLine().getC_Order().getBill_BPartner(), I_C_BPartner.class);
-		final I_C_BPartner_Stats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(billPartner);
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine().getC_Order().getBill_BPartner(), I_C_BPartner.class);
+		
+		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(billPartner);
 
 		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
 
-		if (creditStatus.equals(bpartnerStatBL.getSOCreditStatus(stats)))
+		if (creditStatus.equals(stats.getSOCreditStatus()))
 		{
-			final BigDecimal soCreditUsed = bpartnerStatBL.getSOCreditUsed(stats);
+			final BigDecimal soCreditUsed = stats.getSOCreditUsed();
 			
 			if (soCreditUsed.signum() > 0)
 			{

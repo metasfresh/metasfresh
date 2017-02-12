@@ -26,7 +26,7 @@ package de.metas.prepayorder.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
@@ -44,7 +44,7 @@ public class PaymentAllocate extends CalloutEngine
 		{
 			return "";
 		}
-		final I_C_PaymentAllocate pa = GridTabWrapper.create(mTab, I_C_PaymentAllocate.class);
+		final I_C_PaymentAllocate pa = InterfaceWrapperHelper.create(mTab, I_C_PaymentAllocate.class);
 
 		if (pa.getC_PrepayOrder_ID() <= 0)
 		{

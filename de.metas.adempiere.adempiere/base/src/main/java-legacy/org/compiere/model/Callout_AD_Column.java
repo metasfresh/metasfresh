@@ -14,7 +14,7 @@ package org.compiere.model;
 
 import java.util.Properties;
 
-import org.adempiere.model.GridTabWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DisplayType;
 
 /**
@@ -27,7 +27,7 @@ public class Callout_AD_Column extends CalloutEngine
 
 	public String onColumnName(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_AD_Column column = GridTabWrapper.create(mTab, I_AD_Column.class);
+		I_AD_Column column = InterfaceWrapperHelper.create(mTab, I_AD_Column.class);
 		if (MColumn.isSuggestSelectionColumn(column.getColumnName(), true))
 		{
 			column.setIsSelectionColumn(true);
@@ -37,7 +37,7 @@ public class Callout_AD_Column extends CalloutEngine
 
 	public String onAD_Element_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
-		I_AD_Column column = GridTabWrapper.create(mTab, I_AD_Column.class);
+		I_AD_Column column = InterfaceWrapperHelper.create(mTab, I_AD_Column.class);
 		if (column.getAD_Element_ID() <= 0)
 			return "";
 		I_AD_Element element = column.getAD_Element();

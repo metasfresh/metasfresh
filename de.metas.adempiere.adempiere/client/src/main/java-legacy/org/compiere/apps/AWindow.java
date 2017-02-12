@@ -21,13 +21,14 @@ import java.awt.Image;
 import java.awt.event.WindowEvent;
 
 import org.adempiere.images.Images;
+import org.adempiere.plaf.MetasfreshGlassPane;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CFrame;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.schaeffer.compiere.tools.AttachmentDnDTransferHandler;
 
 /**
@@ -51,17 +52,17 @@ public class AWindow extends CFrame
 	/**
 	 *	Standard Constructor - requires initWindow
 	 */
-	public AWindow ()
+	public AWindow()
 	{
 		super();
 		//	Set UI Components
 		this.setIconImage(Images.getImage2("mWindow"));
 		this.getContentPane().add(m_APanel, BorderLayout.CENTER);
-		this.setGlassPane(m_glassPane);
+		m_glassPane = MetasfreshGlassPane.install(this);
 	}	//	AWindow
 
 	/** The GlassPane           */
-	private AGlassPane  	m_glassPane = new AGlassPane();
+	private final MetasfreshGlassPane m_glassPane;
 	/** Application Window  	*/
 	private APanel			m_APanel = new APanel(this);
 	
@@ -141,7 +142,12 @@ public class AWindow extends CFrame
 	public void setBusyMessage (String AD_Message)
 	{
 		m_glassPane.setMessage(AD_Message);
-	}   //  setBusyMessage
+	}
+	
+	public void setBusyMessagePlain(final String messagePlain)
+	{
+		m_glassPane.setMessagePlain(messagePlain);
+	}
 
 	/**
 	 *  Set and start Busy Counter

@@ -1,39 +1,22 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_AllocationHdr
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_C_AllocationHdr extends org.compiere.model.PO implements I_C_AllocationHdr, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1277812042L;
 
     /** Standard Constructor */
     public X_C_AllocationHdr (Properties ctx, int C_AllocationHdr_ID, String trxName)
@@ -64,41 +47,30 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_AllocationHdr[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Approval Amount.
+	/** Set Freigabe-Betrag.
 		@param ApprovalAmt 
 		Document Approval Amount
 	  */
-	public void setApprovalAmt (BigDecimal ApprovalAmt)
+	@Override
+	public void setApprovalAmt (java.math.BigDecimal ApprovalAmt)
 	{
 		set_Value (COLUMNNAME_ApprovalAmt, ApprovalAmt);
 	}
 
-	/** Get Approval Amount.
+	/** Get Freigabe-Betrag.
 		@return Document Approval Amount
 	  */
-	public BigDecimal getApprovalAmt () 
+	@Override
+	public java.math.BigDecimal getApprovalAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ApprovalAmt);
 		if (bd == null)
@@ -106,10 +78,11 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return bd;
 	}
 
-	/** Set Allocation.
+	/** Set Zuordnung.
 		@param C_AllocationHdr_ID 
 		Payment allocation
 	  */
+	@Override
 	public void setC_AllocationHdr_ID (int C_AllocationHdr_ID)
 	{
 		if (C_AllocationHdr_ID < 1) 
@@ -118,9 +91,10 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 			set_ValueNoCheck (COLUMNNAME_C_AllocationHdr_ID, Integer.valueOf(C_AllocationHdr_ID));
 	}
 
-	/** Get Allocation.
+	/** Get Zuordnung.
 		@return Payment allocation
 	  */
+	@Override
 	public int getC_AllocationHdr_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AllocationHdr_ID);
@@ -129,15 +103,23 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return ii.intValue();
 	}
 
-	public I_C_Currency getC_Currency() throws RuntimeException
-    {
-		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
-			.getPO(getC_Currency_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
 
-	/** Set Currency.
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
+	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -146,9 +128,10 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Currency.
+	/** Get Währung.
 		@return The Currency for this record
 	  */
+	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -157,58 +140,64 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return ii.intValue();
 	}
 
-	/** Set Account Date.
+	/** Set Buchungsdatum.
 		@param DateAcct 
 		Accounting Date
 	  */
-	public void setDateAcct (Timestamp DateAcct)
+	@Override
+	public void setDateAcct (java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
 	}
 
-	/** Get Account Date.
+	/** Get Buchungsdatum.
 		@return Accounting Date
 	  */
-	public Timestamp getDateAcct () 
+	@Override
+	public java.sql.Timestamp getDateAcct () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Transaction Date.
+	/** Set Vorgangsdatum.
 		@param DateTrx 
 		Transaction Date
 	  */
-	public void setDateTrx (Timestamp DateTrx)
+	@Override
+	public void setDateTrx (java.sql.Timestamp DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
 	}
 
-	/** Get Transaction Date.
+	/** Get Vorgangsdatum.
 		@return Transaction Date
 	  */
-	public Timestamp getDateTrx () 
+	@Override
+	public java.sql.Timestamp getDateTrx () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateTrx);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** DocAction AD_Reference_ID=135 */
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
 	public static final int DOCACTION_AD_Reference_ID=135;
 	/** Complete = CO */
 	public static final String DOCACTION_Complete = "CO";
@@ -222,41 +211,46 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 	public static final String DOCACTION_Void = "VO";
 	/** Close = CL */
 	public static final String DOCACTION_Close = "CL";
-	/** Reverse - Correct = RC */
+	/** Reverse_Correct = RC */
 	public static final String DOCACTION_Reverse_Correct = "RC";
-	/** Reverse - Accrual = RA */
+	/** Reverse_Accrual = RA */
 	public static final String DOCACTION_Reverse_Accrual = "RA";
 	/** Invalidate = IN */
 	public static final String DOCACTION_Invalidate = "IN";
-	/** Re-activate = RE */
+	/** Re_Activate = RE */
 	public static final String DOCACTION_Re_Activate = "RE";
-	/** <None> = -- */
+	/** None = -- */
 	public static final String DOCACTION_None = "--";
 	/** Prepare = PR */
 	public static final String DOCACTION_Prepare = "PR";
 	/** Unlock = XL */
 	public static final String DOCACTION_Unlock = "XL";
-	/** Wait Complete = WC */
+	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** Set Document Action.
+	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
 	  */
-	public void setDocAction (String DocAction)
+	@Override
+	public void setDocAction (java.lang.String DocAction)
 	{
 
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Document Action.
+	/** Get Belegverarbeitung.
 		@return The targeted status of the document
 	  */
-	public String getDocAction () 
+	@Override
+	public java.lang.String getDocAction () 
 	{
-		return (String)get_Value(COLUMNNAME_DocAction);
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** DocStatus AD_Reference_ID=131 */
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
 	public static final int DOCSTATUS_AD_Reference_ID=131;
 	/** Drafted = DR */
 	public static final String DOCSTATUS_Drafted = "DR";
@@ -264,7 +258,7 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 	public static final String DOCSTATUS_Completed = "CO";
 	/** Approved = AP */
 	public static final String DOCSTATUS_Approved = "AP";
-	/** Not Approved = NA */
+	/** NotApproved = NA */
 	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
@@ -276,67 +270,65 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 	public static final String DOCSTATUS_Closed = "CL";
 	/** Unknown = ?? */
 	public static final String DOCSTATUS_Unknown = "??";
-	/** In Progress = IP */
+	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Waiting Payment = WP */
+	/** WaitingPayment = WP */
 	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** Waiting Confirmation = WC */
+	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Document Status.
+	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
 	  */
-	public void setDocStatus (String DocStatus)
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
 	{
 
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Document Status.
+	/** Get Belegstatus.
 		@return The current status of the document
 	  */
-	public String getDocStatus () 
+	@Override
+	public java.lang.String getDocStatus () 
 	{
-		return (String)get_Value(COLUMNNAME_DocStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Document No.
+	/** Set Beleg Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
-	public void setDocumentNo (String DocumentNo)
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Beleg Nr..
 		@return Document sequence number of the document
 	  */
-	public String getDocumentNo () 
+	@Override
+	public java.lang.String getDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getDocumentNo());
-    }
-
-	/** Set Approved.
+	/** Set Freigegeben.
 		@param IsApproved 
 		Indicates if this document requires approval
 	  */
+	@Override
 	public void setIsApproved (boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
-	/** Get Approved.
+	/** Get Freigegeben.
 		@return Indicates if this document requires approval
 	  */
+	@Override
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
@@ -349,18 +341,20 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return false;
 	}
 
-	/** Set Manual.
+	/** Set Manuell.
 		@param IsManual 
 		This is a manual process
 	  */
+	@Override
 	public void setIsManual (boolean IsManual)
 	{
 		set_Value (COLUMNNAME_IsManual, Boolean.valueOf(IsManual));
 	}
 
-	/** Get Manual.
+	/** Get Manuell.
 		@return This is a manual process
 	  */
+	@Override
 	public boolean isManual () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsManual);
@@ -373,18 +367,20 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return false;
 	}
 
-	/** Set Posted.
+	/** Set Verbucht.
 		@param Posted 
 		Posting status
 	  */
+	@Override
 	public void setPosted (boolean Posted)
 	{
 		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
 	}
 
-	/** Get Posted.
+	/** Get Verbucht.
 		@return Posting status
 	  */
+	@Override
 	public boolean isPosted () 
 	{
 		Object oo = get_Value(COLUMNNAME_Posted);
@@ -397,18 +393,20 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return false;
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -421,15 +419,17 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
@@ -441,16 +441,24 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 		}
 		return false;
 	}
-	
-	public I_C_AllocationHdr getReversal() throws RuntimeException
-    {
-		return (I_C_AllocationHdr)MTable.get(getCtx(), I_C_AllocationHdr.Table_Name)
-			.getPO(getReversal_ID(), get_TrxName());	}
+
+	@Override
+	public org.compiere.model.I_C_AllocationHdr getReversal() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_C_AllocationHdr.class);
+	}
+
+	@Override
+	public void setReversal(org.compiere.model.I_C_AllocationHdr Reversal)
+	{
+		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_C_AllocationHdr.class, Reversal);
+	}
 
 	/** Set Reversal ID.
 		@param Reversal_ID 
 		ID of document reversal
 	  */
+	@Override
 	public void setReversal_ID (int Reversal_ID)
 	{
 		if (Reversal_ID < 1) 
@@ -462,6 +470,7 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 	/** Get Reversal ID.
 		@return ID of document reversal
 	  */
+	@Override
 	public int getReversal_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
@@ -469,5 +478,4 @@ public class X_C_AllocationHdr extends PO implements I_C_AllocationHdr, I_Persis
 			 return 0;
 		return ii.intValue();
 	}
-
 }

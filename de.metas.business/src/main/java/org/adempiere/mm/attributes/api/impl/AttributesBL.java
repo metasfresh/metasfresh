@@ -34,6 +34,9 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -42,6 +45,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -99,6 +103,32 @@ public class AttributesBL implements IAttributesBL
 
 		final IAttributeValueGenerator generator = Services.get(IJavaClassBL.class).newInstance(javaClassDef);
 		return generator;
+	}
+
+	@Override
+	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
+	{
+		final IAttributeValueGenerator attributeHandler = getAttributeValueGeneratorOrNull(attribute);
+
+		//
+		// First try: check if attributeHandler is implementing IAttributeValuesProvider and return it if that's the case
+		if (attributeHandler instanceof IAttributeValuesProviderFactory)
+		{
+			IAttributeValuesProviderFactory factory = (IAttributeValuesProviderFactory)attributeHandler;
+			return factory.createAttributeValuesProvider(attribute);
+		}
+		//
+		// Second try: check if our attribute is of type list, in which case we are dealing with standard M_AttributeValues
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
+		{
+			return new DefaultAttributeValuesProvider(attribute);
+		}
+		//
+		// Fallback: there is no IAttributeValuesProvider because attribute does not support Lists
+		else
+		{
+			return null;
+		}
 	}
 
 	@Override

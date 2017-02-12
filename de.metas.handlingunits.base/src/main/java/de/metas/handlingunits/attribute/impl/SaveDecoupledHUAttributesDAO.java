@@ -8,13 +8,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -25,12 +24,14 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.logging.LogManager;
 
 /**
  * {@link IHUAttributesDAO} implementation which acts like a save buffer:
@@ -88,12 +89,14 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	{
 		if (idsToSaveFromLastFlush != null && !idsToSaveFromLastFlush.isEmpty())
 		{
-			System.err.println("WARNING: It could be that following M_HU_Attribute_IDs have changes which will never be saved to database: " + idsToSaveFromLastFlush);
+			new AdempiereException("WARNING: It could be that following M_HU_Attribute_IDs have changes which will never be saved to database: " + idsToSaveFromLastFlush)
+					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 
 		if (_huAttributesToRemove != null && !_huAttributesToRemove.isEmpty())
 		{
-			System.err.println("WARNING: It could be that following M_HU_Attributes to be removed are skipped: " + _huAttributesToRemove);
+			new AdempiereException("WARNING: It could be that following M_HU_Attributes to be removed are skipped: " + _huAttributesToRemove)
+					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	}
 

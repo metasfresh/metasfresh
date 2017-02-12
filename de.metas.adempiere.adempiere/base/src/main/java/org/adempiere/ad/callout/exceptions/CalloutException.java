@@ -22,7 +22,6 @@ package org.adempiere.ad.callout.exceptions;
  * #L%
  */
 
-
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
@@ -67,6 +66,15 @@ public class CalloutException extends AdempiereException
 		return this;
 	}
 
+	public CalloutException setCalloutInstanceIfAbsent(ICalloutInstance calloutInstance)
+	{
+		if (this.calloutInstance == null)
+		{
+			this.calloutInstance = calloutInstance;
+		}
+		return this;
+	}
+
 	public ICalloutExecutor getCalloutExecutor()
 	{
 		return calloutExecutor;
@@ -78,9 +86,27 @@ public class CalloutException extends AdempiereException
 		return this;
 	}
 
+	public CalloutException setCalloutExecutorIfAbsent(ICalloutExecutor calloutExecutor)
+	{
+		if (this.calloutExecutor == null)
+		{
+			this.calloutExecutor = calloutExecutor;
+		}
+		return this;
+	}
+
 	public CalloutException setField(final ICalloutField field)
 	{
 		this.field = field;
+		return this;
+	}
+
+	public CalloutException setFieldIfAbsent(final ICalloutField field)
+	{
+		if (this.field == null)
+		{
+			this.field = field;
+		}
 		return this;
 	}
 

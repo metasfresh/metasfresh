@@ -16,7 +16,13 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import java.util.Objects;
+
 import javax.annotation.concurrent.Immutable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 /**
@@ -28,9 +34,25 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class KeyNamePair extends NamePair
 {
-	/**
-	 * 
-	 */
+	@JsonCreator
+	public static final KeyNamePair of(@JsonProperty("k") final int key, @JsonProperty("n") final String name)
+	{
+		if (key == EMPTY.getKey() && Objects.equals(name, EMPTY.getName()))
+		{
+			return EMPTY;
+		}
+		return new KeyNamePair(key, name);
+	}
+	
+	public static final KeyNamePair of(final int key)
+	{
+		if(key < 0)
+		{
+			return EMPTY;
+		}
+		return new KeyNamePair(key, "<" + key + ">");
+	}
+	
 	private static final long serialVersionUID = 6347385376010388473L;
 	
 	public static final KeyNamePair EMPTY = new KeyNamePair(-1, "");
@@ -53,6 +75,7 @@ public final class KeyNamePair extends NamePair
 	 *	Get Key
 	 *  @return key
 	 */
+	@JsonProperty("k")
 	public int getKey()
 	{
 		return m_key;
@@ -64,14 +87,14 @@ public final class KeyNamePair extends NamePair
 	 *  @return String value of key or null if -1
 	 */
 	@Override
+	@JsonIgnore
 	public String getID()
 	{
 		if (m_key == -1)
 			return null;
 		return String.valueOf(m_key);
 	}	//	getID
-
-
+	
 	/**
 	 *	Equals
 	 *  @param obj object
@@ -80,6 +103,11 @@ public final class KeyNamePair extends NamePair
 	@Override
 	public boolean equals(Object obj)
 	{
+		if(this == obj)
+		{
+			return true;
+		}
+		
 		if (obj instanceof KeyNamePair)
 		{
 			KeyNamePair pp = (KeyNamePair)obj;
@@ -92,14 +120,9 @@ public final class KeyNamePair extends NamePair
 		return false;
 	}	//	equals
 
-	/**
-	 *  Return Hashcode of key
-	 *  @return hascode
-	 */
 	@Override
 	public int hashCode()
 	{
-		return m_key;
-	}   //  hashCode
-
-}	//	KeyNamePair
+		return Objects.hash(m_key);
+	}
+}

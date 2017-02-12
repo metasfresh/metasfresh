@@ -26,12 +26,12 @@ package org.eevolution.report;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,27 +47,29 @@ import java.util.List;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
+import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MCostElement;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.X_T_BOMLine;
 
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+
 /**
  * Cost Multi-Level BOM & Formula Review
- * 
+ *
  * @author victor.perez@e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
- * 
+ *
  */
-public class CostBillOfMaterial extends SvrProcess
+public class CostBillOfMaterial extends JavaProcess
 {
 	private static final String LEVELS = "....................";
 	//
@@ -85,7 +87,7 @@ public class CostBillOfMaterial extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParameter())
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
@@ -110,7 +112,7 @@ public class CostBillOfMaterial extends SvrProcess
 
 	/**
 	 * Perform process.
-	 * 
+	 *
 	 * @return Message (clear text)
 	 * @throws Exception
 	 *             if not successful
@@ -122,7 +124,7 @@ public class CostBillOfMaterial extends SvrProcess
 		{
 			throw new FillMandatoryException("M_Product_ID");
 		}
-		explodeProduct(p_M_Product_ID, false); 
+		explodeProduct(p_M_Product_ID, false);
 		//
 		return "";
 	} // doIt
@@ -147,7 +149,7 @@ public class CostBillOfMaterial extends SvrProcess
 			// Create header
 			if (!isComponent)
 			{
-				createLines(bom, null); 
+				createLines(bom, null);
 			}
 			m_LevelNo++;
 			// Create Lines:
@@ -216,7 +218,7 @@ public class CostBillOfMaterial extends SvrProcess
 		{
 			throw new LiberoException("@NotFound@ @PP_Product_BOM_ID@");
 		}
-		for (MCostElement costElement : getCostElements())
+		for (I_M_CostElement costElement : getCostElements())
 		{
 			X_T_BOMLine tboml = new X_T_BOMLine(getCtx(), 0, get_TrxName());
 			tboml.setAD_Org_ID(p_AD_Org_ID);
@@ -226,7 +228,7 @@ public class CostBillOfMaterial extends SvrProcess
 			tboml.setM_CostType_ID(p_M_CostType_ID);
 			tboml.setCostingMethod(p_ConstingMethod);
 			tboml.setAD_PInstance_ID(getAD_PInstance_ID());
-			tboml.setM_CostElement_ID(costElement.get_ID());
+			tboml.setM_CostElement_ID(costElement.getM_CostElement_ID());
 			tboml.setM_Product_ID(product.get_ID());
 			tboml.setQtyBOM(qty);
 			//
@@ -277,8 +279,8 @@ public class CostBillOfMaterial extends SvrProcess
 			m_SeqNo++;
 		}
 	}
-	
-	public Collection<MCostElement> getCostElements()
+
+	public Collection<I_M_CostElement> getCostElements()
 	{
 		if (m_costElements == null)
 		{
@@ -286,5 +288,5 @@ public class CostBillOfMaterial extends SvrProcess
 		}
 		return m_costElements;
 	}
-	private Collection <MCostElement> m_costElements = null;
+	private Collection <I_M_CostElement> m_costElements = null;
 }

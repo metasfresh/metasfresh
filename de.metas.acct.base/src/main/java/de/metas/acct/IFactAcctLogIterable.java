@@ -32,7 +32,7 @@ import de.metas.acct.model.I_Fact_Acct_Log;
 /**
  * An iterable and closeable stream of {@link I_Fact_Acct_Log}s.
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IFactAcctLogIterable extends Iterable<I_Fact_Acct_Log>, IAutoCloseable

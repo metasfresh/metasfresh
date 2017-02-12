@@ -10,12 +10,12 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,8 +81,7 @@ public class TrxManagerTest
 
 		Assert.assertEquals("Transaction " + trx
 				+ (expectedActive ? " shall be " : " shall not be ")
-				+ " in active transactions list"
-				, expectedActive, actualActive);
+				+ " in active transactions list", expectedActive, actualActive);
 	}
 
 	@Test
@@ -131,7 +130,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName=null, manageTrx=N/A
-	 * 
+	 *
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix <code>"TrxRun"</code>
 	 */
 	@Test
@@ -144,9 +143,9 @@ public class TrxManagerTest
 
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
-		final String localTrxName = runnable.getLastTrxName();
-		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxName);
-		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxName, trx);
+		final String localTrxNameEffective = runnable.getLastTrxNameEffective();
+		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxNameEffective);
+		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxNameEffective, trx);
 
 		Assert.assertEquals("Commit was called for " + trx, true, trx.isCommitCalled());
 		Assert.assertEquals("Close was called for " + trx, true, trx.isCloseCalled());
@@ -157,7 +156,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=true
-	 * 
+	 *
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix being the given <code>trxName</code>
 	 */
 	@Test
@@ -170,11 +169,11 @@ public class TrxManagerTest
 
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
-		final String localTrxName = runnable.getLastTrxName();
-		Assert.assertTrue("Created trx '" + localTrxName + "' shall start with '" + trxName + "'", localTrxName.startsWith(trxName));
+		final String localTrxNameEffective = runnable.getLastTrxNameEffective();
+		Assert.assertTrue("Created trx '" + localTrxNameEffective + "' shall start with '" + trxName + "'", localTrxNameEffective.startsWith(trxName));
 
-		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxName);
-		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxName, trx);
+		final MockedTrx trx = (MockedTrx)trxManager.getRemovedTransactionByName(localTrxNameEffective);
+		Assert.assertNotNull("Transaction was created and removed for trxName=" + localTrxNameEffective, trx);
 
 		Assert.assertEquals("Commit was called for " + trx, true, trx.isCommitCalled());
 		Assert.assertEquals("Close was called for " + trx, true, trx.isCloseCalled());
@@ -185,7 +184,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=false
-	 * 
+	 *
 	 * Expectation: use the trx with the the given trxName; create a savepoint and to roll back to in case of problems. don't commit in case of success.
 	 */
 	@Test
@@ -199,6 +198,9 @@ public class TrxManagerTest
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 
 		final String localTrxName = runnable.getLastTrxName();
+		// NOTE: until we get rid of "TrxCallableWithTrxName" our Runnables will get the "effective" localTrxName instead of ThreadInherited.
+		// Assert.assertEquals("Invalid trxName used", ITrx.TRXNAME_ThreadInherited, localTrxName);
+		Assert.assertNotNull(TrxCallableWithTrxName.class); // non-sense, but we just want to have a reference here for future refactoring
 		Assert.assertEquals("Invalid trxName used", trxName, localTrxName);
 
 		final MockedTrx trx = (MockedTrx)trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
@@ -235,11 +237,9 @@ public class TrxManagerTest
 		Assert.assertTrue("Inner Runnable was executed", runnableInner.isExecuted());
 
 		final String localTrxName = runnable.getLastTrxName();
-		Assert.assertFalse("Runnable trxName shall not be null: " + localTrxName,
-				trxManager.isNull(localTrxName));
+		Assert.assertFalse("Runnable trxName shall not be null: " + localTrxName, trxManager.isNull(localTrxName));
 
-		Assert.assertEquals("Inner runnable's trxName shall be the same as runnable's trxName",
-				localTrxName, runnableInner.getLastTrxName());
+		Assert.assertEquals("Inner runnable's trxName shall be the same as runnable's trxName", localTrxName, runnableInner.getLastTrxName());
 
 		Assert.assertNull("Transaction shall be removed: trxName=" + localTrxName,
 				trxManager.get(localTrxName, OnTrxMissingPolicy.ReturnTrxNone));
@@ -290,7 +290,7 @@ public class TrxManagerTest
 	public void test_isNull_IneritedTrx()
 	{
 		Assert.assertEquals("Inherited trxName shall not be considered null",
-				false, // expected
+				false,   // expected
 				trxManager.isNull(ITrx.TRXNAME_ThreadInherited) // actual
 		);
 	}
@@ -346,7 +346,7 @@ public class TrxManagerTest
 	 * <li>running an {@link TrxRunnable} on following configuration: NESTED transaction, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK
 	 * <li>the runnable throws a custom exception
 	 * </ul>
-	 * 
+	 *
 	 * Expectations:
 	 * <ul>
 	 * <li>our custom exception is propagated
@@ -360,11 +360,10 @@ public class TrxManagerTest
 		// Transaction configuration:
 		final String trxName = trxManager.createTrxName("TestTrx", true);
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
-				TrxPropagation.NESTED, // we expect to run into a transaction at this point
+				TrxPropagation.NESTED,   // we expect to run into a transaction at this point
 				OnRunnableSuccess.DONT_COMMIT,
 				// OnRunnableFail: don't rollback => no savepoint shall be created (avoid HUGE performance issues)
-				OnRunnableFail.DONT_ROLLBACK
-				);
+				OnRunnableFail.DONT_ROLLBACK);
 
 		//
 		// TrxRunnable which will throw our custom exception when executed
@@ -401,7 +400,7 @@ public class TrxManagerTest
 
 	/**
 	 * Case: we are running with {@link TrxPropagation#NESTED} but we are not providing any transaction.
-	 * 
+	 *
 	 * Expection: shall fail
 	 */
 	@Test(expected = IllegalTrxRunStateException.class)
@@ -411,9 +410,9 @@ public class TrxManagerTest
 		final String trxName = ITrx.TRXNAME_None; // NO transaction
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
 				TrxPropagation.NESTED,
-				OnRunnableSuccess.DONT_COMMIT, // we don't care for this test
+				OnRunnableSuccess.DONT_COMMIT,   // we don't care for this test
 				OnRunnableFail.DONT_ROLLBACK // we don't care for this test
-				);
+		);
 
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
 		trxManager.run(trxName, trxRunConfig, runnable);
@@ -426,9 +425,9 @@ public class TrxManagerTest
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
 				TrxPropagation.NESTED,
-				OnRunnableSuccess.DONT_COMMIT, // we don't care for this test
+				OnRunnableSuccess.DONT_COMMIT,   // we don't care for this test
 				OnRunnableFail.DONT_ROLLBACK // we don't care for this test
-				);
+		);
 
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
 		trxManager.run(trxName, trxRunConfig, runnable);
@@ -441,9 +440,9 @@ public class TrxManagerTest
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
 				TrxPropagation.NESTED,
-				OnRunnableSuccess.DONT_COMMIT, // we don't care for this test
+				OnRunnableSuccess.DONT_COMMIT,   // we don't care for this test
 				OnRunnableFail.DONT_ROLLBACK // we don't care for this test
-				);
+		);
 
 		// Make sure the thread inherited transaction exists
 		final String existingThreadInheritedTrxName = trxManager.createTrxName("TestTrx", true);
@@ -462,9 +461,9 @@ public class TrxManagerTest
 	 * <li>Propagation=NESTED, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK, trxName= {@link ITrx#TRXNAME_ThreadInherited}
 	 * <li>the thread inerited transaction is set but it does not actually exists
 	 * </ul>
-	 * 
+	 *
 	 * Expectations: an exception will be thrown
-	 * 
+	 *
 	 * Production code expectations (NOT tested here):
 	 * <ul>
 	 * <li>system will create the transaction using that provided trxName and will execute the runnable
@@ -478,9 +477,9 @@ public class TrxManagerTest
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
 				TrxPropagation.NESTED,
-				OnRunnableSuccess.DONT_COMMIT, // we don't care for this test
+				OnRunnableSuccess.DONT_COMMIT,   // we don't care for this test
 				OnRunnableFail.DONT_ROLLBACK // we don't care for this test
-				);
+		);
 
 		// Make sure the thread inherited transaction exists
 		final String existingThreadInheritedTrxName = "TestTrxWhichDoesNotActuallyExist";
@@ -492,7 +491,7 @@ public class TrxManagerTest
 
 	/**
 	 * Corner (possible invalid) case: propagation=NESTED, onSuccess=COMMIT.
-	 * 
+	 *
 	 * Expectation: at least, in JUnit/Developer Mode we expect to fail.
 	 */
 	@Test(expected = IllegalTrxRunStateException.class)
@@ -503,7 +502,7 @@ public class TrxManagerTest
 				TrxPropagation.NESTED,
 				OnRunnableSuccess.COMMIT,
 				OnRunnableFail.DONT_ROLLBACK // we don't care for this test
-				);
+		);
 
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
 		trxManager.run(trxName, trxRunConfig, runnable);
@@ -516,8 +515,7 @@ public class TrxManagerTest
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(
 				TrxPropagation.REQUIRES_NEW,
 				OnRunnableSuccess.COMMIT,
-				OnRunnableFail.ROLLBACK
-				);
+				OnRunnableFail.ROLLBACK);
 
 		final MyCustomAdempiereException expectedException = new MyCustomAdempiereException("test - fail on run()");
 		final MyCustomAdempiereException doFinallyException = new MyCustomAdempiereException("test - fail on doFinally()");
@@ -553,9 +551,8 @@ public class TrxManagerTest
 		}
 
 		Assert.assertEquals("Proper shall be thrown", expectedException, actualException);
-		Assert.assertArrayEquals("Exception thrown on doFinally() shall be suppressed"
-				, new Throwable[] { doFinallyException } // expected
-				, actualException.getSuppressed()// actual
+		Assert.assertArrayEquals("Exception thrown on doFinally() shall be suppressed", new Throwable[] { doFinallyException } // expected
+		, actualException.getSuppressed()// actual
 		);
 	}
 
@@ -605,9 +602,8 @@ public class TrxManagerTest
 		}
 
 		Assert.assertEquals("Proper shall be thrown", expectedException, actualException);
-		Assert.assertArrayEquals("Exception thrown on doFinally() shall be suppressed"
-				, new Throwable[] { doFinallyException } // expected
-				, actualException.getSuppressed()// actual
+		Assert.assertArrayEquals("Exception thrown on doFinally() shall be suppressed", new Throwable[] { doFinallyException } // expected
+		, actualException.getSuppressed()// actual
 		);
 	}
 
@@ -627,7 +623,7 @@ public class TrxManagerTest
 	{
 		// Create and register the transaction
 		final String trxName = "TestTrx";
-		final ITrx expectedTrx = trxManager.createTrxAndRegister(trxName);
+		final ITrx expectedTrx = trxManager.createTrxAndRegister(trxName, false);
 
 		Assert.assertEquals(expectedTrx, trxManager.getTrx(trxName));
 
@@ -648,8 +644,38 @@ public class TrxManagerTest
 	{
 		final String trxName = "MissingTrx";
 		trxManager.setThreadInheritedTrxName(trxName);
-		
+
 		trxManager.getTrx(ITrx.TRXNAME_ThreadInherited); // expect exception
+	}
+
+	@Test(expected = AdempiereException.class)
+	public void test_assertThreadInheritedTrxExists_NoTrx()
+	{
+		trxManager.assertThreadInheritedTrxExists();
+	}
+
+	@Test
+	public void test_assertThreadInheritedTrxExists_WithTrx()
+	{
+		final String threadInheritedTrxName = trxManager.createTrxName("TestTrx", true);
+		trxManager.setThreadInheritedTrxName(threadInheritedTrxName);
+		
+		trxManager.assertThreadInheritedTrxExists();
+	}
+
+	@Test
+	public void test_assertThreadInheritedTrxNotExists_NoTrx()
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+	}
+
+	@Test(expected = AdempiereException.class)
+	public void test_assertThreadInheritedTrxNotExists_WithTrx()
+	{
+		final String threadInheritedTrxName = trxManager.createTrxName("TestTrx", true);
+		trxManager.setThreadInheritedTrxName(threadInheritedTrxName);
+		
+		trxManager.assertThreadInheritedTrxNotExists();
 	}
 
 }

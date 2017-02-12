@@ -13,11 +13,11 @@ package de.metas.invoice.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -60,21 +60,20 @@ public class C_Invoice
 	{
 		// Setup callout C_Invoice
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		calloutProvider.registerAnnotatedCallout(new de.metas.adempiere.callout.C_Invoice());
+		calloutProvider.registerAnnotatedCallout(new de.metas.invoice.callout.C_Invoice());
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })
 	public void updateBPartnerAddress(final I_C_Invoice doc)
 	{
 		Services.get(IDocumentLocationBL.class).setBPartnerAddress(doc);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
-			// exclude columns which are not relevant if they change
-			, ignoreColumnsChanged = {
-					I_C_Invoice.COLUMNNAME_IsPaid
-			})
+	// exclude columns which are not relevant if they change
+	, ignoreColumnsChanged = {
+			I_C_Invoice.COLUMNNAME_IsPaid
+	})
 	public void updateIsReadOnly(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceBL.class).updateInvoiceLineIsReadOnlyFlags(invoice);
@@ -85,8 +84,7 @@ public class C_Invoice
 	 *
 	 * @param invoice
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_PriceList_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_PriceList_ID })
 	public void removeMaterialLinesNotCorrespondingToPriceList(final I_C_Invoice invoice)
 	{
 		Date invoiceDate = invoice.getDateInvoiced();
@@ -383,5 +381,4 @@ public class C_Invoice
 			InterfaceWrapperHelper.delete(line);
 		}
 	}
-
 }

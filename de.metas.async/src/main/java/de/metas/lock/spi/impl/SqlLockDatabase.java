@@ -222,7 +222,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 					+ ", " + toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams) // IsAllowMultipleOwners
 					//
 					+ " FROM " + tableName
-					+ " WHERE " + sqlFilter.getSql();
+					+ " WHERE (" + sqlFilter.getSql() + ")";
 			sqlParams.addAll(sqlFilter.getSqlParams(null));
 			return performLockSQLInsert(lockCommand, sqlParams, sql);
 		}

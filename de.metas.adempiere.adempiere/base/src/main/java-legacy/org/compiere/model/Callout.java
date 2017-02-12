@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.util.Properties;
+import org.adempiere.ad.callout.api.ICalloutField;
 
 /**
  *  Callout Interface for Callout.
@@ -31,24 +31,16 @@ import java.util.Properties;
 public interface Callout
 {
 	/**
-	 *	Start Callout.
-	 *  <p>
-	 *	Callout's are used for cross field validation and setting values in other fields
-	 *	when returning a non empty (error message) string, an exception is raised
-	 *  <p>
-	 *	When invoked, the Tab model has the new value!
+	 * Start Callout.
+	 * <p>
+	 * Callout's are used for cross field validation and setting values in other fields when returning a non empty (error message) string, an exception is raised
+	 * <p>
+	 * When invoked, the Tab model has the new value!
 	 *
-	 *  @param ctx      Context
-	 *  @param method   Method name
-	 *  @param WindowNo current Window No
-	 *  @param mTab     Model Tab
-	 *  @param mField   Model Field
-	 *  @param value    The new value
-	 *  @param oldValue The old value
-	 *  @return Error message or ""
+	 * @param methodName Method name
+	 * @param calloutField
 	 */
-	public String start (Properties ctx, String method, int WindowNo,
-		GridTab mTab, GridField mField, Object value, Object oldValue);
+	public void start (final String methodName, final ICalloutField calloutField);
 
 	/**
 	 *	Conversion Rules.
@@ -57,7 +49,10 @@ public interface Callout
 	 *	@param method   in notation User_Function
 	 *  @param value    the value
 	 *	@return converted String or Null if no method found
+	 *
+	 * @deprecated Only used in import formats; we need to introduce a dedicated interface for that
 	 */
+	@Deprecated
 	public String convert (String method, String value);
 
 }   //  callout

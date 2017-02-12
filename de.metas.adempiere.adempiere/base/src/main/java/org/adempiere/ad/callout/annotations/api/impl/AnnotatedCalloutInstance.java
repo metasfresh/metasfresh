@@ -25,13 +25,8 @@ package org.adempiere.ad.callout.annotations.api.impl;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -39,6 +34,14 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+
+import de.metas.logging.LogManager;
 
 public final class AnnotatedCalloutInstance implements ICalloutInstance
 {
@@ -47,16 +50,14 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 	private final String id;
 	private final Object annotatedObject;
 	private final String tableName;
-	private final Set<String> columnNames = new HashSet<String>();
-	private final Set<String> columnNamesRO = Collections.unmodifiableSet(columnNames);
-
-	private final transient Map<CalloutMethodPointcutKey, List<CalloutMethodPointcut>> mapPointcuts;
+	private final Set<String> columnNames;
+	private final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts;
 
 	/* package */AnnotatedCalloutInstance(final String id,
 			final String tableName,
 			final Collection<String> columnNames,
 			final Object annotatedObject,
-			final Map<CalloutMethodPointcutKey, List<CalloutMethodPointcut>> mapPointcuts)
+			final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts)
 	{
 		super();
 
@@ -67,19 +68,21 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 		this.tableName = tableName;
 
 		Check.assumeNotEmpty(columnNames, "columnNames not empty");
-		this.columnNames.addAll(columnNames);
+		this.columnNames = ImmutableSet.copyOf(columnNames);
 
 		Check.assumeNotNull(annotatedObject, "annotatedObject not null");
 		this.annotatedObject = annotatedObject;
 
-		Check.assumeNotEmpty(mapPointcuts, "mapPointcuts not empty");
-		this.mapPointcuts = mapPointcuts;
+		Check.assume(mapPointcuts != null && !mapPointcuts.isEmpty(), "mapPointcuts not empty");
+		this.mapPointcuts = ImmutableListMultimap.copyOf(mapPointcuts);
 	}
-
-	private CalloutMethodPointcutKey mkKey(final String columnName)
+	
+	@Override
+	public String toString()
 	{
-		final CalloutMethodPointcutKey key = new CalloutMethodPointcutKey(columnName);
-		return key;
+		return MoreObjects.toStringHelper(this)
+				.addValue(annotatedObject)
+				.toString();
 	}
 
 	public String getTableName()
@@ -94,7 +97,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 	 */
 	public Set<String> getColumnNames()
 	{
-		return columnNamesRO;
+		return columnNames;
 	}
 
 	@Override
@@ -107,7 +110,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 	public void execute(final ICalloutExecutor executor, final ICalloutField field)
 	{
 		final String columnName = field.getColumnName();
-		final CalloutMethodPointcutKey pointcutKey = mkKey(columnName);
+		final CalloutMethodPointcutKey pointcutKey = CalloutMethodPointcutKey.of(columnName);
 		final List<CalloutMethodPointcut> pointcutsForKey = mapPointcuts.get(pointcutKey);
 		if (pointcutsForKey.isEmpty())
 		{
@@ -129,10 +132,11 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 			return;
 		}
 
-		final Method method = pointcut.getMethod();
-		final Object model = field.getModel(pointcut.getModelClass());
 		try
 		{
+			final Method method = pointcut.getMethod();
+			final Object model = field.getModel(pointcut.getModelClass());
+			
 			// make sure the method can be executed
 			if (!method.isAccessible())
 			{

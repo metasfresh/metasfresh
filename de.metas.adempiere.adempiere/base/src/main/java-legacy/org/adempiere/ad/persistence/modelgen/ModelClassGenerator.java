@@ -29,14 +29,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.logging.LogManager;
 
 /**
  * Generate Model Classes extending PO.
@@ -408,7 +409,7 @@ public class ModelClassGenerator
 		{
 			if (columnName.endsWith("_ID"))
 			{
-				final int firstValidId = POWrapper.getFirstValidIdByColumnName(columnName);
+				final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(columnName);
 				// set _ID to null if < 0 for special column or < 1 for others
 				sb.append("\t\tif (").append(columnName).append(" < ").append(firstValidId).append(") ").append(NL)
 						.append("\t").append(setValue).append(" (").append("COLUMNNAME_").append(columnName).append(", null);").append(NL)

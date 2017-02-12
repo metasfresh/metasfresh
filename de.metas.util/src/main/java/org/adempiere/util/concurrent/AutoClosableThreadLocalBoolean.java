@@ -36,7 +36,7 @@ import org.adempiere.util.lang.IAutoCloseable;
  * <li>on purpose, there is no value setter method
  * </ul>
  *
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class AutoClosableThreadLocalBoolean

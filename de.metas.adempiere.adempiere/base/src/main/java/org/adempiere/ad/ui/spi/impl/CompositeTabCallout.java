@@ -10,148 +10,153 @@ package org.adempiere.ad.ui.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.GridTab;
 
-public class CompositeTabCallout implements ITabCallout
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+@Immutable
+public final class CompositeTabCallout implements ITabCallout
 {
-	// services
-	private final transient Logger logger = LogManager.getLogger(getClass());
-
-	private final List<ITabCallout> tabCalloutsAll = new ArrayList<>();
-	/** Initialized tab callouts */
-	private final List<ITabCallout> tabCallouts = new ArrayList<>();
-	private boolean _initialized = false;
-
-	public void addTabCallout(final ITabCallout tabCallout)
+	public static final Builder builder()
 	{
-		assertNotInitialized();
-		Check.assumeNotNull(tabCallout, "tabCallout not null");
-
-		if (tabCalloutsAll.contains(tabCallout))
-		{
-			return;
-		}
-		tabCalloutsAll.add(tabCallout);
+		return new Builder();
 	}
 
-	private final void assertNotInitialized()
-	{
-		Check.assume(!_initialized, "not already initialized");
-	}
+	private final List<ITabCallout> tabCallouts;
 
-	private final void markAsInitialized()
+	private CompositeTabCallout(final List<ITabCallout> tabCallouts)
 	{
-		assertNotInitialized();
-		_initialized = true;
+		super();
+		this.tabCallouts = ImmutableList.copyOf(tabCallouts);
 	}
 
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.addValue(tabCallouts)
+				.toString();
 	}
 
 	@Override
-	public void onInit(final GridTab gridTab)
+	public void onIgnore(final ICalloutRecord calloutRecord)
 	{
-		markAsInitialized();
-
-		for (final ITabCallout tabCallout : tabCalloutsAll)
+		for (final ITabCallout tabCallout : tabCallouts)
 		{
-			try
+			tabCallout.onIgnore(calloutRecord);
+		}
+	}
+
+	@Override
+	public void onNew(final ICalloutRecord calloutRecord)
+	{
+		for (final ITabCallout tabCallout : tabCallouts)
+		{
+			tabCallout.onNew(calloutRecord);
+		}
+	}
+
+	@Override
+	public void onSave(final ICalloutRecord calloutRecord)
+	{
+		for (final ITabCallout tabCallout : tabCallouts)
+		{
+			tabCallout.onSave(calloutRecord);
+		}
+	}
+
+	@Override
+	public void onDelete(final ICalloutRecord calloutRecord)
+	{
+		for (final ITabCallout tabCallout : tabCallouts)
+		{
+			tabCallout.onDelete(calloutRecord);
+		}
+	}
+
+	@Override
+	public void onRefresh(final ICalloutRecord calloutRecord)
+	{
+		for (final ITabCallout tabCallout : tabCallouts)
+		{
+			tabCallout.onRefresh(calloutRecord);
+		}
+	}
+
+	@Override
+	public void onRefreshAll(final ICalloutRecord calloutRecord)
+	{
+		for (final ITabCallout tabCallout : tabCallouts)
+		{
+			tabCallout.onRefreshAll(calloutRecord);
+		}
+	}
+
+	@Override
+	public void onAfterQuery(final ICalloutRecord calloutRecord)
+	{
+		for (final ITabCallout tabCallout : tabCallouts)
+		{
+			tabCallout.onAfterQuery(calloutRecord);
+		}
+	}
+
+	public static final class Builder
+	{
+		private final List<ITabCallout> tabCalloutsAll = new ArrayList<>();
+
+		private Builder()
+		{
+			super();
+		}
+
+		public ITabCallout build()
+		{
+			if (tabCalloutsAll.isEmpty())
 			{
-				tabCallout.onInit(gridTab);
-				tabCallouts.add(tabCallout);
+				return ITabCallout.NULL;
 			}
-			catch (Exception e)
+			else if (tabCalloutsAll.size() == 1)
 			{
-				logger.error("Failed to initialize: " + tabCallout, e);
+				return tabCalloutsAll.get(0);
+			}
+			else
+			{
+				return new CompositeTabCallout(tabCalloutsAll);
 			}
 		}
-	}
 
-	@Override
-	public void onIgnore(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
+		public Builder addTabCallout(final ITabCallout tabCallout)
 		{
-			tabCallout.onIgnore(gridTab);
+			Check.assumeNotNull(tabCallout, "tabCallout not null");
+
+			if (tabCalloutsAll.contains(tabCallout))
+			{
+				return this;
+			}
+			tabCalloutsAll.add(tabCallout);
+
+			return this;
 		}
 	}
-
-	@Override
-	public void onNew(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
-		{
-			tabCallout.onNew(gridTab);
-		}
-	}
-
-	@Override
-	public void onSave(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
-		{
-			tabCallout.onSave(gridTab);
-		}
-	}
-
-	@Override
-	public void onDelete(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
-		{
-			tabCallout.onDelete(gridTab);
-		}
-	}
-
-	@Override
-	public void onRefresh(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
-		{
-			tabCallout.onRefresh(gridTab);
-		}
-	}
-
-	@Override
-	public void onRefreshAll(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
-		{
-			tabCallout.onRefreshAll(gridTab);
-		}
-	}
-
-	@Override
-	public void onAfterQuery(final GridTab gridTab)
-	{
-		for (final ITabCallout tabCallout : tabCallouts)
-		{
-			tabCallout.onAfterQuery(gridTab);
-		}
-	}
-
 }

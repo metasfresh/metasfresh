@@ -32,8 +32,8 @@ import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.esr.ESRConstants;
 
 /*
@@ -69,7 +69,7 @@ import de.metas.payment.esr.ESRConstants;
  * 
  * This shall be a short living object.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 class ClientSetup

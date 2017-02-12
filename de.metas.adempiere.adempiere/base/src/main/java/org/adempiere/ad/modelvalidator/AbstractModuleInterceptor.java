@@ -47,7 +47,7 @@ import de.metas.event.Topic;
  * <li>module configuration
  * <li>sub-sequent interceptors and callouts registration
  * </ul>
- * Note that module interceptors can be registered in the "the normal ways", for example  via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
+ * Note that module interceptors can also be registered in the "the normal ways" like any other model insterceptor. For example  via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
  *
  * @author tsa
  *

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-01-09T13:39:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="7ab5da58-2140-4be5-920f-d59a9f0730f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -15,7 +17,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Order_Details_Sum ( $P{c_order_id});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Sum ( $P{c_order_id});]]>
 	</queryString>
 	<field name="nonhulines" class="java.math.BigDecimal"/>
 	<field name="grandtotal" class="java.math.BigDecimal"/>
@@ -27,15 +29,17 @@
 	<field name="taxamt" class="java.math.BigDecimal"/>
 	<title>
 		<band height="12" splitType="Stretch">
-			<textField>
-				<reportElement uuid="9b63a53f-b773-44c5-8c58-62ce14373ffd" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="9b63a53f-b773-44c5-8c58-62ce14373ffd">
+					<printWhenExpression><![CDATA[new Boolean($R{show_summary}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="8b2436d9-25f3-42cb-93ab-a3bf4a7f4b33" key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000" uuid="8b2436d9-25f3-42cb-93ab-a3bf4a7f4b33"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
@@ -47,14 +51,14 @@
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
 			<textField>
-				<reportElement uuid="69138c8f-d6b0-4e0c-b76e-c51ad7dbdc2d" key="textField-16" x="37" y="0" width="236" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="236" height="12" forecolor="#000000" uuid="69138c8f-d6b0-4e0c-b76e-c51ad7dbdc2d"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{NetTotal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -75,7 +79,7 @@
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{taxrate}.floatValue() != 0 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -88,14 +92,14 @@
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="197" y="0" width="24" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="197" y="0" width="24" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -104,14 +108,14 @@
     $R{TaxRate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="1a5a9dfa-d46a-4275-a91f-a8f6c1ab3870" key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="1a5a9dfa-d46a-4275-a91f-a8f6c1ab3870"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{VAT_Amount}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae" key="textField-16" x="222" y="0" width="12" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="222" y="0" width="12" height="12" forecolor="#000000" uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -121,7 +125,7 @@
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean($F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -134,28 +138,28 @@
 				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae" key="textField-16" x="222" y="0" width="12" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="222" y="0" width="12" height="12" forecolor="#000000" uuid="effa9ea2-2983-4839-921b-ed1a4cd6cfae"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="197" y="0" width="24" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="197" y="0" width="24" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="6a4cdc58-9705-4d07-a94d-fc1f1700e5da" key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="6a4cdc58-9705-4d07-a94d-fc1f1700e5da"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUTotal}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585" key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -168,7 +172,7 @@
 	<lastPageFooter>
 		<band height="12">
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2" key="textField-16" x="37" y="0" width="261" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="0" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -185,7 +189,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000"/>
+				<reportElement key="textField-20" x="485" y="0" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

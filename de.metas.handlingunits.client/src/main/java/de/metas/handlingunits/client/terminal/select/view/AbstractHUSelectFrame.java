@@ -10,18 +10,17 @@ package de.metas.handlingunits.client.terminal.select.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -34,10 +33,11 @@ import java.lang.reflect.Method;
 import javax.swing.JFrame;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IPair;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.adempiere.form.terminal.event.MethodActionForwardListener;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
@@ -53,23 +53,30 @@ import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
  */
 public abstract class AbstractHUSelectFrame<MT> implements IComponent
 {
-	private ITerminalContext terminalContext;
+	private final IPair<ITerminalContext, ITerminalContextReferences> contextAndRefs;
+
 	private JFrame frame;
 
-	private IHUSelectPanel huSelectPanel;
+	private final IHUSelectPanel huSelectPanel;
+
+	private boolean _disposing = false;
+
+	private boolean disposed = false;
 
 	public AbstractHUSelectFrame(final JFrame frame, final int windowNo)
 	{
-		super();
-
 		//
 		// Create Terminal Context
-		this.terminalContext = TerminalContextFactory.get().createContext();
-		this.terminalContext.setWindowNo(windowNo);
+		contextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+		final ITerminalContext terminalContext = contextAndRefs.getLeft();
+
+		terminalContext.setWindowNo(windowNo);
 
 		//
 		// Setup Panel
 		huSelectPanel = createHUSelectPanel();
+		terminalContext.addToDisposableComponents(huSelectPanel);
+
 		huSelectPanel.addPropertyChangeListener(
 				IHUSelectPanel.PROPERTY_Disposed,
 				new MethodActionForwardListener(this, ACTIONMETHOD_Dispose));
@@ -81,14 +88,14 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 		initFrame();
 
 		//
-		// Register it as disposable (to be automatically cleaned up in case is needed)
-		terminalContext.addToDisposableComponents(this);
+		// Register this as disposable (to be automatically cleaned up)
+		contextAndRefs.getLeft().addToDisposableComponents(this);
 	}
 
 	@Override
 	public final ITerminalContext getTerminalContext()
 	{
-		return terminalContext;
+		return contextAndRefs.getLeft();
 	}
 
 	@Override
@@ -102,6 +109,12 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 		return huSelectPanel;
 	}
 
+	/**
+	 * Implementors don't need call {@link ITerminalContext#addToDisposableComponents(de.metas.adempiere.form.terminal.IDisposable)} for the new panel.
+	 * That's already done by the caller of this method.
+	 *
+	 * @return
+	 */
 	protected abstract IHUSelectPanel createHUSelectPanel();
 
 	private final void initFrame()
@@ -142,6 +155,12 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 		{
 			return;
 		}
+		if (isDisposed())
+		{
+			// This method can be called by both the WindowAdapter and ITerminalContext.
+			// Therefore we need to make sure not to try and call deleteReferences() twice because the second time there will be an error.
+			return;
+		}
 
 		_disposing = true;
 		try
@@ -152,13 +171,16 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 				frame = null;
 			}
 
-			huSelectPanel = DisposableHelper.dispose(huSelectPanel);
+			// delete this instance's references in an orderly fashion
+			final ITerminalContext terminalContext = contextAndRefs.getLeft();
+			final ITerminalContextReferences references = contextAndRefs.getRight();
+			terminalContext.deleteReferences(references);
 
 			//
 			// Destroy the context / terminal factory
 			final TerminalContextFactory terminalContextFactory = TerminalContextFactory.get();
 			terminalContextFactory.destroy(terminalContext);
-			terminalContext = null;
+			disposed = true;
 		}
 		finally
 		{
@@ -166,6 +188,9 @@ public abstract class AbstractHUSelectFrame<MT> implements IComponent
 		}
 	}
 
-	private boolean _disposing = false;
-
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed;
+	}
 }

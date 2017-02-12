@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -36,6 +38,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Query filter for validation rules
@@ -46,6 +51,8 @@ import org.compiere.util.Env;
  */
 public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
+	private static final Logger logger = LogManager.getLogger(ValidationRuleQueryFilter.class);
+
 	// private final Object model;
 	private final Properties ctx;
 	private final String tableName;
@@ -80,7 +87,7 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@Override
 	public String getSql()
 	{
@@ -94,8 +101,17 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 		final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
 		final IValidationContext evalCtx = validationRuleFactory.createValidationContext(ctx, windowNo, tabNo, tableName);
-		final IValidationRule valRule = validationRuleFactory.create(ctx, tableName, adValRuleId);
-		final String prefilterWhereClause = valRule.getPrefilterWhereClause(evalCtx);
+		final IValidationRule valRule = validationRuleFactory.create(tableName, adValRuleId);
+		
+		final IStringExpression prefilterWhereClauseExpr = valRule.getPrefilterWhereClause();
+		final String prefilterWhereClause = prefilterWhereClauseExpr.evaluate(evalCtx, OnVariableNotFound.ReturnNoResult);
+		if(prefilterWhereClauseExpr.isNoResult(prefilterWhereClause))
+		{
+			final String prefilterWhereClauseDefault = "1=0";
+			logger.warn("Cannot evaluate {} using {}. Returing {}.", prefilterWhereClauseExpr, evalCtx, prefilterWhereClauseDefault);
+			return prefilterWhereClauseDefault;
+		}
+		
 		return prefilterWhereClause;
 	}
 

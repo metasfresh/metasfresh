@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -38,13 +37,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADMessageDAO;
-import org.adempiere.misc.service.IProcessPA;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Color;
-import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_ModelValidator;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_C_DocType;
@@ -54,22 +53,20 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MField;
 import org.compiere.model.MOrg;
 import org.compiere.model.MReference;
-import org.compiere.model.MRole;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_ModelValidator;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_AD_Process;
 import de.metas.document.IDocumentPA;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 
 /**
  * Contains assertions relating to the ADempeire application dictionary
@@ -332,38 +329,6 @@ public class ADAssert
 		}
 	}
 
-	/**
-	 * Checks if the given column's {@link I_AD_Column#COLUMNNAME_ColumnSQL} value is set to any value. Also checks that
-	 * the sql value doesn't contain the string <code>WHERE</code> (in capitals) because this causes errors in
-	 * {@link MRole#addAccessSQL(String, String, boolean, boolean)}.
-	 * 
-	 * @param adTableId
-	 * @param columnName
-	 * @param trxName
-	 */
-	public static void assertColumnSQL(
-			final int adTableId,
-			final String columnName, final String trxName)
-	{
-		assertColumnExists(adTableId, columnName, trxName);
-
-		final POInfo poInfo = POInfo
-				.getPOInfo(Env.getCtx(), adTableId, trxName);
-
-		final String columnSQL = poInfo.getColumnSQL(getColIdx(adTableId,
-				columnName, trxName));
-
-		assertNotNull(
-				getFailMsgPrefix(columnName, poInfo) + " be not null",
-				columnSQL);
-
-		assertFalse(getFailMsgPrefix(columnName, poInfo) + " be not empty",
-				columnSQL.equals(""));
-
-		assertTrue(getFailMsgPrefix(columnName, poInfo) + " not contain the string 'WHERE' (use 'where' instead).",
-				columnSQL.indexOf("WHERE") == -1);
-	}
-
 	public static void assertColumnLength(final int adTableId,
 			final String columnName, final int length, final String trxName)
 	{
@@ -461,17 +426,16 @@ public class ADAssert
 	public static void assertProcessExists(
 			final Properties ctx,
 			final String value,
-			final Class<? extends SvrProcess> processClass,
+			final Class<? extends JavaProcess> processClass,
 			final String trxName)
 	{
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		final I_AD_Process process = processPA.retrieveProcess(ctx, value, trxName);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retriveProcessByValue(ctx, value);
 		if (process == null)
 		{
 			fail("Found no process with class '" + processClass.getName() + "'");
 		}
 
-		assertFalse(process + " has empty Classname", Util.isEmpty(process.getClassname()));
+		assertFalse(process + " has empty Classname", Check.isEmpty(process.getClassname()));
 		assertThat(process + " has wrong Classname", process.getClassname(), equalTo(processClass.getName()));
 	}
 
@@ -482,10 +446,9 @@ public class ADAssert
 	 * @param trxName
 	 */
 	public static void assertProcessExists(
-			final Class<? extends SvrProcess> processClass, final String trxName)
+			final Class<? extends JavaProcess> processClass, final String trxName)
 	{
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		if (processPA.retrieveProcessId(processClass, trxName) <= 0)
+		if (Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(Env.getCtx(), processClass) <= 0)
 		{
 			fail("Found no process with class '" + processClass.getName() + "'");
 		}
@@ -617,8 +580,7 @@ public class ADAssert
 			final String processValue,
 			final String trxName)
 	{
-		final IProcessPA processPA = Services.get(IProcessPA.class);
-		final I_AD_Process process = processPA.retrieveProcess(ctx, processValue, trxName);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retriveProcessByValue(ctx, processValue);
 
 		if (process == null)
 		{

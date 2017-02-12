@@ -587,13 +587,13 @@ public final class Preference extends CDialog
 			final boolean logFileEnabled = LogManager.isFileLoggingEnabled();
 			
 			traceLevel.setSelectedItem(logLevel);
-			String traceFileText = msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE, true);
+			String traceFileText = msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE_ENABLED, true);
 			if (logFile != null)
 			{
 				traceFileText += " (" + logFile + ")";
 			}
 			traceFile.setText(traceFileText);
-			traceFile.setToolTipText(msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE, false));
+			traceFile.setToolTipText(msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE_ENABLED, false));
 			traceFile.setSelected(logFileEnabled);
 		}
 

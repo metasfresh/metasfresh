@@ -41,15 +41,15 @@ import de.metas.product.IProductBL;
 
 /**
  *	Inventory Movement Model
- *	
+ *
  *  @author Jorg Janke
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li>FR [ 1948157  ]  Is necessary the reference for document reverse
  *  		@see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
- * 			<li> FR [ 2520591 ] Support multiples calendar for Org 
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 
+ * 			<li> FR [ 2520591 ] Support multiples calendar for Org
+ *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @author Armen Rizal, Goodwill Consulting
- * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs  
+ * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  *  @author Teo Sarca, www.arhipac.ro
  *  		<li>FR [ 2214883 ] Remove SQL code and Replace for Query
  *  @version $Id: MMovement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
@@ -57,7 +57,7 @@ import de.metas.product.IProductBL;
 public class MMovement extends X_M_Movement implements DocAction
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3634169801280239573L;
 
@@ -80,7 +80,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			setMovementDate (Env.getDate(ctx));	// use Login date (08306)
 			setPosted (false);
 			super.setProcessed (false);
-		}	
+		}
 	}	//	MMovement
 
 	/**
@@ -98,7 +98,7 @@ public class MMovement extends X_M_Movement implements DocAction
 	private MMovementLine[]		m_lines = null;
 	/** Confirmations				*/
 	private MMovementConfirm[]	m_confirms = null;
-	
+
 	/**
 	 * 	Get Lines
 	 *	@param requery requery
@@ -145,7 +145,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		else
 			setDescription(desc + " | " + description);
 	}	//	addDescription
-	
+
 	/**
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
@@ -189,7 +189,7 @@ public class MMovement extends X_M_Movement implements DocAction
 	//	return re.getPDF(file);
 	}	//	createPDF
 
-	
+
 	/**
 	 * 	Before Save
 	 *	@param newRecord new
@@ -210,7 +210,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		}
 		return true;
 	}	//	beforeSave
-	
+
 	/**
 	 * 	Set Processed.
 	 * 	Propergate to Lines/Taxes
@@ -227,8 +227,8 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_lines = null;
 		log.debug("Processed=" + processed + " - Lines=" + noLine);
 	}	//	setProcessed
-	
-	
+
+
 	/**************************************************************************
 	 * 	Process document
 	 *	@param processAction document action
@@ -240,7 +240,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_processMsg = null;
 		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
 	}	//	processIt
-	
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -248,7 +248,7 @@ public class MMovement extends X_M_Movement implements DocAction
 
 	/**
 	 * 	Unlock Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean unlockIt()
@@ -257,10 +257,10 @@ public class MMovement extends X_M_Movement implements DocAction
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
-	
+
 	/**
 	 * 	Invalidate Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean invalidateIt()
@@ -269,10 +269,10 @@ public class MMovement extends X_M_Movement implements DocAction
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	//	invalidateIt
-	
+
 	/**
 	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid) 
+	 * 	@return new status (In Progress or Invalid)
 	 */
 	@Override
 	public String prepareIt()
@@ -295,7 +295,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			m_processMsg = "@NoLines@";
 			return DocAction.STATUS_Invalid;
 		}
-		
+
 		//	Confirmation
 		if (dt.isInTransit())
 			createConfirmation();
@@ -303,13 +303,13 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
-		
+
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
 		return DocAction.STATUS_InProgress;
 	}	//	prepareIt
-	
+
 	/**
 	 * 	Create Movement Confirmation
 	 */
@@ -318,14 +318,14 @@ public class MMovement extends X_M_Movement implements DocAction
 		MMovementConfirm[] confirmations = getConfirmations(false);
 		if (confirmations.length > 0)
 			return;
-		
+
 		//	Create Confirmation
 		MMovementConfirm.create (this, false);
 	}	//	createConfirmation
-	
+
 	/**
 	 * 	Approve Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean  approveIt()
@@ -334,10 +334,10 @@ public class MMovement extends X_M_Movement implements DocAction
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
-	
+
 	/**
 	 * 	Reject Approval
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean rejectIt()
@@ -346,7 +346,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
-	
+
 	/**
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
@@ -361,7 +361,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			if (!DocAction.STATUS_InProgress.equals(status))
 				return status;
 		}
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
@@ -373,27 +373,27 @@ public class MMovement extends X_M_Movement implements DocAction
 			MMovementConfirm confirm = confirmations[i];
 			if (!confirm.isProcessed())
 			{
-				m_processMsg = "Open: @M_MovementConfirm_ID@ - " 
+				m_processMsg = "Open: @M_MovementConfirm_ID@ - "
 					+ confirm.getDocumentNo();
 				return DocAction.STATUS_InProgress;
 			}
 		}
-		
+
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
 		log.debug("Completed: {}", this);
-		
+
 		//
-		MMovementLine[] lines = getLines(true); // NOTE: we need to load the lines again in case some model validator created/changed some lines 
+		MMovementLine[] lines = getLines(true); // NOTE: we need to load the lines again in case some model validator created/changed some lines
 		for (int i = 0; i < lines.length; i++)
 		{
 			MMovementLine line = lines[i];
-			MTransaction trxFrom = null; 
-			
+			MTransaction trxFrom = null;
+
 			//Stock Movement - Counterpart MOrder.reserveStock
 			MProduct product = line.getProduct();
-			if (product != null 
+			if (product != null
 					&& Services.get(IProductBL.class).isStocked(product) )
 			{
 				//Ignore the Material Policy when is Reverse Correction
@@ -409,11 +409,11 @@ public class MMovement extends X_M_Movement implements DocAction
 						MMovementLineMA ma = mas[j];
 						//
 						MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
-						//Update Storage 
+						//Update Storage
 						if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
 								line.getM_Locator_ID(),
-								line.getM_Product_ID(), 
-								ma.getM_AttributeSetInstance_ID(), 0, 
+								line.getM_Product_ID(),
+								ma.getM_AttributeSetInstance_ID(), 0,
 								ma.getMovementQty().negate(), Env.ZERO ,  Env.ZERO , get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
@@ -426,11 +426,11 @@ public class MMovement extends X_M_Movement implements DocAction
 						{
 							M_AttributeSetInstanceTo_ID = ma.getM_AttributeSetInstance_ID();
 						}
-						//Update Storage 
+						//Update Storage
 						if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
 								line.getM_LocatorTo_ID(),
-								line.getM_Product_ID(), 
-								M_AttributeSetInstanceTo_ID, 0, 
+								line.getM_Product_ID(),
+								M_AttributeSetInstanceTo_ID, 0,
 								ma.getMovementQty(), Env.ZERO ,  Env.ZERO , get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
@@ -438,7 +438,7 @@ public class MMovement extends X_M_Movement implements DocAction
 						}
 
 						//
-						trxFrom = new MTransaction (getCtx(), line.getAD_Org_ID(), 
+						trxFrom = new MTransaction (getCtx(), line.getAD_Org_ID(),
 								MTransaction.MOVEMENTTYPE_MovementFrom,
 								line.getM_Locator_ID(), line.getM_Product_ID(), ma.getM_AttributeSetInstance_ID(),
 								ma.getMovementQty().negate(), getMovementDate(), get_TrxName());
@@ -449,7 +449,7 @@ public class MMovement extends X_M_Movement implements DocAction
 							return DocAction.STATUS_Invalid;
 						}
 						//
-						MTransaction trxTo = new MTransaction (getCtx(), line.getAD_Org_ID(), 
+						MTransaction trxTo = new MTransaction (getCtx(), line.getAD_Org_ID(),
 								MTransaction.MOVEMENTTYPE_MovementTo,
 								line.getM_LocatorTo_ID(), line.getM_Product_ID(), M_AttributeSetInstanceTo_ID,
 								ma.getMovementQty(), getMovementDate(), get_TrxName());
@@ -465,22 +465,22 @@ public class MMovement extends X_M_Movement implements DocAction
 				if (trxFrom == null)
 				{
 					MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
-					//Update Storage 
+					//Update Storage
 					if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
 							line.getM_Locator_ID(),
-							line.getM_Product_ID(), 
-							line.getM_AttributeSetInstance_ID(), 0, 
+							line.getM_Product_ID(),
+							line.getM_AttributeSetInstance_ID(), 0,
 							line.getMovementQty().negate(), Env.ZERO ,  Env.ZERO , get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
 						return DocAction.STATUS_Invalid;
 					}
 
-					//Update Storage 
+					//Update Storage
 					if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
 							line.getM_LocatorTo_ID(),
-							line.getM_Product_ID(), 
-							line.getM_AttributeSetInstanceTo_ID(), 0, 
+							line.getM_Product_ID(),
+							line.getM_AttributeSetInstanceTo_ID(), 0,
 							line.getMovementQty(), Env.ZERO ,  Env.ZERO , get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
@@ -488,7 +488,7 @@ public class MMovement extends X_M_Movement implements DocAction
 					}
 
 					//
-					trxFrom = new MTransaction (getCtx(), line.getAD_Org_ID(), 
+					trxFrom = new MTransaction (getCtx(), line.getAD_Org_ID(),
 							MTransaction.MOVEMENTTYPE_MovementFrom,
 							line.getM_Locator_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
 							line.getMovementQty().negate(), getMovementDate(), get_TrxName());
@@ -499,7 +499,7 @@ public class MMovement extends X_M_Movement implements DocAction
 						return DocAction.STATUS_Invalid;
 					}
 					//
-					MTransaction trxTo = new MTransaction (getCtx(), line.getAD_Org_ID(), 
+					MTransaction trxTo = new MTransaction (getCtx(), line.getAD_Org_ID(),
 							MTransaction.MOVEMENTTYPE_MovementTo,
 							line.getM_LocatorTo_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstanceTo_ID(),
 							line.getMovementQty(), getMovementDate(), get_TrxName());
@@ -510,7 +510,7 @@ public class MMovement extends X_M_Movement implements DocAction
 						return DocAction.STATUS_Invalid;
 					}
 				}	//	Fallback
-			} // product stock	
+			} // product stock
 		}	//	for all lines
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -519,16 +519,16 @@ public class MMovement extends X_M_Movement implements DocAction
 			m_processMsg = valid;
 			return DocAction.STATUS_Invalid;
 		}
-		
+
 		// Set the definite document number after completed (if needed)
 		setDefiniteDocumentNo();
 
 		//
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_Reverse_Correct); // issue #347
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -537,12 +537,12 @@ public class MMovement extends X_M_Movement implements DocAction
 		if (dt.isOverwriteDateOnComplete()) {
 			setMovementDate(new Timestamp (System.currentTimeMillis()));
 		}
-		if (dt.isOverwriteSeqOnComplete()) 
+		if (dt.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setTrxName(get_TrxName())
-					.setPO(this)
+					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
@@ -559,7 +559,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
 		if (no > 0)
 			log.info("Deleted old #" + no);
-		
+
 		boolean needSave = false;
 
 		//	Attribute Set Instance
@@ -567,7 +567,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		{
 			MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
 			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-			MStorage[] storages = MStorage.getWarehouse(getCtx(), 0, line.getM_Product_ID(), 0, 
+			MStorage[] storages = MStorage.getWarehouse(getCtx(), 0, line.getM_Product_ID(), 0,
 					null, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
 
 			BigDecimal qtyToDeliver = line.getMovementQty();
@@ -576,26 +576,26 @@ public class MMovement extends X_M_Movement implements DocAction
 			{
 				if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 				{
-					MMovementLineMA ma = new MMovementLineMA (line, 
+					MMovementLineMA ma = new MMovementLineMA (line,
 							storage.getM_AttributeSetInstance_ID(),
 							qtyToDeliver);
-					ma.saveEx();		
+					ma.saveEx();
 					qtyToDeliver = Env.ZERO;
-					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);		
+					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
 				}
 				else
-				{	
-					MMovementLineMA ma = new MMovementLineMA (line, 
+				{
+					MMovementLineMA ma = new MMovementLineMA (line,
 								storage.getM_AttributeSetInstance_ID(),
 								storage.getQtyOnHand());
-					ma.saveEx();	
+					ma.saveEx();
 					qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);		
+					log.debug( ma + ", QtyToDeliver=" + qtyToDeliver);
 				}
 				if (qtyToDeliver.signum() == 0)
 					break;
 			}
-							
+
 			//	No AttributeSetInstance found for remainder
 			if (qtyToDeliver.signum() != 0)
 			{
@@ -607,7 +607,7 @@ public class MMovement extends X_M_Movement implements DocAction
 				log.debug("##: " + ma);
 			}
 		}	//	attributeSetInstance
-		
+
 		if (needSave)
 		{
 			line.saveEx();
@@ -616,7 +616,7 @@ public class MMovement extends X_M_Movement implements DocAction
 
 	/**
 	 * 	Void Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean voidIt()
@@ -626,7 +626,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
 			return false;
-		
+
 		if (DOCSTATUS_Closed.equals(getDocStatus())
 			|| DOCSTATUS_Reversed.equals(getDocStatus())
 			|| DOCSTATUS_Voided.equals(getDocStatus()))
@@ -664,15 +664,15 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
 			return false;
-			
+
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return true;
 	}	//	voidIt
-	
+
 	/**
 	 * 	Close Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean closeIt()
@@ -692,10 +692,10 @@ public class MMovement extends X_M_Movement implements DocAction
 		setDocAction(DOCACTION_None);
 		return true;
 	}	//	closeIt
-	
+
 	/**
 	 * 	Reverse Correction
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reverseCorrectIt()
@@ -705,7 +705,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
@@ -725,7 +725,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		reversal.addDescription("{->" + getDocumentNo() + ")");
 		reversal.setReversal(this); //FR [ 1948157  ]
 		InterfaceWrapperHelper.save(reversal);
-		
+
 		//	Reverse Line Qty
 		final MMovementLine[] oLines = getLines(true);
 		for (int i = 0; i < oLines.length; i++)
@@ -734,7 +734,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			MMovementLine rLine = new MMovementLine(getCtx(), 0, get_TrxName());
 			copyValues(oLine, rLine, oLine.getAD_Client_ID(), oLine.getAD_Org_ID());
 			rLine.setM_Movement_ID(reversal.getM_Movement_ID());
-			//AZ Goodwill			
+			//AZ Goodwill
 			// store original (voided/reversed) document line
 			rLine.setReversalLine_ID(oLine.getM_MovementLine_ID());
 			//
@@ -760,25 +760,25 @@ public class MMovement extends X_M_Movement implements DocAction
 		reversal.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reversal);
 		m_processMsg = reversal.getDocumentNo();
-		
+
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		//	Update Reversed (this)
 		addDescription("(" + reversal.getDocumentNo() + "<-)");
 		setReversal(reversal); //FR [ 1948157  ]
 		setProcessed(true);
 		setDocStatus(DOCSTATUS_Reversed);	//	may come from void
 		setDocAction(DOCACTION_None);
-		
+
 		return true;
 	}	//	reverseCorrectionIt
-	
+
 	/**
 	 * 	Reverse Accrual - none
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reverseAccrualIt()
@@ -788,18 +788,18 @@ public class MMovement extends X_M_Movement implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	reverseAccrualIt
-	
-	/** 
+
+	/**
 	 * 	Re-activate
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reActivateIt()
@@ -808,17 +808,17 @@ public class MMovement extends X_M_Movement implements DocAction
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
-			return false;	
-		
+			return false;
+
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	reActivateIt
-	
-	
+
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document
@@ -837,7 +837,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	//	getSummary
-	
+
 	/**
 	 * 	Get Process Message
 	 *	@return clear text error message
@@ -847,7 +847,7 @@ public class MMovement extends X_M_Movement implements DocAction
 	{
 		return m_processMsg;
 	}	//	getProcessMsg
-	
+
 	/**
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
@@ -869,7 +869,7 @@ public class MMovement extends X_M_Movement implements DocAction
 	//	return pl.getC_Currency_ID();
 		return 0;
 	}	//	getC_Currency_ID
-	
+
 	/**
 	 * 	Is Reversal
 	 *	@return true if this movement is a reversal of an original movement
@@ -886,10 +886,10 @@ public class MMovement extends X_M_Movement implements DocAction
 	public boolean isComplete()
 	{
 		String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds) 
+		return DOCSTATUS_Completed.equals(ds)
 			|| DOCSTATUS_Closed.equals(ds)
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
-	
+
 }	//	MMovement
 

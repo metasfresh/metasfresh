@@ -40,8 +40,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProduct;
 
-import de.metas.adempiere.form.AbstractPackingItem;
-import de.metas.adempiere.form.PackingItem;
+import de.metas.adempiere.form.IPackingItem;
+import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -101,15 +101,15 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		final boolean isSelectedBox = getSelectedBox() != null;
 
 		// get objects from box 0: means unpacked items
-		final List<AbstractPackingItem> unpacked = map.get(PackingItemsMap.KEY_UnpackedItems);
+		final List<IPackingItem> unpacked = map.get(PackingItemsMap.KEY_UnpackedItems);
 		// add to layout unpacked items
 		{
 			if (!(unpacked == null || unpacked.isEmpty()))
 			{
 				for (int i = 0; i < unpacked.size(); i++)
 				{
-					final AbstractPackingItem apck = unpacked.get(i);
-					final PackingItem pck = (PackingItem)apck;
+					final IPackingItem apck = unpacked.get(i);
+					final LegacyPackingItem pck = (LegacyPackingItem)apck;
 
 					final I_M_Product product = MProduct.get(getCtx(), pck.getProductId());
 					de.metas.adempiere.model.I_C_POSKey key = InterfaceWrapperHelper.create(getCtx(), de.metas.adempiere.model.I_C_POSKey.class, ITrx.TRXNAME_None);
@@ -134,13 +134,13 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		if (isSelectedBox)
 		{
 			// put to layout items from selected box
-			List<AbstractPackingItem> selected = map.get(getSelectedBox().getBoxNo());
+			List<IPackingItem> selected = map.get(getSelectedBox().getBoxNo());
 			if (selected != null && !selected.isEmpty())
 			{
 				for (int i = 0; i < selected.size(); i++)
 				{
-					final AbstractPackingItem apck = selected.get(i);
-					final PackingItem pck = (PackingItem)apck;
+					final IPackingItem apck = selected.get(i);
+					final LegacyPackingItem pck = (LegacyPackingItem)apck;
 
 					final I_M_Product product = MProduct.get(getCtx(), pck.getProductId());
 					de.metas.adempiere.model.I_C_POSKey key = InterfaceWrapperHelper.create(getCtx(), de.metas.adempiere.model.I_C_POSKey.class, ITrx.TRXNAME_None);
@@ -176,7 +176,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		return false;
 	}
 
-	protected PackingStates getProductState(final AbstractPackingItem pck, final int boxNo)
+	protected PackingStates getProductState(final IPackingItem pck, final int boxNo)
 	{
 		if (pck.isClosed())
 		{
@@ -191,7 +191,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 			unpacked = true;
 		}
 
-		for (Entry<Integer, List<AbstractPackingItem>> e : packItems.entrySet())
+		for (Entry<Integer, List<IPackingItem>> e : packItems.entrySet())
 		{
 			if (e.getKey() == PackingItemsMap.KEY_UnpackedItems)
 			{
@@ -199,8 +199,8 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 				continue;
 			}
 
-			final List<AbstractPackingItem> products = e.getValue();
-			for (final AbstractPackingItem item : products)
+			final List<IPackingItem> products = e.getValue();
+			for (final IPackingItem item : products)
 			{
 				if (item.getProductId() == pck.getProductId() && isSameBPartner(item, pck) && isSameBPLocation(item, pck))
 				{
@@ -226,12 +226,12 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		return state;
 	}
 
-	public boolean isSameBPartner(final AbstractPackingItem item1, final AbstractPackingItem item2)
+	public boolean isSameBPartner(final IPackingItem item1, final IPackingItem item2)
 	{
 		return true;
 	}
 
-	public boolean isSameBPLocation(final AbstractPackingItem item1, final AbstractPackingItem item2)
+	public boolean isSameBPLocation(final IPackingItem item1, final IPackingItem item2)
 	{
 		return true;
 	}

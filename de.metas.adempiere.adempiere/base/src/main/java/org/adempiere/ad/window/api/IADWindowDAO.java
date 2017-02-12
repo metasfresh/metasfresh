@@ -1,5 +1,7 @@
 package org.adempiere.ad.window.api;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,19 +15,24 @@ package org.adempiere.ad.window.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_UI_Column;
+import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.I_AD_UI_ElementGroup;
+import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
 public interface IADWindowDAO extends ISingletonService
@@ -39,13 +46,32 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	String retrieveWindowName(int adWindowId);
 
+	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
+
+	List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
+
+	List<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn);
+
+	List<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection);
+
+	List<I_AD_UI_Section> retrieveUISections(final Properties ctx, final int AD_Tab_ID);
+
+	List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab);
+
+	boolean hasUISections(I_AD_Tab adTab);
+
+	List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow);
+
+	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
+
+	void moveElement(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup toUIElementGroup);
+
 	/**
-	 * Loads and returns the given window (cached).
+	 * Retrieve the first tab of the given window (seqNo = 10)
 	 * 
-	 * @param ctx
-	 * @param adWindowId whe window's <code>AD_Window_ID</code>.
+	 * @param window
 	 * @return
 	 */
-	I_AD_Window retrieveWindow(Properties ctx, int adWindowId);
+	I_AD_Tab retrieveFirstTab(I_AD_Window window);
 
 }

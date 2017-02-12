@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationLine;
@@ -46,12 +45,11 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.commission.custom.type.ICommissionType;
 import de.metas.commission.interfaces.IAdvComInstance;
@@ -71,6 +69,7 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.PrecedingFactFinder;
 import de.metas.commission.util.SuccessiveFactsFinder;
+import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
 /**
@@ -352,7 +351,7 @@ class CommissionFactRecordInstanceTrigger
 							// Check if there is a fact with an un-reversed sales invoice line
 							final MInvoiceLine il = (MInvoiceLine)ilFacts.get(i).retrievePO();
 
-							final I_C_Invoice invoice = POWrapper.create(faBL.retrieveHeader(il), I_C_Invoice.class);
+							final I_C_Invoice invoice = InterfaceWrapperHelper.create(faBL.retrieveHeader(il), I_C_Invoice.class);
 
 							if (invoice.isSOTrx() && invoice.getReversal_ID() <= 0)
 							{
@@ -791,7 +790,7 @@ class CommissionFactRecordInstanceTrigger
 
 	private MInvoiceLine findReverseLine(final MInvoiceLine il)
 	{
-		final I_C_Invoice invoice = POWrapper.create(il.getC_Invoice(), I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(il.getC_Invoice(), I_C_Invoice.class);
 
 		final MInvoice counterDocPO;
 

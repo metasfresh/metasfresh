@@ -13,17 +13,17 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
@@ -55,12 +56,16 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Attribute;
 
+import de.metas.dimension.IDimensionSpecAttributeDAO;
+import de.metas.dimension.IDimensionspecDAO;
+import de.metas.dimension.model.I_DIM_Dimension_Spec;
+import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 
@@ -69,9 +74,9 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
  *
  * NOTE to developer: if you want to add a new filtering parameter, please make sure you are handling the parameters in following places:
  * <ul>
- * <li> {@link #createQueryFilter()} - creates the actual {@link I_M_HU} filter to be used. Here you will add your filters based on your new parameter value.
- * <li> {@link #copy()} - make sure when copy is invoked, your new parameter is copied
- * <li> {@link #hashCode()}, {@link #equals(Object)} - make sure your new parameter is checked
+ * <li>{@link #createQueryFilter()} - creates the actual {@link I_M_HU} filter to be used. Here you will add your filters based on your new parameter value.
+ * <li>{@link #copy()} - make sure when copy is invoked, your new parameter is copied
+ * <li>{@link #hashCode()}, {@link #equals(Object)} - make sure your new parameter is checked
  * </ul>
  *
  * @author tsa
@@ -116,6 +121,9 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	private Boolean _emptyStorage = null;
 	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} */
 	private final Map<Integer, HUAttributeQueryFilterVO> onlyAttributeId2values = new HashMap<>();
+
+	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} for barcode */
+	private final Map<Integer, HUAttributeQueryFilterVO> _barcodeAttributesIds2Value = new HashMap<>();
 	private final Set<String> _huStatusesToInclude = new HashSet<>();
 	private final Set<String> _huStatusesToExclude = new HashSet<>();
 	private final Set<Integer> _onlyHUIds = new HashSet<>();
@@ -168,6 +176,17 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			final HUAttributeQueryFilterVO attributeFilterVOCopy = attributeFilterVO == null ? null : attributeFilterVO.copy();
 			copy.onlyAttributeId2values.put(attributeId, attributeFilterVOCopy);
 		}
+
+		// task 827
+		// copy barcode attributes
+		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : _barcodeAttributesIds2Value.entrySet())
+		{
+			final Integer attributeId = e.getKey();
+			final HUAttributeQueryFilterVO attributeFilterVO = e.getValue();
+			final HUAttributeQueryFilterVO attributeFilterVOCopy = attributeFilterVO == null ? null : attributeFilterVO.copy();
+			copy._barcodeAttributesIds2Value.put(attributeId, attributeFilterVOCopy);
+		}
+
 		copy._huStatusesToInclude.addAll(_huStatusesToInclude);
 		copy._huStatusesToExclude.addAll(_huStatusesToExclude);
 		copy._onlyHUIds.addAll(_onlyHUIds);
@@ -203,6 +222,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(_onlyWithProductIds)
 				.append(_emptyStorage)
 				.append(onlyAttributeId2values)
+				.append(_barcodeAttributesIds2Value)
 				.append(_huStatusesToInclude)
 				.append(_huStatusesToExclude)
 				.append(_onlyHUIds)
@@ -244,6 +264,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(_onlyWithProductIds, other._onlyWithProductIds)
 				.append(_emptyStorage, other._emptyStorage)
 				.append(onlyAttributeId2values, other.onlyAttributeId2values)
+				.append(_barcodeAttributesIds2Value, other._barcodeAttributesIds2Value)
 				.append(_huStatusesToInclude, other._huStatusesToInclude)
 				.append(_huStatusesToExclude, other._huStatusesToExclude)
 				.append(_onlyHUIds, other._onlyHUIds)
@@ -303,7 +324,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		//
 		// get Query context
 		final Object contextProvider = getContextProvider();
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class,contextProvider);
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, contextProvider);
 
 		// Only those HUs which are from our AD_Client
 		queryBuilder.addOnlyContextClient();
@@ -340,7 +361,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 			if (!onlyInWarehouseIds.isEmpty())
 			{
-				locatorsQueryBuilder.addInArrayFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
+				locatorsQueryBuilder.addInArrayOrAllFilter(I_M_Locator.COLUMN_M_Warehouse_ID, onlyInWarehouseIds);
 			}
 
 			// Make sure _includeAfterPickingLocator and _excludeAfterPickingLocator are not both selected
@@ -371,13 +392,13 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<Integer> onlyWithBPartnerIds = getOnlyInBPartnerIds();
 		if (!onlyWithBPartnerIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_C_BPartner_ID, onlyWithBPartnerIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_ID, onlyWithBPartnerIds);
 		}
 
 		// Filter by C_BPartner_Location_ID
 		if (!_onlyWithBPartnerLocationIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
 		}
 
 		//
@@ -386,7 +407,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		if (!onlyWithProductIds.isEmpty())
 		{
 			final IQuery<I_M_HU_Storage> huStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
-					.addInArrayFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds)
+					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds)
 					.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO)
 					.addOnlyActiveRecordsFilter()
 					.create();
@@ -451,7 +472,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<String> huStatusesToInclude = getHUStatusesToInclude();
 		if (huStatusesToInclude != null && !huStatusesToInclude.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_HUStatus, huStatusesToInclude);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_HUStatus, huStatusesToInclude);
 		}
 		// exclude
 		final Set<String> huStatusesToExclude = getHUStatusesToExclude();
@@ -468,14 +489,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			// because each of them needs to be individually valid
 			for (final HUAttributeQueryFilterVO attributeFilterVO : onlyAttributeId2values.values())
 			{
-				final IQueryFilter<I_M_HU_Attribute> attributeFilter = attributeFilterVO.createQueryFilter();
-
-				final IQueryBuilder<I_M_HU_Attribute> attributesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, getContextProvider())
-						.addOnlyActiveRecordsFilter()
-						.filter(attributeFilter);
-				final IQuery<I_M_HU_Attribute> attributesQuery = attributesQueryBuilder.create();
-
-				filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
+				attributeFilterVO.appendQueryFilterTo(getContextProvider(), filters);
 			}
 		}
 
@@ -483,16 +497,35 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		// Filter by internal barcode
 		if (!Check.isEmpty(barcode, true))
 		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
+			if (!_barcodeAttributesIds2Value.isEmpty())
+			{
+				final ICompositeQueryFilter<I_M_HU> barcodeFilter = queryBL.createCompositeQueryFilter(I_M_HU.class);
+
+				// an HU will be barcode-identified either if it has barcode attributes or value with the value inserted as barcode
+				barcodeFilter.setJoinOr();
+				barcodeFilter.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
+
+				for (final HUAttributeQueryFilterVO attributeFilterVO : _barcodeAttributesIds2Value.values())
+				{
+					attributeFilterVO.appendQueryFilterTo(getContextProvider(), barcodeFilter);
+				}
+
+				filters.addFilter(barcodeFilter);
+			}
+			// task #827 filter by hu value, as before
+			else
+			{
+				filters.addEqualsFilter(I_M_HU.COLUMN_Value, barcode.trim());
+			}
+
 		}
 
 		//
 		// Include only specific HUs
 		if (_onlyHUIds != null && !_onlyHUIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
 		}
-
 
 		//
 		// Exclude specified HUs
@@ -506,7 +539,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<Integer> huPIVersionIdsToInclude = getPIVersionIdsToInclude();
 		if (!huPIVersionIdsToInclude.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
 		}
 
 		//
@@ -848,16 +881,37 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		return this;
 	}
 
+	/**
+	 * Retrieves an existing or new de.metas.handlingunits.impl.HUAttributeQueryFilterVO entry for the given attribute and type.
+	 * Note: The entry will be included in the onlyAttributeId2values and not in the barcode attributes list
+	 * 
+	 * @param attribute
+	 * @param attributeValueType
+	 * @return
+	 */
 	private final HUAttributeQueryFilterVO getAttributeFilterVO(final I_M_Attribute attribute, final String attributeValueType)
+	{
+		return getAttributeFilterVO(onlyAttributeId2values, attribute, attributeValueType);
+	}
+
+	/**
+	 * Possibility to put the attribute in a given map.
+	 * 
+	 * @param targetMap
+	 * @param attribute
+	 * @param attributeValueType
+	 * @return
+	 */
+	private final HUAttributeQueryFilterVO getAttributeFilterVO(final Map<Integer, HUAttributeQueryFilterVO> targetMap, final I_M_Attribute attribute, final String attributeValueType)
 	{
 		Check.assumeNotNull(attribute, "attribute not null");
 
 		final int attributeId = attribute.getM_Attribute_ID();
-		HUAttributeQueryFilterVO attributeFilterVO = onlyAttributeId2values.get(attributeId);
+		HUAttributeQueryFilterVO attributeFilterVO = targetMap.get(attributeId);
 		if (attributeFilterVO == null)
 		{
 			attributeFilterVO = new HUAttributeQueryFilterVO(attribute, attributeValueType);
-			onlyAttributeId2values.put(attributeId, attributeFilterVO);
+			targetMap.put(attributeId, attributeFilterVO);
 		}
 		else
 		{
@@ -883,7 +937,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		return addOnlyWithAttribute(attribute, value);
 	}
 
-
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, final List<? extends Object> values)
 	{
@@ -891,6 +944,33 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final HUAttributeQueryFilterVO attributeFilterVO = getAttributeFilterVO(attribute, attributeValueType);
 		attributeFilterVO.addValues(values);
 
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeInList(final String attributeName, final Object... values)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final List<Object> valuesAsList = Arrays.asList(values);
+		addOnlyWithAttributeInList(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown, valuesAsList);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeNotNull(final String attributeName)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
+				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeMissingOrNull(final String attributeName)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
+				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull);
 		return this;
 	}
 
@@ -920,7 +1000,39 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	public IHUQueryBuilder setOnlyWithBarcode(final String barcode)
 	{
 		this.barcode = barcode;
+		loadBarcodeAttrributes(barcode);
 		return this;
+	}
+
+	private void loadBarcodeAttrributes(final String barcode)
+	{
+		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
+
+		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(getContextProvider());
+
+		final I_DIM_Dimension_Spec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName, contextAware);
+
+		if (barcodeDimSpec == null)
+		{
+			// no barcode dimension spec. Nothing to do
+			return;
+		}
+
+		final List<I_M_Attribute> barcodeAttributes = Services.get(IDimensionSpecAttributeDAO.class)
+				.retrieveAttributesForDimensionSpec(barcodeDimSpec);
+
+		for (final I_M_Attribute attribute : barcodeAttributes)
+		{
+			// Barcode must be a String attribute. In the database, this is forced by a validation rule
+			if (!attribute.getAttributeValueType().equals(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40))
+			{
+				continue;
+			}
+
+			final HUAttributeQueryFilterVO barcodeAttributeFilterVO = getAttributeFilterVO(_barcodeAttributesIds2Value, attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown);
+			barcodeAttributeFilterVO.addValue(barcode);
+		}
+
 	}
 
 	@Override

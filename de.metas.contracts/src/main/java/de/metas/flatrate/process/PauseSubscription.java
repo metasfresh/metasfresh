@@ -30,18 +30,18 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.misc.service.IPOService;
-import org.adempiere.model.POWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.Msg;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
-public class PauseSubscription extends SvrProcess {
+public class PauseSubscription extends JavaProcess {
 
 	static final String DATE_TO = "DateTo";
 
@@ -58,7 +58,7 @@ public class PauseSubscription extends SvrProcess {
 
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		final I_C_Flatrate_Term sc = POWrapper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
+		final I_C_Flatrate_Term sc = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
 		final List<I_C_SubscriptionProgress> sps = subscriptionPA.retrieveNextSPs(sc, dateFrom);
 
@@ -71,7 +71,7 @@ public class PauseSubscription extends SvrProcess {
 
 		final I_C_SubscriptionProgress nextSP = sps.get(0);
 
-		final I_C_SubscriptionProgress pauseBegin = POWrapper.create(getCtx(), I_C_SubscriptionProgress.class, get_TrxName());
+		final I_C_SubscriptionProgress pauseBegin = InterfaceWrapperHelper.create(getCtx(), I_C_SubscriptionProgress.class, get_TrxName());
 
 		pauseBegin.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn);
 		pauseBegin.setC_Flatrate_Term(sc);
@@ -79,9 +79,9 @@ public class PauseSubscription extends SvrProcess {
 		pauseBegin.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
 		pauseBegin.setEventDate(dateFrom);
 		pauseBegin.setSeqNo(nextSP.getSeqNo());
-		POWrapper.save(pauseBegin);
+		InterfaceWrapperHelper.save(pauseBegin);
 		
-		final I_C_SubscriptionProgress pauseEnd = POWrapper.create(getCtx(), I_C_SubscriptionProgress.class, get_TrxName());
+		final I_C_SubscriptionProgress pauseEnd = InterfaceWrapperHelper.create(getCtx(), I_C_SubscriptionProgress.class, get_TrxName());
 
 		pauseEnd.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
 		pauseBegin.setC_Flatrate_Term(sc);
@@ -89,7 +89,7 @@ public class PauseSubscription extends SvrProcess {
 		pauseEnd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
 		pauseEnd.setEventDate(dateTo);
 		pauseEnd.setSeqNo(nextSP.getSeqNo() + 1);
-		POWrapper.save(pauseEnd);
+		InterfaceWrapperHelper.save(pauseEnd);
 
 		//TODO "Created subscription pause
 		
@@ -119,7 +119,7 @@ public class PauseSubscription extends SvrProcess {
 
 	@Override
 	protected void prepare() {
-		final ProcessInfoParameter[] para = getParameter();
+		final ProcessInfoParameter[] para = getParametersAsArray();
 
 		for (int i = 0; i < para.length; i++) {
 

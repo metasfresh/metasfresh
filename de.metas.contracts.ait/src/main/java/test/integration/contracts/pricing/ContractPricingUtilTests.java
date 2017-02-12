@@ -26,7 +26,6 @@ package test.integration.contracts.pricing;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
@@ -34,9 +33,6 @@ import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import test.integration.contracts.ContractsHelper;
-import test.integration.contracts.ContractsTestConfig;
-import test.integration.contracts.flatrate.FlatFeeScenario;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.IHelper;
@@ -45,6 +41,9 @@ import de.metas.flatrate.interfaces.IFlatrateConditionsAware;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.pricing.spi.impl.ContractPricingUtil;
+import test.integration.contracts.ContractsHelper;
+import test.integration.contracts.ContractsTestConfig;
+import test.integration.contracts.flatrate.FlatFeeScenario;
 
 /**
  * Tests the behavior of {@link ContractPricingUtil}.
@@ -104,7 +103,7 @@ public class ContractPricingUtilTests extends AIntegrationTestDriver
 
 		final I_C_Flatrate_Conditions fc = setupContract("ContractPricingUtilTestWithSupportingPO");
 
-		final I_C_OrderLine ol = POWrapper.create(getCtx(), I_C_OrderLine.class, getTrxName());
+		final I_C_OrderLine ol = InterfaceWrapperHelper.create(getCtx(), I_C_OrderLine.class, getTrxName());
 
 		InterfaceWrapperHelper.create(ol, de.metas.contracts.subscription.model.I_C_OrderLine.class).setC_Flatrate_Conditions_ID(fc.getC_Flatrate_Conditions_ID());
 
@@ -121,7 +120,7 @@ public class ContractPricingUtilTests extends AIntegrationTestDriver
 		// only execute this test if subscription tests have been enabled
 		Assume.assumeTrue(!((ContractsHelper)getHelper()).getContractsTestConfig().is_TYPE_CONDITIONS_Subscr_Disabled());
 
-		final I_M_Product p = POWrapper.create(getCtx(), I_M_Product.class, getTrxName());
+		final I_M_Product p = InterfaceWrapperHelper.create(getCtx(), I_M_Product.class, getTrxName());
 
 		final I_C_Flatrate_Conditions result = ContractPricingUtil.getC_Flatrate_Conditions(p);
 		Assert.assertNull(result);

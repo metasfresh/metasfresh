@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import java.util.Collections;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,19 +15,19 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -39,10 +41,14 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.DocAction;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
@@ -144,16 +150,20 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public List<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLine(final org.compiere.model.I_M_InOutLine line)
 	{
-		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, line)
-				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, line.getM_InOutLine_ID()));
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_Alloc_ID);
-
-		return queryBuilder
+		return retrieveRsaForInOutLineQuery(line)
 				.create()
 				.list(I_M_ReceiptSchedule_Alloc.class);
+	}
+
+	private IQueryBuilder<I_M_ReceiptSchedule_Alloc> retrieveRsaForInOutLineQuery(final org.compiere.model.I_M_InOutLine line)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, line)
+				.addEqualsFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, line.getM_InOutLine_ID())
+				//
+				.orderBy()
+				.addColumn(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_Alloc_ID)
+				.endOrderBy();
 	}
 
 	@Override
@@ -162,9 +172,76 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		return createRsaForRsQueryBuilder(receiptSchedule, I_M_ReceiptSchedule_Alloc.class)
 				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_InOutLine_ID)
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
 				.create()
 				.list();
 	}
 
+	@Override
+	public Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
+	{
+		Set<I_M_ReceiptSchedule> schedules = ImmutableSet.of();
+
+		final int tableID = candidate.getAD_Table_ID();
+
+		// invoice candidate references an orderline
+		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+		{
+			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
+			if (orderLine != null)
+			{
+				final I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
+				if (schedForOrderLine != null)
+				{
+					schedules = ImmutableSet.of(schedForOrderLine);
+				}
+			}
+		}
+
+		// invoice candidate references an inoutline
+		else if (tableID == InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
+			final String trxName = InterfaceWrapperHelper.getTrxName(candidate);
+
+			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
+			if (inoutLine != null)
+			{
+				schedules = ImmutableSet.copyOf(retrieveRsForInOutLine(inoutLine));
+			}
+		}
+		else
+		{
+			// No other tables are supported yet
+			// Please add implementation if required
+		}
+		return schedules;
+	}
+
+	@Override
+	public List<I_M_ReceiptSchedule> retrieveRsForInOutLine(final I_M_InOutLine iol)
+	{
+		if (iol == null)
+		{
+			return Collections.emptyList();
+		}
+
+		final I_M_InOut io = iol.getM_InOut();
+		if (io == null)
+		{
+			// this shall never happen
+			return Collections.emptyList();
+		}
+
+		if (io.isSOTrx())
+		{
+			// sales side inouts do not have receipt schedules
+			return Collections.emptyList();
+		}
+
+		return retrieveRsaForInOutLineQuery(iol)
+				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_ReceiptSchedule_ID)
+				.create()
+				.list();
+	}
 }

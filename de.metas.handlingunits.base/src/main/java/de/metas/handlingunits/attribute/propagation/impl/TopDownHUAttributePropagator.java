@@ -10,18 +10,17 @@ package de.metas.handlingunits.attribute.propagation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +53,10 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 		return X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp;
 	}
 
+	/**
+	 * Sets the value to the given <code>attributeSet</code> and propagate it to the set's children as returned by {@link IAttributeStorage#getChildAttributeStorages()}.<br>
+	 * To distribute the given <code>value</code>, it uses a {@link IAttributeSplitterStrategy}.
+	 */
 	@Override
 	public void propagateValue(final IHUAttributePropagationContext propagationContext, final IAttributeStorage attributeSet, final Object value)
 	{
@@ -94,6 +97,7 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 	}
 
 	/**
+	 * Also see the javadoc at {@link #propagateValue(IHUAttributePropagationContext, IAttributeStorage, Object)}.
 	 *
 	 * @param attributeSet
 	 * @param attribute
@@ -107,12 +111,14 @@ public class TopDownHUAttributePropagator extends AbstractHUAttributePropagator
 
 		//
 		// Fetch ALL Child attributes
-		final Collection<IAttributeStorage> childrenAttributeSetsAll = attributeSet.getChildAttributeStorages();
+		final boolean loadIfNeeded = true;
+		final Collection<IAttributeStorage> childrenAttributeSetsAll = attributeSet.getChildAttributeStorages(loadIfNeeded);
 
 		//
 		// Check which of our child attributes are aware of propagation and build a list with them
 		final List<IAttributeStorage> childrenAttributeSets = new ArrayList<IAttributeStorage>(childrenAttributeSetsAll.size());
 		final List<IHUAttributePropagator> childrenAttributeSetPropagators = new ArrayList<IHUAttributePropagator>(childrenAttributeSetsAll.size());
+		
 		for (final IAttributeStorage childAttributeSet : childrenAttributeSetsAll)
 		{
 			IHUAttributePropagator childPropagator = propagationContext.getPropagator();

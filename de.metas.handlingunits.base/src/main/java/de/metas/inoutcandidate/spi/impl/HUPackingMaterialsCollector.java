@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +39,7 @@ import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_BPartner;
@@ -93,7 +93,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	/**
 	 * Maps M_Product_ID to {@link HUPackingMaterialDocumentLineCandidate}s
 	 */
-	private final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = new HashMap<Object, HUPackingMaterialDocumentLineCandidate>();
+	private final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = new HashMap<>();
 	private int countTUs = 0;
 
 	@ToStringBuilder(skip = true)
@@ -138,12 +138,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	public void removeTU(final I_M_HU tuHU)
 	{
 		final boolean remove = true;
-		addOrRemoveHU(remove, tuHU, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, null);
+		final I_M_InOutLine source = null; // N/A
+		addOrRemoveHU(remove, tuHU, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, source);
 	}
 
 	@Override
-	public void addLU(final I_M_HU luHU, 
-			final I_M_InOutLine source)
+	public void addLU(final I_M_HU luHU, final I_M_InOutLine source)
 	{
 		final boolean remove = false;
 		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, source);
@@ -153,24 +153,26 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	public void removeLU(final I_M_HU luHU)
 	{
 		final boolean remove = true;
-		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
+		final I_M_InOutLine source = null; // N/A
+		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, source);
 	}
 
-	@Override
-	public void addHU(final I_M_HU hu, 
-			final I_M_InOutLine source)
-	{
-		final String huUnitTypeOverride = null; // use HU's actual UnitType
-		final boolean remove = false;
-		addOrRemoveHU(remove, hu, huUnitTypeOverride, source);
-	}
-
-	private boolean addOrRemoveHU(final boolean remove, 
+	/**
+	 * Add/Remove HU
+	 * 
+	 * NOTE: this is the main method for collecting packing materials. All other helper methods are converging to this one.
+	 * 
+	 * @param remove
+	 * @param hu
+	 * @param huUnitTypeOverride
+	 * @param source
+	 * @return true if the packing materials were collected
+	 */
+	private boolean addOrRemoveHU(final boolean remove,
 			final I_M_HU hu,
 			final String huUnitTypeOverride,
 			final I_M_InOutLine source)
 	{
-		//
 		// Make sure we are dealing with an existing handling unit
 		if (hu == null)
 		{
@@ -208,9 +210,16 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		//
 		// Iterate all M_HU_PackingMaterials and add their products
-		final List<I_M_HU_PackingMaterial> huPackingMaterials = handlingUnitsDAO.retrievePackingMaterials(hu);
-		for (final I_M_HU_PackingMaterial huPackingMaterial : huPackingMaterials)
+		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterialsAndQtys = handlingUnitsDAO.retrievePackingMaterialAndQtys(hu);
+		for (final IPair<I_M_HU_PackingMaterial, Integer> huPackingMaterialAndQty : packingMaterialsAndQtys)
 		{
+			final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialAndQty.getLeft();
+			if(huPackingMaterial == null)
+			{
+				// note: some old HUs might have no packing material set.
+				// In this case there is no product, so there is no point to go forward.
+				continue;
+			}
 			final int productId = huPackingMaterial.getM_Product_ID();
 			if (productId <= 0)
 			{
@@ -218,23 +227,18 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			}
 
 			final int materialTrackingId = retrieveMaterialTrackingId(hu); // 07734
-
 			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu);
+			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
 
-			HUPackingMaterialDocumentLineCandidate candidate = key2candidates.get(key);
-			if (candidate == null)
-			{
-				candidate = createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu);
-				key2candidates.put(key, candidate);
-			}
+			final int qty = huPackingMaterialAndQty.getRight();
 			if (remove)
 			{
-				candidate.decrementQty();
+				candidate.subtractQty(qty);
 			}
 			else
 			{
 				candidate.addSourceIfNotNull(source);
-				candidate.incrementQty();
+				candidate.addQty(qty);
 			}
 		}
 
@@ -243,6 +247,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final String huUnitTypeToUse = huUnitTypeOverride == null ? handlingUnitsBL.getHU_UnitType(hu) : huUnitTypeOverride;
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
 		{
+			// 'hu' is a TO; count it
 			if (remove)
 			{
 				countTUs--;
@@ -250,6 +255,18 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			else
 			{
 				countTUs++;
+			}
+		}
+		else if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			// gh #640: 'hu' is a "bag" of homogenous HUs. Take into account the number of TUs it represents.
+			if (remove)
+			{
+				countTUs -= hu.getM_HU_Item_Parent().getQty().intValueExact();
+			}
+			else
+			{
+				countTUs += hu.getM_HU_Item_Parent().getQty().intValueExact();
 			}
 		}
 
@@ -263,7 +280,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 *
 	 * @param huPI PI for packing materials
 	 * @param count how many to add
-	 * @param inOutLine 
+	 * @param inOutLine
 	 */
 	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, I_M_InOutLine inOutLine)
 	{
@@ -281,16 +298,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				continue;
 			}
 
-			final int materialTrackingId = -1;
-			final I_M_HU hu = null;
+			final int materialTrackingId = -1; // N/A
+			final I_M_HU hu = null; // N/A
 			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu);
 
-			HUPackingMaterialDocumentLineCandidate candidate = key2candidates.get(key);
-			if (candidate == null)
-			{
-				candidate = createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu);
-				key2candidates.put(key, candidate);
-			}
+			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
+
 			candidate.addSourceIfNotNull(inOutLine);
 			candidate.addQty(count);
 		}
@@ -315,8 +328,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		return Util.mkKey(
 				productId <= 0 ? -1 : productId,
 				locatorId <= 0 ? -1 : locatorId,
-				materialTrackingId
-				);
+				materialTrackingId);
 	}
 
 	/**
@@ -336,12 +348,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		else
 		{
 			// retrieve the attribute
-			final I_M_Attribute trackingAttr =
-					attributeDAO.retrieveAttributeByValue(
-							InterfaceWrapperHelper.getCtx(hu, true),
-							I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID,
-							I_M_Attribute.class
-							);
+			final I_M_Attribute trackingAttr = attributeDAO.retrieveAttributeByValue(
+					InterfaceWrapperHelper.getCtx(hu, true),
+					I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID,
+					I_M_Attribute.class);
 			final I_M_HU_Attribute huAttribute = huContext.getHUAttributeStorageFactory().getHUAttributesDAO().retrieveAttribute(hu, trackingAttr);
 
 			materialTrackingIdStr = huAttribute == null || huAttribute.getValue() == null ? "-1" : huAttribute.getValue();
@@ -371,6 +381,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		final I_M_Locator locator = hu == null ? null : hu.getM_Locator();
+		
+		// hu without locator is OK sometimes (e.g. in InOutProducerFromReceiptScheduleHUTest), so we can't assert this here.
+		//Check.errorIf(hu != null && hu.getM_Locator() == null, "The given hu has no locator; hu={}", hu);
+		
 		final HUPackingMaterialDocumentLineCandidate candidate = new HUPackingMaterialDocumentLineCandidate(product, material_Tracking, locator);
 		return candidate;
 	}
@@ -401,7 +415,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
 			final I_M_HU hu = huAssignment.getM_HU();
-			if(seenM_HU_IDs_ToAdd.contains(hu.getM_HU_ID()))
+			if (seenM_HU_IDs_ToAdd.contains(hu.getM_HU_ID()))
 			{
 				// don't retrieve again those HUs which were already added
 				continue;
@@ -466,8 +480,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addHURecursively(final I_M_HU hu, 
-			final I_M_InOutLine source)
+	public void addHURecursively(final I_M_HU hu, final I_M_InOutLine source)
 	{
 		addOrRemoveHURecursively(hu, source, false);
 	}
@@ -482,9 +495,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * Add or Remove given HU (and recursively its children).
 	 *
 	 * @param hu
-	 * @param remove In case the boolean value is true, the HU will be removed (decremented qty); otherwise, it will be added (it's qty will be incremented)
+	 * @param source
+	 * @param remove In case the boolean value is true, the HU will be removed (decremented qty); otherwise, it will be added (its qty will be incremented)
 	 */
-	private void addOrRemoveHURecursively(final I_M_HU hu, 
+	private void addOrRemoveHURecursively(final I_M_HU hu,
 			final I_M_InOutLine source,
 			final boolean remove)
 	{

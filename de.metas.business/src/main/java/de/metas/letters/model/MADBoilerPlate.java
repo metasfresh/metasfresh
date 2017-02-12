@@ -39,14 +39,14 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.DataSource;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -65,9 +65,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MPInstance;
 import org.compiere.model.MPayment;
-import org.compiere.model.MProcess;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MRMA;
@@ -76,16 +74,20 @@ import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+import org.slf4j.Logger;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailSentStatus;
+import de.metas.logging.LogManager;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -137,37 +139,21 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return bp;
 	}
 
-	public static ReportEngine getReportEngine(String html, Map<String, Object> attrs)
+	public static ReportEngine getReportEngine(final String html, final Map<String, Object> attrs)
 	{
 		final Properties ctx = Env.getCtx();
-		String text = parseText(ctx, html, false, attrs, null);
+		String text = parseText(ctx, html, false, attrs, ITrx.TRXNAME_None);
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
-		//
-		// Get Process
-		final MProcess process = new Query(Env.getCtx(), MProcess.Table_Name, MProcess.COLUMNNAME_Classname + "=?", null)
-				.setParameters(new Object[] {
-						"de.metas.letters.report.AD_BoilerPlate_Report",
-						// AD_BoilerPlate_Report.class.getCanonicalName()
-				})
-				.firstOnly();
-		// Create Instance
-		final MPInstance pInstance = new MPInstance(process); // adTableId=0, recordId=0
-		pInstance.saveEx();
-		// Create Process Info
-		final ProcessInfoParameter[] params = new ProcessInfoParameter[] {
-				new ProcessInfoParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text, null, null, null)
-		};
-		final ProcessInfo pi = new ProcessInfo(process.getName(), process.getAD_Process_ID(), 0, 0);
-		pi.setAD_User_ID(Env.getAD_User_ID(ctx));
-		pi.setAD_Client_ID(Env.getAD_Client_ID(ctx));
-		pi.setAD_PInstance_ID(pInstance.getAD_PInstance_ID());
-		pi.setParameter(params);
-		// Execute Process
-		if (!process.processIt(pi, null))
-		{
-			throw new AdempiereException(pi.getSummary());
-		}
-		//
+		
+		final ProcessInfo pi = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_ProcessByClassname("de.metas.letters.report.AD_BoilerPlate_Report")
+				.addParameter(X_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text)
+				//
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getProcessInfo();
+		
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}
@@ -210,17 +196,25 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final int AD_Table_ID = editor.getAD_Table_ID();
 		final int Record_ID = editor.getRecord_ID();
 		//
-		EMail email = editor.sendEMail(from, toEmail, "", variables);
+		final EMail email = editor.sendEMail(from, toEmail, "", variables);
 		if (withRequest)
 			createRequest(email, AD_Table_ID, Record_ID, variables);
 	}
 
-	public static void createRequest(EMail email,
+	private static void createRequest(EMail email,
 			int parent_table_id, int parent_record_id,
 			Map<String, Object> variables)
 	{
-		if (email == null || !email.isSentOK())
+		if (email == null)
+		{
 			return;
+		}
+		
+		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
+		if (!emailSentStatus.isSentOK())
+		{
+			return;
+		}
 
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
 		final Integer SalesRep_ID = (Integer)variables.get(MADBoilerPlate.VAR_SalesRep_ID);
@@ -240,19 +234,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		//
 		// Attach email attachments to this request
 		final MAttachment requestAttachment = request.createAttachment();
-		for (final Object a : email.getAttachments())
+		for (final EMailAttachment emailAttachment : email.getAttachments())
 		{
-			if (a == null)
+			try
 			{
-				continue;
+				final DataSource dataSource = emailAttachment.createDataSource();
+				requestAttachment.addEntry(dataSource);
 			}
-			else if (a instanceof File)
+			catch (Exception e)
 			{
-				requestAttachment.addEntry((File)a);
-			}
-			else
-			{
-				log.warn("Object type not supported - " + a + " - " + a.getClass());
+				log.warn("Failed adding {} to {}", emailAttachment, requestAttachment);
 			}
 		}
 		if (requestAttachment.getEntryCount() > 0)
@@ -326,7 +317,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		else if (parent_table_id == MCampaign.Table_ID)
 			rq.setC_Campaign_ID(parent_record_id);
 		//
-		else if (parent_table_id == MRequest.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_R_Request.class))
 			rq.setR_RequestRelated_ID(parent_record_id);
 		// FR [2842165] - Order Ref link from SO line creating new request
 		else if (parent_table_id == MOrderLine.Table_ID)
@@ -405,7 +396,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 					windowNo,
 					0, // Column_ID
 					DisplayType.TableDir,
-					Env.getLanguage(ctx),
 					MADBoilerPlate.COLUMNNAME_AD_BoilerPlate_ID,
 					0, // AD_Reference_Value_ID,
 					false, // IsParent,
@@ -804,7 +794,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
 			if (email == null)
 			{
-				for (MUser contact : bp.getContacts(false))
+				final MUser contact = getDefaultContactOrFirstWithValidEMail(bp);
+				if (contact != null)
 				{
 					attrs.put(VAR_AD_User_ID, contact.getAD_User_ID());
 					attrs.put(VAR_AD_User, contact);
@@ -812,11 +803,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 					{
 						email = contact.getEMail();
 						attrs.put(VAR_EMail, email);
-						break;
 					}
 				}
 			}
 		}
+		
 		//
 		// Language
 		String AD_Language = Env.getAD_Language(ctx);
@@ -829,6 +820,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 		attrs.put(VAR_AD_Language, AD_Language);
+		
 		//
 		//
 		// attrs.put(VAR_Phone, null);
@@ -854,6 +846,39 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		// }
 		//
 		return attrs;
+	}
+	
+	private static MUser getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
+	{
+		MUser firstContact = null;
+		MUser firstValidContact = null;
+		for (final MUser contact : bpartner.getContacts(false))
+		{
+			if(contact.isDefaultContact())
+			{
+				return contact;
+			}
+			
+			if(firstContact == null)
+			{
+				firstContact = contact;
+			}
+			
+			if (contact.isEMailValid())
+			{
+				if(firstValidContact == null)
+				{
+					firstValidContact = contact;
+				}
+			}
+		}
+		
+		if(firstValidContact != null)
+		{
+			return firstValidContact;
+		}
+		
+		return firstContact;
 	}
 
 	private static int getValueAsInt(Object o, String columnName)

@@ -22,7 +22,6 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +33,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.ProgramaticCalloutProvider;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MTable;
+import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,14 +53,13 @@ public class ProgramaticCalloutProviderTest
 	@Test
 	public void test_StandardCase()
 	{
+		final MockedCalloutField field = MockedCalloutField.createNewField("MyTableName", "MyColumnName");
+
 		final MockedCalloutInstance calloutInstance = new MockedCalloutInstance();
 		provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 
-		final PlainCalloutField field = new PlainCalloutField();
-		field.setAD_Table_ID(MTable.getTable_ID("MyTableName"));
-		field.setColumnName("MyColumnName");
-
-		final List<ICalloutInstance> calloutInstances = provider.getCallouts(field);
+		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getTableName())
+				.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callout instances retrieved",
 				Collections.singletonList(calloutInstance),
 				calloutInstances);
@@ -70,14 +68,14 @@ public class ProgramaticCalloutProviderTest
 	@Test
 	public void test_StandardCase_CalloutNotFound()
 	{
+		final MockedCalloutField field = MockedCalloutField.createNewField("MyTableName", "MyColumnName" + "_NOT_FOUND");
+
 		final MockedCalloutInstance calloutInstance = new MockedCalloutInstance();
+		MockedCalloutField.createNewField("MyTableName", "MyColumnName"); // calling it just to have the AD_Table and AD_Column records
 		provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 
-		final PlainCalloutField field = new PlainCalloutField();
-		field.setAD_Table_ID(MTable.getTable_ID("MyTableName"));
-		field.setColumnName("MyColumnName" + "_NOT_FOUND");
-
-		final List<ICalloutInstance> calloutInstances = provider.getCallouts(field);
+		final List<ICalloutInstance> calloutInstances = provider.getCallouts(Env.getCtx(), field.getTableName())
+				.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callout instances retrieved",
 				Collections.emptyList(),
 				calloutInstances);
@@ -87,6 +85,8 @@ public class ProgramaticCalloutProviderTest
 	public void test_CalloutNotRegisteredTwice()
 	{
 		final String calloutInstanceId = "MockedCalloutInstance-1";
+
+		MockedCalloutField.createNewField("MyTableName", "MyColumnName"); // calling it just to have the AD_Table and AD_Column records
 
 		final MockedCalloutInstance calloutInstance1 = new MockedCalloutInstance(calloutInstanceId);
 		Assert.assertTrue("Callout " + calloutInstance1 + " shall be registered",
@@ -101,22 +101,24 @@ public class ProgramaticCalloutProviderTest
 	@Test
 	public void test_integration_RegisterTo_CalloutFactory()
 	{
-		final ICalloutFactory calloutFactory = Services.get(ICalloutFactory.class);
+		final CalloutFactory calloutFactory = (CalloutFactory)Services.get(ICalloutFactory.class);
 		Assert.assertFalse("Provider " + provider + " shall not be registered at this moment",
-				calloutFactory.getCalloutProviders().contains(provider));
+				calloutFactory.getCalloutProvidersList().contains(provider));
 
-		// Register some callouts callout and expected to have the provider registered to factory
+		MockedCalloutField.createNewField("MyTableName", "MyColumnName"); // calling it just to have the AD_Table and AD_Column records
+
+		// Register some column callouts and expected to have the provider registered to factory
 		for (int i = 1; i <= 100; i++)
 		{
 			final MockedCalloutInstance calloutInstance = new MockedCalloutInstance();
 			provider.registerCallout("MyTableName", "MyColumnName", calloutInstance);
 			Assert.assertTrue("Provider " + provider + " shall not be registered at this moment",
-					calloutFactory.getCalloutProviders().contains(provider));
+					calloutFactory.getCalloutProvidersList().contains(provider));
 		}
 
 		// Make sure provider is registered only once
 		final List<ICalloutProvider> programaticProviders = new ArrayList<ICalloutProvider>();
-		for (final ICalloutProvider p : calloutFactory.getCalloutProviders())
+		for (final ICalloutProvider p : calloutFactory.getCalloutProvidersList())
 		{
 			if (p instanceof IProgramaticCalloutProvider)
 			{

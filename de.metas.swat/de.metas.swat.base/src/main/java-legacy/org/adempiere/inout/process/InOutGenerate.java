@@ -26,12 +26,12 @@ package org.adempiere.inout.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,24 +48,24 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.adempiere.exceptions.DBException;
 import org.adempiere.inout.shipment.IShipmentBL;
 import org.adempiere.inout.shipment.ShipmentParams;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
-import org.compiere.process.ProcessInfo;
-import org.compiere.process.ProcessInfoParameter;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.inout.model.I_M_InOut;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Generate Shipments. Manual or Automatic
- * 
+ *
  * New features by metas
  * <ul>
  * <li>Option to create shipments in order of ordering, even if a bpartner has
@@ -73,13 +73,13 @@ import de.metas.inout.model.I_M_InOut;
  * <li>Option to evaluate a bPartner's postage-free amount. If used, shipments
  * are created only for orders above a certain value</li>
  * </ul>
- * 
+ *
  * NOTE: this is metas's modified version of ADempiere's org.compiere.process.InOutGenerate
- * 
+ *
  * @author Jorg Janke
  * @author t.schoeneberg@metas.de
  */
-public final class InOutGenerate extends SvrProcess
+public final class InOutGenerate extends JavaProcess
 {
 	public static final String PARAM_Selection = "Selection";
 	public static final String PARAM_M_Warehouse_ID = "M_Warehouse_ID";
@@ -142,9 +142,10 @@ public final class InOutGenerate extends SvrProcess
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare() {
 
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++) {
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
@@ -190,10 +191,11 @@ public final class InOutGenerate extends SvrProcess
 
 	/**
 	 * Generate Shipments
-	 * 
+	 *
 	 * @return info
 	 * @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("Selection=" + p_Selection + ", M_Warehouse_ID="
@@ -217,7 +219,7 @@ public final class InOutGenerate extends SvrProcess
 
 		params.setAdPInstanceId(getAD_PInstance_ID());
 		params.setAdUserId(getAD_User_ID());
-		
+
 		params.setBPartnerId(p_C_BPartner_ID);
 		params.setConsolidateDocument(p_ConsolidateDocument);
 		params.setDatePromised(p_DatePromised);
@@ -227,7 +229,7 @@ public final class InOutGenerate extends SvrProcess
 		params.setWarehouseId(p_M_Warehouse_ID);
 		params.setIgnorePostageFreeamount(p_ignorePostageFreeAmount);
 
-		
+
 		final IShipmentBL shipmentBL = Services.get(IShipmentBL.class);
 		final Iterator<I_M_InOut> shipments = shipmentBL.generateShipments(getCtx(), params, p_docAction, get_TrxName());
 		while(shipments.hasNext())
@@ -239,19 +241,14 @@ public final class InOutGenerate extends SvrProcess
 					currentShipment.getDocumentNo());
 			m_created++;
 		}
-	
+
 		return "@Created@ = " + m_created;
 
 	} // doIt
 
-	public static int[] getM_InOut_IDs(final ProcessInfo pi)
-	{
-		return pi.getIDs();
-	}
-
 	private Set<Integer> retrieveSelectedOrderIds()
 	{
-		final Set<Integer> orderLineIds = new HashSet<Integer>();
+		final Set<Integer> orderLineIds = new HashSet<>();
 
 		final String trxName = get_TrxName();
 		final String sql = SQL_SELECT_SELECTED_ORDERLINE_IDS;

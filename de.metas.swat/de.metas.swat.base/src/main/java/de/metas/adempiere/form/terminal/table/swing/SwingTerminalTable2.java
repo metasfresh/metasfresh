@@ -10,12 +10,12 @@ package de.metas.adempiere.form.terminal.table.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,6 @@ import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.jdesktop.swingx.JXTable;
 
-import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -55,18 +54,15 @@ public class SwingTerminalTable2<T> implements ITerminalTable2<T>
 	private ITerminalScrollPane tableScroll;
 	private SwingSelectionModelSynchronizer<T> selectionModelSync;
 
+	private boolean disposed = false;
+
 	public SwingTerminalTable2(final ITerminalContext terminalContext)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
 
 		this.tableSwing = new JXTable()
 		{
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1971296677096025546L;
 
 			/**
@@ -113,6 +109,8 @@ public class SwingTerminalTable2<T> implements ITerminalTable2<T>
 		}
 
 		setRowHeight(60);// FIXME: hardcoded
+
+		terminalContext.addToDisposableComponents(this);
 	}
 
 	@Override
@@ -226,7 +224,7 @@ public class SwingTerminalTable2<T> implements ITerminalTable2<T>
 
 	/**
 	 * Converts column index from View coordinates to Model coordinates
-	 * 
+	 *
 	 * @param viewColumnIndex
 	 * @return model column index
 	 */
@@ -249,8 +247,6 @@ public class SwingTerminalTable2<T> implements ITerminalTable2<T>
 	@Override
 	public void dispose()
 	{
-		tableScroll = DisposableHelper.dispose(tableScroll);
-
 		if (tableSwing != null)
 		{
 			tableSwing.removeAll();
@@ -266,6 +262,14 @@ public class SwingTerminalTable2<T> implements ITerminalTable2<T>
 			}
 			model = null; // remove the link... we did not created, we are not destroying it
 		}
+
+		disposed = true;
+	}
+
+	@Override
+	public boolean isDisposed()
+	{
+		return disposed ;
 	}
 
 	@Override

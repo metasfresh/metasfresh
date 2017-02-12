@@ -26,13 +26,16 @@ package org.adempiere.ad.validationRule.impl;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRuleDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.I_AD_Val_Rule_Included;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -41,17 +44,18 @@ public class ValidationRuleDAO implements IValidationRuleDAO
 {
 	@Override
 	@Cached(cacheName = I_AD_Val_Rule.Table_Name)
-	public I_AD_Val_Rule retriveValRule(@CacheCtx final Properties ctx, final int adValRuleId)
+	public I_AD_Val_Rule retriveValRule(final int adValRuleId)
 	{
 		if (adValRuleId <= 0)
 		{
 			return null;
 		}
 
-		final String trxName = ITrx.TRXNAME_None;
-		return new TypedSqlQuery<I_AD_Val_Rule>(ctx, I_AD_Val_Rule.class, I_AD_Val_Rule.COLUMNNAME_AD_Val_Rule_ID + "=?", trxName)
-				.setParameters(adValRuleId)
-				.setOnlyActiveRecords(true)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Val_Rule.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Val_Rule.COLUMNNAME_AD_Val_Rule_ID, adValRuleId)
+				.create()
 				.firstOnly(I_AD_Val_Rule.class);
 	}
 

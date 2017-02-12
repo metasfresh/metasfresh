@@ -23,10 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Enumeration;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import javax.mail.Address;
 import javax.mail.Flags;
@@ -42,7 +38,12 @@ import javax.mail.Store;
 import org.compiere.model.MRequest;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
-import org.compiere.util.EMailAuthenticator;
+
+import de.metas.email.MailAuthenticator;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
+import de.metas.logging.LogManager;
 
 /**
  *	Request Email Processor
@@ -50,7 +51,7 @@ import org.compiere.util.EMailAuthenticator;
  *  @author Carlos Ruiz based on initial work by Jorg Janke - sponsored by DigitalArmour
  *  @version $Id: RequestEMailProcessor.java,v 1.2 2006/10/23 06:01:20 cruiz Exp $
  */
-public class RequestEMailProcessor extends SvrProcess
+public class RequestEMailProcessor extends JavaProcess
 {
 	private String	p_IMAPHost = null;
 	private String	p_IMAPUser = null;
@@ -85,9 +86,10 @@ public class RequestEMailProcessor extends SvrProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
+		ProcessInfoParameter[] para = getParametersAsArray();
 		for (int i = 0; i < para.length; i++)
 		{
 			String name = para[i].getParameterName();
@@ -130,6 +132,7 @@ public class RequestEMailProcessor extends SvrProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - IMAPHost=" + p_IMAPHost +
@@ -175,16 +178,16 @@ public class RequestEMailProcessor extends SvrProcess
 			return m_session;
 		
 		//	Session
-		Properties props = System.getProperties();
+		final Properties props = new Properties(System.getProperties());
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", p_IMAPHost);
 		props.put("mail.smtp.auth","true");
-		EMailAuthenticator auth = new EMailAuthenticator (p_IMAPUser, p_IMAPPwd);
+		MailAuthenticator auth = MailAuthenticator.of(p_IMAPUser, p_IMAPPwd);
 		//
 		m_session = Session.getDefaultInstance(props, auth);
 		m_session.setDebug(LogManager.isLevelFinest());
-		log.debug("getSession - " + m_session);
+		log.debug("getSession: {}", m_session);
 		return m_session;
 	}	//	getSession
 	

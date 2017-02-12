@@ -13,15 +13,14 @@ package de.metas.document.archive.async.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -42,7 +41,8 @@ import org.adempiere.util.StreamUtils;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.document.archive.api.IArchiveDAO;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
@@ -50,10 +50,24 @@ import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 
 public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 {
+	public static final void scheduleOnTrxCommit(final org.compiere.model.I_AD_Archive archive)
+	{
+		SCHEDULER.schedule(archive);
+	}
+
+	private static final WorkpackagesOnCommitSchedulerTemplate<org.compiere.model.I_AD_Archive> //
+	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate.newModelScheduler(DocOutboundCCWorkpackageProcessor.class, org.compiere.model.I_AD_Archive.class)
+			.setCreateOneWorkpackagePerModel(true);
+
+	// services
+	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final transient org.adempiere.archive.api.IArchiveDAO archiveDAO = Services.get(org.adempiere.archive.api.IArchiveDAO.class);
+	private final transient IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
+	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
+
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 		final List<I_AD_Archive> archives = queueDAO.retrieveItems(workpackage, I_AD_Archive.class, localTrxName);
 		for (final I_AD_Archive archive : archives)
@@ -65,7 +79,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void writeCCFile(final I_AD_Archive archive)
 	{
-		final Object model = Services.get(org.adempiere.archive.api.IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
+		final Object model = archiveDAO.retrieveReferencedModel(archive, Object.class);
 		if (model == null)
 		{
 			// No model attached?
@@ -73,12 +87,12 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 			throw new AdempiereException("@NotFound@ @AD_Archive_ID@ @Record_ID@");
 		}
 
-		final ICCAbleDocument document = Services.get(ICCAbleDocumentFactoryService.class).createCCAbleDocument(model);
+		final ICCAbleDocument document = ccAbleDocumentFactoryService.createCCAbleDocument(model);
 		Check.assumeNotNull(document, "ccDocument not null");
 
 		//
 		// Get Document Outbound Configuration
-		final I_C_Doc_Outbound_Config config = Services.get(IArchiveDAO.class).retrieveConfigForModel(model);
+		final I_C_Doc_Outbound_Config config = Services.get(IDocOutboundDAO.class).retrieveConfigForModel(model);
 		if (config == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Doc_Outbound_Config@ (" + model + ")");
@@ -101,7 +115,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 		Check.assumeNotEmpty(filename, "filename shall not be empty for {}", document);
 		final String filenameFixed = FileUtils.stripIllegalCharacters(filename);
 		Check.assumeNotEmpty(filenameFixed, "filename shall be valid: {}", filename);
-		
+
 		final File ccFile = new File(ccPathDir, filenameFixed);
 
 		copyArchiveToFile(archive, ccFile);
@@ -109,7 +123,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 	private void copyArchiveToFile(final I_AD_Archive archive, final File file)
 	{
-		final IArchiveStorage archiveStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive);
+		final IArchiveStorage archiveStorage = archiveStorageFactory.getArchiveStorage(archive);
 		final InputStream data = archiveStorage.getBinaryDataAsStream(archive);
 
 		OutputStream out = null;

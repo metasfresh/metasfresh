@@ -30,7 +30,7 @@ import java.util.Date;
  * 
  * This class can also convert a given amount, by using {@link #convertAmount(BigDecimal)}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ICurrencyRate

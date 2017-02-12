@@ -24,7 +24,7 @@ package de.metas.dunning;
 
 /**
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class Dunning_Constants

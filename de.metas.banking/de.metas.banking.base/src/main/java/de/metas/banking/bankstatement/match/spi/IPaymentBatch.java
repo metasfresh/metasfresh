@@ -41,7 +41,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
  * 
  * NOTE to developer: please consider extending {@link PaymentBatch}.
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPaymentBatch

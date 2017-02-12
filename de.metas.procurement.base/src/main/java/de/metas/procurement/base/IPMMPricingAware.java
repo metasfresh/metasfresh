@@ -40,7 +40,7 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
  * <li>has setters to set pricing result fields
  * </ul>
  * 
- * @author metas-dev <dev@metas-fresh.com>
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IPMMPricingAware
@@ -71,5 +71,5 @@ public interface IPMMPricingAware
 
 	void setC_Currency_ID(int C_Currency_ID);
 
-	void setPrice(BigDecimal priceStd);
+	void setPrice(BigDecimal price);
 }

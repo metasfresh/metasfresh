@@ -40,8 +40,8 @@ import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.banking.api.IBPBankAccountDAO;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
 
 /**

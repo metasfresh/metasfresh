@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -13,27 +13,28 @@ package de.metas.adempiere.form.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.text.DecimalFormat;
 import java.text.Format;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.text.ParseException;
 
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -124,10 +125,8 @@ public abstract class AbstractTerminalTextField
 
 	protected final void firePropertyChanged(final String propertyName, final Object valueOld, final Object valueNew)
 	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug(propertyName + ": " + valueOld + "->" + valueNew);
-		}
+		logger.debug("this-ID={}, Name={} Property={}: {} -> {} on this={}",
+				System.identityHashCode(this), getName(), propertyName, valueOld, valueNew, this);
 
 		// Case: valueOld=valueNew=null
 		if (valueOld == valueNew)
@@ -163,7 +162,13 @@ public abstract class AbstractTerminalTextField
 	}
 
 	/**
-	 * Trigger automatically keyboard showing
+	 * Trigger automatically keyboard showing.
+	 * On swing we had the problem that a manually edited value was lost when the keyboard opened and then canceled (because no <code>FocusLost</code> event was triggered).<br>
+	 * When creating another (not-swing) implementation, please make sure that doesn't happen.
+	 * <p>
+	 * Note: the keyboard is created with its own a dedicated 'references' instance, because the on-screen keyboard's terminal components also
+	 * registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
+	 * Otherwise, future key events to other text fields of our panel would update "our" text field.
 	 */
 	protected void showKeyboard()
 	{
@@ -191,27 +196,42 @@ public abstract class AbstractTerminalTextField
 			return;
 		}
 
+		final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
+		try
+		{
+			// make sure that direct edits to the text component with a hardware keyboard are not lost in case the on-screen-keyboard dialog is opened and canceled.
+			// (without this they might get lost because opening this on-screen keyboard does not trigger a focus-lost).
+			textField.commitEdit();
+		}
+		catch (ParseException e)
+		{
+			// do nothing. either the user will fix this value using the keyboard we are about to show, or they will get an error when they try to submit the input.
+		}
+
 		try
 		{
 			logger.debug("Show keyboard");
-			final AbstractTerminalTextField textField = AbstractTerminalTextField.this;
-
-			activeKeyboard = factories.create(ITerminalKeyDialog.class, textField);
-			if (activeKeyboard == null)
-			{
-				activeKeyboard = getTerminalFactory().createTerminalKeyDialog(textField);
-			}
-
 			final Object oldValue = textField.getText();
 
-			// Show Keybord and wait until user closes it (by pressing OK or Cancel)
-			activeKeyboard.activate();
-
-			final String action = TerminalKeyDialog.ACTION_Cancel;
-			activeKeyboard = null;
-			if (action.equals(textField.getAction()))
+			// we need a dedicated 'references' instance, because the on-screen keyboard's terminal components also
+			// registers a ITerminalKeyListener that needs to be disposed right after the on-screen keyboard closes.
+			// otherwise, future key event to other text fields of our panel would update the current 'textField'.
+			try (final ITerminalContextReferences references = getTerminalContext().newReferences())
 			{
-				textField.setValue(oldValue.toString());
+				activeKeyboard = factories.create(ITerminalKeyDialog.class, textField);
+				if (activeKeyboard == null)
+				{
+					activeKeyboard = getTerminalFactory().createTerminalKeyDialog(textField);
+				}
+
+				// Show Keybord and wait until user closes it (by pressing OK or Cancel)
+				activeKeyboard.activate();
+			}
+			activeKeyboard = null;
+
+			if (TerminalKeyDialog.ACTION_Cancel.equals(textField.getAction()))
+			{
+				textField.setValue(oldValue.toString(), true); // fireEvent=true
 				textField.setText(oldValue.toString());
 			}
 			else
@@ -286,16 +306,17 @@ public abstract class AbstractTerminalTextField
 
 		factories.clear();
 		keyLayout = null;
-
-		if (activeKeyboard != null)
-		{
-			activeKeyboard.dispose();
-			activeKeyboard = null;
-		}
 	}
 
 	protected float getFontSize()
 	{
 		return fontSize;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "AbstractTerminalTextField [title=" + title + ", displayType=" + displayType + ", showKeyboardButton=" + showKeyboardButton + ", activeKeyboard=" + activeKeyboard + ", action=" + action + ", fontSize=" + fontSize + ", format=" + format + ", keyLayout=" + keyLayout + "]";
+	}
+
 }

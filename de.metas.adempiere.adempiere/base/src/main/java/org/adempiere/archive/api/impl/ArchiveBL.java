@@ -38,14 +38,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.PrintInfo;
 import org.compiere.model.X_AD_Client;
 import org.compiere.print.layout.LayoutEngine;
-import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Process;
+import de.metas.process.ProcessInfo;
 
 public class ArchiveBL implements IArchiveBL
 {
@@ -134,6 +134,10 @@ public class ArchiveBL implements IArchiveBL
 		archive.setRecord_ID(info.getRecord_ID());
 		archive.setC_BPartner_ID(info.getC_BPartner_ID());
 		storage.setBinaryData(archive, data);
+		
+		//FRESH-349: Set ad_pinstance
+		
+		archive.setAD_PInstance_ID(info.getAD_PInstance_ID());
 
 		if (save)
 		{
@@ -157,7 +161,7 @@ public class ArchiveBL implements IArchiveBL
 		// the language from the given context. In case there will be no other language to fit the logic, this is the value to be returned.
 		final String initialLanguage = Env.getAD_Language(ctx);
 
-		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, info.getAD_Process_ID(), I_AD_Process.class, trxName);
+		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, info.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
 
 		// make sure there is a process set in the PrintInfo
 		if (process == null)
