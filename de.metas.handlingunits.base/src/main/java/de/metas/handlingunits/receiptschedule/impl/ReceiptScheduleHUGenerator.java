@@ -59,6 +59,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.GenericListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -74,7 +75,10 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 /**
  * Helper class for massive generation of HUs for receipt schedule(s).
  * <p>
- * Note:The respective {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s are created via {@link ReceiptScheduleHUTrxListener}.
+ * Notes:
+ * <li>The respective {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s are created via {@link ReceiptScheduleHUTrxListener}.
+ * <li>This class can also be configured to go with pre existing HUs (if they are still valid) instead of creating new ones,
+ * see {@link ILUTUProducerAllocationDestination#setExistingHUs(IHUAllocations)} which is called from this class.
  *
  * @author tsa
  *
@@ -113,7 +117,7 @@ public class ReceiptScheduleHUGenerator
 	private IContextAware _contextInitial;
 	private final List<I_M_ReceiptSchedule> _receiptSchedules = new ArrayList<>();
 	private final Map<Integer, IProductStorage> _receiptSchedule2productStorage = new HashMap<>();
-
+	private final Map<Integer, IHUAllocations> _receiptSchedule2huAllocations = new HashMap<>();
 	private Quantity _qtyToAllocateTarget = null;
 
 	//
@@ -121,10 +125,10 @@ public class ReceiptScheduleHUGenerator
 	private boolean _configurable = true;
 	private IDocumentLUTUConfigurationManager _lutuConfigurationManager;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration;
+	private ILUTUProducerAllocationDestination _lutuProducer;
 
 	private ReceiptScheduleHUGenerator()
 	{
-		super();
 	}
 
 	private final void assertConfigurable()
@@ -231,6 +235,25 @@ public class ReceiptScheduleHUGenerator
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(schedule.getC_OrderLine(), I_C_OrderLine.class);
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		return orderLine;
+	}
+
+	/**
+	 * This method is important in getting precomputed HUs
+	 * 
+	 * @param schedule
+	 * @return
+	 */
+	private IHUAllocations getHUAllocations(final I_M_ReceiptSchedule schedule)
+	{
+		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
+		IHUAllocations huAllocations = _receiptSchedule2huAllocations.get(receiptScheduleId);
+		if (huAllocations == null)
+		{
+			final IProductStorage productStorage = getProductStorage(schedule);
+			huAllocations = new ReceiptScheduleHUAllocations(schedule, productStorage);
+			_receiptSchedule2huAllocations.put(receiptScheduleId, huAllocations);
+		}
+		return huAllocations;
 	}
 
 	private IProductStorage getProductStorage(final I_M_ReceiptSchedule schedule)
@@ -507,10 +530,27 @@ public class ReceiptScheduleHUGenerator
 
 	public ILUTUProducerAllocationDestination getLUTUProducerAllocationDestination()
 	{
+		if (_lutuProducer != null)
+		{
+			return _lutuProducer;
+		}
+
 		final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
+		_lutuProducer = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+
+		//
+		// Ask the "lutuProducer" to consider currently created HUs that are linked to our receipt schedule
+		// In case they are suitable, they will be used, else they will be destroyed.
+		// NOTE: we do this only if we have only one M_ReceiptSchedule
+		final I_M_ReceiptSchedule receiptSchedule = getSingleReceiptScheduleOrNull();
+		if (receiptSchedule != null)
+		{
+			final IHUAllocations huAllocations = getHUAllocations(receiptSchedule);
+			_lutuProducer.setExistingHUs(huAllocations);
+		}
 
 		markNotConfigurable();
-		return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+		return _lutuProducer;
 	}
 
 	/**

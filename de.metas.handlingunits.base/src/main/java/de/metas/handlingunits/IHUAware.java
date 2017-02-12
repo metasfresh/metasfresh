@@ -52,5 +52,21 @@ public interface IHUAware
 		return Collections2.transform(hus, IHUAware::fromHU);
 	}
 
+	/**
+	 * @param model
+	 * @return {@link I_M_HU} or <code>null</code>
+	 */
+	static I_M_HU getM_HUOrNull(final Object model)
+	{
+		if(model instanceof IHUAware)
+		{
+			return ((IHUAware)model).getM_HU();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	I_M_HU getM_HU();
 }

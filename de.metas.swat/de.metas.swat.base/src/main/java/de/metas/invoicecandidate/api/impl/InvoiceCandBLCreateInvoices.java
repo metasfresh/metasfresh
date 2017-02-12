@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -283,7 +283,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 								invoiceHeader.getC_DocTypeInvoice() != null ? invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID() : 0,
 								invoiceHeader.getDateInvoiced(),
 								invoiceHeader.getDateAcct() // task 08437
-				),
+						),
 						I_C_Invoice.class);
 				setC_DocType(invoice, invoiceHeader);
 
@@ -626,7 +626,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final BigDecimal qtyInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null);
+						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null); // TODO
+
+						// #870
+						// Make sure the Qty and Price override are set to null when an invoiceline is created
+						{
+							final int invoiceCandidate_ID = candForIlVO.getC_Invoice_Candidate_ID();
+
+							Services.get(ITrxManager.class)
+									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+									.onAfterCommit(() -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+						}
 					}
 
 					//
@@ -664,6 +674,21 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					throw e;
 				}
 			}
+		}
+
+		/**
+		 * @param invoiceCandidate_ID
+		 */
+		private void set_QtyAndPriceOverrideToNull(final int invoiceCandidate_ID)
+		{
+
+			final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
+
+			ic.setQtyToInvoice_Override(null);
+			ic.setPriceEntered_Override(null);
+
+			InterfaceWrapperHelper.save(ic);
+
 		}
 
 		private final I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
