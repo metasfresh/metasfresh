@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.56.54 (2017-07)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
@@ -32,8 +32,6 @@ upcoming
   * #797 Zoom does not open new document
 
 # metasfresh 4.55.54 (2017-06)
-
-this week's RC
 
 ## Features
 * metasfresh
