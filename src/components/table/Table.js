@@ -550,6 +550,8 @@ class Table extends Component {
         const {selected, rows} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
 
+        console.log(rows);
+
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
             const item = rowData[tabid];
@@ -587,6 +589,40 @@ class Table extends Component {
             return ret;
         }
     }
+
+    // return (
+    //             <tbody>
+    //             {rows.map((row, index) =>
+    //                 <TableItem
+    //                     odd={i & 1}
+    //                     entity={entity}
+    //                     fields={row.fields}
+    //                     rowId={row[keyProp]}
+    //                     tabId={tabId}
+    //                     cols={cols}
+    //                     type={type}
+    //                     docId={docId}
+    //                     tabIndex={tabIndex}
+    //                     readonly={readonly}
+    //                     mainTable={mainTable}
+    //                     onDoubleClick={() => onDoubleClick && onDoubleClick(row[keyProp])}
+    //                     onMouseDown={(e) => handleClick && handleClick(e, row[keyProp])}
+    //                     handleRightClick={(e) => handleRightClick(e, row[keyProp])}
+    //                     changeListenOnTrue={() => changeListenOnTrue && changeListenOnTrue()}
+    //                     changeListenOnFalse={() => changeListenOnFalse && changeListenOnFalse()}
+    //                     newRow={i === keys.length-1 ? newRow : false}
+    //                     isSelected={selected.indexOf(row[keyProp]) > -1}
+    //                     key={index}
+    //                     indentSupported={indentSupported}
+    //                     indent={row.indent}
+    //                     includedDocuments={row.includedDocuments}
+    //                     lastSibling={row.lastChild}
+    //                     handleSelect={this.selectRangeProduct}
+    //                     contextType={row.type}
+    //                 />
+    //             )}
+    //         </tbody>
+    //         );
 
     renderEmptyInfo = (data, tabId) => {
         const {emptyText, emptyHint} = this.props;

@@ -17,6 +17,8 @@ class TableItemWrapper extends Component {
             indentSupported, rows
         } = this.props;
 
+        console.log(rows);
+
         return (
             <tbody>
                 {rows.map((row, index) =>
