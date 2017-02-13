@@ -4,14 +4,19 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
+import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.handlingunits.HUDocumentViewAttributesHelper;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -75,13 +80,35 @@ public final class DocumentViewAttributesLayout
 
 		final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
 		final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
-		
+
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(caption)
 				.setDescription(description)
 				.setWidgetType(widgetType)
 				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeName)
-						.setPublicField(true))
+						.setPublicField(true)
+						.addDevices(createDevices(attribute.getValue())))
+				.build();
+	}
+
+	private static final List<JSONDeviceDescriptor> createDevices(final String attributeCode)
+	{
+		return Services.get(IDevicesHubFactory.class)
+				.getDefaultAttributesDevicesHub()
+				.getAttributeDeviceAccessors(attributeCode)
+				.stream()
+				.map(attributeDeviceAccessor -> createDevice(attributeDeviceAccessor))
+				.collect(GuavaCollectors.toImmutableList());
+
+	}
+
+	private static JSONDeviceDescriptor createDevice(final AttributeDeviceAccessor attributeDeviceAccessor)
+	{
+		final String deviceId = attributeDeviceAccessor.getPublicId();
+		return JSONDeviceDescriptor.builder()
+				.setDeviceId(deviceId)
+				.setCaption(attributeDeviceAccessor.getDisplayName())
+				.setWebsocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
 				.build();
 	}
 

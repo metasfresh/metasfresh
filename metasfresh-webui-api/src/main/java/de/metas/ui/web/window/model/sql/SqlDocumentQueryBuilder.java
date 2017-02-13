@@ -66,6 +66,7 @@ public class SqlDocumentQueryBuilder
 				.setParentDocument(query.getParentDocument())
 				.setRecordId(query.getRecordId())
 				//
+				.noSorting(query.isNoSorting())
 				.setOrderBys(query.getOrderBys())
 				//
 				.setPage(query.getFirstRow(), query.getPageLength())
@@ -80,7 +81,10 @@ public class SqlDocumentQueryBuilder
 	private final List<DocumentFilter> documentFilters = new ArrayList<>();
 	private Document parentDocument;
 	private Integer recordId = null;
+
+	private boolean noSorting = false;
 	private List<DocumentQueryOrderBy> orderBys;
+
 	private int firstRow;
 	private int pageLength;
 
@@ -204,10 +208,13 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// ORDER BY
-		final IStringExpression sqlOrderBy = getSqlOrderByEffective();
-		if (!sqlOrderBy.isNullExpression())
+		if (isSorting())
 		{
-			sqlBuilder.append("\n ORDER BY ").append(sqlOrderBy);
+			final IStringExpression sqlOrderBy = getSqlOrderByEffective();
+			if (!sqlOrderBy.isNullExpression())
+			{
+				sqlBuilder.append("\n ORDER BY ").append(sqlOrderBy);
+			}
 		}
 
 		//
@@ -539,6 +546,11 @@ public class SqlDocumentQueryBuilder
 
 	public List<DocumentQueryOrderBy> getOrderBysEffective()
 	{
+		if (noSorting)
+		{
+			return ImmutableList.of();
+		}
+
 		final List<DocumentQueryOrderBy> queryOrderBys = getOrderBys();
 		if (queryOrderBys != null && !queryOrderBys.isEmpty())
 		{
@@ -575,7 +587,7 @@ public class SqlDocumentQueryBuilder
 		this.documentFilters.addAll(documentFilters);
 		return this;
 	}
-	
+
 	public SqlDocumentQueryBuilder addDocumentFilters(final List<DocumentFilter> documentFiltersToAdd)
 	{
 		this.documentFilters.addAll(documentFiltersToAdd);
@@ -609,6 +621,33 @@ public class SqlDocumentQueryBuilder
 		return recordId != null;
 	}
 
+	public SqlDocumentQueryBuilder noSorting()
+	{
+		noSorting = true;
+		orderBys = null;
+		return this;
+	}
+	
+	public SqlDocumentQueryBuilder noSorting(final boolean noSorting)
+	{
+		this.noSorting = noSorting;
+		if(noSorting)
+		{
+			orderBys = null;
+		}
+		return this;
+	}
+
+	public boolean isSorting()
+	{
+		return !noSorting;
+	}
+
+	public boolean isNoSorting()
+	{
+		return noSorting;
+	}
+
 	private List<DocumentQueryOrderBy> getOrderBys()
 	{
 		return orderBys;
@@ -616,6 +655,14 @@ public class SqlDocumentQueryBuilder
 
 	public SqlDocumentQueryBuilder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
 	{
+		// Don't throw exception if noSorting is true. Just do nothing.
+		// REASON: it gives us better flexibility when this builder is handled by different methods, each of them adding stuff to it
+		// Check.assume(!noSorting, "sorting enabled for {}", this);
+		if (noSorting)
+		{
+			return this;
+		}
+
 		this.orderBys = orderBys;
 		return this;
 	}

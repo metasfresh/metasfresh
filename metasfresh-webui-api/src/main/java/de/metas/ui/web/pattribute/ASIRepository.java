@@ -72,6 +72,7 @@ public class ASIRepository
 	private final AtomicInteger nextASIDocId = new AtomicInteger(1);
 	private final CCache<DocumentId, Document> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
 
+	private static final String VERSION_DEFAULT = "0";
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
 	public Document createNewFrom(final JSONCreateASIRequest request)
@@ -122,10 +123,8 @@ public class ASIRepository
 
 		//
 		// Create the new ASI document
-		final Document asiDoc = Document.builder()
-				.setEntityDescriptor(entityDescriptor)
-				.setDocumentIdSupplier(nextASIDocId::getAndIncrement)
-				.initializeAsNewDocument()
+		final Document asiDoc = Document.builder(entityDescriptor)
+				.initializeAsNewDocument(nextASIDocId::getAndIncrement, VERSION_DEFAULT)
 				.build();
 
 		//

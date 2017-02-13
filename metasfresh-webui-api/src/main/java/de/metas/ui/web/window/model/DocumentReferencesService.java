@@ -83,7 +83,7 @@ public class DocumentReferencesService
 	private static final class DocumentAsZoomSource implements IZoomSource
 	{
 		private final Properties ctx;
-		private final DocumentEvaluatee evaluationContext;
+		private final Evaluatee evaluationContext;
 		
 		private final int adWindowId;
 		private final String tableName;

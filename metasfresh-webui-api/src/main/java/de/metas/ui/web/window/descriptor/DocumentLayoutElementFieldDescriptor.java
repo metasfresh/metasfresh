@@ -1,17 +1,20 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.devices.JSONDeviceDescriptor;
 
 /*
  * #%L
@@ -62,16 +65,19 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	private final ITranslatableString emptyText;
 
+	private final List<JSONDeviceDescriptor> devices;
+
 	private DocumentLayoutElementFieldDescriptor(final Builder builder)
 	{
 		super();
 
 		internalName = builder.internalName;
-		field = Preconditions.checkNotNull(builder.getFieldName(), "field not null");
+		field = builder.getFieldName();
 		lookupSource = builder.lookupSource;
 		fieldType = builder.fieldType;
 		publicField = builder.publicField;
-		this.emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
+		emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
+		devices = builder.getDevices();
 	}
 
 	@Override
@@ -82,6 +88,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 				.add("field", field)
 				.add("internalName", internalName)
 				.add("publicField", publicField)
+				.add("devices", devices.isEmpty() ? null : devices)
 				.toString();
 	}
 
@@ -131,6 +138,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		return publicField;
 	}
 
+	public List<JSONDeviceDescriptor> getDevices()
+	{
+		return devices;
+	}
+
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementFieldDescriptor.Builder.class);
@@ -148,8 +160,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private FieldType fieldType;
 		private ITranslatableString emptyText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
-		private boolean consumed = false;
+		private List<JSONDeviceDescriptor> _devices;
 
+		private boolean consumed = false;
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
 
 		private Builder(final String fieldName)
@@ -161,13 +174,13 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		private Builder(final Builder from)
 		{
-			this.internalName = from.internalName;
-			this.fieldName = from.fieldName;
-			this.lookupSource = from.lookupSource;
-			this.fieldType = from.fieldType;
-			this.emptyText = from.emptyText;
-			this.publicField = from.publicField;
-			this.consumed = false;
+			internalName = from.internalName;
+			fieldName = from.fieldName;
+			lookupSource = from.lookupSource;
+			fieldType = from.fieldType;
+			emptyText = from.emptyText;
+			publicField = from.publicField;
+			consumed = false;
 
 		}
 
@@ -179,6 +192,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 					.add("internalName", internalName)
 					.add("fieldName", fieldName)
 					.add("publicField", publicField)
+					.add("fieldActions", _devices.isEmpty() ? null : _devices)
 					.add("consumed", consumed)
 					.toString();
 		}
@@ -191,7 +205,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			logger.trace("Build {} for {}", result, this);
 			return result;
 		}
-		
+
 		public Builder copy()
 		{
 			return new Builder(this);
@@ -205,6 +219,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		public String getFieldName()
 		{
+			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 			return fieldName;
 		}
 
@@ -252,22 +267,60 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return consumed;
 		}
 
-		public Builder setEmptyText(ITranslatableString emptyText)
+		public Builder setEmptyText(final ITranslatableString emptyText)
 		{
 			Check.assumeNotNull(emptyText, "Parameter emptyText is not null");
 			this.emptyText = emptyText;
 			return this;
 		}
-		
+
 		public Builder trackField(final DocumentFieldDescriptor.Builder field)
 		{
 			documentFieldBuilder = field;
 			return this;
 		}
-		
+
 		public boolean isSpecialField()
 		{
 			return documentFieldBuilder != null && documentFieldBuilder.isSpecialField();
+		}
+
+		public Builder addDevice(final JSONDeviceDescriptor device)
+		{
+			Check.assumeNotNull(device, "Parameter device is not null");
+			if (_devices == null)
+			{
+				_devices = new ArrayList<>();
+			}
+			_devices.add(device);
+
+			return this;
+		}
+
+		public Builder addDevices(final List<JSONDeviceDescriptor> devices)
+		{
+			if (devices == null || devices.isEmpty())
+			{
+				return this;
+			}
+
+			if (_devices == null)
+			{
+				_devices = new ArrayList<>();
+			}
+			_devices.addAll(devices);
+
+			return this;
+
+		}
+
+		private List<JSONDeviceDescriptor> getDevices()
+		{
+			if (_devices == null)
+			{
+				return ImmutableList.of();
+			}
+			return ImmutableList.copyOf(_devices);
 		}
 	}
 }

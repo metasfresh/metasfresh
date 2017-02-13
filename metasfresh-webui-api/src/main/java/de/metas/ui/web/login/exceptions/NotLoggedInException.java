@@ -40,6 +40,12 @@ public class NotLoggedInException extends AuthenticationException
 {
 	public NotLoggedInException()
 	{
-		super("not logged in");
+		this("not logged in");
 	}
+	
+	public NotLoggedInException(final String message)
+	{
+		super(message);
+	}
+
 }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntSupplier;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
@@ -23,13 +22,14 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -44,7 +44,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor.DocumentFieldValueLoader;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.Document.FieldValueSupplier;
+import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -62,11 +62,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -84,7 +84,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
 
-	private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
+	private static final String VERSION_DEFAULT = "0";
 
 	private int loadLimitWarn = 100;
 	private int loadLimitMax = 300;
@@ -120,10 +120,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitMaxOld, this.loadLimitMax);
 	}
 
-	private int getNextId(final DocumentEntityDescriptor entityDescriptor)
+	private static int retrieveNextId(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
 		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+
+		final int adClientId = UserSession.getCurrent().getAD_Client_ID();
 		final String tableName = dataBinding.getTableName();
 		final int nextId = DB.getNextID(adClientId, tableName, ITrx.TRXNAME_ThreadInherited);
 		if (nextId <= 0)
@@ -174,7 +175,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			
+
 			boolean loadLimitWarnReported = false;
 			while (rs.next())
 			{
@@ -242,48 +243,130 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		assertThisRepository(entityDescriptor);
 
-		final int documentId = getNextId(entityDescriptor);
-		return Document.builder()
-				.setEntityDescriptor(entityDescriptor)
+		final int documentId = retrieveNextId(entityDescriptor);
+
+		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.setDocumentIdSupplier(() -> documentId)
-				.initializeAsNewDocument()
-				.build();
+				.initializeAsNewDocument(documentId, VERSION_DEFAULT);
 	}
 
 	private Document retriveDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final ResultSet rs)
 	{
-		final IntSupplier documentIdSupplier;
-		final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
-		final ResultSetFieldValueSupplier fieldValueSupplier = new ResultSetFieldValueSupplier(rs);
-		if (idField == null)
-		{
-			// FIXME: workaround to bypass the missing ID field for views
-			final int missingId = _nextMissingId.decrementAndGet();
-			documentIdSupplier = () -> missingId;
-		}
-		else
-		{
-			documentIdSupplier = () -> (Integer)fieldValueSupplier.getValue(idField);
-		}
-
-		return Document.builder()
-				.setEntityDescriptor(entityDescriptor)
+		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.setDocumentIdSupplier(documentIdSupplier)
-				.initializeAsExistingRecord(fieldValueSupplier)
-				.build();
+				.initializeAsExistingRecord(new ResultSetDocumentValuesSupplier(entityDescriptor, rs));
 	}
 
-	private static final class ResultSetFieldValueSupplier implements FieldValueSupplier
+	@FunctionalInterface
+	private static interface FieldValueSupplier
 	{
+		/**
+		 * @param fieldDescriptor
+		 * @return initial value or {@link DocumentValuesSupplier#NO_VALUE} if it cannot provide a value
+		 */
+		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
+	}
+
+	private static final class InitialDocumentValuesSupplier implements DocumentValuesSupplier
+	{
+		private final int id;
+
+		private InitialDocumentValuesSupplier(final int id)
+		{
+			this.id = id;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this).add("id", id).toString();
+		}
+
+		@Override
+		public int getId()
+		{
+			return id;
+		}
+
+		@Override
+		public String getVersion()
+		{
+			return null;
+		}
+
+		@Override
+		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
+		{
+			return NO_VALUE;
+		}
+
+	}
+
+	private static final class ResultSetDocumentValuesSupplier implements DocumentValuesSupplier
+	{
+		private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
+
+		private final DocumentEntityDescriptor entityDescriptor;
 		private final ResultSet rs;
 
-		public ResultSetFieldValueSupplier(final ResultSet rs)
+		private boolean idAquired = false;
+		private int id;
+
+		private String version;
+
+		public ResultSetDocumentValuesSupplier(final DocumentEntityDescriptor entityDescriptor, final ResultSet rs)
 		{
 			super();
+			Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
 			Check.assumeNotNull(rs, "Parameter rs is not null");
+			this.entityDescriptor = entityDescriptor;
 			this.rs = rs;
+		}
+
+		@Override
+		public int getId()
+		{
+			if (idAquired)
+			{
+				return id;
+			}
+
+			final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
+			if (idField == null)
+			{
+				// FIXME: workaround to bypass the missing ID field for views
+				id = _nextMissingId.decrementAndGet();
+				idAquired = true;
+				return id;
+			}
+			else
+			{
+				id = (int)getValue(idField);
+				idAquired = true;
+				return id;
+			}
+		}
+
+		@Override
+		public String getVersion()
+		{
+			if (version != null)
+			{
+				return version;
+			}
+
+			final DocumentFieldDescriptor versionField = entityDescriptor.getFieldOrNull(SqlDocumentEntityDataBindingDescriptor.FIELDNAME_Version);
+			if (versionField == null)
+			{
+				version = VERSION_DEFAULT;
+				return version;
+			}
+			else
+			{
+				final java.util.Date versionDate = (java.util.Date)getValue(versionField);
+				version = versionDate == null ? VERSION_DEFAULT : String.valueOf(versionDate.getTime());
+				return version;
+			}
 		}
 
 		@Override
@@ -323,7 +406,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
 
-		final DocumentQuery query = DocumentQuery.ofRecordId(document.getEntityDescriptor(), documentId);
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentId);
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = SqlDocumentQueryBuilder.of(query).getSql(sqlParams);
@@ -338,8 +422,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final ResultSetFieldValueSupplier fieldValueSupplier = new ResultSetFieldValueSupplier(rs);
-				document.refresh(fieldValueSupplier);
+				final ResultSetDocumentValuesSupplier fieldValueSupplier = new ResultSetDocumentValuesSupplier(entityDescriptor, rs);
+				document.refreshFromSupplier(fieldValueSupplier);
 			}
 			else
 			{
@@ -351,7 +435,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				throw new AdempiereException("More than one record found while trying to reload document: " + document);
 			}
 		}
-		catch (final Exception e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -429,7 +513,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				throw new DBException("No PO found for " + document);
 			}
 		}
-		
+
 		// TODO: handle the case of composed primary key!
 		if (po.getPOInfo().getKeyColumnName() == null)
 		{
@@ -673,5 +757,17 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final PO po = retrieveOrCreatePO(document);
 
 		InterfaceWrapperHelper.delete(po);
+	}
+
+	@Override
+	public String retrieveVersion(final DocumentEntityDescriptor entityDescriptor, final int documentIdAsInt)
+	{
+		final SqlDocumentEntityDataBindingDescriptor binding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
+
+		final String sql = binding.getSqlSelectVersionById()
+				.orElseThrow(() -> new AdempiereException("Versioning is not supported for " + entityDescriptor));
+
+		final Timestamp version = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, sql, documentIdAsInt);
+		return version == null ? VERSION_DEFAULT : String.valueOf(version.getTime());
 	}
 }

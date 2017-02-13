@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -67,6 +68,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private static final String TABLEALIAS_Master = "master";
 
+	public static final String FIELDNAME_Version = "Updated";
+
 //	//
 //	// Paging constants
 //	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
@@ -87,6 +90,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final Map<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 
 	private final SqlDocumentViewBinding documentViewBinding;
+	
+	private final Optional<String> sqlSelectVersionById;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
@@ -113,6 +118,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				.caching();
 
 		orderBys = ImmutableList.copyOf(builder.getOrderBysList());
+		
+		sqlSelectVersionById = builder.getSqlSelectVersionById();
 		
 		documentViewBinding = builder.buildDocumentViewBinding();
 	}
@@ -254,6 +261,17 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public SqlDocumentViewBinding getDocumentViewBinding()
 	{
 		return documentViewBinding;
+	}
+	
+	public Optional<String> getSqlSelectVersionById()
+	{
+		return sqlSelectVersionById;
+	}
+	
+	@Override
+	public boolean isVersioningSupported()
+	{
+		return sqlSelectVersionById.isPresent();
 	}
 
 	public static final class Builder implements DocumentEntityDataBindingDescriptorBuilder
@@ -572,6 +590,23 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private SqlDocumentViewBinding buildDocumentViewBinding()
 		{
 			return documentViewBinding.build();
+		}
+		
+		private Optional<String> getSqlSelectVersionById()
+		{
+			if(getFieldsByFieldName().get(FIELDNAME_Version) == null)
+			{
+				return Optional.empty();
+			}
+			
+			final String keyColumnName = getKeyColumnName();
+			if(keyColumnName == null)
+			{
+				return Optional.empty();
+			}
+			
+			final String sql = "SELECT " + FIELDNAME_Version + " FROM " + getTableName() + " WHERE " + keyColumnName + "=?";
+			return Optional.of(sql);
 		}
 	}
 }

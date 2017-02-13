@@ -1,5 +1,6 @@
 package de.metas.ui.web.menu;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
+import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 
 /*
  * #%L
@@ -32,11 +34,11 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -93,7 +95,7 @@ public final class MenuTree
 		final MenuNode node = nodesById.get(nodeId);
 		if (node == null)
 		{
-			throw new IllegalArgumentException("No menu node found for nodeId=" + nodeId);
+			throw new NoMenuNodesFoundException("No menu node found for nodeId=" + nodeId);
 		}
 		return node;
 	}
@@ -104,7 +106,7 @@ public final class MenuTree
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())
 		{
-			throw new IllegalArgumentException("No menu node found for type=" + type + " and elementId=" + elementId);
+			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
 		}
 		return nodes.get(0);
 	}
@@ -138,7 +140,7 @@ public final class MenuTree
 
 	/**
 	 * Filters this node and its children recursively.
-	 * 
+	 *
 	 * @param nameQuery
 	 * @param includeLeafsIfGroupAccepted
 	 *            <ul>
@@ -172,7 +174,7 @@ public final class MenuTree
 						return MenuNodeFilterResolution.Accept;
 					}
 
-					if (node.isGrouppingNode())
+					if (node.isGroupingNode())
 					{
 						logger.trace("Filter: accept node (if has children!) because does matches and it's a groupping node: {}", node);
 						return MenuNodeFilterResolution.AcceptIfHasChildren;
@@ -190,8 +192,17 @@ public final class MenuTree
 				});
 	}
 
-	private final boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
+	private static final boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
 	{
-		return node.getCaption().toLowerCase().indexOf(nameQueryLC) >= 0;
+		final String captionNorm = stripDiacritics(node.getCaption().toLowerCase());
+		final String queryNorm = stripDiacritics(nameQueryLC);
+		return captionNorm.indexOf(queryNorm) >= 0;
+	}
+
+	private static final String stripDiacritics(final String string)
+	{
+		String s = Normalizer.normalize(string, Normalizer.Form.NFD);
+		s = s.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+		return s;
 	}
 }

@@ -4,11 +4,18 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -16,11 +23,13 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.DocumentViewResult;
 import de.metas.ui.web.view.IDocumentView;
 import de.metas.ui.web.view.IDocumentViewSelection;
+import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -55,32 +64,29 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return new Builder();
 	}
-	
+
 	// services
 	private final ProcessDescriptorsFactory processDescriptorsFactory;
 
 	private final String viewId;
 	private final int adWindowId;
-	
+
 	private final DocumentPath referencingDocumentPath;
-	
-	/** Top level records list */
-	private final List<IDocumentView> records;
-	/** All records (included ones too) indexed by DocumentId */
-	private final Map<DocumentId, IDocumentView> recordsById;
+
+	private final HUDocumentViewLoader documentViewsLoader;
+	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
 
 	private HUDocumentViewSelection(final Builder builder)
 	{
 		super();
-		
+
 		// services
 		processDescriptorsFactory = builder.getProcessDescriptorFactory();
 
 		viewId = builder.getViewId();
 		adWindowId = builder.getAD_Window_ID();
 
-		records = ImmutableList.copyOf(builder.getRecords());
-		recordsById = builder.buildRecordsByIdMap();
+		documentViewsLoader = builder.getDocumentViewsLoader();
 
 		referencingDocumentPath = builder.getReferencingDocumentPath();
 	}
@@ -100,22 +106,23 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public long size()
 	{
-		return records.size();
+		return getRecords().size();
 	}
 
 	@Override
 	public void close()
 	{
+		invalidateAllNoNotify();
 	}
 
 	@Override
 	public DocumentViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		Stream<IDocumentView> stream = records.stream()
+		Stream<HUDocumentView> stream = getRecords().stream()
 				.skip(firstRow)
 				.limit(pageLength);
 
-		final Comparator<IDocumentView> comparator = createComparatorOrNull(orderBys);
+		final Comparator<HUDocumentView> comparator = createComparatorOrNull(orderBys);
 		if (comparator != null)
 		{
 			stream = stream.sorted(comparator);
@@ -126,17 +133,17 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		return DocumentViewResult.of(this, firstRow, pageLength, orderBys, page);
 	}
 
-	private static final Comparator<IDocumentView> createComparatorOrNull(final List<DocumentQueryOrderBy> orderBys)
+	private static final Comparator<HUDocumentView> createComparatorOrNull(final List<DocumentQueryOrderBy> orderBys)
 	{
 		if (orderBys == null || orderBys.isEmpty())
 		{
 			return null;
 		}
 
-		Comparator<IDocumentView> comparator = null;
+		Comparator<HUDocumentView> comparator = null;
 		for (final DocumentQueryOrderBy orderBy : orderBys)
 		{
-			final Comparator<IDocumentView> orderByComparator = orderBy.<IDocumentView> asComparator((viewRecord, fieldName) -> viewRecord.getFieldValueAsJson(fieldName));
+			final Comparator<HUDocumentView> orderByComparator = orderBy.<HUDocumentView> asComparator((viewRecord, fieldName) -> viewRecord.getFieldValueAsJson(fieldName));
 			if (comparator == null)
 			{
 				comparator = orderByComparator;
@@ -153,12 +160,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	@Override
 	public IDocumentView getById(final DocumentId documentId) throws EntityNotFoundException
 	{
-		final IDocumentView record = recordsById.get(documentId);
-		if (record == null)
-		{
-			throw new EntityNotFoundException("No document found for documentId=" + documentId);
-		}
-		return record;
+		return getRecords().getById(documentId);
 	}
 
 	@Override
@@ -192,16 +194,17 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public String getSqlWhereClause(final List<Integer> viewDocumentIds)
+	public String getSqlWhereClause(final Collection<Integer> viewDocumentIds)
 	{
 		Check.assumeNotEmpty(viewDocumentIds, "viewDocumentIds is not empty");
 		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIds) + ")";
 	}
 
 	@Override
-	public Stream<RelatedProcessDescriptorWrapper> streamActions()
+	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
 	{
-		return processDescriptorsFactory.streamDocumentRelatedProcesses(I_M_HU.Table_Name);
+		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, I_M_HU.Table_Name, selectedDocumentIds);
+		return processDescriptorsFactory.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 
 	@Override
@@ -209,22 +212,105 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return true;
 	}
-	
+
 	public DocumentPath getReferencingDocumentPath()
 	{
 		return referencingDocumentPath;
 	}
-	
-	public void notifyRecordsChanged(final Collection<DocumentId> documentIds)
+
+	public void invalidateAll()
 	{
-		// TODO: implement
-		
-		if(documentIds == null || documentIds.isEmpty())
+		invalidateAllNoNotify();
+
+		final DocumentViewChangesCollector changesCollector = DocumentViewChangesCollector.getCurrentOrNull();
+		if (changesCollector != null)
 		{
-			return;
+			changesCollector.collectFullyChanged(this);
 		}
-		
-		
+	}
+
+	private void invalidateAllNoNotify()
+	{
+		_recordsSupplier.forget();
+		documentViewsLoader.getAttributesProvider().invalidateAll();
+	}
+
+	private IndexedDocumentViews getRecords()
+	{
+		return _recordsSupplier.get();
+	}
+
+	private IndexedDocumentViews retrieveRecords()
+	{
+		final List<HUDocumentView> recordsList = documentViewsLoader.retrieveDocumentViews();
+		return new IndexedDocumentViews(recordsList);
+	}
+
+	private static final class IndexedDocumentViews
+	{
+		/** Top level records list */
+		private final List<HUDocumentView> records;
+		/** All records (included ones too) indexed by DocumentId */
+		private final Map<DocumentId, HUDocumentView> allRecordsById;
+
+		public IndexedDocumentViews(final List<HUDocumentView> records)
+		{
+			super();
+			this.records = ImmutableList.copyOf(records);
+			allRecordsById = buildRecordsByIdMap(this.records);
+		}
+
+		public HUDocumentView getById(final DocumentId documentId)
+		{
+			final HUDocumentView record = allRecordsById.get(documentId);
+			if (record == null)
+			{
+				throw new EntityNotFoundException("No document found for documentId=" + documentId);
+			}
+			return record;
+		}
+
+		public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
+		{
+			if (documentIds == null || documentIds.isEmpty())
+			{
+				return Stream.empty();
+			}
+
+			return documentIds.stream()
+					.distinct()
+					.map(documentId -> allRecordsById.get(documentId))
+					.filter(document -> document != null);
+		}
+
+		public Stream<HUDocumentView> stream()
+		{
+			return records.stream();
+		}
+
+		public long size()
+		{
+			return records.size();
+		}
+
+		private static ImmutableMap<DocumentId, HUDocumentView> buildRecordsByIdMap(final List<HUDocumentView> records)
+		{
+			if (records.isEmpty())
+			{
+				return ImmutableMap.of();
+			}
+
+			final ImmutableMap.Builder<DocumentId, HUDocumentView> recordsById = ImmutableMap.builder();
+			records.forEach(record -> indexByIdRecursively(recordsById, record));
+			return recordsById.build();
+		}
+
+		private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, HUDocumentView> collector, final HUDocumentView record)
+		{
+			collector.put(record.getDocumentId(), record);
+			record.getIncludedDocuments()
+					.forEach(includedRecord -> indexByIdRecursively(collector, includedRecord));
+		}
 	}
 
 	//
@@ -235,10 +321,10 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		private String viewId;
 		private int adWindowId;
-		private List<IDocumentView> records;
 		private DocumentPath referencingDocumentPath;
 
 		private ProcessDescriptorsFactory processDescriptorsFactory;
+		private HUDocumentViewLoader documentViewsLoader;
 
 		private Builder()
 		{
@@ -272,40 +358,16 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return adWindowId;
 		}
 
-		public Builder setRecords(final List<IDocumentView> records)
+		public Builder setRecords(final HUDocumentViewLoader documentViewsLoader)
 		{
-			this.records = records;
+			this.documentViewsLoader = documentViewsLoader;
 			return this;
 		}
 
-		private List<IDocumentView> getRecords()
+		private HUDocumentViewLoader getDocumentViewsLoader()
 		{
-			if (records == null || records.isEmpty())
-			{
-				return ImmutableList.of();
-			}
-
-			return records;
-		}
-
-		private ImmutableMap<DocumentId, IDocumentView> buildRecordsByIdMap()
-		{
-			final List<IDocumentView> records = getRecords();
-			if (records.isEmpty())
-			{
-				return ImmutableMap.of();
-			}
-
-			final ImmutableMap.Builder<DocumentId, IDocumentView> recordsById = ImmutableMap.builder();
-			records.forEach(record -> indexById(recordsById, record));
-			return recordsById.build();
-		}
-
-		private static final void indexById(final ImmutableMap.Builder<DocumentId, IDocumentView> recordsById, final IDocumentView record)
-		{
-			recordsById.put(record.getDocumentId(), record);
-			record.getIncludedDocuments()
-					.forEach(includedRecord -> indexById(recordsById, includedRecord));
+			Check.assumeNotNull(documentViewsLoader, "Parameter documentViewsLoader is not null");
+			return documentViewsLoader;
 		}
 
 		public Builder setServices(final ProcessDescriptorsFactory processDescriptorsFactory)
@@ -319,17 +381,49 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			Check.assumeNotNull(processDescriptorsFactory, "Parameter processDescriptorsFactory is not null");
 			return processDescriptorsFactory;
 		}
-		
+
 		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath)
 		{
 			this.referencingDocumentPath = referencingDocumentPath;
 			return this;
 		}
-		
+
 		private DocumentPath getReferencingDocumentPath()
 		{
 			return referencingDocumentPath;
 		}
 	}
 
+	@Override
+	public Stream<HUDocumentView> streamByIds(final Collection<DocumentId> documentIds)
+	{
+		return getRecords().streamByIds(documentIds);
+	}
+
+	// public List<HUDocumentView> retrieveModelsByIds(Collection<DocumentId> documentIds, final Class<>)
+	// {
+	// return streamUserSelectedDocuments().collect(GuavaCollectors.toImmutableList());
+	// }
+
+	@Override
+	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
+	{
+		final Set<Integer> huIds = getRecords()
+				.streamByIds(documentIds)
+				.filter(HUDocumentView::isPureHU)
+				.map(HUDocumentView::getM_HU_ID)
+				.collect(GuavaCollectors.toImmutableSet());
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<I_M_HU> hus = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.list(I_M_HU.class);
+
+		return InterfaceWrapperHelper.createList(hus, modelClass);
+	}
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
+import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
 import io.swagger.annotations.ApiParam;
 
@@ -74,7 +75,10 @@ public class MenuRestController
 		final MenuNode node = getMenuTree()
 				.getRootNode();
 
-		return JSONMenuNode.of(node, depth, childrenLimit);
+		return JSONMenuNode.builder(node)
+				.setMaxDepth(depth)
+				.setMaxChildrenPerNode(childrenLimit)
+				.build();
 	}
 
 	@RequestMapping(value = "/node", method = RequestMethod.GET)
@@ -89,7 +93,10 @@ public class MenuRestController
 		final MenuNode node = getMenuTree()
 				.getNodeById(nodeId);
 
-		return JSONMenuNode.of(node, depth, childrenLimit);
+		return JSONMenuNode.builder(node)
+				.setMaxDepth(depth)
+				.setMaxChildrenPerNode(childrenLimit)
+				.build();
 	}
 
 	@RequestMapping(value = "/path", method = RequestMethod.GET)
@@ -139,10 +146,16 @@ public class MenuRestController
 
 		if (rootFiltered == null)
 		{
-			return null;
+			throw new NoMenuNodesFoundException();
+		}
+		if(rootFiltered.getChildren().isEmpty())
+		{
+			throw new NoMenuNodesFoundException();
 		}
 
-		return JSONMenuNode.of(rootFiltered, childrenLimit);
+		return JSONMenuNode.builder(rootFiltered)
+				.setMaxLeafNodes(childrenLimit)
+				.build();
 	}
 
 }

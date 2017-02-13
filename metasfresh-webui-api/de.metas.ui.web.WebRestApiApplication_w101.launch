@@ -14,5 +14,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--debug"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-webui-api"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="${jrebel_args}&#13;&#10;-DPropertyFile=${project_loc:metasfresh-webui-api}/tmp/metasfresh_w101.properties&#13;&#10;-noverify&#13;&#10;-Xmx1G&#13;&#10;-XX:MaxPermSize=256m&#13;&#10;-Dde.metas.server.embedded=false"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="${jrebel_args}&#13;&#10;-DPropertyFile=${project_loc:metasfresh-webui-api}/tmp/metasfresh_w101.properties&#13;&#10;-noverify&#13;&#10;-Xmx1G&#13;&#10;-XX:MaxPermSize=256m&#13;&#10;-Dde.metas.server.embedded=false&#13;&#10;-Dspring.profiles.active=development"/>
 </launchConfiguration>

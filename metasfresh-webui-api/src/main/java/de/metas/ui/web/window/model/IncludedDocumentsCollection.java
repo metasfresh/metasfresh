@@ -132,7 +132,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	private final boolean isStale(final DocumentId documentId)
 	{
-		return _staleDocumentIds.contains(documentId);
+		if(_staleDocumentIds.contains(documentId))
+		{
+			return true;
+		}
+		
+		return false;
 	}
 
 	private final void markNotStale()
@@ -146,7 +151,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			throw new NullPointerException("documentId cannot be null");
 		}
-		_staleDocumentIds.add(documentId);
+		_staleDocumentIds.remove(documentId);
 	}
 
 	public final void markStaleAll()
@@ -156,11 +161,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 		Execution.getCurrentDocumentChangesCollectorOrNull()
 				.collectStaleDetailId(parentDocument.getDocumentPath(), getDetailId());
-	}
-
-	private DocumentsRepository getDocumentsRepository()
-	{
-		return entityDescriptor.getDataBinding().getDocumentsRepository();
 	}
 
 	public DetailId getDetailId()
@@ -180,14 +180,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		final Document documentExisting = _documents.get(documentId);
 		if (documentExisting != null)
 		{
-			if (isStale(documentId))
-			{
-				logger.trace("Found stale document with id '{}' in local documents. We need to reload it.");
-				getDocumentsRepository().refresh(documentExisting);
-				markNotStale(documentId);
-			}
-
-			return documentExisting;
+			refreshStaleDocumentIfPossible(documentExisting);
 		}
 		else
 		{
@@ -223,6 +216,26 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		// Done
 		return documentNew;
 	}
+	
+	private void refreshStaleDocumentIfPossible(final Document document)
+	{
+		final DocumentId documentId = document.getDocumentId();
+		if (isStale(documentId))
+		{
+			logger.trace("Found stale document with id '{}' in local documents. We need to reload it.");
+			document.refreshFromRepository();
+			markNotStale(documentId);
+		}
+		else
+		{
+			document.refreshFromRepositoryIfStaled();
+		}
+		
+		if (!document.isStaled())
+		{
+			markNotStale(documentId);
+		}
+	}
 
 	public synchronized List<Document> getDocuments()
 	{
@@ -245,8 +258,17 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		if (isStale() || !isFullyLoaded())
 		{
 			loadAll();
+			return getInnerDocuments();
 		}
-		return _documents.values();
+
+		//
+		final Collection<Document> documents = getInnerDocuments();
+		for(final Document document : documents)
+		{
+			refreshStaleDocumentIfPossible(document);
+		}
+		
+		return documents;
 	}
 
 	public synchronized Document createNewDocument()

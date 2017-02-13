@@ -153,7 +153,7 @@ public class JSONLookupValuesList implements Serializable
 
 	public JSONLookupValuesList setDefaultValue(final JSONLookupValue defaultValue)
 	{
-		this.defaultValue = defaultValue == null ? null : defaultValue.entry().getKey();
+		this.defaultValue = defaultValue == null ? null : defaultValue.getKey();
 		return this;
 	}
 

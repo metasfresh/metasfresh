@@ -8,9 +8,9 @@ import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -61,7 +61,7 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
-	
+
 	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr)
 	{
 		if (documentTypeId <= 0)
@@ -92,7 +92,7 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
-	
+
 	public static final List<DocumentPath> rootDocumentPathsList(final DocumentType documentType, final int documentTypeId, final String documentIdsListStr)
 	{
 		if (documentIdsListStr == null || documentIdsListStr.isEmpty())
@@ -100,33 +100,22 @@ public final class DocumentPath
 			return ImmutableList.of();
 		}
 
-		final ImmutableList.Builder<DocumentPath> documentPaths = ImmutableList.builder();
-		for (final String documentIdStr : Builder.SPLITTER_RowIds.splitToList(documentIdsListStr))
-		{
-			final DocumentId documentId = DocumentId.fromNullable(documentIdStr);
-			if (documentId == null)
-			{
-				continue;
-			}
-
-			final DocumentPath documentPath = rootDocumentPath(documentType, documentTypeId, documentId);
-			documentPaths.add(documentPath);
-		}
-		
-		return documentPaths.build();
+		return DocumentId.streamFromCommaSeparatedString(documentIdsListStr)
+				.map(documentId -> rootDocumentPath(documentType, documentTypeId, documentId))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId, final String rowIdStr)
 	{
-		if(Check.isEmpty(detailId, true))
+		if (Check.isEmpty(detailId, true))
 		{
 			throw new IllegalArgumentException("No detailId provided");
 		}
-		if(Check.isEmpty(rowIdStr, true))
+		if (Check.isEmpty(rowIdStr, true))
 		{
 			throw new IllegalArgumentException("No rowId provided");
 		}
-		
+
 		return builder()
 				.setDocumentType(documentType, documentTypeId)
 				.setDocumentId(idStr)
@@ -137,11 +126,11 @@ public final class DocumentPath
 
 	public static final DocumentPath includedDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr, final String detailId)
 	{
-		if(Check.isEmpty(detailId, true))
+		if (Check.isEmpty(detailId, true))
 		{
 			throw new IllegalArgumentException("No detailId provided");
 		}
-		
+
 		return builder()
 				.setDocumentType(documentType, documentTypeId)
 				.setDocumentId(idStr)
@@ -183,12 +172,12 @@ public final class DocumentPath
 	private DocumentPath(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
 	{
 		super();
-		
+
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
 		this.documentType = documentType;
 		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
-		
+
 		detailId = null;
 		rowIds = ImmutableSet.of();
 		singleRowId = null;
@@ -198,12 +187,12 @@ public final class DocumentPath
 	private DocumentPath(final DocumentType documentType, final int adWindowId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
 	{
 		super();
-		
+
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
 		this.documentType = documentType;
 		this.documentTypeId = adWindowId;
 		this.documentId = documentId;
-		
+
 		this.detailId = detailId;
 
 		if (rowIds == null || rowIds.isEmpty())
@@ -228,12 +217,12 @@ public final class DocumentPath
 	private DocumentPath(final DocumentType documentType, final int adWindowId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
 	{
 		super();
-		
+
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
 		this.documentType = documentType;
 		this.documentTypeId = adWindowId;
 		this.documentId = documentId;
-		
+
 		this.detailId = detailId;
 		this.singleRowId = singleRowId;
 		rowIds = singleRowId == null ? ImmutableSet.of() : ImmutableSet.of(singleRowId);
@@ -298,12 +287,12 @@ public final class DocumentPath
 				&& DataTypes.equals(detailId, other.detailId)
 				&& DataTypes.equals(rowIds, other.rowIds);
 	}
-	
+
 	public DocumentType getDocumentType()
 	{
 		return documentType;
 	}
-	
+
 	public int getDocumentTypeId()
 	{
 		return documentTypeId;
@@ -415,8 +404,6 @@ public final class DocumentPath
 		private boolean rowId_allowNull = false;
 		private boolean rowId_allowNew = false;
 
-		private static final Splitter SPLITTER_RowIds = Splitter.on(",").trimResults().omitEmptyStrings();
-
 		private Builder()
 		{
 			super();
@@ -424,11 +411,11 @@ public final class DocumentPath
 
 		public DocumentPath build()
 		{
-			if(documentType == null)
+			if (documentType == null)
 			{
 				throw new InvalidDocumentPathException("Invalid document type: " + documentType);
 			}
-			
+
 			//
 			// Validate documentTypeId
 			if (documentTypeId <= 0)
@@ -481,7 +468,7 @@ public final class DocumentPath
 			setDocumentType(DocumentType.Window, AD_Window_ID);
 			return this;
 		}
-		
+
 		public Builder setDocumentType(final DocumentType documentType, final int documentTypeId)
 		{
 			Preconditions.checkNotNull(documentType, "documentType not null");
@@ -534,22 +521,7 @@ public final class DocumentPath
 		public Builder setRowIdsList(final String rowIdsListStr)
 		{
 			rowIds.clear();
-
-			if (rowIdsListStr == null || rowIdsListStr.isEmpty())
-			{
-				return this;
-			}
-
-			for (final String rowIdStr : SPLITTER_RowIds.splitToList(rowIdsListStr))
-			{
-				final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
-				if (rowId == null)
-				{
-					continue;
-				}
-
-				rowIds.add(rowId);
-			}
+			rowIds.addAll(DocumentId.ofCommaSeparatedString(rowIdsListStr));
 
 			return this;
 		}

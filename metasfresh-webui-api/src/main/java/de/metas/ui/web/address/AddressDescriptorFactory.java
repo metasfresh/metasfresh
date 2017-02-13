@@ -97,11 +97,15 @@ public class AddressDescriptorFactory
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
 		//
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Postal)
+				.setValueClass(String.class)
+				.setWidgetType(DocumentFieldWidgetType.Text)
+				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Postal, false, I_C_Location::getPostal, AddressFieldBinding::writeValue_Postal)));
+		//
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_City)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, I_C_Location::getCity, AddressFieldBinding::writeValue_City)));
-		//
 		// addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_City_ID)
 		// .setValueClass(IntegerLookupValue.class)
 		// .setWidgetType(DocumentFieldWidgetType.Lookup)
@@ -304,6 +308,11 @@ public class AddressDescriptorFactory
 		public static void writeValue_Address4(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
 		{
 			toLocationRecord.setAddress4(fromField.getValueAs(String.class));
+		}
+		
+		public static void writeValue_Postal(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setPostal(fromField.getValueAs(String.class));
 		}
 
 		public static void writeValue_City(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)

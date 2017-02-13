@@ -1,10 +1,14 @@
-package de.metas.ui.web.config;
+package de.metas.ui.web.websocket;
 
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.Check;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.messaging.Message;
@@ -14,13 +18,19 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 
 /*
  * #%L
@@ -35,11 +45,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,12 +58,22 @@ import de.metas.logging.LogManager;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 {
+	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
+
 	private static final String ENDPOINT = "/stomp";
 	private static final String TOPIC_Notifications = "/notifications";
+	private static final String TOPIC_DocumentView = "/view";
+	public static final String TOPIC_Devices = "/devices";
 
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
 		return TOPIC_Notifications + "/" + adUserId;
+	}
+
+	public static final String buildDocumentViewNotificationsTopicName(final String viewId)
+	{
+		Check.assumeNotEmpty(viewId, "viewId is not empty");
+		return TOPIC_DocumentView + "/" + viewId;
 	}
 
 	@Override
@@ -64,15 +84,19 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 				.setAllowedOrigins("*") // FIXME: for now we allow any origin
 				.addInterceptors(new WebSocketHandshakeInterceptor())
 				.withSockJS()
-				//
-				;
+		//
+		;
 	}
 
 	@Override
 	public void configureMessageBroker(final MessageBrokerRegistry config)
 	{
 		// use the /topic prefix for outgoing WebSocket communication
-		config.enableSimpleBroker(TOPIC_Notifications);
+		config.enableSimpleBroker( //
+				TOPIC_Notifications //
+				, TOPIC_DocumentView //
+				, TOPIC_Devices //
+		);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");
@@ -108,6 +132,22 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		return true;
 	}
 
+	private static final String extractSimpDestination(final AbstractSubProtocolEvent event)
+	{
+		return extractSimpHeaderAsString(event, "simpDestination");
+	}
+
+	private static final String extractSimpSessionId(final AbstractSubProtocolEvent event)
+	{
+		return extractSimpHeaderAsString(event, "simpSessionId");
+	}
+
+	private static final String extractSimpHeaderAsString(final AbstractSubProtocolEvent event, final String name)
+	{
+		final Object simpDestinationObj = event.getMessage().getHeaders().get(name);
+		return simpDestinationObj == null ? null : simpDestinationObj.toString();
+	}
+
 	private static class WebSocketChannelInterceptor extends ChannelInterceptorAdapter
 	{
 		private static final Logger logger = LogManager.getLogger(WebSocketConfig.WebSocketChannelInterceptor.class);
@@ -139,14 +179,79 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		@Override
 		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
-			logger.trace("before handshake: {}", wsHandler);
+			// UserSession.getCurrent().assertLoggedIn();
+			// return true;
+
+			final UserSession userSession = UserSession.getCurrentOrNull();
+			if (userSession == null)
+			{
+				logger.warn("Websocket connection not allowed (missing session)");
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				return false;
+			}
+
+			if (!userSession.isLoggedIn())
+			{
+				logger.warn("Websocket connection not allowed (not logged in) - {}", userSession);
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				return false;
+			}
+			
 			return true;
 		}
 
 		@Override
 		public void afterHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Exception exception)
 		{
-			logger.trace("after handshake: {}", wsHandler);
+			// nothing
+		}
+	}
+
+	@Component
+	public static class WebSocketSubscribeEventListener implements ApplicationListener<SessionSubscribeEvent>
+	{
+		@Autowired
+		private WebSocketProducersRegistry websocketProducersRegistry;
+
+		@Override
+		public void onApplicationEvent(final SessionSubscribeEvent event)
+		{
+			final String simpSessionId = extractSimpSessionId(event);
+			final String simpDestination = extractSimpDestination(event);
+			websocketProducersRegistry.onTopicSubscribed(simpSessionId, simpDestination);
+
+			logger.info("Subscribed to {} [ {} ]", simpDestination, simpSessionId);
+		}
+	}
+
+	@Component
+	public static class WebSocketUnsubscribeEventListener implements ApplicationListener<SessionUnsubscribeEvent>
+	{
+		@Autowired
+		private WebSocketProducersRegistry websocketProducersRegistry;
+
+		@Override
+		public void onApplicationEvent(final SessionUnsubscribeEvent event)
+		{
+			final String simpSessionId = extractSimpSessionId(event);
+			final String simpDestination = extractSimpDestination(event);
+			websocketProducersRegistry.onTopicUnsubscribed(simpSessionId, simpDestination);
+
+			logger.info("Unsubscribed from {} [ {} ]", simpDestination, simpSessionId);
+		}
+	}
+
+	@Component
+	public static class WebSocketDisconnectEventListener implements ApplicationListener<SessionDisconnectEvent>
+	{
+		@Autowired
+		private WebSocketProducersRegistry websocketProducersRegistry;
+
+		@Override
+		public void onApplicationEvent(final SessionDisconnectEvent event)
+		{
+			final String sessionId = event.getSessionId();
+			websocketProducersRegistry.onSessionDisconnect(sessionId);
 		}
 	}
 }

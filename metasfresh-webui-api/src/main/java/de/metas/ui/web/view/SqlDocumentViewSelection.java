@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -12,10 +13,14 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
@@ -28,8 +33,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
-import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFieldValueLoader;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
@@ -112,6 +118,8 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	// Misc
 	private transient String _toString;
 
+	//
+	// Caching
 	private final transient CCache<DocumentId, IDocumentView> cache_documentViewsById;
 
 	private SqlDocumentViewSelection(final Builder builder)
@@ -282,13 +290,13 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			}
 
 			final List<IDocumentView> page = pageBuilder.build();
-			
+
 			// Add to cache
 			for (final IDocumentView documentView : page)
 			{
 				cache_documentViewsById.put(documentView.getDocumentId(), documentView);
 			}
-			
+
 			return DocumentViewResult.of(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
 		}
 		catch (final SQLException | DBException e)
@@ -306,7 +314,11 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	public IDocumentView getById(final DocumentId documentId)
 	{
 		assertNotClosed();
+		return getOrRetrieveById(documentId);
+	}
 
+	private final IDocumentView getOrRetrieveById(final DocumentId documentId)
+	{
 		return cache_documentViewsById.getOrLoad(documentId, () -> retrieveById(documentId));
 	}
 
@@ -389,16 +401,16 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	{
 		final DocumentView.Builder documentViewBuilder = newDocumentViewBuilder();
 		final boolean loaded = sqlFieldLoaders.loadDocumentViewValue(documentViewBuilder, rs);
-		if(!loaded)
+		if (!loaded)
 		{
 			return null;
 		}
-		
+
 		return documentViewBuilder.build();
 	}
 
 	@Override
-	public String getSqlWhereClause(final List<Integer> viewDocumentIds)
+	public String getSqlWhereClause(final Collection<Integer> viewDocumentIds)
 	{
 		final String sqlTableName = getTableName();
 		final String sqlKeyColumnName = getKeyColumnName();
@@ -441,17 +453,49 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public Stream<RelatedProcessDescriptorWrapper> streamActions()
+	public Stream<WebuiRelatedProcessDescriptor> streamActions(final Collection<DocumentId> selectedDocumentIds)
 	{
 		assertNotClosed();
 
-		return processDescriptorFactory.streamDocumentRelatedProcesses(getTableName());
+		final DocumentViewAsPreconditionsContext preconditionsContext = DocumentViewAsPreconditionsContext.newInstance(this, getTableName(), selectedDocumentIds);
+		return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext);
 	}
 
 	@Override
 	public boolean hasAttributesSupport()
 	{
 		return attributesProvider != null;
+	}
+
+	@Override
+	public Stream<? extends IDocumentView> streamByIds(final Collection<DocumentId> documentIds)
+	{
+		if (documentIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
+		// and the records recently retrieved have a big chance to be cached.
+		return documentIds.stream()
+				.map(this::getOrRetrieveById)
+				.filter(document -> document != null);
+	}
+
+	@Override
+	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
+	{
+		if (documentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final String sqlWhereClause = getSqlWhereClause(DocumentId.toIntSet(documentIds));
+
+		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
+				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))
+				.create()
+				.list(modelClass);
 	}
 
 	//

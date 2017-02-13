@@ -7,12 +7,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.CtxName;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
@@ -49,13 +50,13 @@ import de.metas.ui.web.window.descriptor.DetailId;
  * #L%
  */
 
-public final class DocumentEvaluatee implements Evaluatee
+/* package */final class DocumentEvaluatee implements IDocumentEvaluatee, IDocumentAware
 {
 	private static final Logger logger = LogManager.getLogger(DocumentEvaluatee.class);
 
 	private final Document _document;
 
-	/* package */ DocumentEvaluatee(final Document document)
+	/* package */ DocumentEvaluatee(@NotNull final Document document)
 	{
 		super();
 		_document = document; // note: we assume it's not null
@@ -74,12 +75,13 @@ public final class DocumentEvaluatee implements Evaluatee
 		return _document.getCtx();
 	}
 
-	private DocumentEvaluatee getParentEvaluateeOrNull()
+	private IDocumentEvaluatee getParentEvaluateeOrNull()
 	{
 		return _document.getParentDocumentEvaluateeOrNull();
 	}
 
-	/* package */Document getDocument()
+	@Override
+	public Document getDocument()
 	{
 		return _document;
 	}
@@ -97,7 +99,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	@Override
 	public String get_ValueAsString(final String variableName)
 	{
-		Object valueObj = getValueIfExists(variableName, String.class).orElse(null);
+		Object valueObj = get_ValueIfExists(variableName, String.class).orElse(null);
 		if (valueObj == null)
 		{
 			valueObj = getDefaultValue(variableName).orElse(null);
@@ -109,7 +111,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	@Override
 	public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
 	{
-		Object valueObj = getValueIfExists(variableName, Integer.class).orElse(null);
+		Object valueObj = get_ValueIfExists(variableName, Integer.class).orElse(null);
 		if (valueObj == null && defaultValue == null)
 		{
 			valueObj = getDefaultValue(variableName).orElse(null);
@@ -121,7 +123,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	@Override
 	public Boolean get_ValueAsBoolean(final String variableName, final Boolean defaultValue)
 	{
-		Object valueObj = getValueIfExists(variableName, Boolean.class).orElse(null);
+		Object valueObj = get_ValueIfExists(variableName, Boolean.class).orElse(null);
 		if (valueObj == null && defaultValue == null)
 		{
 			valueObj = getDefaultValue(variableName).orElse(null);
@@ -133,7 +135,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	@Override
 	public java.util.Date get_ValueAsDate(final String variableName, final java.util.Date defaultValue)
 	{
-		Object valueObj = getValueIfExists(variableName, java.util.Date.class).orElse(null);
+		Object valueObj = get_ValueIfExists(variableName, java.util.Date.class).orElse(null);
 		if (valueObj == null && defaultValue == null)
 		{
 			valueObj = getDefaultValue(variableName).orElse(null);
@@ -161,7 +163,7 @@ public final class DocumentEvaluatee implements Evaluatee
 	@Override
 	public BigDecimal get_ValueAsBigDecimal(final String variableName, final BigDecimal defaultValue)
 	{
-		Object valueObj = getValueIfExists(variableName, BigDecimal.class).orElse(null);
+		Object valueObj = get_ValueIfExists(variableName, BigDecimal.class).orElse(null);
 		if (valueObj == null && defaultValue == null)
 		{
 			valueObj = getDefaultValue(variableName).orElse(null);
@@ -170,7 +172,8 @@ public final class DocumentEvaluatee implements Evaluatee
 		return valueObj == null ? defaultValue : convertToBigDecimal(variableName, valueObj);
 	}
 	
-	private Optional<Object> getValueIfExists(final String variableName, final Class<?> targetType)
+	@Override
+	public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
 	{
 		if (variableName == null)
 		{
@@ -229,11 +232,11 @@ public final class DocumentEvaluatee implements Evaluatee
 
 		//
 		// Check parent
-		final DocumentEvaluatee parentEvaluatee = getParentEvaluateeOrNull();
+		final IDocumentEvaluatee parentEvaluatee = getParentEvaluateeOrNull();
 		boolean hasParentEvaluatee = parentEvaluatee != null;
 		if (hasParentEvaluatee)
 		{
-			final Optional<Object> value = parentEvaluatee.getValueIfExists(variableName, targetType);
+			final Optional<Object> value = parentEvaluatee.get_ValueIfExists(variableName, targetType);
 			if (value.isPresent())
 			{
 				return value;

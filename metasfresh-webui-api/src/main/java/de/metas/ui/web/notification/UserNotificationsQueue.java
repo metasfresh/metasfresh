@@ -15,9 +15,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.config.WebSocketConfig;
 import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
+import de.metas.ui.web.websocket.WebSocketConfig;
 
 /*
  * #%L

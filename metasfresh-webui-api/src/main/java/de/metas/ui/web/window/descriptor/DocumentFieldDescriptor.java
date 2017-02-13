@@ -680,6 +680,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return _detailId;
 		}
+		
+		/**
+		 * @return true if included entity (i.e. detail tab)
+		 */
+		private boolean isDetail()
+		{
+			return getDetailId() != null;
+		}
 
 		public Builder setKey(final boolean key)
 		{
@@ -700,9 +708,9 @@ public final class DocumentFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public boolean isParentLink()
+		public boolean isParentLinkEffective()
 		{
-			return parentLink;
+			return parentLink && isDetail();
 		}
 
 		public Builder setVirtualField(final boolean virtualField)
@@ -873,7 +881,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private ILogicExpression buildReadonlyLogicEffective()
 		{
-			if (isParentLink())
+			if (isParentLinkEffective())
 			{
 				return ILogicExpression.TRUE;
 			}
@@ -1037,7 +1045,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private final ILogicExpression buildMandatoryLogicEffective()
 		{
-			if (isParentLink())
+			if (isParentLinkEffective())
 			{
 				return ILogicExpression.TRUE;
 			}

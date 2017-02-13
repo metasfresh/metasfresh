@@ -1,17 +1,19 @@
 package de.metas.ui.web.process;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import java.util.Properties;
+
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.process.IProcessPrecondition.PreconditionsContext;
-import de.metas.ui.web.window.model.Document;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,41 +31,42 @@ import de.metas.ui.web.window.model.Document;
  * #L%
  */
 
-public final class DocumentPreconditionsContext implements PreconditionsContext
+/* package */ final class DocumentFieldAsProcessDefaultParameter implements IProcessDefaultParameter
 {
-	public static final DocumentPreconditionsContext of(final Document document)
+	public static final DocumentFieldAsProcessDefaultParameter of(final IDocumentFieldView field)
 	{
-		return new DocumentPreconditionsContext(document);
+		return new DocumentFieldAsProcessDefaultParameter(field);
 	}
 
-	private final Document document;
-	private final String tableName;
+	private final IDocumentFieldView field;
 
-	private DocumentPreconditionsContext(final Document document)
+	private DocumentFieldAsProcessDefaultParameter(final IDocumentFieldView field)
 	{
 		super();
-		this.document = document;
-		tableName = document.getEntityDescriptor().getTableName();
+		this.field = field;
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(document)
-				.toString();
+		return MoreObjects.toStringHelper(this).addValue(field).toString();
 	}
 
 	@Override
-	public String getTableName()
+	public String getColumnName()
 	{
-		return tableName;
+		return field.getFieldName();
 	}
 
 	@Override
-	public <T> T getModel(final Class<T> modelClass)
+	public Properties getCtx()
 	{
-		return InterfaceWrapperHelper.create(document, modelClass);
+		return Env.getCtx();
 	}
 
+	@Override
+	public int getWindowNo()
+	{
+		return field.getDocumentPath().getAD_Window_ID();
+	}
 }

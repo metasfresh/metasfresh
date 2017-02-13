@@ -7,10 +7,13 @@ import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPrecondition.PreconditionsContext;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.ProcessPreconditionChecker;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -51,7 +54,7 @@ public final class ProcessDescriptor
 
 	private final int adProcessId;
 	private final ProcessDescriptorType type;
-	private final Class<? extends IProcessPrecondition> preconditionsClass;
+	private final Class<? extends IProcessDefaultParametersProvider> defaultParametersProviderClass;
 	private final String processClassname;
 
 	private final DocumentEntityDescriptor parametersDescriptor;
@@ -66,7 +69,7 @@ public final class ProcessDescriptor
 		type = builder.getType();
 
 		processClassname = builder.getProcessClassname();
-		preconditionsClass = builder.getPreconditionsClass();
+		defaultParametersProviderClass = builder.getProcessDefaultParametersProvider();
 
 		parametersDescriptor = builder.getParametersDescriptor();
 
@@ -101,19 +104,9 @@ public final class ProcessDescriptor
 		return type;
 	}
 
-	public boolean hasPreconditions()
-	{
-		return preconditionsClass != null;
-	}
-
 	public String getProcessClassname()
 	{
 		return processClassname;
-	}
-
-	public Class<? extends IProcessPrecondition> getPreconditionsClass()
-	{
-		return preconditionsClass;
 	}
 
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
@@ -135,22 +128,28 @@ public final class ProcessDescriptor
 		return true;
 	}
 
-	public boolean isPreconditionsApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (!hasPreconditions())
+		return ProcessPreconditionChecker.newInstance()
+				.setProcess(getProcessClassname())
+				.setPreconditionsContext(context)
+				.checkApplies();
+	}
+	
+	public IProcessDefaultParametersProvider getDefaultParametersProvider()
+	{
+		if (defaultParametersProviderClass == null)
 		{
-			return true;
+			return null;
 		}
-
+		
 		try
 		{
-			final IProcessPrecondition preconditions = preconditionsClass.newInstance();
-			return preconditions.isPreconditionApplicable(context);
+			return defaultParametersProviderClass.newInstance();
 		}
-		catch (final Exception ex)
+		catch (InstantiationException | IllegalAccessException ex)
 		{
-			logger.warn("Failed to determine if preconditions of {} are appliable on {}. Considering NOT appliable.", this, context, ex);
-			return false;
+			throw Throwables.propagate(ex);
 		}
 	}
 	
@@ -241,22 +240,22 @@ public final class ProcessDescriptor
 			}
 			catch (final ClassNotFoundException e)
 			{
-				logger.error("Cannot load class: " + classname, e);
+				logger.error("Cannot process class: {}", classname, e);
 				return Optional.empty();
 			}
 		}
 
-		private Class<? extends IProcessPrecondition> getPreconditionsClass()
+		private Class<? extends IProcessDefaultParametersProvider> getProcessDefaultParametersProvider()
 		{
 			final Class<?> processClass = getProcessClassOrNull();
-			if (processClass == null || !IProcessPrecondition.class.isAssignableFrom(processClass))
+			if (processClass == null || !IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
 			{
 				return null;
 			}
 
 			try
 			{
-				return processClass.asSubclass(IProcessPrecondition.class);
+				return processClass.asSubclass(IProcessDefaultParametersProvider.class);
 			}
 			catch (final Exception e)
 			{
@@ -264,6 +263,7 @@ public final class ProcessDescriptor
 				return null;
 			}
 		}
+
 
 		public Builder setParametersDescriptor(final DocumentEntityDescriptor parametersDescriptor)
 		{

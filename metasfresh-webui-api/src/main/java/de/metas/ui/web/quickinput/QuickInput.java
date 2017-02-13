@@ -3,6 +3,7 @@ package de.metas.ui.web.quickinput;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -49,6 +50,15 @@ public final class QuickInput
 	{
 		return new Builder();
 	}
+	
+	public static final QuickInput getQuickInputOrNull(final ICalloutField calloutField)
+	{
+		final Object documentObj = calloutField.getModel(Object.class);
+		final QuickInput quickInput = InterfaceWrapperHelper.getDynAttribute(documentObj, DYNATTR_QuickInput);
+		return quickInput;
+	}
+
+	private static final String VERSION_DEFAULT = "0";
 
 	private final DocumentPath rootDocumentPath;
 	private final DetailId targetDetailId;
@@ -57,6 +67,8 @@ public final class QuickInput
 	private final Document quickInputDocument;
 
 	private transient Document rootDocument;
+	
+	private static final String DYNATTR_QuickInput = QuickInput.class.getName();
 
 	private QuickInput(final Builder builder)
 	{
@@ -66,6 +78,7 @@ public final class QuickInput
 		quickInputProcessorFactory = builder.getQuickInputProcessorFactory();
 
 		quickInputDocument = builder.buildQuickInputDocument();
+		quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
 
 		rootDocument = null;
 	}
@@ -79,6 +92,14 @@ public final class QuickInput
 		quickInputProcessorFactory = from.quickInputProcessorFactory;
 
 		quickInputDocument = from.quickInputDocument.copy(copyMode);
+		if(copyMode.isWritable())
+		{
+			quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
+		}
+		else
+		{
+			// quickInputDocument.setDynAttribute(DYNATTR_QuickInput, null); // NOTE: cannot call it because it will throw exception (document not writable)
+		}
 
 		rootDocument = null; // we are not copying it on purpose
 	}
@@ -255,10 +276,8 @@ public final class QuickInput
 
 		private Document buildQuickInputDocument()
 		{
-			return Document.builder()
-					.setEntityDescriptor(getQuickInputDescriptor())
-					.setDocumentIdSupplier(() -> nextQuickInputDocumentId.getAndIncrement())
-					.initializeAsNewDocument()
+			return Document.builder(getQuickInputDescriptor())
+					.initializeAsNewDocument(() -> nextQuickInputDocumentId.getAndIncrement(), VERSION_DEFAULT)
 					.build();
 
 		}

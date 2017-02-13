@@ -8,6 +8,7 @@ import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -19,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
@@ -35,20 +37,28 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackageClasses = {
+		WebRestApiApplication.class // this one
+		, org.adempiere.ad.dao.IQueryStatisticsLogger.class // FIXME: hardcoded because else SQL tracing is not working and atm i am not confident to scan the whole de.metas/org.compiere/org.adempiere trees.
+})
 public class WebRestApiApplication
 {
 	public static final String PROFILE_Test = "test";
 	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
+	public static final String PROFILE_Webui = "webui";
+	/** Profile activate when running from IDE */
+	public static final String PROFILE_Development = "development";
+
+	private static final Logger logger = LogManager.getLogger(WebRestApiApplication.class);
 
 	public static void main(String[] args)
 	{
@@ -63,8 +73,28 @@ public class WebRestApiApplication
 		new SpringApplicationBuilder(WebRestApiApplication.class)
 				.headless(false) // FIXME: we need it for initial connection setup popup (if any)
 				.web(true)
+				.profiles(PROFILE_Webui)
 				.run(args);
 
+	}
+
+	/** @return true if {@link #PROFILE_Development} is active (i.e. we are running from IDE) */
+	public static boolean isDevelopmentProfileActive()
+	{
+		return isProfileActive(PROFILE_Development);
+	}
+
+	/** @return true if given profile is active */
+	public static boolean isProfileActive(final String profile)
+	{
+		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		if (context == null)
+		{
+			logger.warn("No application context found to determine if '{}' profile is active", profile);
+			return true;
+		}
+
+		return context.getEnvironment().acceptsProfiles(profile);
 	}
 
 	@Autowired

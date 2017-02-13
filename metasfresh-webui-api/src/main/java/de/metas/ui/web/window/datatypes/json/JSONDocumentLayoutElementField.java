@@ -1,17 +1,22 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -41,6 +46,7 @@ import io.swagger.annotations.ApiModel;
 
 @ApiModel("field")
 @SuppressWarnings("serial")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutElementField implements Serializable
 {
 	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors, final JSONOptions jsonOpts)
@@ -120,6 +126,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonProperty("emptyText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
+	
+	@JsonProperty("devices")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDeviceDescriptor> devices;
 
 	private JSONDocumentLayoutElementField(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
 	{
@@ -128,6 +138,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
 		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
+		devices = fieldDescriptor.getDevices();
 	}
 
 	@JsonCreator
@@ -136,6 +147,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			, @JsonProperty("type") final JSONFieldType type //
 			, @JsonProperty("source") final JSONLookupSource source //
 			, @JsonProperty("emptyText") final String emptyText //
+			, @JsonProperty("devices") final List<JSONDeviceDescriptor> devices
 	)
 	{
 		super();
@@ -143,6 +155,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		this.type = type;
 		this.source = source;
 		this.emptyText = emptyText;
+		this.devices = devices == null ? ImmutableList.of() : ImmutableList.copyOf(devices);
 	}
 
 	@Override
@@ -154,6 +167,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.add("type", type)
 				.add("source", source)
 				.add("emptyText", emptyText)
+				.add("actions", devices.isEmpty() ? null : devices)
 				.toString();
 	}
 
@@ -175,5 +189,10 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	public String getEmptyText()
 	{
 		return emptyText;
+	}
+	
+	public List<JSONDeviceDescriptor> getDevices()
+	{
+		return devices;
 	}
 }

@@ -26,53 +26,58 @@ import org.compiere.model.I_C_Country;
 
 public interface IAddressModel
 {
+	//@formatter:off
 	String COLUMNNAME_Address1 = "Address1";
-
 	public String getAddress1();
-
 	public void setAddress1(String address);
+	//@formatter:on
 
+	//@formatter:off
 	String COLUMNNAME_Address2 = "Address2";
-
 	public String getAddress2();
-
 	public void setAddress2(String address);
+	//@formatter:on
 
+	//@formatter:off
 	String COLUMNNAME_Address3 = "Address3";
-
 	public String getAddress3();
-
 	public void setAddress3(String address);
+	//@formatter:on
 
+	//@formatter:off
 	String COLUMNNAME_Address4 = "Address4";
-
 	public String getAddress4();
-
 	public void setAddress4(String address);
+	//@formatter:on
 
+	//@formatter:off
+	String COLUMNNAME_Postal = "Postal";
+	public String getPostal();
+	public void setPostal(String postal);
+	//@formatter:on
+
+	//@formatter:off
 	String COLUMNNAME_City = "City";
-
 	void setCity(String City);
-
 	String getCity();
+	//@formatter:on
 
+	//@formatter:off
 	String COLUMNNAME_C_Region_ID = "C_Region_ID";
-
 	void setC_Region_ID(int C_Region_ID);
-
 	int getC_Region_ID();
+	//@formatter:on
 
+	//@formatter:off
 	String COLUMNNAME_C_Country_ID = "C_Country_ID";
-
 	void setC_Country_ID(int C_Country_ID);
-
 	int getC_Country_ID();
-
 	I_C_Country getC_Country();
+	//@formatter:on
 
+	//@formatter:off
 	String COLUMNNAME_HasRegion = "HasRegion";
-
 	void setHasRegion(boolean HasRegion);
-
 	boolean isHasRegion();
+	//@formatter:on
 }

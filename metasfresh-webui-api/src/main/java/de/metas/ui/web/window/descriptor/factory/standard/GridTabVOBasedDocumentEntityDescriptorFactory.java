@@ -12,22 +12,19 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.quickinput.orderline.OrderLineQuickInputDescriptorFactory;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -55,16 +52,16 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package */class GridTabVOBasedDocumentEntityDescriptorFactory
+/* package */class GridTabVOBasedDocumentEntityDescriptorFactory
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
@@ -211,11 +208,10 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.getFields()
 				.stream()
 				.forEach(gridFieldVO -> createAndAddDocumentField(entityDescriptorBuilder, gridFieldVO));
-		
+
 		//
 		// Quick input descriptor
 		setupQuickInputEntityDescriptor(entityDescriptorBuilder);
-		
 
 		return entityDescriptorBuilder;
 	}
@@ -289,14 +285,21 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 					, valueClass //
 					, gridFieldVO.isMandatory() //
 			);
+
 			if (gridFieldVO.isReadOnly())
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
-			else if (!gridFieldVO.isUpdateable())
+			// Readonly logic in case of not Updateable
+			// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
+			// But here, on Webui we no longer have this concept, since we are auto-saving it.
+			// NOTE2: we are checking the AD_Field/AD_Column.IsParentLink and in case is true, we consider the only reason why Updateable=N is because of them.
+			// So basically in that case we ignore it.
+			//
+			// Example where this rule is needed: have a table which has a column which is parent link, but in some windows we are displaying it as header (first tab),
+			// and we want to allow the user setting it.
+			else if (!gridFieldVO.isUpdateable() && !gridFieldVO.isParentLink())
 			{
-				// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
-				// But here, on Webui we no longer have this concept, since we are auto-saving it.
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
 			else
@@ -514,66 +517,18 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 	private void setupQuickInputEntityDescriptor(final DocumentEntityDescriptor.Builder documentDescriptor)
 	{
-		// FIXME uber HARDCODED
-		
-		if(!I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableNameOrNull()))
+
+		final DocumentEntityDescriptor.Builder quickInputDescriptor;
+		if (I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableNameOrNull()))
 		{
-			return;
+			// FIXME uber HARDCODED
+			quickInputDescriptor = OrderLineQuickInputDescriptorFactory.instance.createQuickInputEntityDescriptor(documentDescriptor);
 		}
-		
-		final DocumentEntityDescriptor.Builder quickInputDescriptor = DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.QuickInput, documentDescriptor.getDocumentTypeId())
-				.disableCallouts()
-				.setDataBinding(DocumentEntityDataBindingDescriptorBuilder.NULL)
-				// Defaults:
-				.setDetailId(documentDescriptor.getDetailId())
-				.setAD_Tab_ID(documentDescriptor.getAD_Tab_ID())
-				.setTableName(documentDescriptor.getTableName())
-				.setIsSOTrx(documentDescriptor.getIsSOTrx())
-				//
-				;
+		else
+		{
+			quickInputDescriptor = null;
+		}
 
-		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("M_Product_ID")
-				.setCaption(Services.get(IMsgBL.class).translatable("M_Product_ID"))
-				//
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName("M_Product_ID")
-						.setDisplayType(DisplayType.Search)
-						.setAD_Val_Rule_ID(540051)
-						.buildProvider())
-				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
-				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField));
-
-		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("M_HU_PI_Item_Product_ID")
-				.setCaption(Services.get(IMsgBL.class).translatable("M_HU_PI_Item_Product_ID"))
-				//
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName("M_HU_PI_Item_Product_ID")
-						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540199)
-						.buildProvider())
-				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
-				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField));
-		
-		quickInputDescriptor.addField(DocumentFieldDescriptor.builder("Qty")
-				.setCaption(Services.get(IMsgBL.class).translatable("Qty"))
-				.setWidgetType(DocumentFieldWidgetType.Quantity)
-				.setReadonlyLogic(ILogicExpression.FALSE)
-				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField));
-		
 		documentDescriptor.setQuickInputDescriptor(quickInputDescriptor);
 	}
 }

@@ -9,6 +9,7 @@ import org.compiere.util.NamePair;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
@@ -43,27 +44,26 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONLookupValue implements Serializable
 {
-	public static final JSONLookupValue of(final String key, final String value)
+	public static final JSONLookupValue of(final String key, final String name)
 	{
-		return new JSONLookupValue(ImmutableMap.of(key, value == null ? "" : value));
+		return new JSONLookupValue(key, name);
 	}
 
-	public static final JSONLookupValue of(final int key, final String value)
+	public static final JSONLookupValue of(final int key, final String name)
 	{
 		final String keyStr = String.valueOf(key);
-		return new JSONLookupValue(ImmutableMap.of(keyStr, value == null ? "" : value));
+		return new JSONLookupValue(keyStr, name);
 	}
 
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
 	{
 		return of(lookupValue.getIdAsString(), lookupValue.getDisplayName());
 	}
-	
+
 	public static final JSONLookupValue ofNamePair(final NamePair namePair)
 	{
 		return of(namePair.getID(), namePair.getName());
 	}
-
 
 	public static final IntegerLookupValue integerLookupValueFromJsonMap(final Map<String, String> map)
 	{
@@ -107,18 +107,29 @@ public final class JSONLookupValue implements Serializable
 	}
 
 	private Map<String, String> map;
+	@JsonIgnore
+	private String _key;
+	@JsonIgnore
+	private String _name;
 
+	/**
+	 * Used to deserialize JSON string
+	 *
+	 * @see #set(String, String)
+	 */
 	@JsonCreator
 	private JSONLookupValue()
 	{
 		super();
 		map = ImmutableMap.of();
+		_key = null;
+		_name = null;
 	}
 
-	private JSONLookupValue(final ImmutableMap<String, String> map)
+	private JSONLookupValue(final String key, final String name)
 	{
 		super();
-		this.map = map;
+		set(key, name);
 	}
 
 	@Override
@@ -134,16 +145,31 @@ public final class JSONLookupValue implements Serializable
 	{
 		return map;
 	}
-	
+
+	@JsonIgnore
 	public Map.Entry<String, String> entry()
 	{
 		return map.entrySet().iterator().next();
 	}
 
 	@JsonAnySetter
-	public void set(final String key, final String value)
+	public void set(final String key, final String name)
 	{
-		map = ImmutableMap.of(key, value);
+		final String nameNorm = name == null ? "" : name;
+		_key = key;
+		_name = nameNorm;
+		map = ImmutableMap.of(key, nameNorm);
 	}
 
+	@JsonIgnore
+	public String getKey()
+	{
+		return _key;
+	}
+
+	@JsonIgnore
+	public String getName()
+	{
+		return _name;
+	}
 }

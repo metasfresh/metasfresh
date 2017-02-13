@@ -27,4 +27,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 public interface IDocumentViewAttributesProvider
 {
 	IDocumentViewAttributes getAttributes(final DocumentId documentId);
+
+	void invalidateAll();
 }

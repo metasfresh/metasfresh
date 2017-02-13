@@ -107,7 +107,17 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
+		
+		final ProcessInfo processInfo = createProcessInfo(adProcessId, request);
 
+		return Execution.callInNewExecution("pinstance.create", () -> {
+			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processInfo);
+			return JSONProcessInstance.of(processInstance, newJsonOpts());
+		});
+	}
+	
+	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
+	{
 		// Validate request's AD_Process_ID
 		// (we are not using it, but just for consistency)
 		if (request.getAD_Process_ID() > 0 && request.getAD_Process_ID() != adProcessId)
@@ -158,7 +168,7 @@ public class ProcessRestController
 			documentRef = null;
 		}
 
-		final ProcessInfo processInfo = ProcessInfo.builder()
+		return ProcessInfo.builder()
 				.setCtx(userSession.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(adProcessId)
@@ -169,12 +179,6 @@ public class ProcessRestController
 				.addParameter(ProcessInstance.PARAM_ViewId, viewId) // internal parameter
 				//
 				.build();
-
-		return Execution.callInNewExecution("pinstance.create", () -> {
-			final ProcessInstance processInstance = instancesRepository.createNewProcessInstance(processInfo);
-			return JSONProcessInstance.of(processInstance, newJsonOpts());
-		});
-
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)

@@ -56,4 +56,6 @@ public interface DocumentsRepository
 	void save(Document document);
 
 	void delete(Document document);
+
+	String retrieveVersion(DocumentEntityDescriptor entityDescriptor, int documentIdAsInt);
 }

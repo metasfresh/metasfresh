@@ -97,6 +97,12 @@ public final class MenuNode
 		}
 		
 		matchedByFilter = false;
+		
+		// Validate
+		if(type != MenuNodeType.Group && !children.isEmpty())
+		{
+			throw new IllegalArgumentException("Only grouping nodes can have children");
+		}
 	}
 
 	/** Copy constructor */
@@ -277,9 +283,21 @@ public final class MenuNode
 		return parent == null;
 	}
 
-	public boolean isGrouppingNode()
+	public boolean isGroupingNode()
 	{
 		return type == MenuNodeType.Group;
+	}
+	
+	/**
+	 * Returns true if this node is effectively a leaf node.
+	 * 
+	 * An effectively leaf node it's a node which it's not a grouping node, or even if it's grouping node, it does no have any children.
+	 * 
+	 * @return
+	 */
+	public boolean isEffectiveLeafNode()
+	{
+		return children.isEmpty();
 	}
 	
 	public boolean isMatchedByFilter()

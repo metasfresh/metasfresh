@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 
 /*
@@ -27,9 +28,9 @@ import de.metas.handlingunits.model.X_M_HU;
 
 public interface I_WEBUI_HU_View
 {
-	String COLUMNNAME_M_HU_ID = "M_HU_ID";
-	String COLUMNNAME_Value = "Value";
-	String COLUMNNAME_HU_UnitType = "HU_UnitType";
+	String COLUMNNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
+	String COLUMNNAME_Value = I_M_HU.COLUMNNAME_Value;
+	String COLUMNNAME_HU_UnitType = I_M_HU_PI_Version.COLUMNNAME_HU_UnitType;
 	
 	String COLUMNNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
 	int HUSTATUS_AD_Reference_ID = X_M_HU.HUSTATUS_AD_Reference_ID;

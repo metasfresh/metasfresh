@@ -1,4 +1,4 @@
-package de.metas.ui.web.quickinput;
+package de.metas.ui.web.quickinput.orderline;
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -6,7 +6,6 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -16,6 +15,8 @@ import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.ui.web.quickinput.IQuickInputProcessor;
+import de.metas.ui.web.quickinput.QuickInput;
 
 /*
  * #%L
@@ -101,18 +102,5 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 
 		return huPackingAware;
-	}
-
-	private interface IOrderLineQuickInput
-	{
-		int getM_Product_ID();
-
-		I_M_Product getM_Product();
-
-		int getM_HU_PI_Item_Product_ID();
-
-		I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
-		BigDecimal getQty();
 	}
 }

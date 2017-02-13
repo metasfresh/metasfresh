@@ -1,10 +1,12 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.window.model;
+
+import org.compiere.util.Evaluatee;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,31 +24,6 @@ package de.metas.ui.web.window.descriptor;
  * #L%
  */
 
-public class POJODocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor
+public interface IDocumentEvaluatee extends Evaluatee
 {
-	public static final POJODocumentFieldDataBindingDescriptor of(final String columnName)
-	{
-		return new POJODocumentFieldDataBindingDescriptor(columnName);
-	}
-
-	private final String columnName;
-
-	private POJODocumentFieldDataBindingDescriptor(final String columnName)
-	{
-		super();
-		this.columnName = columnName;
-	}
-
-	@Override
-	public String getColumnName()
-	{
-		return columnName;
-	}
-
-	@Override
-	public boolean isMandatory()
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
 }

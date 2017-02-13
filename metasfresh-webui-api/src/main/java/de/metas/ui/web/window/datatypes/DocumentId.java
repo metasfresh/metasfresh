@@ -1,9 +1,17 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.util.GuavaCollectors;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -37,6 +45,8 @@ public abstract class DocumentId implements Serializable
 	public static final String NEW_ID_STRING = "NEW";
 	private static final DocumentId NEW = new IntDocumentId(NEW_ID);
 
+	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+
 	public static final DocumentId of(String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
@@ -62,7 +72,7 @@ public abstract class DocumentId implements Serializable
 		{
 			return new StringDocumentId(idStr);
 		}
-		
+
 		return of(idInt);
 	}
 
@@ -75,10 +85,47 @@ public abstract class DocumentId implements Serializable
 
 		return new IntDocumentId(idInt);
 	}
-	
+
 	public static DocumentId ofString(final String idStr)
 	{
 		return new StringDocumentId(idStr);
+	}
+
+	public static Set<DocumentId> ofCommaSeparatedString(final String string)
+	{
+		if (string == null || string.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return streamFromCommaSeparatedString(string)
+				.collect(GuavaCollectors.toImmutableSet());
+	}
+
+	public static Stream<DocumentId> streamFromCommaSeparatedString(final String string)
+	{
+		// avoid NPE
+		if (string == null)
+		{
+			return Stream.empty();
+		}
+
+		return SPLITTER_DocumentIds.splitToList(string)
+				.stream()
+				.map(idStr -> DocumentId.fromNullable(idStr))
+				.filter(documentId -> documentId != null);
+
+	}
+
+	public static Set<DocumentId> ofStringSet(final Set<String> documentIds)
+	{
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return documentIds
+				.stream()
+				.map(idStr -> of(idStr))
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
 	public static final DocumentId fromNullable(final String idStr)
@@ -88,6 +135,16 @@ public abstract class DocumentId implements Serializable
 			return null;
 		}
 		return of(idStr.trim());
+	}
+
+	public static final Set<Integer> toIntSet(final Collection<DocumentId> documentIds)
+	{
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return documentIds.stream().map(documentId -> documentId.toInt()).collect(GuavaCollectors.toImmutableSet());
 	}
 
 	private DocumentId()

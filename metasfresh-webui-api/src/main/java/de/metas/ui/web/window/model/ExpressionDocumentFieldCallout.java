@@ -7,6 +7,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.util.Check;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -95,7 +96,7 @@ public final class ExpressionDocumentFieldCallout implements IDocumentFieldCallo
 	public void execute(final ICalloutExecutor calloutExecutor, final ICalloutField calloutField) throws Exception
 	{
 		final Document document = extractDocument(calloutField);
-		final DocumentEvaluatee ctx = document.asEvaluatee();
+		final Evaluatee ctx = document.asEvaluatee();
 
 		final Object value = expression.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
 		if (expression.isNoResult(value))

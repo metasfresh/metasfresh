@@ -1,6 +1,7 @@
 package de.metas.ui.web.process.descriptor;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
@@ -80,22 +83,24 @@ public class ProcessDescriptorsFactory
 	@Autowired
 	private UserSession userSession;
 
-	public Stream<RelatedProcessDescriptorWrapper> streamDocumentRelatedProcesses(final String tableName)
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
 	{
+		final String tableName = preconditionsContext.getTableName();
 		final int adTableId = adTableDAO.retrieveTableId(tableName);
 		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
 		return adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId)
 				.values()
 				.stream()
-				.map(relatedProcess -> getRelatedProcessDescriptorWrapper(relatedProcess))
-				.filter(processDescriptor -> processDescriptor.isExecutionGranted(userRolePermissions));
+				.filter(relatedProcess -> relatedProcess.isExecutionGranted(userRolePermissions)) // only those which can be executed by current user permissions
+				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
 	
-	private RelatedProcessDescriptorWrapper getRelatedProcessDescriptorWrapper(final RelatedProcessDescriptor relatedProcess)
+	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
 	{
 		final int adProcessId = relatedProcess.getAD_Process_ID();
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(adProcessId);
-		return RelatedProcessDescriptorWrapper.of(relatedProcess, processDescriptor);
+		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
+		return WebuiRelatedProcessDescriptor.of(relatedProcess, processDescriptor, preconditionsResolutionSupplier);
 	}
 	
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)

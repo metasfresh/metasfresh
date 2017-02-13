@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.util.NumberUtils;
+import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -170,7 +171,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		_initialValue = initialValueConv;
 
 		//
-		// Update old value too
+		// Update checkout value too because we consider initialization as first checkout
 		_valueOnCheckout = initialValueConv;
 
 		//
@@ -387,7 +388,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
 
-		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
+		final Evaluatee ctx = getDocument().asEvaluatee();
 		final LookupValuesList values = lookupDataSource.findEntities(ctx);
 		lookupValuesStaled = false;
 		return values == null ? LookupValuesList.EMPTY : values;
@@ -401,7 +402,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		{
 			throw new DocumentFieldNotLookupException(getFieldName());
 		}
-		final DocumentEvaluatee ctx = getDocument().asEvaluatee();
+		final Evaluatee ctx = getDocument().asEvaluatee();
 		final LookupValuesList values = lookupDataSource.findEntities(ctx, query);
 		lookupValuesStaled = false;
 		return values;

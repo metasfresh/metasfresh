@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.process.descriptor.RelatedProcessDescriptorWrapper;
+import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
@@ -72,10 +73,9 @@ public class DocumentViewRestController
 
 	@Autowired
 	private CompositeDocumentViewSelectionFactory factory;
-	
+
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
-	
 
 	private JSONOptions newJSONOptions()
 	{
@@ -198,10 +198,15 @@ public class DocumentViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
-				.streamActions()
-				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
+		final IDocumentViewSelection view = documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId);
+
+		return view.streamActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
+				//
+				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled
+				// TODO: replace the line above with following, after https://github.com/metasfresh/metasfresh-webui-frontend/issues/191#issuecomment-275927950 it's implemented
+				// .filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
+				//
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
@@ -209,16 +214,14 @@ public class DocumentViewRestController
 	public JSONDocumentActionsList getDocumentQuickActions(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
 			, @PathVariable("viewId") final String viewId//
+			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
 	)
 	{
 		userSession.assertLoggedIn();
 
 		return documentViewsRepo.getView(viewId)
 				.assertWindowIdMatches(adWindowId)
-				.streamActions()
-				// .filter(processDescriptor -> processDescriptor.isPreconditionsApplicable(preconditionsContext))
-				.filter(RelatedProcessDescriptorWrapper::isQuickAction)
+				.streamQuickActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
-
 }
