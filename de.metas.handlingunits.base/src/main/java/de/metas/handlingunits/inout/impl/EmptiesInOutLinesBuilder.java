@@ -39,7 +39,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
 
-public class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLinesBuilder
+/* package */class EmptiesInOutLinesBuilder extends AbstractPackingMaterialDocumentLinesBuilder
 {
 	//
 	// Services
