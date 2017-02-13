@@ -1,4 +1,4 @@
-drop function if exists report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying);
+﻿drop function if exists report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying);
 
 -- DROP FUNCTION report.fresh_pricelist_details_report(numeric, numeric, numeric, character varying);
 
