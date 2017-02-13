@@ -61,11 +61,6 @@ export const getRoutes = (store) => {
                 />
                 <Route path="/window/:windowType/:docId"
                     component={MasterWindow}
-                    onEnter={(nextState) => store.dispatch(
-                        createWindow(
-                            nextState.params.windowType, nextState.params.docId
-                        )
-                    )}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
                 <Route path="/inbox" component={InboxAll} />
