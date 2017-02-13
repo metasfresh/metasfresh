@@ -700,7 +700,7 @@ public final class ALogin extends CDialog
 					// But in case it happens and it's because somehow the language was not preselected,
 					// at least give to user the opportunity so select the language manually
 					setLanguageComboVisible(true);
-					throw new AdempiereException("@NotFound@ @AD_Language@");
+					new AdempiereException("@NotFound@ @AD_Language@").throwIfDeveloperModeOrLogWarningElse(log);
 				}
 				Env.verifyLanguage(language);
 				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());

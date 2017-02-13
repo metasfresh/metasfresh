@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 4.56.54 (2017-07)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
@@ -22,16 +22,16 @@ upcoming
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
+  * #734 Add Translation for en_US in WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
+  * #947 Window Greeting Add Translation for en_US
 
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
 
 # metasfresh 4.55.54 (2017-06)
-
-this week's RC
 
 ## Features
 * metasfresh
