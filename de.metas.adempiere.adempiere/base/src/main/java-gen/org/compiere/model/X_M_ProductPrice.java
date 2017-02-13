@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -32,7 +16,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 799201189L;
+	private static final long serialVersionUID = -463752021L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (Properties ctx, int M_ProductPrice_ID, String trxName)
@@ -41,14 +25,25 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
       /** if (M_ProductPrice_ID == 0)
         {
 			setC_TaxCategory_ID (0);
+			setC_UOM_ID (0);
+			setIsAttributeDependant (false);
+// N
+			setIsDefault (false);
+// N
+			setIsSeasonFixedPrice (false);
+// N
 			setM_PriceList_Version_ID (0);
 			setM_Product_ID (0);
 			setM_ProductPrice_ID (0);
+			setMatchSeqNo (0);
+// @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
 			setPriceLimit (Env.ZERO);
 			setPriceList (Env.ZERO);
 			setPriceStd (Env.ZERO);
 			setSeqNo (0);
 // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@
+			setUseScalePrice (false);
+// N
         } */
     }
 
@@ -58,29 +53,13 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_ProductPrice[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -152,6 +131,152 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set isAttributeDependant.
+		@param IsAttributeDependant isAttributeDependant	  */
+	@Override
+	public void setIsAttributeDependant (boolean IsAttributeDependant)
+	{
+		set_Value (COLUMNNAME_IsAttributeDependant, Boolean.valueOf(IsAttributeDependant));
+	}
+
+	/** Get isAttributeDependant.
+		@return isAttributeDependant	  */
+	@Override
+	public boolean isAttributeDependant () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAttributeDependant);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Standard.
+		@param IsDefault 
+		Default value
+	  */
+	@Override
+	public void setIsDefault (boolean IsDefault)
+	{
+		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+	}
+
+	/** Get Standard.
+		@return Default value
+	  */
+	@Override
+	public boolean isDefault () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Saison Fix Preis.
+		@param IsSeasonFixedPrice Saison Fix Preis	  */
+	@Override
+	public void setIsSeasonFixedPrice (boolean IsSeasonFixedPrice)
+	{
+		set_Value (COLUMNNAME_IsSeasonFixedPrice, Boolean.valueOf(IsSeasonFixedPrice));
+	}
+
+	/** Get Saison Fix Preis.
+		@return Saison Fix Preis	  */
+	@Override
+	public boolean isSeasonFixedPrice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSeasonFixedPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Ausprägung Merkmals-Satz.
+		@param M_AttributeSetInstance_ID 
+		Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Ausprägung Merkmals-Satz.
+		@return Instanz des Merkmals-Satzes zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_DiscountSchemaLine getM_DiscountSchemaLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaLine_ID, org.compiere.model.I_M_DiscountSchemaLine.class);
+	}
+
+	@Override
+	public void setM_DiscountSchemaLine(org.compiere.model.I_M_DiscountSchemaLine M_DiscountSchemaLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchemaLine_ID, org.compiere.model.I_M_DiscountSchemaLine.class, M_DiscountSchemaLine);
+	}
+
+	/** Set Discount Pricelist.
+		@param M_DiscountSchemaLine_ID 
+		Line of the pricelist trade discount schema
+	  */
+	@Override
+	public void setM_DiscountSchemaLine_ID (int M_DiscountSchemaLine_ID)
+	{
+		if (M_DiscountSchemaLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_DiscountSchemaLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_DiscountSchemaLine_ID, Integer.valueOf(M_DiscountSchemaLine_ID));
+	}
+
+	/** Get Discount Pricelist.
+		@return Line of the pricelist trade discount schema
+	  */
+	@Override
+	public int getM_DiscountSchemaLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchemaLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -231,6 +356,40 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_ProductPrice getM_ProductPrice_Base() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ProductPrice_Base_ID, org.compiere.model.I_M_ProductPrice.class);
+	}
+
+	@Override
+	public void setM_ProductPrice_Base(org.compiere.model.I_M_ProductPrice M_ProductPrice_Base)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ProductPrice_Base_ID, org.compiere.model.I_M_ProductPrice.class, M_ProductPrice_Base);
+	}
+
+	/** Set Base product price.
+		@param M_ProductPrice_Base_ID Base product price	  */
+	@Override
+	public void setM_ProductPrice_Base_ID (int M_ProductPrice_Base_ID)
+	{
+		if (M_ProductPrice_Base_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ProductPrice_Base_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ProductPrice_Base_ID, Integer.valueOf(M_ProductPrice_Base_ID));
+	}
+
+	/** Get Base product price.
+		@return Base product price	  */
+	@Override
+	public int getM_ProductPrice_Base_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductPrice_Base_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set M_ProductPrice_ID.
 		@param M_ProductPrice_ID M_ProductPrice_ID	  */
 	@Override
@@ -248,6 +407,25 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	public int getM_ProductPrice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductPrice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Matching order.
+		@param MatchSeqNo Matching order	  */
+	@Override
+	public void setMatchSeqNo (int MatchSeqNo)
+	{
+		set_Value (COLUMNNAME_MatchSeqNo, Integer.valueOf(MatchSeqNo));
+	}
+
+	/** Get Matching order.
+		@return Matching order	  */
+	@Override
+	public int getMatchSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MatchSeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -339,5 +517,31 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Staffelpreis.
+		@param UseScalePrice 
+		Legt fest, ob zu diesem Artikel Staffelpreise gehören.
+	  */
+	@Override
+	public void setUseScalePrice (boolean UseScalePrice)
+	{
+		set_Value (COLUMNNAME_UseScalePrice, Boolean.valueOf(UseScalePrice));
+	}
+
+	/** Get Staffelpreis.
+		@return Legt fest, ob zu diesem Artikel Staffelpreise gehören.
+	  */
+	@Override
+	public boolean isUseScalePrice () 
+	{
+		Object oo = get_Value(COLUMNNAME_UseScalePrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

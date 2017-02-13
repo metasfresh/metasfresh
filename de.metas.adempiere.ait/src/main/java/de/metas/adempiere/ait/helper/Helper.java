@@ -60,14 +60,15 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MBank;
 import org.compiere.model.MChat;
 import org.compiere.model.MChatEntry;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
-import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MTable;
@@ -76,6 +77,7 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_BankAccount;
 import org.compiere.model.X_C_Tax;
+import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.process.DocAction;
 import org.compiere.process.InvoiceGenerate;
 import org.compiere.util.CacheMgt;
@@ -93,9 +95,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.currency.ICurrencyBL;
@@ -977,7 +977,7 @@ public class Helper implements IHelper
 		if (ds == null)
 		{
 			ds = InterfaceWrapperHelper.create(ctx, I_M_DiscountSchema.class, null);
-			ds.setDiscountType(MDiscountSchema.DISCOUNTTYPE_FlatPercent);
+			ds.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_FlatPercent);
 			ds.setFlatDiscount(BigDecimal.ZERO);
 			ds.setIsBPartnerFlatDiscount(true);
 			ds.setName(valueFinal);
@@ -1054,14 +1054,14 @@ public class Helper implements IHelper
 	 * @see test.integration.common.helper.IHelper#getM_PriceList(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public de.metas.adempiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode)
+	public org.compiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode)
 	{
 		final boolean isSO = true;
 		return getM_PriceList(pricingSystemValue, currencyCode, countryCode, isSO);
 	}
 
 	@Override
-	public de.metas.adempiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode, boolean isSOPriceList)
+	public org.compiere.model.I_M_PriceList getM_PriceList(String pricingSystemValue, String currencyCode, String countryCode, boolean isSOPriceList)
 	{
 		Assert.assertNotNull("pricingSystemValue should not be null", pricingSystemValue);
 		Assert.assertNotNull("currencyCode should not be null", currencyCode);
@@ -1082,15 +1082,15 @@ public class Helper implements IHelper
 
 		final String priceListValue = ps.getValue() + "-" + currencyCode + "-" + (isSOPriceList ? "SO" : "PO");
 
-		final String whereClause = de.metas.adempiere.model.I_M_PriceList.COLUMNNAME_M_PricingSystem_ID + "=?"
-				// + " AND " + de.metas.adempiere.model.I_M_PriceList.COLUMNNAME_Name + "=?"
-				// + " AND " + de.metas.adempiere.model.I_M_PriceList.COLUMNNAME_IsSOPriceList + "=?"
-				// + " AND " + de.metas.adempiere.model.I_M_PriceList.COLUMNNAME_C_Currency_ID + "=?"
-				+ " AND " + de.metas.adempiere.model.I_M_PriceList.COLUMNNAME_C_Country_ID + "=?";
+		final String whereClause = org.compiere.model.I_M_PriceList.COLUMNNAME_M_PricingSystem_ID + "=?"
+				// + " AND " + org.compiere.model.I_M_PriceList.COLUMNNAME_Name + "=?"
+				// + " AND " + org.compiere.model.I_M_PriceList.COLUMNNAME_IsSOPriceList + "=?"
+				// + " AND " + org.compiere.model.I_M_PriceList.COLUMNNAME_C_Currency_ID + "=?"
+				+ " AND " + org.compiere.model.I_M_PriceList.COLUMNNAME_C_Country_ID + "=?";
 
-		de.metas.adempiere.model.I_M_PriceList pl = new Query(ctx, de.metas.adempiere.model.I_M_PriceList.Table_Name, whereClause, null)
+		org.compiere.model.I_M_PriceList pl = new Query(ctx, org.compiere.model.I_M_PriceList.Table_Name, whereClause, null)
 				.setParameters(ps.getM_PricingSystem_ID()/* , priceListValue, IsSO, currencyId */, countryId)
-				.firstOnly(de.metas.adempiere.model.I_M_PriceList.class);
+				.firstOnly(org.compiere.model.I_M_PriceList.class);
 		if (pl == null)
 		{
 			pl = InterfaceWrapperHelper.create(ctx, I_M_PriceList.class, null);

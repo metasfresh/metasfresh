@@ -577,7 +577,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL
 				// .mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				//
-				.execute();
+				.execute()
+				.getRowsInserted();
 
 		logger.debug("Invalidated {} invoice candidates for {}", new Object[] { count, icQuery });
 

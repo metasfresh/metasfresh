@@ -73,13 +73,13 @@ import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.Lookup;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MProductPrice;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.PopupMenuListenerAdapter;
@@ -1165,8 +1165,9 @@ public class VLookup extends JComponent
 
 			if (m_mField != null)
 			{
-				int AD_Table_ID = m_mField.getAD_Table_ID();
-				multipleSelection = (MOrderLine.Table_ID == AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID) || (MProductPrice.Table_ID == AD_Table_ID);
+				final int AD_Table_ID = m_mField.getAD_Table_ID();
+				multipleSelection = (MOrderLine.Table_ID == AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID)
+						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 
 			// Show Info

@@ -23,20 +23,14 @@ package org.adempiere.pricing.api;
  */
 
 import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_DiscountSchemaLine;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.MDiscountSchemaLine;
-
-import de.metas.adempiere.model.I_M_PriceList;
-import de.metas.adempiere.model.I_M_ProductPrice;
 
 /**
  * @author RC
@@ -66,29 +60,25 @@ public interface IPriceListBL extends ISingletonService
 	 * price related things when a new price list is created.
 	 *
 	 * @param ctxAware
-	 * @param oldProductPrices
 	 * @param targetPriceListVersion
 	 * @param dsl
 	 * @param adPinstanceId
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/07286_get_rid_of_jboss-aop_for_good_%28104432455599%29
 	 */
-	void finishPlvCreation(IContextAware ctxAware, Iterator<I_M_ProductPrice> oldProductPrices, I_M_PriceList_Version targetPriceListVersion, I_M_DiscountSchemaLine dsl, int adPinstanceId);
+	void finishPlvCreation(IContextAware ctxAware, I_M_PriceList_Version targetPriceListVersion, I_M_DiscountSchemaLine dsl, int adPinstanceId);
 
 	/**
-	 * Adds another listener to be called from within {@link #finishPlvCreation(Properties, Iterator, I_M_PriceList_Version, MDiscountSchemaLine, int, String)}.
+	 * Adds another listener to be called from within {@link #finishPlvCreation(IContextAware, I_M_PriceList_Version, I_M_DiscountSchemaLine, int)}.
 	 *
-	 * @param l
-	 * @see #finishPlvCreation(IContextAware, Iterator, I_M_PriceList_Version, MDiscountSchemaLine, int)
+	 * @param listener
 	 */
-	void addPlvCreationListener(IPlvCreationListener l);
+	void addPlvCreationListener(IPlvCreationListener listener);
 
 	/**
 	 *
 	 * @see IPriceListBL#addPlvCreationListener(IPlvCreationListener)
-	 * @see IPriceListBL#finishPlvCreation(IContextAware, Iterator, I_M_PriceList_Version, MDiscountSchemaLine, int)
-	 * @see #finishPlvCreation(IContextAware, Iterator, I_M_PriceList_Version, MDiscountSchemaLine, int)
-	 *
+	 * @see IPriceListBL#finishPlvCreation(IContextAware, I_M_PriceList_Version, I_M_DiscountSchemaLine, int)
 	 */
 	interface IPlvCreationListener
 	{
@@ -103,7 +93,6 @@ public interface IPriceListBL extends ISingletonService
 		 */
 		void onPlvCreation(IContextAware ctxAware,
 				I_M_PriceList_Version targetPriceListVersion,
-				Iterator<I_M_ProductPrice> oldProductPrices,
 				I_M_DiscountSchemaLine dsl,
 				int adPinstanceId);
 
@@ -113,24 +102,6 @@ public interface IPriceListBL extends ISingletonService
 		 */
 		int getExecutionOrderSeqNo();
 	}
-
-	/**
-	 * Find the product price from the freshest plv of a pricing system.
-	 *
-	 * @param contextProvider
-	 * @param pricingSystem
-	 * @param product - the product we need the price for
-	 * @param country - the country we search the plv for
-	 * @param isSOTrx - true is sales, false if purchase
-	 *
-	 * @return the price if found, <code>null</code> otherwise
-	 */
-	I_M_ProductPrice getCurrentProductPrice(
-			IContextAware contextProvider,
-			I_M_PricingSystem pricingSystem,
-			I_M_Product product,
-			I_C_Country country,
-			boolean isSOTrx);
 
 	/**
 	 * Find the current version from a pricing system based on the given parameters.

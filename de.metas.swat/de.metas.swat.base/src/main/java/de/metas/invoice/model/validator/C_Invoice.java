@@ -36,18 +36,16 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocActionBL;
@@ -104,10 +102,7 @@ public class C_Invoice
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice, trxName);
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
-			final I_M_Product product = invoiceLine.getM_Product();
-
-			final I_M_ProductPrice productPrice = priceListDAO.retrieveProductPriceOrNull(priceListVersion, product.getM_Product_ID());
-			if (productPrice == null)
+			if(!ProductPriceQuery.mainProductPriceExists(priceListVersion, invoiceLine.getM_Product_ID()))
 			{
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
@@ -232,7 +227,7 @@ public class C_Invoice
 
 		while (parentInvoiceIterator.hasNext())
 		{
-			if (creditMemoLeft.compareTo(Env.ZERO) <= 0)
+			if (creditMemoLeft.signum() <= 0)
 			{
 				// nothing to allocate
 				return;

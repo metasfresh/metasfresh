@@ -25,6 +25,7 @@ package org.adempiere.pricing.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.pricing.api.IPricingAttribute;
@@ -33,7 +34,6 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.util.Env;
 
 /**
  *
@@ -57,10 +57,10 @@ class PricingResult implements IPricingResult
 	private int C_TaxCategory_ID = -1;
 	private int M_DiscountSchema_ID = -1;
 	private int precision = NO_PRECISION;
-	private BigDecimal priceList = Env.ZERO;
-	private BigDecimal priceStd = Env.ZERO;
-	private BigDecimal priceLimit = Env.ZERO;
-	private BigDecimal discount = Env.ZERO;
+	private BigDecimal priceList = BigDecimal.ZERO;
+	private BigDecimal priceStd = BigDecimal.ZERO;
+	private BigDecimal priceLimit = BigDecimal.ZERO;
+	private BigDecimal discount = BigDecimal.ZERO;
 	private boolean enforcePriceLimit = false;
 	private boolean taxIncluded = false;
 	private boolean isUseDiscountSchema = false;
@@ -411,6 +411,17 @@ class PricingResult implements IPricingResult
 	public List<IPricingAttribute> getPricingAttributes()
 	{
 		return pricingAttributes;
+	}
+	
+	@Override
+	public void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd)
+	{
+		if(pricingAttributesToAdd == null || pricingAttributesToAdd.isEmpty())
+		{
+			return;
+		}
+		
+		this.pricingAttributes.addAll(pricingAttributesToAdd);
 	}
 
 	@Override

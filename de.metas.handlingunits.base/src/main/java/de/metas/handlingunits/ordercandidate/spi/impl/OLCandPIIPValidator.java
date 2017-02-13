@@ -35,10 +35,10 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList;
 
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -101,12 +101,7 @@ public class OLCandPIIPValidator implements IOLCandValdiator
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
-		final I_M_PriceList pl =
-				InterfaceWrapperHelper.create(
-						Services.get(IProductPA.class).retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true,
-								trxName),
-						I_M_PriceList.class);
-
+		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName);
 		if (pl == null)
 		{
 			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + bill_Location_ID);
