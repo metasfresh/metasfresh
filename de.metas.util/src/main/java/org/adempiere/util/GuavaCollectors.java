@@ -1,6 +1,7 @@
 package org.adempiere.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -78,6 +79,20 @@ public final class GuavaCollectors
 		};
 		final Function<LinkedHashSet<T>, ImmutableList<T>> finisher = ImmutableList::copyOf;
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	/**
+	 * Collect a stream of elements into an {@link ImmutableList}.
+	 * 
+	 * Duplicates will be automatically discarded.
+	 *
+	 * @param keyFunction key function for identifying duplicates
+	 */
+	public static <T, K> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates(final Function<T, K> keyFunction)
+	{
+		final BiConsumer<K, T> duplicatesConsumer = (key, duplicate) -> {
+		};
+		return toImmutableListExcludingDuplicates(keyFunction, duplicatesConsumer);
 	}
 
 	/**
@@ -188,7 +203,7 @@ public final class GuavaCollectors
 		final Function<List<T>, String> finisher = joiner::join;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
-	
+
 	public static <K, V> Map.Entry<K, V> entry(final K key, final V value)
 	{
 		return new Map.Entry<K, V>()
@@ -206,28 +221,27 @@ public final class GuavaCollectors
 			}
 
 			@Override
-			public V setValue(V value)
+			public V setValue(final V value)
 			{
 				throw new UnsupportedOperationException();
 			}
 		};
 	}
-	
+
 	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
 	{
 		final Supplier<ImmutableMap.Builder<K, V>> supplier = ImmutableMap.Builder::new;
-		final BiConsumer<ImmutableMap.Builder<K, V>, Entry<K,V>> accumulator = (builder, entry) -> builder.put(entry);
+		final BiConsumer<ImmutableMap.Builder<K, V>, Entry<K, V>> accumulator = (builder, entry) -> builder.put(entry);
 		final BinaryOperator<ImmutableMap.Builder<K, V>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
 		final Function<ImmutableMap.Builder<K, V>, ImmutableMap<K, V>> finisher = (builder) -> builder.build();
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-
 	/**
 	 * Collects to {@link ImmutableMap}.
-	 * 
+	 *
 	 * If duplicate key was found, the last provided item will be used.
-	 * 
+	 *
 	 * @param keyMapper
 	 * @return immutable map collector
 	 */
@@ -243,6 +257,27 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toMap(final Supplier<Map<K, V>> mapSupplier)
+	{
+		final BiConsumer<Map<K, V>, Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
+		final BinaryOperator<Map<K, V>> combiner = (map1, map2) -> {
+			map1.putAll(map2);
+			return map1;
+		};
+		final Function<Map<K, V>, Map<K, V>> finisher = (map) -> map;
+		return Collector.of(mapSupplier, accumulator, combiner, finisher);
+	}
+
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toHashMap()
+	{
+		return toMap(HashMap::new);
+	}
+	
+	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toLinkedHashMap()
+	{
+		return toMap(LinkedHashMap::new);
+	}
+
 	public static <K, V> Collector<V, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap(final Function<? super V, ? extends K> keyMapper)
 	{
 		final Supplier<ImmutableListMultimap.Builder<K, V>> supplier = ImmutableListMultimap.Builder::new;
@@ -251,7 +286,7 @@ public final class GuavaCollectors
 		final Function<ImmutableListMultimap.Builder<K, V>, ImmutableListMultimap<K, V>> finisher = (builder) -> builder.build();
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
-	
+
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap()
 	{
 		final Supplier<ImmutableListMultimap.Builder<K, V>> supplier = ImmutableListMultimap.Builder::new;
@@ -260,7 +295,6 @@ public final class GuavaCollectors
 		final Function<ImmutableListMultimap.Builder<K, V>, ImmutableListMultimap<K, V>> finisher = (builder) -> builder.build();
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
-
 
 	private GuavaCollectors()
 	{

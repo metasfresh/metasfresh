@@ -206,7 +206,7 @@ public interface ISysConfigBL extends ISingletonService
 	 *            from the AD_SysConfig <code>Name</code> values before adding them to the result map.
 	 * @param adClientId
 	 * @param adOrgId
-	 * @return
+	 * @return immutable map of name/value
 	 */
 	Map<String, String> getValuesForPrefix(String prefix, boolean removePrefix, int adClientId, int adOrgId);
 

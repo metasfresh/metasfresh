@@ -37,10 +37,21 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 
-/* package */class HUReceiptLinePartAttributes implements IHUReceiptLinePartAttributes
+/**
+ * A wrapper for an {@link I_M_HU} (a TU to be more precise), to access those HU attributes that are relevant for receipt {@link I_M_InOutLine}s.<br>
+ * Basically, these properties decide if two HUs can be mapped to the same receipt line or not.
+ * <p>
+ * Use {@link #newInstance(IHUContext, I_M_HU)} to get an instance for production use.
+ *
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+/* package */class HUReceiptLinePartAttributes
 {
 	//
 	// Services
@@ -58,10 +69,28 @@ import de.metas.inout.model.I_M_QualityNote;
 	private final I_M_Attribute attr_QualityNotice;
 	private final I_M_Attribute attr_SubProducerBPartner;
 
-	public HUReceiptLinePartAttributes(final IHUContext huContext, final I_M_HU tuHU)
+	public static HUReceiptLinePartAttributes newInstance(final IHUContext huContext, final I_M_HU tuHU)
 	{
-		super();
+		return new HUReceiptLinePartAttributes(huContext, tuHU);
+	}
 
+	/**
+	 * This constructor exist to that the class can be overridden by unit tests. If you override this class, please make sure to override all its public methods.
+	 * <p>
+	 * If you need a "real" instance, please use {@link #newInstance(IHUContext, I_M_HU)}.
+	 */
+	HUReceiptLinePartAttributes()
+	{
+		this.id = "<NULL>";
+		this.huContext = null;
+		this.tuHU = null;
+		this.attr_QualityDiscountPercent = null;
+		this.attr_QualityNotice = null;
+		this.attr_SubProducerBPartner = null;
+	}
+
+	private HUReceiptLinePartAttributes(final IHUContext huContext, final I_M_HU tuHU)
+	{
 		Check.assumeNotNull(huContext, "huContext not null");
 		this.huContext = huContext;
 
@@ -84,7 +113,6 @@ import de.metas.inout.model.I_M_QualityNote;
 				+ "]";
 	}
 
-	@Override
 	public String getId()
 	{
 		return id;
@@ -97,7 +125,6 @@ import de.metas.inout.model.I_M_QualityNote;
 		return attributeStorage;
 	}
 
-	@Override
 	public Object getAttributeStorageAggregationKey()
 	{
 		final Map<String, Object> key = new TreeMap<>();
@@ -120,9 +147,8 @@ import de.metas.inout.model.I_M_QualityNote;
 	}
 
 	/**
-	 * @return Quality discount percent (between 0..100)
+	 * @return quality discount percent (between 0...100); never return null
 	 */
-	@Override
 	public BigDecimal getQualityDiscountPercent()
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();
@@ -141,7 +167,6 @@ import de.metas.inout.model.I_M_QualityNote;
 		return qualityDiscountPercent;
 	}
 
-	@Override
 	public String getQualityNoticeDisplayName()
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();
@@ -162,7 +187,6 @@ import de.metas.inout.model.I_M_QualityNote;
 		return qualityNoticeName;
 	}
 
-	@Override
 	public int getSubProducer_BPartner_ID()
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();
@@ -175,7 +199,11 @@ import de.metas.inout.model.I_M_QualityNote;
 		return subProducerBPartnerId <= 0 ? -1 : subProducerBPartnerId; // make sure we use same value for N/A
 	}
 
-	@Override
+	/**
+	 * The M_QualityNote linked with the HUReceiptLine
+	 * 
+	 * @return
+	 */
 	public I_M_QualityNote getQualityNote()
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage();

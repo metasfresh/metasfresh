@@ -3,7 +3,9 @@ package de.metas.procurement.base.order.process;
 import org.adempiere.util.Services;
 
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.rfq.model.I_C_RfQ;
 import de.metas.rfq.IRfQConfiguration;
@@ -46,10 +48,10 @@ public class C_RfQ_PublishResults extends JavaProcess implements IProcessPrecond
 
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_RfQ rfq = context.getModel(I_C_RfQ.class);
-		return rfqBL.isClosed(rfq);
+		final I_C_RfQ rfq = context.getSelectedModel(I_C_RfQ.class);
+		return ProcessPreconditionsResolution.acceptIf(rfqBL.isClosed(rfq));
 	}
 
 	@Override

@@ -281,22 +281,22 @@ public final class Ini implements Serializable
 		}
 
 		final String fileName = getFileName();
+		final File file = new File(fileName).getAbsoluteFile();
 		FileOutputStream fos = null;
 		try
 		{
-			final File f = new File(fileName);
-			f.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
-			fos = new FileOutputStream(f);
+			file.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
+			fos = new FileOutputStream(file);
 			s_prop.store(fos, "metasfresh.properties");
 			fos.flush();
 			fos.close();
 		}
 		catch (Exception e)
 		{
-			log.error("Cannot save Properties to " + fileName + " - " + e.toString());
+			log.error("Cannot save Properties to {}", file, e);
 			return;
 		}
-		log.info("Saved properties to {}", fileName);
+		log.info("Saved properties to {}", file);
 
 	}	// save
 

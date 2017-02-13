@@ -106,8 +106,8 @@ FROM
 			x.C_InvoiceLine_ID,
 			First_Agg(x.DocType) AS DocType,
 			String_agg ( x.DocNo, ', ' ORDER BY x.DocNo) AS DocNo,
-			Max (x.DateFrom) AS DateFrom,
-			Min (x.DateTo) AS DateTo,
+			Min (x.DateFrom) AS DateFrom,
+			Max (x.DateTo) AS DateTo,
 			String_agg(x.reference, ', ' ORDER BY x.DocNo) AS reference,
 			x.shipLocation
 	FROM ( 
@@ -115,8 +115,8 @@ FROM
 			iliol.C_InvoiceLine_ID,
 			First_Agg( COALESCE (dtt.Printname, dt.Printname) ORDER BY io.DocumentNo ) AS DocType,
 			String_agg ( io.DocumentNo, ', ' ORDER BY io.DocumentNo ) AS DocNo,
-			Max ( io.MovementDate ) AS DateFrom,
-			Min ( io.MovementDate ) AS DateTo,
+			Min ( io.MovementDate ) AS DateFrom,
+			Max ( io.MovementDate ) AS DateTo,
 			io.poreference AS reference,
 			bpl.name AS shipLocation
 		FROM

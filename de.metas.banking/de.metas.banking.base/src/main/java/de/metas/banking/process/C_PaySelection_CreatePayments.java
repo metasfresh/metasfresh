@@ -7,7 +7,9 @@ import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Creates an links {@link I_C_Payment}s to {@link I_C_PaySelectionLine}s.
@@ -21,15 +23,15 @@ public class C_PaySelection_CreatePayments extends JavaProcess implements IProce
 	private final transient IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 
 	@Override
-	public boolean isPreconditionApplicable(final PreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_C_PaySelection paySelection = context.getModel(I_C_PaySelection.class);
+		final I_C_PaySelection paySelection = context.getSelectedModel(I_C_PaySelection.class);
 		if (!paySelection.isProcessed())
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject("not processed");
 		}
 
-		return true;
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override

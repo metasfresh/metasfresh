@@ -73,13 +73,4 @@ public interface IDimensionspecDAO extends ISingletonService
 	 * @return
 	 */
 	List<String> retrieveAttributeValueForGroup(String dimensionSpectInternalName, String groupName, IContextAware ctxAware);
-
-	/**
-	 * @param internalName not empty or null
-	 * @param ctx
-	 * @param trxName
-	 * 
-	 * @return
-	 */
-	I_DIM_Dimension_Spec retrieveForInternalName(String internalName, Properties ctx, String trxName);
 }

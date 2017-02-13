@@ -13,11 +13,11 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -100,6 +100,8 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	private final I_M_HU _hu;
 	private IHUStorage _huStorage;
 	private final boolean virtualPI;
+	private final boolean aggregateHU;
+	private final int aggregatedHUCount;
 	private final IHUDocumentLine _documentLine;
 
 	private final String id;
@@ -141,6 +143,16 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 			// never aggregate together non-concrete HUs
 			aggregationKey = Util.mkKey(piId, UUID.randomUUID());
 		}
+
+		aggregateHU = handlingUnitsBL.isAggregateHU(hu);
+		if (aggregateHU)
+		{
+			aggregatedHUCount = hu.getM_HU_Item_Parent().getQty().intValueExact(); // no NPE because isAggregateHU(hu) returned true.
+		}
+		else
+		{
+			aggregatedHUCount = 0;
+		}
 	}
 
 	private IHUStorage getHUStorage()
@@ -174,7 +186,6 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	@Override
 	public final I_M_HU getM_HU()
 	{
-		// NOTE: never null
 		return _hu;
 	}
 
@@ -247,10 +258,13 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		return documentLine;
 	}
 
+	/**
+	 * @return {@code true} if the wrapped HU is a virtual <b>and not</b> aggregate HU.
+	 */
 	@Override
 	public boolean isVirtualPI()
 	{
-		return virtualPI;
+		return virtualPI && !aggregateHU;
 	}
 
 	@Override
@@ -430,6 +444,16 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	public boolean isDestroyed()
 	{
 		return handlingUnitsBL.isDestroyed(getM_HU());
+	}
+
+	public boolean isAggregateHU()
+	{
+		return aggregateHU;
+	}
+
+	public int getAggregatedHUCount()
+	{
+		return aggregatedHUCount;
 	}
 
 	/**

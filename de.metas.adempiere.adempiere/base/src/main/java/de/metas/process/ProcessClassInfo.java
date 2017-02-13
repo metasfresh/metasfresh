@@ -14,11 +14,14 @@ import javax.annotation.Nullable;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.Adempiere;
 import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Profile;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -228,6 +231,7 @@ public final class ProcessClassInfo
 
 	public static final ProcessClassInfo NULL = new ProcessClassInfo();
 
+	private final String classname; // mainly for logging
 	private final boolean runPrepareOutOfTransaction;
 	private final boolean runDoItOutOfTransaction;
 	private final boolean clientOnly;
@@ -236,6 +240,8 @@ public final class ProcessClassInfo
 	private static final boolean DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear = true;
 	private final boolean existingCurrentRecordRequiredWhenCalledFromGear;
 
+	private final String[] onlyForProfiles;
+
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
 	// Remember that we are caching this object.
 
@@ -243,16 +249,20 @@ public final class ProcessClassInfo
 	private ProcessClassInfo()
 	{
 		super();
+		classname = null;
 		runPrepareOutOfTransaction = false;
 		runDoItOutOfTransaction = false;
 		clientOnly = false;
 		parameterInfos = ImmutableList.of();
 		existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
+		onlyForProfiles = null;
 	}
 
 	private ProcessClassInfo(final Class<?> processClass)
 	{
 		super();
+
+		classname = processClass.getName();
 
 		//
 		// Load from @RunOutOfTrx annnotation
@@ -282,12 +292,26 @@ public final class ProcessClassInfo
 			this.existingCurrentRecordRequiredWhenCalledFromGear = DEFAULT_ExistingCurrentRecordRequiredWhenCalledFromGear;
 			this.clientOnly = false;
 		}
+
+		//
+		// Load from @Profile annotation
+		final Profile profile = processClass.getAnnotation(Profile.class);
+		this.onlyForProfiles = profile != null ? profile.value() : null;
 	}
 
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("classname", classname)
+				.add("runPrepareOutOfTransaction", runPrepareOutOfTransaction)
+				.add("runDoItOutOfTransaction", runDoItOutOfTransaction)
+				.add("clientOnly", clientOnly)
+				.add("parameterInfos", parameterInfos)
+				.add("existingCurrentRecordRequiredWhenCalledFromGear", existingCurrentRecordRequiredWhenCalledFromGear)
+				.add("onlyForProfiles", onlyForProfiles)
+				.toString();
 	}
 
 	/**
@@ -387,5 +411,24 @@ public final class ProcessClassInfo
 	public boolean isExistingCurrentRecordRequiredWhenCalledFromGear()
 	{
 		return existingCurrentRecordRequiredWhenCalledFromGear;
+	}
+
+	public boolean isAllowedForCurrentProfiles()
+	{
+		// No profiles restriction => allowed
+		if (onlyForProfiles == null || onlyForProfiles.length == 0)
+		{
+			return true;
+		}
+
+		// No application context => allowed (but warn)
+		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		if (context == null)
+		{
+			logger.warn("No application context found to determine if {} is allowed for current profiles. Considering allowed", this);
+			return true;
+		}
+
+		return context.getEnvironment().acceptsProfiles(onlyForProfiles);
 	}
 }

@@ -1,5 +1,8 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,11 +16,11 @@ package de.metas.handlingunits.receiptschedule.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -110,6 +113,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	public void testDifferentASIAndQualityIssues()
 	{
 		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToReceiptSchedule();
+		assertThat(paloxes.size(), is(10)); // guard
 
 		//
 		// Setup paloxe attribute structure
@@ -158,6 +162,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.noQualityDiscountPercent().noQualityNote()
 					.inDispute(false)
 					.endExpectation()
+
 				.newInOutLineExpectation()// line 2: Quality issue: 5% with issues
 					.qtyEnteredTU(0) // TUs shall not be set for lines with issues
 					.referencesPackagingMaterialLineIdx(0) // does *not* reference packaging iol, because it has no HUs
@@ -168,6 +173,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.qualityDiscountPercent("5").qualityNote(HUTestHelper.QUALITYNOTICE_Test1)
 					.inDispute(true)
 					.endExpectation()
+
 				.newInOutLineExpectation()// line 3: Quality issue: 90% OK
 					.qtyEnteredTU(1)
 					.newHUAssignmentExpectation().hu(paloxes.get(1)).luHU(null).tuHU(null).endExpectation()
@@ -180,6 +186,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.noQualityDiscountPercent().noQualityNote()
 					.inDispute(false)
 					.endExpectation()
+
 				.newInOutLineExpectation()// line 4: Quality issue: 10% with issues
 					.qtyEnteredTU(0)
 					.referencesPackagingMaterialLineIdx(0) // does *not* reference packaging iol, because it has no HUs
@@ -190,6 +197,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.qualityDiscountPercent("10").qualityNote(HUTestHelper.QUALITYNOTICE_Test2)
 					.inDispute(true)
 					.endExpectation()
+
 				.newInOutLineExpectation()// line 5: Rest of the quantity
 					.qtyEnteredTU(10 -1 -1)
 					.newHUAssignmentExpectation().hu(paloxes.get(2)).luHU(null).tuHU(null).endExpectation()
@@ -218,6 +226,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.noQualityNote()
 					.inDispute(false)
 					.endExpectation()
+					
 				.newInOutLineExpectation() // line 6: packing materials line
 					.referencesPackagingMaterialLineIdx(0) // is packaging material and does not reference another packing material line
 					//
@@ -410,7 +419,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			POJOWrapper.setInstanceName(paloxe, "Paloxe-" + (i + 1) + "/" + paloxesCount);
 			POJOWrapper.save(paloxe);
 		}
-			
+
 		initReceiptScheduleAllocations(paloxes);
 		newTUWeightsExpectations()
 				.setDefaultTUExpectation(standardPaloxeWeightExpectation)
@@ -428,7 +437,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				receiptSchedules,
 				selectedHUsSet,
 				true // storeReceipts
-				);
+		);
 		final I_M_InOut receipt = result.getInOuts().get(0);
 		return receipt;
 	}

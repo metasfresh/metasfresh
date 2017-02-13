@@ -147,8 +147,11 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	}
 
 	@Override
-	public final void allocate(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu,
-			final BigDecimal qtyToAllocate, final I_C_UOM uom,
+	public final void allocate(final I_M_HU luHU, 
+			final I_M_HU tuHU, 
+			final I_M_HU vhu,
+			final BigDecimal qtyToAllocate,
+			final I_C_UOM uom,
 			final boolean deleteOldTUAllocations)
 	{
 		//
@@ -200,6 +203,9 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 		return assignedHUs;
 	}
 
+	/**
+	 * Invokes {@link IHUAssignmentBL#assignHUs(Object, Collection, String)}.
+	 */
 	@Override
 	public final void addAssignedHUs(final Collection<I_M_HU> husToAssign)
 	{

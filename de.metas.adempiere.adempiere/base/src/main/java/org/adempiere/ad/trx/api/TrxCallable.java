@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@FunctionalInterface
 public interface TrxCallable<ResultType> extends Callable<ResultType>
 {
 	/** Value to be returned by {@link #doCatch(Throwable)} */

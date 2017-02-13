@@ -81,7 +81,7 @@ public class DocumentEngine implements DocAction
 	private String m_action = null;
 
 	/** Logger */
-	private static Logger logger = LogManager.getLogger(DocumentEngine.class);
+	private static final transient Logger logger = LogManager.getLogger(DocumentEngine.class);
 
 	/**
 	 * Get Doc Status
@@ -245,7 +245,7 @@ public class DocumentEngine implements DocAction
 		{
 			if (m_document != null)
 			{
-				m_document.get_Logger().info("**** No Action (Prc=" + processAction + "/Doc=" + docAction + ") " + m_document);
+				m_document.get_Logger().debug("**** No Action (Prc={}/Doc={}) {}", processAction, docAction, m_document);
 			}
 			return true;
 		}
@@ -256,12 +256,12 @@ public class DocumentEngine implements DocAction
 		}
 		if (m_document != null)
 		{
-			m_document.get_Logger().info("**** Action=" + m_action + " (Prc=" + processAction + "/Doc=" + docAction + ") " + m_document);
+			m_document.get_Logger().debug("**** Action={} (Prc={}/Doc={}) {}", m_action, processAction, docAction, m_document);
 		}
 		final boolean success = processIt(m_action);
 		if (m_document != null)
 		{
-			m_document.get_Logger().debug("**** Action=" + m_action + " - Success=" + success);
+			m_document.get_Logger().debug("**** Action={} - Success={}", m_action, success);
 		}
 		return success;
 	}	// process
