@@ -40,16 +40,26 @@ import de.metas.process.JavaProcess;
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private final String _returnMovementType;
+	private final int _targetWindowId;
 
-	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base(final String returnMovementType)
+	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base(final String returnMovementType, int targetWindowId)
 	{
 		Check.assumeNotEmpty(returnMovementType, "returnMovementType is not empty");
+		Check.assume(targetWindowId > 0, "targetWindowId > 0");
+
 		_returnMovementType = returnMovementType;
+		_targetWindowId = targetWindowId;
+
 	}
 
 	private String getReturnMovementType()
 	{
 		return _returnMovementType;
+	}
+
+	private int getTargetWindowId()
+	{
+		return _targetWindowId;
 	}
 
 	@Override
@@ -68,9 +78,8 @@ import de.metas.process.JavaProcess;
 				.dontComplete()
 				.create();
 
-		final int adWindowId = -1; // TODO
 		final boolean gridView = false; // single document
-		getResult().setRecordToOpen(TableRecordReference.of(inout), adWindowId, gridView);
+		getResult().setRecordToOpen(TableRecordReference.of(inout), getTargetWindowId(), gridView);
 
 		return MSG_OK;
 	}

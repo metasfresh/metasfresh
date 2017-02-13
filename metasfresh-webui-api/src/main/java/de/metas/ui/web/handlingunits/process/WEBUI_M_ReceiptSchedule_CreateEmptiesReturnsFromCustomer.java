@@ -26,8 +26,10 @@ import org.compiere.model.X_M_InOut;
 
 public class WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer extends WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base
 {
+	private static final int Target_Window_ID = 540323; // Return from customers - Leergut Rücknahme
+
 	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer()
 	{
-		super(X_M_InOut.MOVEMENTTYPE_CustomerReturns);
+		super(X_M_InOut.MOVEMENTTYPE_CustomerReturns, Target_Window_ID);
 	}
 }
