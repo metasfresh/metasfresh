@@ -35,17 +35,11 @@ class RawModal extends Component {
     }
 
     handleScroll = (event) => {
-        let scrollTop = event.srcElement.scrollTop;
+        const scrollTop = event.srcElement.scrollTop;
 
-        if(scrollTop > 0) {
-            this.setState(Object.assign({}, this.state, {
-                scrolled: true
-            }))
-        } else {
-            this.setState(Object.assign({}, this.state, {
-                scrolled: false
-            }))
-        }
+        this.setState({
+            scrolled: scrollTop > 0
+        })
     }
 
     handleClose = () => {
