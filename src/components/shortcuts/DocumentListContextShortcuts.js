@@ -29,7 +29,6 @@ class DocumentListContextShortcuts extends Component {
             break
         case 'SELECT_ALL_LEAFS':
             event.preventDefault();
-            console.log('select all leafs');
             getAllLeafs();
             break
         }
