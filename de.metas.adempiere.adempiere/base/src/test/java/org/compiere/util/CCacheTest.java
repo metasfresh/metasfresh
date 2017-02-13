@@ -25,11 +25,11 @@ package org.compiere.util;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 
 public class CCacheTest
