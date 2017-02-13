@@ -65,7 +65,6 @@ class SelectionAttributes extends Component {
     }
 
     getTabId = (item) => {
-
         return item && item[0].readonly ? -1 : 1;
 
     }

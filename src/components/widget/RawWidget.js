@@ -608,8 +608,8 @@ class RawWidget extends Component {
                         }
                     >
                         {this.renderWidget()}
-
-                        {fields[0].devices &&
+                        
+                        {fields[0].devices && !widgetData[0].readonly &&
                             <DevicesWidget
                                 devices={fields[0].devices}
                                 handleChange={(value) =>
