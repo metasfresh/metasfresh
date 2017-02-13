@@ -85,7 +85,6 @@ class Table extends Component {
                 if(selectFirst){
                     this.selectOneProduct(this.state.rows[0].id);
                     document.getElementsByClassName('js-table')[0].focus();
-                    window.scrollTo(0,0);
                 }
                 
             })
@@ -95,6 +94,7 @@ class Table extends Component {
     getAllLeafs = () => {
         const {rows, selected} = this.state;
         let leafs = [];
+        let leafsIds = [];
         
         rows.map( item => {
             if(item.id == selected[0]){
@@ -102,7 +102,12 @@ class Table extends Component {
             }
         });
 
-        // console.log(leafs);
+        leafs.map(item => {
+            leafsIds = leafsIds.concat(item.id);
+        });
+
+        this.selectRangeProduct(leafsIds);
+       
 
     }
 

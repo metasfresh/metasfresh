@@ -82,7 +82,6 @@ class SelectionAttributes extends Component {
         } = this.props;
 
         const lastItem = DLWrapperLayout.length-1;
-        let data = "";
 
         return (
             <div>
