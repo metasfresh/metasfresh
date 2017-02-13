@@ -59,6 +59,15 @@ class SelectionAttributes extends Component {
             });
     }
 
+    moveToDevice = (e) => {
+        switch(e.key) {
+            case "Shift":
+                e.preventDefault();
+                //TO DO
+            break;
+        }
+    }
+
     getTabId = (item) => {
         return item && item[0].readonly ? -1 : 1;
 
@@ -74,6 +83,8 @@ class SelectionAttributes extends Component {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
             DLWrapperHandleChange, DLWrapperHandlePatch, entity, setClickOutsideLock
         } = this.props;
+
+        const lastItem = DLWrapperLayout.length-1;
 
         return (
             <div>
