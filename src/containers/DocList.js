@@ -39,22 +39,6 @@ class DocList extends Component {
         dispatch(updateUri(pathname, query, prop, value));
     }
 
-    renderDocumentList = () => {
-        const {windowType, query, viewId, selected} = this.props;
-
-        return (<DocumentList
-            type="grid"
-            updateUri={this.updateUriCallback}
-            windowType={parseInt(windowType)}
-            defaultViewId={query.viewId}
-            defaultSort={query.sort}
-            defaultPage={parseInt(query.page)}
-            refType={query.refType}
-            refId={query.refId}
-            selected={selected}
-        />)
-    }
-
     render() {
         const {
             dispatch, windowType, breadcrumb, query, actions, modal, viewId,
@@ -97,7 +81,18 @@ class DocList extends Component {
                          />
                      </RawModal>
                  }
-                {this.renderDocumentList()}
+                 <DocumentList
+                     type="grid"
+                     updateUri={this.updateUriCallback}
+                     windowType={parseInt(windowType)}
+                     defaultViewId={query.viewId}
+                     defaultSort={query.sort}
+                     defaultPage={parseInt(query.page)}
+                     refType={query.refType}
+                     refId={query.refId}
+                     selected={selected}
+                     inBackground={rawModal.visible}
+                 />
             </Container>
         );
     }

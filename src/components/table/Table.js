@@ -51,9 +51,10 @@ class Table extends Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {dispatch} = this.props;
+        const {dispatch, disconnected} = this.props;
 
-        if(JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected)){
+        if((JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
+        ){
             dispatch(selectTableItems(nextState.selected));
         }
     }

@@ -29,7 +29,11 @@ class QuickActions extends Component {
     }
 
     componentDidUpdate = (prevProps) => {
-        const {selected, refresh} = this.props;
+        const {selected, refresh, shouldNotUpdate} = this.props;
+        if(shouldNotUpdate){
+            return;
+        }
+
         if(
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
             (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))

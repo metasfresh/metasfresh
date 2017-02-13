@@ -20,8 +20,12 @@ class SelectionAttributes extends Component {
 
     componentDidUpdate = (prevProps) => {
         const {
-            selected, DLWrapperSetData, DLWrapperSetLayout, refresh
+            selected, DLWrapperSetData, DLWrapperSetLayout, refresh, shouldNotUpdate
         } = this.props;
+
+        if(shouldNotUpdate){
+            return;
+        }
 
         if(
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||

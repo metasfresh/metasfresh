@@ -285,7 +285,7 @@ class DocumentList extends Component {
         } = this.state;
 
         const {
-            dispatch, windowType, type, open, closeOverlays, selected
+            dispatch, windowType, type, open, closeOverlays, selected, inBackground
         } = this.props;
 
         if(layout && data) {
@@ -314,6 +314,7 @@ class DocumentList extends Component {
                             viewId={viewId}
                             selected={data.size && selected}
                             refresh={refresh}
+                            shouldNotUpdate={inBackground}
                         />
                     </div>
                     <div className="document-list-body">
@@ -359,6 +360,7 @@ class DocumentList extends Component {
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
                                         selected={selected}
+                                        shouldNotUpdate={inBackground}
                                     />
                                 </DataLayoutWrapper>
                             }
