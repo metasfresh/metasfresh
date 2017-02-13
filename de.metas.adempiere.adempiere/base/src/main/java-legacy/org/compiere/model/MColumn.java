@@ -329,7 +329,7 @@ public class MColumn extends X_AD_Column
 	}	// afterSave
 
 	/**
-	 * Get SQL Add command
+	 * Create and return the SQL add column DDL sstatement.
 	 *
 	 * @param table table
 	 * @return sql
@@ -339,9 +339,9 @@ public class MColumn extends X_AD_Column
 		final String tableName = table.getTableName();
 
 		final StringBuilder sql = new StringBuilder("ALTER TABLE ")
-				.append("public.") // if the table is already DLM'ed then there is a view with the sale name in the dlm schema.
+				.append("public.") // if the table is already DLM'ed then there is a view with the same name in the dlm schema.
 				.append(tableName)
-				.append(" ADD ").append(getSQLDDL());
+				.append(" ADD COLUMN ").append(getSQLDDL());
 
 		final String constraint = getConstraint(tableName);
 		if (constraint != null && constraint.length() > 0)
@@ -350,9 +350,8 @@ public class MColumn extends X_AD_Column
 					.append(tableName)
 					.append(" ADD ").append(constraint);
 		}
-		
-		// execute the ADD COLUMN SQL within the db_alter_table function to make sure that also views like "SELECT * FROM tableName" work fine with the new column
-		return "SELECT public.db_alter_table('" + tableName + "', '" + sql.toString() + "')";
+
+		return sql.toString();
 	}	// getSQLAdd
 
 	/**
@@ -391,9 +390,9 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost			
+			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
 			// if (!isMandatory())
-			//	sql.append(" DEFAULT NULL ");
+			// sql.append(" DEFAULT NULL ");
 			defaultValue = null;
 		}
 
@@ -451,9 +450,9 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
-//			if (!mandatory)
-//				sqlDefault.append(" DEFAULT NULL ");
+			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
+			// if (!mandatory)
+			// sqlDefault.append(" DEFAULT NULL ");
 			defaultValue = null;
 		}
 		sql.append(DB.convertSqlToNative(sqlDefault.toString()));
@@ -648,6 +647,7 @@ public class MColumn extends X_AD_Column
 			rs.close();
 			rs = null;
 
+			boolean addingSingleColumn = false;
 			if (noColumns == 0)
 			{
 				// No Table
@@ -657,12 +657,13 @@ public class MColumn extends X_AD_Column
 			{
 				// No existing column
 				sql = getSQLAdd(table);
+				addingSingleColumn = true;
 			}
 			if (sql == null)
 			{
 				return "No sql";
 			}
-			
+
 			if (sql.indexOf(DB.SQLSTATEMENT_SEPARATOR) == -1)
 			{
 				DB.executeUpdateEx(sql, get_TrxName());
@@ -672,7 +673,17 @@ public class MColumn extends X_AD_Column
 				String statements[] = sql.split(DB.SQLSTATEMENT_SEPARATOR);
 				for (int i = 0; i < statements.length; i++)
 				{
-					DB.executeUpdateEx(statements[i], get_TrxName());
+					final String stmtToUse;
+					if (addingSingleColumn && isAddColumnDDL(statements[i]))
+					{
+						// execute the ADD COLUMN SQL within the db_alter_table function to make sure that also views like "SELECT * FROM tableName" work fine with the new column
+						stmtToUse = "SELECT public.db_alter_table('" + tableName + "', quote_literal('" + statements[i] + "'))";
+				}
+					else
+					{
+						stmtToUse = statements[i];
+			}
+					DB.executeUpdateEx(stmtToUse, get_TrxName());
 				}
 			}
 
@@ -696,6 +707,17 @@ public class MColumn extends X_AD_Column
 				}
 			}
 		}
+	}
+
+	private boolean isAddColumnDDL(final String statement)
+	{
+		if (Check.isEmpty(statement, true))
+		{
+			return false;
+		}
+
+		// example: ALTER TABLE public.C_BPartner ADD COLUMN AD_User_ID NUMERIC(10)
+		return statement.matches("(?i).*alter table [^ ]+ add column .*");
 	}
 
 	public static boolean isSuggestSelectionColumn(String columnName, boolean caseSensitive)
