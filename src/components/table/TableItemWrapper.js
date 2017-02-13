@@ -7,63 +7,6 @@ import {flattenLastElem} from '../../actions/MenuActions';
 class TableItemWrapper extends Component {
     constructor(props){
         super(props);
-
-        this.state = {
-            rows: []
-        }
-    }
-
-    componentDidMount(){
-        const {item} = this.props;
-
-        this.setState(Object.assign({}, this.state, {
-            rows: this.mapIncluded(item)
-        }))
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        const {item} = this.props;
-
-        if(
-            JSON.stringify(prevProps.item) !=
-            JSON.stringify(item)
-        ){
-            this.setState(Object.assign({}, this.state, {
-                rows: this.mapIncluded(item)
-            }))
-        }
-    }
-
-    mapIncluded = (node, indent, isParentLastChild = false) => {
-        let ind = indent ? indent : [];
-        let result = [];
-
-        const nodeCopy = Object.assign({}, node, {
-            indent: ind
-        });
-
-        result = result.concat([nodeCopy]);
-
-        if(isParentLastChild){
-            ind[ind.length - 2] = false;
-        }
-
-        if(node.includedDocuments){
-            for(let i = 0; i < node.includedDocuments.length; i++){
-                let copy = node.includedDocuments[i];
-                if(i === node.includedDocuments.length - 1){
-                    copy = Object.assign({}, copy, {
-                        lastChild: true
-                    });
-                }
-
-                result = result.concat(
-                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
-                )
-            }
-        }
-
-        return result;
     }
 
     render() {
@@ -71,10 +14,8 @@ class TableItemWrapper extends Component {
             item, entity, tabId, cols, type, docId, selected, onDoubleClick,
             handleClick, handleRightClick, changeListenOnTrue, changeListenOnFalse,
             newRow, tabIndex, readonly, mainTable, handleSelect, odd, keyProperty,
-            indentSupported
+            indentSupported, rows
         } = this.props;
-
-        const {rows} = this.state;
 
         return (
             <tbody>

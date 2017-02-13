@@ -32,6 +32,7 @@ const shortcutManager = new ShortcutManager(keymap);
 class Table extends Component {
     constructor(props) {
         super(props);
+        
         this.state = {
             selected: [null],
             listenOnKeys: true,
@@ -62,10 +63,17 @@ class Table extends Component {
         }
     }
 
-    componentDidUpdate() {
-        const {mainTable, open} = this.props;
+    componentDidUpdate(prevProps) {
+        const {mainTable, open, rowData} = this.props;
         if(mainTable && open){
             this.table.focus();
+        }
+
+        if(
+            JSON.stringify(prevProps.rowData) !=
+            JSON.stringify(rowData)
+        ){
+            this.getIndentData();
         }
     }
 
@@ -135,11 +143,19 @@ class Table extends Component {
     }
 
     selectAll = () => {
-        const {rowData, tabid, keyProperty} = this.props;
+        const {rowData, tabid, keyProperty, indentSupported} = this.props;
+        const {rows} = this.state;
         const property = keyProperty ? keyProperty : "rowId";
-        const toSelect = rowData[tabid].map((item, index) => item[property]);
+        
 
-        this.selectRangeProduct(toSelect);
+        if(indentSupported){
+            const toSelect = rows.map((item, index) => item[property]);
+            this.selectRangeProduct(toSelect);
+        } else {
+            const toSelect = rowData[tabid].map((item, index) => item[property]);
+            this.selectRangeProduct(toSelect);
+        }
+        
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
@@ -485,7 +501,7 @@ class Table extends Component {
             indentSupported
         } = this.props;
 
-        const {selected} = this.state;
+        const {selected, rows} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
 
         if(!!rowData && rowData[tabid]){
@@ -517,6 +533,8 @@ class Table extends Component {
                         newRow={i === keys.length-1 ? newRow : false}
                         handleSelect={this.selectRangeProduct}
                         indentSupported={indentSupported}
+                        mapIncluded={this.mapIncluded}
+                        rows={this.mapIncluded(item[key])}
                     />
                 );
             }
