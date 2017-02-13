@@ -48,7 +48,6 @@ class QuickActions extends Component {
 
     handleClick = (action) => {
         const {dispatch, viewId} = this.props;
-        console.log(viewId)
         if(!action.disabled){
             dispatch(
                 openModal(
@@ -61,7 +60,6 @@ class QuickActions extends Component {
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
-
         dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
             this.setState({
                 actions: response.data.actions

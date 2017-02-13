@@ -99,6 +99,12 @@ class DocumentList extends Component {
         }
     }
 
+    componentDidMount() {
+        const {viewId} = this.state;
+
+        this.connectWS(viewId);
+    }
+
     componentWillUnmount() {
         this.disconnectWS();
     }
@@ -107,9 +113,7 @@ class DocumentList extends Component {
         return !!nextState.layout && !!nextState.data;
     }
 
-    connectWS = () => {
-        const {viewId} = this.props;
-
+    connectWS = (viewId) => {
         this.sockClient && this.sockClient.disconnect();
 
         this.sock = new SockJs(config.WS_URL);
@@ -120,9 +124,6 @@ class DocumentList extends Component {
                 const {fullyChanged} = JSON.parse(msg.body);
                 if(fullyChanged == true){
                     this.browseView();
-                    this.setState({
-                        refresh: Date.now()
-                    })
                 }
             });
         });
@@ -221,8 +222,9 @@ class DocumentList extends Component {
         ).then(response => {
             this.setState({
                 data: response.data,
-                viewid: response.data.viewId,
-                filters: response.data.filters
+                viewId: response.data.viewId,
+                filters: response.data.filters,
+                refresh: Date.now()
             })
         });
     }
@@ -310,7 +312,7 @@ class DocumentList extends Component {
                         <QuickActions
                             windowType={windowType}
                             viewId={viewId}
-                            selected={selected}
+                            selected={data.size && selected}
                             refresh={refresh}
                         />
                     </div>
