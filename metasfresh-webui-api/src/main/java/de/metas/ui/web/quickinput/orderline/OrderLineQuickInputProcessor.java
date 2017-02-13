@@ -3,9 +3,11 @@ package de.metas.ui.web.quickinput.orderline;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -15,6 +17,7 @@ import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 
@@ -43,6 +46,7 @@ import de.metas.ui.web.quickinput.QuickInput;
 public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 {
 	// services
+	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final transient IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 
@@ -89,18 +93,41 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final I_M_HU_PI_Item_Product piItemProduct = quickInput.getM_HU_PI_Item_Product();
 		huPackingAware.setM_HU_PI_Item_Product(piItemProduct);
 
+		// Get quickInput's Qty
+		final BigDecimal quickInputQty = quickInput.getQty();
+		if(quickInputQty == null || quickInputQty.signum() <= 0)
+		{
+			logger.warn("Invalid Qty={} for {}", quickInputQty, quickInput);
+			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
+		}
+
+		//
+		// Compute QtyCU and QtyTU
 		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
 		{
-			huPackingAware.setQty(quickInput.getQty());
+			huPackingAware.setQty(quickInputQty);
 			huPackingAware.setQtyPacks(BigDecimal.ONE);
 		}
 		else
 		{
-			final BigDecimal qtyTU = quickInput.getQty();
+			final BigDecimal qtyTU = quickInputQty;
 			huPackingAware.setQtyPacks(qtyTU);
 			huPackingAwareBL.setQty(huPackingAware, qtyTU.intValue());
 		}
-
+		
+		//
+		// Validate the result
+		if (huPackingAware.getQty() == null || huPackingAware.getQty().signum() <= 0)
+		{
+			logger.warn("Invalid Qty={} for {}", huPackingAware.getQty(), huPackingAware);
+			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
+		}
+		if (huPackingAware.getQtyPacks() == null || huPackingAware.getQtyPacks().signum() <= 0)
+		{
+			logger.warn("Invalid QtyTU={} for {}", huPackingAware.getQtyPacks(), huPackingAware);
+			throw new AdempiereException("QtyTU shall be greather than zero"); // TODO trl
+		}
+		
 		return huPackingAware;
 	}
 }
