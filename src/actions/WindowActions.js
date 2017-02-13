@@ -21,6 +21,19 @@ import {
     addNotification
 } from './AppActions'
 
+export function openRawModal(windowType, viewId) {
+    return {
+        type: types.OPEN_RAW_MODAL,
+        windowType: windowType,
+        viewId: viewId
+    }
+}
+
+export function closeRawModal() {
+    return {
+        type: types.CLOSE_RAW_MODAL
+    }
+}
 
 export function initLayoutSuccess(layout, scope) {
     return {
@@ -30,11 +43,12 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope) {
+export function initDataSuccess(data, scope, docId) {
     return {
         type: types.INIT_DATA_SUCCESS,
         data: data,
-        scope: scope
+        scope: scope,
+        docId: docId
     }
 }
 
@@ -110,13 +124,14 @@ export function noConnection(status) {
     }
 }
 
-export function openModal(title, windowType, type, tabId, rowId, isAdvanced) {
+export function openModal(title, windowType, type, tabId, rowId, isAdvanced, viewId) {
     return {
         type: types.OPEN_MODAL,
         windowType: windowType,
         modalType: type,
         tabId: tabId,
         rowId: rowId,
+        viewId: viewId,
         title: title,
         isAdvanced: isAdvanced
     }
@@ -185,7 +200,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 docId = response.data[elem].id;
                 const preparedData = parseToDisplay(response.data[elem].fields);
 
-                dispatch(initDataSuccess(preparedData, getScope(isModal)));
+                dispatch(initDataSuccess(preparedData, getScope(isModal), docId));
 
                 if (isModal && rowId === "NEW") {
                     dispatch(mapDataToState([response.data[0]], false, "NEW", docId, windowType))
@@ -309,7 +324,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                         if (rowId) {
                             dispatch(updateRowSuccess(field, item.tabid, item.rowId, getScope(false)));
                         }
-                        
+
                         dispatch(updateDataSuccess(field, getScope(isModal)));
                     }
                 });
@@ -381,7 +396,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
             dispatch(addNotification("Process error", summary, 5000, "error"));
         }else{
             if(viewId && viewWindowId){
-                dispatch(push('/window/' + viewWindowId + '?viewId=' + viewId));
+                dispatch(openRawModal(viewWindowId, viewId));
             }else if(reportFilename){
                 dispatch(printRequest('process', type, id, reportFilename))
             }

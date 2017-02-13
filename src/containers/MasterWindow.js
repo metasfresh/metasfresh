@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
+    createWindow,
     startProcess
 } from '../actions/WindowActions';
 
@@ -28,18 +29,22 @@ class MasterWindow extends Component {
         }
     }
 
+    componentDidMount(){
+        const { dispatch, params } = this.props;
+        dispatch(createWindow(params.windowType, params.docId))
+    }
+
     closeModalCallback = (entity, isNew, dataId) => {
         const {dispatch} = this.props;
 
         if(isNew){
-            this.setState(
-                Object.assign({}, this.state, {
+            this.setState({
                     newRow: true
-                }), () => {
+                }, () => {
                     setTimeout(() => {
-                        this.setState(Object.assign({}, this.state, {
+                        this.setState({
                             newRow: false
-                        }))
+                        })
                     }, 1000);
                 }
             )
@@ -50,7 +55,7 @@ class MasterWindow extends Component {
         const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
         const {newRow} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
-        const dataId = findRowByPropName(master.data, "ID").value;
+        const dataId = master.docId;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
 
         const docStatusData = {
@@ -59,7 +64,7 @@ class MasterWindow extends Component {
             "displayed": true
         };
 
-        const docSummaryData =  findRowByPropName(
+        const docSummaryData = findRowByPropName(
             master.data,
             documentSummaryElement && documentSummaryElement.fields[0].field
         );

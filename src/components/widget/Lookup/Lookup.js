@@ -66,7 +66,7 @@ class Lookup extends Component {
     handleSelect = (select) => {
         const {
             dispatch, properties, onChange, dataId, fields, filterWidget,
-            parameterName, setSelectedItem, windowType, subentity
+            parameterName, windowType, subentity
         } = this.props;
 
         const {
@@ -79,7 +79,6 @@ class Lookup extends Component {
         }), () => {
             if(filterWidget) {
                 onChange(parameterName, select);
-                setSelectedItem(select[Object.keys(select)[0]]);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
 
@@ -102,7 +101,7 @@ class Lookup extends Component {
                         promise.then(() => {
                             if(!subentity){
                                 this.getAllDropdowns();
-                            }    
+                            }
                         }
                     )}
                 } else {
@@ -205,14 +204,14 @@ class Lookup extends Component {
     }
 
     handleBlur = (callback) => {
-        
+
         this.setState(Object.assign({}, this.state, {
             isOpen: false
         }), () => {
             if(callback) {
                 callback();
             }
-            
+
         })
     }
 
@@ -281,8 +280,8 @@ class Lookup extends Component {
         e && e.preventDefault();
         this.inputSearch.value = "";
 
-        onChange(properties, "", false);
-        
+        onChange(properties, null, false);
+
         this.handleBlur(this.clearState);
     }
 
@@ -361,8 +360,8 @@ class Lookup extends Component {
                     isInputEmpty: false
                 }));
             }
-            
-        } else if(oldValue && !defaultValue[0].value && this.inputSearch) { 
+
+        } else if(oldValue && !defaultValue[0].value && this.inputSearch) {
             const inputEmptyValue = defaultValue[0].value;
 
             if(inputEmptyValue !== oldValue){

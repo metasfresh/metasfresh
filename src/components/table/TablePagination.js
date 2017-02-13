@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 
 class TablePagination extends Component {
@@ -121,7 +121,14 @@ class TablePagination extends Component {
         const {handleChangePage, deselect} = this.props;
         for(let i = start; i <= end; i++){
             pagination.push(
-                <li className={" page-item " + (page === i ? "active": "")} key={i} onClick={() => {handleChangePage(i); deselect()} }>
+                <li
+                    className={
+                        "page-item " +
+                        (page === i ? "active": "")
+                    }
+                    key={i}
+                    onClick={() => {handleChangePage(i); deselect()} }
+                >
                     <a className="page-link">{i}</a>
                 </li>
             );
@@ -129,11 +136,13 @@ class TablePagination extends Component {
     }
 
     render() {
-        const {size, pageLength, selected, handleSelectAll, handleChangePage, page, orderBy, deselect} = this.props;
+        const {
+            size, pageLength, selected, handleSelectAll, handleChangePage, page,
+            orderBy, deselect
+        } = this.props;
         const pages = size ? Math.ceil(size / pageLength) : 0;
         const startPoint = pages > 1 ? (pages - page <= 4 ? (pages - 4 > 0 ? pages - 4 : 1 ) : page) : 1;
         const endPoint = pages > 1 ? (startPoint + 4 > pages ? pages : startPoint + 4) : 1;
-
 
         let pagination = [];
 
@@ -202,6 +211,5 @@ class TablePagination extends Component {
 
     }
 }
-
 
 export default TablePagination;

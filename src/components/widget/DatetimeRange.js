@@ -14,16 +14,16 @@ class DatetimeRange extends Component {
     componentDidMount() {
         const {value, valueTo, onChange} = this.props;
         if(value && valueTo){
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 startDate: Moment(value),
                 endDate: Moment(valueTo)
-            }));
+            });
         }else{
             const initDate = new Date();
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 startDate: initDate,
                 endDate: initDate
-            }), () => {
+            }, () => {
                 onChange(initDate, initDate)
             });
         }
@@ -32,10 +32,10 @@ class DatetimeRange extends Component {
     handleEvent = (event, picker) => {
         const {onChange} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             startDate: picker.startDate,
             endDate: picker.endDate
-        }), () => {
+        }, () => {
             onChange(picker.startDate, picker.endDate);
         });
     }
@@ -50,7 +50,7 @@ class DatetimeRange extends Component {
             'Last Month': [Moment().subtract(1, 'month').startOf('month'), Moment().subtract(1, 'month').endOf('month')]
         }
         const {startDate, endDate} = this.state;
-        const {isShown, isHidden, mandatory} = this.props;
+        const {onShow, onHide, mandatory} = this.props;
 
         return (
             <DateRangePicker
@@ -59,8 +59,8 @@ class DatetimeRange extends Component {
                 ranges={ranges}
                 alwaysShowCalendars={true}
                 onApply={this.handleEvent}
-                onShow={isShown}
-                onHide={isHidden}
+                onShow={onShow}
+                onHide={onHide}
                 locale={{
                     "firstDay": 1,
                     "monthNames": Moment.months()

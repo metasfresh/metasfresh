@@ -8,12 +8,18 @@ const initialState = {
         type: "",
         tabId: null,
         rowId: null,
+        viewId: null,
         layout: {},
         data: [],
         rowData: {},
         modalTitle: "",
         modalType: "",
         isAdvanced: false
+    },
+    rawModal: {
+        visible: false,
+        windowType: null,
+        viewId: null
     },
     master: {
         layout: {},
@@ -40,6 +46,7 @@ export default function windowHandler(state = initialState, action) {
                     type: action.windowType,
                     tabId: action.tabId,
                     rowId: action.rowId,
+                    viewId: action.viewId,
                     title: action.title,
                     modalType: action.modalType,
                     isAdvanced: action.isAdvanced
@@ -79,6 +86,7 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     data: action.data,
+                    docId: action.docId,
                     layout: {},
                     rowData: {}
                 })
@@ -180,13 +188,32 @@ export default function windowHandler(state = initialState, action) {
         case types.CHANGE_INDICATOR_STATE:
             return Object.assign({}, state, {
                 indicator: action.state
-            }
-        );
+            })
+
         // END OF INDICATOR ACTIONS
 
         case types.SELECT_TABLE_ITEMS:
             return Object.assign({}, state, {
                 selected: action.ids
+            })
+
+        // RAW Modal
+        case types.CLOSE_RAW_MODAL:
+            return Object.assign({}, state, {
+                rawModal: Object.assign({}, state.rawModal, {
+                    visible: false,
+                    type: null,
+                    viewId: null
+                })
+            })
+
+        case types.OPEN_RAW_MODAL:
+            return Object.assign({}, state, {
+                rawModal: Object.assign({}, state.rawModal, {
+                    visible: true,
+                    type: action.windowType,
+                    viewId: action.viewId
+                })
             })
 
         default:

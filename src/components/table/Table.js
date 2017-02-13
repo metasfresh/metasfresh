@@ -41,18 +41,20 @@ class Table extends Component {
                 y: 0
             },
             promptOpen: false,
-            isBatchEntry: false
+            isBatchEntry: false,
+            rows: []
         }
     }
 
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
+    componentDidMount(){
+        this.getIndentData(true);
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {dispatch} = this.props;
+        const {dispatch, disconnected} = this.props;
 
-        if(JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected)){
+        if((JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
+        ){
             dispatch(selectTableItems(nextState.selected));
         }
     }
@@ -64,27 +66,71 @@ class Table extends Component {
         }
     }
 
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
+    }
+
+    getIndentData = (selectFirst) => {
+        const {rowData, tabid, indentSupported} = this.props;
+
+        if(indentSupported){
+            let rowsData = [];
+
+            rowData[tabid].map(item => {
+                rowsData = rowsData.concat(this.mapIncluded(item));
+            })
+
+            this.setState({
+                rows: rowsData
+            }, () => {
+                if(selectFirst){
+                    this.selectOneProduct(this.state.rows[0].id);
+                    document.getElementsByClassName('js-table')[0].focus();
+                }
+
+            })
+        }
+    }
+
+    getAllLeafs = () => {
+        const {rows, selected} = this.state;
+        let leafs = [];
+        let leafsIds = [];
+
+        rows.map( item => {
+            if(item.id == selected[0]){
+                leafs = this.mapIncluded(item);
+            }
+        });
+
+        leafs.map(item => {
+            leafsIds = leafsIds.concat(item.id);
+        });
+
+        this.selectRangeProduct(leafsIds);
+    }
+
     changeListen = (listenOnKeys) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             listenOnKeys: !!listenOnKeys
-        }))
+        })
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => Object.assign({}, this.state, {
+        this.setState(prevState => {
             selected: prevState.selected.concat([id])
-        }), () => {
+        }, () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
 
     selectRangeProduct = (ids) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: ids
-        }))
+        });
     }
 
     selectAll = () => {
@@ -96,9 +142,9 @@ class Table extends Component {
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: [id]
-        }), () => {
+        }, () => {
             this.triggerFocus(idFocused, idFocusedDown);
             cb && cb();
         })
@@ -112,9 +158,9 @@ class Table extends Component {
     }
 
     deselectAllProducts = (cb) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: []
-        }), cb && cb());
+        }, cb && cb());
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
@@ -209,17 +255,59 @@ class Table extends Component {
         }
     }
 
+    mapIncluded = (node, indent, isParentLastChild = false) => {
+        let ind = indent ? indent : [];
+        let result = [];
+
+        const nodeCopy = Object.assign({}, node, {
+            indent: ind
+        });
+
+        result = result.concat([nodeCopy]);
+
+        if(isParentLastChild){
+            ind[ind.length - 2] = false;
+        }
+
+        if(node.includedDocuments){
+            for(let i = 0; i < node.includedDocuments.length; i++){
+                let copy = node.includedDocuments[i];
+                if(i === node.includedDocuments.length - 1){
+                    copy = Object.assign({}, copy, {
+                        lastChild: true
+                    });
+                }
+
+                result = result.concat(
+                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
+                )
+            }
+        }
+
+        return result;
+    }
+
     handleKeyDownDocList = (e) => {
-        const {selected} = this.state;
-        const {rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open} = this.props;
-        const item = rowData[tabid];
+        const {selected, rows} = this.state;
+        const {
+            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open,
+            indentSupported
+        } = this.props;
+
         const selectRange = e.shiftKey;
+        let data = "";
+
+        if(indentSupported){
+            data = rows;
+        } else {
+            data = rowData[tabid];
+        }
 
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
 
-                const array = (rowData[tabid]).map((item, id) => {
+                const array = (data).map((item, id) => {
                     return item.id
                 });
 
@@ -238,7 +326,7 @@ class Table extends Component {
             case "ArrowUp":
                 e.preventDefault();
 
-                const arrays = (rowData[tabid]).map((item, id) => {
+                const arrays = (data).map((item, id) => {
                     return item.id
                 });
 
@@ -269,15 +357,19 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
+            case "Tab":
+                e.preventDefault();
+                document.getElementsByClassName('js-attributes')[0].focus();
+                break;
         }
     }
 
     closeContextMenu = (event) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 open: false
             })
-        }))
+        })
     }
 
     handleClick = (e, id) => {
@@ -323,20 +415,20 @@ class Table extends Component {
     }
 
     setContextMenu = (clientX, clientY) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 x: clientX,
                 y: clientY,
                 open: true
             })
-        }));
+        });
     }
 
     handleFocus = () => {
-        const {rowData, tabid} = this.props;
-        const {selected} = this.state;
+        const {rowData, tabid, indentSupported} = this.props;
+        const {selected, rows} = this.state;
 
-        if(selected.length <= 0){
+         if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
         }
@@ -374,14 +466,72 @@ class Table extends Component {
     handleBatchEntryToggle = () => {
         const {isBatchEntry} = this.state;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isBatchEntry: !isBatchEntry
-        }));
+        });
     }
 
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, "window", tabId, rowId));
+    }
+
+    handleAdvancedEdit = (type, tabId, selected) => {
+        const {dispatch} = this.props;
+
+        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
+    }
+
+    handleOpenNewTab = (selected) => {
+        const {type} = this.props;
+        for(let i = 0; i < selected.length; i++){
+            window.open("/window/" + type + "/" + selected[i], "_blank");
+        }
+    }
+
+    handleDelete = () => {
+        this.setState({
+            promptOpen: true
+        })
+    }
+
+    handlePromptCancelClick = () => {
+        this.setState({
+            promptOpen: false
+        })
+    }
+
+    handlePromptSubmitClick = (selected) => {
+        const {
+            dispatch, type, docId, mainTable, updateDocList, entity, tabid
+        } = this.props;
+
+        this.setState({
+            promptOpen: false,
+            selected: []
+        }, () => {
+            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
+            .then(() => {
+                if(docId){
+                    dispatch(deleteLocal(tabid, selected, "master"))
+                } else {
+                    updateDocList();
+                }
+            });
+        });
+    }
+
+    handleKey = (e) => {
+        const {readonly, mainTable} = this.props;
+        const {listenOnKeys} = this.state;
+
+        if(listenOnKeys){
+            if(!readonly){
+                this.handleKeyDown(e);
+            }else if(mainTable){
+                this.handleKeyDownDocList(e)
+            }
+        }
     }
 
     renderTableBody = () => {
@@ -451,66 +601,6 @@ class Table extends Component {
         }
     }
 
-    handleAdvancedEdit = (type, tabId, selected) => {
-        const {dispatch} = this.props;
-
-        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
-    }
-
-    handleOpenNewTab = (selected) => {
-        const {type} = this.props;
-        for(let i = 0; i < selected.length; i++){
-            window.open("/window/" + type + "/" + selected[i], "_blank");
-        }
-    }
-
-    handleDelete = () => {
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: true
-        }))
-    }
-
-    handlePromptCancelClick = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                promptOpen: false
-            })
-        )
-    }
-
-    handlePromptSubmitClick = (selected) => {
-        const {
-            dispatch, type, docId, mainTable, updateDocList, entity, tabid
-        } = this.props;
-
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: false,
-            selected: []
-        }), () => {
-            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
-            .then(() => {
-                if(docId){
-                    dispatch(deleteLocal(tabid, selected, "master"))
-                } else {
-                    updateDocList();
-                }
-            });
-        });
-    }
-
-    handleKey = (e) => {
-        const {readonly, mainTable} = this.props;
-        const {listenOnKeys} = this.state;
-
-        if(listenOnKeys){
-            if(!readonly){
-                this.handleKeyDown(e);
-            }else if(mainTable){
-                this.handleKeyDownDocList(e)
-            }
-        }
-    }
-
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
@@ -564,7 +654,7 @@ class Table extends Component {
                     >
                         <table
                             className={
-                                "table table-bordered-vertically table-striped " +
+                                "table table-bordered-vertically table-striped js-table " +
                                 (readonly ? "table-read-only" : "")
                             }
                             onKeyDown={this.handleKey}
@@ -631,6 +721,7 @@ class Table extends Component {
                     handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+                    getAllLeafs={this.getAllLeafs}
                 />
 
                 {!readonly &&

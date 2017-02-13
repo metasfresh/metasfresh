@@ -57,18 +57,15 @@ class Header extends Component {
     }
 
     handleInboxOpen = (state) => {
-        this.setState(
-            Object.assign({}, this.state, {
-                isInboxOpen: !!state
-            })
-        );
+        this.setState({
+            isInboxOpen: !!state
+        });
     }
 
     handleCloseSideList = (callback) => {
-        this.setState(
-            Object.assign({}, this.state, {
+        this.setState({
                 isSideListShow: false
-            }), callback);
+            }, callback);
         this.toggleScrollScope(false);
     }
 
@@ -77,21 +74,18 @@ class Header extends Component {
         e && e.preventDefault();
 
         let toggleBreadcrumb = () => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 menuOverlay: nodeId
-            }), () => {
+            }, () => {
                 if(nodeId !== "") {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         isMenuOverlayShow: true
-                    }), () => {
-
                     });
                 } else {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         isMenuOverlayShow: false
-                    }));
+                    });
                 }
-
             });
         }
 
@@ -114,13 +108,13 @@ class Header extends Component {
         let scrollTop = event.srcElement.body.scrollTop;
 
         if(scrollTop > 0) {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 scrolled: true
-            }))
+            })
         } else {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 scrolled: false
-            }))
+            })
         }
     }
 
@@ -138,11 +132,9 @@ class Header extends Component {
     }
 
     toggleTooltip = (tooltip) => {
-        this.setState(
-            Object.assign({}, this.state, {
-                tooltipOpen: tooltip
-            })
-        );
+        this.setState({
+            tooltipOpen: tooltip
+        });
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
@@ -161,11 +153,11 @@ class Header extends Component {
     handleDelete = () => {
         const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             prompt: Object.assign({}, this.state.prompt, {
                 open: true
             })
-        }));
+        });
     }
 
     handleClone = (windowType, docId) => {
@@ -173,21 +165,21 @@ class Header extends Component {
     }
 
     handlePromptCancelClick = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             prompt: Object.assign({}, this.state.prompt, {
                 open: false
             })
-        }));
+        });
     }
 
     handlePromptSubmitClick = (windowType, docId) => {
         const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             prompt: Object.assign({}, this.state.prompt, {
                 open: false
             })
-        }), () => {
+        }, () => {
             dispatch(deleteRequest('window', windowType, null, null, [docId]))
                 .then(response => {
                     dispatch(push('/window/' + windowType));
@@ -213,14 +205,14 @@ class Header extends Component {
     closeOverlays = (clickedItem, callback) => {
         const {isSideListShow, isSubheaderShow} = this.state;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
             isSideListShow: (clickedItem == 'isSideListShow' ? !isSideListShow : false),
             isSubheaderShow: (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
             tooltipOpen: ''
-        }), callback);
+        }, callback);
 
         if(clickedItem == 'isSideListShow') {
             this.toggleScrollScope(!isSideListShow);
@@ -406,7 +398,7 @@ class Header extends Component {
                 />}
 
                 {showSidelist && isSideListShow && <SideList
-                    windowType={windowType}
+                    windowType={parseInt(windowType)}
                     closeOverlays={this.closeOverlays}
                     closeSideList={this.handleCloseSideList}
                     disableOnClickOutside={!showSidelist}
