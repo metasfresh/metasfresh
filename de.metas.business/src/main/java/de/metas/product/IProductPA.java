@@ -27,8 +27,8 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.I_M_ProductScalePrice;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
