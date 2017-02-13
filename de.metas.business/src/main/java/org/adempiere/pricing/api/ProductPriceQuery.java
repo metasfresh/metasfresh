@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -85,24 +86,44 @@ public class ProductPriceQuery
 			return false;
 		}
 
-		return newInstance(plv)
-				.setM_Product_ID(productId)
-				.noAttributePricing()
+		return newMainProductPriceQuery(plv, productId)
 				.matches();
 	}
-	
+
 	public static final Optional<I_M_ProductPrice> retrieveMainProductPriceIfExists(final I_M_PriceList_Version plv, final int productId)
 	{
-		final I_M_ProductPrice productPrice = newInstance(plv)
-				.setM_Product_ID(productId)
-				.noAttributePricing()
+		final I_M_ProductPrice productPrice = newMainProductPriceQuery(plv, productId)
 				.toQuery()
 				.firstOnly(I_M_ProductPrice.class);
 		return Optional.ofNullable(productPrice);
 	}
 
+	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final int productId)
+	{
+		return newInstance(plv)
+				.setM_Product_ID(productId)
+				.noAttributePricing()
+				//
+				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
+	}
+
+	public static void registerMainProductPriceMatcher(final IProductPriceQueryMatcher matcher)
+	{
+		Check.assumeNotNull(matcher, "Parameter matcher is not null");
+		final boolean added = MATCHERS_MainProductPrice.addIfAbsent(matcher);
+		if (!added)
+		{
+			logger.warn("Main product matcher {} was not registered because it's a duplicate: {}", matcher, MATCHERS_MainProductPrice);
+		}
+		else
+		{
+			logger.info("Registered main product matcher: {}", matcher);
+		}
+	}
 
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
+
+	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> MATCHERS_MainProductPrice = new CopyOnWriteArrayList<>();
 
 	private Object _contextProvider;
 	private int _priceListVersionId;
@@ -354,6 +375,13 @@ public class ProductPriceQuery
 		_attributePricing_asiToMatch = asi;
 		return this;
 	}
+	
+	public ProductPriceQuery dontMatchAttributes()
+	{
+		_attributePricing = null;
+		_attributePricing_asiToMatch = null;
+		return this;
+	}
 
 	private Boolean getAttributePricing()
 	{
@@ -379,8 +407,8 @@ public class ProductPriceQuery
 	public ProductPriceQuery matching(final IProductPriceQueryMatcher matcher)
 	{
 		Check.assumeNotNull(matcher, "Parameter matcher is not null");
-		
-		if(_additionalMatchers == null)
+
+		if (_additionalMatchers == null)
 		{
 			_additionalMatchers = new LinkedHashMap<>();
 		}
@@ -388,23 +416,38 @@ public class ProductPriceQuery
 
 		return this;
 	}
-	
-	public ProductPriceQuery matching(final Collection<IProductPriceQueryMatcher> matchers)
+
+	private final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
 	{
-		if(matchers == null || matchers.isEmpty())
+		if (matchers == null || matchers.isEmpty())
 		{
 			return this;
 		}
-		
+
+		if (_additionalMatchers == null)
+		{
+			_additionalMatchers = new LinkedHashMap<>();
+		}
+		matchers.forEach(matcher -> _additionalMatchers.putIfAbsent(matcher.getName(), matcher));
+
+		return this;
+	}
+
+	public ProductPriceQuery matching(final Collection<IProductPriceQueryMatcher> matchers)
+	{
+		if (matchers == null || matchers.isEmpty())
+		{
+			return this;
+		}
+
 		matchers.forEach(this::matching);
 
 		return this;
 	}
 
-
 	private Collection<IProductPriceQueryMatcher> getAdditionalMatchers()
 	{
-		if(_additionalMatchers == null)
+		if (_additionalMatchers == null)
 		{
 			return ImmutableList.of();
 		}
