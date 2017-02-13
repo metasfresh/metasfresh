@@ -219,11 +219,6 @@ update M_ProductPrice pp set
 	, MatchSeqNo = 0
 where exists (select 1 from TMP_M_ProductPrice t where pp.M_ProductPrice_ID=t.Old_ProductPrice_ID)
 ;
--- Delete the migration M_ProductPrice_Attribute records
--- we expect that M_ProductPrice_Attribute_Line to be deleted too.
-delete from M_ProductPrice_Attribute pa
-where exists (select 1 from TMP_M_ProductPrice t where t.Old_ProductPrice_Attribute_ID=pa.M_ProductPrice_Attribute_ID)
-;
 
 
 --
@@ -238,4 +233,13 @@ where
 ;
 
 
+
+
+
+-- Delete the migration M_ProductPrice_Attribute records
+-- we expect that M_ProductPrice_Attribute_Line to be deleted too.
+-- NOTE: KEEP THIS LAST
+delete from M_ProductPrice_Attribute pa
+where exists (select 1 from TMP_M_ProductPrice t where t.Old_ProductPrice_Attribute_ID=pa.M_ProductPrice_Attribute_ID)
+;
 
