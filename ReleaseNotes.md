@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.56.54 (2017-07)
+# metasfresh 4.56.55 (2017-07)
 
 this week's RC
 
