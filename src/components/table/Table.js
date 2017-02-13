@@ -533,7 +533,6 @@ class Table extends Component {
                         newRow={i === keys.length-1 ? newRow : false}
                         handleSelect={this.selectRangeProduct}
                         indentSupported={indentSupported}
-                        mapIncluded={this.mapIncluded}
                         rows={this.mapIncluded(item[key])}
                     />
                 );
