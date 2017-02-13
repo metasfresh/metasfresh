@@ -149,7 +149,7 @@ class DocumentList extends Component {
 
     fetchLayoutAndData = (isNewFilter) => {
         const {
-            dispatch, windowType, type
+            dispatch, windowType, type, setModalTitle
         } = this.props;
 
         const {
@@ -169,6 +169,8 @@ class DocumentList extends Component {
                 }else{
                     this.createView();
                 }
+
+                setModalTitle && setModalTitle(response.data.caption)
             })
         });
     }

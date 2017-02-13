@@ -7,7 +7,8 @@ class Device extends Component {
         super(props);
 
         this.state = {
-            value: null
+            value: null,
+            valueDelayed: null
         }
     }
 
@@ -23,35 +24,62 @@ class Device extends Component {
                 const body = JSON.parse(msg.body);
                 this.setState({
                     value: body.value
-                })
+                });
             });
         });
+
+        this.delayForDisplayingValue(1000);
     }
 
     componentWillUnmount() {
         this.sockClient.disconnect();
+        clearInterval(this.interval);
     }
 
     handleClick = () => {
         const {handleChange} = this.props;
-        const {value} = this.state;
+        const {valueDelayed} = this.state;
 
-        handleChange(value);
+        handleChange(valueDelayed);
+    }
+
+    handleSlowDisplaying = () => {
+        this.delayForDisplayingValue(2000);
+    }
+
+    handleRegularDisplaying = () => {
+        this.delayForDisplayingValue(1000);
+    }
+
+    delayForDisplayingValue = (interval) => {
+        const self = this;
+
+        clearInterval(this.interval);
+
+        this.interval = setInterval(() => {
+            self.setState({
+                valueDelayed: self.state.value
+            })
+        }, interval);
     }
 
     render() {
-        const {value, index, isMore} = this.state;
+        const {valueDelayed, index, isMore} = this.state;
 
-        if(!!value){
+        if(!!valueDelayed){
             return (
                 <div
                     className={"btn btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev " +
                         (isMore ? "btn-flagged ": "")
                     }
                     onClick={this.handleClick}
+                    onMouseEnter={this.handleSlowDisplaying}
+                    onFocus={this.handleSlowDisplaying}
+                    onMouseLeave={this.handleRegularDisplaying}
+                    onBlur={this.handleRegularDisplaying}
                 >
                     {isMore && <span className="btn-flag">{index + 1}</span>}
-                    {value}
+                    {valueDelayed}
                 </div>
             )
         }else{
