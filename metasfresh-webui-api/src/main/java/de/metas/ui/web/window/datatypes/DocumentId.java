@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.Splitter;
@@ -308,7 +309,7 @@ public abstract class DocumentId implements Serializable
 		@Override
 		public int toInt()
 		{
-			throw new IllegalStateException("String document IDs cannot be converted to int: " + this);
+			throw new AdempiereException("String document IDs cannot be converted to int: " + this);
 		}
 
 		@Override
