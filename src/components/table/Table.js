@@ -46,10 +46,6 @@ class Table extends Component {
         }
     }
 
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
-    }
-
     componentDidMount(){
         this.getIndentData(true);
     }
@@ -69,6 +65,10 @@ class Table extends Component {
         }
     }
 
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
+    }
+
     getIndentData = (selectFirst) => {
         const {rowData, tabid, indentSupported} = this.props;
 
@@ -79,14 +79,14 @@ class Table extends Component {
                 rowsData = rowsData.concat(this.mapIncluded(item));
             })
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 rows: rowsData
-            }), ()=> {
+            }, () => {
                 if(selectFirst){
                     this.selectOneProduct(this.state.rows[0].id);
                     document.getElementsByClassName('js-table')[0].focus();
                 }
-                
+
             })
         }
     }
@@ -95,7 +95,7 @@ class Table extends Component {
         const {rows, selected} = this.state;
         let leafs = [];
         let leafsIds = [];
-        
+
         rows.map( item => {
             if(item.id == selected[0]){
                 leafs = this.mapIncluded(item);
@@ -107,31 +107,29 @@ class Table extends Component {
         });
 
         this.selectRangeProduct(leafsIds);
-       
-
     }
 
     changeListen = (listenOnKeys) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             listenOnKeys: !!listenOnKeys
-        }))
+        })
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => Object.assign({}, this.state, {
+        this.setState(prevState => {
             selected: prevState.selected.concat([id])
-        }), () => {
+        }, () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
 
     selectRangeProduct = (ids) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: ids
-        }))
+        });
     }
 
     selectAll = () => {
@@ -143,9 +141,9 @@ class Table extends Component {
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: [id]
-        }), () => {
+        }, () => {
             this.triggerFocus(idFocused, idFocusedDown);
             cb && cb();
         })
@@ -159,9 +157,9 @@ class Table extends Component {
     }
 
     deselectAllProducts = (cb) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: []
-        }), cb && cb());
+        }, cb && cb());
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
@@ -294,7 +292,7 @@ class Table extends Component {
             rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open,
             indentSupported
         } = this.props;
-        
+
         const selectRange = e.shiftKey;
         let data = "";
 
@@ -366,11 +364,11 @@ class Table extends Component {
     }
 
     closeContextMenu = (event) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 open: false
             })
-        }))
+        })
     }
 
     handleClick = (e, id) => {
@@ -416,13 +414,13 @@ class Table extends Component {
     }
 
     setContextMenu = (clientX, clientY) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 x: clientX,
                 y: clientY,
                 open: true
             })
-        }));
+        });
     }
 
     handleFocus = () => {
@@ -434,7 +432,6 @@ class Table extends Component {
             this.selectOneProduct(firstId, 0);
         }
     }
-
 
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
@@ -468,14 +465,72 @@ class Table extends Component {
     handleBatchEntryToggle = () => {
         const {isBatchEntry} = this.state;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isBatchEntry: !isBatchEntry
-        }));
+        });
     }
 
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
         dispatch(openModal("Add new", windowType, "window", tabId, rowId));
+    }
+
+    handleAdvancedEdit = (type, tabId, selected) => {
+        const {dispatch} = this.props;
+
+        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
+    }
+
+    handleOpenNewTab = (selected) => {
+        const {type} = this.props;
+        for(let i = 0; i < selected.length; i++){
+            window.open("/window/" + type + "/" + selected[i], "_blank");
+        }
+    }
+
+    handleDelete = () => {
+        this.setState({
+            promptOpen: true
+        })
+    }
+
+    handlePromptCancelClick = () => {
+        this.setState({
+            promptOpen: false
+        })
+    }
+
+    handlePromptSubmitClick = (selected) => {
+        const {
+            dispatch, type, docId, mainTable, updateDocList, entity, tabid
+        } = this.props;
+
+        this.setState({
+            promptOpen: false,
+            selected: []
+        }, () => {
+            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
+            .then(() => {
+                if(docId){
+                    dispatch(deleteLocal(tabid, selected, "master"))
+                } else {
+                    updateDocList();
+                }
+            });
+        });
+    }
+
+    handleKey = (e) => {
+        const {readonly, mainTable} = this.props;
+        const {listenOnKeys} = this.state;
+
+        if(listenOnKeys){
+            if(!readonly){
+                this.handleKeyDown(e);
+            }else if(mainTable){
+                this.handleKeyDownDocList(e)
+            }
+        }
     }
 
     renderTableBody = () => {
@@ -542,66 +597,6 @@ class Table extends Component {
             )
         }else{
             return false;
-        }
-    }
-
-    handleAdvancedEdit = (type, tabId, selected) => {
-        const {dispatch} = this.props;
-
-        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
-    }
-
-    handleOpenNewTab = (selected) => {
-        const {type} = this.props;
-        for(let i = 0; i < selected.length; i++){
-            window.open("/window/" + type + "/" + selected[i], "_blank");
-        }
-    }
-
-    handleDelete = () => {
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: true
-        }))
-    }
-
-    handlePromptCancelClick = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                promptOpen: false
-            })
-        )
-    }
-
-    handlePromptSubmitClick = (selected) => {
-        const {
-            dispatch, type, docId, mainTable, updateDocList, entity, tabid
-        } = this.props;
-
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: false,
-            selected: []
-        }), () => {
-            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
-            .then(() => {
-                if(docId){
-                    dispatch(deleteLocal(tabid, selected, "master"))
-                } else {
-                    updateDocList();
-                }
-            });
-        });
-    }
-
-    handleKey = (e) => {
-        const {readonly, mainTable} = this.props;
-        const {listenOnKeys} = this.state;
-
-        if(listenOnKeys){
-            if(!readonly){
-                this.handleKeyDown(e);
-            }else if(mainTable){
-                this.handleKeyDownDocList(e)
-            }
         }
     }
 
