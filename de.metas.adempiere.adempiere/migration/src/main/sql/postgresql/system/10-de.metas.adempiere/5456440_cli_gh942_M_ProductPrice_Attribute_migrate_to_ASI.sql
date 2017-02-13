@@ -212,6 +212,7 @@ select
 	, M_HU_PI_Item_Product_ID
 from TMP_M_ProductPrice
 ;
+
 --
 -- Transform the old M_ProductPrice to main product price records
 update M_ProductPrice pp set
@@ -223,6 +224,15 @@ where exists (select 1 from TMP_M_ProductPrice t where pp.M_ProductPrice_ID=t.Ol
 
 --
 -- Migrate C_OLCand
+CREATE INDEX IF NOT EXISTS C_OLCand_M_ProductPrice_ID_M_ProductPrice_Attribute_ID
+  ON C_OLCand
+  USING btree
+  (M_ProductPrice_ID, M_ProductPrice_Attribute_ID);
+CREATE INDEX IF NOT EXISTS TMP_ASI_ProductPrice_ID_M_ProductPrice_Attribute_ID
+  ON TMP_ASI
+  USING btree
+  (Old_ProductPrice_ID, M_ProductPrice_Attribute_ID);
+
 update C_OLCand c set
 	M_ProductPrice_ID=asi.M_ProductPrice_ID
 	, M_ProductPrice_Attribute_ID=null
@@ -239,6 +249,10 @@ where
 -- Delete the migration M_ProductPrice_Attribute records
 -- we expect that M_ProductPrice_Attribute_Line to be deleted too.
 -- NOTE: KEEP THIS LAST
+CREATE INDEX IF NOT EXISTS TMP_M_ProductPrice_Old_ProductPrice_Attribute_ID
+  ON tMP_M_ProductPrice
+  USING btree
+  (Old_ProductPrice_Attribute_ID);
 delete from M_ProductPrice_Attribute pa
 where exists (select 1 from TMP_M_ProductPrice t where t.Old_ProductPrice_Attribute_ID=pa.M_ProductPrice_Attribute_ID)
 ;
