@@ -29,7 +29,11 @@ class QuickActions extends Component {
     }
 
     componentDidUpdate = (prevProps) => {
-        const {selected, refresh} = this.props;
+        const {selected, refresh, shouldNotUpdate} = this.props;
+        if(shouldNotUpdate){
+            return;
+        }
+
         if(
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
             (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
@@ -48,7 +52,6 @@ class QuickActions extends Component {
 
     handleClick = (action) => {
         const {dispatch, viewId} = this.props;
-        console.log(viewId)
         if(!action.disabled){
             dispatch(
                 openModal(
@@ -61,7 +64,6 @@ class QuickActions extends Component {
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
-
         dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
             this.setState({
                 actions: response.data.actions

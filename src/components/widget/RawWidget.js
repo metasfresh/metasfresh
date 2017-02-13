@@ -583,7 +583,6 @@ class RawWidget extends Component {
             tabIndex, handlePatch
         } = this.props;
 
-
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className={
@@ -609,11 +608,10 @@ class RawWidget extends Component {
                         }
                     >
                         {this.renderWidget()}
-
-                        {fields[0].devices &&
+                        
+                        {fields[0].devices && !widgetData[0].readonly &&
                             <DevicesWidget
                                 devices={fields[0].devices}
-                                tabIndex={1}
                                 handleChange={(value) =>
                                     handlePatch && handlePatch(fields[0].field, value)
                                 }

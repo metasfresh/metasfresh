@@ -20,8 +20,12 @@ class SelectionAttributes extends Component {
 
     componentDidUpdate = (prevProps) => {
         const {
-            selected, DLWrapperSetData, DLWrapperSetLayout, refresh
+            selected, DLWrapperSetData, DLWrapperSetLayout, refresh, shouldNotUpdate
         } = this.props;
+
+        if(shouldNotUpdate){
+            return;
+        }
 
         if(
             (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
@@ -55,8 +59,16 @@ class SelectionAttributes extends Component {
             });
     }
 
-    getTabId = (item) => {
+    moveToDevice = (e) => {
+        switch(e.key) {
+            case "Shift":
+                e.preventDefault();
+                //TO DO
+            break;
+        }
+    }
 
+    getTabId = (item) => {
         return item && item[0].readonly ? -1 : 1;
 
     }
@@ -71,6 +83,8 @@ class SelectionAttributes extends Component {
             windowType, viewId, DLWrapperLayout, DLWrapperData, DLWrapperDataId,
             DLWrapperHandleChange, DLWrapperHandlePatch, entity, setClickOutsideLock
         } = this.props;
+
+        const lastItem = DLWrapperLayout.length-1;
 
         return (
             <div>

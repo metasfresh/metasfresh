@@ -86,6 +86,7 @@ export default function windowHandler(state = initialState, action) {
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     data: action.data,
+                    docId: action.docId,
                     layout: {},
                     rowData: {}
                 })

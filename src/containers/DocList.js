@@ -39,22 +39,6 @@ class DocList extends Component {
         dispatch(updateUri(pathname, query, prop, value));
     }
 
-    renderDocumentList = () => {
-        const {windowType, query, viewId, selected} = this.props;
-
-        return (<DocumentList
-            type="grid"
-            updateUri={this.updateUriCallback}
-            windowType={parseInt(windowType)}
-            defaultViewId={query.viewId}
-            defaultSort={query.sort}
-            defaultPage={parseInt(query.page)}
-            refType={query.refType}
-            refId={query.refId}
-            selected={selected}
-        />)
-    }
-
     render() {
         const {
             dispatch, windowType, breadcrumb, query, actions, modal, viewId,
@@ -87,17 +71,29 @@ class DocList extends Component {
                      />
                  }
                  {rawModal.visible &&
-                     <RawModal>
+                     <RawModal
+                         modalTitle="Document view"
+                     >
                          <DocumentList
                              type="grid"
-                             modalTitle="Document view"
                              windowType={parseInt(rawModal.type)}
                              defaultViewId={rawModal.viewId}
                              selected={selected}
                          />
                      </RawModal>
                  }
-                {this.renderDocumentList()}
+                 <DocumentList
+                     type="grid"
+                     updateUri={this.updateUriCallback}
+                     windowType={parseInt(windowType)}
+                     defaultViewId={query.viewId}
+                     defaultSort={query.sort}
+                     defaultPage={parseInt(query.page)}
+                     refType={query.refType}
+                     refId={query.refId}
+                     selected={selected}
+                     inBackground={rawModal.visible}
+                 />
             </Container>
         );
     }
