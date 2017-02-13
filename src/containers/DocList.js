@@ -71,10 +71,11 @@ class DocList extends Component {
                      />
                  }
                  {rawModal.visible &&
-                     <RawModal>
+                     <RawModal
+                         modalTitle="Document view"
+                     >
                          <DocumentList
                              type="grid"
-                             modalTitle="Document view"
                              windowType={parseInt(rawModal.type)}
                              defaultViewId={rawModal.viewId}
                              selected={selected}

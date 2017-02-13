@@ -359,7 +359,7 @@ class DocumentList extends Component {
                                     <SelectionAttributes
                                         refresh={refresh}
                                         setClickOutsideLock={this.setClickOutsideLock}
-                                        selected={selected}
+                                        selected={data.size && selected}
                                         shouldNotUpdate={inBackground}
                                     />
                                 </DataLayoutWrapper>
