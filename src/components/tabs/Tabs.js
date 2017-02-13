@@ -31,6 +31,7 @@ class Tabs extends Component {
 
     renderPills = (pills) => {
         const {tabIndex} = this.props;
+        const maxWidth = (95 / pills.length) + '%';
 
         return pills.map((item) => {
             return (
@@ -40,6 +41,7 @@ class Tabs extends Component {
                     onClick={(e) => this.handleClick(e, item.key)}
                     tabIndex={tabIndex}
                     onKeyDown={(e) => this.handlePillKeyDown(e, item.key)}
+                    style={{ maxWidth }}
                 >
                     <a className={"nav-link " + ((this.state.selected === item.key) ? "active" : "")}>{item.props.caption}</a>
                 </li>
