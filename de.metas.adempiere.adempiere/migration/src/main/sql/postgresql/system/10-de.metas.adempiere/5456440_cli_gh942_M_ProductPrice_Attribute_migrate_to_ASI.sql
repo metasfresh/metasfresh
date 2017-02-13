@@ -11,7 +11,6 @@ create table backup.M_ProductPrice_Attribute_BKP as select * from M_ProductPrice
 create table backup.M_ProductPrice_Attribute_Line_BKP as select * from M_ProductPrice_Attribute_Line;
 create table backup.M_ProductScalePrice_BKP as select * from M_ProductScalePrice;
 
-
 --
 -- Restore (if needed)
 /*
@@ -47,9 +46,10 @@ select
 	, pp.M_Product_ID
 	, pp.C_UOM_ID
 	--
-	, pa.PriceList
-	, pa.PriceStd
-	, pa.PriceLimit
+	-- the may be null in M_ProductPrice_Attribute, but not in M_ProductPrice
+	, COALESCE(pp.PriceList, pa.PriceList) AS PriceList 
+	, COALESCE(pp.PriceStd, pa.PriceStd) AS PriceStd
+	, COALESCE(pp.PriceLimit, pa.PriceLimit) AS PriceLimit
 	--
 	, pp.C_TaxCategory_ID
 	--
@@ -57,7 +57,7 @@ select
 	, pp.IsSeasonFixedPrice
 	--
 	, pp.IsAttributeDependant
-	, nextval('m_attributesetinstance_seq') as m_attributesetinstance_id
+	, nextval('m_attributesetinstance_seq') as m_attributesetinstance_id -- we will create ASIs those those IDs further down the road
 	--
 	, pp.IsDefault
 	--
@@ -70,6 +70,7 @@ select
 	, pa.M_ProductPrice_Attribute_ID as Old_ProductPrice_Attribute_ID
 from M_ProductPrice_Attribute pa
 inner join M_ProductPrice pp on (pp.M_ProductPrice_ID=pa.M_ProductPrice_ID)
+where pa.IsActive='Y' AND pp.IsActive='Y'
 ;
 -- select * from TMP_M_ProductPrice;
 
@@ -209,7 +210,7 @@ select
 from TMP_M_ProductPrice
 ;
 --
--- Trasform the old M_ProductPrice to main product price records
+-- Transform the old M_ProductPrice to main product price records
 update M_ProductPrice pp set
 	IsAttributeDependant='N' -- not anymore, we created different records for that
 	, MatchSeqNo = 0
