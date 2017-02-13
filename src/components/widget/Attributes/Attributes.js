@@ -164,7 +164,7 @@ class Attributes extends Component {
                         (readonly ? "tag-disabled disabled " : "")
                     }
                 >
-                    {label ? label : "Edit attributes"}
+                    {label ? label : "Edit"}
                 </button>
                 {dropdown &&
                     <AttributesDropdown

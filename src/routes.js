@@ -22,22 +22,23 @@ import {
 
 export const getRoutes = (store) => {
     const authRequired = (nextState, replace, callback) => {
-            if( !localStorage.isLogged ){
-                store.dispatch(localLoginRequest()).then((resp) => {
-                    if(!!resp.data){
-                        store.dispatch(loginSuccess());
-                        callback(null, nextState.location.pathname);
-                    }else{
-                        //redirect tells that there should be
-                        //step back in history after login
-                        store.dispatch(push('/login?redirect=true'));
-                    }
-                })
-            }else{
-                store.dispatch(loginSuccess());
-                callback();
-            }
+        if( !localStorage.isLogged ){
+            store.dispatch(localLoginRequest()).then((resp) => {
+                if(!!resp.data){
+                    store.dispatch(loginSuccess());
+                    callback(null, nextState.location.pathname);
+                }else{
+                    //redirect tells that there should be
+                    //step back in history after login
+                    store.dispatch(push('/login?redirect=true'));
+                }
+            })
+        }else{
+            store.dispatch(loginSuccess());
+            callback();
         }
+    }
+
     const logout = () => {
         store.dispatch(logoutRequest()).then(()=>
             store.dispatch(logoutSuccess())
@@ -45,6 +46,7 @@ export const getRoutes = (store) => {
             store.dispatch(push('/login'))
         );
     }
+
     return (
         <Route path="/">
             <Route onEnter={authRequired}>
@@ -59,7 +61,11 @@ export const getRoutes = (store) => {
                 />
                 <Route path="/window/:windowType/:docId"
                     component={MasterWindow}
-                    onEnter={(nextState) => store.dispatch(createWindow(nextState.params.windowType, nextState.params.docId))}
+                    onEnter={(nextState) => store.dispatch(
+                        createWindow(
+                            nextState.params.windowType, nextState.params.docId
+                        )
+                    )}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
                 <Route path="/inbox" component={InboxAll} />
@@ -68,7 +74,10 @@ export const getRoutes = (store) => {
                 <Route path="/dashboard2" component={Dashboard} />
             </Route>
             <Route path="/login" component={nextState =>
-                <Login redirect={nextState.location.query.redirect} logged={localStorage.isLogged} />
+                <Login
+                    redirect={nextState.location.query.redirect}
+                    logged={localStorage.isLogged}
+                />
             } />
             <Route path="*" component={NoMatch} />
         </Route>

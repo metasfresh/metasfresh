@@ -109,6 +109,7 @@ class SelectionAttributes extends Component {
                             tabIndex={this.getTabId(item.fields.map(elem => findRowByPropName(DLWrapperData, elem.field)))}
                         />
                     )}
+                    {DLWrapperLayout && !DLWrapperLayout.length && <i>Select element to display its attributes.</i>}
                 </div>
                 <div className="focusHandler" tabIndex={1} onFocus={this.selectTable}></div>
             </div>

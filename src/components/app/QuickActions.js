@@ -28,10 +28,6 @@ class QuickActions extends Component {
         this.fetchActions();
     }
 
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
-    }
-
     componentDidUpdate = (prevProps) => {
         const {selected, refresh} = this.props;
         if(
@@ -42,14 +38,24 @@ class QuickActions extends Component {
         }
     }
 
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
+    }
+
     handleClickOutside = () => {
         this.toggleDropdown();
     }
 
     handleClick = (action) => {
-        const {dispatch} = this.props;
+        const {dispatch, viewId} = this.props;
+        console.log(viewId)
         if(!action.disabled){
-            dispatch(openModal(action.caption, action.processId, "process", null, null, false));
+            dispatch(
+                openModal(
+                    action.caption, action.processId, "process", null, null, false,
+                    viewId
+                )
+            );
         }
     }
 
@@ -57,16 +63,16 @@ class QuickActions extends Component {
         const {dispatch, windowType, viewId, selected} = this.props;
 
         dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 actions: response.data.actions
-            }))
+            })
         });
     }
 
     toggleDropdown = (option) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isDropdownOpen: option
-        }))
+        })
     }
 
     render() {
