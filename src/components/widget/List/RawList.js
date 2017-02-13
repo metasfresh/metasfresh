@@ -8,14 +8,18 @@ class RawList extends Component {
         super(props);
 
         this.state = {
-            selected: 0,
+            selected: props.selected || 0,
             isOpen: false
         }
     }
 
     handleBlur = (e) => {
+        const { selected } = this.props;
+
+        this.dropdown.blur();
         this.setState(Object.assign({}, this.state, {
-            isOpen: false
+            isOpen: false,
+            selected: selected || 0
         }))
     }
 
@@ -45,7 +49,15 @@ class RawList extends Component {
             onSelect(null);
         }
 
-        this.handleBlur();
+        this.setState({
+            selected: (option || 0)
+        }, () => this.handleBlur())
+    }
+
+    handleSwitch = (option) => {
+        this.setState({
+            selected: (option || 0)
+        })
     }
 
     navigate = (up) => {
@@ -83,14 +95,56 @@ class RawList extends Component {
         }
     }
 
+    areOptionsEqual(selected, option){
+        // different types - not equal for sure
+        if (typeof option !== typeof selected){
+            return false;
+        }
+
+        // option and selected are not objects
+        if(
+            typeof option !== 'object' &&
+            typeof selected !== 'object' &&
+            selected === option
+        ){
+            return true;
+        }
+
+        const optionKeys = Object.keys(option);
+        const selectedKeys = Object.keys(selected);
+        const firstOption = option[optionKeys[0]];
+        const firstSelected = selected[selectedKeys[0]];
+
+        // objects, and first elements are not
+        if (
+            typeof option === 'object' &&
+            typeof selected === 'object' &&
+            typeof firstOption !== 'object' &&
+            typeof firstSelected !== 'object'
+        )
+        {
+            return optionKeys[0] === selectedKeys[0] &&
+                    firstOption === firstSelected;
+        }
+
+        // first elements are nested objects, repeat checking
+        return this.areOptionsEqual(firstOption, firstSelected);
+    }
+
     getRow = (index, option, label) => {
         const {selected} = this.state;
+
         return (
             <div
                 key={index}
-                className={"input-dropdown-list-option "  +
-                    (selected === index ? "input-dropdown-list-option-key-on" : "")
+                className={"input-dropdown-list-option"  +
+                    (
+                        this.areOptionsEqual(selected, option) ?
+                        " input-dropdown-list-option-key-on" :
+                        ""
+                    )
                 }
+                onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
             >
                 <p className="input-dropdown-item-title">{label ? label : option[Object.keys(option)[0]]}</p>
@@ -104,7 +158,7 @@ class RawList extends Component {
         let ret = [];
 
         if(!mandatory){
-            emptyText && ret.push(this.getRow(0, null, emptyText));
+            emptyText && ret.push(this.getRow(0, 0, emptyText));
         }
 
         list.map((option, index) => {

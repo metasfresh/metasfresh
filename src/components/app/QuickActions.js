@@ -11,6 +11,11 @@ import {
 
 import QuickActionsDropdown from './QuickActionsDropdown';
 
+import keymap from '../../keymap.js';
+import QuickActionsContextShortcuts from '../shortcuts/QuickActionsContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+const shortcutManager = new ShortcutManager(keymap);
+
 class QuickActions extends Component {
     constructor(props){
         super(props);
@@ -33,14 +38,24 @@ class QuickActions extends Component {
         }
     }
 
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
+    }
+
     handleClickOutside = () => {
         this.toggleDropdown();
     }
 
     handleClick = (action) => {
-        const {dispatch} = this.props;
+        const {dispatch, viewId} = this.props;
+        console.log(viewId)
         if(!action.disabled){
-            dispatch(openModal(action.caption, action.processId, "process", null, null, false));
+            dispatch(
+                openModal(
+                    action.caption, action.processId, "process", null, null, false,
+                    viewId
+                )
+            );
         }
     }
 
@@ -48,16 +63,16 @@ class QuickActions extends Component {
         const {dispatch, windowType, viewId, selected} = this.props;
 
         dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 actions: response.data.actions
-            }))
+            })
         });
     }
 
     toggleDropdown = (option) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isDropdownOpen: option
-        }))
+        })
     }
 
     render() {
@@ -99,12 +114,19 @@ class QuickActions extends Component {
                             />
                         }
                     </div>
+                    <QuickActionsContextShortcuts
+                        handleClick={() => this.handleClick(actions[0])}
+                    />
                 </div>
             );
         }else{
             return false;
         }
     }
+}
+
+QuickActions.childContextTypes = {
+    shortcuts: PropTypes.object.isRequired
 }
 
 QuickActions.propTypes = {

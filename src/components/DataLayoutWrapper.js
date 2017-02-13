@@ -46,7 +46,7 @@ class DataLayoutWrapper extends Component {
         dispatch(patchRequest(
             entity, windowType, dataId, null, null, prop, value, null, null, null, viewId
         )).then(response => {
-            response.data[0].fields.map(item => {
+            response.data[0] && response.data[0].fields.map(item => {
                 this.setState(Object.assign({}, this.state, {
                     data: this.state.data.map(field => {
                         if(field.field === item.field){

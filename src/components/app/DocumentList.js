@@ -35,60 +35,85 @@ class DocumentList extends Component {
     constructor(props){
         super(props);
 
+        const {defaultViewId, defaultPage, defaultSort} = this.props;
+
+        this.pageLength = 20;
+
         this.state = {
             data: null,
             layout: null,
+
+            viewId: defaultViewId,
+            page: defaultPage || 1,
+            sort: defaultSort,
+            filters: null,
+
             clickOutsideLock: false,
             refresh: null
         }
-        this.updateData();
-    }
-
-    componentWillUnmount() {
-        this.sockClient.disconnect();
+        this.fetchLayoutAndData();
     }
 
     componentWillReceiveProps(props) {
-        const {sorting, windowType, viewId} = props;
-
+        const {windowType, defaultViewId, defaultSort, defaultPage} = props;
+        const {page, sort, viewId} = this.state;
         //if we browse list of docs, changing type of Document
         //does not re-construct component, so we need to
         //make it manually while the windowType changes.
         if(windowType !== this.props.windowType) {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 data:null,
                 layout:null
-            }), () => {
-                this.updateData();
-            })
+            }, () => {
+
+                this.fetchLayoutAndData();
+            });
         }
 
-        if(viewId !== this.props.viewId){
-            this.connectWS(viewId);
+        if(
+            defaultSort != this.props.defaultSort &&
+            defaultSort != sort
+        ){
+            this.setState({
+                sort: defaultSort
+            });
         }
+
+        if(
+            defaultPage != this.props.defaultPage &&
+            defaultPage != page
+        ){
+            this.setState({
+                page: defaultPage || 1
+            });
+        }
+
+        if(
+            defaultViewId != this.props.defaultViewId &&
+            defaultViewId != viewId
+        ) {
+            this.setState({
+                viewId: defaultViewId
+            });
+            this.connectWS(defaultViewId);
+        }
+    }
+
+    componentWillUnmount() {
+        this.disconnectWS();
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         return !!nextState.layout && !!nextState.data;
     }
 
-    componentDidUpdate(prevProps) {
-        const {filters} = this.props;
+    connectWS = () => {
+        const {viewId} = this.props;
 
-        const oldFilter = prevProps.filters[0] ? JSON.stringify(prevProps.filters[0]) : '';
-        const newFilter = filters[0] ? JSON.stringify(filters[0]) : '';
+        this.sockClient && this.sockClient.disconnect();
 
-        if(newFilter !== oldFilter){
-
-            this.updateData(true);
-        }
-    }
-
-    // We have to postpone this task til the viewId won't be created
-    connectWS = (viewId) => {
         this.sock = new SockJs(config.WS_URL);
         this.sockClient = Stomp.Stomp.over(this.sock);
-
         this.sockClient.debug = null;
         this.sockClient.connect({}, frame => {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
@@ -103,152 +128,114 @@ class DocumentList extends Component {
         });
     }
 
-    setListData = (data) => {
-        const {dispatch} = this.props;
+    disconnectWS = () => {
+        this.sockClient && this.sockClient.disconnect();
+    }
 
-        this.setState(Object.assign({}, this.state, {
-            data: data
-        }), () => {
-            this.getView(data.viewId);
-            dispatch(initDocumentView(data.viewId));
+    redirectToNewDocument = () => {
+        const {dispatch, windowType} = this.props;
+
+        dispatch(push('/window/' + windowType + '/new'));
+    }
+
+    setClickOutsideLock = (value) => {
+        this.setState({
+            clickOutsideLock: !!value
         })
     }
 
-    createNewView = () => {
-        const {dispatch, windowType, type, filters, query} = this.props;
-        dispatch(
-            createViewRequest(
-                windowType, type, 20, filters, query && query.refType,
-                query && query.refId
-            )
-        ).then((response) => {
-            this.setListData(response.data);
-        })
-    }
+    // FETCHING LAYOUT && DATA -------------------------------------------------
 
-    browseView = () => {
-        const {dispatch, windowType, query, type, filters} = this.props;
-        dispatch(browseViewRequest(query.viewId, query.page ? query.page : 1, 20, query.filters, windowType))
-            .then((response) => {
-                // this.setListData(response.data);
-                this.setState(Object.assign({}, this.state, {
-                    data: response.data
-                }), () => {
-                    dispatch(initDocumentView(response.data.viewId));
-                })
-            }).catch((err) => {
-                if(err.response && err.response.status === 404) {
-                    this.createNewView(windowType, type, filters);
-                }
-            });
-    }
-
-    updateData = (isNewFilter) => {
+    fetchLayoutAndData = (isNewFilter) => {
         const {
-            dispatch, windowType, type, filters, filtersWindowType, query, viewId
+            dispatch, windowType, type
         } = this.props;
 
-        if(!!filtersWindowType && (filtersWindowType != windowType)) {
-            dispatch(setFilter(null,null));
-        }
+        const {
+            viewId
+        } = this.state;
 
-        windowType && dispatch(
-            initLayout(
-                'documentView', windowType, null, null, null, null, type, true
-            )
+        dispatch(
+            initLayout('documentView', windowType, null, null, null, null, type, true)
         ).then(response => {
-            this.setState(Object.assign({}, this.state, {
-                layout: response.data
-            }), () => {
-                if(query && query.viewId && !isNewFilter){
+            this.setState({
+                layout: response.data,
+                page:1,
+                sort:null
+            }, () => {
+                if(viewId && !isNewFilter){
                     this.browseView();
                 }else{
-                    this.createNewView();
+                    this.createView();
                 }
             })
         });
     }
 
-    getView = (viewId) => {
-        const {data} = this.state;
-        const {dispatch, pagination, sorting, windowType, query, updateUri} = this.props;
-        let urlQuery = "";
-        let urlPage = pagination.page;
-
-        !!updateUri && updateUri("viewId", viewId);
-
-        if(query){
-            if(query.sort){
-                urlQuery = query.sort;
-                dispatch(setSorting(urlQuery.substring(1), urlQuery[0], windowType));
-            }
-            if(query.page){
-                urlPage = query.page;
-                dispatch(setPagination(parseInt(query.page), windowType));
-            }
-        }
-        //
-        //  Condition, that ensure wheter windowType
-        //  is the same as for saved query params
-        //
-        else if(windowType === sorting.windowType) {
-            urlQuery = this.getSortingQuery(sorting.dir, sorting.prop);
-        }else{
-            dispatch(clearListProps());
-        }
-
-        if(windowType !== pagination.windowType) {
-            dispatch(clearListPagination());
-        }
-
-        this.getData(data.viewId, urlPage, 20, urlQuery);
-    }
-
-    getData = (id, page, pages, sortingQuery) => {
-        const {data} = this.state;
+    /*
+     *  If viewId exist, than browse that view.
+     */
+    browseView = () => {
         const {dispatch, windowType} = this.props;
-        dispatch(browseViewRequest(id, page, pages, sortingQuery, windowType)).then((response) => {
-            this.setState(Object.assign({}, this.state, {
-                data: response.data
-            }))
+        const {viewId, page, sort} = this.state;
+
+        this.getData(
+            viewId, page, sort
+        ).catch((err) => {
+            if(err.response && err.response.status === 404) {
+                this.createView();
+            }
         });
     }
 
-    getSortingQuery = (asc, field) => {
-        let sortingQuery = '';
+    createView = () => {
+        const {
+            dispatch, windowType, type, refType, refId
+        } = this.props;
 
-        if(field && asc) {
-            sortingQuery = '+' + field;
-        } else if(field && !asc) {
-            sortingQuery = '-' + field;
-        }
-        return sortingQuery;
+        const {page, sort, filters} = this.state;
+
+        dispatch(
+            createViewRequest(windowType, type, this.pageLength, filters, refType, refId)
+        ).then(response => {
+            this.setState({
+                data: response.data,
+                viewId: response.data.viewId
+            }, () => {
+                this.getData(response.data.viewId, page, sort);
+            })
+        })
     }
 
-    sortData = (asc, field, startPage, currPage) => {
-        const {sorting, page, dispatch, windowType, updateUri} = this.props;
-        const {data} = this.state;
+    getData = (id, page, sortingQuery) => {
+        const {dispatch, windowType, updateUri} = this.props;
 
-        let setPage = currPage;
-
-        asc && field && !!updateUri && updateUri("sort", (asc?"+":"-")+field);
-
-        dispatch(setSorting(field, asc, windowType));
-
-        if(startPage){
-            dispatch(setPagination(1, windowType));
-            !!updateUri && updateUri("page", 1);
-            setPage = 1;
+        if(updateUri){
+            id && updateUri("viewId", id);
+            page && updateUri("page", page);
+            sortingQuery && updateUri("sort", sortingQuery);
         }
 
-        this.getData(data.viewId, setPage, 20, this.getSortingQuery(asc, field));
+        return dispatch(
+            browseViewRequest(id, page, this.pageLength, sortingQuery, windowType)
+        ).then(response => {
+            this.setState({
+                data: response.data,
+                viewid: response.data.viewId,
+                filters: response.data.filters
+            })
+        });
     }
+
+    // END OF FETCHING LAYOUT && DATA ------------------------------------------
+
+    // MANAGING SORT, PAGINATION, FILTERS --------------------------------------
 
     handleChangePage = (index) => {
-        const {data} = this.state;
-        const {sorting, pagination, dispatch, updateUri, windowType} = this.props;
+        const {data, sort, page, viewId} = this.state;
+        const {dispatch} = this.props;
 
-        let currentPage = pagination.page;
+        let currentPage = page;
 
         switch(index){
             case "up":
@@ -261,31 +248,42 @@ class DocumentList extends Component {
                 currentPage = index;
         }
 
-        if(currentPage !== pagination.page){
-            dispatch(setPagination(currentPage, windowType));
-            !!updateUri && updateUri("page", currentPage);
-
-            this.sortData(sorting.dir, sorting.prop, false, currentPage);
-        }
-    }
-
-    newDocument = () => {
-        const {dispatch, windowType} = this.props;
-
-        dispatch(push('/window/' + windowType + '/new'));
-    }
-
-    setClickOutsideLock = (value) => {
         this.setState({
-            clickOutsideLock: !!value
+            page: currentPage
+        }, () => {
+            this.getData(viewId, currentPage, sort);
+        });
+    }
+
+    getSortingQuery = (asc, field) => (asc ? "+" : "-") + field;
+
+    sortData = (asc, field, startPage, currPage) => {
+        const {data, viewId, page} = this.state;
+
+        this.setState({
+            sort: this.getSortingQuery(asc, field)
+        }, () => {
+            this.getData(viewId, startPage ? 1 : page, this.getSortingQuery(asc, field));
+        });
+    }
+
+    handleFilterChange = (filters) => {
+        this.setState({
+            filters: filters
+        }, () => {
+            this.fetchLayoutAndData(true);
         })
     }
 
+    // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
+
     render() {
-        const {layout, data, clickOutsideLock, refresh} = this.state;
         const {
-            dispatch, windowType, type, filters, pagination, open, closeOverlays,
-            selected
+            layout, data, viewId, clickOutsideLock, refresh, page, sort, filters
+        } = this.state;
+
+        const {
+            dispatch, windowType, type, open, closeOverlays, selected
         } = this.props;
 
         if(layout && data) {
@@ -296,21 +294,22 @@ class DocumentList extends Component {
                             {type === "grid" &&
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
-                                    onClick={() => this.newDocument()}
+                                    onClick={() => this.redirectToNewDocument()}
                                 >
                                     <i className="meta-icon-add" /> New {layout.caption}
                                 </button>
                             }
-                            <Filters
+                            {layout.filters && <Filters
                                 filterData={layout.filters}
-                                filtersActive={data.filters}
+                                filtersActive={filters}
                                 windowType={windowType}
-                                viewId={data.viewId}
-                            />
+                                viewId={viewId}
+                                updateDocList={this.handleFilterChange}
+                            />}
                         </div>
                         <QuickActions
                             windowType={windowType}
-                            viewId={data.viewId}
+                            viewId={viewId}
                             selected={selected}
                             refresh={refresh}
                         />
@@ -334,11 +333,11 @@ class DocumentList extends Component {
                                 dispatch(push("/window/" + windowType + "/" + id))
                             }}
                             size={data.size}
-                            pageLength={20}
+                            pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
-                            page={pagination.page}
+                            page={page}
                             mainTable={true}
-                            updateDocList={this.updateData}
+                            updateDocList={this.fetchLayoutAndData}
                             sort={this.sortData}
                             orderBy={data.orderBy}
                             tabIndex={0}
@@ -352,7 +351,7 @@ class DocumentList extends Component {
                                     className="table-flex-wrapper attributes-selector"
                                     entity="documentView"
                                     windowType={windowType}
-                                    viewId={data.viewId}
+                                    viewId={viewId}
                                 >
                                     <SelectionAttributes
                                         refresh={refresh}
@@ -373,40 +372,10 @@ class DocumentList extends Component {
 }
 
 DocumentList.propTypes = {
+    windowType: PropTypes.number.isRequired,
     dispatch: PropTypes.func.isRequired,
-    sorting: PropTypes.object.isRequired,
-    pagination: PropTypes.object.isRequired,
-    filters: PropTypes.array.isRequired,
-    filtersWindowType: PropTypes.string,
-    viewId: PropTypes.string
 }
 
-function mapStateToProps(state) {
-    const { listHandler } = state;
-
-    const {
-        filters,
-        filtersWindowType,
-        sorting,
-        pagination,
-        viewId
-    } = listHandler || {
-        viewId: "",
-        filters: {},
-        sorting: {},
-        pagination: {},
-        filtersWindowType: ""
-    }
-
-    return {
-        filters,
-        sorting,
-        pagination,
-        filtersWindowType,
-        viewId
-    }
-}
-
-DocumentList = connect(mapStateToProps)(DocumentList)
+DocumentList = connect()(DocumentList);
 
 export default DocumentList;

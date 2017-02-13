@@ -21,7 +21,6 @@ class RawWidget extends Component {
         super(props);
 
         this.state = {
-            textValue: props.selectedItem,
             isEdited: false,
             cachedValue: null
         }
@@ -32,15 +31,6 @@ class RawWidget extends Component {
         if(this.rawWidget && autoFocus){
             this.rawWidget.focus();
         }
-    }
-
-    handleSelectedValue = (item) => {
-        const {setSelectedItem} = this.props
-        this.setState(Object.assign({}, this.state, {
-            textValue: item
-        }))
-
-        setSelectedItem(item);
     }
 
     handleFocus = (e) => {
@@ -91,34 +81,19 @@ class RawWidget extends Component {
         this.handlePatch(widgetField, value, id);
     }
 
-    renderWidget = (
-        widgetType, fields, windowType, dataId, type, data, rowId, tabId, icon, align
-    ) => {
+    renderWidget = () => {
         const {
             handleChange, handleFocus, updated, isModal, filterWidget, filterId,
-            parameterName, setSelectedItem, selectedItem, selectedItemTo, id,
-            range, entity, isShown, isHidden, handleBackdropLock, subentity,
-            subentityId, tabIndex, viewId, dropdownOpenCallback, autoFocus, fullScreen
+            id, range, entity, onShow,
+            onHide, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
+            dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
+            windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign
         } = this.props;
 
-        const {textValue, isEdited} = this.state;
-        const widgetData = data[0];
+        const {isEdited} = this.state;
 
-        let widgetField = "";
-        let selectedField = "";
-        let selectedFieldTo = "";
-        let widgetFields = "";
-
-        if (filterWidget) {
-            widgetField = parameterName;
-            selectedField = selectedItem;
-            selectedFieldTo = selectedItemTo;
-            widgetFields = fields;
-        } else {
-            widgetField = fields[0].field;
-            selectedField = data[0].value;
-            widgetFields = fields[0];
-        }
+        // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
+        const widgetField = filterWidget ? fields[0].parameterName : fields[0].field;
 
         switch(widgetType){
             case "Date":
@@ -130,20 +105,20 @@ class RawWidget extends Component {
                             onChange={(value, valueTo) =>
                                 this.handlePatch(widgetField, value, valueTo)
                             }
-                            mandatory={widgetData.mandatory}
-                            isShown={isShown}
-                            isHidden={isHidden}
-                            value={selectedField}
-                            valueTo={selectedFieldTo}
+                            mandatory={widgetData[0].mandatory}
+                            onShow={onShow}
+                            onHide={onHide}
+                            value={widgetData[0].value}
+                            valueTo={widgetData[0].valueTo}
                             tabIndex={fullScreen ? -1 : tabIndex}
                          />
                     )
                 }else{
                     return (
                         <div className={"input-icon-container input-block " +
-                            (widgetData.readonly ? "input-disabled " : "") +
-                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                            (align ? "text-xs-" + align + " " : "") +
+                            (widgetData[0].readonly ? "input-disabled " : "") +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
+                            (gridAlign ? "text-xs-" + gridAlign + " " : "") +
                             (type === "primary" ? "input-primary " : "input-secondary ") +
                             (updated ? "pulse-on " : "pulse-off ") +
                             (rowId && !isModal ? "input-table " : "")
@@ -153,11 +128,11 @@ class RawWidget extends Component {
                                 timeFormat={false}
                                 dateFormat={true}
                                 inputProps={{
-                                    placeholder: widgetFields.emptyText,
-                                    disabled: widgetData.readonly,
+                                    placeholder: fields[0].emptyText,
+                                    disabled: widgetData[0].readonly,
                                     tabIndex: fullScreen ? -1 : tabIndex
                                 }}
-                                value={selectedField}
+                                value={widgetData[0].value}
                                 onChange={(date) => handleChange(widgetField, date)}
                                 patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                                 handleBackdropLock={handleBackdropLock}
@@ -169,9 +144,9 @@ class RawWidget extends Component {
             case "DateTime":
                 return (
                     <div className={"input-icon-container input-block " +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
-                        (align ? "text-xs-" + align + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         (((rowId && !isModal)) ? "input-table " : "")
@@ -181,11 +156,11 @@ class RawWidget extends Component {
                             timeFormat={true}
                             dateFormat={true}
                             inputProps={{
-                                placeholder: widgetFields.emptyText,
-                                disabled: widgetData.readonly,
+                                placeholder: fields[0].emptyText,
+                                disabled: widgetData[0].readonly,
                                 tabIndex: fullScreen ? -1 : tabIndex
                             }}
-                            value={selectedField}
+                            value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
@@ -198,9 +173,9 @@ class RawWidget extends Component {
                 return (
                     <div className={"input-icon-container input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         ((rowId && !isModal) ? "input-table " : "")
                     }>
@@ -209,11 +184,11 @@ class RawWidget extends Component {
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{
-                                placeholder: widgetFields.emptyText,
-                                disabled: widgetData.readonly,
+                                placeholder: fields[0].emptyText,
+                                disabled: widgetData[0].readonly,
                                 tabIndex: fullScreen ? -1 : tabIndex
                             }}
-                            value={selectedField}
+                            value={widgetData[0].value}
                             onChange={(date) => handleChange(widgetField, date)}
                             patch={(date) => this.handlePatch(widgetField, date ? Moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null)}
                             tabIndex={fullScreen ? -1 : tabIndex}
@@ -232,20 +207,19 @@ class RawWidget extends Component {
                         dataId={dataId}
                         properties={fields}
                         windowType={windowType}
-                        defaultValue={data}
-                        placeholder={widgetFields.emptyText}
-                        readonly={widgetData.readonly}
-                        mandatory={widgetData.mandatory}
+                        defaultValue={widgetData}
+                        placeholder={fields[0].emptyText}
+                        readonly={widgetData[0].readonly}
+                        mandatory={widgetData[0].mandatory}
                         rank={type}
                         onChange={this.handlePatch}
-                        align={align}
+                        align={gridAlign}
                         isModal={isModal}
                         updated={updated}
                         filterWidget={filterWidget}
                         filterId={filterId}
-                        parameterName={parameterName}
-                        setSelectedItem={setSelectedItem}
-                        selected={selectedField}
+                        parameterName={fields[0].parameterName}
+                        selected={widgetData[0].value}
                         tabId={tabId}
                         rowId={rowId}
                         tabIndex={fullScreen ? -1 : tabIndex}
@@ -260,22 +234,21 @@ class RawWidget extends Component {
                         entity={entity}
                         subentity={subentity}
                         subentityId={subentityId}
-                        defaultValue={widgetFields.emptyText}
-                        selected={selectedField}
+                        defaultValue={fields[0].emptyText}
+                        selected={widgetData[0].value}
                         properties={fields}
-                        readonly={widgetData.readonly}
-                        mandatory={widgetData.mandatory}
+                        readonly={widgetData[0].readonly}
+                        mandatory={widgetData[0].mandatory}
                         windowType={windowType}
                         rowId={rowId}
                         tabId={tabId}
                         onChange={(option) => this.handlePatch(widgetField, option, id)}
-                        align={align}
+                        align={gridAlign}
                         updated={updated}
                         filterWidget={filterWidget}
                         filterId={filterId}
-                        parameterName={parameterName}
-                        setSelectedItem={setSelectedItem}
-                        emptyText={widgetFields.emptyText}
+                        parameterName={fields[0].parameterName}
+                        emptyText={fields[0].emptyText}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         viewId={viewId}
                         autoFocus={autoFocus}
@@ -286,9 +259,9 @@ class RawWidget extends Component {
                     <div className={
                             "input-block input-icon-container " +
                             (type === "primary" ? "input-primary " : "input-secondary ") +
-                            (widgetData.readonly ? "input-disabled " : "") +
-                            (align ? "text-xs-" + align + " " : "") +
-                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                            (widgetData[0].readonly ? "input-disabled " : "") +
+                            (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                             (updated ? "pulse-on " : "pulse-off ") +
                             ((rowId && !isModal) ? "input-table " : "") +
                             (isEdited ? "input-focused " : "")
@@ -298,9 +271,9 @@ class RawWidget extends Component {
                             type="text"
                             ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
-                            value={selectedField}
-                            placeholder={widgetFields.emptyText}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            placeholder={fields[0].emptyText}
+                            disabled={widgetData[0].readonly}
                             onFocus={this.handleFocus}
                             onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
@@ -314,9 +287,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         ((rowId && !isModal) ? "input-table " : "") +
                         (isEdited ? "input-focused " : "")
@@ -324,11 +297,11 @@ class RawWidget extends Component {
                         <textarea
                             ref={c => this.rawWidget = c}
                             className="input-field js-input-field"
-                            value={filterWidget ? textValue : selectedField}
-                            disabled={widgetData.readonly}
-                            placeholder={widgetFields.emptyText}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
+                            placeholder={fields[0].emptyText}
                             onFocus={this.handleFocus}
-                            onChange={filterWidget ? (e) => this.handleSelectedValue(e.target.value) : (e) => handleChange(widgetField, e.target.value)}
+                            onChange={(e) => handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
                         />
@@ -339,9 +312,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? " pulse-on" : " pulse-off") +
                         ((rowId && !isModal) ? "input-table " : "") +
                         (isEdited ? "input-focused " : "")
@@ -352,8 +325,8 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             onFocus={this.handleFocus}
                             onChange={(e) => handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
@@ -366,9 +339,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         ((rowId && !isModal) ? "input-table " : "") +
                         (isEdited ? "input-focused " : "")
@@ -377,10 +350,10 @@ class RawWidget extends Component {
                             ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             onFocus={this.handleFocus}
-                            onChange={(e) => handleChange && handleChange(widgetFields.field, e.target.value)}
+                            onChange={(e) => handleChange && handleChange(fields[0].field, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
                             tabIndex={fullScreen ? -1 : tabIndex}
                         />
@@ -391,9 +364,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         ((rowId && !isModal) ? "input-table " : "") +
                         (isEdited ? "input-focused " : "")
@@ -404,8 +377,8 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
@@ -418,9 +391,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         ((rowId && !isModal) ? "input-table " : "") +
                         (isEdited ? "input-focused " : "")
@@ -431,8 +404,8 @@ class RawWidget extends Component {
                             className="input-field js-input-field"
                             min="0"
                             step="1"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
@@ -445,9 +418,9 @@ class RawWidget extends Component {
                     <div className={
                         "input-block " +
                         (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (align ? "text-xs-" + align + " " : "") +
-                        (widgetData.readonly ? "input-disabled " : "") +
-                        (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "") +
+                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                        (widgetData[0].readonly ? "input-disabled " : "") +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
                         (updated ? "pulse-on " : "pulse-off ") +
                         ((rowId && !isModal) ? "input-table " : "") +
                         (isEdited ? "input-focused " : "")
@@ -456,8 +429,8 @@ class RawWidget extends Component {
                             ref={c => this.rawWidget = c}
                             type="number"
                             className="input-field js-input-field"
-                            value={selectedField}
-                            disabled={widgetData.readonly}
+                            value={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             onFocus={this.handleFocus}
                             onChange={(e) =>  handleChange && handleChange(widgetField, e.target.value)}
                             onBlur={(e) => this.handleBlur(widgetField, e.target.value, id)}
@@ -470,7 +443,7 @@ class RawWidget extends Component {
                     <label
                         className={
                             "input-checkbox " +
-                            (widgetData.readonly ? "input-disabled " : "")
+                            (widgetData[0].readonly ? "input-disabled " : "")
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
@@ -484,8 +457,8 @@ class RawWidget extends Component {
                         <input
                             ref={c => this.rawWidget = c}
                             type="checkbox"
-                            checked={selectedField}
-                            disabled={widgetData.readonly}
+                            checked={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
                         />
@@ -497,16 +470,16 @@ class RawWidget extends Component {
                     <label
                         className={
                             "input-switch " +
-                            (widgetData.readonly ? "input-disabled " : "") +
-                            (widgetData.mandatory && widgetData.value.length === 0 ? "input-mandatory " : "")
+                            (widgetData[0].readonly ? "input-disabled " : "") +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "")
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
                         <input
                             type="checkbox"
-                            checked={selectedField}
-                            disabled={widgetData.readonly}
+                            checked={widgetData[0].value}
+                            disabled={widgetData[0].readonly}
                             tabIndex="-1"
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                         />
@@ -518,12 +491,12 @@ class RawWidget extends Component {
                     <div
                         className={
                             "tag tag-warning " +
-                            (align ? "text-xs-" + align + " " : "")
+                            (gridAlign ? "text-xs-" + gridAlign + " " : "")
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
                     >
-                        {widgetData.value}
+                        {widgetData[0].value}
                     </div>
                 )
             case "Button":
@@ -531,20 +504,20 @@ class RawWidget extends Component {
                     <button
                         className={
                             "btn btn-sm btn-meta-primary " +
-                            (align ? "text-xs-" + align + " " : "") +
-                            (widgetData.readonly ? "tag-disabled disabled " : "")
+                            (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+                            (widgetData[0].readonly ? "tag-disabled disabled " : "")
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
                     >
-                        {widgetData.value[Object.keys(widgetData.value)[0]]}
+                        {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
                     </button>
                 )
             case "ActionButton":
                 return (
                     <ActionButton
-                        data={widgetData}
+                        data={widgetData[0]}
                         windowType={windowType}
                         fields={fields}
                         dataId={dataId}
@@ -560,7 +533,7 @@ class RawWidget extends Component {
                         attributeType='pattribute'
                         fields={fields}
                         dataId={dataId}
-                        widgetData={widgetData}
+                        widgetData={widgetData[0]}
                         docType={windowType}
                         tabId={tabId}
                         rowId={rowId}
@@ -569,7 +542,7 @@ class RawWidget extends Component {
                         patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
-                        readonly={widgetData.readonly}
+                        readonly={widgetData[0].readonly}
                     />
                 )
             case "Address":
@@ -578,7 +551,7 @@ class RawWidget extends Component {
                         attributeType='address'
                         fields={fields}
                         dataId={dataId}
-                        widgetData={widgetData}
+                        widgetData={widgetData[0]}
                         docType={windowType}
                         tabId={tabId}
                         rowId={rowId}
@@ -587,13 +560,13 @@ class RawWidget extends Component {
                         patch={(option) => this.handlePatch(widgetField, option)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         autoFocus={autoFocus}
-                        readonly={widgetData.readonly}
+                        readonly={widgetData[0].readonly}
                     />
                 )
             case "Image":
                 return <Image
                     fields={fields}
-                    data={widgetData}
+                    data={widgetData[0]}
                     handlePatch={this.handlePatch}
                 />;
             default:
@@ -606,7 +579,7 @@ class RawWidget extends Component {
     render() {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, gridAlign, updated, isModal,
+            widgetData, dataId, rowId, tabId, icon, updated, isModal,
             tabIndex, handlePatch
         } = this.props;
 
@@ -634,10 +607,7 @@ class RawWidget extends Component {
                             (fields[0].devices ? "form-group-flex ": "")
                         }
                     >
-                        {this.renderWidget(
-                            widgetType, fields, windowType, dataId, type, widgetData,
-                            rowId, tabId, icon, gridAlign
-                        )}
+                        {this.renderWidget()}
 
                         {fields[0].devices &&
                             <DevicesWidget

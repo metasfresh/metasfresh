@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 import Modal from '../components/app/Modal';
+import RawModal from '../components/app/RawModal';
 
 import {
     getWindowBreadcrumb
@@ -40,12 +41,16 @@ class DocList extends Component {
 
     renderDocumentList = () => {
         const {windowType, query, viewId, selected} = this.props;
+
         return (<DocumentList
             type="grid"
             updateUri={this.updateUriCallback}
-            windowType={windowType}
-            query={query}
-            viewId={viewId}
+            windowType={parseInt(windowType)}
+            defaultViewId={query.viewId}
+            defaultSort={query.sort}
+            defaultPage={parseInt(query.page)}
+            refType={query.refType}
+            refId={query.refId}
             selected={selected}
         />)
     }
@@ -53,7 +58,7 @@ class DocList extends Component {
     render() {
         const {
             dispatch, windowType, breadcrumb, query, actions, modal, viewId,
-            selected, references
+            selected, references, rawModal
         } = this.props;
 
         return (
@@ -75,9 +80,22 @@ class DocList extends Component {
                         rowId={modal.rowId}
                         modalTitle={modal.title}
                         modalType={modal.modalType}
-                        viewId={viewId}
+                        modalViewId={modal.viewId}
+                        query={query}
                         selected={selected}
+                        viewId={query.viewId}
                      />
+                 }
+                 {rawModal.visible &&
+                     <RawModal>
+                         <DocumentList
+                             type="grid"
+                             modalTitle="Document view"
+                             windowType={parseInt(rawModal.type)}
+                             defaultViewId={rawModal.viewId}
+                             selected={selected}
+                         />
+                     </RawModal>
                  }
                 {this.renderDocumentList()}
             </Container>
@@ -92,7 +110,7 @@ DocList.propTypes = {
     search: PropTypes.string.isRequired,
     pathname: PropTypes.string.isRequired,
     modal: PropTypes.object.isRequired,
-    viewId: PropTypes.string.isRequired,
+    rawModal: PropTypes.object.isRequired,
     selected: PropTypes.array,
     actions: PropTypes.array.isRequired,
     references: PropTypes.array.isRequired
@@ -103,9 +121,11 @@ function mapStateToProps(state) {
 
     const {
         modal,
+        rawModal,
         selected
     } = windowHandler || {
         modal: false,
+        rawModal: false,
         selected: []
     }
 
@@ -117,12 +137,6 @@ function mapStateToProps(state) {
         actions: [],
         refereces: [],
         breadcrumb: []
-    }
-
-    const {
-        viewId
-    } = listHandler || {
-        viewId: ""
     }
 
     const {
@@ -140,9 +154,9 @@ function mapStateToProps(state) {
         search,
         pathname,
         actions,
-        viewId,
         selected,
-        references
+        references,
+        rawModal
     }
 }
 

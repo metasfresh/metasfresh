@@ -4,6 +4,7 @@ import { push } from 'react-router-redux';
 
 import Window from '../Window';
 import Process from '../Process';
+import DocumentList from './DocumentList';
 
 import {
     closeModal,
@@ -23,7 +24,7 @@ class Modal extends Component {
 
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
-            relativeType, isAdvanced
+            relativeType, isAdvanced, modalViewId
         } = this.props;
 
         this.state = {
@@ -31,6 +32,7 @@ class Modal extends Component {
             isNew: rowId === "NEW",
             init: false
         }
+
         switch(modalType){
             case "window":
                 dispatch(createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)).catch(err => {
@@ -39,9 +41,11 @@ class Modal extends Component {
                 break;
             case "process":
                 //processid, viewId, docType, id or ids
-                dispatch(createProcess(windowType, viewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                dispatch(createProcess(windowType, modalViewId, relativeType, dataId ? dataId : selected)).catch(err => {
                     this.handleClose();
                 });
+                break;
+            case "documentView":
                 break;
         }
     }
@@ -100,6 +104,37 @@ class Modal extends Component {
         document.body.style.overflow = "auto";
     }
 
+    renderModalBody = () => {
+        const {
+            data, layout, tabId, rowId, dataId, modalType, windowType,
+            isAdvanced, modalViewId, query, selected
+        } = this.props;
+
+        switch(modalType){
+            case "window":
+                return (
+                    <Window
+                        data={data}
+                        dataId={dataId}
+                        layout={layout}
+                        modal={true}
+                        tabId={tabId}
+                        rowId={rowId}
+                        isModal={true}
+                        isAdvanced={isAdvanced}
+                    />
+                )
+            case "process":
+                return (
+                    <Process
+                        data={data}
+                        layout={layout}
+                        type={windowType}
+                    />
+                )
+        }
+    }
+
     render() {
         const {
             data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType,
@@ -111,7 +146,7 @@ class Modal extends Component {
         } = this.state;
 
         return (
-            data.length > 0 && <div
+            (modalType === "documentView" || data.length > 0) && <div
                 className="screen-freeze js-not-unselect"
             >
                 <div className="panel panel-modal panel-modal-primary">
@@ -147,24 +182,7 @@ class Modal extends Component {
                         className="panel-modal-content js-panel-modal-content container-fluid"
                         ref={c => { c && c.focus()}}
                     >
-                        {modalType === "window" ?
-                            <Window
-                                data={data}
-                                dataId={dataId}
-                                layout={layout}
-                                modal={true}
-                                tabId={tabId}
-                                rowId={rowId}
-                                isModal={true}
-                                isAdvanced={isAdvanced}
-                            />
-                        :
-                            <Process
-                                data={data}
-                                layout={layout}
-                                type={windowType}
-                            />
-                        }
+                        {this.renderModalBody()}
                     </div>
                 </div>
             </div>

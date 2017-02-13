@@ -41,12 +41,17 @@ class Table extends Component {
                 y: 0
             },
             promptOpen: false,
-            isBatchEntry: false
+            isBatchEntry: false,
+            rows: []
         }
     }
 
     getChildContext = () => {
         return { shortcuts: shortcutManager }
+    }
+
+    componentDidMount(){
+        this.getIndentData(true);
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -62,6 +67,48 @@ class Table extends Component {
         if(mainTable && open){
             this.table.focus();
         }
+    }
+
+    getIndentData = (selectFirst) => {
+        const {rowData, tabid, indentSupported} = this.props;
+
+        if(indentSupported){
+            let rowsData = [];
+
+            rowData[tabid].map(item => {
+                rowsData = rowsData.concat(this.mapIncluded(item));
+            })
+
+            this.setState(Object.assign({}, this.state, {
+                rows: rowsData
+            }), ()=> {
+                if(selectFirst){
+                    this.selectOneProduct(this.state.rows[0].id);
+                    document.getElementsByClassName('js-table')[0].focus();
+                }
+                
+            })
+        }
+    }
+
+    getAllLeafs = () => {
+        const {rows, selected} = this.state;
+        let leafs = [];
+        let leafsIds = [];
+        
+        rows.map( item => {
+            if(item.id == selected[0]){
+                leafs = this.mapIncluded(item);
+            }
+        });
+
+        leafs.map(item => {
+            leafsIds = leafsIds.concat(item.id);
+        });
+
+        this.selectRangeProduct(leafsIds);
+       
+
     }
 
     changeListen = (listenOnKeys) => {
@@ -209,17 +256,59 @@ class Table extends Component {
         }
     }
 
+    mapIncluded = (node, indent, isParentLastChild = false) => {
+        let ind = indent ? indent : [];
+        let result = [];
+
+        const nodeCopy = Object.assign({}, node, {
+            indent: ind
+        });
+
+        result = result.concat([nodeCopy]);
+
+        if(isParentLastChild){
+            ind[ind.length - 2] = false;
+        }
+
+        if(node.includedDocuments){
+            for(let i = 0; i < node.includedDocuments.length; i++){
+                let copy = node.includedDocuments[i];
+                if(i === node.includedDocuments.length - 1){
+                    copy = Object.assign({}, copy, {
+                        lastChild: true
+                    });
+                }
+
+                result = result.concat(
+                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
+                )
+            }
+        }
+
+        return result;
+    }
+
     handleKeyDownDocList = (e) => {
-        const {selected} = this.state;
-        const {rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open} = this.props;
-        const item = rowData[tabid];
+        const {selected, rows} = this.state;
+        const {
+            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open,
+            indentSupported
+        } = this.props;
+        
         const selectRange = e.shiftKey;
+        let data = "";
+
+        if(indentSupported){
+            data = rows;
+        } else {
+            data = rowData[tabid];
+        }
 
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
 
-                const array = (rowData[tabid]).map((item, id) => {
+                const array = (data).map((item, id) => {
                     return item.id
                 });
 
@@ -238,7 +327,7 @@ class Table extends Component {
             case "ArrowUp":
                 e.preventDefault();
 
-                const arrays = (rowData[tabid]).map((item, id) => {
+                const arrays = (data).map((item, id) => {
                     return item.id
                 });
 
@@ -268,6 +357,10 @@ class Table extends Component {
                 if(open){
                     closeOverlays();
                 }
+                break;
+            case "Tab":
+                e.preventDefault();
+                document.getElementsByClassName('js-attributes')[0].focus();
                 break;
         }
     }
@@ -333,14 +426,15 @@ class Table extends Component {
     }
 
     handleFocus = () => {
-        const {rowData, tabid} = this.props;
-        const {selected} = this.state;
+        const {rowData, tabid, indentSupported} = this.props;
+        const {selected, rows} = this.state;
 
-        if(selected.length <= 0){
+         if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
         }
     }
+
 
     getProductRange = (id) => {
         const {rowData, tabid, keyProperty} = this.props;
@@ -564,7 +658,7 @@ class Table extends Component {
                     >
                         <table
                             className={
-                                "table table-bordered-vertically table-striped " +
+                                "table table-bordered-vertically table-striped js-table " +
                                 (readonly ? "table-read-only" : "")
                             }
                             onKeyDown={this.handleKey}
@@ -631,6 +725,7 @@ class Table extends Component {
                     handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+                    getAllLeafs={this.getAllLeafs}
                 />
 
                 {!readonly &&
