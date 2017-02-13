@@ -48,6 +48,12 @@ class MenuOverlay extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: flattenLastElem(response.data)
                 }))
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.setState(Object.assign({}, this.state, {
+                        queriedResults: []
+                    }))
+                }
             });
         }else{
 
@@ -183,7 +189,7 @@ class MenuOverlay extends Component {
              <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
                 tabIndex={0}
-                onKeyDown={(e)=>this.handleKeyDown(e)}
+                onKeyDown={(e) => this.handleKeyDown(e)}
              >
                 {node.nodeId != 0 &&
                     <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header">
@@ -229,6 +235,7 @@ class MenuOverlay extends Component {
     }
 
     linkClick = (item) => {
+        
         const {dispatch} = this.props;
         if(item.elementId && item.type == "newRecord") {
             this.handleNewRedirect(item.elementId)
@@ -318,6 +325,9 @@ class MenuOverlay extends Component {
                                             {...result}
                                         />
                                     )}
+                                    { queriedResults.length === 0 && query!="" &&
+                                        <span>There are no results</span>
+                                    }
                                 </div>
                             </div>
                         </div> :

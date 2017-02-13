@@ -96,14 +96,18 @@ class TableQuickInput extends Component {
         }))
     }
 
-    handlePatch = (prop, value) => {
+    handlePatch = (prop, value, callback) => {
         const {dispatch, docType, docId, tabId} = this.props;
         const {id} = this.state;
-        value && dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id)).then(response => {
-            response.data && response.data[0].fields.map(item => {
+       
+        dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id)).then(response => {
+            response.data[0] && response.data[0].fields.map(item => {
                 this.setState(Object.assign({}, this.state, {
                     data: this.state.data.map(field => {
                         if(field.field === item.field){
+                            if(callback){
+                                callback();
+                            }
                             return Object.assign({}, field, item);
                         }else{
                             return field;
@@ -134,11 +138,11 @@ class TableQuickInput extends Component {
                     key={id}
                     type={item.type}
                     caption={item.caption}
-                    handlePatch={(prop, value) => this.handlePatch(prop,value)}
+                    handlePatch={(prop, value, callback) => this.handlePatch(prop,value, callback)}
                     handleFocus={() => {}}
                     handleChange={this.handleChange}
                     type="secondary"
-                    autoFocus={id === editedField}
+                    autoFocus={id === 0}
                 />)
             })
         }

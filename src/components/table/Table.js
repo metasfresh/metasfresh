@@ -16,10 +16,10 @@ import {
 import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
+import TableItemWrapper from './TableItemWrapper';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
-import TableItem from './TableItem';
 import MasterWidget from '../widget/MasterWidget';
 
 import keymap from '../../keymap.js';
@@ -64,15 +64,9 @@ class Table extends Component {
         }
     }
 
-    changeListenOnTrue = () => {
+    changeListen = (listenOnKeys) => {
         this.setState(Object.assign({}, this.state, {
-            listenOnKeys: true
-        }))
-    }
-
-    changeListenOnFalse = () => {
-        this.setState(Object.assign({}, this.state, {
-            listenOnKeys: false
+            listenOnKeys: !!listenOnKeys
         }))
     }
 
@@ -84,8 +78,8 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
-            selected: this.state.selected.concat([id])
+        this.setState(prevState => Object.assign({}, this.state, {
+            selected: prevState.selected.concat([id])
         }), () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
@@ -129,12 +123,13 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        if(document.getElementsByClassName('row-selected').length > 0){
+        const rowSelected = document.getElementsByClassName('row-selected');
+        if(rowSelected.length > 0){
             if(typeof idFocused == "number"){
-                document.getElementsByClassName('row-selected')[0].children[idFocused].focus();
+                rowSelected[0].children[idFocused].focus();
             }
             if(typeof idFocusedDown == "number"){
-                document.getElementsByClassName('row-selected')[document.getElementsByClassName('row-selected').length-1].children[idFocusedDown].focus();
+                rowSelected[rowSelected.length-1].children[idFocusedDown].focus();
             }
         }
     }
@@ -403,10 +398,11 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity
+            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays
         } = this.props;
 
         const {selected} = this.state;
+        const keyProp = keyProperty ? keyProperty : "rowId";
 
         if(!!rowData && rowData[tabid]){
             let keys = Object.keys(rowData[tabid]);
@@ -414,27 +410,28 @@ class Table extends Component {
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
-                const index = keyProperty ? keyProperty : "rowId";
                 ret.push(
-                    <TableItem
-                        entity={entity}
-                        fields={item[key].fields}
+                    <TableItemWrapper
                         key={i}
-                        rowId={item[key].rowId}
+                        odd={i & 1}
+                        item={item[key]}
+                        entity={entity}
                         tabId={tabid}
                         cols={cols}
                         type={type}
                         docId={docId}
-                        isSelected={selected.indexOf(item[key][index]) > -1}
-                        onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][index])}
-                        onMouseDown={(e) => this.handleClick(e, item[key][index])}
-                        onContextMenu={(e) => this.handleRightClick(e, item[key][index])}
-                        changeListenOnTrue={() => this.changeListenOnTrue()}
-                        changeListenOnFalse={() => this.changeListenOnFalse()}
+                        tabIndex={tabIndex}
                         readonly={readonly}
                         mainTable={mainTable}
+                        selected={selected}
+                        keyProperty={keyProp}
+                        onDoubleClick={onDoubleClick}
+                        handleClick={this.handleClick}
+                        handleRightClick={this.handleRightClick}
+                        changeListenOnTrue={() => this.changeListen(true)}
+                        changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === keys.length-1 ? newRow : false}
-                        tabIndex={tabIndex}
+                        handleSelect={this.selectProduct}
                     />
                 );
             }
@@ -591,11 +588,7 @@ class Table extends Component {
                                     page={page}
                                 />
                             </thead>
-                            <tbody
-                                ref={c => this.tbody = c}
-                            >
-                                {this.renderTableBody()}
-                            </tbody>
+                            {this.renderTableBody()}
                             <tfoot
                                 ref={c => this.tfoot = c}
                                 tabIndex={tabIndex}
@@ -605,20 +598,22 @@ class Table extends Component {
                         {this.renderEmptyInfo(rowData, tabid)}
                     </div>
                 </div>
-                {page && pageLength && <div className="row">
-                    <div className="col-xs-12">
-                        <TablePagination
-                            handleChangePage={handleChangePage}
-                            handleSelectAll={this.selectAll}
-                            pageLength={pageLength}
-                            size={size}
-                            selected={selected}
-                            page={page}
-                            orderBy={orderBy}
-                            deselect={this.deselectAllProducts}
-                        />
+                {page && pageLength &&
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <TablePagination
+                                handleChangePage={handleChangePage}
+                                handleSelectAll={this.selectAll}
+                                pageLength={pageLength}
+                                size={size}
+                                selected={selected}
+                                page={page}
+                                orderBy={orderBy}
+                                deselect={this.deselectAllProducts}
+                            />
+                        </div>
                     </div>
-                </div>}
+                }
                 {
                     promptOpen &&
                     <Prompt
@@ -635,12 +630,12 @@ class Table extends Component {
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
                 />
 
-            {!readonly &&
-                <TableContextShortcuts
-                    handleToggleQuickInput={this.handleBatchEntryToggle}
-                    handleToggleExpand={() => toggleFullScreen(!fullScreen)}
-                />
-            }
+                {!readonly &&
+                    <TableContextShortcuts
+                        handleToggleQuickInput={this.handleBatchEntryToggle}
+                        handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+                    />
+                }
             </div>
         )
     }

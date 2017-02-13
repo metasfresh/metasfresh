@@ -29,7 +29,8 @@ class DocList extends Component {
         dispatch(updateUri(pathname, query, prop, value));
     }
 
-    renderDocumentList = (windowType, query, viewId) => {
+    renderDocumentList = () => {
+        const {windowType, query, viewId} = this.props;
         return (<DocumentList
             type="grid"
             updateUri={this.updateUriCallback}
@@ -52,6 +53,7 @@ class DocList extends Component {
                 windowType={windowType}
                 actions={actions}
                 references={references}
+                query={query}
             >
                 {modal.visible &&
                     <Modal
@@ -67,7 +69,7 @@ class DocList extends Component {
                         selected={selected}
                      />
                  }
-                {this.renderDocumentList(windowType, query, viewId)}
+                {this.renderDocumentList()}
             </Container>
         );
     }
@@ -114,11 +116,9 @@ function mapStateToProps(state) {
     }
 
     const {
-        query,
         search,
         pathname
     } = routing.locationBeforeTransitions || {
-        query: {},
         search: "",
         pathname: ""
     }
@@ -127,7 +127,6 @@ function mapStateToProps(state) {
     return {
         modal,
         breadcrumb,
-        query,
         search,
         pathname,
         actions,

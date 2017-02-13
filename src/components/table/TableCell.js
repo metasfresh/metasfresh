@@ -54,9 +54,15 @@ class TableCell extends Component {
                     break;
                 case "string":
                     if(type === "Date" || type === "DateTime" || type === "Time"){
-                        let d = new Date(field);
-                        let date = Moment(d).format('DD.MM.YYYY')
-                        return date;
+                        if(field){
+                            let d = new Date(field);
+                            let date = Moment(d).format('DD.MM.YYYY');
+                            return date;
+                        } else {
+                            // specified case to avoid parsing "error" text
+                            return "";
+                        }
+                        
                     } else {
                         return field;
                     }
@@ -72,6 +78,7 @@ class TableCell extends Component {
             isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
             onKeyDown, readonly, updatedRow, tabIndex, entity
         } = this.props;
+
         return (
             <td
                 tabIndex={tabIndex}

@@ -587,6 +587,9 @@ input:checked + .input-slider:before {
 }
 .input-dropdown-list-option p {
     margin:0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 .input-dropdown-item-title {
     margin-bottom: 6px;
@@ -650,8 +653,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     position: absolute;
     z-index: 50;
     margin-top:5px;
-    width: 100%;
-    max-width: 450px;
+    width: 450px;
 }
 
 .quick-input-container {

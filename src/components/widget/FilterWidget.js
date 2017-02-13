@@ -42,7 +42,6 @@ class FilterWidget extends Component {
                     selectedItemTo={filter.parameters.length ? ( filter.parameters[id].valueTo  ? filter.parameters[id].valueTo : '' ) : ''}
                     handleFocus={this.handleFocus}
                     id={id}
-                    handleChange={this.handleChange}
                     range={item.range}
                     isShown={isShown}
                     isHidden={isHidden}

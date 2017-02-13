@@ -65,7 +65,10 @@ class MasterWidget extends Component {
             dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
 
-        ret = dispatch(patch(entity, windowType, dataId, tabId, currRowId, property, value, isModal, isAdvanced));
+        ret = dispatch(patch(
+            entity, windowType, dataId, tabId, currRowId, property, value, isModal,
+            isAdvanced
+        ));
 
         //callback
         if(onChange){
@@ -133,7 +136,7 @@ class MasterWidget extends Component {
         const {
             caption, widgetType, description, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
-            handleBackdropLock, tabIndex, dropdownOpenCallback
+            handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus, fullScreen
         } = this.props;
 
         const {updated, edited} = this.state;
@@ -161,6 +164,8 @@ class MasterWidget extends Component {
                 handleBackdropLock={handleBackdropLock}
                 tabIndex={tabIndex}
                 dropdownOpenCallback={dropdownOpenCallback}
+                autoFocus={autoFocus}
+                fullScreen={fullScreen}
             />
         )
     }

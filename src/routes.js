@@ -52,6 +52,7 @@ export const getRoutes = (store) => {
                 <Route path="/window/:windowType"
                     component={(nextState) =>
                         <DocList
+                            query={nextState.location.query}
                             windowType={nextState.params.windowType}
                         />
                     }
@@ -63,6 +64,8 @@ export const getRoutes = (store) => {
                 <Route path="/sitemap" component={NavigationTree} />
                 <Route path="/inbox" component={InboxAll} />
                 <Route path="/logout" onEnter={logout} />
+                <Route path="/dashboard1" component={Dashboard} />
+                <Route path="/dashboard2" component={Dashboard} />
             </Route>
             <Route path="/login" component={nextState =>
                 <Login redirect={nextState.location.query.redirect} logged={localStorage.isLogged} />

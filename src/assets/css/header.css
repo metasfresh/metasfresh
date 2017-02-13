@@ -272,6 +272,7 @@
 .btn-header-open {
     border-width: 1px 1px 0 1px;
     border-style: solid;
+    pointer-events: none;
 }
 
 .btn-header {
@@ -448,6 +449,10 @@
     text-align: center;
 }
 
+.header-item.icon-sm {
+    font-size: .875rem;
+}
+
 .header-item-container {
     min-width: 55px;
     height: 55px;
@@ -483,4 +488,16 @@
 
 .header-item-badge.header-item {
     overflow: visible;
+}
+
+.logo-wrapper {
+    text-align: center;
+}
+
+.dashboard-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

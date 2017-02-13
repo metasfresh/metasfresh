@@ -1,0 +1,23 @@
+*:focus,
+.input-checkbox:focus input ~ .input-checkbox-tick,
+*:focus > .input-dropdown,
+.input-focused > .input-dropdown,
+.input-focused {
+    border-color: $brand-font-color;
+    outline: 0;
+}
+
+*:focus > .nav-link.active {
+    border-color: $brand-font-color $brand-font-color transparent !important;
+    outline:0;
+}
+
+*:focus > .nav-link {
+    border-color: $brand-font-color $brand-font-color $brand-border-color !important;
+    outline:0;
+}
+
+.btn:focus,
+button:focus {
+    outline: 0;
+}

@@ -8,6 +8,10 @@
     color: $brand-font-color;
 }
 
+.table tbody+tbody {
+    border-top: 0;
+}
+
 .table thead th {
     border: 0;
     background-color: $brand-color-secondary;
@@ -50,8 +54,19 @@
     pointer-events: none;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
+
+.table-striped tbody tr.tr-odd:nth-child(even) {
     background-color: #F2F7FA;
+}
+.table-striped tbody tr.tr-odd:nth-child(odd) {
+    background-color: #fff;
+}
+.table-striped tbody tr.tr-even:nth-last-child(odd) {
+    background-color: #F2F7FA;
+}
+.table-striped tbody tr.tr-even:nth-last-child(even) {
+    background-color: #fff;
+
 }
 
 .row-selected {
@@ -166,7 +181,9 @@
 
 th {
     font-weight: 500;
+    position: relative;
 }
+
 .empty-info-text {
     display: flex;
     justify-content: center;
@@ -249,4 +266,97 @@ th {
 
 .pagination-link {
     text-decoration: underline;
+}
+
+.table.table-bordered-vertically td.indented {
+    min-width:0;
+    border-right:0;
+    padding-top:0;
+    padding-bottom:0;
+    line-height: 37px;
+    vertical-align: middle;
+}
+
+/* INDENT SIGN ================ */
+
+$indent-height: 37px;
+$indent-height-mid: 18px;
+$indent-signs-offset: 6px;
+
+.indent {
+    position: relative;
+    height: $indent-height;
+}
+
+.indent-item-mid,
+.indent-icon,
+.indent-bot,
+.indent-mid {
+    display: inline-block;
+    width: 20px;
+    height: $indent-height;
+    vertical-align: middle;
+}
+
+.indent-item-mid{
+    padding-left:$indent-signs-offset;
+}
+
+.indent-item-mid .indent-sign {
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: $indent-height;
+    border-left: 1px solid #afbfca;
+}
+
+.indent-item-mid .indent-sign.indent-sign-bot {
+    height: $indent-height-mid;
+}
+
+.indent-mid {
+    position: absolute;
+    top: $indent-height-mid;
+    width: 5px;
+    height: 1px;
+    border-top: 1px solid #afbfca;
+}
+
+.indent-bot {
+    position: absolute;
+    bottom:-1px;
+    margin-left: $indent-signs-offset;
+    width: 1px;
+    height: 6px;
+    border-left: 1px solid #afbfca;
+}
+
+/* END OF INDENT SIGN ============ */
+
+
+.indent-item {
+    right:18px;
+    top:16px;
+
+    width:5px;
+    height:1px;
+    border-top: 1px solid #afbfca;
+}
+
+.indent-root {
+    right: 8px;
+    bottom: 0px;
+
+    width:1px;
+    height: 6px;
+    border-left: 1px solid #afbfca;
+}
+
+.indent-parent {
+    right: 8px;
+    top: 0px;
+
+    width:1px;
+    height: 6px;
+    border-left: 1px solid #afbfca;
 }
