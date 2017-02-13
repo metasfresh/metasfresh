@@ -43,11 +43,11 @@ class Device extends Component {
         handleChange(valueDelayed);
     }
 
-    handleMouseEnter = () => {
+    handleSlowDisplaying = () => {
         this.delayForDisplayingValue(2000);
     }
 
-    handleMouseLeave = () => {
+    handleRegularDisplaying = () => {
         this.delayForDisplayingValue(1000);
     }
 
@@ -73,8 +73,10 @@ class Device extends Component {
                         (isMore ? "btn-flagged ": "")
                     }
                     onClick={this.handleClick}
-                    onMouseEnter={this.handleMouseEnter}
-                    onMouseLeave={this.handleMouseLeave}
+                    onMouseEnter={this.handleSlowDisplaying}
+                    onFocus={this.handleSlowDisplaying}
+                    onMouseLeave={this.handleRegularDisplaying}
+                    onBlur={this.handleRegularDisplaying}
                 >
                     {isMore && <span className="btn-flag">{index + 1}</span>}
                     {valueDelayed}
