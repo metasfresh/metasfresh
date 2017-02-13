@@ -5,7 +5,7 @@
 @Rem explicitly here for different versions, etc. e.g.
 @Rem
 @Rem SET METASFRESH_HOME=C:\metasfresh
-@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_40
+@Rem SET JAVA_HOME=c:\Program Files\Java\jdk1.8.0_112
 
 @Rem Variables: 
 @Rem DBG_PORT                   ->  Start-Port the script will scan (min. port)
@@ -78,13 +78,18 @@ SET METASFRESH_HOME=%~dp0
 REM @goto MULTI_INSTALL
 
 :METASFRESH_HOME_OK
-SET MAIN_CLASSNAME=org.springframework.boot.loader.JarLauncher
+SET MAIN_CLASSNAME=org.springframework.boot.loader.PropertiesLauncher
 
 @REM finding our jar file
 @REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
 for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR=%%F
 
 SET CLASSPATH=%JAR%
+
+@REM Comma-separated Classpath, e.g. lib,${HOME}/app/lib. see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+SET LOADER_PATH=%METASFRESH_HOME%\userlib
+
+SET PATH=%PATH%;%METASFRESH_HOME%\userlib-x64
 
 :MULTI_INSTALL
 @REM  To switch between multiple installs, copy the created metasfresh.properties file
@@ -108,6 +113,7 @@ SET CLASSPATH=%JAR%
 @Echo JMX_REMOTE_DEBUG_OPTS=%JMX_REMOTE_DEBUG_OPTS%
 @Echo SECURE=%SECURE%
 @Echo CLASSPATH=%CLASSPATH%
+@Echo LOADER_PATH=%LOADER_PATH%
 @Echo MAIN_CLASSNAME=%MAIN_CLASSNAME%
 
 :START
