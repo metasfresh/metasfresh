@@ -5,11 +5,13 @@ drop table if exists backup.M_ProductPrice_BKP;
 drop table if exists backup.M_ProductPrice_Attribute_BKP;
 drop table if exists backup.M_ProductPrice_Attribute_Line_BKP;
 drop table if exists backup.M_ProductScalePrice_BKP;
+drop table if exists backup.C_OLCand_BKP;
 */
 create table backup.M_ProductPrice_BKP as select * from M_ProductPrice;
 create table backup.M_ProductPrice_Attribute_BKP as select * from M_ProductPrice_Attribute;
 create table backup.M_ProductPrice_Attribute_Line_BKP as select * from M_ProductPrice_Attribute_Line;
 create table backup.M_ProductScalePrice_BKP as select * from M_ProductScalePrice;
+create table backup.C_OLCand_BKP as select * from C_OLCand;
 
 --
 -- Restore (if needed)
@@ -31,6 +33,7 @@ INSERT INTO M_ProductPrice_Attribute_Line(ad_client_id, ad_org_id, created, crea
 INSERT INTO M_ProductScalePrice(ad_client_id, ad_org_id, created, createdby, isactive, m_productprice_id, m_productscaleprice_id, pricelimit, pricelist, pricestd, qty, updated, updatedby)
 	select ad_client_id, ad_org_id, created, createdby, isactive, m_productprice_id, m_productscaleprice_id, pricelimit, pricelist, pricestd, qty, updated, updatedby
 	from backup.M_ProductScalePrice_BKP;
+-- TODO: restore C_OLCand
 */
 
 
@@ -220,6 +223,18 @@ where exists (select 1 from TMP_M_ProductPrice t where pp.M_ProductPrice_ID=t.Ol
 -- we expect that M_ProductPrice_Attribute_Line to be deleted too.
 delete from M_ProductPrice_Attribute pa
 where exists (select 1 from TMP_M_ProductPrice t where t.Old_ProductPrice_Attribute_ID=pa.M_ProductPrice_Attribute_ID)
+;
+
+
+--
+-- Migrate C_OLCand
+update C_OLCand c set
+	M_ProductPrice_ID=asi.M_ProductPrice_ID
+	, M_ProductPrice_Attribute_ID=null
+from TMP_ASI asi
+where 
+	c.M_ProductPrice_ID=asi.Old_ProductPrice_ID
+	and c.M_ProductPrice_Attribute_ID=asi.M_ProductPrice_Attribute_ID
 ;
 
 
