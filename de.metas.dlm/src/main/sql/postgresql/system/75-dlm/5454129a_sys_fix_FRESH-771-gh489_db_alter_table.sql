@@ -1,4 +1,4 @@
-
+﻿
 CREATE OR REPLACE FUNCTION public.db_alter_table(
     p_table_name text,
     p_ddl text)

@@ -341,7 +341,8 @@ public class MColumn extends X_AD_Column
 		final StringBuilder sql = new StringBuilder("ALTER TABLE ")
 				.append("public.") // if the table is already DLM'ed then there is a view with the same name in the dlm schema.
 				.append(tableName)
-				.append(" ADD COLUMN ").append(getSQLDDL());
+				.append(" ADD COLUMN ") // not just "ADD" but "ADD COLUMN" to make it easier to distinguish the sort of this DDL further down the road.
+				.append(getSQLDDL());
 
 		final String constraint = getConstraint(tableName);
 		if (constraint != null && constraint.length() > 0)
@@ -664,27 +665,10 @@ public class MColumn extends X_AD_Column
 				return "No sql";
 			}
 
-			if (sql.indexOf(DB.SQLSTATEMENT_SEPARATOR) == -1)
+			final String statements[] = sql.split(DB.SQLSTATEMENT_SEPARATOR); // split also works for a single statement, with and without the separator
+			for (String statement : statements)
 			{
-				DB.executeUpdateEx(sql, get_TrxName());
-			}
-			else
-			{
-				String statements[] = sql.split(DB.SQLSTATEMENT_SEPARATOR);
-				for (int i = 0; i < statements.length; i++)
-				{
-					final String stmtToUse;
-					if (addingSingleColumn && isAddColumnDDL(statements[i]))
-					{
-						// execute the ADD COLUMN SQL within the db_alter_table function to make sure that also views like "SELECT * FROM tableName" work fine with the new column
-						stmtToUse = "SELECT public.db_alter_table('" + tableName + "', quote_literal('" + statements[i] + "'))";
-				}
-					else
-					{
-						stmtToUse = statements[i];
-			}
-					DB.executeUpdateEx(stmtToUse, get_TrxName());
-				}
+				executeSQL(tableName, statement, addingSingleColumn);
 			}
 
 			return sql;
@@ -709,6 +693,33 @@ public class MColumn extends X_AD_Column
 		}
 	}
 
+	/**
+	 * Executes the given SQL statement.
+	 * 
+	 * @param tableName the table name that needs to be changed
+	 * @param statement the DDL that needs to be executed
+	 * @param addingSingleColumn tells if the given {@code statement} is about adding a (single) column, as opposed to creating a whole table.
+	 *            If this parameter's value is {@code true} and if {@link #isAddColumnDDL(String)} returns {@code true} on the given {@code statement},
+	 *            then the given statement is wrapped into an invocation of the {@code db_alter_table()} DB function.
+	 *            See that function and its documentation for more infos.
+	 */
+	private void executeSQL(String tableName, String statement, boolean addingSingleColumn)
+	{
+		if (addingSingleColumn && isAddColumnDDL(statement))
+		{
+			DB.executeFunctionCallEx(get_TrxName(), "SELECT public.db_alter_table(?,?)", new Object[] { tableName, statement });
+		}
+		else
+		{
+			DB.executeUpdateEx(statement, get_TrxName());
+		}
+	}
+
+	/**
+	 * 
+	 * @param statement
+	 * @return {@code true} if the given statement is something like {@code ... ALTER TABLE ... ADD COLUMN ...} (case-insensitive!).
+	 */
 	private boolean isAddColumnDDL(final String statement)
 	{
 		if (Check.isEmpty(statement, true))
