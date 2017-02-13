@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
@@ -50,10 +49,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductPA;
 
 /**
  * Controller to be used for setting ASI in InfoProduct quick input.
@@ -114,26 +110,6 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		public int getM_Locator_ID()
 		{
 			return -1;
-		}
-
-		@Override
-		public int getM_AttributeSet_ID()
-		{
-			final int productId = getM_Product_ID();
-			if (productId <= 0)
-			{
-				return -1;
-			}
-
-			final I_M_Product product = Services.get(IProductPA.class).retrieveProduct(Env.getCtx(), productId, false, ITrx.TRXNAME_None);
-			if (product == null)
-			{
-				return -1;
-			}
-
-			// use the method from the service so if the product doesn't have an AS, it can be taken from product category
-			final int productAttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
-			return productAttributeSet_ID;
 		}
 
 		@Override

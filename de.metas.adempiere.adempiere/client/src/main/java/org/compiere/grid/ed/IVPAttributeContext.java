@@ -37,8 +37,6 @@ public interface IVPAttributeContext
 
 	boolean isSOTrx();
 
-	int getM_AttributeSet_ID();
-
 	int getC_DocType_ID();
 
 	int getM_Locator_ID();

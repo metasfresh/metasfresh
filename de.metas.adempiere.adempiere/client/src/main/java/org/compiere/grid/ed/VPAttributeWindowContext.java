@@ -109,12 +109,6 @@ import org.compiere.util.Env;
 	}
 
 	@Override
-	public int getM_AttributeSet_ID()
-	{
-		return getContextAsInt("M_AttributeSet_ID");
-	}
-
-	@Override
 	public int getM_Warehouse_ID()
 	{
 		return getContextAsInt("M_Warehouse_ID");

@@ -48,6 +48,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
@@ -62,7 +63,6 @@ import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.PAttributeInstance;
-import org.compiere.grid.ed.VPAttribute.VPAttributeType;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -165,38 +165,25 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	//
 	private final CPanel centerPanel = new CPanel();
 
-	public VPAttributeDialog( //
-			final Frame frame //
-			, final int adColumnId, final VPAttributeType type, final I_M_AttributeSet attributeSet //
-			, final List<MAttribute> availableAttributes //
-			, final MAttributeSetInstance asiTemplate //
-			, final IVPAttributeContext attributeContext //
-	)
+	public VPAttributeDialog(final Frame frame, final ASIEditingInfo asiInfo, final IVPAttributeContext attributeContext)
 	{
 		super(frame, Services.get(IMsgBL.class).translate(Env.getCtx(), "M_AttributeSetInstance_ID"), true);
 
 		m_WindowNo = Env.createWindowNo(this);
 		this.attributeContext = attributeContext;
 
+		final I_M_AttributeSet attributeSet = asiInfo.getM_AttributeSet();
 		_attributeSet = LegacyAdapters.convertToPO(attributeSet);
-		_asiTemplate = asiTemplate;
-		_availableAttributes = availableAttributes;
-		_allowSelectExistingASI = type == VPAttributeType.Regular;
+		_asiTemplate = asiInfo.getM_AttributeSetInstance();
+		_availableAttributes = asiInfo.getAvailableAttributes();
+		_allowSelectExistingASI = asiInfo.isAllowSelectExistingASI();
 
 		_productId = attributeContext.getM_Product_ID();
-		_adColumnId = adColumnId;
+		_adColumnId = asiInfo.getAD_Column_ID();
 
-		this.isLotEnabled = type == VPAttributeType.Regular
-				&& (attributeSet != null && attributeSet.isLot());
-		this.isSerNoEnabled = type == VPAttributeType.Regular
-				&& (attributeSet != null && attributeSet.isSerNo());
-		// isGuaranteeDateEnabled:
-		// We are displaying it if we deal with a pure product ASI (i.e. user is not editing the ASI from product window),
-		// and if:
-		// * the attribute set requires a GuaranteeDate
-		// * or if the ASI has a GuaranteeDate already set
-		this.isGuaranteeDateEnabled = type == VPAttributeType.Regular
-				&& ((attributeSet != null && attributeSet.isGuaranteeDate()) || (asiTemplate != null && asiTemplate.getGuaranteeDate() != null));
+		this.isLotEnabled = asiInfo.isLotEnabled();
+		this.isSerNoEnabled = asiInfo.isSerNoEnabled();
+		this.isGuaranteeDateEnabled = asiInfo.isGuaranteeDateEnabled();
 
 		//
 		// Initialize
@@ -285,9 +272,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final void initAttributes()
 	{
 		final Properties ctx = getCtx();
-		// final boolean isPureProductASI = isPureProductASI();
 		final boolean allowSelectExistingASI = isAllowSelectExistingASI();
-		// final boolean isASITemplateNew = asiTemplate.getM_AttributeSetInstance_ID() <= 0;
 
 		final MAttributeSet attributeSet = getM_AttributeSet();
 
@@ -619,9 +604,6 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		dispose();
 	}
 
-	/**
-	 * dispose
-	 */
 	@Override
 	public void dispose()
 	{
