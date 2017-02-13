@@ -129,7 +129,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private MAttributeSetInstance asiEdited = null;
 	private int _locatorId;
 	private final int _productId;
-	private final int _adColumnId;
+	private final int _callerColumnId;
 
 	/** Row Counter */
 	private int m_row = 0;
@@ -179,7 +179,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		_allowSelectExistingASI = asiInfo.isAllowSelectExistingASI();
 
 		_productId = attributeContext.getM_Product_ID();
-		_adColumnId = asiInfo.getAD_Column_ID();
+		_callerColumnId = asiInfo.getCallerColumnId();
 
 		this.isLotEnabled = asiInfo.isLotEnabled();
 		this.isSerNoEnabled = asiInfo.isSerNoEnabled();
@@ -261,9 +261,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return _allowSelectExistingASI;
 	}
 
-	private int getAD_Column_ID()
+	private int getCallerColumnId()
 	{
-		return _adColumnId;
+		return _callerColumnId;
 	}
 
 	/**
@@ -337,7 +337,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			{
 				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, false)
 						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, false)
-						&& !attributeSet.isExcludeLot(getAD_Column_ID(), attributeContext.isSOTrx()))
+						&& !attributeSet.isExcludeLot(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bLot, null);
 					bLot.addActionListener(this);
@@ -373,7 +373,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			if (attributeSet.getM_SerNoCtl_ID() > 0)
 			{
 				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, false)
-						&& !attributeSet.isExcludeSerNo(getAD_Column_ID(), attributeContext.isSOTrx()))
+						&& !attributeSet.isExcludeSerNo(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bSerNo, null);
 					bSerNo.addActionListener(this);
@@ -725,7 +725,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 		// teo_sarca [ 1564520 ] Inventory Move: can't select existing attributes
 		int M_Locator_ID = 0;
-		if (getAD_Column_ID() == 8551) // TODO: hardcoded: M_MovementLine[324].M_AttributeSetInstance_ID[8551]
+		if (getCallerColumnId() == 8551) // TODO: hardcoded: M_MovementLine[324].M_AttributeSetInstance_ID[8551]
 		{
 			M_Locator_ID = attributeContext.getM_Locator_ID();
 		}

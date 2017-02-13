@@ -17,6 +17,7 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
@@ -58,16 +59,21 @@ import de.metas.product.IProductBL;
  */
 public final class ASIEditingInfo
 {
-	public static final ASIEditingInfo of(final int productId, final int attributeSetInstanceId, final int adColumnId, final boolean isSOTrx)
+	public static final ASIEditingInfo of( //
+			final int productId, final int attributeSetInstanceId //
+			, final String callerTableName, final int callerColumnId //
+			, final boolean isSOTrx //
+	)
 	{
-		return new ASIEditingInfo(productId, attributeSetInstanceId, adColumnId, isSOTrx);
+		return new ASIEditingInfo(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
 	}
 
 	// Parameters
 	private final WindowType _type;
 	private final int _productId;
 	private final int _attributeSetInstanceId;
-	private final int _adColumnId;
+	private final String _callerTableName;
+	private final int _calledColumnId;
 	private final boolean _isSOTrx;
 
 	// Deducted values
@@ -79,13 +85,18 @@ public final class ASIEditingInfo
 	private final boolean isSerNoEnabled;
 	private final boolean isGuaranteeDateEnabled;
 
-	private ASIEditingInfo(final int productId, final int attributeSetInstanceId, final int adColumnId, final boolean isSOTrx)
+	private ASIEditingInfo( //
+			final int productId, final int attributeSetInstanceId //
+			, final String callerTableName, final int callerColumnId //
+			, final boolean isSOTrx //
+	)
 	{
 		// Parameters, must be set first
-		_type = extractType(adColumnId);
+		_type = extractType(callerTableName, callerColumnId);
 		_productId = productId;
 		_attributeSetInstanceId = attributeSetInstanceId;
-		_adColumnId = adColumnId;
+		_callerTableName = callerTableName;
+		_calledColumnId = callerColumnId;
 		_isSOTrx = isSOTrx;
 
 		// Deducted values, we assume params are set
@@ -117,17 +128,17 @@ public final class ASIEditingInfo
 				&& (_attributeSet != null && _attributeSet.isGuaranteeDate() || _attributeSetInstance != null && _attributeSetInstance.getGuaranteeDate() != null);
 	}
 
-	private static WindowType extractType(final int AD_Column_ID)
+	private static WindowType extractType(String callerTableName, final int callerColumnId)
 	{
-		if (AD_Column_ID == 8418) // FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID = 8418
+		if (I_M_Product.Table_Name.equals(callerTableName)) // FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID's AD_Column_ID = 8418
 		{
 			return WindowType.ProductWindow;
 		}
-		else if (AD_Column_ID == 556075) // FIXME HARDCODED: M_ProductPrice.M_AttributeSetInstance_ID
+		else if (I_M_ProductPrice.Table_Name.equals(callerTableName)) // FIXME HARDCODED: M_ProductPrice.M_AttributeSetInstance_ID's AD_Column_ID = 556075
 		{
 			return WindowType.Pricing;
 		}
-		else if (AD_Column_ID <= 0)
+		else if (Check.isEmpty(callerTableName, true))
 		{
 			return WindowType.ProcessParameter;
 		}
@@ -172,9 +183,14 @@ public final class ASIEditingInfo
 		return _attributeSetInstance;
 	}
 
-	public int getAD_Column_ID()
+	public String getCallerTableName()
 	{
-		return _adColumnId;
+		return _callerTableName;
+	}
+
+	public int getCallerColumnId()
+	{
+		return _calledColumnId;
 	}
 
 	public boolean isSOTrx()
@@ -286,7 +302,7 @@ public final class ASIEditingInfo
 		if (attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0)
 		{
 			final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
-			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getAD_Column_ID(), isSOTrx());
+			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getCallerColumnId(), isSOTrx());
 			final boolean exclude = asExclude != null && excludeBL.isFullExclude(asExclude);
 			return exclude;
 		}
@@ -317,7 +333,7 @@ public final class ASIEditingInfo
 	{
 		final WindowType type = getWindowType();
 		final MAttributeSet attributeSet = LegacyAdapters.convertToPO(getM_AttributeSet());
-		final int adColumnId = getAD_Column_ID();
+		final int callerColumnId = getCallerColumnId();
 		final boolean isSOTrx = isSOTrx();
 
 		final Stream<MAttribute> attributes;
@@ -378,7 +394,7 @@ public final class ASIEditingInfo
 		final IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
 
 		return attributes
-				.filter(attribute -> attributeSet == null || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSet, adColumnId, isSOTrx))
+				.filter(attribute -> attributeSet == null || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSet, callerColumnId, isSOTrx))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

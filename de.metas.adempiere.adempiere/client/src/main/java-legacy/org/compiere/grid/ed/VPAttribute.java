@@ -402,6 +402,12 @@ public class VPAttribute extends JComponent
 	{
 		return m_mField;
 	}
+	
+	private String getTableName()
+	{
+		final GridField gridField = getField();
+		return gridField == null ? null : gridField.getTableName();
+	}
 
 	private int getAD_Column_ID()
 	{
@@ -446,8 +452,8 @@ public class VPAttribute extends JComponent
 	{
 		final ASIEditingInfo asiInfo = ASIEditingInfo.of(
 				attributeContext.getM_Product_ID() // product
-				, getM_AttributeSetInstance_ID() //
-				, getAD_Column_ID() //
+				, getM_AttributeSetInstance_ID() // ASI
+				, getTableName(), getAD_Column_ID() // caller TableName/AD_Column_ID
 				, attributeContext.isSOTrx() //
 		);
 		if (asiInfo.isExcludedAttributeSet())
