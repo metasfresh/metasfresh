@@ -1,6 +1,6 @@
---DROP VIEW IF EXISTS rv_fresh_pricelist ;
---DROP VIEW IF EXISTS rv_fresh_pricelist_comparison;
---DROP VIEW IF EXISTS report.fresh_AttributePrice;
+﻿DROP VIEW IF EXISTS rv_fresh_pricelist ;
+DROP VIEW IF EXISTS rv_fresh_pricelist_comparison;
+DROP VIEW IF EXISTS report.fresh_AttributePrice;
 
 CREATE OR REPLACE VIEW report.fresh_AttributePrice AS 
 SELECT 	
@@ -38,7 +38,7 @@ FROM
 WHERE 	
 	pp.IsActive = 'Y'
 GROUP BY 
-	pp.M_ProductPrice_ID, pp.PriceStd, pp.IsActive, pp.M_HU_PI_Item_Product_ID
+	pp.M_ProductPrice_ID,ai.m_attributesetinstance_id, pp.PriceStd, pp.IsActive, pp.M_HU_PI_Item_Product_ID
 ;
 
 

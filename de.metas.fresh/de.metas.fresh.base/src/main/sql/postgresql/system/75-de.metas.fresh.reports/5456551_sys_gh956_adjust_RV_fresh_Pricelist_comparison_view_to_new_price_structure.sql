@@ -1,4 +1,4 @@
-
+﻿
 --DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
 CREATE OR REPLACE VIEW RV_fresh_PriceList_Comparison AS 
