@@ -68,7 +68,9 @@ import de.metas.process.JavaProcess;
 				.dontComplete()
 				.create();
 
-		getResult().setRecordToSelectAfterExecution(TableRecordReference.of(inout));
+		final int adWindowId = -1; // TODO
+		final boolean gridView = false; // single document
+		getResult().setRecordToOpen(TableRecordReference.of(inout), adWindowId, gridView);
 
 		return MSG_OK;
 	}

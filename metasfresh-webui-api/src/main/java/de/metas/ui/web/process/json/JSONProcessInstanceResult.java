@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -22,11 +23,11 @@ import de.metas.ui.web.process.ProcessInstanceResult;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -59,17 +60,39 @@ public final class JSONProcessInstanceResult implements Serializable
 	private final String reportContentType;
 
 	//
-	// View
+	// Open view (deprecated)
 	@JsonProperty("viewWindowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Deprecated
 	private final Integer viewWindowId;
+	//
 	@JsonProperty("viewId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Deprecated
 	private final String viewId;
+
+	//
+	// Open view
+	@JsonProperty("openViewWindowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Integer openViewWindowId;
+	//
+	@JsonProperty("openViewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String openViewId;
+
+	//
+	// Open single document
+	@JsonProperty("openDocumentWindowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Integer openDocumentWindowId;
+	//
+	@JsonProperty("openDocumentId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String openDocumentId;
 
 	private JSONProcessInstanceResult(final ProcessInstanceResult result)
 	{
-		super();
 		pinstanceId = result.getAD_PInstance_ID();
 
 		summary = result.getSummary();
@@ -82,8 +105,27 @@ public final class JSONProcessInstanceResult implements Serializable
 
 		//
 		// View
-		viewWindowId = result.getViewWindowId() > 0 ? result.getViewWindowId() : null;
-		viewId = result.getViewId();
+		openViewWindowId = result.getOpenViewWindowId() > 0 ? result.getOpenViewWindowId() : null;
+		openViewId = result.getOpenViewId();
+		//
+		viewWindowId = openViewWindowId;
+		viewId = openViewId;
+
+		//
+		// Single document
+		{
+			final DocumentPath singleDocumentPath = result.getOpenSingleDocumentPath();
+			if (singleDocumentPath == null)
+			{
+				openDocumentWindowId = null;
+				openDocumentId = null;
+			}
+			else
+			{
+				openDocumentWindowId = singleDocumentPath.getAD_Window_ID();
+				openDocumentId = singleDocumentPath.getDocumentId().toJson();
+			}
+		}
 	}
 
 	public int getPinstanceId()
@@ -109,15 +151,5 @@ public final class JSONProcessInstanceResult implements Serializable
 	public String getReportContentType()
 	{
 		return reportContentType;
-	}
-
-	public Integer getViewWindowId()
-	{
-		return viewWindowId;
-	}
-
-	public String getViewId()
-	{
-		return viewId;
 	}
 }
