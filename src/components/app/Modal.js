@@ -24,7 +24,7 @@ class Modal extends Component {
 
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
-            relativeType, isAdvanced
+            relativeType, isAdvanced, modalViewId
         } = this.props;
 
         this.state = {
@@ -41,7 +41,7 @@ class Modal extends Component {
                 break;
             case "process":
                 //processid, viewId, docType, id or ids
-                dispatch(createProcess(windowType, viewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                dispatch(createProcess(windowType, modalViewId, relativeType, dataId ? dataId : selected)).catch(err => {
                     this.handleClose();
                 });
                 break;
