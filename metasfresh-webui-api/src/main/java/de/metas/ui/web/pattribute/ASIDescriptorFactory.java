@@ -1,28 +1,29 @@
 package de.metas.ui.web.pattribute;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MAttribute;
-import org.compiere.model.MAttributeSet;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CCache;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.util.function.BiConsumer;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -52,11 +53,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -64,7 +65,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 @Component
 public class ASIDescriptorFactory
 {
-	private final CCache<Integer, ASIDescriptor> asiDescriptorByAttributeSetId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
+	private final CCache<DocumentId, ASIDescriptor> asiDescriptorById = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
 	private final CCache<Integer, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
 
 	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
@@ -74,55 +75,68 @@ public class ASIDescriptorFactory
 		super();
 	}
 
-	public ASIDataBindingDescriptorBuilder getAsiBindingsBuilder()
+	private ASIDataBindingDescriptorBuilder getASIBindingsBuilder()
 	{
 		return _asiBindingsBuilder;
 	}
 
-	public ASIDescriptor getASIDescriptor(final int attributeSetId)
+	public ASIDescriptor getASIDescriptor(final ASIEditingInfo info)
 	{
-		return asiDescriptorByAttributeSetId.getOrLoad(attributeSetId, () -> retrieveASIDescriptor(attributeSetId));
+		final DocumentId asiDescriptorId = extractASIDescriptorId(info);
+		return asiDescriptorById.getOrLoad(asiDescriptorId, () -> createASIDescriptor(asiDescriptorId, info));
 	}
 
-	private ASIDescriptor retrieveASIDescriptor(final int attributeSetId)
+	private static final DocumentId extractASIDescriptorId(final ASIEditingInfo info)
 	{
-		Check.assume(attributeSetId > 0, "attributeSetId > 0");
+		return DocumentId.ofString(info.getWindowType() + "_" + info.getM_AttributeSet_ID());
+	}
 
-		final MAttributeSet attributeSet = MAttributeSet.get(Env.getCtx(), attributeSetId);
-		final DocumentEntityDescriptor attributeSetDescriptor = createASIDescriptor(attributeSet);
+	private ASIDescriptor createASIDescriptor(final DocumentId asiDescriptorId, final ASIEditingInfo info)
+	{
+		final DocumentEntityDescriptor entityDescriptor = createDocumentEntityDescriptor( //
+				asiDescriptorId //
+				, info.getM_AttributeSet_Name() // name
+				, info.getM_AttributeSet_Description() // description
+				, info.getAvailableAttributes() // attributes
+		);
 
-		final ASILayout layout = createLayout(attributeSetDescriptor);
+		final ASILayout layout = createLayout(asiDescriptorId, entityDescriptor);
 
 		return ASIDescriptor.builder()
-				.setEntityDescriptor(attributeSetDescriptor)
+				.setM_AttributeSet_ID(info.getM_AttributeSet_ID())
+				.setEntityDescriptor(entityDescriptor)
 				.setLayout(layout)
 				.build();
 	}
 
-	private final DocumentEntityDescriptor createASIDescriptor(final MAttributeSet attributeSet)
+	private final DocumentEntityDescriptor createDocumentEntityDescriptor( //
+			DocumentId asiDescriptorId //
+			, final String name //
+			, final String description //
+			, final List<MAttribute> attributes //
+	)
 	{
 		final DocumentEntityDescriptor.Builder attributeSetDescriptor = DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.ProductAttributes, attributeSet.getM_AttributeSet_ID())
-				.setCaption(attributeSet.getName())
-				.setDescription(attributeSet.getDescription())
-				.setDataBinding(getAsiBindingsBuilder())
+				.setDocumentType(DocumentType.ProductAttributes, asiDescriptorId)
+				.setCaption(name)
+				.setDescription(description)
+				.setDataBinding(getASIBindingsBuilder())
 				.disableCallouts()
 				// Defaults:
 				.setDetailId(null)
-				//
-				;
+		//
+		;
 
-		final MAttribute[] attributes = attributeSet.getMAttributes(true);
 		for (final I_M_Attribute attribute : attributes)
 		{
-			final DocumentFieldDescriptor.Builder fieldDescriptor = createASIAttributeDescriptor(attribute);
+			final DocumentFieldDescriptor.Builder fieldDescriptor = createDocumentFieldDescriptor(attribute);
 			attributeSetDescriptor.addField(fieldDescriptor);
 		}
 
 		return attributeSetDescriptor.build();
 	}
 
-	private DocumentFieldDescriptor.Builder createASIAttributeDescriptor(final I_M_Attribute attribute)
+	private DocumentFieldDescriptor.Builder createDocumentFieldDescriptor(final I_M_Attribute attribute)
 	{
 		final int attributeId = attribute.getM_Attribute_ID();
 		final String fieldName = attribute.getValue();
@@ -191,22 +205,22 @@ public class ASIDescriptorFactory
 				.addCharacteristic(Characteristic.PublicField)
 				//
 				.setDataBinding(new ASIAttributeFieldBinding(attributeId, fieldName, attribute.isMandatory(), readMethod, writeMethod))
-				//
-				;
+		//
+		;
 	}
 
-	public LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
+	private LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
 	{
 		return asiLookupDescriptorsByAttributeId.getOrLoad(attribute.getM_Attribute_ID(), () -> ASILookupDescriptor.of(attribute));
 	}
 
-	private static ASILayout createLayout(final DocumentEntityDescriptor attributeSetDescriptor)
+	private static ASILayout createLayout(final DocumentId asiDescriptorId, final DocumentEntityDescriptor entityDescriptor)
 	{
 		final ASILayout.Builder layout = ASILayout.builder()
-				.setCaption(attributeSetDescriptor.getCaption())
-				.setM_AttributeSet_ID(attributeSetDescriptor.getDocumentTypeId());
+				.setCaption(entityDescriptor.getCaption())
+				.setASIDescriptorId(asiDescriptorId);
 
-		attributeSetDescriptor.getFields()
+		entityDescriptor.getFields()
 				.stream()
 				.map(fieldDescriptor -> createLayoutElement(fieldDescriptor))
 				.forEach(layoutElement -> layout.addElement(layoutElement));
@@ -231,7 +245,7 @@ public class ASIDescriptorFactory
 			@Override
 			public DocumentsRepository getDocumentsRepository()
 			{
-				throw new IllegalStateException("No repository available for "+this);
+				throw new IllegalStateException("No repository available for " + this);
 			}
 		};
 

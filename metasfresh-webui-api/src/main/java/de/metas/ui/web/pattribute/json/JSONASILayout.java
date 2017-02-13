@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.pattribute.ASILayout;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -45,7 +46,7 @@ public final class JSONASILayout implements Serializable
 	}
 
 	@JsonProperty("id")
-	private final int id;
+	private final String id;
 
 	@JsonProperty("caption")
 	private final String caption;
@@ -61,7 +62,10 @@ public final class JSONASILayout implements Serializable
 	{
 		super();
 		final String adLanguage = jsonOpts.getAD_Language();
-		id = layout.getM_AttributeSet_ID();
+		
+		final DocumentId asiDescriptorId = layout.getASIDescriptorId();
+		this.id = asiDescriptorId == null ? null : asiDescriptorId.toJson();
+		
 		caption = layout.getCaption(adLanguage);
 		description = layout.getDescription(adLanguage);
 		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);

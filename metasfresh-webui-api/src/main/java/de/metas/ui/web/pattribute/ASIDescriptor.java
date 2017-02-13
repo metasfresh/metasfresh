@@ -21,11 +21,11 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,12 +38,15 @@ public final class ASIDescriptor
 		return new Builder();
 	}
 
-	private DocumentEntityDescriptor entityDescriptor;
-	private ASILayout layout;
+	private final int attributeSetId;
+	private final DocumentEntityDescriptor entityDescriptor;
+	private final ASILayout layout;
 
 	private ASIDescriptor(final Builder builder)
 	{
 		super();
+
+		attributeSetId = builder.attributeSetId;
 
 		entityDescriptor = builder.entityDescriptor;
 		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
@@ -56,8 +59,14 @@ public final class ASIDescriptor
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.add("M_AttributeSet_ID", attributeSetId)
 				.add("entityDescriptor", entityDescriptor)
 				.toString();
+	}
+
+	public int getM_AttributeSet_ID()
+	{
+		return attributeSetId;
 	}
 
 	public DocumentEntityDescriptor getEntityDescriptor()
@@ -65,25 +74,16 @@ public final class ASIDescriptor
 		return entityDescriptor;
 	}
 
-	public void setEntityDescriptor(final DocumentEntityDescriptor entityDescriptor)
-	{
-		this.entityDescriptor = entityDescriptor;
-	}
-
 	public ASILayout getLayout()
 	{
 		return layout;
-	}
-
-	public void setLayout(final ASILayout layout)
-	{
-		this.layout = layout;
 	}
 
 	public static final class Builder
 	{
 		private DocumentEntityDescriptor entityDescriptor;
 		private ASILayout layout;
+		private int attributeSetId = 0;
 
 		private Builder()
 		{
@@ -104,6 +104,12 @@ public final class ASIDescriptor
 		public Builder setLayout(final ASILayout layout)
 		{
 			this.layout = layout;
+			return this;
+		}
+
+		public Builder setM_AttributeSet_ID(final int attributeSetId)
+		{
+			this.attributeSetId = attributeSetId;
 			return this;
 		}
 
