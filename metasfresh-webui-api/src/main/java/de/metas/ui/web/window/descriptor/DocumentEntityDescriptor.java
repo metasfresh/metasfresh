@@ -38,6 +38,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
@@ -74,7 +75,7 @@ public class DocumentEntityDescriptor
 	}
 
 	private final DocumentType documentType;
-	private final int documentTypeId;
+	private final DocumentId documentTypeId;
 	private final String _id;
 
 	private final ITranslatableString caption;
@@ -194,20 +195,15 @@ public class DocumentEntityDescriptor
 		return documentType;
 	}
 
-	public int getDocumentTypeId()
+	public DocumentId getDocumentTypeId()
 	{
-		return documentTypeId;
-	}
-
-	public int getDocumentTypeId(final DocumentType expectedDocumentType)
-	{
-		Check.assume(documentType == expectedDocumentType, "expected document type to be {} but it was {}", expectedDocumentType, documentType);
 		return documentTypeId;
 	}
 
 	public int getAD_Window_ID()
 	{
-		return getDocumentTypeId(DocumentType.Window);
+		Check.assume(documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, documentType);
+		return documentTypeId.toInt();
 	}
 
 	public ITranslatableString getCaption()
@@ -391,7 +387,7 @@ public class DocumentEntityDescriptor
 		private boolean _built = false;
 
 		private DocumentType _documentType;
-		private Integer _documentTypeId;
+		private DocumentId _documentTypeId;
 
 		private ITranslatableString _caption = ImmutableTranslatableString.empty();
 		private ITranslatableString _description = ImmutableTranslatableString.empty();
@@ -626,10 +622,16 @@ public class DocumentEntityDescriptor
 			return dependenciesBuilder.build();
 		}
 
-		public Builder setDocumentType(final DocumentType documentType, final int documentTypeId)
+		public Builder setDocumentType(final DocumentType documentType, final DocumentId documentTypeId)
 		{
 			_documentType = documentType;
 			_documentTypeId = documentTypeId;
+			return this;
+		}
+		
+		public Builder setDocumentType(final DocumentType documentType, final int documentTypeIdInt)
+		{
+			setDocumentType(documentType, DocumentId.of(documentTypeIdInt));
 			return this;
 		}
 
@@ -639,7 +641,7 @@ public class DocumentEntityDescriptor
 			return _documentType;
 		}
 
-		public int getDocumentTypeId()
+		public DocumentId getDocumentTypeId()
 		{
 			Check.assumeNotNull(_documentTypeId, "documentTypeId is set for {}", this);
 			return _documentTypeId;

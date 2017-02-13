@@ -516,7 +516,7 @@ public final class Document
 		private final DocumentValuesSupplier parentSupplier;
 		private final Properties ctx;
 		private final DocumentType documentType;
-		private final int documentTypeId;
+		private final DocumentId documentTypeId;
 		private final Evaluatee evaluatee;
 		private final DocumentId parentDocumentId;
 
@@ -617,7 +617,7 @@ public final class Document
 			final String fieldName = fieldDescriptor.getFieldName();
 			if (documentType == DocumentType.Window)
 			{
-				final int adWindowId = documentTypeId;
+				final int adWindowId = documentTypeId.toInt();
 
 				//
 				// Preference (user) - P|
