@@ -43,11 +43,12 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(data, scope) {
+export function initDataSuccess(data, scope, docId) {
     return {
         type: types.INIT_DATA_SUCCESS,
         data: data,
-        scope: scope
+        scope: scope,
+        docId: docId
     }
 }
 
@@ -199,7 +200,7 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 docId = response.data[elem].id;
                 const preparedData = parseToDisplay(response.data[elem].fields);
 
-                dispatch(initDataSuccess(preparedData, getScope(isModal)));
+                dispatch(initDataSuccess(preparedData, getScope(isModal), docId));
 
                 if (isModal && rowId === "NEW") {
                     dispatch(mapDataToState([response.data[0]], false, "NEW", docId, windowType))
