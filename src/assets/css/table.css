@@ -243,13 +243,13 @@ th {
 }
 
 .pagination-row {
-    margin: 1rem 0;
+    margin: 1rem;
     font-size: .7rem;
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-center;
+    align-items: center;
 }
 
 .order-list-panel-body .pagination-wrapper {

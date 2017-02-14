@@ -96,6 +96,7 @@
     max-height: calc(100% - 75px);
     width: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     color: $brand-font-color;
 }
 
