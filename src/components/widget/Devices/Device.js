@@ -51,14 +51,16 @@ class Device extends Component {
 
     render() {
         const {value, index, isMore} = this.state;
+        const {tabIndex} = this.props;
 
         if(!!value){
             return (
                 <div
-                    className={"btn btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev " +
+                    className={"btn btn-device btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev " +
                         (isMore ? "btn-flagged ": "")
                     }
                     onClick={this.handleClick}
+                    tabIndex={tabIndex ? tabIndex : ""}
                     onMouseEnter={() => this.handleToggleChangeStopper(true)}
                     onFocus={() => this.handleToggleChangeStopper(true)}
                     onMouseLeave={() => this.handleToggleChangeStopper(false)}

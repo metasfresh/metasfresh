@@ -16,7 +16,7 @@ import {
 import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
-import TableItemWrapper from './TableItemWrapper';
+import TableItem from './TableItem';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
@@ -32,6 +32,7 @@ const shortcutManager = new ShortcutManager(keymap);
 class Table extends Component {
     constructor(props) {
         super(props);
+        
         this.state = {
             selected: [null],
             listenOnKeys: true,
@@ -59,10 +60,17 @@ class Table extends Component {
         }
     }
 
-    componentDidUpdate() {
-        const {mainTable, open} = this.props;
+    componentDidUpdate(prevProps) {
+        const {mainTable, open, rowData} = this.props;
         if(mainTable && open){
             this.table.focus();
+        }
+
+        if(
+            JSON.stringify(prevProps.rowData) !=
+            JSON.stringify(rowData)
+        ){
+            this.getIndentData();
         }
     }
 
@@ -89,6 +97,10 @@ class Table extends Component {
                 }
 
             })
+        } else {
+            this.setState({
+                rows: rowData[tabid]
+            });
         }
     }
 
@@ -119,9 +131,9 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => {
+        this.setState(prevState => Object.assign({}, this.state, {
             selected: prevState.selected.concat([id])
-        }, () => {
+        }), () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
@@ -134,11 +146,13 @@ class Table extends Component {
     }
 
     selectAll = () => {
-        const {rowData, tabid, keyProperty} = this.props;
+        const {rowData, tabid, keyProperty, indentSupported} = this.props;
+        const {rows} = this.state;
         const property = keyProperty ? keyProperty : "rowId";
-        const toSelect = rowData[tabid].map((item, index) => item[property]);
+        const toSelect = rows.map((item, index) => item[property]);
 
         this.selectRangeProduct(toSelect);
+        
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
@@ -188,8 +202,7 @@ class Table extends Component {
 
     handleKeyDown = (e) => {
         const {rowData, tabid, listenOnKeys} = this.props;
-        const item = rowData[tabid];
-        const {selected} = this.state;
+        const {selected, rows} = this.state;
         const selectRange = e.shiftKey;
 
         const nodeList = Array.prototype.slice.call(document.activeElement.parentElement.children);
@@ -204,30 +217,30 @@ class Table extends Component {
             case "ArrowDown":
                 e.preventDefault();
 
-                const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
+                const actualId = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
 
-                if(actualId < Object.keys(rowData[tabid]).length-1 ){
+                if(actualId < Object.keys(rows).length-1 ){
                     let newId = actualId+1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
+                        this.selectOneProduct(Object.keys(rows)[newId], false, idFocused);
                     } else {
-                        this.selectProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
+                        this.selectProduct(Object.keys(rows)[newId], false, idFocused);
                     }
                 }
                 break;
             case "ArrowUp":
                 e.preventDefault();
 
-                const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
+                const actual = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
 
                 if(actual > 0 ){
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], idFocused, false);
+                        this.selectOneProduct(Object.keys(rows)[newId], idFocused, false);
                     } else {
-                        this.selectProduct(Object.keys(rowData[tabid])[newId], idFocused, false);
+                        this.selectProduct(Object.keys(rows)[newId], idFocused, false);
                     }
                 }
                 break;
@@ -289,29 +302,22 @@ class Table extends Component {
 
     handleKeyDownDocList = (e) => {
         const {selected, rows} = this.state;
+
         const {
-            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open,
-            indentSupported
+            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open
         } = this.props;
-
+        
         const selectRange = e.shiftKey;
-        let data = "";
-
-        if(indentSupported){
-            data = rows;
-        } else {
-            data = rowData[tabid];
-        }
 
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
 
-                const array = (data).map((item, id) => {
+                const array = rows.map((item, id) => {
                     return item.id
                 });
 
-                const actualId = array.findIndex(x => x === selected[selected.length-1])
+                const actualId = array.findIndex(x => x === selected[selected.length-1]);
 
                 if(actualId < array.length-1 ){
                     let newId = actualId+1;
@@ -326,7 +332,7 @@ class Table extends Component {
             case "ArrowUp":
                 e.preventDefault();
 
-                const arrays = (data).map((item, id) => {
+                const arrays = rows.map((item, id) => {
                     return item.id
                 });
 
@@ -541,39 +547,48 @@ class Table extends Component {
             indentSupported
         } = this.props;
 
-        const {selected} = this.state;
+        const {selected, rows} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
 
-        if(!!rowData && rowData[tabid]){
-            let keys = Object.keys(rowData[tabid]);
-            const item = rowData[tabid];
+        if(rows){
+            let keys = Object.keys(rows);
+            const item = rows;
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 ret.push(
-                    <TableItemWrapper
-                        key={i}
-                        odd={i & 1}
-                        item={item[key]}
-                        entity={entity}
-                        tabId={tabid}
-                        cols={cols}
-                        type={type}
-                        docId={docId}
-                        tabIndex={tabIndex}
-                        readonly={readonly}
-                        mainTable={mainTable}
-                        selected={selected}
-                        keyProperty={keyProp}
-                        onDoubleClick={onDoubleClick}
-                        handleClick={this.handleClick}
-                        handleRightClick={this.handleRightClick}
-                        changeListenOnTrue={() => this.changeListen(true)}
-                        changeListenOnFalse={() => this.changeListen(false)}
-                        newRow={i === keys.length-1 ? newRow : false}
-                        handleSelect={this.selectRangeProduct}
-                        indentSupported={indentSupported}
-                    />
+                    <tbody key={i}>
+                        <TableItem
+                            key={i}
+                            odd={i & 1}
+                            item={item[key]}
+                            entity={entity}
+                            fields={item[key].fields}
+                            rowId={item[key][keyProp]}
+                            tabId={tabid}
+                            cols={cols}
+                            type={type}
+                            docId={docId}
+                            tabIndex={tabIndex}
+                            readonly={readonly}
+                            mainTable={mainTable}
+                            selected={selected}
+                            keyProperty={keyProp}
+                            onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][keyProp])}
+                            onMouseDown={(e) => this.handleClick(e, item[key][keyProp])}
+                            handleRightClick={(e) => this.handleRightClick(e, item[key][keyProp])}
+                            changeListenOnTrue={() => this.changeListen(true)}
+                            changeListenOnFalse={() => this.changeListen(false)}
+                            newRow={i === keys.length-1 ? newRow : false}
+                            isSelected={selected.indexOf(item[key][keyProp]) > -1}
+                            handleSelect={this.selectRangeProduct}
+                            indentSupported={indentSupported}
+                            indent={item[key].indent}
+                            includedDocuments={item[key].includedDocuments}
+                            lastSibling={item[key].lastChild}
+                            contextType={item[key].type}
+                        />
+                    </tbody>
                 );
             }
 
