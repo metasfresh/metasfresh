@@ -86,7 +86,9 @@ for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.
 
 SET CLASSPATH=%JAR%
 
-@REM Comma-separated Classpath, e.g. lib,${HOME}/app/lib. see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+@REM Comma-separated Classpath, e.g. lib,${HOME}/app/lib. 
+@REM see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+@REM see https://github.com/metasfresh/metasfresh/issues/695
 SET LOADER_PATH=%METASFRESH_HOME%\userlib
 
 SET PATH=%PATH%;%METASFRESH_HOME%\userlib-x64
