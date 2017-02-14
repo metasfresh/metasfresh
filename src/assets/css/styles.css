@@ -140,7 +140,7 @@ body {
     width: 472px;
     background-color: #fff;
     border-left: 1px solid $brand-border-color;
-    z-index: 201;
+    z-index: 99;
     right: 0;
     bottom: 0;
     overflow-y: scroll;
@@ -221,7 +221,7 @@ body {
     background-color: inherit;
     min-width: 100%;
     width: auto;
-    z-index: 201;
+    z-index: 99;
 }
 
 .dropdown-status-item {
