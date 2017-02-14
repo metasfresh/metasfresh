@@ -34,6 +34,7 @@ this week's RC
 * webUI
   * #119 Error when Pressing the Attribute Button
   * #276 Wrong timing when completing a quick input entry
+  * #279 While browsing a document, pressing New does nothing
 
 # metasfresh 4.55.54 (2017-06)
 
