@@ -41,6 +41,7 @@ class Device extends Component {
 
     render() {
         const {value, index, isMore} = this.state;
+        const {tabIndex} = this.props;
 
         if(!!value){
             return (
@@ -49,6 +50,7 @@ class Device extends Component {
                         (isMore ? "btn-flagged ": "")
                     }
                     onClick={this.handleClick}
+                    tabIndex={tabIndex ? tabIndex : ""}
                 >
                     {isMore && <span className="btn-flag">{index + 1}</span>}
                     {value}

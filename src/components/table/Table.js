@@ -16,7 +16,7 @@ import {
 import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
-import TableItemWrapper from './TableItemWrapper';
+import TableItem from './TableItem';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
@@ -550,79 +550,52 @@ class Table extends Component {
         const {selected, rows} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
 
-        console.log(rows);
-
-        if(!!rowData && rowData[tabid]){
-            let keys = Object.keys(rowData[tabid]);
-            const item = rowData[tabid];
+        if(rows){
+            let keys = Object.keys(rows);
+            const item = rows;
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 ret.push(
-                    <TableItemWrapper
-                        key={i}
-                        odd={i & 1}
-                        item={item[key]}
-                        entity={entity}
-                        tabId={tabid}
-                        cols={cols}
-                        type={type}
-                        docId={docId}
-                        tabIndex={tabIndex}
-                        readonly={readonly}
-                        mainTable={mainTable}
-                        selected={selected}
-                        keyProperty={keyProp}
-                        onDoubleClick={onDoubleClick}
-                        handleClick={this.handleClick}
-                        handleRightClick={this.handleRightClick}
-                        changeListenOnTrue={() => this.changeListen(true)}
-                        changeListenOnFalse={() => this.changeListen(false)}
-                        newRow={i === keys.length-1 ? newRow : false}
-                        handleSelect={this.selectRangeProduct}
-                        indentSupported={indentSupported}
-                        rows={this.mapIncluded(item[key])}
-                    />
+                    <tbody key={i}>
+                        <TableItem
+                            key={i}
+                            odd={i & 1}
+                            item={item[key]}
+                            entity={entity}
+                            fields={item[key].fields}
+                            rowId={item[key][keyProp]}
+                            tabId={tabid}
+                            cols={cols}
+                            type={type}
+                            docId={docId}
+                            tabIndex={tabIndex}
+                            readonly={readonly}
+                            mainTable={mainTable}
+                            selected={selected}
+                            keyProperty={keyProp}
+                            onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][keyProp])}
+                            onMouseDown={(e) => this.handleClick(e, item[key][keyProp])}
+                            handleRightClick={(e) => this.handleRightClick(e, item[key][keyProp])}
+                            changeListenOnTrue={() => this.changeListen(true)}
+                            changeListenOnFalse={() => this.changeListen(false)}
+                            newRow={i === keys.length-1 ? newRow : false}
+                            isSelected={selected.indexOf(item[key][keyProp]) > -1}
+                            handleSelect={this.selectRangeProduct}
+                            indentSupported={indentSupported}
+                            indent={item[key].indent}
+                            includedDocuments={item[key].includedDocuments}
+                            rows={this.mapIncluded(item[key])}
+                            lastSibling={item[key].lastChild}
+                            contextType={item[key].type}
+                        />
+                    </tbody>
                 );
             }
 
             return ret;
         }
     }
-
-    // return (
-    //             <tbody>
-    //             {rows.map((row, index) =>
-    //                 <TableItem
-    //                     odd={i & 1}
-    //                     entity={entity}
-    //                     fields={row.fields}
-    //                     rowId={row[keyProp]}
-    //                     tabId={tabId}
-    //                     cols={cols}
-    //                     type={type}
-    //                     docId={docId}
-    //                     tabIndex={tabIndex}
-    //                     readonly={readonly}
-    //                     mainTable={mainTable}
-    //                     onDoubleClick={() => onDoubleClick && onDoubleClick(row[keyProp])}
-    //                     onMouseDown={(e) => handleClick && handleClick(e, row[keyProp])}
-    //                     handleRightClick={(e) => handleRightClick(e, row[keyProp])}
-    //                     changeListenOnTrue={() => changeListenOnTrue && changeListenOnTrue()}
-    //                     changeListenOnFalse={() => changeListenOnFalse && changeListenOnFalse()}
-    //                     newRow={i === keys.length-1 ? newRow : false}
-    //                     isSelected={selected.indexOf(row[keyProp]) > -1}
-    //                     key={index}
-    //                     indentSupported={indentSupported}
-    //                     indent={row.indent}
-    //                     includedDocuments={row.includedDocuments}
-    //                     lastSibling={row.lastChild}
-    //                     handleSelect={this.selectRangeProduct}
-    //                     contextType={row.type}
-    //                 />
-    //             )}
-    //         </tbody>
-    //         );
 
     renderEmptyInfo = (data, tabId) => {
         const {emptyText, emptyHint} = this.props;
