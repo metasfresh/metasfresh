@@ -37,6 +37,7 @@ this week's RC
 * webUI
   * #119 Error when Pressing the Attribute Button
   * #116 qty 0 in purchase order
+  * #264 Included tabs layout is broken
   * #276 Wrong timing when completing a quick input entry
   * #279 While browsing a document, pressing New does nothing
 
