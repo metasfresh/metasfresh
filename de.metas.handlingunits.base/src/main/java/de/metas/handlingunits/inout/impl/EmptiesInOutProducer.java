@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -73,34 +73,19 @@ import de.metas.inout.IInOutBL;
 	private Date _movementDate = null;
 	private boolean _complete = true;
 
-	/**
-	 * #643 The order on based on which the empties inout is created (if it was selected)
-	 */
+	/** #643 The order on based on which the empties inout is created (if it was selected) */
 	private I_C_Order _order = null;
 
-	/**
-	 * InOut header reference.
-	 *
-	 * It will be created just when it is needed.
-	 */
-	private final LazyInitializer<I_M_InOut> inoutRef = new LazyInitializer<I_M_InOut>()
-	{
-
-		@Override
-		protected I_M_InOut initialize()
-		{
-			return createInOutHeader();
-		}
-	};
-
-	private final EmptiesInOutLinesBuilder inoutLinesBuilder = new EmptiesInOutLinesBuilder(inoutRef);
+	/** InOut header reference. It will be created just when it is needed. */
+	private final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
+	private final EmptiesInOutLinesBuilder inoutLinesBuilder = EmptiesInOutLinesBuilder.newBuilder(inoutRef);
 
 	public EmptiesInOutProducer(final Properties ctx)
 	{
 		super();
 
 		Check.assumeNotNull(ctx, "ctx not null");
-		this._ctx = ctx;
+		_ctx = ctx;
 	}
 
 	private final Properties getCtx()
@@ -111,10 +96,10 @@ import de.metas.inout.IInOutBL;
 	private IContextAware getContextProvider()
 	{
 		final Properties ctx = getCtx();
-		
+
 		final String trxName = trxManager.getThreadInheritedTrxName();
 		trxManager.assertTrxNameNotNull(trxName);
-		
+
 		return PlainContextAware.newWithTrxName(ctx, trxName);
 	}
 
@@ -123,12 +108,12 @@ import de.metas.inout.IInOutBL;
 	{
 		Check.assume(!executed, "inout not already created");
 		executed = true;
-		
+
 		final boolean doComplete = isComplete();
 
 		//
 		// Create and complete the material return
-		if(doComplete)
+		if (doComplete)
 		{
 			// Create document lines
 			// NOTE: as a side effect the document header will be created, if there was at least one line
@@ -144,9 +129,9 @@ import de.metas.inout.IInOutBL;
 				// nothing created
 				return null;
 			}
-	
+
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-			
+
 			return inout;
 		}
 		//
@@ -246,21 +231,21 @@ import de.metas.inout.IInOutBL;
 			final I_M_Warehouse warehouse = getM_WarehouseToUse();
 			inout.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		}
-		
-		// 
+
+		//
 		// task #643: Add order related details
 		{
 			final I_C_Order order = getC_Order();
-			
-			if(order == null)
+
+			if (order == null)
 			{
-				//nothing to do. The order was not selected
+				// nothing to do. The order was not selected
 			}
 			else
 			{
 				// if the order was selected, set its poreference to the inout
 				final String poReference = order.getPOReference();
-				
+
 				inout.setPOReference(poReference);
 				inout.setC_Order(order);
 			}
@@ -391,7 +376,7 @@ import de.metas.inout.IInOutBL;
 		_order = order;
 		return this;
 	}
-	
+
 	private I_C_Order getC_Order()
 	{
 		return _order;
@@ -403,7 +388,7 @@ import de.metas.inout.IInOutBL;
 		_complete = false;
 		return this;
 	}
-	
+
 	private boolean isComplete()
 	{
 		return _complete;
