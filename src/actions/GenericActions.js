@@ -23,8 +23,8 @@ export function getData(
 ) {
     return () => axios.get(
         config.API_URL +
-        '/' + entity + '/' +
-        docType + '/' +
+        '/' + entity +
+        '/' + docType +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
@@ -37,7 +37,9 @@ export function getData(
 export function createInstance(entity, docType, docId, tabId, subentity) {
     return () => axios.post(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
+        '/' + entity +
+        '/' + docType +
+        '/' + docId +
         (tabId ? "/" + tabId : "") +
         (subentity ? "/" + subentity : "")
     );
