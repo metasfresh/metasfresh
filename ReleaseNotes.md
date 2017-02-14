@@ -33,6 +33,7 @@ this week's RC
   
 * webUI
   * #119 Error when Pressing the Attribute Button
+  * #276 Wrong timing when completing a quick input entry
 
 # metasfresh 4.55.54 (2017-06)
 
