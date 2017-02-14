@@ -151,8 +151,7 @@ public class ASIRepository
 		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
 		final int attributeSetId = getASIDocument(asiDocId)
 				.getEntityDescriptor()
-				.getDocumentTypeId()
-				.toInt();
+				.getDocumentTypeId();
 
 		return descriptorsFactory.getASIDescriptor(attributeSetId)
 				.getLayout();
@@ -244,7 +243,7 @@ public class ASIRepository
 	{
 		//
 		// Create M_AttributeSetInstance
-		final int attributeSetId = asiDoc.getEntityDescriptor().getDocumentTypeId().toInt();
+		final int attributeSetId = asiDoc.getEntityDescriptor().getDocumentTypeId();
 
 		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.create(Env.getCtx(), I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
 		asiRecord.setM_AttributeSet_ID(attributeSetId);
