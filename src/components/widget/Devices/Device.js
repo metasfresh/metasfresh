@@ -8,7 +8,7 @@ class Device extends Component {
 
         this.state = {
             value: null,
-            valueDelayed: null
+            valueChangeStopper: false
         }
     }
 
@@ -21,65 +21,53 @@ class Device extends Component {
         this.sockClient.debug = null;
         this.sockClient.connect({}, frame => {
             this.sockClient.subscribe(device.websocketEndpoint, msg => {
-                const body = JSON.parse(msg.body);
-                this.setState({
-                    value: body.value
-                });
+                if(!this.state.valueChangeStopper){
+                    const body = JSON.parse(msg.body);
+
+                    this.setState({
+                        value: body.value
+                    });
+                }
             });
         });
-
-        this.delayForDisplayingValue(1000);
     }
 
     componentWillUnmount() {
         this.sockClient.disconnect();
-        clearInterval(this.interval);
     }
 
     handleClick = () => {
         const {handleChange} = this.props;
-        const {valueDelayed} = this.state;
+        const {value} = this.state;
 
-        handleChange(valueDelayed);
+        handleChange(value);
     }
 
-    handleSlowDisplaying = () => {
-        this.delayForDisplayingValue(2000);
-    }
-
-    handleRegularDisplaying = () => {
-        this.delayForDisplayingValue(1000);
-    }
-
-    delayForDisplayingValue = (interval) => {
-        const self = this;
-
-        clearInterval(this.interval);
-
-        this.interval = setInterval(() => {
-            self.setState({
-                valueDelayed: self.state.value
-            })
-        }, interval);
+    handleToggleChangeStopper = (value) => {
+        this.setState({
+            valueChangeStopper: value
+        })
     }
 
     render() {
-        const {valueDelayed, index, isMore} = this.state;
+        const {value, index, isMore} = this.state;
+        const {tabIndex} = this.props;
 
-        if(!!valueDelayed){
+        if(!!value){
             return (
                 <div
-                    className={"btn btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev " +
+                    className={"btn btn-device btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev " +
                         (isMore ? "btn-flagged ": "")
                     }
                     onClick={this.handleClick}
-                    onMouseEnter={this.handleSlowDisplaying}
-                    onFocus={this.handleSlowDisplaying}
-                    onMouseLeave={this.handleRegularDisplaying}
-                    onBlur={this.handleRegularDisplaying}
+                    tabIndex={tabIndex ? tabIndex : ""}
+                    onMouseEnter={() => this.handleToggleChangeStopper(true)}
+                    onFocus={() => this.handleToggleChangeStopper(true)}
+                    onMouseLeave={() => this.handleToggleChangeStopper(false)}
+                    onBlur={() => this.handleToggleChangeStopper(false)}
                 >
                     {isMore && <span className="btn-flag">{index + 1}</span>}
-                    {valueDelayed}
+                    {value}
                 </div>
             )
         }else{

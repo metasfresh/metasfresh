@@ -92,7 +92,7 @@ class RawModal extends Component {
                         </div>
                     </div>
                     <div
-                        className="panel-modal-content js-panel-modal-content container-fluid"
+                        className="panel-modal-content js-panel-modal-content"
                         ref={c => { c && c.focus()}}
                     >
                         {children}
