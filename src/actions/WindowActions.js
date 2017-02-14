@@ -22,6 +22,13 @@ import {
     addNotification
 } from './AppActions'
 
+export function setLatestNewDocument(id) {
+    return {
+        type: types.SET_LATEST_NEW_DOCUMENT,
+        id: id
+    }
+}
+
 export function openRawModal(windowType, viewId) {
     return {
         type: types.OPEN_RAW_MODAL,
@@ -185,10 +192,10 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
-
                 if (docId == "NEW" && !isModal) {
+                    dispatch(setLatestNewDocument(response.data[0].id));
                     // redirect immedietely
-                    return dispatch(push("/window/" + windowType + "/" + response.data[0].id));
+                    return dispatch(replace("/window/" + windowType + "/" + response.data[0].id));
                 }
 
                 let elem = 0;
@@ -368,7 +375,7 @@ export function updateProperty(property, value, tabid, rowid, isModal) {
 export function attachFileAction(windowType, docId, data){
     return dispatch => {
         dispatch(addNotification('Attachment', 'Uploading attachment', 5000, 'primary'));
-        
+
         return axios.post(`${config.API_URL}/window/${windowType}/${docId}/attachments`, data)
             .then(() => {
                 dispatch(addNotification('Attachment', 'Uploading attachment succeeded.', 5000, 'primary'))

@@ -15,6 +15,11 @@ import {
     updateUri
 } from '../actions/AppActions';
 
+import {
+    selectTableItems,
+    setLatestNewDocument
+} from '../actions/WindowActions';
+
 class DocList extends Component {
     constructor(props){
         super(props);
@@ -25,9 +30,14 @@ class DocList extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType} = this.props;
+        const {dispatch, windowType, latestNewDocument} = this.props;
 
         dispatch(getWindowBreadcrumb(windowType));
+
+        if(latestNewDocument){
+            dispatch(selectTableItems([latestNewDocument]));
+            dispatch(setLatestNewDocument(null));
+        }
     }
 
     componentDidUpdate = (prevProps) => {
@@ -133,11 +143,13 @@ function mapStateToProps(state) {
     const {
         modal,
         rawModal,
-        selected
+        selected,
+        latestNewDocument
     } = windowHandler || {
         modal: false,
         rawModal: false,
-        selected: []
+        selected: [],
+        latestNewDocument: null
     }
 
     const {
@@ -166,6 +178,7 @@ function mapStateToProps(state) {
         pathname,
         actions,
         selected,
+        latestNewDocument,
         references,
         rawModal
     }

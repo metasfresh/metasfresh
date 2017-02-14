@@ -22,15 +22,6 @@ import {
     addNotification
 } from '../../actions/AppActions';
 
-import {
-    setPagination,
-    setSorting,
-    clearListProps,
-    clearListPagination,
-    initDocumentView,
-    setFilter
-} from '../../actions/ListActions';
-
 class DocumentList extends Component {
     constructor(props){
         super(props);
@@ -350,6 +341,7 @@ class DocumentList extends Component {
                             closeOverlays={closeOverlays}
                             indentSupported={layout.supportTree}
                             disableOnClickOutside={clickOutsideLock}
+                            defaultSelected={selected}
                         >
                             {layout.supportAttributes &&
                                 <DataLayoutWrapper
