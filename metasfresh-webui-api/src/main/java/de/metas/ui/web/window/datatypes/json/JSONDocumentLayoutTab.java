@@ -97,7 +97,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 	
 	@JsonProperty("quickInput")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final JSONDocumentLayoutTabQuickInput quickInput;
+	private final JSONQuickInputLayoutDescriptor quickInput;
 
 	private JSONDocumentLayoutTab(
 			final DocumentLayoutDetailDescriptor detail //
@@ -129,7 +129,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
 		
-		this.quickInput = JSONDocumentLayoutTabQuickInput.fromNullable(detail.getQuickInput().orElse(null), jsonOpts);
+		this.quickInput = JSONQuickInputLayoutDescriptor.fromNullable(detail.getQuickInput().orElse(null), jsonOpts);
 	}
 
 	@JsonCreator
@@ -142,7 +142,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty("quickInput") final JSONDocumentLayoutTabQuickInput quickInput //
+			, @JsonProperty("quickInput") final JSONQuickInputLayoutDescriptor quickInput //
 	)
 	{
 		super();

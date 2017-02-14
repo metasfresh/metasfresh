@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.compiere.Adempiere;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_UI_Column;
@@ -16,8 +17,8 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
-import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -25,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.quickinput.QuickInputDescriptor;
+import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -32,7 +35,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
@@ -55,11 +57,11 @@ import de.metas.ui.web.window.descriptor.LayoutType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,6 +70,8 @@ public class LayoutFactory
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
+	@Autowired
+	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
@@ -95,7 +99,8 @@ public class LayoutFactory
 
 	public LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
 	{
-		super();
+		Adempiere.autowire(this);
+
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
 		_adWindowId = gridTabVO.getAD_Window_ID();
 
@@ -508,51 +513,17 @@ public class LayoutFactory
 
 		//
 		// Quick input
-		layoutDetail.setQuickInput(layoutDetail_QuickInput());
+		{
+			final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor( //
+					entityDescriptor.getDocumentType() //
+					, entityDescriptor.getDocumentTypeId() //
+					, entityDescriptor.getTableNameOrNull() //
+					, entityDescriptor.getDetailId() //
+			);
+			layoutDetail.setQuickInput(quickInputDescriptor == null ? null : quickInputDescriptor.getLayout());
+		}
 
 		return layoutDetail;
-	}
-
-	public DocumentLayoutDetailQuickInputDescriptor.Builder layoutDetail_QuickInput()
-	{
-		final DocumentEntityDescriptor.Builder documentEntityDescriptor = documentEntity();
-		final DocumentEntityDescriptor.Builder quickInputDescriptor = documentEntityDescriptor.getQuickInputDescriptor();
-		if (quickInputDescriptor == null)
-		{
-			return null;
-		}
-
-		// FIXME: hardcoded quickInput for Order lines
-
-		if (!documentEntityDescriptor.isTableName(I_C_OrderLine.Table_Name))
-		{
-			return null;
-		}
-
-		final DocumentFieldDescriptor.Builder field_M_Product_ID = quickInputDescriptor.getFieldBuilder("M_Product_ID");
-		final DocumentFieldDescriptor.Builder field_M_HU_PI_Item_Product_ID = quickInputDescriptor.getFieldBuilder("M_HU_PI_Item_Product_ID");
-		final DocumentFieldDescriptor.Builder field_Qty = quickInputDescriptor.getFieldBuilder("Qty");
-
-		final DocumentLayoutDetailQuickInputDescriptor.Builder quickInputLayout = DocumentLayoutDetailQuickInputDescriptor.builder()
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption(field_M_Product_ID.getCaption())
-						.setDescription(field_M_Product_ID.getDescription())
-						.setWidgetType(field_M_Product_ID.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_Product_ID.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_M_Product_ID.getLookupSourceType()))
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_M_HU_PI_Item_Product_ID.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_M_HU_PI_Item_Product_ID.getLookupSourceType())))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption(field_Qty.getCaption())
-						.setDescription(field_Qty.getDescription())
-						.setWidgetType(field_Qty.getWidgetType())
-						.addField(DocumentLayoutElementFieldDescriptor.builder(field_Qty.getFieldName())
-								.setPublicField(true)
-								.setLookupSource(field_Qty.getLookupSourceType())));
-
-		return quickInputLayout;
 	}
 
 	/**
