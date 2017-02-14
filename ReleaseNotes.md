@@ -19,6 +19,7 @@ this week's RC
   * #913 include branch name in build version string
   
 * webUI
+  * #121 Empties Returns for Vendors and Customers in Material Receipt Window
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
