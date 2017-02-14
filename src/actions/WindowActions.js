@@ -14,7 +14,8 @@ import {
     initLayout,
     getData,
     patchRequest,
-    printRequest
+    printRequest,
+    createInstance
 } from './GenericActions';
 
 import {
@@ -179,10 +180,16 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
             docId = "NEW";
         }
 
+
         // this chain is really important,
         // to do not re-render widgets on init
         return dispatch(initWindow(windowType, docId, tabId, rowId, isAdvanced))
             .then(response => {
+
+                if (docId == "NEW" && !isModal) {
+                    // redirect immedietely
+                    return dispatch(push("/window/" + windowType + "/" + response.data[0].id));
+                }
 
                 let elem = 0;
 
@@ -191,11 +198,6 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                         elem = index;
                     }
                 });
-
-                if (docId == "NEW" && !isModal) {
-                    dispatch(clearListProps());
-                    dispatch(replace("/window/" + windowType + "/" + response.data[0].id));
-                }
 
                 docId = response.data[elem].id;
                 const preparedData = parseToDisplay(response.data[elem].fields);
@@ -210,23 +212,25 @@ export function createWindow(windowType, docId = "NEW", tabId, rowId, isModal = 
                 if (!isModal) {
                     dispatch(getWindowBreadcrumb(windowType));
                 }
-            }).then(() =>
-                dispatch(initLayout('window', windowType, tabId, null, null, isAdvanced))
-            ).then(response =>
-                dispatch(initLayoutSuccess(response.data, getScope(isModal)))
-            ).then(response => {
-                let tabTmp = {};
 
-                response.layout.tabs && response.layout.tabs.map(tab => {
-                    tabTmp[tab.tabid] = {};
-                    dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
-                        tabTmp[tab.tabid] = res;
-                        dispatch(addRowData(tabTmp, getScope(isModal)));
-                    })
-                })
+                dispatch(initLayout('window', windowType, tabId, null, null, isAdvanced)
+                    ).then(response =>
+                        dispatch(initLayoutSuccess(response.data, getScope(isModal)))
+                    ).then(response => {
+                        let tabTmp = {};
+
+                        response.layout.tabs && response.layout.tabs.map(tab => {
+                            tabTmp[tab.tabid] = {};
+                            dispatch(getTab(tab.tabid, windowType, docId)).then(res => {
+                                tabTmp[tab.tabid] = res;
+                                dispatch(addRowData(tabTmp, getScope(isModal)));
+                            })
+                        }
+                    )
             }).catch((err) => {
                 dispatch(addNotification("Error", err.response.data.error, 5000, "error"));
             });
+        });
     }
 }
 
@@ -358,6 +362,20 @@ export function updateProperty(property, value, tabid, rowid, isModal) {
                 dispatch(updateDataProperty(property, value, "master"))
             }
         }
+    }
+}
+
+export function attachFileAction(windowType, docId, data){
+    return dispatch => {
+        dispatch(addNotification('Attachment', 'Uploading attachment', 5000, 'primary'));
+        
+        return axios.post(`${config.API_URL}/window/${windowType}/${docId}/attachments`, data)
+            .then(() => {
+                dispatch(addNotification('Attachment', 'Uploading attachment succeeded.', 5000, 'primary'))
+            })
+            .catch(() => {
+                dispatch(addNotification('Attachment', 'Uploading attachment error.', 5000, 'error'))
+            })
     }
 }
 

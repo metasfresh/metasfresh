@@ -67,27 +67,20 @@ class Modal extends Component {
         const modalContent = document.querySelector('.js-panel-modal-content')
         modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
     }
-
-    handleScroll = (event) => {
-        let scrollTop = event.srcElement.scrollTop;
-
-        if(scrollTop > 0) {
-            this.setState(Object.assign({}, this.state, {
-                scrolled: true
-            }))
-        } else {
-            this.setState(Object.assign({}, this.state, {
-                scrolled: false
-            }))
-        }
-    }
-
+    
     handleClose = () => {
         const {dispatch, closeCallback, modalType} = this.props;
         const {isNew} = this.state;
-
         closeCallback && closeCallback(isNew);
         this.removeModal();
+    }
+
+    handleScroll = (event) => {
+        const scrollTop = event.srcElement.scrollTop;
+
+        this.setState({
+            scrolled: scrollTop > 0
+        })
     }
 
     handleStart = () => {

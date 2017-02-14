@@ -221,7 +221,7 @@ body {
     background-color: inherit;
     min-width: 100%;
     width: auto;
-    z-index: 201;
+    z-index: 99;
 }
 
 .dropdown-status-item {
@@ -877,4 +877,42 @@ td.pulse-off input {
     overflow:hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.document-file-dropzone{
+    width: 100%;
+    height: auto;
+    position: relative;
+}
+
+.document-file-dropzone-backdrop{
+    background-color: black;
+    opacity: 0.5;
+    cursor: copy;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin-top: 15px;
+    border: 5px dashed white;
+}
+
+.document-file-dropzone-info{
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: white;
+    height: 30px;
+    line-height: 30px;
+    margin-top: -15px;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.document-file-dropzone-active .document-file-dropzone-backdrop{
+    display: block;
 }
