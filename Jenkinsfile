@@ -59,6 +59,137 @@ def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBr
 		], wait: wait
 }
 
+
+def boolean isRepoExists(String repoId)
+{
+	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
+	{
+		echo "Check if the nexus repository ${repoId} exists";
+
+		// check if there is a repository for ur branch
+		final String checkForRepoCommand = "curl --silent -X GET -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories | grep '<id>${repoId}-releases</id>'";
+		final grepExitCode = sh returnStatus: true, script: checkForRepoCommand;
+		final repoExists = grepExitCode == 0;
+
+		echo "The nexus repository ${repoId} exists: ${repoExists}";
+		return repoExists;
+	}
+}
+
+def createRepo(String repoId)
+{
+	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
+	{
+		echo "Create the repository ${repoId}-releases";
+
+		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<repository>
+  <data>
+	<id>${repoId}-releases</id>
+	<name>${repoId}-releases</name>
+	<exposed>true</exposed>
+	<repoType>hosted</repoType>
+	<writePolicy>ALLOW_WRITE_ONCE</writePolicy>
+    <browseable>true</browseable>
+    <indexable>true</indexable>
+	<repoPolicy>RELEASE</repoPolicy>
+	<providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
+	<provider>maven2</provider>
+	<format>maven2</format>
+  </data>
+</repository>
+""";
+
+		// # nexus ignored application/json
+		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
+		sh "${createRepoCommand}"
+		
+		echo "Create the repository-group ${repoId}";
+		
+		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
+<repo-group>
+  <data>
+    <repositories>
+	  <!-- include mvn-public that contains everything we need to perform the build-->
+      <repo-group-member>
+        <name>mvn-public</name>
+        <id>mvn-public</id>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
+      </repo-group-member>
+	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
+      <repo-group-member>
+        <name>${repoId}-releases</name>
+        <id>${repoId}-releases</id>
+        <resourceURI>https://repo.metasfresh.com/content/repositories/${repoId}-releases/</resourceURI>
+      </repo-group-member>
+    </repositories>
+    <name>${repoId}</name>
+    <repoType>group</repoType>
+    <providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
+    <exposed>true</exposed>
+    <id>${repoId}</id>
+	<provider>maven2</provider>
+	<format>maven2</format>
+  </data>
+</repo-group>
+""";
+
+		// # nexus ignored application/json
+		final String createGroupCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createGroupPayload}\' https://repo.metasfresh.com/service/local/repo_groups"
+		sh "${createGroupCommand}"
+
+		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
+		
+final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
+<scheduled-task>
+  <data>
+	<id>cleanup-repo-${repoId}-releases</id>
+	<enabled>true</enabled>
+	<name>Remove Releases from ${repoId}-releases</name>
+	<typeId>ReleaseRemoverTask</typeId>
+	<schedule>daily</schedule>
+	<startDate>${currentBuild.startTimeInMillis}</startDate>
+	<recurringTime>03:00</recurringTime>
+	<properties>
+      <scheduled-task-property>
+        <key>numberOfVersionsToKeep</key>
+        <value>3</value>
+      </scheduled-task-property>
+      <scheduled-task-property>
+        <key>indexBackend</key>
+        <value>false</value>
+      </scheduled-task-property>
+      <scheduled-task-property>
+        <key>repositoryId</key>
+        <value>${repoId}-releases</value>
+      </scheduled-task-property>
+	</properties>
+  </data>
+</scheduled-task>"""
+	
+		// # nexus ignored application/json
+		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
+		sh "${createScheduleCommand}"		
+	} // withCredentials
+}
+
+def deleteRepo(String repoId)
+{
+	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
+	{
+		echo "Delete the repository ${repoId}";
+		
+		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
+		sh "${deleteGroupCommand}"
+		
+		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
+		sh "${deleteRepoCommand}"
+		
+		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
+		sh "${deleteScheduleCommand}"
+	}
+}
+
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
@@ -133,17 +264,15 @@ echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
 final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
 echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
 
+
+// IMPORTANT: the Dtask-repo-id and task-repo-url properties which we set in MF_MAVEN_TASK_RESOLVE_PARAMS are used within the settings.xml that our jenkins provides to the build. 
+// That's why we need it in the mvn parameters, also if all we want to do is deploying
 final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
 
 // the repository to which we are going to deploy
 final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
 echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
-
-// provide these cmdline params to all maven invocations that do a deploy
-// deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
-final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
-echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 // note: going to set currentBuild.description after we deployed
@@ -161,7 +290,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			doGenerateSubmoduleConfigurations: false, 
 			extensions: [
 				[$class: 'CleanCheckout']
-			], 
+			],
 			submoduleCfg: [], 
 			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-webui-frontend.git']]
 		])
@@ -173,26 +302,21 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
 			stage('Set versions and build metasfresh-webui-frontend') 
             {
-				final String mavenUpdateParentParam=''; // empty string for now. Uncomment the two assignements in the if and else *if* and when metasfresh-webui switcheds its parent pom to de.metas.parent
-				final String mavenUpdatePropertyParam;
-				if(params.MF_UPSTREAM_VERSION)
+				if(!isRepoExists(MF_MAVEN_REPO_NAME))
 				{
-					// mavenUpdateParentParam="-DparentVersion=${params.MF_UPSTREAM_VERSION}"
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${params.MF_UPSTREAM_VERSION}"; // update the property, use the metasfresh version that we were given by the upstream job
+					createRepo(MF_MAVEN_REPO_NAME);
 				}
-				else
-				{
-					// mavenUpdateParentParam=''; 
-					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // still update the property, but use the latest version
-				}
-				sh "rm -r ~/.npm"
+
+				sh "if [ -d ~/.npm ]; then rm -r ~/.npm; fi" // make sure the .npm folder isn't there. it caused us problems in the past when it contained "stale files".
+
 				def nodeHome = tool name: "$NODEJS_TOOL_NAME"
 				env.PATH = "${nodeHome}/bin:${env.PATH}"
 				sh "npm install"
 				sh "webpack --config webpack.prod.js"
 				sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
-				sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -Durl=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
-
+				
+				//sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -Durl=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
+			sh "mvn --settings ${MAVEN_SETTINGS} deploy:deploy-file ${MF_MAVEN_TASK_RESOLVE_PARAMS} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz -Durl=${MF_MAVEN_DEPLOY_REPO_URL} -DrepositoryId=${MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -Dpackaging=tar.gz -DgeneratePom=true"
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
