@@ -650,7 +650,14 @@ class Table extends Component {
                     </div>}
 
                     <div
-                        className="panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table"
+                        className={
+                            "panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table" +
+                            ((
+                                (rowData && rowData[tabid] &&
+                                Object.keys(rowData[tabid]).length === 0) ||
+                                (!rowData[tabid])
+                            ) ? " table-content-empty" : null)
+                        }
                     >
                         <table
                             className={
@@ -679,7 +686,6 @@ class Table extends Component {
                                 tabIndex={tabIndex}
                             />
                         </table>
-
 
                         {this.renderEmptyInfo(rowData, tabid)}
                     </div>

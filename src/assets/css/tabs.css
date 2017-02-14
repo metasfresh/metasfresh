@@ -61,7 +61,7 @@
     flex-direction: column;
 }
 
-.tab-pane .panel:not(.panel-prompt) {
+.tab-pane .panel:not(.panel-prompt):not(.table-content-empty) {
     padding-bottom: 100px;
 }
 
