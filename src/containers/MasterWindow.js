@@ -67,14 +67,14 @@ class MasterWindow extends Component {
             return Promise.reject();
         }
 
-        const { attachFile, master } = this.props;
+        const { dispatch, master } = this.props;
         const dataId = findRowByPropName(master.data, "ID").value;
         const { type } = master.layout;
 
         let fd = new FormData();
         fd.append('file', file);
 
-        return attachFile(type, dataId, fd);
+        return dispatch(attachFileAction(type, dataId, fd));
     }
 
     render() {
@@ -185,12 +185,6 @@ function mapStateToProps(state) {
     }
 }
 
-function mapDispatchToProps(dispatch){
-    return {
-        attachFile: (windowType, docId, data) => dispatch(attachFileAction(windowType, docId, data))
-    }
-}
-
-MasterWindow = connect(mapStateToProps, mapDispatchToProps)(MasterWindow)
+MasterWindow = connect(mapStateToProps)(MasterWindow)
 
 export default MasterWindow;
