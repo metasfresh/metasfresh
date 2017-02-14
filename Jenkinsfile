@@ -312,7 +312,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				def nodeHome = tool name: "$NODEJS_TOOL_NAME"
 				env.PATH = "${nodeHome}/bin:${env.PATH}"
 				sh "npm install"
-				sh "webpack --config webpack.prod.js"
+				sh "webpack --config webpack.prod.js --bail --display-error-details"
 				sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
 				
 				//sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -Durl=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
