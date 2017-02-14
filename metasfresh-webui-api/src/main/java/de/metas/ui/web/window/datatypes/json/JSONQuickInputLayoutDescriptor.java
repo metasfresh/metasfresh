@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescriptor;
+import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 
 /*
  * #%L
@@ -35,22 +35,22 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescripto
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JSONDocumentLayoutTabQuickInput implements Serializable
+public class JSONQuickInputLayoutDescriptor implements Serializable
 {
-	public static JSONDocumentLayoutTabQuickInput fromNullable(final DocumentLayoutDetailQuickInputDescriptor layout, final JSONOptions jsonOpts)
+	public static JSONQuickInputLayoutDescriptor fromNullable(final QuickInputLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
 		if(layout == null)
 		{
 			return null;
 		}
-		return new JSONDocumentLayoutTabQuickInput(layout, jsonOpts);
+		return new JSONQuickInputLayoutDescriptor(layout, jsonOpts);
 	}
 
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDocumentLayoutTabQuickInput(final DocumentLayoutDetailQuickInputDescriptor layout, final JSONOptions jsonOpts)
+	private JSONQuickInputLayoutDescriptor(final QuickInputLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
 		super();
 		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);

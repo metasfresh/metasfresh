@@ -17,7 +17,6 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -35,22 +34,28 @@ import de.metas.ui.web.window.model.DocumentCollection;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * Quick input instance
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public final class QuickInput
 {
 	public static final Builder builder()
 	{
 		return new Builder();
 	}
-	
+
 	public static final QuickInput getQuickInputOrNull(final ICalloutField calloutField)
 	{
 		final Object documentObj = calloutField.getModel(Object.class);
@@ -60,22 +65,22 @@ public final class QuickInput
 
 	private static final String VERSION_DEFAULT = "0";
 
+	private final QuickInputDescriptor descriptor;
 	private final DocumentPath rootDocumentPath;
 	private final DetailId targetDetailId;
-	private final QuickInputProcessorFactory quickInputProcessorFactory;
 
 	private final Document quickInputDocument;
 
 	private transient Document rootDocument;
-	
+
 	private static final String DYNATTR_QuickInput = QuickInput.class.getName();
 
 	private QuickInput(final Builder builder)
 	{
 		super();
+		descriptor = builder.getQuickInputDescriptor();
 		rootDocumentPath = builder.getRootDocumentPath();
 		targetDetailId = builder.getTargetDetailId();
-		quickInputProcessorFactory = builder.getQuickInputProcessorFactory();
 
 		quickInputDocument = builder.buildQuickInputDocument();
 		quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
@@ -87,12 +92,12 @@ public final class QuickInput
 	private QuickInput(final QuickInput from, final CopyMode copyMode)
 	{
 		super();
+		descriptor = from.descriptor;
 		rootDocumentPath = from.rootDocumentPath;
 		targetDetailId = from.targetDetailId;
-		quickInputProcessorFactory = from.quickInputProcessorFactory;
 
 		quickInputDocument = from.quickInputDocument.copy(copyMode);
-		if(copyMode.isWritable())
+		if (copyMode.isWritable())
 		{
 			quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
 		}
@@ -152,7 +157,7 @@ public final class QuickInput
 
 		return this;
 	}
-	
+
 	/**
 	 * Asserts we are allowed to create a new included document.
 	 */
@@ -187,13 +192,11 @@ public final class QuickInput
 	public Document complete()
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		
-		final IQuickInputProcessor processor = quickInputProcessorFactory.createProcessor(getTargetTableName());
-		final Object orderLineObj = processor.process(this);
-		final int orderLineId = InterfaceWrapperHelper.getId(orderLineObj);
 
-		final Document orderDocument = getRootDocument();
-		final Document orderLineDocument = orderDocument.getIncludedDocument(targetDetailId, DocumentId.of(orderLineId));
+		final IQuickInputProcessor processor = descriptor.createProcessor();
+		final DocumentId documentLineId = processor.process(this);
+		final Document rootDocument = getRootDocument();
+		final Document orderLineDocument = rootDocument.getIncludedDocument(targetDetailId, documentLineId);
 
 		return orderLineDocument;
 	}
@@ -217,9 +220,7 @@ public final class QuickInput
 		private static final AtomicInteger nextQuickInputDocumentId = new AtomicInteger(1);
 
 		private DocumentPath _rootDocumentPath;
-		private DocumentEntityDescriptor _quickInputDescriptor;
-
-		private QuickInputProcessorFactory _quickInputProcessorFactory;
+		private QuickInputDescriptor _quickInputDescriptor;
 
 		private Builder()
 		{
@@ -243,13 +244,13 @@ public final class QuickInput
 			return _rootDocumentPath;
 		}
 
-		public Builder setQuickInputDescriptor(final DocumentEntityDescriptor quickInputDescriptor)
+		public Builder setQuickInputDescriptor(final QuickInputDescriptor quickInputDescriptor)
 		{
 			_quickInputDescriptor = quickInputDescriptor;
 			return this;
 		}
 
-		private DocumentEntityDescriptor getQuickInputDescriptor()
+		private QuickInputDescriptor getQuickInputDescriptor()
 		{
 			Check.assumeNotNull(_quickInputDescriptor, "Parameter quickInputDescriptor is not null");
 			return _quickInputDescriptor;
@@ -262,21 +263,9 @@ public final class QuickInput
 			return targetDetailId;
 		}
 
-		public Builder setQuickInputProcessorFactory(final QuickInputProcessorFactory quickInputProcessorFactory)
-		{
-			_quickInputProcessorFactory = quickInputProcessorFactory;
-			return this;
-		}
-
-		private QuickInputProcessorFactory getQuickInputProcessorFactory()
-		{
-			Check.assumeNotNull(_quickInputProcessorFactory, "Parameter _quickInputProcessorFactory is not null");
-			return _quickInputProcessorFactory;
-		}
-
 		private Document buildQuickInputDocument()
 		{
-			return Document.builder(getQuickInputDescriptor())
+			return Document.builder(getQuickInputDescriptor().getEntityDescriptor())
 					.initializeAsNewDocument(() -> nextQuickInputDocumentId.getAndIncrement(), VERSION_DEFAULT)
 					.build();
 

@@ -36,7 +36,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
@@ -101,13 +100,12 @@ public class DocumentEntityDescriptor
 	//
 	// Callouts
 	private final boolean calloutsEnabled;
+	private final boolean defaultTableCalloutsEnabled;
 	private final ICalloutExecutor calloutExecutorFactory;
 
 	private final DocumentFilterDescriptorsProvider filtersProvider;
 
 	private final OptionalInt printProcessId;
-
-	private final DocumentEntityDescriptor quickInputDescriptor;
 
 	// Legacy
 	private final OptionalInt AD_Tab_ID;
@@ -140,13 +138,12 @@ public class DocumentEntityDescriptor
 		//
 		// Callouts
 		calloutsEnabled = builder.isCalloutsEnabled();
+		defaultTableCalloutsEnabled = builder.isDefaultTableCalloutsEnabled();
 		calloutExecutorFactory = builder.buildCalloutExecutorFactory(fields.values());
 
 		filtersProvider = builder.createFiltersProvider();
 
 		printProcessId = builder.getPrintAD_Process_ID();
-
-		quickInputDescriptor = builder.getQuickInputDescriptor() == null ? null : builder.getQuickInputDescriptor().build();
 
 		// legacy:
 		AD_Tab_ID = builder.getAD_Tab_ID();
@@ -349,7 +346,7 @@ public class DocumentEntityDescriptor
 
 	public ITabCallout createAndInitializeDocumentCallout(final ICalloutRecord documentAsCalloutRecord)
 	{
-		if (!calloutsEnabled)
+		if (!defaultTableCalloutsEnabled)
 		{
 			return ITabCallout.NULL;
 		}
@@ -375,15 +372,6 @@ public class DocumentEntityDescriptor
 		return printProcessId.orElseThrow(() -> new IllegalStateException("No print process configured for " + this));
 	}
 
-	public DocumentEntityDescriptor getQuickInputDescriptor()
-	{
-		if (quickInputDescriptor == null)
-		{
-			throw new EntityNotFoundException("No quick input descriptor for " + this);
-		}
-		return quickInputDescriptor;
-	}
-
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
@@ -400,7 +388,7 @@ public class DocumentEntityDescriptor
 		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
 		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
-		private DocumentEntityDataBindingDescriptorBuilder _dataBinding;
+		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 
 		private DetailId _detailId;
 
@@ -415,8 +403,6 @@ public class DocumentEntityDescriptor
 		private boolean _defaultTableCalloutsEnabled = true; // enabled by default
 
 		private OptionalInt _printProcessId = OptionalInt.empty();
-
-		private DocumentEntityDescriptor.Builder quickInputDescriptor;
 
 		// Legacy
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
@@ -633,7 +619,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private DocumentType getDocumentType()
+		public DocumentType getDocumentType()
 		{
 			Check.assumeNotNull(_documentType, "documentType is set for {}", this);
 			return _documentType;
@@ -824,7 +810,7 @@ public class DocumentEntityDescriptor
 
 		private boolean isDefaultTableCalloutsEnabled()
 		{
-			return _defaultTableCalloutsEnabled;
+			return _calloutsEnabled && _defaultTableCalloutsEnabled;
 		}
 
 		private ICalloutExecutor buildCalloutExecutorFactory(final Collection<DocumentFieldDescriptor> fields)
@@ -897,17 +883,6 @@ public class DocumentEntityDescriptor
 		private OptionalInt getPrintAD_Process_ID()
 		{
 			return _printProcessId;
-		}
-
-		public Builder setQuickInputDescriptor(final DocumentEntityDescriptor.Builder quickInputDescriptor)
-		{
-			this.quickInputDescriptor = quickInputDescriptor;
-			return this;
-		}
-
-		public DocumentEntityDescriptor.Builder getQuickInputDescriptor()
-		{
-			return quickInputDescriptor;
 		}
 	}
 }

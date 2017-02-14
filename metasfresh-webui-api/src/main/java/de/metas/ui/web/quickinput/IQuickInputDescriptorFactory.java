@@ -1,6 +1,8 @@
 package de.metas.ui.web.quickinput;
 
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -26,5 +28,5 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public interface IQuickInputDescriptorFactory
 {
-	DocumentEntityDescriptor.Builder createQuickInputEntityDescriptor(DocumentEntityDescriptor.Builder documentDescriptor);
+	QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId);
 }
