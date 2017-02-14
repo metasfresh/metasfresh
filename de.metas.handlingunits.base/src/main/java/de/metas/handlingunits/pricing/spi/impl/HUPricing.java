@@ -24,35 +24,8 @@ public class HUPricing extends AttributePricing
 	private static final transient Logger logger = LogManager.getLogger(HUPricing.class);
 
 	private static final String HUPIItemProductMatcher_NAME = "M_HU_PI_Item_Product_Matcher";
-	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
+	public static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
 	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, new NotEqualsQueryFilter<>(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
-
-	/**
-	 * Registers a default matcher which filters out all product prices which have an M_HU_PI_Item_Product_ID set.
-	 *
-	 * From skype chat:
-	 *
-	 * <pre>
-	 * [Dienstag, 4. Februar 2014 15:33] Cis:
-	 * 
-	 * if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
-	 * more concretely: we have two rules:
-	 * IFCO A, with Red
-	 * IFCO B with Blue
-	 * 
-	 * And we put a product in IFCO A with Blue
-	 * 
-	 * HU pricing rule won't find a match,
-	 * Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
-	 *
-	 * <pre>
-	 *
-	 * ..and that's why we register the filter here.
-	 */
-	static
-	{
-		AttributePricing.registerDefaultMatcher(HUPIItemProductMatcher_None);
-	}
 
 	@Override
 	protected Optional<I_M_ProductPrice> findMatchingProductPrice(final IPricingContext pricingCtx)
@@ -96,11 +69,22 @@ public class HUPricing extends AttributePricing
 			logger.debug("No M_HU_PI_Item_Product_ID found: {}", pricingCtx);
 			return Optional.empty();
 		}
-		final I_M_ProductPrice productPrice = ProductPriceQuery.newInstance(plv)
+		
+		final ProductPriceQuery productPriceQuery = ProductPriceQuery.newInstance(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
-				.matchingAttributes(attributeSetInstance)
-				.matching(createHUPIItemProductMatcher(huPIItemProductId))
-				.firstMatching(I_M_ProductPrice.class);
+				.matching(createHUPIItemProductMatcher(huPIItemProductId));
+
+		// Match attributes if we have attributes.
+		if(attributeSetInstance == null || attributeSetInstance.getM_AttributeSetInstance_ID() <= 0)
+		{
+			productPriceQuery.dontMatchAttributes();
+		}
+		else
+		{
+			productPriceQuery.matchingAttributes(attributeSetInstance);
+		}
+		
+		final I_M_ProductPrice productPrice = productPriceQuery.firstMatching(I_M_ProductPrice.class);
 		if (productPrice == null)
 		{
 			logger.debug("No product attribute pricing found: {}", pricingCtx);
