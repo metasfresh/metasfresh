@@ -25,6 +25,10 @@ class LoginForm extends Component {
         }
     }
 
+    componentDidMount(){
+        this.login.focus();
+    }
+
     handleKeyPress = (e) => {
         if(e.key === 'Enter'){
             this.handleLogin();
