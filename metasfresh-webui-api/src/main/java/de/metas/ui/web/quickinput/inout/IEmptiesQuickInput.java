@@ -1,8 +1,6 @@
-package de.metas.ui.web.handlingunits.process;
+package de.metas.ui.web.quickinput.inout;
 
-import org.compiere.model.X_M_InOut;
-
-import de.metas.ui.web.quickinput.inout.EmptiesQuickInputDescriptorFactory;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 /*
  * #%L
@@ -26,10 +24,19 @@ import de.metas.ui.web.quickinput.inout.EmptiesQuickInputDescriptorFactory;
  * #L%
  */
 
-public class WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer extends WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base
+public interface IEmptiesQuickInput
 {
-	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer()
-	{
-		super(X_M_InOut.MOVEMENTTYPE_CustomerReturns, EmptiesQuickInputDescriptorFactory.CustomerReturns_Window_ID);
-	}
+	//@formatter:off
+	String COLUMNNAME_M_HU_PackingMaterial_ID = I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID;
+	//int getM_HU_PackingMaterial_ID();
+	I_M_HU_PackingMaterial getM_HU_PackingMaterial();
+	//void setM_HU_PackingMaterial_ID(final int M_HU_PackingMaterial_ID);
+	//void setM_HU_PackingMaterial(final I_M_HU_PackingMaterial huPIItemProduct);
+	//@formatter:on
+
+	//@formatter:off
+	String COLUMNNAME_Qty = "Qty";
+	int getQty();
+	//@formatter:on
+
 }
