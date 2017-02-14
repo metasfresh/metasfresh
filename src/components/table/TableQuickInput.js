@@ -102,7 +102,7 @@ class TableQuickInput extends Component {
     handlePatch = (prop, value, callback) => {
         const {dispatch, docType, docId, tabId} = this.props;
         const {id} = this.state;
-       
+
         this.patchPromise = new Promise(resolve => {
             dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id))
                 .then(response => {
@@ -147,7 +147,6 @@ class TableQuickInput extends Component {
                     widgetData={widgetData}
                     gridAlign={item.gridAlign}
                     key={id}
-                    type={item.type}
                     caption={item.caption}
                     handlePatch={(prop, value, callback) => this.handlePatch(prop,value, callback)}
                     handleFocus={() => {}}
