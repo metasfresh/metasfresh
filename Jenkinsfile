@@ -288,6 +288,7 @@ echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
 final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
 echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
 
+// IMPORTANT: the task-repo-url which we set in MF_MAVEN_TASK_RESOLVE_PARAMS is used within the settings.xml that our jenkins provides to the build. That's why we need it in the mvn parameters
 final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
 
@@ -416,12 +417,17 @@ stage('Invoke downstream jobs')
 	{
 		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs"
 		
-		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui.. 
+		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui or metasfresh-webui-frontend.. 
 		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_VERSION is set
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
 			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
+		}
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend')
+		{
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
+			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui-frontend=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
 		}
 		// TODO: also handle procurement-webui
 	}
@@ -430,6 +436,7 @@ stage('Invoke downstream jobs')
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] = invokeDownStreamJobs('metasfresh-webui-frontend', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		}
 
 		EXTERNAL_ARTIFACT_URLS['metasfresh-procurement-webui'] = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
@@ -535,7 +542,7 @@ node('agent && linux && libc6-i386')
 				if(EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'])
 				{
 					currentBuild.description="""${currentBuild.description}
-<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+<li><a href=\"${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 """;
 				}
 				
