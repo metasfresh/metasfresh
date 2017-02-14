@@ -34,6 +34,14 @@ class MasterWindow extends Component {
         dispatch(createWindow(params.windowType, params.docId))
     }
 
+    componentDidUpdate(prevProps) {
+        const { dispatch, params } = this.props;
+
+        if(prevProps.params.docId != params.docId) {
+            dispatch(createWindow(params.windowType, params.docId))
+        }
+    }
+
     closeModalCallback = (entity, isNew, dataId) => {
         const {dispatch} = this.props;
 
