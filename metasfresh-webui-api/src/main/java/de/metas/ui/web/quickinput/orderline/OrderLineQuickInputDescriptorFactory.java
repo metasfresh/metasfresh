@@ -1,5 +1,7 @@
 package de.metas.ui.web.quickinput.orderline;
 
+import java.util.Set;
+
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.Services;
@@ -7,6 +9,9 @@ import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
@@ -48,13 +53,13 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
  * #L%
  */
 
-public final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
+@Component
+/* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	public static final transient OrderLineQuickInputDescriptorFactory instance = new OrderLineQuickInputDescriptorFactory();
-
-	private OrderLineQuickInputDescriptorFactory()
+	@Override
+	public Set<MatchingKey> getMatchingKeys()
 	{
-		super();
+		return ImmutableSet.of(MatchingKey.ofTableName(I_C_OrderLine.Table_Name));
 	}
 
 	@Override

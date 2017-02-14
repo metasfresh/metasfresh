@@ -1,12 +1,18 @@
 package de.metas.ui.web.quickinput;
 
-import org.compiere.model.I_C_OrderLine;
+import java.util.Map;
+import java.util.Set;
+
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import de.metas.ui.web.quickinput.inout.EmptiesQuickInputDescriptorFactory;
-import de.metas.ui.web.quickinput.orderline.OrderLineQuickInputDescriptorFactory;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -37,6 +43,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 @Service
 public class QuickInputDescriptorFactoryService
 {
+	private static final Logger logger = LogManager.getLogger(QuickInputDescriptorFactoryService.class);
+
+	private final Map<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factories;
 	private final CCache<ArrayKey, QuickInputDescriptor> descriptors = CCache.newCache("QuickInputDescriptors", 10, 0);
 
 	public QuickInputDescriptor getQuickInputEntityDescriptor(final DocumentEntityDescriptor includedDocumentDescriptor)
@@ -46,6 +55,39 @@ public class QuickInputDescriptorFactoryService
 		final String tableName = includedDocumentDescriptor.getTableNameOrNull();
 		final DetailId detailId = includedDocumentDescriptor.getDetailId();
 		return getQuickInputEntityDescriptor(documentType, documentTypeId, tableName, detailId);
+	}
+
+	@Autowired
+	private QuickInputDescriptorFactoryService(final ApplicationContext context)
+	{
+		factories = createFactoriesFromContext(context);
+
+		//
+		if (logger.isInfoEnabled())
+		{
+			factories.forEach((matchingKey, factory) -> logger.info("Registered: {} -> {}", matchingKey, factory));
+		}
+	}
+
+	private static Map<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> createFactoriesFromContext(final ApplicationContext context)
+	{
+		final ImmutableMap.Builder<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factories = ImmutableMap.builder();
+		for (final IQuickInputDescriptorFactory factory : context.getBeansOfType(IQuickInputDescriptorFactory.class).values())
+		{
+			final Set<IQuickInputDescriptorFactory.MatchingKey> matchingKeys = factory.getMatchingKeys();
+			if (matchingKeys == null || matchingKeys.isEmpty())
+			{
+				logger.warn("Ignoring {} because it provides no matching keys", factory);
+				break;
+			}
+
+			for (final IQuickInputDescriptorFactory.MatchingKey matchingKey : matchingKeys)
+			{
+				factories.put(matchingKey, factory);
+			}
+		}
+
+		return factories.build();
 	}
 
 	public QuickInputDescriptor getQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final String tableName, final DetailId detailId)
@@ -68,20 +110,26 @@ public class QuickInputDescriptorFactoryService
 
 	private IQuickInputDescriptorFactory getQuickInputDescriptorFactory(final DocumentType documentType, final DocumentId documentTypeId, final String tableName)
 	{
-		// FIXME uber HARDCODED
-
-		if (I_C_OrderLine.Table_Name.equals(tableName))
+		//
+		// Find factory for included document
 		{
-			return OrderLineQuickInputDescriptorFactory.instance;
-		}
-		else if (EmptiesQuickInputDescriptorFactory.instance.matches(documentType, documentTypeId, tableName))
-		{
-			return EmptiesQuickInputDescriptorFactory.instance;
-		}
-		else
-		{
-			return null;
+			final IQuickInputDescriptorFactory factory = factories.get(IQuickInputDescriptorFactory.MatchingKey.includedDocument(documentType, documentTypeId, tableName));
+			if (factory != null)
+			{
+				return factory;
+			}
 		}
 
+		//
+		// Find factory for table
+		{
+			final IQuickInputDescriptorFactory factory = factories.get(IQuickInputDescriptorFactory.MatchingKey.ofTableName(tableName));
+			if (factory != null)
+			{
+				return factory;
+			}
+		}
+
+		return null;
 	}
 }

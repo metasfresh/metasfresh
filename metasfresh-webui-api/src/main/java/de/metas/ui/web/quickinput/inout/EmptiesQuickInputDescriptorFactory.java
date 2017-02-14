@@ -1,10 +1,15 @@
 package de.metas.ui.web.quickinput.inout;
 
+import java.util.Set;
+
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -43,33 +48,20 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Component
 public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	public static final transient EmptiesQuickInputDescriptorFactory instance = new EmptiesQuickInputDescriptorFactory();
-
+	// FIXME: hardcoded AD_Window_IDs
 	public static final int CustomerReturns_Window_ID = 540323; // Return from customers - Leergut Rücknahme
 	public static final int VendorReturns_Window_ID = 540322; // Return to vendor - Leergut Rückgabe
 
-	private EmptiesQuickInputDescriptorFactory()
+	@Override
+	public Set<MatchingKey> getMatchingKeys()
 	{
-	}
-
-	public boolean matches(final DocumentType documentType, final DocumentId documentTypeId, final String tableName)
-	{
-		if (documentType == DocumentType.Window)
-		{
-			final int adWindowId = documentTypeId.toInt();
-			if (adWindowId == CustomerReturns_Window_ID || adWindowId == VendorReturns_Window_ID)
-			{
-				if (I_M_InOutLine.Table_Name.equals(tableName))
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return ImmutableSet.<MatchingKey> builder()
+				.add(MatchingKey.includedDocument(DocumentType.Window, CustomerReturns_Window_ID, I_M_InOutLine.Table_Name))
+				.add(MatchingKey.includedDocument(DocumentType.Window, VendorReturns_Window_ID, I_M_InOutLine.Table_Name))
+				.build();
 	}
 
 	@Override
