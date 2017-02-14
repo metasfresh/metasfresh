@@ -23,6 +23,7 @@ this week's RC
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
+  * #257 login page: focus on username
   * #275 None of the menus could be opened when in full screen mode
   * #734 Add Translation for en_US in WebUI
   * #894 Payment Allocation Window WebUI
