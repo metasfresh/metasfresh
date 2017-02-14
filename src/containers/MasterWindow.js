@@ -3,8 +3,9 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    createWindow,
-    startProcess
+    startProcess,
+    attachFileAction,
+    createWindow
 } from '../actions/WindowActions';
 
 import {
@@ -34,6 +35,14 @@ class MasterWindow extends Component {
         dispatch(createWindow(params.windowType, params.docId))
     }
 
+    componentDidUpdate(prevProps) {
+        const { dispatch, params } = this.props;
+
+        if(prevProps.params.docId != params.docId) {
+            dispatch(createWindow(params.windowType, params.docId))
+        }
+    }
+
     closeModalCallback = (entity, isNew, dataId) => {
         const {dispatch} = this.props;
 
@@ -49,6 +58,23 @@ class MasterWindow extends Component {
                 }
             )
         }
+    }
+
+    handleDropFile(file){
+        file = file instanceof Array ? file[0] : file;
+
+        if (!file instanceof File){
+            return Promise.reject();
+        }
+
+        const { dispatch, master } = this.props;
+        const dataId = findRowByPropName(master.data, "ID").value;
+        const { type } = master.layout;
+
+        let fd = new FormData();
+        fd.append('file', file);
+
+        return dispatch(attachFileAction(type, dataId, fd));
     }
 
     render() {
@@ -110,6 +136,7 @@ class MasterWindow extends Component {
                     dataId={dataId}
                     isModal={false}
                     newRow={newRow}
+                    handleDropFile={(accepted, rejected) => this.handleDropFile(accepted, rejected)}
                 />
             </Container>
         );

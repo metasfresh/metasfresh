@@ -4,9 +4,9 @@
   font-family: "meta";
   src:url("fonts/meta.eot");
   src:url("fonts/meta.eot?#iefix") format("embedded-opentype"),
-    url("fonts/meta.woff") format("woff"),
-    url("fonts/meta.ttf") format("truetype"),
-    url("fonts/meta.svg#meta") format("svg");
+  url("fonts/meta.woff") format("woff"),
+  url("fonts/meta.ttf") format("truetype"),
+  url("fonts/meta.svg#meta") format("svg");
   font-weight: normal;
   font-style: normal;
 
@@ -196,4 +196,7 @@
 }
 .meta-icon-accept:before {
   content: "\30";
+}
+.meta-icon-upload-1:before {
+  content: "\31";
 }

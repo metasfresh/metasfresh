@@ -22,6 +22,9 @@ import {
 } from '../../actions/AppActions';
 
 class TableQuickInput extends Component {
+    // promise with patching for queuing form submission after patch is done
+    patchPromise;
+
     constructor(props) {
         super(props);
 
@@ -99,23 +102,31 @@ class TableQuickInput extends Component {
     handlePatch = (prop, value, callback) => {
         const {dispatch, docType, docId, tabId} = this.props;
         const {id} = this.state;
-       
-        dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id)).then(response => {
-            response.data[0] && response.data[0].fields.map(item => {
-                this.setState(Object.assign({}, this.state, {
-                    data: this.state.data.map(field => {
-                        if(field.field === item.field){
-                            if(callback){
-                                callback();
-                            }
-                            return Object.assign({}, field, item);
-                        }else{
-                            return field;
-                        }
+
+        this.patchPromise = new Promise(resolve => {
+            dispatch(patchRequest('window', docType, docId, tabId, null, prop, value, 'quickInput', id))
+                .then(response => {
+                    response.data[0] && response.data[0].fields.map(item => {
+                        this.setState({
+                            data: this.state.data.map(field => {
+                                if (field.field !== item.field){
+                                    return field;
+                                }
+
+                                if(callback){
+                                    callback();
+                                }
+
+                                resolve();
+                                return {
+                                    ...field,
+                                    ...item
+                                };
+                            })
+                        });
                     })
-                }));
-            })
-        })
+                })
+        });
     }
 
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
@@ -136,7 +147,6 @@ class TableQuickInput extends Component {
                     widgetData={widgetData}
                     gridAlign={item.gridAlign}
                     key={id}
-                    type={item.type}
                     caption={item.caption}
                     handlePatch={(prop, value, callback) => this.handlePatch(prop,value, callback)}
                     handleFocus={() => {}}
@@ -155,14 +165,20 @@ class TableQuickInput extends Component {
 
         document.activeElement.blur();
 
-        if(this.validateForm(data)){
-            dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id)).then(response => {
+        if(!this.validateForm(data)){
+            return dispatch(addNotification("Error", 'Mandatory fields are not filled!', 5000, "error"))
+        }
+
+        this.patchPromise
+            .then(() => {
+                console.log('submit');
+                return dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id))
+            })
+            .then(response => {
+                console.log('submitEnd');
                 this.initQuickInput();
                 dispatch(addNewRow(response.data, tabId, response.data.rowId, "master"))
             });
-        }else{
-            dispatch(addNotification("Error", 'Mandatory fields are not filled!', 5000, "error"))
-        }
     }
 
     validateForm = (data) => {

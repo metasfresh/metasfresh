@@ -18,6 +18,10 @@ import {
 class DocList extends Component {
     constructor(props){
         super(props);
+
+        this.state = {
+            modalTitle: ""
+        }
     }
 
     componentDidMount = () => {
@@ -39,11 +43,21 @@ class DocList extends Component {
         dispatch(updateUri(pathname, query, prop, value));
     }
 
+    setModalTitle = (title) => {
+        this.setState({
+            modalTitle: title
+        })
+    }
+
     render() {
         const {
             dispatch, windowType, breadcrumb, query, actions, modal, viewId,
             selected, references, rawModal
         } = this.props;
+
+        const {
+            modalTitle
+        } = this.state;
 
         return (
             <Container
@@ -72,13 +86,14 @@ class DocList extends Component {
                  }
                  {rawModal.visible &&
                      <RawModal
-                         modalTitle="Document view"
+                         modalTitle={modalTitle}
                      >
                          <DocumentList
                              type="grid"
                              windowType={parseInt(rawModal.type)}
                              defaultViewId={rawModal.viewId}
                              selected={selected}
+                             setModalTitle={this.setModalTitle}
                          />
                      </RawModal>
                  }

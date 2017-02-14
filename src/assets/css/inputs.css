@@ -586,7 +586,7 @@ input:checked + .input-slider:before {
     position: absolute;
     width: 100%;
     background-color: #fff;
-    z-index:300;
+    z-index:99;
     border-width: 0 1px 1px 1px;
     border-style: solid;
     border-color: $brand-light-color;
