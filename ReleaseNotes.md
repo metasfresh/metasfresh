@@ -10,9 +10,9 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.56.54 (2017-07)
+# metasfresh 4.56.55 (2017-07)
 
-upcoming
+this week's RC
 
 ## Features
 * metasfresh
@@ -22,14 +22,16 @@ upcoming
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
+  * #734 Add Translation for en_US in WebUI
+  * #894 Payment Allocation Window WebUI
+  * #895 Dunning Candidates Window WebUI
+  * #947 Window Greeting Add Translation for en_US
 
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
 
 # metasfresh 4.55.54 (2017-06)
-
-this week's RC
 
 ## Features
 * metasfresh
@@ -60,19 +62,31 @@ this week's RC
 ## Fixes
 * metasfresh
   * #857 Fix String Attributes Save in POS
+    * Fix that now allows the possibility to save String Attribute in POS Windows also without loosing focus for recorded field.
   * #863 No Result Window for Prosesses that don't allow rerun
+    * Fix for rerun parameter in Processes. Now possible to switch off the rerun confirmation Window after Process.
   * #879 Fix "ValueType not supported: D" when HU attributes are generated
+    * Minor Fix for Value Type of generated HU Attributes.
   * #781 ESR scan processing returns improper bpartner
+    * Fix and Enhancement of ESR Scan functionality in Purchase Invoices. Now allowing to select alternative Business Partner for on the Fly Bank Account generation. 
   * #783 DocAction on Sales Order not available although permission existing
+    * Sysconfig to certrally enable/ disable the Document Action Close.
   * #813 hide packing instruction and qty when null
+    * Fix that does not show the Packing Instruction and Packing Qty on documents anymore when null.
   * #903 Jenkins build error with slash in branch name
-  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect 
-  * #910 update and fix sales invoice jasper and function
+    * Minor Fix for Jenkins Build.
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect
+    * Fix that stores the price & qty override in Invoice Candidates after Reverse-Correct of Invoice.
+  * #910 Put explicit delivery date on invoice
+    * Add the precise description for delivery date as demanded by german law.
 
 * webui
   * #204 Can not complete Order
+    * Minor Fix that now allows the completion of Sales Order in Web User Interface.
   * #886 GrandTotal missing in Purchase Order Grid view
+    * Fix that enables the display of Grandtotal Field in Purchase Order Grid View.
   * #179 Fields too short for documentno in Breadcrumbs
+    * Fix that extends the number of visible digits (now 9 digits) in Breadcrumb menu for Document or masterdata identifiers.
 
 # metasfresh 4.54.53 (2017-05)
 
