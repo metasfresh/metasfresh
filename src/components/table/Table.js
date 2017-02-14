@@ -585,7 +585,6 @@ class Table extends Component {
                             indentSupported={indentSupported}
                             indent={item[key].indent}
                             includedDocuments={item[key].includedDocuments}
-                            rows={this.mapIncluded(item[key])}
                             lastSibling={item[key].lastChild}
                             contextType={item[key].type}
                         />
