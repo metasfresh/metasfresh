@@ -27,6 +27,7 @@ const initialState = {
         rowData: {},
     },
     indicator: 'saved',
+    latestNewDocument: null,
     viewId: null,
     selected: []
 }
@@ -195,6 +196,12 @@ export default function windowHandler(state = initialState, action) {
         case types.SELECT_TABLE_ITEMS:
             return Object.assign({}, state, {
                 selected: action.ids
+            })
+
+        // LATEST NEW DOCUMENT CACHE
+        case types.SET_LATEST_NEW_DOCUMENT:
+            return Object.assign({}, state, {
+                latestNewDocument: action.id
             })
 
         // RAW Modal

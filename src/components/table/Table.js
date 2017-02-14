@@ -32,9 +32,11 @@ const shortcutManager = new ShortcutManager(keymap);
 class Table extends Component {
     constructor(props) {
         super(props);
-        
+
+        const {defaultSelected} = this.props;
+
         this.state = {
-            selected: [null],
+            selected: defaultSelected || [null],
             listenOnKeys: true,
             contextMenu: {
                 open: false,
@@ -152,7 +154,7 @@ class Table extends Component {
         const toSelect = rows.map((item, index) => item[property]);
 
         this.selectRangeProduct(toSelect);
-        
+
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
@@ -306,7 +308,7 @@ class Table extends Component {
         const {
             rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open
         } = this.props;
-        
+
         const selectRange = e.shiftKey;
 
         switch(e.key) {
