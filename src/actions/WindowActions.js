@@ -14,7 +14,8 @@ import {
     initLayout,
     getData,
     patchRequest,
-    printRequest
+    printRequest,
+    createInstance
 } from './GenericActions';
 
 import {
@@ -358,6 +359,20 @@ export function updateProperty(property, value, tabid, rowid, isModal) {
                 dispatch(updateDataProperty(property, value, "master"))
             }
         }
+    }
+}
+
+export function attachFileAction(windowType, docId, data){
+    return dispatch => {
+        dispatch(addNotification('Attachment', 'Uploading attachment', 5000, 'primary'));
+        
+        return axios.post(`${config.API_URL}/window/${windowType}/${docId}/attachments`, data)
+            .then(() => {
+                dispatch(addNotification('Attachment', 'Uploading attachment succeeded.', 5000, 'primary'))
+            })
+            .catch(() => {
+                dispatch(addNotification('Attachment', 'Uploading attachment error.', 5000, 'error'))
+            })
     }
 }
 
