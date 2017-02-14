@@ -30,6 +30,9 @@ this week's RC
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
+  
+* webUI
+  * #119 Error when Pressing the Attribute Button
 
 # metasfresh 4.55.54 (2017-06)
 
