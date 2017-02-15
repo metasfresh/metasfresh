@@ -23,9 +23,11 @@ package org.adempiere.service;
  */
 
 import java.io.File;
+import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.MAttachmentEntry;
 
 public interface IAttachmentBL extends ISingletonService
 {
@@ -82,4 +84,10 @@ public interface IAttachmentBL extends ISingletonService
 	 * @return
 	 */
 	byte[] getFirstEntryAsBytesOrNull(I_AD_Attachment attachment);
+
+	List<MAttachmentEntry> getEntiresForModel(Object model);
+	
+	MAttachmentEntry getEntryForModelById(final Object model, final int id);
+	
+	void deleteEntryForModel(Object model, int id);
 }
