@@ -16,6 +16,11 @@ import {
     initLayout
 } from '../../actions/GenericActions';
 
+
+import {
+    selectTableItems
+} from '../../actions/WindowActions';
+
 import {
     createViewRequest,
     browseViewRequest,
@@ -40,14 +45,19 @@ class DocumentList extends Component {
             filters: null,
 
             clickOutsideLock: false,
-            refresh: null
+            refresh: null,
+            
+            cachedSelection: null
         }
         this.fetchLayoutAndData();
     }
 
     componentWillReceiveProps(props) {
-        const {windowType, defaultViewId, defaultSort, defaultPage} = props;
-        const {page, sort, viewId} = this.state;
+        const {
+            windowType, defaultViewId, defaultSort, defaultPage, selected,
+            inBackground
+        } = props;
+        const {page, sort, viewId, cachedSelection} = this.state;
         //if we browse list of docs, changing type of Document
         //does not re-construct component, so we need to
         //make it manually while the windowType changes.
@@ -87,6 +97,25 @@ class DocumentList extends Component {
                 viewId: defaultViewId
             });
             this.connectWS(defaultViewId);
+        }
+        
+        /*
+         * It is case when we need refersh global selection state, 
+         * because scope is changed
+         *
+         * After opening modal cache current selection
+         * After closing modal with gridview, refresh selected.
+         */
+        if(inBackground != this.props.inBackground) {
+            if(!inBackground){
+                this.props.dispatch(
+                    selectTableItems(cachedSelection)
+                )
+            }else{
+                this.setState({
+                    cachedSelection: selected
+                })
+            }
         }
     }
 

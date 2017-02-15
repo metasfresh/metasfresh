@@ -133,9 +133,9 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => Object.assign({}, this.state, {
+        this.setState(prevState => {
             selected: prevState.selected.concat([id])
-        }), () => {
+        }, () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
