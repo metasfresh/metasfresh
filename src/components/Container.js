@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import Header from './header/Header';
+import ErrorScreen from './app/ErrorScreen';
 import NotificationHandler from './notifications/NotificationHandler';
 
 class Container extends Component {
@@ -48,4 +49,12 @@ class Container extends Component {
     }
 }
 
-export default Container;
+Container.propTypes = {
+    connectionError: PropTypes.bool
+};
+
+const mapStateToProps = state => ({
+    connectionError: state.windowHandler.connectionError || false
+});
+
+export default connect(mapStateToProps)(Container);
