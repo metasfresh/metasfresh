@@ -35,6 +35,7 @@ import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.TableResource;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
@@ -43,6 +44,7 @@ import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Form_Access;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Record_Access;
@@ -231,7 +233,37 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 		else
 		{
-			return retrieveRoleOrgPermissions(role.getAD_Role_ID(), adTreeOrgId);
+	
+			if (role.isAccessAllOrgs())
+			{
+				final int AD_Client_ID = role.getAD_Client_ID();
+				final Properties ctx = InterfaceWrapperHelper.getCtx(role);
+
+				//
+				// if role has acces all org, then behave as would be * access
+				final OrgPermissions.Builder builder = OrgPermissions.builder()
+						.setOrg_Tree_ID(adTreeOrgId);
+				
+				// org *
+				OrgResource resource = OrgResource.of(AD_Client_ID, 0);
+				OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
+				builder.addPermission(permission);
+				
+				//
+				// now add all orgs
+				final List<I_AD_Org> clientOrgs = Services.get(IOrgDAO.class).retrieveClientOrgs(ctx, AD_Client_ID);
+				for (final I_AD_Org org :  clientOrgs)
+				{
+					resource = OrgResource.of(AD_Client_ID, org.getAD_Org_ID());
+					permission = OrgPermission.ofResourceAndReadOnly(resource, false);
+					builder.addPermission(permission);
+				}
+				return builder.build();
+			}
+			else
+			{
+				return retrieveRoleOrgPermissions(role.getAD_Role_ID(), adTreeOrgId);
+			}
 		}
 
 	}
