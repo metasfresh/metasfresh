@@ -171,7 +171,7 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, mandatory, value, tabIndex
+            rowId, isModal, mandatory, value, tabIndex, disabled
         } = this.props;
 
         const {
@@ -203,14 +203,17 @@ class RawList extends Component {
                     }>
                         <input
                             type="text"
-                            className="input-field js-input-field font-weight-semibold"
+                            className={
+                                "input-field js-input-field font-weight-semibold " +
+                                (disabled ? 'input-disabled ' : '')
+                            }
                             readOnly
                             tabIndex={-1}
                             placeholder={defaultValue}
                             value={selected ? selected[Object.keys(selected)[0]] : ""}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
-                            disabled={readonly}
+                            disabled={readonly || disabled}
                         />
                     </div>
                     <div className="input-icon">
