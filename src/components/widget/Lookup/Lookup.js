@@ -203,16 +203,11 @@ class Lookup extends Component {
         dispatch(openModal("Add new", windowType, "window"));
     }
 
-    handleBlur = (callback) => {
+    handleBlur = () => {
 
         this.setState(Object.assign({}, this.state, {
             isOpen: false
-        }), () => {
-            if(callback) {
-                callback();
-            }
-
-        })
+        }));
     }
 
     handleFocus = () => {
@@ -413,6 +408,7 @@ class Lookup extends Component {
                             className="input-field js-input-field font-weight-semibold"
                             onChange={this.handleChange}
                             onFocus={this.handleFocus}
+                            onBlur={this.handleBlur}
                             ref={(c) => this.inputSearch = c}
                             placeholder={placeholder}
                             disabled={readonly}
