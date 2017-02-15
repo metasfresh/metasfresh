@@ -1,25 +1,33 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
-import '../../assets/css/header.css';
 import Prompt from '../app/Prompt';
 import onClickOutside from 'react-onclickoutside';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import {
     setFilter
 } from '../../actions/ListActions';
+
+import {
+    addNotification
+} from '../../actions/AppActions'
 
 import keymap from '../../keymap.js';
 
 import {
     setReferences,
     setActions,
-    getViewActions
+    getViewActions,
+    setAttachments
 } from '../../actions/MenuActions';
 
 import {
     actionsRequest,
-    referencesRequest
+    referencesRequest,
+    attachmentsRequest,
+    openFile,
+    deleteRequest
 } from '../../actions/GenericActions';
 
 class Subheader extends Component {
@@ -27,7 +35,8 @@ class Subheader extends Component {
         super(props);
 
         this.state = {
-            pdfSrc: null
+            pdfSrc: null,
+            attachmentHovered: null
         }
     }
 
@@ -55,7 +64,28 @@ class Subheader extends Component {
             dispatch(actionsRequest(entity, windowType, dataId ? dataId : query && query.viewId, selected)).then((response) => {
                 dispatch(setActions(response.data.actions));
             });
+            
+            dataId && dispatch(attachmentsRequest(entity, windowType, dataId)).then((response) => {
+                dispatch(setAttachments(response.data));
+            });
         }
+    }
+    
+    handleAttachmentClick = (id) => {
+        const {dispatch, entity, windowType, dataId} = this.props;
+        dispatch(openFile(entity, windowType, dataId, 'attachments', id));
+    }
+    
+    handleAttachmentDelete = (e, id) => {
+        const {dispatch, entity, windowType, dataId} = this.props;
+        e.stopPropagation();
+        dispatch(deleteRequest(
+            entity, windowType, dataId, null, null, 'attachments', id
+        )).then(() => {
+            return dispatch(attachmentsRequest(entity, windowType, dataId))
+        }).then((response) => {
+            dispatch(setAttachments(response.data));
+        });
     }
 
     handleReferenceClick = (type, filter) => {
@@ -117,6 +147,12 @@ class Subheader extends Component {
                 break;
         }
     }
+    
+    toggleAttachmentDelete = (value) => {
+        this.setState({
+            attachmentHovered: value
+        })
+    }
 
     getColumnActiveElem = () => {
         const active = document.activeElement;
@@ -146,10 +182,11 @@ class Subheader extends Component {
     render() {
         const {
             windowType, onClick, references, actions, dataId, viewId, docNo, openModal,
-            handlePrint, handleDelete, redirect, handleClone, dispatch, closeSubheader
+            handlePrint, handleDelete, redirect, handleClone, dispatch, closeSubheader,
+            attachments
         } = this.props;
 
-        const {prompt} = this.state;
+        const {prompt,attachmentHovered} = this.state;
 
         return (
             <div
@@ -202,7 +239,36 @@ class Subheader extends Component {
                                     ) : <div className="subheader-item subheader-item-disabled">There is no referenced document</div>}
 
                             </div>
-                            <div className="subheader-column">
+                            <div className=" subheader-column js-subheader-column" tabIndex={0}>
+
+                                    <div className="subheader-header">Attachments</div>
+                                    <div className="subheader-break " />
+                                    { attachments && !!attachments.length ? attachments.map((item, key) =>
+                                        <div
+                                            className="subheader-item subheader-item-ellipsis js-subheader-item"
+                                            key={key}
+                                            tabIndex={0}
+                                            onMouseEnter={() => this.toggleAttachmentDelete(item.id)}
+                                            onMouseLeave={() => this.toggleAttachmentDelete(null)}
+                                            onClick={() => this.handleAttachmentClick(item.id)}
+                                        >
+                                            {item.name}
+                                            <ReactCSSTransitionGroup 
+                                                transitionName="slidein"
+                                                transitionEnterTimeout={1000} 
+                                                transitionLeaveTimeout={0}
+                                            >
+                                                {attachmentHovered === item.id &&
+                                                    <div 
+                                                        className="subheader-additional-box"
+                                                        onClick={(e) => this.handleAttachmentDelete(e, item.id)}
+                                                    >
+                                                        <i className="meta-icon-delete"/>
+                                                    </div>
+                                                }
+                                            </ReactCSSTransitionGroup>
+                                        </div>
+                                    ) : <div className="subheader-item subheader-item-disabled">There is no attachment</div>}
 
                             </div>
                         </div>

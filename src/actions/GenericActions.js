@@ -138,13 +138,17 @@ export function dropdownRequest(
     );
 }
 
-export function deleteRequest(entity, docType, docId, tabId, ids) {
+export function deleteRequest(
+    entity, docType, docId, tabId, ids, subentity, subentityId
+) {
     return () => axios.delete(
         config.API_URL +
         '/' + entity +
         (docType ? "/" + docType : "") +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
+        (subentity ? "/" + subentity : "") +
+        (subentityId ? "/" + subentityId : "") +
         (ids ? "?ids=" + ids : "")
     );
 }
@@ -176,14 +180,25 @@ export function referencesRequest(entity, type, id){
     );
 }
 
-export function printRequest(entity, docType, docId, name) {
+export function attachmentsRequest(entity, docType, docId) {
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        docType + '/' +
+        docId +
+        '/attachments'
+    );
+}
+
+export function openFile(entity, docType, docId, fileType, fileId) {
     return () => {
         const url =
             config.API_URL + '/' +
             entity + '/' +
             docType + '/' +
-            docId +
-            '/print/' + name;
+            docId + '/' +
+            fileType + '/' +
+            fileId;
 
         window.open(url, "_blank");
     }

@@ -65,7 +65,10 @@ class MasterWindow extends Component {
     }
 
     render() {
-        const {master, connectionError, modal, breadcrumb, references, actions} = this.props;
+        const {
+            master, connectionError, modal, breadcrumb, references, actions, 
+            attachments
+        } = this.props;
         const {newRow} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
         const dataId = master.docId;
@@ -95,6 +98,7 @@ class MasterWindow extends Component {
                 breadcrumb={breadcrumb}
                 references={references}
                 actions={actions}
+                attachments={attachments}
                 showSidelist={true}
             >
                 {modal.visible &&
@@ -137,6 +141,7 @@ MasterWindow.propTypes = {
     breadcrumb: PropTypes.array.isRequired,
     references: PropTypes.array.isRequired,
     actions: PropTypes.array.isRequired,
+    attachments: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired
 };
 
@@ -155,20 +160,23 @@ function mapStateToProps(state) {
     const {
         breadcrumb,
         references,
-        actions
+        actions,
+        attachments
     } = menuHandler || {
         references: [],
         breadcrumb: [],
-        actions: []
+        actions: [],
+        attachments: []
     }
-
+    
     return {
         master,
         connectionError,
         breadcrumb,
         references,
         modal,
-        actions
+        actions,
+        attachments
     }
 }
 

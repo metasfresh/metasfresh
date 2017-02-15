@@ -23,6 +23,13 @@ export function setReferences(references){
     }
 }
 
+export function setAttachments(attachments){
+    return {
+        type: types.SET_ATTACHMENTS,
+        attachments: attachments
+    }
+}
+
 export function setActions(actions){
     return {
         type: types.SET_ACTIONS,
