@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import {
     dropdownRequest
 } from '../../actions/GenericActions';
+import DocumentStatusContextShortcuts from '../shortcuts/DocumentStatusContextShortcuts';
 
 class ActionButton extends Component {
     constructor(props) {
@@ -14,6 +15,10 @@ class ActionButton extends Component {
             },
             selected: 0
         }
+    }
+
+    componentDidMount(){
+        this.fetchStatusList();
     }
 
     handleKeyDown = (e) => {
@@ -57,18 +62,26 @@ class ActionButton extends Component {
     }
 
     handleDropdownFocus = () => {
-        const { dispatch, windowType, fields, dataId, dropdownOpenCallback} = this.props;
+        const {dropdownOpenCallback} = this.props;
 
-        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, "window")).then((res) => {
-            this.setState({list: res.data});
-        });
+        this.fetchStatusList();
         dropdownOpenCallback();
         this.statusDropdown.classList.add('dropdown-status-open');
     }
 
+    fetchStatusList(){
+        const { dispatch, windowType, fields, dataId} = this.props;
+        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, "window")).then((res) => {
+            this.setState({list: res.data});
+        });
+    }
+
     handleChangeStatus = (status) => {
-        this.props.onChange(status);
+        let changePromise = this.props.onChange(status);
         this.statusDropdown.blur();
+        if (changePromise instanceof Promise){
+            changePromise.then(() => this.fetchStatusList());
+        }
     }
 
     getStatusClassName = (abrev) => {
@@ -119,6 +132,7 @@ class ActionButton extends Component {
         const {data} = this.props;
         const abrev = (data.status.value !== undefined) ? Object.keys(data.status.value)[0] : null;
         const value = (abrev !== null || undefined) ? data.status.value[abrev] : null;
+        const { list } = this.state;
 
         return (
             <div
@@ -132,8 +146,13 @@ class ActionButton extends Component {
                 <div className={"tag tag-" + this.getStatusContext(abrev)}>{value} </div>
                 <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(abrev)} />
                 <ul className="dropdown-status-list">
-                    {this.renderStatusList(this.state.list)}
+                    {this.renderStatusList(list)}
                 </ul>
+                <DocumentStatusContextShortcuts
+                    handleDocumentCompleteStatus={() => {
+                        this.handleChangeStatus(list.values.filter(elem => !!elem.CO)[0])
+                    }}
+                />
             </div>
         )
     }
