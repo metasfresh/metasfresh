@@ -6,9 +6,9 @@ import Stomp from 'stompjs/lib/stomp.min.js';
 import qs from 'qs';
 
 export function loginSuccess() {
-	return dispatch => {
-		/** global: localStorage */
-		localStorage.setItem('isLogged', true);
+    return dispatch => {
+        /** global: localStorage */
+        localStorage.setItem('isLogged', true);
 
         dispatch(getNotificationsEndpoint()).then(topic => {
             let sock = new SockJs(config.WS_URL);
@@ -38,14 +38,14 @@ export function loginSuccess() {
                 response.data.unreadCount
             ));
         });
-	}
+    }
 }
 
 export function logoutSuccess() {
-	return () => {
-		/** global: localStorage */
-		localStorage.removeItem('isLogged');
-	}
+    return () => {
+        /** global: localStorage */
+        localStorage.removeItem('isLogged');
+    }
 }
 
 export function getUserLang() {
@@ -69,14 +69,14 @@ export function getUserDashboardIndicators() {
 }
 
 export function browseViewRequest(viewId, page, pageLength, orderBy, windowType){
-	return () => axios.get(
+    return () => axios.get(
         config.API_URL + '/documentView/' + windowType +
         '/' + viewId + '?firstRow=' + pageLength * (page - 1) +
         '&pageLength=' + pageLength + (orderBy ? '&orderBy=' + orderBy : ''));
 }
 
 export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
-	return () => axios.post(config.API_URL + '/documentView/' + windowType, {
+    return () => axios.post(config.API_URL + '/documentView/' + windowType, {
         "documentType": windowType,
         "viewType": viewType,
         "referencing": (refDocType && refDocId) ? {
@@ -88,25 +88,25 @@ export function createViewRequest(windowType, viewType, pageLength, filters, ref
 }
 
 export function addNotification(title, msg, time, notifType){
-	return {
-		type: types.ADD_NOTIFICATION,
-		title: title,
-		msg: msg,
-		time: time,
-		notifType: notifType
-	}
+    return {
+        type: types.ADD_NOTIFICATION,
+        title: title,
+        msg: msg,
+        time: time,
+        notifType: notifType
+    }
 }
 
 export function deleteNotification(id){
-	return {
-		type: types.DELETE_NOTIFICATION,
-		id: id
-	}
+    return {
+        type: types.DELETE_NOTIFICATION,
+        id: id
+    }
 }
 
 export function updateUri(pathname, query, prop, value) {
-	return (dispatch) => {
-		let url = pathname;
+    return (dispatch) => {
+        let url = pathname;
         url += "?";
 
         // add new prop
@@ -119,24 +119,24 @@ export function updateUri(pathname, query, prop, value) {
             url += queryKeys[i] + "=" + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? "&": "");
         }
 
-		dispatch(replace(url));
-	}
+        dispatch(replace(url));
+    }
 }
 
 export function loginRequest(login, passwd){
-	return () => axios.post(config.API_URL + '/login/authenticate?username=' + login + '&password=' + passwd);
+    return () => axios.post(config.API_URL + '/login/authenticate?username=' + login + '&password=' + passwd);
 }
 
 export function localLoginRequest(){
-	return () => axios.get(config.API_URL + '/login/isLoggedIn');
+    return () => axios.get(config.API_URL + '/login/isLoggedIn');
 }
 
 export function loginCompletionRequest(role){
-	return () => axios.post(config.API_URL + '/login/loginComplete', role);
+    return () => axios.post(config.API_URL + '/login/loginComplete', role);
 }
 
 export function logoutRequest(){
-	return () => axios.get(config.API_URL + '/login/logout');
+    return () => axios.get(config.API_URL + '/login/logout');
 }
 
 export function getNotifications() {
