@@ -52,6 +52,16 @@ class Header extends Component {
         }
     }
 
+    componentDidMount() {
+        const {dispatch} = this.props;
+        dispatch(getRootBreadcrumb());
+        document.addEventListener('scroll', this.handleScroll);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('scroll', this.handleScroll);
+    }
+
     getChildContext = () => {
         return { shortcuts: shortcutManager }
     }
@@ -94,16 +104,6 @@ class Header extends Component {
         }
     }
 
-    componentDidMount() {
-        const {dispatch} = this.props;
-        dispatch(getRootBreadcrumb());
-        document.addEventListener('scroll', this.handleScroll);
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('scroll', this.handleScroll);
-    }
-
     handleScroll = (event) => {
         let scrollTop = event.srcElement.body.scrollTop;
 
@@ -138,8 +138,8 @@ class Header extends Component {
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
-        const {dispatch} = this.props;
-        dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
+        const {dispatch, query} = this.props;
+        dispatch(openModal(caption, windowType, type, null, null, isAdvanced, query && query.viewId));
     }
 
     handlePrint = (windowType, docId, docNo) => {
