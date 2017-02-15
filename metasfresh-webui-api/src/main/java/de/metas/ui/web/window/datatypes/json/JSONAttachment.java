@@ -37,7 +37,7 @@ public class JSONAttachment implements Serializable
 {
 	public static JSONAttachment of(MAttachmentEntry entry)
 	{
-		return new JSONAttachment(entry.getId(), entry.getName());
+		return new JSONAttachment(entry.getId(), entry.getFilename());
 	}
 
 
