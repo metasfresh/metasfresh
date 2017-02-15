@@ -143,7 +143,7 @@ class Modal extends Component {
         } = this.state;
 
         return (
-            (modalType === "documentView" || data.length > 0) && <div
+            data.length > 0 && <div
                 className="screen-freeze js-not-unselect"
             >
                 <div className="panel panel-modal panel-modal-primary">
