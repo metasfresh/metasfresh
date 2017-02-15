@@ -389,7 +389,6 @@ export function attachFileAction(windowType, docId, data){
 // PROCESS ACTIONS
 
 export function createProcess(processType, viewId, type, ids) {
-    console.log("PROCESS START", processType, type, viewId, ids);
     let pid = null;
     return (dispatch) =>
         dispatch(getProcessData(processType, viewId, type, ids)).then(response => {
