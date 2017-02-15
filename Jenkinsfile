@@ -421,6 +421,7 @@ stage('Invoke downstream jobs')
 		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_VERSION is set
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
+			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
 			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
 		}
@@ -435,7 +436,9 @@ stage('Invoke downstream jobs')
 	{
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
+			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] = invokeDownStreamJobs('metasfresh-webui-frontend', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
 		}
 
@@ -702,10 +705,21 @@ stage('Deployment')
 					paramWebuiApiServerArtifactURL="-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=LATEST";
 				}
 				invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-api/scripts", "./update_metasfresh-webui-api.sh ${paramWebuiApiServerArtifactURL}");
+								
+				final paramWebuiFrontendServerArtifactURL;
+				if( EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] )
+				{
+					echo "Deploying metasfresh-webui-frontend from URL ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+					paramWebuiFrontendServerArtifactURL="-u ${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
+				}
+				else
+				{
+					echo "Deploying latest metasfresh-webui-frontend from the ${MF_MAVEN_REPO_NAME} repository (see console to check what is really deployed)"
+					paramWebuiFrontendServerArtifactURL="-u http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=LATEST&p=tar.gz";
+				}
 				
 				// FIXME: commented out because it's not working
-				//echo "Building and installing the latest metasfresh-webui-frontend"
-				//invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh");
+				//invokeRemote(sshTargetHost, sshTargetUser, "/opt/metasfresh-webui-frontend/scripts", "./update_metasfresh-webui-frontend.sh ${paramWebuiFrontendServerArtifactURL}");
 				
 				// clean up the workspace, including the local maven repositories that the withMaven steps created
 				step([$class: 'WsCleanup', cleanWhenFailure: false])
