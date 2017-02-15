@@ -35,17 +35,21 @@ class Modal extends Component {
 
         switch(modalType){
             case "window":
-                dispatch(createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)).catch(err => {
+                dispatch(
+                    createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
+                ).catch(err => {
                     this.handleClose();
                 });
                 break;
             case "process":
                 //processid, viewId, docType, id or ids
-                dispatch(createProcess(windowType, modalViewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                dispatch(
+                    createProcess(
+                        windowType, modalViewId, relativeType, dataId ? dataId : selected
+                    )
+                ).catch(err => {
                     this.handleClose();
                 });
-                break;
-            case "documentView":
                 break;
         }
     }
@@ -67,7 +71,7 @@ class Modal extends Component {
         const modalContent = document.querySelector('.js-panel-modal-content')
         modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
     }
-    
+
     handleClose = () => {
         const {dispatch, closeCallback, modalType} = this.props;
         const {isNew} = this.state;

@@ -7,6 +7,7 @@ import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
+import Modal from '../components/app/Modal';
 
 
 import {
@@ -188,6 +189,19 @@ class NavigationTree extends Component {
                 breadcrumb={breadcrumb.slice(0,1)}
                 siteName = {"Sitemap"}
             >
+                {modal.visible &&
+                    <Modal
+                        windowType={modal.type}
+                        data={modal.data}
+                        layout={modal.layout}
+                        rowData={modal.rowData}
+                        tabId={modal.tabId}
+                        rowId={modal.rowId}
+                        modalTitle={modal.title}
+                        modalType={modal.modalType}
+                        modalViewId={modal.viewId}
+                     />
+                 }
                 {this.renderTree(rootResults)}
             </Container>
         );
@@ -196,6 +210,13 @@ class NavigationTree extends Component {
 
 function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
+
+    const {
+        modal,
+    } = windowHandler || {
+        modal: {},
+    }
+
     const {
         breadcrumb
     } = menuHandler || {
@@ -203,13 +224,15 @@ function mapStateToProps(state) {
     }
 
     return {
-        breadcrumb
+        breadcrumb,
+        modal
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    breadcrumb: PropTypes.array.isRequired,
+    modal: PropTypes.object.isRequired,
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);

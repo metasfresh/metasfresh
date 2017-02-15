@@ -447,7 +447,7 @@ function getProcessData(processId, viewId, type, ids) {
             viewDocumentIds: ids
         } : {
             processId: processId,
-            documentId: ids,
+            documentId: Array.isArray(ids) ? ids[0] : ids,
             documentType: type
         }
     );
@@ -460,10 +460,6 @@ export function startProcess(processType, pinstanceId) {
         '/' + pinstanceId +
         '/start'
     );
-}
-
-export function updateProcess(processId, pinstanceId, data){
-    return axios.patch(`${config.API_URL}/process/${processId}/${pinstanceId}`, data)
 }
 
 export function deleteLocal(tabid, rowsid, scope) {

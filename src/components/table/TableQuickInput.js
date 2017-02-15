@@ -171,11 +171,9 @@ class TableQuickInput extends Component {
 
         this.patchPromise
             .then(() => {
-                console.log('submit');
                 return dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id))
             })
             .then(response => {
-                console.log('submitEnd');
                 this.initQuickInput();
                 dispatch(addNewRow(response.data, tabId, response.data.rowId, "master"))
             });
