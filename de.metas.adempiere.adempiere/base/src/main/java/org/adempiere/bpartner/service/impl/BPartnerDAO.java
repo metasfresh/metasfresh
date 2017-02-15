@@ -322,12 +322,14 @@ public class BPartnerDAO implements IBPartnerDAO
 		// Sales
 		if (isSOTrx)
 		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact, true);
 			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact_Default, true);
 
 		}
 		// Purchase
 		else
 		{
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact, true);
 			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, true);
 		}
 
