@@ -204,15 +204,13 @@ class Lookup extends Component {
     }
 
     handleBlur = (callback) => {
-
         this.setState(Object.assign({}, this.state, {
             isOpen: false
         }), () => {
-            if(callback) {
+            if(callback){
                 callback();
             }
-
-        })
+        });
     }
 
     handleFocus = () => {
