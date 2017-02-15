@@ -45,7 +45,7 @@ class Lookup extends Component {
         if(selected) {
             this.inputSearch.value = selected[Object.keys(selected)[0]];
         }else{
-            this.handleClear();
+            this.handleBlur(this.clearState);
         }
     }
 
