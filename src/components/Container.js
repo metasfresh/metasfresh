@@ -49,6 +49,12 @@ class Container extends Component {
     }
 }
 
-export default connect(state => ({
-    connectionError: state.windowHandler.connectionError
-}))(Container);
+Container.propTypes = {
+    connectionError: PropTypes.bool
+};
+
+const mapStateToProps = state => ({
+    connectionError: state.windowHandler.connectionError || false
+});
+
+export default connect(mapStateToProps)(Container);
