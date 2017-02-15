@@ -6,13 +6,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.service.IAttachmentBL;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.MAttachmentEntry;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -36,6 +41,7 @@ import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.json.JSONAttachment;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
@@ -504,13 +510,13 @@ public class WindowRestController
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(reportData, headers, HttpStatus.OK);
+		final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		return response;
 	}
 
 	/**
 	 * Attaches a file to given root document.
-	 * 
+	 *
 	 * @param adWindowId
 	 * @param documentId
 	 * @param file
@@ -530,6 +536,74 @@ public class WindowRestController
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
 		final Document document = documentCollection.getDocument(documentPath);
+
 		Services.get(IAttachmentBL.class).createAttachment(document, name, data);
 	}
+
+	@GetMapping("/{windowId}/{documentId}/attachments")
+	public List<JSONAttachment> getAttachments(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentId //
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+		final Document document = documentCollection.getDocument(documentPath);
+
+		return Services.get(IAttachmentBL.class).getEntiresForModel(document)
+				.stream()
+				.map(JSONAttachment::of)
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	@GetMapping("/{windowId}/{documentId}/attachments/{id}")
+	public ResponseEntity<byte[]> getAttachmentById(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("id") final int id)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+		final Document document = documentCollection.getDocument(documentPath);
+
+		final MAttachmentEntry entry = Services.get(IAttachmentBL.class).getEntryForModelById(document, id);
+		if (entry == null)
+		{
+			throw new EntityNotFoundException("No attachment found (ID=" + id + ")");
+		}
+
+		final String entryFilename = entry.getFilename();
+		final byte[] entryData = entry.getData();
+		if (entryData == null || entryData.length == 0)
+		{
+			throw new EntityNotFoundException("No attachment found (ID=" + id + ")");
+		}
+
+		final String entryContentType = entry.getContentType();
+
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType(entryContentType));
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + entryFilename + "\"");
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+		final ResponseEntity<byte[]> response = new ResponseEntity<>(entryData, headers, HttpStatus.OK);
+		return response;
+	}
+
+	@DeleteMapping("/{windowId}/{documentId}/attachments/{id}")
+	public void deleteAttachmentById(
+			@PathVariable("windowId") final int adWindowId //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("id") final int id //
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+		final Document document = documentCollection.getDocument(documentPath);
+
+		Services.get(IAttachmentBL.class).deleteEntryForModel(document, id);
+	}
+
 }
