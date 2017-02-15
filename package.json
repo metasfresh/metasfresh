@@ -2,7 +2,8 @@
   "name": "metasfresh-webui-frontend",
   "scripts": {
     "start": "node server.js",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "lint-fix": "eslint src --fix"
   },
   "devDependencies": {
     "autoprefixer": "~6.3.6",
