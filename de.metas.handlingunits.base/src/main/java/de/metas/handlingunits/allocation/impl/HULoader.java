@@ -133,14 +133,16 @@ public class HULoader
 		this.allowPartialLoads = allowPartialLoads;
 	}
 
+	/**
+	 * If this setter is called with {@code true}, then the loader will load into the destination whatever was unloaded from the source, no matter what the destination's capacity is.
+	 * <p>
+	 * The default if this setter is not called is {@code false}.
+	 * 
+	 * @param forceLoad
+	 */
 	public void setForceLoad(final boolean forceLoad)
 	{
 		this.forceLoad = forceLoad;
-	}
-
-	public final boolean isForceLoad()
-	{
-		return forceLoad;
 	}
 
 	/**
@@ -435,7 +437,7 @@ public class HULoader
 	private final IAllocationRequest createQtyLoadRequest(final IAllocationRequest unloadRequestActual, final IHUTransaction unloadTrx)
 	{
 		final IAllocationRequestBuilder builder = AllocationUtils.createQtyLoadRequestBuilder(unloadRequestActual, unloadTrx);
-		if (isForceLoad())
+		if (forceLoad)
 		{
 			builder.setForceQtyAllocation(true);
 		}

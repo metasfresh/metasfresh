@@ -125,7 +125,7 @@ import de.metas.process.RunOutOfTrx;
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		getResult().setRecordsToSelectAfterExecution(TableRecordReference.ofList(hus));
+		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
 
 		return MSG_OK;
 	}
