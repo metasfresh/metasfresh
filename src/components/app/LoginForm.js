@@ -19,9 +19,9 @@ class LoginForm extends Component {
         super(props);
 
         this.state = {
-            role: "",
+            role: '',
             roleSelect: false,
-            err: ""
+            err: ''
         }
     }
 
@@ -39,7 +39,7 @@ class LoginForm extends Component {
         e.preventDefault();
 
         this.setState(Object.assign({}, this.state, {
-            err: ""
+            err: ''
         }))
     }
 
@@ -131,9 +131,9 @@ class LoginForm extends Component {
                                 type="text"
                                 onChange={this.handleOnChange}
                                 className={
-                                    "input-primary input-block " +
-                                    (err ? "input-error " : "") +
-                                    (pending ? "input-disabled ": "")
+                                    'input-primary input-block ' +
+                                    (err ? 'input-error ' : '') +
+                                    (pending ? 'input-disabled ': '')
                                 }
                                 disabled={pending}
                                 ref={c => this.login = c} />
@@ -144,9 +144,9 @@ class LoginForm extends Component {
                                 type="password"
                                 onChange={this.handleOnChange}
                                 className={
-                                    "input-primary input-block " +
-                                    (err ? "input-error " : "") +
-                                    (pending ? "input-disabled " : "")
+                                    'input-primary input-block ' +
+                                    (err ? 'input-error ' : '') +
+                                    (pending ? 'input-disabled ' : '')
                                 }
                                 disabled={pending}
                                 ref={c => this.passwd = c}
@@ -156,7 +156,7 @@ class LoginForm extends Component {
                     </div>
                 }
                 <div className="mt-2">
-                    <button className="btn btn-sm btn-block btn-meta-success" onClick={this.handleLogin}>{roleSelect? "Send" : "Login"}</button>
+                    <button className="btn btn-sm btn-block btn-meta-success" onClick={this.handleLogin}>{roleSelect? 'Send' : 'Login'}</button>
                 </div>
             </div>
         )

@@ -19,13 +19,13 @@ export function loginSuccess() {
                 client.subscribe(topic.data, msg => {
                     const notification = JSON.parse(msg.body);
 
-                    if(notification.eventType === "Read"){
+                    if(notification.eventType === 'Read'){
                         dispatch(updateNotification(notification.notification, notification.unreadCount));
-                    }else if(notification.eventType === "New"){
+                    }else if(notification.eventType === 'New'){
                         dispatch(newNotification(notification.notification, notification.unreadCount));
                         const notif = notification.notification;
                         if(notif.important){
-                            dispatch(addNotification("Important notification", notif.message, 5000, "primary"))
+                            dispatch(addNotification('Important notification', notif.message, 5000, 'primary'))
                         }
                     }
                 });
@@ -77,13 +77,13 @@ export function browseViewRequest(viewId, page, pageLength, orderBy, windowType)
 
 export function createViewRequest(windowType, viewType, pageLength, filters, refDocType = null, refDocId = null){
     return () => axios.post(config.API_URL + '/documentView/' + windowType, {
-        "documentType": windowType,
-        "viewType": viewType,
-        "referencing": (refDocType && refDocId) ? {
-            "documentType": refDocType,
-            "documentId": refDocId
+        'documentType': windowType,
+        'viewType': viewType,
+        'referencing': (refDocType && refDocId) ? {
+            'documentType': refDocType,
+            'documentId': refDocId
         }: null,
-        "filters": filters
+        'filters': filters
     });
 }
 
@@ -107,7 +107,7 @@ export function deleteNotification(id){
 export function updateUri(pathname, query, prop, value) {
     return (dispatch) => {
         let url = pathname;
-        url += "?";
+        url += '?';
 
         // add new prop
         // or overwrite existing
@@ -116,7 +116,7 @@ export function updateUri(pathname, query, prop, value) {
         const queryKeys = Object.keys(query);
 
         for(let i = 0; i < queryKeys.length; i++){
-            url += queryKeys[i] + "=" + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? "&": "");
+            url += queryKeys[i] + '=' + query[queryKeys[i]] + (queryKeys.length - 1 !== i  ? '&': '');
         }
 
         dispatch(replace(url));
@@ -159,13 +159,13 @@ export function markAsRead(id) {
 
 export function getAttributesInstance(attrType, tmpId, docType, docId, tabId, rowId, fieldName) {
     return () => axios.post(config.API_URL + '/' + attrType, {
-        "templateId": tmpId,
-        "source": {
-            "documentType": docType,
-            "documentId": docId,
-            "tabid": tabId,
-            "rowId": rowId,
-            "fieldName": fieldName
+        'templateId': tmpId,
+        'source': {
+            'documentType': docType,
+            'documentId': docId,
+            'tabid': tabId,
+            'rowId': rowId,
+            'fieldName': fieldName
         }
     });
 }

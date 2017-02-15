@@ -25,7 +25,7 @@ class DocList extends Component {
         super(props);
 
         this.state = {
-            modalTitle: ""
+            modalTitle: ''
         }
     }
 
@@ -166,8 +166,8 @@ function mapStateToProps(state) {
         search,
         pathname
     } = routing.locationBeforeTransitions || {
-        search: "",
-        pathname: ""
+        search: '',
+        pathname: ''
     }
 
 

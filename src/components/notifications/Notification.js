@@ -18,7 +18,7 @@ class Notification extends Component {
         const {notificationMounted} = this.state;
 
         return (
-            <div className={"notification-item " + (item.notifType ? item.notifType : 'error') + (notificationMounted ? ' notif-animate' : '')}>
+            <div className={'notification-item ' + (item.notifType ? item.notifType : 'error') + (notificationMounted ? ' notif-animate' : '')}>
                 <div className="notification-header"> {item.title} <i onClick={() => this.closeNotification(index)} className="meta-icon-close-1"></i></div>
                 <div className="notification-content"> {item.msg} </div>
             </div>

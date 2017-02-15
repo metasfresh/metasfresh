@@ -58,8 +58,8 @@ class Prompt extends Component {
                     </div>
                     <div className="panel-modal-header panel-prompt-header panel-prompt-footer">
                         <div className="prompt-button-wrapper">
-                            {cancel ? this.renderCancelButton() : ""}
-                            {submit ? this.renderSubmitButton() : ""}
+                            {cancel ? this.renderCancelButton() : ''}
+                            {submit ? this.renderSubmitButton() : ''}
                         </div>
                     </div>
                 </div>

@@ -127,7 +127,7 @@ export default class Image extends React.Component{
         }, () => {
             navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: "user",
+                    facingMode: 'user',
                     width: 400,
                     height: 300
                 }

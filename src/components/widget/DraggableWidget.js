@@ -124,10 +124,10 @@ export class DraggableWidget extends Component {
 
         return connectDragSource(connectDropTarget(
             <div className={
-                "draggable-widget" +
-                (isMaximize ? " draggable-widget-maximize" : "") +
-                (isDragging ? " dragging" : "") +
-                ((idMaximized !== false) && !isMaximize ? " hidden-xs-up" : "")
+                'draggable-widget' +
+                (isMaximize ? ' draggable-widget-maximize' : '') +
+                (isDragging ? ' dragging' : '') +
+                ((idMaximized !== false) && !isMaximize ? ' hidden-xs-up' : '')
             } >
                 <div className="draggable-widget-header">
                     {text}
@@ -144,7 +144,7 @@ export class DraggableWidget extends Component {
                         </div>
                     }
                 </div>
-                {this.props.dashboard == "/dashboard2" && 
+                {this.props.dashboard == '/dashboard2' && 
                     <div className="draggable-widget-body">
                         {id===1000001 &&
                             <BarChart5/>
@@ -166,7 +166,7 @@ export class DraggableWidget extends Component {
                         }
                     </div>
                 }
-                {this.props.dashboard == "/dashboard1" && 
+                {this.props.dashboard == '/dashboard1' && 
                     <div className="draggable-widget-body">
                         <iframe
                             src={!refresh && url}

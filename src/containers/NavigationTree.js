@@ -27,10 +27,10 @@ class NavigationTree extends Component {
         super(props);
         this.state = {
             rootResults: {
-                caption: "",
+                caption: '',
                 children: []
             },
-            query: "",
+            query: '',
             queriedResults: [],
             deepNode: null
         };
@@ -40,7 +40,7 @@ class NavigationTree extends Component {
         const {dispatch, windowType} = this.props;
 
         this.getData();
-        dispatch(getWindowBreadcrumb("143"));
+        dispatch(getWindowBreadcrumb('143'));
     }
 
     getData = (callback) => {
@@ -49,7 +49,7 @@ class NavigationTree extends Component {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
-                query: ""
+                query: ''
             }), () => {
                 callback();
             })
@@ -58,7 +58,7 @@ class NavigationTree extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: [],
                     rootResults: {},
-                    query: ""
+                    query: ''
                 }), () => {
                     callback();
                 })
@@ -101,7 +101,7 @@ class NavigationTree extends Component {
     }
 
     clearValue = () => {
-        document.getElementById('search-input').value=""
+        document.getElementById('search-input').value=''
     }
 
     handleClear = (e) => {
@@ -141,7 +141,7 @@ class NavigationTree extends Component {
                             {...subitem}
                         />
                     )}
-                    { queriedResults.length === 0 && query!="" &&
+                    { queriedResults.length === 0 && query!='' &&
                         <span>There are no results</span>
                     }
               </div>
@@ -151,12 +151,12 @@ class NavigationTree extends Component {
   }
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + elementId));
+        dispatch(push('/window/' + elementId));
     }
 
     handleNewRedirect = (elementId) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + elementId + "/new"));
+        dispatch(push('/window/' + elementId + '/new'));
     }
 
     handleDeeper = (e, nodeId) => {

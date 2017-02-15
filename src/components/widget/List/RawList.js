@@ -76,19 +76,19 @@ class RawList extends Component {
         const {selected} = this.state;
 
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 this.navigate(true);
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 this.navigate(false);
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 this.handleSelect(list[Object.keys(list)[selected-1]])
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 this.handleBlur();
                 break;
@@ -137,11 +137,11 @@ class RawList extends Component {
         return (
             <div
                 key={index}
-                className={"input-dropdown-list-option"  +
+                className={'input-dropdown-list-option'  +
                     (
                         this.areOptionsEqual(selected, option) ?
-                        " input-dropdown-list-option-key-on" :
-                        ""
+                        ' input-dropdown-list-option-key-on' :
+                        ''
                     )
                 }
                 onMouseEnter={() => this.handleSwitch(option)}
@@ -186,31 +186,31 @@ class RawList extends Component {
                 onBlur={this.handleBlur}
                 onKeyDown={this.handleKeyDown}
                 className={
-                    "input-dropdown-container " +
-                    (readonly ? "input-disabled " : "") +
-                    (rowId ? "input-dropdown-container-static " : "") +
-                    ((rowId && !isModal) ? "input-table " : "")
+                    'input-dropdown-container ' +
+                    (readonly ? 'input-disabled ' : '') +
+                    (rowId ? 'input-dropdown-container-static ' : '') +
+                    ((rowId && !isModal) ? 'input-table ' : '')
                 }
             >
                 <div className={
-                    "input-dropdown input-block input-readonly input-" +
-                    (rank ? rank : "secondary") +
-                    (updated ? " pulse " : " ")
+                    'input-dropdown input-block input-readonly input-' +
+                    (rank ? rank : 'secondary') +
+                    (updated ? ' pulse ' : ' ')
                 }>
                     <div className={
-                        "input-editable input-dropdown-focused " +
-                        (align ? "text-xs-" + align + " " : "")
+                        'input-editable input-dropdown-focused ' +
+                        (align ? 'text-xs-' + align + ' ' : '')
                     }>
                         <input
                             type="text"
                             className={
-                                "input-field js-input-field font-weight-semibold " +
+                                'input-field js-input-field font-weight-semibold ' +
                                 (disabled ? 'input-disabled ' : '')
                             }
                             readOnly
                             tabIndex={-1}
                             placeholder={defaultValue}
-                            value={selected ? selected[Object.keys(selected)[0]] : ""}
+                            value={selected ? selected[Object.keys(selected)[0]] : ''}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
                             disabled={readonly || disabled}

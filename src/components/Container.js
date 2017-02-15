@@ -39,8 +39,8 @@ class Container extends Component {
                 <NotificationHandler />
                 <div
                     className={
-                        "header-sticky-distance js-unselect " +
-                        (!!noMargin ? "dashboard" : "container-fluid")
+                        'header-sticky-distance js-unselect ' +
+                        (!!noMargin ? 'dashboard' : 'container-fluid')
                     }
                 >
                     {children}

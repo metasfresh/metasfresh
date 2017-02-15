@@ -234,9 +234,9 @@ class DocumentList extends Component {
         const {dispatch, windowType, updateUri} = this.props;
 
         if(updateUri){
-            id && updateUri("viewId", id);
-            page && updateUri("page", page);
-            sortingQuery && updateUri("sort", sortingQuery);
+            id && updateUri('viewId', id);
+            page && updateUri('page', page);
+            sortingQuery && updateUri('sort', sortingQuery);
         }
 
         return dispatch(
@@ -262,10 +262,10 @@ class DocumentList extends Component {
         let currentPage = page;
 
         switch(index){
-            case "up":
+            case 'up':
                 currentPage * data.pageLength < data.size ? currentPage++ : null;
                 break;
-            case "down":
+            case 'down':
                 currentPage != 1 ? currentPage-- : null;
                 break;
             default:
@@ -279,7 +279,7 @@ class DocumentList extends Component {
         });
     }
 
-    getSortingQuery = (asc, field) => (asc ? "+" : "-") + field;
+    getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
 
     sortData = (asc, field, startPage, currPage) => {
         const {data, viewId, page} = this.state;
@@ -315,7 +315,7 @@ class DocumentList extends Component {
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         <div>
-                            {type === "grid" &&
+                            {type === 'grid' &&
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
                                     onClick={() => this.redirectToNewDocument()}
@@ -355,7 +355,7 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
-                                dispatch(push("/window/" + windowType + "/" + id))
+                                dispatch(push('/window/' + windowType + '/' + id))
                             }}
                             size={data.size}
                             pageLength={this.pageLength}

@@ -11,7 +11,7 @@ const initialState = {
         page: 1,
         windowType: null
     },
-    viewId: ""
+    viewId: ''
 }
 
 export default function listHandler(state = initialState, action) {

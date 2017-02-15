@@ -27,7 +27,7 @@ class Tooltips extends Component {
         return (
             <div style={{opacity: opacity}}>
                 <div 
-                    className={"tooltip-wrapp" + " tooltip-"+type + " " + extraClass}
+                    className={'tooltip-wrapp' + ' tooltip-'+type + ' ' + extraClass}
                 >
                     <div className="tooltip-shortcut">{name}</div>
                     <div className="tooltip-name">{action}</div>

@@ -57,11 +57,11 @@ class MasterWidget extends Component {
         let currRowId = rowId;
         let ret = null;
 
-        if(rowId === "NEW"){
+        if(rowId === 'NEW'){
             currRowId = relativeDocId;
         }
 
-        if(widgetType !== "Button"){
+        if(widgetType !== 'Button'){
             dispatch(updateProperty(property, value, tabId, currRowId, isModal));
         }
 
@@ -98,7 +98,7 @@ class MasterWidget extends Component {
                 return;
             }
 
-            if(rowId === "NEW"){
+            if(rowId === 'NEW'){
                 currRowId = relativeDocId;
             }
 
@@ -118,8 +118,8 @@ class MasterWidget extends Component {
         let precisionProcessed = precision;
 
         if(
-            widgetType === "Integer" ||
-            widgetType === "Quantity"
+            widgetType === 'Integer' ||
+            widgetType === 'Quantity'
         ){
             precisionProcessed = 0;
         }

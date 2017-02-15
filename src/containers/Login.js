@@ -13,7 +13,7 @@ class Login extends Component {
     componentWillMount(){
         const {logged, dispatch} = this.props;
         if(logged){
-            dispatch(push("/"));
+            dispatch(push('/'));
         }
     }
 

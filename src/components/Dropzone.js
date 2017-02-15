@@ -36,7 +36,7 @@ class DropzoneWrapper extends Component {
         return (
             <Dropzone
                 className={
-                    "document-file-dropzone" +
+                    'document-file-dropzone' +
                     (dragActive ? ' document-file-dropzone-active' : '')
                 }
                 multiple={false}

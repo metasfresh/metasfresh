@@ -9,11 +9,11 @@ class InboxItem extends Component {
 
     renderIconFromTarget = (target) => {
         switch(target){
-            case "143":
-                return "sales";
+            case '143':
+                return 'sales';
                 break;
             default:
-                return "system";
+                return 'system';
         }
     }
 
@@ -24,23 +24,23 @@ class InboxItem extends Component {
      handleKeyDown = (e) => {
         const {close} = this.props;
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 if(document.activeElement.nextSibling) {
                     document.activeElement.nextSibling.focus();
                 }
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 if(document.activeElement.previousSibling) {
                     document.activeElement.previousSibling.focus();
                 }
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 document.activeElement.click();
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 close && close();
                 break;
@@ -55,14 +55,14 @@ class InboxItem extends Component {
                 onKeyDown={this.handleKeyDown}
                 tabIndex={0}
                 className={
-                "inbox-item js-inbox-item pointer " +
-                (!item.read ? "inbox-item-unread ":"")
+                'inbox-item js-inbox-item pointer ' +
+                (!item.read ? 'inbox-item-unread ':'')
             }>
                 {item.important && <div className="inbox-item-icon inbox-item-icon-sm">
                     <i className="meta-icon-important" />
                 </div>}
                 <div className="inbox-item-icon">
-                    <i className={"meta-icon-" + this.renderIconFromTarget(item.target && item.target.documentType)} />
+                    <i className={'meta-icon-' + this.renderIconFromTarget(item.target && item.target.documentType)} />
                 </div>
                 <div className="inbox-item-content">
                     <div className="inbox-item-title">

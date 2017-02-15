@@ -18,7 +18,7 @@ class Breadcrumb extends Component {
 
     linkToPage = (page) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + page));
+        dispatch(push('/window/' + page));
     }
 
     toggleTooltip = (tooltip) => {
@@ -39,9 +39,9 @@ class Breadcrumb extends Component {
             <div className={"header-btn tooltip-parent"}>
                 <div
                     title={!!index && menu.children.captionBreadcrumb ? menu.children.captionBreadcrumb : ''}
-                    className={"header-item-container pointer " +
-                        (menuOverlay === menu.nodeId ? "header-item-open " : "") +
-                        (!index ? "header-item-container-static ": "")
+                    className={'header-item-container pointer ' +
+                        (menuOverlay === menu.nodeId ? 'header-item-open ' : '') +
+                        (!index ? 'header-item-container-static ': '')
                     }
                     onClick={ !(menu && menu.children && menu.children.elementId) ?
                         e => {handleMenuOverlay(e, menu.nodeId), this.toggleTooltip(false)} :
@@ -61,7 +61,7 @@ class Breadcrumb extends Component {
                     <MenuOverlay
                         nodeId={menu.nodeId}
                         node={menu}
-                        onClickOutside={e => handleMenuOverlay(e, "")}
+                        onClickOutside={e => handleMenuOverlay(e, '')}
                         disableOnClickOutside={menuOverlay !== menu.nodeId}
                         siteName={siteName}
                         handleMenuOverlay={handleMenuOverlay}
