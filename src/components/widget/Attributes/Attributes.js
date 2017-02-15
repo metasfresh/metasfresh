@@ -117,6 +117,16 @@ class Attributes extends Component {
         const {data} = this.state;
         const attrId = findRowByPropName(data, "ID").value;
 
+        const valid = data
+            .filter(field => field.mandatory)
+            .map(field => !!field.value)
+            .reduce((prev, current) => prev && current);
+
+        //required value is not set. just close
+        if (!valid){
+            return this.handleToggle(false);
+        }
+
         dispatch(completeRequest(attributeType, attrId)).then(response => {
             patch(response.data);
             this.handleToggle(false);
