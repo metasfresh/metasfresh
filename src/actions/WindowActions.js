@@ -420,8 +420,10 @@ export function handleProcessResponse(response, type, id, successCallback) {
         if(error){
             dispatch(addNotification("Process error", summary, 5000, "error"));
         }else{
-            if(viewId && viewWindowId){
-                dispatch(openRawModal(viewWindowId, viewId));
+            if(openViewId && openViewWindowId){
+                dispatch(openRawModal(openViewWindowId, openViewId));
+            }else if(openDocumentWindowId && openDocumentId){
+                dispatch(push("/window/" + openDocumentWindowId + "/" + openDocumentId));
             }else if(reportFilename){
                 dispatch(printRequest('process', type, id, reportFilename))
             }
