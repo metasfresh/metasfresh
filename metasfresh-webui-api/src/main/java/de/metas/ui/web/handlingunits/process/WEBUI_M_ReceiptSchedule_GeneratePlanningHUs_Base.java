@@ -2,12 +2,13 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.Quantity;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -34,17 +35,20 @@ import de.metas.process.RunOutOfTrx;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/ abstract class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base extends JavaProcess implements IProcessPrecondition
+/* package */ abstract class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base extends JavaProcess implements IProcessPrecondition
 {
+	protected abstract I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template);
+	protected abstract boolean isUpdateReceiptScheduleDefaultConfiguration();
+	
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -75,44 +79,39 @@ import de.metas.process.RunOutOfTrx;
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	//
-	// State
-	private I_M_HU_LUTU_Configuration _defaultLUTUConfiguration; // lazy
-
-	protected abstract I_M_HU_LUTU_Configuration updateM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfigurationToEdit);
-
-	protected I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration()
-	{
-		if (_defaultLUTUConfiguration == null)
-		{
-			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
-			_defaultLUTUConfiguration = getCurrentLUTUConfiguration(receiptSchedule);
-		}
-		return _defaultLUTUConfiguration;
-	}
-
 	protected static I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return Services.get(IHUReceiptScheduleBL.class)
+		final I_M_HU_LUTU_Configuration lutuConfig = Services.get(IHUReceiptScheduleBL.class)
 				.createLUTUConfigurationManager(receiptSchedule)
 				.getCreateLUTUConfiguration();
+
+		// Make sure nobody is overriding the existing configuration
+		if (lutuConfig.getM_HU_LUTU_Configuration_ID() > 0)
+		{
+			InterfaceWrapperHelper.setSaveDeleteDisabled(lutuConfig, true);
+		}
+
+		return lutuConfig;
 	}
 
 	@Override
 	@RunOutOfTrx
 	protected final String doIt() throws Exception
 	{
+		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(this)
-				.addM_ReceiptSchedule(getM_ReceiptSchedule());
+				.addM_ReceiptSchedule(receiptSchedule)
+				.setUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration());
 
 		//
-		// Get/Create and Edit LU/TU configuration
-		final I_M_HU_LUTU_Configuration lutuConfigurationOrig = huGenerator
-				.getLUTUConfigurationManager()
-				.getCreateLUTUConfiguration();
-		
-		final I_M_HU_LUTU_Configuration lutuConfiguration = updateM_HU_LUTU_Configuration(lutuConfigurationOrig);
-		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration is not null");
+		// Get/Create the initial LU/TU configuration
+		final I_M_HU_LUTU_Configuration lutuConfigurationOrig = getCurrentLUTUConfiguration(receiptSchedule);
+
+		//
+		// Create the effective LU/TU configuration
+		final I_M_HU_LUTU_Configuration lutuConfiguration = createM_HU_LUTU_Configuration(lutuConfigurationOrig);
+		Services.get(ILUTUConfigurationFactory.class).save(lutuConfiguration);
+		huGenerator.setM_HU_LUTU_Configuration(lutuConfiguration);
 
 		//
 		// Calculate the target CUs that we want to allocate
@@ -132,7 +131,7 @@ import de.metas.process.RunOutOfTrx;
 		return MSG_OK;
 	}
 
-	private I_M_ReceiptSchedule getM_ReceiptSchedule()
+	protected final I_M_ReceiptSchedule getM_ReceiptSchedule()
 	{
 		return getRecord(I_M_ReceiptSchedule.class);
 	}

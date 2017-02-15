@@ -2,6 +2,8 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPreconditionsContext;
@@ -61,12 +63,23 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 		
 		return packingInfo.toString();
 	}
+	
+	@Override
+	protected boolean isUpdateReceiptScheduleDefaultConfiguration()
+	{
+		return false;
+	}
 
 	@Override
-	protected I_M_HU_LUTU_Configuration updateM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfigurationToEdit)
+	protected I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template)
 	{
-		// preserve the default suggested one
-		return lutuConfigurationToEdit;
+		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.copy()
+				.setFrom(template)
+				.copyToNew(I_M_HU_LUTU_Configuration.class);
+		
+		lutuConfigurationNew.setQtyLU(BigDecimal.ONE);
+		
+		return lutuConfigurationNew;
 	}
 
 }
