@@ -40,5 +40,8 @@ export default {
     },
     QUICK_ACTIONS: {
         QUICK_ACTION_POS: mod + '+' + 'u'
+    },
+    DOCUMENT_STATUS_CONTEXT: {
+        COMPLETE_STATUS: mod + '+' + 'u'
     }
 }
