@@ -41,6 +41,7 @@ this week's RC
   * #116 qty 0 in purchase order
   * #229 Location editor button called "edit attributes"
   * #264 Included tabs layout is broken
+  * #268 Wrong viewId when starting the process
   * #276 Wrong timing when completing a quick input entry
   * #279 While browsing a document, pressing New does nothing
 
