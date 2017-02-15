@@ -134,7 +134,6 @@ class Attributes extends Component {
     }
 
     handleKeyDown = (e) => {
-        console.log(e.key);
         switch(e.key){
             case "Escape":
                 e.preventDefault();
