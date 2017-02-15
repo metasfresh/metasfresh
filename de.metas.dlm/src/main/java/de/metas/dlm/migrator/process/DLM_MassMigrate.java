@@ -3,7 +3,6 @@ package de.metas.dlm.migrator.process;
 import java.sql.ResultSet;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
@@ -108,13 +107,6 @@ public class DLM_MassMigrate extends JavaProcess
 					}
 
 					final String tablename = rs.getString("tablename");
-					if (Check.isEmpty(tablename, true))
-					{
-						done.setValue(true);
-						Loggables.get().addLog("load_production_table_rows: we are done");
-						return;
-					}
-
 					final int updatecount = rs.getInt("updatecount");
 					final int massmigrate_id = rs.getInt("massmigrate_id");
 

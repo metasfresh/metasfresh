@@ -21,7 +21,7 @@ BEGIN
 	IF v_config_line IS NULL
 	THEN
 		RAISE INFO 'update_production_table: Found no dlm.massmigrate record with status=''update_rows''; p_tableName=%; nothing to do.', p_tableName;	
-		RETURN QUERY SELECT NULL AS TableName, 0 AS UpdateCount, NULL AS MassMigrate_ID;
+		RETURN; -- see RETURN and RETURN QUERY in https://www.postgresql.org/docs/9.5/static/plpgsql-control-structures.html
 	END IF;
 	
 	RAISE INFO 'update_production_table - %: Going to load max % references from dlm.massmigrate_records into a temporary table', v_config_line.TableName, p_limit;
@@ -72,6 +72,7 @@ BEGIN
 	END IF;
 
 	RETURN QUERY SELECT v_config_line.TableName, v_to_update, v_config_line.massmigrate_id;
+	RETURN;
 END
 $BODY$
 	LANGUAGE plpgsql VOLATILE;
