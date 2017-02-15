@@ -803,14 +803,15 @@ public abstract class PO
 			return false;
 		}
 
-		if (m_newValues[index] == null)
-			return false;
 		// metas: begin: If column was explicitly marked as changed we consider it changed
 		if (markedChangedColumns != null && markedChangedColumns.contains(index))
 		{
 			return true;
 		}
 		// metas: end
+
+		if (m_newValues[index] == null)
+			return false;
 
 		// metas: normalize null values before comparing them (04219)
 		Object newValue = m_newValues[index];
