@@ -3,7 +3,6 @@ import {connect} from 'react-redux';
 import update from 'react-addons-update';
 import {push} from 'react-router-redux';
 
-import '../../assets/css/header.css';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
@@ -26,7 +25,7 @@ import {
 
 import {
     deleteRequest,
-    printRequest
+    openFile
 } from '../../actions/GenericActions';
 
 import keymap from '../../keymap.js';
@@ -145,8 +144,8 @@ class Header extends Component {
     handlePrint = (windowType, docId, docNo) => {
         const {dispatch} = this.props;
 
-        dispatch(printRequest(
-            'window', windowType, docId, windowType + '_' + (docNo ? docNo : docId) + '.pdf'
+        dispatch(openFile(
+            'window', windowType, docId, 'print', windowType + '_' + (docNo ? docNo : docId) + '.pdf'
         ));
     }
 
@@ -231,7 +230,7 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docNo, docStatus, docStatusData,
             windowType, dataId, breadcrumb, showSidelist, references, actions, indicator,
-            viewId, inbox, homemenu, selected, entity, query
+            viewId, inbox, homemenu, selected, entity, query, attachments
         } = this.props;
 
         const {
@@ -381,6 +380,7 @@ class Header extends Component {
                 {isSubheaderShow && <Subheader
                     dataId={dataId}
                     references={references}
+                    attachments={attachments}
                     actions={actions}
                     windowType={windowType}
                     viewId={viewId}

@@ -916,3 +916,22 @@ td.pulse-off input {
 .document-file-dropzone-active .document-file-dropzone-backdrop{
     display: block;
 }
+
+.slidein-enter {
+    right: -100%;
+}
+
+.slidein-enter.slidein-enter-active {
+    right: 0;
+    transition: right .2s;
+    transition-delay: .8s;
+}
+
+.slidein-leave {
+    right: 0;
+    transition: right .2s;
+}
+
+.slidein-leave.slidein-leave-active {
+    right: -100%;
+}

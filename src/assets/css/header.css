@@ -177,6 +177,8 @@
 .subheader-column {
     width: 25%;
     border-right: 1px solid #e1e7ec;
+    
+    overflow: hidden;
 }
 .subheader-column:focus {
     border-color: #e1e7ec;;
@@ -196,11 +198,29 @@
 }
 
 .subheader-item {
-    color: inherit;
+    position: relative;
     width: 100%;
     display: block;
     padding: .75rem 1.25rem;
     text-decoration: none !important;
+    color: inherit;
+}
+
+.subheader-additional-box{
+    position:absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 50px;
+    right:0;
+    top:0;
+    background-color: #6c7b85;
+}
+.subheader-item-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .subheader-item:not(.subheader-item-disabled){

@@ -14,7 +14,7 @@ import {
     initLayout,
     getData,
     patchRequest,
-    printRequest,
+    openFile,
     createInstance
 } from './GenericActions';
 
@@ -428,7 +428,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
             }else if(openDocumentWindowId && openDocumentId){
                 dispatch(push("/window/" + openDocumentWindowId + "/" + openDocumentId));
             }else if(reportFilename){
-                dispatch(printRequest('process', type, id, reportFilename))
+                dispatch(openFile('process', type, id, 'print', reportFilename))
             }
 
             if(summary){

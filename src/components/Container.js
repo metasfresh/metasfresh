@@ -13,7 +13,7 @@ class Container extends Component {
         const {
             docActionElem, docStatusData, docNoElement, docNoData, docSummaryData,
             dataId, windowType, breadcrumb, references, actions, showSidelist,
-            siteName, connectionError, noMargin, entity, children, query
+            siteName, connectionError, noMargin, entity, children, query, attachments
         } = this.props;
 
         return (
@@ -30,6 +30,7 @@ class Container extends Component {
                     breadcrumb={breadcrumb}
                     references={references}
                     actions={actions}
+                    attachments={attachments}
                     showSidelist={showSidelist}
                     siteName = {siteName}
                     query={query}
