@@ -186,8 +186,10 @@ public class ReceiptScheduleHUGenerator
 
 	private final Quantity getQtyToAllocateTarget()
 	{
-		Check.assumeNotNull(_qtyToAllocateTarget, "_qtyToAllocateTarget not null");
-		Check.assume(_qtyToAllocateTarget.signum() > 0, "qtyToAllocateTarget > 0 but it was {}", _qtyToAllocateTarget);
+		if(_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0)
+		{
+			throw new AdempiereException("Quantity to receive shall be greather than zero");
+		}
 		return _qtyToAllocateTarget;
 	}
 
