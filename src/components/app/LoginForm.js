@@ -63,27 +63,36 @@ class LoginForm extends Component {
         const {dispatch} = this.props;
         const {roleSelect, roles, role} = this.state;
 
+        this.setState({
+            pending: true
+        });
         if(roleSelect){
             dispatch(loginCompletionRequest(role)).then(() => {
                 dispatch(loginSuccess());
                 this.handleSuccess();
             })
         }else{
-            dispatch(loginRequest(this.login.value, this.passwd.value)).then(response =>{
-                if(response.data.loginComplete){
-                    this.handleSuccess();
-                }else{
+            dispatch(loginRequest(this.login.value, this.passwd.value))
+                .then(response =>{
+                    if(response.data.loginComplete){
+                        this.handleSuccess();
+                    }else{
+                        this.setState(Object.assign({}, this.state, {
+                            roleSelect: true,
+                            roles: response.data.roles,
+                            role: response.data.roles[0]
+                        }))
+                    }
+                }).catch(err => {
                     this.setState(Object.assign({}, this.state, {
-                        roleSelect: true,
-                        roles: response.data.roles,
-                        role: response.data.roles[0]
-                    }))
-                }
-            }).catch(err => {
-                this.setState(Object.assign({}, this.state, {
-                    err: err.response.data.message
-                }));
-            })
+                        err: err.response.data.message
+                    }));
+                })
+                .then(() => {
+                    this.setState({
+                        pending: false
+                    });
+                })
         }
     }
 
@@ -94,7 +103,7 @@ class LoginForm extends Component {
     }
 
     render() {
-        const {roleSelect, roles, err, role} = this.state;
+        const {roleSelect, roles, err, role, pending} = this.state;
         return (
             <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary" onKeyPress={this.handleKeyPress}>
                 <div className="text-xs-center">
@@ -107,6 +116,7 @@ class LoginForm extends Component {
                             list={roles}
                             onSelect={option => this.handleRoleSelect(option)}
                             selected={role}
+                            disabled={pending}
                         />
                     </div>:
                     <div>
@@ -122,7 +132,10 @@ class LoginForm extends Component {
                                 onChange={this.handleOnChange}
                                 className={
                                     "input-primary input-block " +
-                                    (err ? "input-error " : "")}
+                                    (err ? "input-error " : "") +
+                                    (pending ? "input-disabled ": "")
+                                }
+                                disabled={pending}
                                 ref={c => this.login = c} />
                         </div>
                         <div>
@@ -132,7 +145,10 @@ class LoginForm extends Component {
                                 onChange={this.handleOnChange}
                                 className={
                                     "input-primary input-block " +
-                                    (err ? "input-error " : "")}
+                                    (err ? "input-error " : "") +
+                                    (pending ? "input-disabled " : "")
+                                }
+                                disabled={pending}
                                 ref={c => this.passwd = c}
                             />
                         </div>
