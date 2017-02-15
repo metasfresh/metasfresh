@@ -41,26 +41,26 @@ class MenuOverlay extends Component {
         const {dispatch} = this.props;
         e.preventDefault();
         if(!!e.target.value){
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 query: e.target.value
-            }));
+            })
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     queriedResults: flattenLastElem(response.data)
-                }))
+                })
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         queriedResults: []
-                    }))
+                    })
                 }
             });
         }else{
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 query: "",
                 queriedResults: []
-            }), ()=> {
+            }, ()=> {
                 document.getElementById('search-input-query').value=""
             });
         }
@@ -68,10 +68,10 @@ class MenuOverlay extends Component {
 
     handleClear = (e) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             query: "",
             queriedResults: []
-        }), ()=> {
+        }, ()=> {
             document.getElementById('search-input-query').value=""
         });
     }
@@ -80,9 +80,9 @@ class MenuOverlay extends Component {
         const {dispatch} = this.props;
         e.preventDefault();
         dispatch(nodePathsRequest(nodeId,8)).then(response => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 deepNode: response.data
-            }))
+            })
 
             this.handlePath(nodeId);
         })
@@ -91,24 +91,24 @@ class MenuOverlay extends Component {
     handleSubDeeper = (nodeId) => {
         const {dispatch} = this.props;
         dispatch(nodePathsRequest(nodeId,8)).then(response => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 deepSubNode: response.data
-            }))
+            })
         })
     }
 
     handleClickBack = (e) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             deepNode: null
-        }))
+        })
     }
 
     handleSubClickBack = (e) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             deepSubNode: null
-        }))
+        })
     }
 
     handleRedirect = (elementId) => {
@@ -122,7 +122,6 @@ class MenuOverlay extends Component {
         this.handleClickOutside();
         dispatch(push("/window/" + elementId + "/new"));
     }
-
 
     handlePath = (nodeId) => {
         const {dispatch} = this.props;
@@ -141,9 +140,9 @@ class MenuOverlay extends Component {
             //remove first MENU element
             pathArray.shift();
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 path: pathArray
-            }))
+            })
         });
     }
 
@@ -164,9 +163,9 @@ class MenuOverlay extends Component {
             //remove first MENU element
             pathArray.shift();
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 subPath: pathArray
-            }))
+            })
         });
     }
 
@@ -175,7 +174,10 @@ class MenuOverlay extends Component {
             <span>
                 {path && path.map((item, index) =>
                     <span key={index}>
-                        {item.nodeId > 0 ? ((index > 0 ? ' / ' : '') + item.captionBreadcrumb) : item.captionBreadcrumb}
+                        {item.nodeId > 0 ?
+                            ((index > 0 ? ' / ' : '') + item.captionBreadcrumb) :
+                            item.captionBreadcrumb
+                        }
                     </span>
                 )}
             </span>
@@ -235,7 +237,7 @@ class MenuOverlay extends Component {
     }
 
     linkClick = (item) => {
-        
+
         const {dispatch} = this.props;
         if(item.elementId && item.type == "newRecord") {
             this.handleNewRedirect(item.elementId)

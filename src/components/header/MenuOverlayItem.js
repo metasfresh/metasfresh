@@ -10,6 +10,13 @@ class MenuOverlayItem extends Component {
         super(props);
     }
 
+    componentDidMount() {
+        const {query} = this.props;
+        if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
+             document.getElementsByClassName('js-menu-overlay')[0].focus();
+        }
+    }
+
     clickedItem = (e, elementId, nodeId, type ) => {
         const {
             handleClickOnFolder, handleRedirect, handleNewRedirect, openModal,
@@ -27,23 +34,10 @@ class MenuOverlayItem extends Component {
         }
     }
 
-    renderBreadcrumb = (elementId) => {
-        const {dispatch} = this.props;
-
-        dispatch(getWindowBreadcrumb(elementId));
-    }
-
     handleClick = (elementId) => {
         const {handleRedirect} = this.props;
         handleRedirect(elementId);
         this.renderBreadcrumb(elementId)
-    }
-
-    componentDidMount() {
-        const {query} = this.props;
-        if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
-             document.getElementsByClassName('js-menu-overlay')[0].focus();
-        }
     }
 
     handleKeyDown = (e) => {
@@ -119,6 +113,12 @@ class MenuOverlayItem extends Component {
                 }
             }
         }
+    }
+
+    renderBreadcrumb = (elementId) => {
+        const {dispatch} = this.props;
+
+        dispatch(getWindowBreadcrumb(elementId));
     }
 
     render() {
