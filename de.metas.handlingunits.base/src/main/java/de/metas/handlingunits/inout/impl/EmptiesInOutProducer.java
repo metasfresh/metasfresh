@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,7 +63,7 @@ import de.metas.inout.IInOutBL;
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final Properties ctx;
+	private final Properties _ctx;
 	private boolean executed = false;
 
 	private I_C_BPartner _bpartner = null;
@@ -71,82 +71,78 @@ import de.metas.inout.IInOutBL;
 	private String _movementType = null;
 	private I_M_Warehouse _warehouse = null;
 	private Date _movementDate = null;
+	private boolean _complete = true;
 
-	/**
-	 * #643 The order on based on which the empties inout is created (if it was selected)
-	 */
+	/** #643 The order on based on which the empties inout is created (if it was selected) */
 	private I_C_Order _order = null;
 
-	/**
-	 * InOut header reference.
-	 *
-	 * It will be created just when it is needed.
-	 */
-	private final LazyInitializer<I_M_InOut> inoutRef = new LazyInitializer<I_M_InOut>()
-	{
-
-		@Override
-		protected I_M_InOut initialize()
-		{
-			return createInOutHeader();
-		}
-	};
-
-	private final EmptiesInOutLinesBuilder inoutLinesBuilder = new EmptiesInOutLinesBuilder(inoutRef);
+	/** InOut header reference. It will be created just when it is needed. */
+	private final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
+	private final EmptiesInOutLinesBuilder inoutLinesBuilder = EmptiesInOutLinesBuilder.newBuilder(inoutRef);
 
 	public EmptiesInOutProducer(final Properties ctx)
 	{
 		super();
 
 		Check.assumeNotNull(ctx, "ctx not null");
-		this.ctx = ctx;
+		_ctx = ctx;
 	}
 
 	private final Properties getCtx()
 	{
-		return ctx;
-	}
-
-	private final String getTrxName()
-	{
-		final String trxName = trxManager.getThreadInheritedTrxName();
-
-		trxManager.assertTrxNameNotNull(trxName);
-
-		return trxName;
+		return _ctx;
 	}
 
 	private IContextAware getContextProvider()
 	{
 		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-		return new PlainContextAware(ctx, trxName);
+
+		final String trxName = trxManager.getThreadInheritedTrxName();
+		trxManager.assertTrxNameNotNull(trxName);
+
+		return PlainContextAware.newWithTrxName(ctx, trxName);
 	}
 
 	@Override
 	public I_M_InOut create()
 	{
 		Check.assume(!executed, "inout not already created");
-
-		inoutLinesBuilder.create();
-
-		if (!inoutRef.isInitialized())
-		{
-			// nothing created
-			return null;
-		}
-		final I_M_InOut inout = inoutRef.getValue();
-		if (inout.getM_InOut_ID() <= 0)
-		{
-			// nothing created
-			return null;
-		}
-
-		docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-
 		executed = true;
 
-		return inout;
+		final boolean doComplete = isComplete();
+
+		//
+		// Create and complete the material return
+		if (doComplete)
+		{
+			// Create document lines
+			// NOTE: as a side effect the document header will be created, if there was at least one line
+			inoutLinesBuilder.create();
+			if (!inoutRef.isInitialized())
+			{
+				// nothing created
+				return null;
+			}
+			final I_M_InOut inout = inoutRef.getValue();
+			if (inout.getM_InOut_ID() <= 0)
+			{
+				// nothing created
+				return null;
+			}
+
+			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+
+			return inout;
+		}
+		//
+		// Create a draft material return, even if there are no lines
+		else
+		{
+			inoutLinesBuilder.create();
+			final I_M_InOut inout = inoutRef.getValue();
+			InterfaceWrapperHelper.save(inout);
+			return inout;
+		}
 	}
 
 	@Override
@@ -156,10 +152,11 @@ import de.metas.inout.IInOutBL;
 	}
 
 	@Override
-	public void addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty)
+	public IEmptiesInOutProducer addPackingMaterial(final I_M_HU_PackingMaterial packingMaterial, final int qty)
 	{
 		Check.assume(!executed, "inout shall not be generated yet");
 		inoutLinesBuilder.addSource(packingMaterial, qty);
+		return this;
 	}
 
 	private I_M_InOut createInOutHeader()
@@ -234,21 +231,21 @@ import de.metas.inout.IInOutBL;
 			final I_M_Warehouse warehouse = getM_WarehouseToUse();
 			inout.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		}
-		
-		// 
+
+		//
 		// task #643: Add order related details
 		{
 			final I_C_Order order = getC_Order();
-			
-			if(order == null)
+
+			if (order == null)
 			{
-				//nothing to do. The order was not selected
+				// nothing to do. The order was not selected
 			}
 			else
 			{
 				// if the order was selected, set its poreference to the inout
 				final String poReference = order.getPOReference();
-				
+
 				inout.setPOReference(poReference);
 				inout.setC_Order(order);
 			}
@@ -269,24 +266,26 @@ import de.metas.inout.IInOutBL;
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner bpartner)
+	public IEmptiesInOutProducer setC_BPartner(final I_C_BPartner bpartner)
 	{
 		assertConfigurable();
 		_bpartner = bpartner;
+		return this;
 	}
 
-	public I_C_BPartner getC_BPartnerToUse()
+	private I_C_BPartner getC_BPartnerToUse()
 	{
 		Check.assumeNotNull(_bpartner, "bpartner not null");
 		return _bpartner;
 	}
 
 	@Override
-	public void setC_BPartner_Location(final I_C_BPartner_Location bpLocation)
+	public IEmptiesInOutProducer setC_BPartner_Location(final I_C_BPartner_Location bpLocation)
 	{
 		assertConfigurable();
 		Check.assumeNotNull(bpLocation, "bpLocation not null");
 		_bpartnerLocationId = bpLocation.getC_BPartner_Location_ID();
+		return this;
 	}
 
 	private int getC_BPartner_Location_ID_ToUse()
@@ -297,17 +296,18 @@ import de.metas.inout.IInOutBL;
 		}
 
 		final I_C_BPartner bpartner = getC_BPartnerToUse();
-		final I_C_BPartner_Location bpLocation = bpartnerDAO.retrieveShipToLocation(ctx, bpartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.retrieveShipToLocation(getCtx(), bpartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
 		Check.assumeNotNull(bpLocation, "bpLocation not null");
 		return bpLocation.getC_BPartner_Location_ID();
 	}
 
 	@Override
-	public void setMovementType(final String movementType)
+	public IEmptiesInOutProducer setMovementType(final String movementType)
 	{
 		assertConfigurable();
 
 		_movementType = movementType;
+		return this;
 	}
 
 	private String getMovementTypeToUse()
@@ -317,11 +317,12 @@ import de.metas.inout.IInOutBL;
 	}
 
 	@Override
-	public void setM_Warehouse(final I_M_Warehouse warehouse)
+	public IEmptiesInOutProducer setM_Warehouse(final I_M_Warehouse warehouse)
 	{
 		assertConfigurable();
 
 		_warehouse = warehouse;
+		return this;
 	}
 
 	private final I_M_Warehouse getM_WarehouseToUse()
@@ -349,10 +350,11 @@ import de.metas.inout.IInOutBL;
 	}
 
 	@Override
-	public void setMovementDate(final Date movementDate)
+	public IEmptiesInOutProducer setMovementDate(final Date movementDate)
 	{
 		Check.assumeNotNull(movementDate, "movementDate not null");
 		_movementDate = movementDate;
+		return this;
 	}
 
 	private final Timestamp getMovementDateToUse()
@@ -368,15 +370,27 @@ import de.metas.inout.IInOutBL;
 	}
 
 	@Override
-	public void setC_Order(final I_C_Order order)
+	public IEmptiesInOutProducer setC_Order(final I_C_Order order)
 	{
 		assertConfigurable();
 		_order = order;
+		return this;
 	}
-	
-	@Override
-	public I_C_Order getC_Order()
+
+	private I_C_Order getC_Order()
 	{
 		return _order;
+	}
+
+	@Override
+	public IEmptiesInOutProducer dontComplete()
+	{
+		_complete = false;
+		return this;
+	}
+
+	private boolean isComplete()
+	{
+		return _complete;
 	}
 }
