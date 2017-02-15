@@ -52,6 +52,13 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 		
 		StringBuilder packingInfo = new StringBuilder();
 		packingInfo.append(lutuConfig.getM_HU_PI_Item_Product().getName());
+		
+		final BigDecimal qtyTU = lutuConfig.getQtyTU();
+		if(qtyTU.signum() > 0)
+		{
+			packingInfo.insert(0, qtyTU.intValue() + " x ");
+		}
+		
 		return packingInfo.toString();
 	}
 
