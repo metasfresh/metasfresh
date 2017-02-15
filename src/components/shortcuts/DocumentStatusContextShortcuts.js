@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
-class PaginationContextShortcuts extends Component {
+class DocumentStatusContextShortcuts extends Component {
     handleShortcuts = (action) => {
         const {
             handleDocumentCompleteStatus
@@ -27,4 +27,4 @@ class PaginationContextShortcuts extends Component {
     }
 }
 
-export default PaginationContextShortcuts;
+export default DocumentStatusContextShortcuts;

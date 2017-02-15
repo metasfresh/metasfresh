@@ -77,7 +77,9 @@ class ActionButton extends Component {
     }
 
     handleChangeStatus = (status) => {
-        let changePromise = this.props.onChange(status);
+        const { onChange } = this.props;
+        const changePromise = onChange(status);
+
         this.statusDropdown.blur();
         if (changePromise instanceof Promise){
             changePromise.then(() => this.fetchStatusList());
