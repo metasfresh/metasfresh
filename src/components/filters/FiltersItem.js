@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import update from 'react-addons-update';
 
 import RawWidget from '../widget/RawWidget';
 
@@ -80,8 +79,7 @@ class FiltersItem extends Component {
 
     render() {
         const {
-            data, applyFilters, notValidFields, isActive, windowType,
-            setSelectedItem, selectedItem, onShow, onHide, viewId
+            data, notValidFields, isActive, windowType, onShow, onHide, viewId
         } = this.props;
 
         const {

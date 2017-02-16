@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import update from 'react-addons-update';
 
 import {
@@ -38,7 +37,7 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        const {selected, filterWidget} = this.props;
+        const {selected} = this.props;
 
         this.handleValueChanged();
 
@@ -65,19 +64,18 @@ class Lookup extends Component {
 
     handleSelect = (select) => {
         const {
-            dispatch, properties, onChange, dataId, fields, filterWidget,
-            parameterName, windowType, subentity
+            onChange, filterWidget, parameterName, subentity
         } = this.props;
 
         const {
-            mainProperty, propertiesCopy, property
+            mainProperty, property
         } = this.state;
 
 
         // removing selection
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: null
-        }), () => {
+        }, () => {
             if(filterWidget) {
                 console.log('filterWidget');
                 onChange(parameterName, select);
@@ -136,8 +134,8 @@ class Lookup extends Component {
 
     getAllDropdowns = () => {
         const {
-            dispatch, windowType, item, dataId, newProps, select, tabId, rowId,
-            entity, subentity, subentityId
+            dispatch, windowType, dataId, select, tabId, rowId, entity, subentity, 
+            subentityId
         } = this.props;
 
         const {
@@ -173,7 +171,7 @@ class Lookup extends Component {
     }
 
     generatingPropsSelection = () => {
-        const {dispatch, onChange} = this.props;
+        const {onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
 
@@ -206,7 +204,6 @@ class Lookup extends Component {
     }
 
     handleAddNew = () => {
-        const {query} = this.state;
         const {dispatch, windowType} = this.props;
 
         //TODO: Waiting for windowType from API for the new instance of entity
@@ -214,9 +211,9 @@ class Lookup extends Component {
     }
 
     handleBlur = (callback) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: false
-        }), () => {
+        }, () => {
             if(callback){
                 callback();
             }
@@ -225,9 +222,9 @@ class Lookup extends Component {
 
     handleFocus = () => {
         const {isInputEmpty, property} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: true
-        }))
+        })
 
         if(!isInputEmpty && property === ''){
             this.handleChange();
@@ -236,9 +233,8 @@ class Lookup extends Component {
 
     handleChange = () => {
         const {
-            dispatch, recent, windowType, properties, dataId, filterWidget,
-            filterId, parameterName, tabId, rowId, entity,subentity, subentityId,
-            viewId
+            dispatch, recent, windowType, dataId, filterWidget, parameterName, 
+            tabId, rowId, entity,subentity, subentityId, viewId
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -284,7 +280,7 @@ class Lookup extends Component {
     }
 
     handleClear = (e) => {
-        const {onChange, properties, defaultValue, subentity} = this.props;
+        const {onChange, properties} = this.props;
         e && e.preventDefault();
         this.inputSearch.value = '';
 
@@ -332,28 +328,28 @@ class Lookup extends Component {
 
         if(list.length === 0){
             // Case of selecting row for creting new instance
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 selected: 'new'
-            }));
+            });
         }else{
             // Case of selecting regular list items
             if(typeof selected === 'number'){
                 const selectTarget = selected + (reverse ? (-1) : (1));
                 if (typeof list[selectTarget] != 'undefined') {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         selected: selectTarget
-                    }));
+                    });
                 }
             }else if(typeof list[0] != 'undefined'){
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     selected: 0
-                }));
+                });
             }
         }
     }
 
     handleValueChanged = () => {
-        const {defaultValue, filterWidget, selected} = this.props;
+        const {defaultValue, filterWidget} = this.props;
         const {oldValue} = this.state;
 
         if(!filterWidget && !!defaultValue[0].value && this.inputSearch) {
@@ -363,10 +359,10 @@ class Lookup extends Component {
             if(inputValue !== oldValue){
                 this.inputSearch.value = inputValue;
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     oldValue: inputValue,
                     isInputEmpty: false
-                }));
+                });
             }
 
         } else if(oldValue && !defaultValue[0].value && this.inputSearch) {
@@ -374,18 +370,18 @@ class Lookup extends Component {
 
             if(inputEmptyValue !== oldValue){
                 this.inputSearch.value = inputEmptyValue;
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     oldValue: inputEmptyValue,
                     isInputEmpty: true
-                }));
+                });
             }
         }
     }
 
     render() {
         const {
-            rank, readonly, properties, defaultValue, placeholder, align, isModal,
-            updated, oldValue, filterWidget, mandatory, rowId, tabIndex
+            rank, readonly, defaultValue, placeholder, align, isModal, updated, 
+            filterWidget, mandatory, rowId, tabIndex
         } = this.props;
 
         const {

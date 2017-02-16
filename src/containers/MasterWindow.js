@@ -3,22 +3,11 @@ import {connect} from 'react-redux';
 
 import {
     findRowByPropName,
-    startProcess,
-    attachFileAction,
-    createWindow
+    attachFileAction
 } from '../actions/WindowActions';
-
-import {
-    getData
-} from '../actions/GenericActions';
-
-import {
-    addNotification
-} from '../actions/AppActions';
 
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
-import MasterWidget from '../components/widget/MasterWidget';
 import Container from '../components/Container';
 
 class MasterWindow extends Component {
@@ -30,9 +19,7 @@ class MasterWindow extends Component {
         }
     }
 
-    closeModalCallback = (entity, isNew, dataId) => {
-        const {dispatch} = this.props;
-
+    closeModalCallback = (isNew) => {
         if(isNew){
             this.setState({
                     newRow: true
@@ -66,7 +53,7 @@ class MasterWindow extends Component {
 
     render() {
         const {
-            master, connectionError, modal, breadcrumb, references, actions, 
+            master, modal, breadcrumb, references, actions, 
             attachments
         } = this.props;
         const {newRow} = this.state;
@@ -135,7 +122,6 @@ class MasterWindow extends Component {
 }
 
 MasterWindow.propTypes = {
-    connectionError: PropTypes.bool.isRequired,
     modal: PropTypes.object.isRequired,
     master: PropTypes.object.isRequired,
     breadcrumb: PropTypes.array.isRequired,
@@ -149,11 +135,9 @@ function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
     const {
         master,
-        connectionError,
         modal
     } = windowHandler || {
         master: {},
-        connectionError: false,
         modal: false
     }
 
@@ -171,7 +155,6 @@ function mapStateToProps(state) {
     
     return {
         master,
-        connectionError,
         breadcrumb,
         references,
         modal,

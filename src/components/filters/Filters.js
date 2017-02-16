@@ -1,12 +1,7 @@
 import React, { Component, PropTypes } from 'react';
-import update from 'react-addons-update';
 
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
-
-import {
-    getItemsByProperty
-} from '../../actions/WindowActions';
 
 class Filters extends Component {
     constructor(props) {
@@ -120,9 +115,9 @@ class Filters extends Component {
     // RENDERING FILTERS -------------------------------------------------------
 
     render() {
-        const {filterData, filtersActive, windowType, viewId} = this.props;
+        const {filterData, windowType, viewId} = this.props;
         const {frequentFilters, notFrequentFilters} = this.sortFilters(filterData);
-        const {selectedItem, notValidFields, widgetShown, filter} = this.state;
+        const {notValidFields, widgetShown, filter} = this.state;
         return (
             <div className="filter-wrapper js-not-unselect">
                 <span>Filters: </span>

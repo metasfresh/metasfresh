@@ -1,9 +1,10 @@
+/* global config:true */
+ 
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import {replace} from 'react-router-redux';
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
-import qs from 'qs';
 
 export function loginSuccess() {
     return dispatch => {
@@ -15,7 +16,7 @@ export function loginSuccess() {
             let client = Stomp.Stomp.over(sock);
             client.debug = null;
 
-            client.connect({}, frame => {
+            client.connect({}, () => {
                 client.subscribe(topic.data, msg => {
                     const notification = JSON.parse(msg.body);
 

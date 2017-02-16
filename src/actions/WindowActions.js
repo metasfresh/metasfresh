@@ -1,3 +1,5 @@
+/* global config:true */
+
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import { push, replace } from 'react-router-redux';
@@ -7,15 +9,10 @@ import {
 } from './MenuActions';
 
 import {
-    clearListProps
-} from './ListActions';
-
-import {
     initLayout,
     getData,
     patchRequest,
-    openFile,
-    createInstance
+    openFile
 } from './GenericActions';
 
 import {
@@ -304,7 +301,7 @@ export function patch(entity, windowType, id = 'NEW', tabId, rowId, property, va
         ).then(response => {
             responsed = true;
             dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
-        }).catch((err) => {
+        }).catch(() => {
             dispatch(getData('window', windowType, id, tabId, rowId, null, null, isAdvanced))
                 .then(response => {
                     dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));

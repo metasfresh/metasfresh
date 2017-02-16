@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import {
     dropdownRequest
 } from '../../actions/GenericActions';
+
 import DocumentStatusContextShortcuts from '../shortcuts/DocumentStatusContextShortcuts';
 
 class ActionButton extends Component {
@@ -15,6 +16,7 @@ class ActionButton extends Component {
             },
             selected: 0
         }
+        
     }
 
     componentDidMount(){
@@ -49,9 +51,9 @@ class ActionButton extends Component {
         const {selected,list} = this.state;
         const next = up ? selected + 1 : selected - 1;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: (next >= 0 && next <= list.values.length) ? next : selected
-        }));
+        });
     }
 
     handleDropdownBlur = () => {
@@ -71,7 +73,10 @@ class ActionButton extends Component {
 
     fetchStatusList(){
         const { dispatch, windowType, fields, dataId} = this.props;
-        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, 'window')).then((res) => {
+        
+        dispatch(
+            dropdownRequest(windowType, fields[1].field, dataId, null, null, 'window')
+        ).then((res) => {
             this.setState({list: res.data});
         });
     }

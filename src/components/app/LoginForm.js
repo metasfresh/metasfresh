@@ -61,7 +61,7 @@ class LoginForm extends Component {
 
     handleLogin = () => {
         const {dispatch} = this.props;
-        const {roleSelect, roles, role} = this.state;
+        const {roleSelect, role} = this.state;
 
         this.setState({
             pending: true
@@ -156,11 +156,13 @@ class LoginForm extends Component {
                     </div>
                 }
                 <div className="mt-2">
+
                     <button 
-                        className="btn btn-sm btn-block btn-meta-success" 
+                        className="btn btn-sm btn-block btn-meta-success"
                         onClick={this.handleLogin}
+                        disabled={pending}
                     >
-                        {roleSelect? 'Send' : 'Login'}
+                        {roleSelect? "Send" : "Login"}
                     </button>
                 </div>
             </div>

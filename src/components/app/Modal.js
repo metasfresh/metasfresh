@@ -1,10 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import { push } from 'react-router-redux';
 
 import Window from '../Window';
 import Process from '../Process';
-import DocumentList from './DocumentList';
 
 import {
     closeModal,
@@ -14,16 +12,13 @@ import {
     handleProcessResponse
 } from '../../actions/WindowActions';
 
-import {
-    addNotification
-} from '../../actions/AppActions';
 
 class Modal extends Component {
     constructor(props) {
         super(props);
 
         const {
-            dispatch, windowType, dataId, tabId, rowId, modalType, viewId, selected,
+            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
             relativeType, isAdvanced, modalViewId
         } = this.props;
 
@@ -37,7 +32,7 @@ class Modal extends Component {
             case 'window':
                 dispatch(
                     createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
-                ).catch(err => {
+                ).catch(() => {
                     this.handleClose();
                 });
                 break;
@@ -47,7 +42,7 @@ class Modal extends Component {
                     createProcess(
                         windowType, modalViewId, relativeType, dataId ? dataId : selected
                     )
-                ).catch(err => {
+                ).catch(() => {
                     this.handleClose();
                 });
                 break;
@@ -73,7 +68,7 @@ class Modal extends Component {
     }
 
     handleClose = () => {
-        const {dispatch, closeCallback, modalType} = this.props;
+        const {closeCallback} = this.props;
         const {isNew} = this.state;
         closeCallback && closeCallback(isNew);
         this.removeModal();
@@ -88,7 +83,7 @@ class Modal extends Component {
     }
 
     handleStart = () => {
-        const {dispatch, modalType, layout, windowType} = this.props;
+        const {dispatch, layout, windowType} = this.props;
         dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
             dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
         });
@@ -103,8 +98,7 @@ class Modal extends Component {
 
     renderModalBody = () => {
         const {
-            data, layout, tabId, rowId, dataId, modalType, windowType,
-            isAdvanced, modalViewId, query, selected
+            data, layout, tabId, rowId, dataId, modalType, windowType, isAdvanced
         } = this.props;
 
         switch(modalType){
@@ -134,8 +128,7 @@ class Modal extends Component {
 
     render() {
         const {
-            data, layout, modalTitle, tabId, rowId, dataId, modalType, windowType,
-            isAdvanced
+            data, modalTitle, modalType
         } = this.props;
 
         const {

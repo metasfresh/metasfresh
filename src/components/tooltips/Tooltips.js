@@ -1,4 +1,4 @@
-import React, { Component,PropTypes } from 'react';
+import React, { Component } from 'react';
 
 class Tooltips extends Component {
     constructor(props) {
@@ -11,9 +11,9 @@ class Tooltips extends Component {
 
     componentDidMount() {
         this.timeout = setTimeout(() => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 opacity: 1
-            }))
+            })
         }, 1000);
     }
 

@@ -3,8 +3,7 @@ import { connect } from 'react-redux';
 
 import {
     patch,
-    updateProperty,
-    findRowByPropName
+    updateProperty
 } from '../../actions/WindowActions';
 
 import RawWidget from './RawWidget';
@@ -21,7 +20,7 @@ class MasterWidget extends Component {
 
     componentWillReceiveProps(nextProps) {
         const {widgetData} = this.props;
-        const {edited, editedProp} = this.state;
+        const {edited} = this.state;
 
         if(JSON.stringify(widgetData[0].value) !== JSON.stringify(nextProps.widgetData[0].value)) {
             if(!edited) {
@@ -50,8 +49,8 @@ class MasterWidget extends Component {
 
     handlePatch = (property, value) => {
         const {
-            isModal, widgetType, widgetData, dataId, windowType, dispatch,
-            rowId, tabId, onChange, relativeDocId, isAdvanced = false, entity
+            isModal, widgetType, dataId, windowType, dispatch, rowId, tabId, 
+            onChange, relativeDocId, isAdvanced = false, entity
         } = this.props;
 
         let currRowId = rowId;
@@ -84,7 +83,7 @@ class MasterWidget extends Component {
     //
     handleChange = (property, val) => {
         const {
-            dispatch, tabId, rowId, isModal, relativeDocId, precision, widgetType
+            dispatch, tabId, rowId, isModal, relativeDocId, widgetType
         } = this.props;
 
         let currRowId = rowId;
@@ -134,12 +133,12 @@ class MasterWidget extends Component {
 
     render() {
         const {
-            caption, widgetType, description, fields, windowType, type, noLabel,
+            caption, widgetType, fields, windowType, type, noLabel,
             widgetData, dataId, rowId, tabId, icon, gridAlign, isModal, entity,
             handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus, fullScreen
         } = this.props;
 
-        const {updated, edited} = this.state;
+        const {updated} = this.state;
 
         return (
             <RawWidget

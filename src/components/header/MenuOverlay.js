@@ -40,7 +40,7 @@ class MenuOverlay extends Component {
     handleQuery = (e) => {
         const {dispatch} = this.props;
         e.preventDefault();
-        if(!!e.target.value){
+        if(e.target.value){
             this.setState({
                 query: e.target.value
             })
@@ -135,7 +135,7 @@ class MenuOverlay extends Component {
 
                 pathArray.push(node);
                 node = children;
-            }while(!!node);
+            }while(node);
 
             //remove first MENU element
             pathArray.shift();
@@ -158,7 +158,7 @@ class MenuOverlay extends Component {
 
                 pathArray.push(node);
                 node = children;
-            }while(!!node);
+            }while(node);
 
             //remove first MENU element
             pathArray.shift();
@@ -185,7 +185,7 @@ class MenuOverlay extends Component {
     }
 
     renderNaviagtion = (node) => {
-    	const {path} = this.state;
+        const {path} = this.state;
         const {handleMenuOverlay} = this.props;
         return (
              <div
@@ -227,7 +227,7 @@ class MenuOverlay extends Component {
                     >
                         <span
                             className={item.elementId ? 'menu-overlay-link' : 'menu-overlay-expand'}
-                            onClick={ e => this.linkClick(item) }>
+                            onClick={ () => this.linkClick(item) }>
                                 {item.caption}
                         </span>
                     </span>

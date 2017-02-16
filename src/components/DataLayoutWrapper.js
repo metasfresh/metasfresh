@@ -1,14 +1,11 @@
-import React, { Component, PropTypes, cloneElement } from 'react';
+import React, { Component, cloneElement } from 'react';
 import {connect} from 'react-redux';
 
 import {
-    initLayout,
-    getData,
     patchRequest
 } from '../actions/GenericActions';
 
 import {
-    findRowByPropName,
     parseToDisplay
 } from '../actions/WindowActions';
 

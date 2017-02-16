@@ -1,5 +1,4 @@
 import React, { Component, PropTypes } from 'react';
-import {push,replace} from 'react-router-redux';
 import {connect} from 'react-redux';
 
 import DocumentList from '../components/app/DocumentList';
@@ -61,8 +60,8 @@ class DocList extends Component {
 
     render() {
         const {
-            dispatch, windowType, breadcrumb, query, actions, modal, viewId,
-            selected, references, rawModal
+            windowType, breadcrumb, query, actions, modal, selected, references,
+            rawModal
         } = this.props;
 
         const {
@@ -138,7 +137,7 @@ DocList.propTypes = {
 }
 
 function mapStateToProps(state) {
-    const { windowHandler, menuHandler, listHandler, routing } = state;
+    const { windowHandler, menuHandler, routing } = state;
 
     const {
         modal,

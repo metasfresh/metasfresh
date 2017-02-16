@@ -3,10 +3,6 @@ import {connect} from 'react-redux';
 
 import Notification from './Notification';
 
-import {
-    addNotification
-} from '../../actions/AppActions';
-
 class NotificationHandler extends Component {
     constructor(props) {
         super(props);

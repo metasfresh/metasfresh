@@ -1,8 +1,9 @@
+/* global config:true */
+
 import React, { Component, PropTypes } from 'react';
-import {push, replace} from 'react-router-redux';
+import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
 
-import DatetimeRange from '../widget/DatetimeRange';
 import QuickActions from './QuickActions';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
@@ -23,8 +24,7 @@ import {
 
 import {
     createViewRequest,
-    browseViewRequest,
-    addNotification
+    browseViewRequest
 } from '../../actions/AppActions';
 
 class DocumentList extends Component {
@@ -139,7 +139,7 @@ class DocumentList extends Component {
         this.sock = new SockJs(config.WS_URL);
         this.sockClient = Stomp.Stomp.over(this.sock);
         this.sockClient.debug = null;
-        this.sockClient.connect({}, frame => {
+        this.sockClient.connect({}, () => {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
                 const {fullyChanged} = JSON.parse(msg.body);
                 if(fullyChanged == true){
@@ -199,7 +199,6 @@ class DocumentList extends Component {
      *  If viewId exist, than browse that view.
      */
     browseView = () => {
-        const {dispatch, windowType} = this.props;
         const {viewId, page, sort} = this.state;
 
         this.getData(
@@ -257,7 +256,6 @@ class DocumentList extends Component {
 
     handleChangePage = (index) => {
         const {data, sort, page, viewId} = this.state;
-        const {dispatch} = this.props;
 
         let currentPage = page;
 
@@ -281,8 +279,8 @@ class DocumentList extends Component {
 
     getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
 
-    sortData = (asc, field, startPage, currPage) => {
-        const {data, viewId, page} = this.state;
+    sortData = (asc, field, startPage) => {
+        const {viewId, page} = this.state;
 
         this.setState({
             sort: this.getSortingQuery(asc, field)
@@ -303,7 +301,7 @@ class DocumentList extends Component {
 
     render() {
         const {
-            layout, data, viewId, clickOutsideLock, refresh, page, sort, filters
+            layout, data, viewId, clickOutsideLock, refresh, page, filters
         } = this.state;
 
         const {
@@ -400,7 +398,7 @@ class DocumentList extends Component {
 
 DocumentList.propTypes = {
     windowType: PropTypes.number.isRequired,
-    dispatch: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired
 }
 
 DocumentList = connect()(DocumentList);
