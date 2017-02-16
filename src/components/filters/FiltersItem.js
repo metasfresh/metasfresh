@@ -48,10 +48,14 @@ class FiltersItem extends Component {
                 filter: Object.assign({}, prevState.filter, {
                     parameters: prevState.filter.parameters.map(param => {
                         if(param.parameterName === property){
-                            return Object.assign({}, param, {
-                                value: value,
-                                valueTo: valueTo
-                            })
+                            return Object.assign({}, param, 
+                                valueTo ? {
+                                    value,
+                                    valueTo
+                                } : {
+                                    value
+                                }
+                            )
                         }else{
                             return param;
                         }

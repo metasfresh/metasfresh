@@ -38,15 +38,15 @@ class Filters extends Component {
     }
 
     setSelectedItem = (item, close) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selectedItem: item
-        }), () => {
-            close && this.setState(Object.assign({}, this.state, {
+        }, () => {
+            close && this.setState({
                 notFrequentListOpen: true,
                 filterDataItem: '',
                 notFrequentFilterOpen: false,
                 frequentFilterOpen: false
-            }))
+            })
         });
     }
 
