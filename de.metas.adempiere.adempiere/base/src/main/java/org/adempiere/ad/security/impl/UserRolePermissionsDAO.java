@@ -245,9 +245,11 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 						.setOrg_Tree_ID(adTreeOrgId);
 				
 				// org *
-				final OrgResource resource = OrgResource.of(AD_Client_ID, 0);
-				final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
-				builder.addPermission(permission);
+				{
+					final OrgResource resource = OrgResource.of(AD_Client_ID, 0);
+					final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
+					builder.addPermission(permission);
+				}
 				
 				//
 				// now add all orgs
