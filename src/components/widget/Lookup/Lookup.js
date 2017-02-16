@@ -77,7 +77,6 @@ class Lookup extends Component {
             selected: null
         }, () => {
             if(filterWidget) {
-                console.log('filterWidget');
                 onChange(parameterName, select);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
@@ -85,15 +84,9 @@ class Lookup extends Component {
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
-                console.log('select');
-                console.log(select);
-                console.log(property);
 
                 if(property === '') {
-                    console.log('property=""');
                     const promise = onChange(mainProperty[0].field, select, this.getAllDropdowns);
-
-                    console.log(promise);
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
 
@@ -112,8 +105,6 @@ class Lookup extends Component {
                     )}
                 } else {
                     onChange(property, select);
-
-                    console.log('property else');
 
                     this.setState((prevState) => update(this.state, {
                         properts: {$apply: item => {
@@ -170,10 +161,21 @@ class Lookup extends Component {
         }
     }
 
+
     generatingPropsSelection = () => {
         const {onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
+        let isClose = true;
+
+
+        this.props.defaultValue.map (item => {
+            if(!item.value){
+                isClose = false;
+            }
+        });
+
+        
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
@@ -200,6 +202,10 @@ class Lookup extends Component {
                 onChange(propertiesKeys[i], properts[propertiesKeys[i]][0]);
                 this.handleBlur();
             }
+        }
+
+        if(isClose) {
+            this.handleBlur();
         }
     }
 
