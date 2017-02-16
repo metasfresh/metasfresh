@@ -6,10 +6,6 @@ import {
 } from '../../actions/ListActions';
 
 import {
-    makeCancelable
-} from '../../actions/AppActions';
-
-import {
     openModal
 } from '../../actions/WindowActions';
 
