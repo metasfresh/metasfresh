@@ -119,6 +119,8 @@ public class ReceiptScheduleHUGenerator
 	private final Map<Integer, IProductStorage> _receiptSchedule2productStorage = new HashMap<>();
 	private final Map<Integer, IHUAllocations> _receiptSchedule2huAllocations = new HashMap<>();
 	private Quantity _qtyToAllocateTarget = null;
+	//
+	private boolean updateReceiptScheduleDefaultConfiguration = false; // default false, backward compatible; this flag is not considered by #generateAllPlanningHUs_InChunks()
 
 	//
 	// Status
@@ -162,11 +164,32 @@ public class ReceiptScheduleHUGenerator
 		_contextInitial = context;
 		return this;
 	}
+	
+	/**
+	 * Sets if, after generating the HUs, we shall also update receipt schedule's LUTU configuration.
+	 * 
+	 * IMPORTANT: this flag applies for {@link #generate()} but does not apply for {@link #generateAllPlanningHUs_InChunks()}.
+	 * 
+	 * @param updateReceiptScheduleDefaultConfiguration
+	 */
+	public ReceiptScheduleHUGenerator setUpdateReceiptScheduleDefaultConfiguration(final boolean updateReceiptScheduleDefaultConfiguration)
+	{
+		assertConfigurable();
+		this.updateReceiptScheduleDefaultConfiguration = updateReceiptScheduleDefaultConfiguration;
+		return this;
+	}
+	
+	public boolean isUpdateReceiptScheduleDefaultConfiguration()
+	{
+		return updateReceiptScheduleDefaultConfiguration;
+	}
 
 	private final Quantity getQtyToAllocateTarget()
 	{
-		Check.assumeNotNull(_qtyToAllocateTarget, "_qtyToAllocateTarget not null");
-		Check.assume(_qtyToAllocateTarget.signum() > 0, "qtyToAllocateTarget > 0 but it was {}", _qtyToAllocateTarget);
+		if(_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0)
+		{
+			throw new AdempiereException("Quantity to receive shall be greather than zero");
+		}
 		return _qtyToAllocateTarget;
 	}
 
@@ -314,7 +337,19 @@ public class ReceiptScheduleHUGenerator
 		Check.assume(!qtyCUsTotal.isInfinite(), "QtyToAllocate(target) shall not be infinite");
 
 		final IAllocationRequest request = createAllocationRequest(qtyCUsTotal);
-		return generateLUTUHandlingUnitsForQtyToAllocate(request);
+		final List<I_M_HU> hus = generateLUTUHandlingUnitsForQtyToAllocate(request);
+		
+		//
+		// Update receipt schedule's LU/TU configuration
+		if(isUpdateReceiptScheduleDefaultConfiguration())
+		{
+			trxManager.run(() -> {
+				final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
+				getLUTUConfigurationManager().setCurrentLUTUConfigurationAndSave(lutuConfiguration);
+			});
+		}
+		
+		return hus;
 	}
 
 	/**
@@ -485,6 +520,8 @@ public class ReceiptScheduleHUGenerator
 	 * Creates/Updates {@link I_M_ReceiptSchedule#COLUMNNAME_M_HU_LUTU_Configuration_ID}.
 	 *
 	 * Please note, this method is not updating the receipt schedule but only the {@link I_M_HU_LUTU_Configuration}.
+	 * 
+	 * IMPORTANT: this is used only by {@link #generateAllPlanningHUs_InChunks()}.
 	 *
 	 * Also, it:
 	 * <ul>
@@ -513,8 +550,23 @@ public class ReceiptScheduleHUGenerator
 		lutuConfigurationFactory.save(lutuConfiguration);
 		_lutuConfiguration = lutuConfiguration;
 	}
+	
+	/**
+	 * Sets the LU/TU configuration to be used when generating HUs.
+	 */
+	public ReceiptScheduleHUGenerator setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		assertConfigurable();
+		
+		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
+		_lutuConfiguration = lutuConfiguration;
+		return this;
+	}
 
-	private I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
+	/**
+	 * @return the LU/TU configuration to be used when generating HUs.
+	 */
+	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		if (_lutuConfiguration != null)
 		{
@@ -555,6 +607,8 @@ public class ReceiptScheduleHUGenerator
 
 	/**
 	 * Adjust LU/TU Configuration with actual <code>lutuProducer</code> values.
+	 * 
+	 * IMPORTANT: this is called only from {@link #generateAllPlanningHUs_InChunks()} so it's ONLY about when we are pregerating the HUs.
 	 *
 	 * NOTE:
 	 * <ul>
@@ -665,14 +719,9 @@ public class ReceiptScheduleHUGenerator
 
 		//
 		// Adjust the LU/TU configuration if needed and push it back to receipt schedule (for later use)
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, false);
-				updateLUTUConfigurationFromActualValues();
-			}
+		trxManager.run(() -> {
+			InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, false);
+			updateLUTUConfigurationFromActualValues();
 		});
 	}
 
