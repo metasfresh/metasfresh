@@ -28,7 +28,9 @@ class QuickActions extends Component {
         
         const {fetchOnInit} = this.props;
 
-        fetchOnInit && this.fetchActions();
+        if(fetchOnInit){
+            this.fetchActions();
+        }
     }
 
     componentDidUpdate = (prevProps) => {
