@@ -5,13 +5,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.MAttributeSetInstance;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
@@ -29,7 +29,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -70,97 +69,71 @@ public class ASIRepository
 	private DocumentCollection documentsCollection;
 
 	private final AtomicInteger nextASIDocId = new AtomicInteger(1);
-	private final CCache<DocumentId, Document> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
+	private final CCache<DocumentId, ASIDocument> id2asiDoc = CCache.newLRUCache("ASIDocuments", 500, 0);
 
 	private static final String VERSION_DEFAULT = "0";
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
-	public Document createNewFrom(final JSONCreateASIRequest request)
+	public ASIDocument createNewFrom(final JSONCreateASIRequest request)
 	{
-		//
-		// Extract template ASI
-		final int templateASI_ID = request.getTemplateId();
-		final I_M_AttributeSetInstance templateASI;
-		int attributeSetId = -1;
-		if (templateASI_ID <= 0)
-		{
-			templateASI = null;
-		}
-		else
-		{
-			templateASI = InterfaceWrapperHelper.create(Env.getCtx(), templateASI_ID, I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
-			if (templateASI == null)
-			{
-				throw new EntityNotFoundException("@NotFound@ @M_AttributeSetInstance_ID@ (ID=" + templateASI_ID + ")");
-			}
-
-			attributeSetId = templateASI.getM_AttributeSet_ID();
-		}
-
-		//
-		// Extract the M_AttributeSet_ID
-		if (attributeSetId <= 0)
-		{
-			final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
-			final Document document = documentsCollection.getDocument(documentPath);
-			final int productId = document.getFieldView("M_Product_ID").getValueAsInt(-1);
-			if(productId <= 0)
-			{
-				throw new AdempiereException("Cannot fetch the attribute set when the product field is not filled");
-			}
-
-			attributeSetId = Services.get(IProductBL.class).getM_AttributeSet_ID(Env.getCtx(), productId);
-			if(attributeSetId <= 0)
-			{
-				throw new AdempiereException("Product does not support attributes");
-			}
-		}
+		final ASIEditingInfo info = createASIEditingInfo(request);
 
 		//
 		// Get the ASI descriptor
-		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getASIDescriptor(attributeSetId)
-				.getEntityDescriptor();
+		final ASIDescriptor asiDescriptor = descriptorsFactory.getASIDescriptor(info);
 
 		//
 		// Create the new ASI document
-		final Document asiDoc = Document.builder(entityDescriptor)
+		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
 				.initializeAsNewDocument(nextASIDocId::getAndIncrement, VERSION_DEFAULT)
 				.build();
 
 		//
 		// If we have a template ASI, populate the ASI document from it
+		final MAttributeSetInstance templateASI = info.getM_AttributeSetInstance();
 		if (templateASI != null)
 		{
 			for (final I_M_AttributeInstance fromAI : Services.get(IAttributeDAO.class).retrieveAttributeInstances(templateASI))
 			{
-				loadASIDocumentField(asiDoc, fromAI);
+				loadASIDocumentField(asiDocData, fromAI);
 			}
 		}
 
 		//
 		// Validate, log and add the new ASI document to our index
-		asiDoc.checkAndGetValidStatus();
-		logger.trace("Created from ASI={}: {}", templateASI_ID, asiDoc);
+		asiDocData.checkAndGetValidStatus();
+		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
+		
+		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
 		putASIDocument(asiDoc);
 
 		return asiDoc;
+	}
+	
+	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
+	{
+		final DocumentPath documentPath = request.getSource().toSingleDocumentPath();
+		final Document document = documentsCollection.getDocument(documentPath);
+		final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
+		final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
+		
+		int attributeSetInstanceId = request.getTemplateId();
+		final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
+		final int callerColumnId = -1; // FIXME implement
+		return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
 	}
 
 	public ASILayout getLayout(final int asiDocIdInt)
 	{
 		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
-		final int attributeSetId = getASIDocument(asiDocId)
-				.getEntityDescriptor()
-				.getDocumentTypeId()
-				.toInt();
-
-		return descriptorsFactory.getASIDescriptor(attributeSetId)
+		return getASIDocument(asiDocId)
+				.getDescriptor()
 				.getLayout();
 	}
 
-	private final void putASIDocument(final Document asiDoc)
+	private final void putASIDocument(final ASIDocument asiDoc)
 	{
-		final Document asiDocReadonly = asiDoc.copy(CopyMode.CheckInReadonly);
+		final ASIDocument asiDocReadonly = asiDoc.copy(CopyMode.CheckInReadonly);
 		id2asiDoc.put(asiDoc.getDocumentId(), asiDocReadonly);
 
 		logger.trace("Added to repository: {}", asiDocReadonly);
@@ -168,20 +141,20 @@ public class ASIRepository
 
 	private final void removeASIDocumentById(final DocumentId asiDocId)
 	{
-		final Document asiDocRemoved = id2asiDoc.remove(asiDocId);
+		final ASIDocument asiDocRemoved = id2asiDoc.remove(asiDocId);
 
 		logger.trace("Removed from repository by ID={}: {}", asiDocId, asiDocRemoved);
 	}
 
-	public Document getASIDocument(final int asiDocIdInt)
+	public ASIDocument getASIDocument(final int asiDocIdInt)
 	{
 		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
 		return getASIDocument(asiDocId);
 	}
 
-	public Document getASIDocument(final DocumentId asiDocId)
+	public ASIDocument getASIDocument(final DocumentId asiDocId)
 	{
-		final Document asiDoc = id2asiDoc.get(asiDocId);
+		final ASIDocument asiDoc = id2asiDoc.get(asiDocId);
 		if (asiDoc == null)
 		{
 			throw new EntityNotFoundException("No product attributes found for asiId=" + asiDocId);
@@ -189,7 +162,7 @@ public class ASIRepository
 		return asiDoc;
 	}
 
-	private Document getASIDocumentForWriting(final DocumentId asiDocId)
+	private ASIDocument getASIDocumentForWriting(final DocumentId asiDocId)
 	{
 		return getASIDocument(asiDocId).copy(CopyMode.CheckOutWritable);
 	}
@@ -197,7 +170,7 @@ public class ASIRepository
 	public void processASIDocumentChanges(final int asiDocIdInt, final List<JSONDocumentChangedEvent> events)
 	{
 		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
-		final Document asiDoc = getASIDocumentForWriting(asiDocId);
+		final ASIDocument asiDoc = getASIDocumentForWriting(asiDocId);
 		asiDoc.processValueChanges(events, REASON_ProcessASIDocumentChanges);
 
 		Services.get(ITrxManager.class)
@@ -205,7 +178,7 @@ public class ASIRepository
 				.onAfterCommit(() -> putASIDocument(asiDoc));
 	}
 
-	private void loadASIDocumentField(final Document asiDoc, final I_M_AttributeInstance fromAI)
+	private static void loadASIDocumentField(final Document asiDoc, final I_M_AttributeInstance fromAI)
 	{
 		final String fieldName = fromAI.getM_Attribute().getValue();
 		final IDocumentFieldView field = asiDoc.getFieldViewOrNull(fieldName);
@@ -229,7 +202,7 @@ public class ASIRepository
 	public LookupValue complete(final int asiDocIdInt)
 	{
 		final DocumentId asiDocId = DocumentId.of(asiDocIdInt);
-		final Document asiDoc = getASIDocumentForWriting(asiDocId);
+		final ASIDocument asiDoc = getASIDocumentForWriting(asiDocId);
 
 		final I_M_AttributeSetInstance asiRecord = createM_AttributeSetInstance(asiDoc);
 
@@ -240,11 +213,11 @@ public class ASIRepository
 		return IntegerLookupValue.of(asiRecord.getM_AttributeSetInstance_ID(), asiRecord.getDescription());
 	}
 
-	private final I_M_AttributeSetInstance createM_AttributeSetInstance(final Document asiDoc)
+	private final I_M_AttributeSetInstance createM_AttributeSetInstance(final ASIDocument asiDoc)
 	{
 		//
 		// Create M_AttributeSetInstance
-		final int attributeSetId = asiDoc.getEntityDescriptor().getDocumentTypeId().toInt();
+		final int attributeSetId = asiDoc.getM_AttributeSet_ID();
 
 		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.create(Env.getCtx(), I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
 		asiRecord.setM_AttributeSet_ID(attributeSetId);

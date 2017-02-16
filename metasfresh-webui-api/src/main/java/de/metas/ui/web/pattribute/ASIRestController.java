@@ -21,7 +21,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.Document;
 import io.swagger.annotations.Api;
 
 /*
@@ -37,11 +36,11 @@ import io.swagger.annotations.Api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -72,8 +71,8 @@ public class ASIRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("createASI", () -> {
-			final Document asiDoc = asiRepo.createNewFrom(request);
-			return JSONDocument.ofDocument(asiDoc, newJsonOpts());
+			return asiRepo.createNewFrom(request)
+					.toJSONDocument(newJsonOpts());
 		});
 	}
 
@@ -91,8 +90,8 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Document asiDoc = asiRepo.getASIDocument(asiDocId);
-		return JSONDocument.ofDocument(asiDoc, newJsonOpts());
+		return asiRepo.getASIDocument(asiDocId)
+				.toJSONDocument(newJsonOpts());
 	}
 
 	@RequestMapping(value = "/{asiDocId}", method = RequestMethod.PATCH)
