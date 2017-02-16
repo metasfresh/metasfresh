@@ -315,8 +315,9 @@ class DocumentList extends Component {
                         <div>
                             {type === 'grid' &&
                                 <button
-                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down"
+                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
+                                    title={'New '+layout.caption}
                                 >
                                     <i className="meta-icon-add" /> New {layout.caption}
                                 </button>

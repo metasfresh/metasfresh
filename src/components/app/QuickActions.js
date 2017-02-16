@@ -91,10 +91,11 @@ class QuickActions extends Component {
                     <span className="spacer-right">Actions:</span>
                     <div className="quick-actions-wrapper">
                         <div
-                            className={'tag tag-success tag-xlg spacer-right ' +
+                            className={'tag tag-success tag-xlg spacer-right quick-actions-tag ' +
                                 (actions[0].disabled ? 'tag-default ' : 'pointer ')
                             }
                             onClick={() => this.handleClick(actions[0])}
+                            title={actions[0].caption}
                         >
                             <i className="meta-icon-accept" /> {actions[0].caption}
                         </div>

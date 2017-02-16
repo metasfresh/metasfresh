@@ -815,12 +815,15 @@ td.pulse-off input {
 
 .quick-actions-wrapper {
     position: relative;
+    display: flex;
 }
 
 .quick-actions-dropdown {
     position: absolute;
     z-index:1;
     width: 100%;
+    left: 0;
+    top: 100%;
 
     margin-top: .2rem;
     padding: .3rem;
@@ -934,4 +937,12 @@ td.pulse-off input {
 
 .slidein-leave.slidein-leave-active {
     right: -100%;
+}
+
+@media (max-width: $breakpoint-md){
+    .btn-new-document {
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
