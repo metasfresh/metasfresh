@@ -246,7 +246,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				
 				// org *
 				{
-					final OrgResource resource = OrgResource.of(AD_Client_ID, 0);
+					final OrgResource resource = OrgResource.of(AD_Client_ID, Env.CTXVALUE_AD_Org_ID_Any);
 					final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
 					builder.addPermission(permission);
 				}
