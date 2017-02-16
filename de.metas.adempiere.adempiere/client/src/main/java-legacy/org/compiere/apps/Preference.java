@@ -103,34 +103,6 @@ public final class Preference extends CDialog
 	private static final transient Logger log = LogManager.getLogger(Preference.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	/**
-	 * Standard Constructor
-	 * 
-	 * @param frame frame
-	 * @param WindowNo window
-	 */
-	public Preference(Frame frame, int WindowNo)
-	{
-		super(frame, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Preference"), true);
-		try
-		{
-			jbInit();
-		}
-		catch (Exception ex)
-		{
-			log.error("Failed initalizing", ex);
-		}
-		load();
-		//
-		final StringBuilder sta = new StringBuilder("#");
-		sta.append(Env.getCtx().size()).append(" - ")
-				.append(msgBL.translate(Env.getCtx(), "AD_Window_ID"))
-				.append("=").append(WindowNo);
-		statusBar.setStatusLine(sta.toString());
-		statusBar.setStatusDB("");
-		AEnv.positionCenterWindow(frame, this);
-	}	// Preference
-
 	private CPanel panel = new CPanel();
 	private BorderLayout panelLayout = new BorderLayout();
 	private CTabbedPane tabPane = new CTabbedPane();
@@ -196,6 +168,39 @@ public final class Preference extends CDialog
 				}
 			});
 
+	/**
+	 * Contains the parameters that were passed to {@link #addSettingsPanel(CPanel, Consumer, Consumer)} as {@code (panel, (onLoad, onSave))}.
+	 */
+	private final static List<IPair<CPanel, IPair<Consumer<Preference>, Consumer<Preference>>>> additionalSettingsPanels = new ArrayList<>();
+
+	/**
+	 * Standard Constructor
+	 * 
+	 * @param frame frame
+	 * @param WindowNo window
+	 */
+	public Preference(Frame frame, int WindowNo)
+	{
+		super(frame, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Preference"), true);
+		try
+		{
+			jbInit();
+		}
+		catch (Exception ex)
+		{
+			log.error("Failed initalizing", ex);
+		}
+		load();
+		//
+		final StringBuilder sta = new StringBuilder("#");
+		sta.append(Env.getCtx().size()).append(" - ")
+				.append(msgBL.translate(Env.getCtx(), "AD_Window_ID"))
+				.append("=").append(WindowNo);
+		statusBar.setStatusLine(sta.toString());
+		statusBar.setStatusDB("");
+		AEnv.positionCenterWindow(frame, this);
+	}	// Preference
+	
 	/**
 	 * Static Init.
 	 * 
@@ -753,11 +758,6 @@ public final class Preference extends CDialog
 		Ini.saveProperties();
 		dispose();
 	}	// cmd_save
-
-	/**
-	 * Contains the parameters that were passed to {@link #addSettingsPanel(CPanel, Consumer, Consumer)} as {@code (panel, (onLoad, onSave))}.
-	 */
-	private final static List<IPair<CPanel, IPair<Consumer<Preference>, Consumer<Preference>>>> additionalSettingsPanels = new ArrayList<>();
 
 	/**
 	 * 
