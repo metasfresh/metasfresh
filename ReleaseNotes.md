@@ -19,15 +19,22 @@ this week's RC
   * #913 include branch name in build version string
   
 * webUI
+  * #112 On login page, deactivate the fields while logging in
+  * #120 Material Receipt WebUI: Attribute Values wrong
+  * #127 Receipt schedules - Receive with configuration improvements
   * #118 Functionality to easily add files to current record in webUI
   * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+  * #127 Receipt schedules - Receive with configuration improvements
+  * #132 Receiving HUs: already received HUs shall be flagged as processed
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
   * #256 Implement document attachments
   * #257 login page: focus on username
   * #275 None of the menus could be opened when in full screen mode
+  * #281 Remove margin from wrapper modal to make 0-padding inside
   * #734 Add Translation for en_US in WebUI
+  * #833 Invoice Process in Invoice Candidates WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
   * #947 Window Greeting Add Translation for en_US
@@ -45,6 +52,7 @@ this week's RC
   * #268 Wrong viewId when starting the process
   * #276 Wrong timing when completing a quick input entry
   * #279 While browsing a document, pressing New does nothing
+  * #295 Attribute Editor too narrow
 
 # metasfresh 4.55.54 (2017-06)
 
