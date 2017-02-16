@@ -20,6 +20,7 @@ import {
     getAvailableLang
 } from '../actions/AppActions';
 
+import '../assets/css/styles.css';
 
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);

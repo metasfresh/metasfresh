@@ -8,13 +8,12 @@ import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../keymap.js';
 
 class Breadcrumb extends Component {
-	constructor(props) {
-		super(props);
-
+    constructor(props) {
+        super(props);
         this.state = {
             tooltipOpen: false
         }
-	}
+    }
 
     linkToPage = (page) => {
         const {dispatch} = this.props;
@@ -33,10 +32,10 @@ class Breadcrumb extends Component {
         } = this.props;
 
         return (<div key={index}>
-            {index && <span className="divider">/</span>}
+            {index ? <span className="divider">/</span> : null}
             <div className="header-btn tooltip-parent">
                 <div
-                    title={index && menu.children.captionBreadcrumb ? menu.children.captionBreadcrumb : ''}
+                    title={(index && menu.children.captionBreadcrumb) ? menu.children.captionBreadcrumb : ''}
                     className={'header-item-container pointer ' +
                         (menuOverlay === menu.nodeId ? 'header-item-open ' : '') +
                         (!index ? 'header-item-container-static ': '')
@@ -70,7 +69,7 @@ class Breadcrumb extends Component {
         </div>)
     }
 
-	render() {
+    render() {
         const {
             breadcrumb, homemenu, windowType, docNo, docNoData, docSummaryData, dataId,
             siteName
@@ -123,11 +122,11 @@ class Breadcrumb extends Component {
             </div>
 
         )
-	}
+    }
 }
 
 Breadcrumb.propTypes = {
-	dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired
 };
 
 Breadcrumb = connect()(Breadcrumb)

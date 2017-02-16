@@ -208,3 +208,24 @@ export function postImageAction (data) {
     return axios.post(`${config.API_URL}/image`, data)
         .then(response => response.data);
 }
+
+export function makeCancelable (promise) {
+    let hasCanceled_ = false;
+    
+    const wrappedPromise = new Promise((resolve, reject) => {
+        promise.then((val) =>
+            hasCanceled_ ? reject({isCanceled: true}) : resolve(val)
+        );
+    
+        promise.catch((error) =>
+            hasCanceled_ ? reject({isCanceled: true}) : reject(error)
+        );
+    });
+
+    return {
+        promise: wrappedPromise,
+        cancel() {
+            hasCanceled_ = true;
+        },
+    };
+};
