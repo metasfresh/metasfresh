@@ -7,6 +7,7 @@ import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
+import Modal from '../components/app/Modal';
 
 
 import {
@@ -26,10 +27,10 @@ class NavigationTree extends Component {
         super(props);
         this.state = {
             rootResults: {
-                caption: "",
+                caption: '',
                 children: []
             },
-            query: "",
+            query: '',
             queriedResults: [],
             deepNode: null
         };
@@ -39,7 +40,7 @@ class NavigationTree extends Component {
         const {dispatch, windowType} = this.props;
 
         this.getData();
-        dispatch(getWindowBreadcrumb("143"));
+        dispatch(getWindowBreadcrumb('143'));
     }
 
     getData = (callback) => {
@@ -48,7 +49,7 @@ class NavigationTree extends Component {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
-                query: ""
+                query: ''
             }), () => {
                 callback();
             })
@@ -57,7 +58,7 @@ class NavigationTree extends Component {
                 this.setState(Object.assign({}, this.state, {
                     queriedResults: [],
                     rootResults: {},
-                    query: ""
+                    query: ''
                 }), () => {
                     callback();
                 })
@@ -100,7 +101,7 @@ class NavigationTree extends Component {
     }
 
     clearValue = () => {
-        document.getElementById('search-input').value=""
+        document.getElementById('search-input').value=''
     }
 
     handleClear = (e) => {
@@ -140,7 +141,7 @@ class NavigationTree extends Component {
                             {...subitem}
                         />
                     )}
-                    { queriedResults.length === 0 && query!="" &&
+                    { queriedResults.length === 0 && query!='' &&
                         <span>There are no results</span>
                     }
               </div>
@@ -150,12 +151,12 @@ class NavigationTree extends Component {
   }
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + elementId));
+        dispatch(push('/window/' + elementId));
     }
 
     handleNewRedirect = (elementId) => {
         const {dispatch} = this.props;
-        dispatch(push("/window/" + elementId + "/new"));
+        dispatch(push('/window/' + elementId + '/new'));
     }
 
     handleDeeper = (e, nodeId) => {
@@ -186,8 +187,21 @@ class NavigationTree extends Component {
         return (
             <Container
                 breadcrumb={breadcrumb.slice(0,1)}
-                siteName = {"Sitemap"}
+                siteName = "Sitemap"
             >
+                {modal.visible &&
+                    <Modal
+                        windowType={modal.type}
+                        data={modal.data}
+                        layout={modal.layout}
+                        rowData={modal.rowData}
+                        tabId={modal.tabId}
+                        rowId={modal.rowId}
+                        modalTitle={modal.title}
+                        modalType={modal.modalType}
+                        modalViewId={modal.viewId}
+                     />
+                 }
                 {this.renderTree(rootResults)}
             </Container>
         );
@@ -196,6 +210,13 @@ class NavigationTree extends Component {
 
 function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
+
+    const {
+        modal,
+    } = windowHandler || {
+        modal: {},
+    }
+
     const {
         breadcrumb
     } = menuHandler || {
@@ -203,13 +224,15 @@ function mapStateToProps(state) {
     }
 
     return {
-        breadcrumb
+        breadcrumb,
+        modal
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired
+    breadcrumb: PropTypes.array.isRequired,
+    modal: PropTypes.object.isRequired,
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);

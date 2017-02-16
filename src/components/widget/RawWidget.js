@@ -96,7 +96,7 @@ class RawWidget extends Component {
         const widgetField = filterWidget ? fields[0].parameterName : fields[0].field;
 
         switch(widgetType){
-            case "Date":
+            case 'Date':
                 if(range){
                     //Watch out! The datetimerange widget as exception, is non-controlled
                     //input! For further usage, needs upgrade.
@@ -115,13 +115,13 @@ class RawWidget extends Component {
                     )
                 }else{
                     return (
-                        <div className={"input-icon-container input-block " +
-                            (widgetData[0].readonly ? "input-disabled " : "") +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                            (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                            (type === "primary" ? "input-primary " : "input-secondary ") +
-                            (updated ? "pulse-on " : "pulse-off ") +
-                            (rowId && !isModal ? "input-table " : "")
+                        <div className={'input-icon-container input-block ' +
+                            (widgetData[0].readonly ? 'input-disabled ' : '') +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                            (updated ? 'pulse-on ' : 'pulse-off ') +
+                            (rowId && !isModal ? 'input-table ' : '')
                         }>
                             <DatePicker
                                 ref={c => this.rawWidget = c}
@@ -141,15 +141,15 @@ class RawWidget extends Component {
                         </div>
                     )
                 }
-            case "DateTime":
+            case 'DateTime':
                 return (
-                    <div className={"input-icon-container input-block " +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        (((rowId && !isModal)) ? "input-table " : "")
+                    <div className={'input-icon-container input-block ' +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        (((rowId && !isModal)) ? 'input-table ' : '')
                     }>
                         <DatePicker
                             ref={c => this.rawWidget = c}
@@ -169,15 +169,15 @@ class RawWidget extends Component {
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
                 )
-            case "Time":
+            case 'Time':
                 return (
-                    <div className={"input-icon-container input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "")
+                    <div className={'input-icon-container input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '')
                     }>
                         <DatePicker
                             ref={c => this.rawWidget = c}
@@ -197,7 +197,7 @@ class RawWidget extends Component {
                         <i className="meta-icon-calendar input-icon-right"></i>
                     </div>
                 )
-            case "Lookup":
+            case 'Lookup':
                 return (
                     <Lookup
                         entity={entity}
@@ -227,7 +227,7 @@ class RawWidget extends Component {
                         autoFocus={autoFocus}
                     />
                 )
-            case "List":
+            case 'List':
                 return (
                     <List
                         dataId={dataId}
@@ -254,17 +254,17 @@ class RawWidget extends Component {
                         autoFocus={autoFocus}
                     />
                 )
-            case "Text":
+            case 'Text':
                 return (
                     <div className={
-                            "input-block input-icon-container " +
-                            (type === "primary" ? "input-primary " : "input-secondary ") +
-                            (widgetData[0].readonly ? "input-disabled " : "") +
-                            (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                            (updated ? "pulse-on " : "pulse-off ") +
-                            ((rowId && !isModal) ? "input-table " : "") +
-                            (isEdited ? "input-focused " : "")
+                            'input-block input-icon-container ' +
+                            (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                            (widgetData[0].readonly ? 'input-disabled ' : '') +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                            (updated ? 'pulse-on ' : 'pulse-off ') +
+                            ((rowId && !isModal) ? 'input-table ' : '') +
+                            (isEdited ? 'input-focused ' : '')
                         }
                     >
                         <input
@@ -282,17 +282,17 @@ class RawWidget extends Component {
                         {icon && <i className="meta-icon-edit input-icon-right"></i>}
                     </div>
                 )
-            case "LongText":
+            case 'LongText':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
                             ref={c => this.rawWidget = c}
@@ -307,17 +307,17 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
-            case "Integer":
+            case 'Integer':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? " pulse-on" : " pulse-off") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? ' pulse-on' : ' pulse-off') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
                             ref={c => this.rawWidget = c}
@@ -334,17 +334,17 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
-            case "Number":
+            case 'Number':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
                             ref={c => this.rawWidget = c}
@@ -359,17 +359,17 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
-            case "Amount" :
+            case 'Amount' :
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
                             ref={c => this.rawWidget = c}
@@ -386,17 +386,17 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
-            case "Quantity":
+            case 'Quantity':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
                             ref={c => this.rawWidget = c}
@@ -413,17 +413,17 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
-            case "CostPrice":
+            case 'CostPrice':
                 return (
                     <div className={
-                        "input-block " +
-                        (type === "primary" ? "input-primary " : "input-secondary ") +
-                        (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                        (widgetData[0].readonly ? "input-disabled " : "") +
-                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "") +
-                        (updated ? "pulse-on " : "pulse-off ") +
-                        ((rowId && !isModal) ? "input-table " : "") +
-                        (isEdited ? "input-focused " : "")
+                        'input-block ' +
+                        (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+                        (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                        (widgetData[0].readonly ? 'input-disabled ' : '') +
+                        (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '') +
+                        (updated ? 'pulse-on ' : 'pulse-off ') +
+                        ((rowId && !isModal) ? 'input-table ' : '') +
+                        (isEdited ? 'input-focused ' : '')
                     }>
                         <input
                             ref={c => this.rawWidget = c}
@@ -438,17 +438,17 @@ class RawWidget extends Component {
                         />
                     </div>
                 )
-            case "YesNo":
+            case 'YesNo':
                 return (
                     <label
                         className={
-                            "input-checkbox " +
-                            (widgetData[0].readonly ? "input-disabled " : "")
+                            'input-checkbox ' +
+                            (widgetData[0].readonly ? 'input-disabled ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
                         onKeyDown={e => {
-                            if(e.key === " "){
+                            if(e.key === ' '){
                                 e.preventDefault();
                                 this.checkbox.click();
                             }
@@ -462,16 +462,16 @@ class RawWidget extends Component {
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
                         />
-                        <div className={"input-checkbox-tick"}/>
+                        <div className="input-checkbox-tick" />
                     </label>
                 )
-            case "Switch":
+            case 'Switch':
                 return (
                     <label
                         className={
-                            "input-switch " +
-                            (widgetData[0].readonly ? "input-disabled " : "") +
-                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? "input-mandatory " : "")
+                            'input-switch ' +
+                            (widgetData[0].readonly ? 'input-disabled ' : '') +
+                            (widgetData[0].mandatory && widgetData[0].value.length === 0 ? 'input-mandatory ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
@@ -483,15 +483,15 @@ class RawWidget extends Component {
                             tabIndex="-1"
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                         />
-                        <div className={"input-slider"} />
+                        <div className="input-slider" />
                     </label>
                 )
-            case "Label":
+            case 'Label':
                 return (
                     <div
                         className={
-                            "tag tag-warning " +
-                            (gridAlign ? "text-xs-" + gridAlign + " " : "")
+                            'tag tag-warning ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
                         }
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => {(c && autoFocus) && c.focus()}}
@@ -499,13 +499,13 @@ class RawWidget extends Component {
                         {widgetData[0].value}
                     </div>
                 )
-            case "Button":
+            case 'Button':
                 return (
                     <button
                         className={
-                            "btn btn-sm btn-meta-primary " +
-                            (gridAlign ? "text-xs-" + gridAlign + " " : "") +
-                            (widgetData[0].readonly ? "tag-disabled disabled " : "")
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly ? 'tag-disabled disabled ' : '')
                         }
                         onClick={(e) => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
@@ -514,7 +514,7 @@ class RawWidget extends Component {
                         {widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
                     </button>
                 )
-            case "ActionButton":
+            case 'ActionButton':
                 return (
                     <ActionButton
                         data={widgetData[0]}
@@ -527,10 +527,10 @@ class RawWidget extends Component {
                         ref={c => this.rawWidget = c}
                     />
                 )
-            case "ProductAttributes":
+            case 'ProductAttributes':
                 return (
                     <Attributes
-                        attributeType='pattribute'
+                        attributeType="pattribute"
                         fields={fields}
                         dataId={dataId}
                         widgetData={widgetData[0]}
@@ -545,10 +545,10 @@ class RawWidget extends Component {
                         readonly={widgetData[0].readonly}
                     />
                 )
-            case "Address":
+            case 'Address':
                 return (
                     <Attributes
-                        attributeType='address'
+                        attributeType="address"
                         fields={fields}
                         dataId={dataId}
                         widgetData={widgetData[0]}
@@ -563,7 +563,7 @@ class RawWidget extends Component {
                         readonly={widgetData[0].readonly}
                     />
                 )
-            case "Image":
+            case 'Image':
                 return <Image
                     fields={fields}
                     data={widgetData[0]}
@@ -586,15 +586,15 @@ class RawWidget extends Component {
         if(widgetData[0].displayed && widgetData[0].displayed === true){
             return (
                 <div className={
-                    "form-group row " +
-                    ((rowId && !isModal) ? "form-group-table " : " ")
+                    'form-group row ' +
+                    ((rowId && !isModal) ? 'form-group-table ' : ' ')
                 }>
                     {(!noLabel && caption) &&
                         <div
                             key="title"
                             className={
-                                "form-control-label " +
-                                ((type === "primary") ? "col-sm-12 panel-title" : "col-sm-3")
+                                'form-control-label ' +
+                                ((type === 'primary') ? 'col-sm-12 panel-title' : 'col-sm-3')
                             }
                             title={caption}
                         >
@@ -603,8 +603,8 @@ class RawWidget extends Component {
                     }
                     <div
                         className={
-                            ((type === "primary" || noLabel) ? "col-sm-12 " : "col-sm-9 ") +
-                            (fields[0].devices ? "form-group-flex ": "")
+                            ((type === 'primary' || noLabel) ? 'col-sm-12 ' : 'col-sm-9 ') +
+                            (fields[0].devices ? 'form-group-flex ': '')
                         }
                     >
                         {this.renderWidget()}

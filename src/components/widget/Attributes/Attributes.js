@@ -115,7 +115,17 @@ class Attributes extends Component {
     handleCompletion = () => {
         const {attributeType, dispatch, patch} = this.props;
         const {data} = this.state;
-        const attrId = findRowByPropName(data, "ID").value;
+        const attrId = findRowByPropName(data, 'ID').value;
+
+        const valid = data
+            .filter(field => field.mandatory)
+            .map(field => !!field.value)
+            .reduce((prev, current) => prev && current);
+
+        //required value is not set. just close
+        if (!valid){
+            return this.handleToggle(false);
+        }
 
         dispatch(completeRequest(attributeType, attrId)).then(response => {
             patch(response.data);
@@ -125,7 +135,7 @@ class Attributes extends Component {
 
     handleKeyDown = (e) => {
         switch(e.key){
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 this.handleCompletion();
                 break;
@@ -145,26 +155,26 @@ class Attributes extends Component {
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
         const label = value[tmpId];
-        const attrId = findRowByPropName(data, "ID").value;
+        const attrId = findRowByPropName(data, 'ID').value;
 
         return (
             <div
                 onKeyDown={this.handleKeyDown}
                 className={
-                    "attributes " +
-                    (rowId ? "attributes-in-table " : "")
+                    'attributes ' +
+                    (rowId ? 'attributes-in-table ' : '')
                 }
             >
                 <button
                     tabIndex={tabIndex}
                     onClick={() => this.handleToggle(true)}
                     className={
-                        "btn btn-block tag tag-lg tag-block tag-secondary pointer " +
-                        (dropdown ? "tag-disabled " : "") +
-                        (readonly ? "tag-disabled disabled " : "")
+                        'btn btn-block tag tag-lg tag-block tag-secondary pointer ' +
+                        (dropdown ? 'tag-disabled ' : '') +
+                        (readonly ? 'tag-disabled disabled ' : '')
                     }
                 >
-                    {label ? label : "Edit"}
+                    {label ? label : 'Edit'}
                 </button>
                 {dropdown &&
                     <AttributesDropdown

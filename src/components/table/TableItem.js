@@ -10,8 +10,8 @@ class TableItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            edited: "",
-            activeCell: "",
+            edited: '',
+            activeCell: '',
             updatedRow: false
         };
     }
@@ -61,9 +61,9 @@ class TableItem extends Component {
           }))
         }
 
-        if(e.key === "Enter" && !edited) {
+        if(e.key === 'Enter' && !edited) {
             this.handleEditProperty(e,property, true);
-        } else if (e.key === "Enter" && edited) {
+        } else if (e.key === 'Enter' && edited) {
             this.handleEditProperty(e);
             changeListenOnTrue();
             activeCell && activeCell.focus();
@@ -156,14 +156,13 @@ class TableItem extends Component {
             indentation.push(
                 <div
                     key={i}
-                    className={"indent-item-mid "
-                    }
+                    className="indent-item-mid"
                 >
                     {i === indent.length - 1 && <div className="indent-mid"/>}
                     <div
                         className={
-                            (indent[i] ? "indent-sign " : "") +
-                            ((lastSibling && i === indent.length - 1) ? "indent-sign-bot " : "")
+                            (indent[i] ? 'indent-sign ' : '') +
+                            ((lastSibling && i === indent.length - 1) ? 'indent-sign-bot ' : '')
                         }
                     />
                 </div>
@@ -183,9 +182,9 @@ class TableItem extends Component {
                     <div
                         className="indent-icon"
                     >
-                        {huType == "LU" && <i className="meta-icon-palette"/>}
-                        {huType == "TU" && <i className="meta-icon-package"/>}
-                        {huType == "CU" && <i className="meta-icon-product"/>}
+                        {huType == 'LU' && <i className="meta-icon-palette"/>}
+                        {huType == 'TU' && <i className="meta-icon-package"/>}
+                        {huType == 'CU' && <i className="meta-icon-product"/>}
                     </div>
                 </div>
             );
@@ -208,9 +207,9 @@ class TableItem extends Component {
                 onDoubleClick={onDoubleClick}
                 onContextMenu={handleRightClick}
                 className={
-                    (isSelected ? "row-selected " : "") +
-                    (odd ? "tr-odd ": "") +
-                    (!odd ? "tr-even ": "")
+                    (isSelected ? 'row-selected ' : '') +
+                    (odd ? 'tr-odd ': '') +
+                    (!odd ? 'tr-even ': '')
                 }
             >
                 {indentSupported &&

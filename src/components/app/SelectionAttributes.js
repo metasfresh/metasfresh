@@ -61,7 +61,7 @@ class SelectionAttributes extends Component {
 
     moveToDevice = (e) => {
         switch(e.key) {
-            case "Shift":
+            case 'Shift':
                 e.preventDefault();
                 //TO DO
             break;

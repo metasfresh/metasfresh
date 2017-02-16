@@ -137,7 +137,7 @@ class TableQuickInput extends Component {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
                 return (<RawWidget
                     entity={attributeType}
-                    subentity='quickInput'
+                    subentity="quickInput"
                     subentityId={quickInputId}
                     tabId={tabId}
                     windowType={docType}
@@ -166,18 +166,16 @@ class TableQuickInput extends Component {
         document.activeElement.blur();
 
         if(!this.validateForm(data)){
-            return dispatch(addNotification("Error", 'Mandatory fields are not filled!', 5000, "error"))
+            return dispatch(addNotification('Error', 'Mandatory fields are not filled!', 5000, 'error'))
         }
 
         this.patchPromise
             .then(() => {
-                console.log('submit');
                 return dispatch(completeRequest('window', docType, docId, tabId, null, 'quickInput', id))
             })
             .then(response => {
-                console.log('submitEnd');
                 this.initQuickInput();
-                dispatch(addNewRow(response.data, tabId, response.data.rowId, "master"))
+                dispatch(addNewRow(response.data, tabId, response.data.rowId, 'master'))
             });
     }
 

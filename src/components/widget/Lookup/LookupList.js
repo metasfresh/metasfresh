@@ -57,8 +57,8 @@ class LookupList extends Component {
             <div
                 key={key}
                 className={
-                    "input-dropdown-list-option " +
-                    (selected === index ? 'input-dropdown-list-option-key-on' : "") }
+                    'input-dropdown-list-option ' +
+                    (selected === index ? 'input-dropdown-list-option-key-on' : '') }
                 onClick={() => {handleSelect(item)}}
             >
                 <p className="input-dropdown-item-title">{name}</p>
@@ -76,12 +76,12 @@ class LookupList extends Component {
         return (
             <div
                 className={
-                    "input-dropdown-list-option input-dropdown-list-option-alt "  +
-                    (selected === "new" ? 'input-dropdown-list-option-key-on' : "")
+                    'input-dropdown-list-option input-dropdown-list-option-alt '  +
+                    (selected === 'new' ? 'input-dropdown-list-option-key-on' : '')
                 }
                 onClick={() => handleAddNew(query)}
             >
-                <p>New {query ? '"' + query + '"' : ""}</p>
+                <p>New {query ? '"' + query + '"' : ''}</p>
             </div>
         )
     }

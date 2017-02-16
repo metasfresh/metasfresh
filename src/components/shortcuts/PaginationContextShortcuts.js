@@ -27,9 +27,9 @@ class PaginationContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name={"PAGINATION_CONTEXT"}
+                name="PAGINATION_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }

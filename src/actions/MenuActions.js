@@ -23,6 +23,13 @@ export function setReferences(references){
     }
 }
 
+export function setAttachments(attachments){
+    return {
+        type: types.SET_ATTACHMENTS,
+        attachments: attachments
+    }
+}
+
 export function setActions(actions){
     return {
         type: types.SET_ACTIONS,
@@ -44,7 +51,7 @@ export function nodePathsRequest(nodeId, limit) {
         config.API_URL +
         '/menu/node?nodeId=' + nodeId +
         '&depth=2' +
-        (limit ? '&childrenLimit=' + limit : "")
+        (limit ? '&childrenLimit=' + limit : '')
     );
 }
 
@@ -61,7 +68,7 @@ export function queryPathsRequest(query, limit, child) {
     return () => axios.get(
         config.API_URL +
         '/menu/queryPaths?nameQuery=' + query +
-        (limit ? '&childrenLimit=' + limit : "") +
+        (limit ? '&childrenLimit=' + limit : '') +
         (child ? '&childrenInclusive=true':'')
     );
 }
@@ -70,20 +77,20 @@ export function rootRequest(limit) {
     return () => axios.get(
         config.API_URL +
         '/menu/root?depth=10' +
-        (limit ? '&childrenLimit=' + limit : ""));
+        (limit ? '&childrenLimit=' + limit : ''));
 }
 
 export function getRootBreadcrumb() {
     return (dispatch) => {
         dispatch(rootRequest(6)).then(root => {
-            dispatch(setHomeMenu({nodeId: "0", children: root.data}));
+            dispatch(setHomeMenu({nodeId: '0', children: root.data}));
         });
     }
 }
 
 export function getWindowBreadcrumb(id){
     return dispatch => {
-        dispatch(elementPathRequest("window", id)).then(response => {
+        dispatch(elementPathRequest('window', id)).then(response => {
             let req = 0;
             let pathData = flattenOneLine(response.data);
 
@@ -117,14 +124,14 @@ export function getWindowBreadcrumb(id){
 
 // UTILITIES
 
-export function flattenLastElem(node, prop = "children") {
+export function flattenLastElem(node, prop = 'children') {
     let result = [];
 
     if(!!node[prop]){
         node[prop].map(child => {
             const flat = flattenLastElem(child);
 
-            if(typeof flat === "object"){
+            if(typeof flat === 'object'){
                 result = result.concat(flat);
             }else{
                 result.push(flattenLastElem(child));

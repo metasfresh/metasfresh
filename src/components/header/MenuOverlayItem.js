@@ -10,6 +10,13 @@ class MenuOverlayItem extends Component {
         super(props);
     }
 
+    componentDidMount() {
+        const {query} = this.props;
+        if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
+             document.getElementsByClassName('js-menu-overlay')[0].focus();
+        }
+    }
+
     clickedItem = (e, elementId, nodeId, type ) => {
         const {
             handleClickOnFolder, handleRedirect, handleNewRedirect, openModal,
@@ -23,14 +30,8 @@ class MenuOverlayItem extends Component {
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
         } else if (type === 'report') {
-            openModal(elementId + "", "process", caption)
+            openModal(elementId + '', 'process', caption)
         }
-    }
-
-    renderBreadcrumb = (elementId) => {
-        const {dispatch} = this.props;
-
-        dispatch(getWindowBreadcrumb(elementId));
     }
 
     handleClick = (elementId) => {
@@ -39,43 +40,36 @@ class MenuOverlayItem extends Component {
         this.renderBreadcrumb(elementId)
     }
 
-    componentDidMount() {
-        const {query} = this.props;
-        if(!query &&  document.getElementsByClassName('js-menu-overlay')[0]) {
-             document.getElementsByClassName('js-menu-overlay')[0].focus();
-        }
-    }
-
     handleKeyDown = (e) => {
         const {back, handleMenuOverlay} = this.props;
         const overlay = document.getElementsByClassName('js-menu-overlay')[0];
 
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 this.handleArrowDown();
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 this.handeArrowUp();
                 break;
-            case "Tab":
+            case 'Tab':
                 e.preventDefault();
                 document.getElementsByClassName('js-menu-item')[0].focus();
                 break;
-            case "Backspace":
+            case 'Backspace':
                 e.preventDefault();
                 back(e);
                 overlay.focus();
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 document.activeElement.childNodes[0].click();
                 overlay.focus();
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
-                handleMenuOverlay("","");
+                handleMenuOverlay('','');
         }
     }
 
@@ -121,6 +115,12 @@ class MenuOverlayItem extends Component {
         }
     }
 
+    renderBreadcrumb = (elementId) => {
+        const {dispatch} = this.props;
+
+        dispatch(getWindowBreadcrumb(elementId));
+    }
+
     render() {
         const {
             dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder,
@@ -132,15 +132,15 @@ class MenuOverlayItem extends Component {
                 tabIndex={0}
                 onKeyDown={this.handleKeyDown}
                 className={
-                    "menu-overlay-expanded-link js-menu-item " +
-                    (!printChildren ? "menu-overlay-expanded-link-spaced " : "")
+                    'menu-overlay-expanded-link js-menu-item ' +
+                    (!printChildren ? 'menu-overlay-expanded-link-spaced ' : '')
                 }
             >
 
             { !query &&
                 <span
                     className={
-                        (children ? "menu-overlay-expand" : "menu-overlay-link")
+                        (children ? 'menu-overlay-expand' : 'menu-overlay-link')
                     }
                     onClick={e => {
                         children ?
@@ -154,14 +154,14 @@ class MenuOverlayItem extends Component {
             }
 
             { query &&
-                <span className={children ? "" : (type === 'group'? "query-clickable-group" : "query-clickable-link")}
+                <span className={children ? '' : (type === 'group'? 'query-clickable-group' : 'query-clickable-link')}
                     onClick={ children ? '' : e => this.clickedItem(e, elementId, nodeId, type)  }
                 >
                     {children ? children.map(
                         (item, id) =>
                             <span key={id} className="query-results" >
                                 <span className="query-caption">{id===0 ? caption +' / ': '/'}</span>
-                                <span title={item.caption} className={type === 'group' ? "query-clickable-group" : "query-clickable-link"}
+                                <span title={item.caption} className={type === 'group' ? 'query-clickable-group' : 'query-clickable-link'}
                                      onClick={e => this.clickedItem(e, item.elementId, item.nodeId, item.type)}
                                 >
                                     {item.caption}

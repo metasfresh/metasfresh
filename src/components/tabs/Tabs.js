@@ -24,7 +24,7 @@ class Tabs extends Component {
     // }
 
     handlePillKeyDown = (e, key) => {
-        if(e.key === "Enter"){
+        if(e.key === 'Enter'){
             this.handleClick(e, key);
         }
     }
@@ -37,13 +37,13 @@ class Tabs extends Component {
             return (
                 <li
                     className="nav-item"
-                    key={"tab" + item.key}
+                    key={'tab' + item.key}
                     onClick={(e) => this.handleClick(e, item.key)}
                     tabIndex={tabIndex}
                     onKeyDown={(e) => this.handlePillKeyDown(e, item.key)}
                     style={{ maxWidth }}
                 >
-                    <a className={"nav-link " + ((this.state.selected === item.key) ? "active" : "")}>{item.props.caption}</a>
+                    <a className={'nav-link ' + ((this.state.selected === item.key) ? 'active' : '')}>{item.props.caption}</a>
                 </li>
             );
         });
@@ -63,8 +63,8 @@ class Tabs extends Component {
             if(selected == item.key){
                 return (
                     <div
-                        key={"pane" + item.key}
-                        className={"tab-pane active"}
+                        key={'pane' + item.key}
+                        className="tab-pane active"
                     >
                         {itemWithProps}
                     </div>
@@ -78,17 +78,16 @@ class Tabs extends Component {
 
     render() {
         const {children, tabIndex, fullScreen} = this.props;
-        // const {fullScreen} = this.state;
         return (
             <div className={
-                "mb-1 " +
-                (fullScreen ? "tabs-fullscreen container-fluid " : "")
+                'mb-1 ' +
+                (fullScreen ? 'tabs-fullscreen container-fluid ' : '')
             }>
                 <ul className="nav nav-tabs mt-1">
                     {this.renderPills(children)}
                 </ul>
                 <div
-                    className={"tab-content"}
+                    className="tab-content"
                     tabIndex={tabIndex}
                     ref={c => this.tabContent = c}
                 >

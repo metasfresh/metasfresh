@@ -9,14 +9,14 @@ class Indicator extends Component {
     }
     renderIndicator = (state) => {
         switch(state){
-            case "saved":
-                return "indicator-success";
+            case 'saved':
+                return 'indicator-success';
                 break;
-            case "pending":
-                return "indicator-pending";
+            case 'pending':
+                return 'indicator-pending';
                 break;
-            case "error":
-                return "indicator-error";
+            case 'error':
+                return 'indicator-error';
                 break;
         }
     }
@@ -24,7 +24,7 @@ class Indicator extends Component {
         const {indicator} = this.props;
         return (
             <div>
-                <div className={"indicator-bar indicator-" + indicator} />
+                <div className={'indicator-bar indicator-' + indicator} />
             </div>
         )
     }

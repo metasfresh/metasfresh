@@ -24,21 +24,21 @@ class ActionButton extends Component {
     handleKeyDown = (e) => {
         const {list, selected} = this.state;
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 this.navigate(true);
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
                 this.navigate();
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 if(selected != null){
                     this.handleChangeStatus(list.values[selected]);
                 }
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
                 this.handleDropdownBlur();
                 break;
@@ -71,7 +71,7 @@ class ActionButton extends Component {
 
     fetchStatusList(){
         const { dispatch, windowType, fields, dataId} = this.props;
-        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, "window")).then((res) => {
+        dispatch(dropdownRequest(windowType, fields[1].field, dataId, null, null, 'window')).then((res) => {
             this.setState({list: res.data});
         });
     }
@@ -90,25 +90,25 @@ class ActionButton extends Component {
         const {data} = this.props;
 
         if((data.action.value !== undefined) && Object.keys(data.action.value)[0] !== abrev){
-            return "";
+            return '';
         }
 
         if(abrev === 'DR'){
-            return "dropdown-status-item-def";
+            return 'dropdown-status-item-def';
         }else if (abrev === 'CO'){
-            return "dropdown-status-item-def-1";
+            return 'dropdown-status-item-def-1';
         }else{
-            return "";
+            return '';
         }
     }
 
     getStatusContext = (abrev) => {
         if(abrev === 'DR'){
-            return "primary"
+            return 'primary'
         }else if (abrev === 'CO'){
-            return "success"
+            return 'success'
         }else {
-            return "default"
+            return 'default'
         }
     }
 
@@ -119,8 +119,8 @@ class ActionButton extends Component {
             return <li
                 key={index}
                 className={
-                    "dropdown-status-item " +
-                    (selected === index ? "dropdown-status-item-on-key " : "") +
+                    'dropdown-status-item ' +
+                    (selected === index ? 'dropdown-status-item-on-key ' : '') +
                     this.getStatusClassName(key)
                 }
                 onClick={() => this.handleChangeStatus(item)}
@@ -145,8 +145,8 @@ class ActionButton extends Component {
                 onBlur={this.handleDropdownBlur}
                 onFocus={this.handleDropdownFocus}
             >
-                <div className={"tag tag-" + this.getStatusContext(abrev)}>{value} </div>
-                <i className={"meta-icon-chevron-1 meta-icon-" + this.getStatusContext(abrev)} />
+                <div className={'tag tag-' + this.getStatusContext(abrev)}>{value} </div>
+                <i className={'meta-icon-chevron-1 meta-icon-' + this.getStatusContext(abrev)} />
                 <ul className="dropdown-status-list">
                     {this.renderStatusList(list)}
                 </ul>

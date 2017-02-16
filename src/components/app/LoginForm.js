@@ -19,9 +19,9 @@ class LoginForm extends Component {
         super(props);
 
         this.state = {
-            role: "",
+            role: '',
             roleSelect: false,
-            err: ""
+            err: ''
         }
     }
 
@@ -39,7 +39,7 @@ class LoginForm extends Component {
         e.preventDefault();
 
         this.setState(Object.assign({}, this.state, {
-            err: ""
+            err: ''
         }))
     }
 
@@ -110,7 +110,7 @@ class LoginForm extends Component {
                     <img src={logo} className="header-logo mt-2 mb-2" />
                 </div>
                 {roleSelect ? <div>
-                    <div className={"form-control-label"}><small>Select role</small></div>
+                    <div className="form-control-label"><small>Select role</small></div>
                         <RawList
                             rank="primary"
                             list={roles}
@@ -126,27 +126,27 @@ class LoginForm extends Component {
                             </div>
                         }
                         <div>
-                            <div className={"form-control-label"}><small>Login</small></div>
+                            <div className="form-control-label"><small>Login</small></div>
                             <input
                                 type="text"
                                 onChange={this.handleOnChange}
                                 className={
-                                    "input-primary input-block " +
-                                    (err ? "input-error " : "") +
-                                    (pending ? "input-disabled ": "")
+                                    'input-primary input-block ' +
+                                    (err ? 'input-error ' : '') +
+                                    (pending ? 'input-disabled ': '')
                                 }
                                 disabled={pending}
                                 ref={c => this.login = c} />
                         </div>
                         <div>
-                            <div className={"form-control-label"}><small>Password</small></div>
+                            <div className="form-control-label"><small>Password</small></div>
                             <input
                                 type="password"
                                 onChange={this.handleOnChange}
                                 className={
-                                    "input-primary input-block " +
-                                    (err ? "input-error " : "") +
-                                    (pending ? "input-disabled " : "")
+                                    'input-primary input-block ' +
+                                    (err ? 'input-error ' : '') +
+                                    (pending ? 'input-disabled ' : '')
                                 }
                                 disabled={pending}
                                 ref={c => this.passwd = c}
@@ -156,9 +156,11 @@ class LoginForm extends Component {
                     </div>
                 }
                 <div className="mt-2">
-                    <button className="btn btn-sm btn-block btn-meta-success"
-                            onClick={this.handleLogin}
-                            disabled={pending}
+
+                    <button 
+                        className="btn btn-sm btn-block btn-meta-success"
+                        onClick={this.handleLogin}
+                        disabled={pending}
                     >
                         {roleSelect? "Send" : "Login"}
                     </button>

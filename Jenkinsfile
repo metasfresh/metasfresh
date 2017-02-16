@@ -320,7 +320,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
-<li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION}/webui-dist-${BUILD_VERSION}.tar.gz\">webui-dist-${BUILD_VERSION}.tar.gz</a></li>
+<li><a href=\"https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION}/metasfresh-webui-frontend-${BUILD_VERSION}.tar.gz\">metasfresh-webui-frontend-${BUILD_VERSION}.tar.gz</a></li>
 </ul>"""
             }
 		}

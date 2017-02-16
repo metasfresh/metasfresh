@@ -21,6 +21,11 @@
 - Then you should run node server by:
 > npm start
 
+## Contribution info
+
+Remember to ensure before contribution that your IDE supports `.editorconfig` file,
+and if needed fix your file before commit changes.
+
 ## In case of build static version execute (you're gonna need webpack installed globally):
 > webpack --config webpack.prod.js
 

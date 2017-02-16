@@ -14,7 +14,7 @@ class InboxAll extends Component {
 
         return (
             <Container
-                siteName = {"Inbox"}
+                siteName = "Inbox"
             >
                 <Inbox
                     all={true}

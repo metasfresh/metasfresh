@@ -21,7 +21,7 @@ class RawModal extends Component {
         // because body is out of react app range
         // and css dont affect parents
         // but we have to change scope of scrollbar
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
@@ -54,7 +54,7 @@ class RawModal extends Component {
         const {dispatch} = this.props;
 
         dispatch(closeRawModal());
-        document.body.style.overflow = "auto";
+        document.body.style.overflow = 'auto';
     }
 
 
@@ -74,12 +74,12 @@ class RawModal extends Component {
                 <div className="panel panel-modal panel-modal-primary">
                     <div
                         className={
-                            "panel-modal-header " +
-                            (scrolled ? "header-shadow": "")
+                            'panel-modal-header ' +
+                            (scrolled ? 'header-shadow': '')
                         }
                     >
                         <span className="panel-modal-header-title">
-                            {modalTitle ? modalTitle : "Modal"}
+                            {modalTitle ? modalTitle : 'Modal'}
                         </span>
                         <div className="items-row-2">
                             <button

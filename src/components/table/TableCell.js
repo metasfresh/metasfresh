@@ -48,27 +48,27 @@ class TableCell extends Component {
             return date;
         } else {
             // specified case to avoid parsing "error" text
-            return "";
+            return '';
         }
     }
 
     fieldToString = (field, type) => {
         if(field === null){
-            return "";
+            return '';
         }else{
             switch(typeof field){
-                case "object":
-                    if(type === "Date" || type === "DateTime" || type === "Time"){
+                case 'object':
+                    if(type === 'Date' || type === 'DateTime' || type === 'Time'){
                         return this.createDate(field);
                     } else {
                         return field[Object.keys(field)[0]];
                     }
                     break;
-                case "boolean":
+                case 'boolean':
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
                     break;
-                case "string":
-                    if(type === "Date" || type === "DateTime" || type === "Time"){
+                case 'string':
+                    if(type === 'Date' || type === 'DateTime' || type === 'Time'){
                         return this.createDate(field);
                     } else {
                         return field;
@@ -94,21 +94,21 @@ class TableCell extends Component {
                 onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}
                 className={
-                    (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
-                    (widgetData[0].readonly ? "cell-disabled " : "") +
-                    (widgetData[0].mandatory ? "cell-mandatory " : "") +
-                    (item.widgetType==="Lookup" ||
-                        item.widgetType==="LongText" ||
-                        item.widgetType==="List" ||
-                        item.widgetType==="Date" ||
-                        item.widgetType==="DateTime" ||
-                        item.widgetType==="Time" ?
-                            "td-lg " : "") +
-                    (item.widgetType==="ProductAttributes" ? "td-md " : "") +
-                    (item.widgetType==="Address" ? "td-md " : "") +
-                    (item.widgetType==="Text" ? "td-md " : "") +
+                    (item.gridAlign ? 'text-xs-' + item.gridAlign + ' ' : '') +
+                    (widgetData[0].readonly ? 'cell-disabled ' : '') +
+                    (widgetData[0].mandatory ? 'cell-mandatory ' : '') +
+                    (item.widgetType==='Lookup' ||
+                        item.widgetType==='LongText' ||
+                        item.widgetType==='List' ||
+                        item.widgetType==='Date' ||
+                        item.widgetType==='DateTime' ||
+                        item.widgetType==='Time' ?
+                            'td-lg ' : '') +
+                    (item.widgetType==='ProductAttributes' ? 'td-md ' : '') +
+                    (item.widgetType==='Address' ? 'td-md ' : '') +
+                    (item.widgetType==='Text' ? 'td-md ' : '') +
                     (item.widgetType) +
-                    ((updatedRow) ? " pulse-on" : " pulse-off")
+                    ((updatedRow) ? ' pulse-on' : ' pulse-off')
                 }
             >
                 {

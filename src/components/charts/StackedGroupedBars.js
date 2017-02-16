@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 class BarChart extends Component {
     constructor(props){
@@ -11,14 +11,14 @@ class BarChart extends Component {
         const chart = document.getElementsByClassName('chart-grouped')[0];
 
         const widgetWidth = document.getElementsByClassName('draggable-widget-body')[0].offsetWidth;
-        chart.setAttribute("width", widgetWidth);
+        chart.setAttribute('width', widgetWidth);
       
         this.drawChart();
 
         d3.select(window)
-          .on("resize", () => {
+          .on('resize', () => {
             const responsiveWidgetWidth = document.getElementsByClassName('draggable-widget-body')[0].offsetWidth;
-            chart.setAttribute("width", responsiveWidgetWidth);
+            chart.setAttribute('width', responsiveWidgetWidth);
             document.getElementsByClassName('chart-grouped')[0].childNodes[0].remove();
             this.drawChart();
           });
@@ -38,11 +38,11 @@ class BarChart extends Component {
             yMax = d3.max(yz, function(y) { return d3.max(y); }),
             y1Max = d3.max(y01z, function(y) { return d3.max(y, function(d) { return d[1]; }); });
 
-        var svg = d3.select(".chart-grouped"),
+        var svg = d3.select('.chart-grouped'),
             margin = {top: 40, right: 10, bottom: 20, left: 10},
-            width = +svg.attr("width") - margin.left - margin.right,
-            height = +svg.attr("height") - margin.top - margin.bottom,
-            g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            width = +svg.attr('width') - margin.left - margin.right,
+            height = +svg.attr('height') - margin.top - margin.bottom,
+            g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
         var x = d3.scaleBand()
             .domain(xz)
@@ -57,43 +57,43 @@ class BarChart extends Component {
             .domain(d3.range(n))
             .range(d3.schemeCategory20c);
 
-        var series = g.selectAll(".series")
+        var series = g.selectAll('.series')
         .data(y01z)
-        .enter().append("g")
-            .attr("fill", function(d, i) { return color(i); });
+        .enter().append('g')
+            .attr('fill', function(d, i) { return color(i); });
 
-        var rect = series.selectAll("rect")
+        var rect = series.selectAll('rect')
         .data(function(d) { return d; })
-        .enter().append("rect")
-            .attr("x", function(d, i) { return x(i); })
-            .attr("y", height)
-            .attr("width", x.bandwidth())
-            .attr("height", 0);
+        .enter().append('rect')
+            .attr('x', function(d, i) { return x(i); })
+            .attr('y', height)
+            .attr('width', x.bandwidth())
+            .attr('height', 0);
 
         rect.transition()
             .delay(function(d, i) { return i * 10; })
-            .attr("y", function(d) { return y(d[1]); })
-            .attr("height", function(d) { return y(d[0]) - y(d[1]); });
+            .attr('y', function(d) { return y(d[1]); })
+            .attr('height', function(d) { return y(d[0]) - y(d[1]); });
 
-        g.append("g")
-            .attr("class", "axis axis--x")
-            .attr("transform", "translate(0," + height + ")")
+        g.append('g')
+            .attr('class', 'axis axis--x')
+            .attr('transform', 'translate(0,' + height + ')')
             .call(d3.axisBottom(x)
                 .tickSize(0)
                 .tickPadding(6));
 
-        d3.selectAll("input")
-            .on("change", changed);
+        d3.selectAll('input')
+            .on('change', changed);
 
         var timeout = d3.timeout(function() {
-        d3.select("input[value=\"grouped\"]")
-            .property("checked", true)
-            .dispatch("change");
+        d3.select('input[value="grouped"]')
+            .property('checked', true)
+            .dispatch('change');
         }, 2000);
 
         function changed() {
         timeout.stop();
-        if (this.value === "grouped") transitionGrouped();
+        if (this.value === 'grouped') transitionGrouped();
         else transitionStacked();
         }
 
@@ -103,11 +103,11 @@ class BarChart extends Component {
         rect.transition()
             .duration(500)
             .delay(function(d, i) { return i * 10; })
-            .attr("x", function(d, i) { return x(i) + x.bandwidth() / n * this.parentNode.__data__.key; })
-            .attr("width", x.bandwidth() / n)
+            .attr('x', function(d, i) { return x(i) + x.bandwidth() / n * this.parentNode.__data__.key; })
+            .attr('width', x.bandwidth() / n)
             .transition()
-            .attr("y", function(d) { return y(d[1] - d[0]); })
-            .attr("height", function(d) { return y(0) - y(d[1] - d[0]); });
+            .attr('y', function(d) { return y(d[1] - d[0]); })
+            .attr('height', function(d) { return y(0) - y(d[1] - d[0]); });
         }
 
         function transitionStacked() {
@@ -116,11 +116,11 @@ class BarChart extends Component {
         rect.transition()
             .duration(500)
             .delay(function(d, i) { return i * 10; })
-            .attr("y", function(d) { return y(d[1]); })
-            .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+            .attr('y', function(d) { return y(d[1]); })
+            .attr('height', function(d) { return y(d[0]) - y(d[1]); })
             .transition()
-            .attr("x", function(d, i) { return x(i); })
-            .attr("width", x.bandwidth());
+            .attr('x', function(d, i) { return x(i); })
+            .attr('width', x.bandwidth());
         }
 
         // Returns an array of m psuedorandom, smoothly-varying non-negative numbers.

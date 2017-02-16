@@ -8,13 +8,13 @@ export function initLayout(
     return () => axios.get(
         config.API_URL +
         '/' + entity + '/' + docType +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (subentity ? "/" + subentity : "") +
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (subentity ? '/' + subentity : '') +
         '/layout' +
-        (isAdvanced ? "?advanced=true" : "") +
-        (list ? "?viewType=" + list : "") +
-        (supportTree ? "&supportTree=true" : "")
+        (isAdvanced ? '?advanced=true' : '') +
+        (list ? '?viewType=' + list : '') +
+        (supportTree ? '&supportTree=true' : '')
     );
 }
 
@@ -25,12 +25,12 @@ export function getData(
         config.API_URL +
         '/' + entity +
         '/' + docType +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        (isAdvanced ? "?advanced=true" : "")
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
+        (subentity ? '/' + subentity : '') +
+        (subentityId ? '/' + subentityId : '') +
+        (isAdvanced ? '?advanced=true' : '')
     );
 }
 
@@ -40,19 +40,19 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
         '/' + entity +
         '/' + docType +
         '/' + docId +
-        (tabId ? "/" + tabId : "") +
-        (subentity ? "/" + subentity : "")
+        (tabId ? '/' + tabId : '') +
+        (subentity ? '/' + subentity : '')
     );
 }
 
 export function patchRequest(
-    entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
+    entity, docType, docId = 'NEW', tabId, rowId, property, value, subentity,
     subentityId, isAdvanced, viewId
 ) {
 
     let payload = [];
 
-    if (docId === "NEW") {
+    if (docId === 'NEW') {
         payload = [];
     } else if (Array.isArray(property) && value !== undefined) {
         property.map(item => {
@@ -75,14 +75,14 @@ export function patchRequest(
     return () => axios.patch(
         config.API_URL +
         '/' + entity +
-        (docType ? "/" + docType : "") +
-        (viewId ? "/" + viewId : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
-        (isAdvanced ? "?advanced=true" : ""), payload);
+        (docType ? '/' + docType : '') +
+        (viewId ? '/' + viewId : '') +
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
+        (subentity ? '/' + subentity : '') +
+        (subentityId ? '/' + subentityId : '') +
+        (isAdvanced ? '?advanced=true' : ''), payload);
 }
 
 export function completeRequest(
@@ -91,12 +91,12 @@ export function completeRequest(
     return () => axios.post(
         config.API_URL +
         '/' + entity + '/' +
-        (docType ? "/" + docType : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
+        (docType ? '/' + docType : '') +
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
+        (subentity ? '/' + subentity : '') +
+        (subentityId ? '/' + subentityId : '') +
         '/complete'
     );
 }
@@ -108,13 +108,13 @@ export function autocompleteRequest(
     return () => axios.get(
         config.API_URL +
         '/' + entity +
-        (docType ? "/" + docType : "") +
-        (viewId ? "/" + viewId : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
+        (docType ? '/' + docType : '') +
+        (viewId ? '/' + viewId : '') +
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
+        (subentity ? '/' + subentity : '') +
+        (subentityId ? '/' + subentityId : '') +
         '/attribute/' + propertyName +
         '/typeahead' + '?query=' + encodeURIComponent(query)
     );
@@ -126,33 +126,37 @@ export function dropdownRequest(
     return () => axios.get(
         config.API_URL +
         '/' + entity +
-        (docType ? "/" + docType : "") +
-        (viewId ? "/" + viewId : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (rowId ? "/" + rowId : "") +
-        (subentity ? "/" + subentity : "") +
-        (subentityId ? "/" + subentityId : "") +
+        (docType ? '/' + docType : '') +
+        (viewId ? '/' + viewId : '') +
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
+        (subentity ? '/' + subentity : '') +
+        (subentityId ? '/' + subentityId : '') +
         '/attribute/' + propertyName +
         '/dropdown'
     );
 }
 
-export function deleteRequest(entity, docType, docId, tabId, ids) {
+export function deleteRequest(
+    entity, docType, docId, tabId, ids, subentity, subentityId
+) {
     return () => axios.delete(
         config.API_URL +
         '/' + entity +
-        (docType ? "/" + docType : "") +
-        (docId ? "/" + docId : "") +
-        (tabId ? "/" + tabId : "") +
-        (ids ? "?ids=" + ids : "")
+        (docType ? '/' + docType : '') +
+        (docId ? '/' + docId : '') +
+        (tabId ? '/' + tabId : '') +
+        (subentity ? '/' + subentity : '') +
+        (subentityId ? '/' + subentityId : '') +
+        (ids ? '?ids=' + ids : '')
     );
 }
 
 export function actionsRequest(entity, type, id, selected){
-    let query = "";
+    let query = '';
     for (let item of selected) {
-       query+=","+item;
+       query+=','+item;
     }
     query = query.substring(1);
 
@@ -162,7 +166,7 @@ export function actionsRequest(entity, type, id, selected){
         type + '/' +
         id +
         '/actions'+
-        (selected.length > 0 && entity=="documentView" ? "?selectedIds="+ query :"")
+        (selected.length > 0 && entity=='documentView' ? '?selectedIds='+ query :'')
     );
 }
 
@@ -176,15 +180,26 @@ export function referencesRequest(entity, type, id){
     );
 }
 
-export function printRequest(entity, docType, docId, name) {
+export function attachmentsRequest(entity, docType, docId) {
+    return () => axios.get(
+        config.API_URL + '/' +
+        entity + '/' +
+        docType + '/' +
+        docId +
+        '/attachments'
+    );
+}
+
+export function openFile(entity, docType, docId, fileType, fileId) {
     return () => {
         const url =
             config.API_URL + '/' +
             entity + '/' +
             docType + '/' +
-            docId +
-            '/print/' + name;
+            docId + '/' +
+            fileType + '/' +
+            fileId;
 
-        window.open(url, "_blank");
+        window.open(url, '_blank');
     }
 }

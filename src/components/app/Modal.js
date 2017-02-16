@@ -29,23 +29,27 @@ class Modal extends Component {
 
         this.state = {
             scrolled: false,
-            isNew: rowId === "NEW",
+            isNew: rowId === 'NEW',
             init: false
         }
 
         switch(modalType){
-            case "window":
-                dispatch(createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)).catch(err => {
+            case 'window':
+                dispatch(
+                    createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
+                ).catch(err => {
                     this.handleClose();
                 });
                 break;
-            case "process":
+            case 'process':
                 //processid, viewId, docType, id or ids
-                dispatch(createProcess(windowType, modalViewId, relativeType, dataId ? dataId : selected)).catch(err => {
+                dispatch(
+                    createProcess(
+                        windowType, modalViewId, relativeType, dataId ? dataId : selected
+                    )
+                ).catch(err => {
                     this.handleClose();
                 });
-                break;
-            case "documentView":
                 break;
         }
     }
@@ -56,7 +60,7 @@ class Modal extends Component {
         // because body is out of react app range
         // and css dont affect parents
         // but we have to change scope of scrollbar
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
 
         const modalContent = document.querySelector('.js-panel-modal-content')
 
@@ -67,7 +71,7 @@ class Modal extends Component {
         const modalContent = document.querySelector('.js-panel-modal-content')
         modalContent && modalContent.removeEventListener('scroll', this.handleScroll);
     }
-    
+
     handleClose = () => {
         const {dispatch, closeCallback, modalType} = this.props;
         const {isNew} = this.state;
@@ -94,7 +98,7 @@ class Modal extends Component {
         const {dispatch} = this.props;
 
         dispatch(closeModal());
-        document.body.style.overflow = "auto";
+        document.body.style.overflow = 'auto';
     }
 
     renderModalBody = () => {
@@ -104,7 +108,7 @@ class Modal extends Component {
         } = this.props;
 
         switch(modalType){
-            case "window":
+            case 'window':
                 return (
                     <Window
                         data={data}
@@ -117,7 +121,7 @@ class Modal extends Component {
                         isAdvanced={isAdvanced}
                     />
                 )
-            case "process":
+            case 'process':
                 return (
                     <Process
                         data={data}
@@ -139,18 +143,18 @@ class Modal extends Component {
         } = this.state;
 
         return (
-            (modalType === "documentView" || data.length > 0) && <div
+            data.length > 0 && <div
                 className="screen-freeze js-not-unselect"
             >
                 <div className="panel panel-modal panel-modal-primary">
                     <div
                         className={
-                            "panel-modal-header " +
-                            (scrolled ? "header-shadow": "")
+                            'panel-modal-header ' +
+                            (scrolled ? 'header-shadow': '')
                         }
                     >
                         <span className="panel-modal-header-title">
-                            {modalTitle ? modalTitle : "Modal"}
+                            {modalTitle ? modalTitle : 'Modal'}
                         </span>
                         <div className="items-row-2">
                             <button
@@ -158,9 +162,9 @@ class Modal extends Component {
                                 onClick={this.handleClose}
                                 tabIndex={0}
                             >
-                                {modalType === "process" ? "Cancel" : "Done"}
+                                {modalType === 'process' ? 'Cancel' : 'Done'}
                             </button>
-                            {modalType === "process" &&
+                            {modalType === 'process' &&
                                 <button
                                     className="btn btn-meta-primary btn-distance-3 btn-md"
                                     onClick={this.handleStart}

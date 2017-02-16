@@ -55,7 +55,7 @@ class QuickActions extends Component {
         if(!action.disabled){
             dispatch(
                 openModal(
-                    action.caption, action.processId, "process", null, null, false,
+                    action.caption, action.processId, 'process', null, null, false,
                     viewId
                 )
             );
@@ -89,8 +89,8 @@ class QuickActions extends Component {
                     <span className="spacer-right">Actions:</span>
                     <div className="quick-actions-wrapper">
                         <div
-                            className={"tag tag-success tag-xlg spacer-right " +
-                                (actions[0].disabled ? "tag-default " : "pointer ")
+                            className={'tag tag-success tag-xlg spacer-right ' +
+                                (actions[0].disabled ? 'tag-default ' : 'pointer ')
                             }
                             onClick={() => this.handleClick(actions[0])}
                         >
@@ -99,8 +99,8 @@ class QuickActions extends Component {
 
                         <div
                             className={
-                                "btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer " +
-                                (isDropdownOpen ? "btn-disabled " : "")
+                                'btn-meta-outline-secondary btn-icon-sm btn-inline btn-icon pointer ' +
+                                (isDropdownOpen ? 'btn-disabled ' : '')
                             }
                             onClick={() => this.toggleDropdown(!isDropdownOpen)}
                         >

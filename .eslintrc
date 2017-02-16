@@ -8,8 +8,10 @@
     "node": true
   },
   "parser": "babel-eslint",
+  "extends": "eslint:recommended",
   "rules": {
     "quotes": [2, "single"],
+    "jsx-quotes": [2, "prefer-double"],
     "strict": [2, "never"],
     "react/jsx-uses-react": 2,
     "react/jsx-uses-vars": 2,

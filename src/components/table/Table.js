@@ -133,9 +133,9 @@ class Table extends Component {
     selectProduct = (id, idFocused, idFocusedDown) => {
         const {dispatch} = this.props;
 
-        this.setState(prevState => Object.assign({}, this.state, {
+        this.setState(prevState => {
             selected: prevState.selected.concat([id])
-        }), () => {
+        }, () => {
             dispatch(selectTableItems(this.state.selected))
             this.triggerFocus(idFocused, idFocusedDown);
         })
@@ -150,7 +150,7 @@ class Table extends Component {
     selectAll = () => {
         const {rowData, tabid, keyProperty, indentSupported} = this.props;
         const {rows} = this.state;
-        const property = keyProperty ? keyProperty : "rowId";
+        const property = keyProperty ? keyProperty : 'rowId';
         const toSelect = rows.map((item, index) => item[property]);
 
         this.selectRangeProduct(toSelect);
@@ -182,10 +182,10 @@ class Table extends Component {
     triggerFocus = (idFocused, idFocusedDown) => {
         const rowSelected = document.getElementsByClassName('row-selected');
         if(rowSelected.length > 0){
-            if(typeof idFocused == "number"){
+            if(typeof idFocused == 'number'){
                 rowSelected[0].children[idFocused].focus();
             }
-            if(typeof idFocusedDown == "number"){
+            if(typeof idFocusedDown == 'number'){
                 rowSelected[rowSelected.length-1].children[idFocusedDown].focus();
             }
         }
@@ -216,7 +216,7 @@ class Table extends Component {
         }
 
         switch(e.key) {
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
 
                 const actualId = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
@@ -231,7 +231,7 @@ class Table extends Component {
                     }
                 }
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
 
                 const actual = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
@@ -246,19 +246,19 @@ class Table extends Component {
                     }
                 }
                 break;
-            case "ArrowLeft":
+            case 'ArrowLeft':
                 e.preventDefault();
                 if(document.activeElement.previousSibling){
                     document.activeElement.previousSibling.focus();
                 }
                 break;
-            case "ArrowRight":
+            case 'ArrowRight':
                 e.preventDefault();
                 if(document.activeElement.nextSibling){
                     document.activeElement.nextSibling.focus();
                 }
                 break;
-            case "Tab":
+            case 'Tab':
                 if(e.shiftKey){
                     //passing focus over table cells backwards
                     this.table.focus();
@@ -312,7 +312,7 @@ class Table extends Component {
         const selectRange = e.shiftKey;
 
         switch(e.key) {
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
 
                 const array = rows.map((item, id) => {
@@ -331,7 +331,7 @@ class Table extends Component {
                     }
                 }
                 break;
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
 
                 const arrays = rows.map((item, id) => {
@@ -350,7 +350,7 @@ class Table extends Component {
                     }
                 }
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 if(selected.length <= 1) {
                    onDoubleClick(selected[selected.length-1]);
@@ -360,12 +360,12 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
-            case "Escape":
+            case 'Escape':
                 if(open){
                     closeOverlays();
                 }
                 break;
-            case "Tab":
+            case 'Tab':
                 e.preventDefault();
                 document.getElementsByClassName('js-attributes')[0].focus();
                 break;
@@ -481,19 +481,19 @@ class Table extends Component {
 
     openModal = (windowType, tabId, rowId) => {
         const {dispatch} = this.props;
-        dispatch(openModal("Add new", windowType, "window", tabId, rowId));
+        dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
     }
 
     handleAdvancedEdit = (type, tabId, selected) => {
         const {dispatch} = this.props;
 
-        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
+        dispatch(openModal('Advanced edit', type, 'window', tabId, selected[0], true));
     }
 
     handleOpenNewTab = (selected) => {
         const {type} = this.props;
         for(let i = 0; i < selected.length; i++){
-            window.open("/window/" + type + "/" + selected[i], "_blank");
+            window.open('/window/' + type + '/' + selected[i], '_blank');
         }
     }
 
@@ -518,10 +518,10 @@ class Table extends Component {
             promptOpen: false,
             selected: []
         }, () => {
-            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
+            dispatch(deleteRequest('window', type, docId ? docId : null, docId ? tabid : null, selected))
             .then(() => {
                 if(docId){
-                    dispatch(deleteLocal(tabid, selected, "master"))
+                    dispatch(deleteLocal(tabid, selected, 'master'))
                 } else {
                     updateDocList();
                 }
@@ -550,7 +550,7 @@ class Table extends Component {
         } = this.props;
 
         const {selected, rows} = this.state;
-        const keyProp = keyProperty ? keyProperty : "rowId";
+        const keyProp = keyProperty ? keyProperty : 'rowId';
 
         if(rows){
             let keys = Object.keys(rows);
@@ -631,8 +631,8 @@ class Table extends Component {
 
         return (
             <div className="table-flex-wrapper">
-                <div className={"table-flex-wrapper " +
-                        (mainTable ? "table-flex-wrapper-row " : "")
+                <div className={'table-flex-wrapper ' +
+                        (mainTable ? 'table-flex-wrapper-row ' : '')
                     }
                 >
                     {contextMenu.open && <TableContextMenu
@@ -653,7 +653,7 @@ class Table extends Component {
                     {!readonly && <div className="row">
                         <div className="col-xs-12">
                             <TableFilter
-                                openModal={() => this.openModal(type, tabid, "NEW")}
+                                openModal={() => this.openModal(type, tabid, 'NEW')}
                                 toggleFullScreen={toggleFullScreen}
                                 fullScreen={fullScreen}
                                 docType={type}
@@ -668,18 +668,18 @@ class Table extends Component {
 
                     <div
                         className={
-                            "panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table" +
+                            'panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table ' +
                             ((
                                 (rowData && rowData[tabid] &&
                                 Object.keys(rowData[tabid]).length === 0) ||
                                 (!rowData[tabid])
-                            ) ? " table-content-empty" : null)
+                            ) ? 'table-content-empty ' : '')
                         }
                     >
                         <table
                             className={
-                                "table table-bordered-vertically table-striped js-table " +
-                                (readonly ? "table-read-only" : "")
+                                'table table-bordered-vertically table-striped js-table ' +
+                                (readonly ? 'table-read-only' : '')
                             }
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
@@ -732,9 +732,9 @@ class Table extends Component {
                 }
                 {promptOpen &&
                     <Prompt
-                        title={"Delete"}
-                        text={"Are you sure?"}
-                        buttons={{submit: "Delete", cancel: "Cancel"}}
+                        title="Delete"
+                        text="Are you sure?"
+                        buttons={{submit: 'Delete', cancel: 'Cancel'}}
                         onCancelClick={this.handlePromptCancelClick}
                         onSubmitClick={() => this.handlePromptSubmitClick(selected)}
                     />

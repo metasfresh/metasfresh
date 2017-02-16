@@ -19,9 +19,9 @@ class DocumentListContextShortcuts extends Component {
     render() {
         return (
         <Shortcuts
-            name={"QUICK_ACTIONS"}
+            name="QUICK_ACTIONS"
             handler = { this.handleShortcuts }
-            targetNodeSelector = { "body" }
+            targetNodeSelector = "body"
             isolate = { true }
             preventDefault = { true }
             stopPropagation = { true } 

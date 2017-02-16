@@ -45,9 +45,9 @@ class FiltersFrequent extends Component {
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
                                 className={
-                                    "btn btn-filter btn-meta-outline-secondary btn-distance btn-sm " +
-                                    (openFilterId === index ? "btn-select ": "") +
-                                    (isActive ? "btn-active ": "")
+                                    'btn btn-filter btn-meta-outline-secondary btn-distance btn-sm ' +
+                                    (openFilterId === index ? 'btn-select ': '') +
+                                    (isActive ? 'btn-active ': '')
                                 }
                             >
                                 <i className="meta-icon-preview" />

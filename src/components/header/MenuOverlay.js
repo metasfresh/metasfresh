@@ -18,17 +18,17 @@ class MenuOverlay extends Component {
         super(props);
         this.state = {
             queriedResults: [],
-            query: "",
+            query: '',
             deepNode: null,
             deepSubNode: null,
-            path: "",
-            subPath: ""
+            path: '',
+            subPath: ''
         };
     }
 
     browseWholeTree = () => {
       const {dispatch} = this.props;
-      dispatch(push("/sitemap"));
+      dispatch(push('/sitemap'));
     }
 
     handleClickOutside = (e) => {
@@ -41,38 +41,38 @@ class MenuOverlay extends Component {
         const {dispatch} = this.props;
         e.preventDefault();
         if(!!e.target.value){
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 query: e.target.value
-            }));
+            })
             dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     queriedResults: flattenLastElem(response.data)
-                }))
+                })
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         queriedResults: []
-                    }))
+                    })
                 }
             });
         }else{
 
-            this.setState(Object.assign({}, this.state, {
-                query: "",
+            this.setState({
+                query: '',
                 queriedResults: []
-            }), ()=> {
-                document.getElementById('search-input-query').value=""
+            }, ()=> {
+                document.getElementById('search-input-query').value=''
             });
         }
     }
 
     handleClear = (e) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
-            query: "",
+        this.setState({
+            query: '',
             queriedResults: []
-        }), ()=> {
-            document.getElementById('search-input-query').value=""
+        }, ()=> {
+            document.getElementById('search-input-query').value=''
         });
     }
 
@@ -80,9 +80,9 @@ class MenuOverlay extends Component {
         const {dispatch} = this.props;
         e.preventDefault();
         dispatch(nodePathsRequest(nodeId,8)).then(response => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 deepNode: response.data
-            }))
+            })
 
             this.handlePath(nodeId);
         })
@@ -91,38 +91,37 @@ class MenuOverlay extends Component {
     handleSubDeeper = (nodeId) => {
         const {dispatch} = this.props;
         dispatch(nodePathsRequest(nodeId,8)).then(response => {
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 deepSubNode: response.data
-            }))
+            })
         })
     }
 
     handleClickBack = (e) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             deepNode: null
-        }))
+        })
     }
 
     handleSubClickBack = (e) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             deepSubNode: null
-        }))
+        })
     }
 
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
         this.handleClickOutside();
-        dispatch(push("/window/" + elementId));
+        dispatch(push('/window/' + elementId));
     }
 
     handleNewRedirect = (elementId) => {
         const {dispatch} = this.props;
         this.handleClickOutside();
-        dispatch(push("/window/" + elementId + "/new"));
+        dispatch(push('/window/' + elementId + '/new'));
     }
-
 
     handlePath = (nodeId) => {
         const {dispatch} = this.props;
@@ -141,9 +140,9 @@ class MenuOverlay extends Component {
             //remove first MENU element
             pathArray.shift();
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 path: pathArray
-            }))
+            })
         });
     }
 
@@ -164,9 +163,9 @@ class MenuOverlay extends Component {
             //remove first MENU element
             pathArray.shift();
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 subPath: pathArray
-            }))
+            })
         });
     }
 
@@ -175,7 +174,10 @@ class MenuOverlay extends Component {
             <span>
                 {path && path.map((item, index) =>
                     <span key={index}>
-                        {item.nodeId > 0 ? ((index > 0 ? ' / ' : '') + item.captionBreadcrumb) : item.captionBreadcrumb}
+                        {item.nodeId > 0 ?
+                            ((index > 0 ? ' / ' : '') + item.captionBreadcrumb) :
+                            item.captionBreadcrumb
+                        }
                     </span>
                 )}
             </span>
@@ -235,14 +237,14 @@ class MenuOverlay extends Component {
     }
 
     linkClick = (item) => {
-        
+
         const {dispatch} = this.props;
-        if(item.elementId && item.type == "newRecord") {
+        if(item.elementId && item.type == 'newRecord') {
             this.handleNewRedirect(item.elementId)
-        } else if (item.elementId && item.type == "window"){
+        } else if (item.elementId && item.type == 'window'){
             this.handleRedirect(item.elementId)
             dispatch(getWindowBreadcrumb(item.elementId));
-        } else if (item.type == "group"){
+        } else if (item.type == 'group'){
             this.handleSubDeeper(item.nodeId);
             this.handleSubPath(item.nodeId);
         }
@@ -254,7 +256,7 @@ class MenuOverlay extends Component {
         const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
         const parentSibling = document.activeElement.parentElement.nextSibling;
         switch(e.key){
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
                 if (document.activeElement.classList.contains('js-menu-overlay')) {
                     firstMenuItem && firstMenuItem.focus();
@@ -264,7 +266,7 @@ class MenuOverlay extends Component {
                     parentSibling && parentSibling.focus();
                 }
                 break;
-            case "Tab":
+            case 'Tab':
                 e.preventDefault();
                 if(document.activeElement === input) {
                     firstMenuItem.focus();
@@ -272,20 +274,20 @@ class MenuOverlay extends Component {
                     input.focus();
                 }
                 break;
-            case "Enter":
+            case 'Enter':
                 e.preventDefault();
                 document.activeElement.click();
                 break;
-            case "Backspace":
+            case 'Backspace':
                 if(document.activeElement !== input){
                     e.preventDefault();
                     this.handleClickBack(e);
                     document.getElementsByClassName('js-menu-overlay')[0].focus();
                 }
                 break;
-            case "Escape":
+            case 'Escape':
                 e.preventDefault();
-                handleMenuOverlay("","");
+                handleMenuOverlay('','');
         }
     }
 
@@ -311,7 +313,7 @@ class MenuOverlay extends Component {
                                 :
                                 <span
                                     className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
-                                    onClick={() => dispatch(push("/"))}
+                                    onClick={() => dispatch(push('/'))}
                                     tabIndex={0}
                                     onKeyDown={(e) => this.handleKeyDown(e)}
                                 >
@@ -353,7 +355,7 @@ class MenuOverlay extends Component {
                                             {...result}
                                         />
                                     )}
-                                    { queriedResults.length === 0 && query!="" &&
+                                    { queriedResults.length === 0 && query!='' &&
                                         <span>There are no results</span>
                                     }
                                 </div>
@@ -376,7 +378,7 @@ class MenuOverlay extends Component {
 
                         </div>
                     }
-                    {nodeId == '0' && siteName !== "Sitemap" &&
+                    {nodeId == '0' && siteName !== 'Sitemap' &&
                         <div className="text-xs-right">
                             <span className="menu-overlay-link tree-link" onClick={this.browseWholeTree}>Browse whole tree &gt;&gt; </span>
                         </div>

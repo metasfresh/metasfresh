@@ -61,8 +61,8 @@ export class DraggableWrapper extends Component {
             }
         }), () => {
             const changes = {
-                "jsonDashboardChanges": {
-                    "dashboardItemIdsOrder": cards.map(item => item.id)
+                'jsonDashboardChanges': {
+                    'dashboardItemIdsOrder': cards.map(item => item.id)
                 }
             };
             dispatch(setUserDashboardWidgets(changes));
@@ -87,8 +87,8 @@ export class DraggableWrapper extends Component {
     render() {
         const { cards, isVisible, idMaximized, indicators } = this.state;
         return (
-            <div className={this.props.dashboard == "/"?"dashboard-wrapper":""}> 
-                {this.props.dashboard == "/" &&
+            <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}> 
+                {this.props.dashboard == '/' &&
                     <div className="logo-wrapper">
                         <img src={logo} />
                     </div>
@@ -97,8 +97,8 @@ export class DraggableWrapper extends Component {
                 
                 
                 {false && indicators.length > 0 && <div className={
-                    "indicators-wrapper " +
-                    (idMaximized !== false ? "indicator-hidden" : "")
+                    'indicators-wrapper ' +
+                    (idMaximized !== false ? 'indicator-hidden' : '')
                 }>
                     {false && indicators.map((indicator, id) =>
                         <div
@@ -116,7 +116,7 @@ export class DraggableWrapper extends Component {
                     )}
                 </div>}
 
-                {this.props.dashboard != "/" && cards.map((card, i) => {
+                {this.props.dashboard != '/' && cards.map((card, i) => {
                     return (
                         <DraggableWidget
                             key={card.id}

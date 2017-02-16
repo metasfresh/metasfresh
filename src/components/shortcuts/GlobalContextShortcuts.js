@@ -69,13 +69,14 @@ class GlobalContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name = { "GLOBAL_CONTEXT" }
+                name = "GLOBAL_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
                 global = {true}
+                dataShortcuts = { true }
             />
         )
     }
