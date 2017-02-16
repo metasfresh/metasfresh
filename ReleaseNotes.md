@@ -31,6 +31,7 @@ this week's RC
   * #257 login page: focus on username
   * #275 None of the menus could be opened when in full screen mode
   * #734 Add Translation for en_US in WebUI
+  * #833 Invoice Process in Invoice Candidates WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
   * #947 Window Greeting Add Translation for en_US
