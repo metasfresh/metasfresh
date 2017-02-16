@@ -113,7 +113,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ILogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ILogicExpression.FALSE)
 				.setDisplayLogic(ILogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField));
 
