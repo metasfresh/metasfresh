@@ -187,7 +187,7 @@ class NavigationTree extends Component {
         return (
             <Container
                 breadcrumb={breadcrumb.slice(0,1)}
-                siteName = {"Sitemap"}
+                siteName = "Sitemap"
             >
                 {modal.visible &&
                     <Modal

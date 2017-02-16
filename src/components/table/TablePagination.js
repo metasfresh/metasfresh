@@ -189,7 +189,7 @@ class TablePagination extends Component {
 
                                     {pagination}
 
-                                    <li className={"page-item "}>
+                                    <li className="page-item ">
                                         <a className="page-link" onClick={() => {handleChangePage('up'); deselect()} }>
                                             <span>&raquo;</span>
                                         </a>

@@ -36,7 +36,7 @@ class Breadcrumb extends Component {
 
         return (<div key={index}>
             {!!index && <span className="divider">/</span>}
-            <div className={"header-btn tooltip-parent"}>
+            <div className="header-btn tooltip-parent">
                 <div
                     title={!!index && menu.children.captionBreadcrumb ? menu.children.captionBreadcrumb : ''}
                     className={'header-item-container pointer ' +
@@ -53,7 +53,7 @@ class Breadcrumb extends Component {
                     onMouseEnter={!!index ? '' : (e) => this.toggleTooltip(true)}
                     onMouseLeave={(e) => this.toggleTooltip(false)}
                 >
-                    <span className={"header-item icon-sm"}>
+                    <span className="header-item icon-sm">
                         {!!index ? menu.children.captionBreadcrumb : <i className="meta-icon-menu" />}
                     </span>
                 </div>

@@ -9,6 +9,7 @@
   },
   "parser": "babel-eslint",
   "rules": {
+    "esline:recommended": 2,
     "quotes": [2, "single"],
     "jsx-quotes": [2, "prefer-double"],
     "strict": [2, "never"],

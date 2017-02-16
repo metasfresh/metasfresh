@@ -462,7 +462,7 @@ class RawWidget extends Component {
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                             tabIndex="-1"
                         />
-                        <div className={"input-checkbox-tick"}/>
+                        <div className="input-checkbox-tick" />
                     </label>
                 )
             case 'Switch':
@@ -483,7 +483,7 @@ class RawWidget extends Component {
                             tabIndex="-1"
                             onChange={(e) => this.handlePatch(widgetField, e.target.checked, id)}
                         />
-                        <div className={"input-slider"} />
+                        <div className="input-slider" />
                     </label>
                 )
             case 'Label':

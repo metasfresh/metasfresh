@@ -732,8 +732,8 @@ class Table extends Component {
                 }
                 {promptOpen &&
                     <Prompt
-                        title={"Delete"}
-                        text={"Are you sure?"}
+                        title="Delete"
+                        text="Are you sure?"
                         buttons={{submit: 'Delete', cancel: 'Cancel'}}
                         onCancelClick={this.handlePromptCancelClick}
                         onSubmitClick={() => this.handlePromptSubmitClick(selected)}

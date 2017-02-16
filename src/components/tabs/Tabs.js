@@ -64,7 +64,7 @@ class Tabs extends Component {
                 return (
                     <div
                         key={'pane' + item.key}
-                        className={"tab-pane active"}
+                        className="tab-pane active"
                     >
                         {itemWithProps}
                     </div>
@@ -78,7 +78,6 @@ class Tabs extends Component {
 
     render() {
         const {children, tabIndex, fullScreen} = this.props;
-        // const {fullScreen} = this.state;
         return (
             <div className={
                 'mb-1 ' +
@@ -88,7 +87,7 @@ class Tabs extends Component {
                     {this.renderPills(children)}
                 </ul>
                 <div
-                    className={"tab-content"}
+                    className="tab-content"
                     tabIndex={tabIndex}
                     ref={c => this.tabContent = c}
                 >

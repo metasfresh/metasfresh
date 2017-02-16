@@ -156,8 +156,7 @@ class TableItem extends Component {
             indentation.push(
                 <div
                     key={i}
-                    className={"indent-item-mid "
-                    }
+                    className="indent-item-mid"
                 >
                     {i === indent.length - 1 && <div className="indent-mid"/>}
                     <div

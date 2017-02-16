@@ -13,7 +13,7 @@ export class Dashboard extends Component {
         const {breadcrumb} = this.props;
         return (
             <Container
-                siteName = {"Dashboard"}
+                siteName = "Dashboard"
                 noMargin = {true}
             >
                 <div className="container-fluid dashboard-wrapper">

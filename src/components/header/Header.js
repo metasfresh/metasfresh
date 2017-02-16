@@ -243,8 +243,8 @@ class Header extends Component {
             {
                 prompt.open &&
                 <Prompt
-                    title={"Delete"}
-                    text={"Are you sure?"}
+                    title="Delete"
+                    text="Are you sure?"
                     buttons={{submit: 'Delete', cancel: 'Cancel'}}
                     onCancelClick={this.handlePromptCancelClick}
                     onSubmitClick={() => this.handlePromptSubmitClick(windowType, dataId)}
@@ -328,7 +328,7 @@ class Header extends Component {
                                     onMouseEnter={(e) => this.toggleTooltip(keymap.GLOBAL_CONTEXT.OPEN_INBOX_MENU)}
                                     onMouseLeave={(e) => this.toggleTooltip('')}
                                 >
-                                    <span className={"header-item header-item-badge icon-lg"}>
+                                    <span className="header-item header-item-badge icon-lg">
                                         <i className="meta-icon-notifications" />
                                         {inbox.unreadCount > 0 && <span className="notification-number">{inbox.unreadCount}</span>}
                                     </span>

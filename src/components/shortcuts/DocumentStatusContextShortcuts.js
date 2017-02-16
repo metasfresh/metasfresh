@@ -16,9 +16,9 @@ class DocumentStatusContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name={"DOCUMENT_STATUS_CONTEXT"}
+                name="DOCUMENT_STATUS_CONTEXT"
                 handler = { this.handleShortcuts }
-                targetNodeSelector = { "body" }
+                targetNodeSelector = "body"
                 isolate = { true }
                 preventDefault = { true }
                 stopPropagation = { true }
