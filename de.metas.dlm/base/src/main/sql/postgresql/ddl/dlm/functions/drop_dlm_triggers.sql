@@ -16,7 +16,7 @@ BEGIN
 END 
 $BODY$
 	LANGUAGE plpgsql VOLATILE;
-COMMENT ON FUNCTION dlm.create_dlm_triggers(text) IS 
+COMMENT ON FUNCTION dlm.drop_dlm_triggers(text) IS 
 'Uses the view dlm.triggers to drop the tiggers and triggerfunctions that were created using the dlm.triggers view.
 See gh #489.'
 ;

@@ -3,8 +3,8 @@ CREATE OR REPLACE FUNCTION dlm.create_dlm_triggers(p_table_name text)
   RETURNS void AS
 $BODY$
 DECLARE
-	v_trigger_view_row dlm.triggers;
 	v_trigger_select_sql text;
+	v_trigger_view_row dlm.triggers;
 BEGIN
 	v_trigger_select_sql = '
 SELECT v.*

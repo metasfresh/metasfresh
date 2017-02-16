@@ -3,6 +3,10 @@ DROP VIEW IF EXISTS dlm.triggers;
 CREATE OR REPLACE VIEW dlm.triggers AS
 SELECT 
 	fk_info.*,
+------------------------- DDL to disable the trigger -------------------------
+	format('ALTER TABLE public.%s DISABLE TRIGGER dlm_%s_tg', fk_info.foreign_table_name, fk_info.constraint_name) AS disable_dlm_trigger_ddl,
+------------------------- DDL to enable the trigger -------------------------
+	format('ALTER TABLE public.%s ENABLE TRIGGER dlm_%s_tg', fk_info.foreign_table_name, fk_info.constraint_name) AS enable_dlm_trigger_ddl,
 ------------------------- DDL to drop the trigger ------------------------- 
 	'DROP TRIGGER IF EXISTS dlm_' || fk_info.constraint_name || '_tg ON public.'|| fk_info.foreign_table_name ||';' AS drop_dlm_trigger_ddl,
 	
@@ -18,7 +22,7 @@ COMMENT ON TRIGGER dlm_' || fk_info.constraint_name || '_tg ON public.'|| fk_inf
   IS ''Trigger to fire when we might migrate a '||fk_info.foreign_table_name||' record out of the visiblility of a '||fk_info.table_name||' record'';'
 AS create_dlm_trigger_ddl,
 
-------------------------- DDL to create the trgger function ------------------------- 
+------------------------- DDL to create the trigger function ------------------------- 
 	'DROP FUNCTION IF EXISTS dlm.' || fk_info.constraint_name || '_tgfn() CASCADE;
 CREATE OR REPLACE FUNCTION dlm.' || fk_info.constraint_name || '_tgfn()
   RETURNS trigger AS
