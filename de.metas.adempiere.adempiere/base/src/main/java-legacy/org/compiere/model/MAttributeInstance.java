@@ -29,7 +29,7 @@ import java.util.Properties;
 public class MAttributeInstance extends X_M_AttributeInstance
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6154044437449512042L;
 
@@ -40,11 +40,9 @@ public class MAttributeInstance extends X_M_AttributeInstance
 	 *	@param ignored ignored
 	 *	@param trxName transaction
 	 */
-	public MAttributeInstance (Properties ctx, int ignored, String trxName)
+	public MAttributeInstance (Properties ctx, int id, String trxName)
 	{
-		super(ctx, 0, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-Key");
+		super(ctx, id, trxName);
 	}	//	MAttributeInstance
 
 	/**
@@ -66,7 +64,7 @@ public class MAttributeInstance extends X_M_AttributeInstance
 	 *	@param Value string value
 	 *	@param trxName transaction
 	 */
-	public MAttributeInstance (Properties ctx, int M_Attribute_ID, 
+	public MAttributeInstance (Properties ctx, int M_Attribute_ID,
 		int M_AttributeSetInstance_ID, String Value, String trxName)
 	{
 		super(ctx, 0, trxName);
@@ -74,7 +72,7 @@ public class MAttributeInstance extends X_M_AttributeInstance
 		setM_AttributeSetInstance_ID (M_AttributeSetInstance_ID);
 		setValue (Value);
 	}	//	MAttributeInstance
-	
+
 	/**
 	 * 	Number Value Constructior
 	 *	@param ctx context
@@ -83,7 +81,7 @@ public class MAttributeInstance extends X_M_AttributeInstance
 	 *	@param BDValue number value
 	 *	@param trxName transaction
 	 */
-	public MAttributeInstance (Properties ctx, int M_Attribute_ID, 
+	public MAttributeInstance (Properties ctx, int M_Attribute_ID,
 		int M_AttributeSetInstance_ID, BigDecimal BDValue, String trxName)
 	{
 		super(ctx, 0, trxName);
@@ -101,7 +99,7 @@ public class MAttributeInstance extends X_M_AttributeInstance
 	 * 	@param Value String representation for fast display
 	 *	@param trxName transaction
 	 */
-	public MAttributeInstance (Properties ctx, int M_Attribute_ID, 
+	public MAttributeInstance (Properties ctx, int M_Attribute_ID,
 		int M_AttributeSetInstance_ID, int M_AttributeValue_ID, String Value, String trxName)
 	{
 		super(ctx, 0, trxName);
@@ -111,7 +109,7 @@ public class MAttributeInstance extends X_M_AttributeInstance
 		setValue (Value);
 	}	//	MAttributeInstance
 
-	
+
 	/**
 	 * 	Set ValueNumber
 	 *	@param ValueNumber number
@@ -151,11 +149,11 @@ public class MAttributeInstance extends X_M_AttributeInstance
 					add = true;
 				}
 			}
-		}			
+		}
 		setValue(display.toString());
 	}	//	setValueNumber
-	
-	
+
+
 	/**
 	 *	String Representation
 	 * 	@return info
