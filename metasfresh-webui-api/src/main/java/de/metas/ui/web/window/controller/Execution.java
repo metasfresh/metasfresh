@@ -13,6 +13,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.exceptions.InvalidDocumentVersionException;
 import de.metas.ui.web.window.model.DocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -30,11 +31,11 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -64,46 +65,27 @@ public class Execution implements IAutoCloseable
 		return execution;
 	}
 
+	public static ExecutionBuilder prepareNewExecution()
+	{
+		return new ExecutionBuilder();
+	}
+
 	/**
 	 * Calls the given caller running in:
 	 * <ul>
 	 * <li>in a new execution; assumes no other executions are currently running on this thread
 	 * <li>in transaction
 	 * </ul>
-	 * 
+	 *
 	 * @param name execution name (for logging purposes only)
 	 * @param callable
 	 * @return callable's return value
 	 */
 	public static <T> T callInNewExecution(final String name, final Callable<T> callable)
 	{
-		Preconditions.checkNotNull(callable, "callable");
-
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		boolean error = false;
-		try (final Execution execution = startExecution())
-		{
-			return trxManager.call(callable);
-		}
-		catch (Exception e)
-		{
-			error = true;
-			logger.info("Changes that will be discarded: {}", getCurrentDocumentChangesCollectorOrNull());
-			throw Throwables.propagate(e);
-		}
-		finally
-		{
-			if (!error)
-			{
-				logger.debug("Executed {} in {} ({})", name, stopwatch, callable);
-			}
-			else
-			{
-				logger.warn("Failed executing {} (took {}) ({})", name, stopwatch, callable);
-			}
-		}
+		return new ExecutionBuilder()
+				.name(name)
+				.execute(callable);
 	}
 
 	public static IDocumentChangesCollector getCurrentDocumentChangesCollector()
@@ -136,11 +118,12 @@ public class Execution implements IAutoCloseable
 	private Execution()
 	{
 		super();
-		this.threadName = Thread.currentThread().getName();
+		threadName = Thread.currentThread().getName();
 	}
 
 	@Override
 	public String toString()
+
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("threadName", threadName)
@@ -182,5 +165,123 @@ public class Execution implements IAutoCloseable
 			}
 		}
 		return documentChangesCollector;
+	}
+
+	public static final class ExecutionBuilder
+	{
+		private String name = "";
+		private int versionErrorRetryCount;
+		private boolean inTransaction = true;
+
+		private ExecutionBuilder()
+		{
+		}
+
+		public <T> T execute(final Callable<T> callable)
+		{
+			Callable<T> callableEffective = callable;
+
+			//
+			// First(important). Run in transaction
+			if (inTransaction)
+			{
+				final Callable<T> beforeCall = callableEffective;
+				callableEffective = () -> {
+					final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+					try
+					{
+						return trxManager.call(beforeCall);
+					}
+					catch (final Exception e)
+					{
+						logger.info("Changes that will be discarded: {}", getCurrentDocumentChangesCollectorOrNull());
+						throw Throwables.propagate(e);
+					}
+				};
+			}
+
+			//
+			// Retry on version error
+			if (versionErrorRetryCount > 0)
+			{
+				final Callable<T> beforeCall = callableEffective;
+				callableEffective = () -> {
+					InvalidDocumentVersionException versionException = null;
+					for (int retry = 0; retry < versionErrorRetryCount; retry++)
+					{
+						try
+						{
+							return beforeCall.call();
+						}
+						catch (final InvalidDocumentVersionException ex)
+						{
+							versionException = ex;
+							logger.info("Version error on run {}/{}", retry + 1, versionErrorRetryCount, versionException);
+						}
+					}
+
+					throw versionException;
+				};
+			}
+
+			//
+			// Last, measure and log
+			{
+				final Callable<T> beforeCall = callableEffective;
+				callableEffective = () -> {
+					boolean error = true;
+					final Stopwatch stopwatch = Stopwatch.createStarted();
+					try
+					{
+						final T result = beforeCall.call();
+						error = false;
+						return result;
+					}
+					finally
+					{
+						if (!error)
+						{
+							logger.debug("Executed {} in {} ({})", name, stopwatch, callable);
+						}
+						else
+						{
+							logger.warn("Failed executing {} (took {}) ({})", name, stopwatch, callable);
+						}
+
+					}
+				};
+			}
+
+			//
+			// Run the effective callable in a new execution
+			try (final Execution execution = startExecution())
+			{
+				return callableEffective.call();
+			}
+			catch (final Exception ex)
+			{
+				throw Throwables.propagate(ex);
+			}
+		}
+
+		public ExecutionBuilder name(final String name)
+		{
+			this.name = name;
+			return this;
+		}
+
+		public ExecutionBuilder retryOnVersionError(final int retryCount)
+		{
+			Preconditions.checkArgument(retryCount > 0);
+			versionErrorRetryCount = retryCount;
+			return this;
+		}
+
+		public ExecutionBuilder outOfTransaction()
+		{
+			inTransaction = false;
+			return this;
+		}
 	}
 }
