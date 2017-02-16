@@ -162,7 +162,7 @@ class LoginForm extends Component {
                         onClick={this.handleLogin}
                         disabled={pending}
                     >
-                        {roleSelect? "Send" : "Login"}
+                        {roleSelect? 'Send' : 'Login'}
                     </button>
                 </div>
             </div>
