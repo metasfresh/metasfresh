@@ -73,11 +73,13 @@ class Lookup extends Component {
             mainProperty, propertiesCopy, property
         } = this.state;
 
+
         // removing selection
         this.setState(Object.assign({}, this.state, {
             selected: null
         }), () => {
             if(filterWidget) {
+                console.log('filterWidget');
                 onChange(parameterName, select);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
@@ -85,9 +87,15 @@ class Lookup extends Component {
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
+                console.log('select');
+                console.log(select);
+                console.log(property);
 
                 if(property === '') {
+                    console.log('property=""');
                     const promise = onChange(mainProperty[0].field, select, this.getAllDropdowns);
+
+                    console.log(promise);
 
                     this.inputSearch.value = select[Object.keys(select)[0]];
 
@@ -106,6 +114,8 @@ class Lookup extends Component {
                     )}
                 } else {
                     onChange(property, select);
+
+                    console.log('property else');
 
                     this.setState((prevState) => update(this.state, {
                         properts: {$apply: item => {
@@ -381,7 +391,6 @@ class Lookup extends Component {
         const {
             propertiesCopy, isInputEmpty, list, query, loading, selected, isOpen
         } = this.state;
-
 
         return (
             <div

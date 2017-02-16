@@ -53,6 +53,7 @@ class LookupList extends Component {
         const {handleSelect, selected} = this.props;
         const name = item[Object.keys(item)[0]];
         const key = Object.keys(item)[0];
+        // console.log(item);
         return (
             <div
                 key={key}
@@ -118,6 +119,8 @@ class LookupList extends Component {
         const {
             loading, list
         } = this.props;
+
+        // console.log(list);
 
         return (
             <div className="input-dropdown-list" ref={c => this.listScrollWrap = c}>
