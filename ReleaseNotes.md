@@ -19,9 +19,14 @@ this week's RC
   * #913 include branch name in build version string
   
 * webUI
+  * #118 Functionality to easily add files to current record in webUI
+  * #121 Empties Returns for Vendors and Customers in Material Receipt Window
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
+  * #256 Implement document attachments
+  * #257 login page: focus on username
+  * #275 None of the menus could be opened when in full screen mode
   * #734 Add Translation for en_US in WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
@@ -30,6 +35,16 @@ this week's RC
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
+  
+* webUI
+  * #119 Error when Pressing the Attribute Button
+  * #116 qty 0 in purchase order
+  * #229 Location editor button called "edit attributes"
+  * #261 When the attribute is readonly don't show the Device button(s)
+  * #264 Included tabs layout is broken
+  * #268 Wrong viewId when starting the process
+  * #276 Wrong timing when completing a quick input entry
+  * #279 While browsing a document, pressing New does nothing
 
 # metasfresh 4.55.54 (2017-06)
 

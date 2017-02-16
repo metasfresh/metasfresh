@@ -185,6 +185,8 @@ public interface ITrxManager extends ISingletonService
 	String createTrxName(String prefix, boolean createTrx);
 
 	<T> T call(Callable<T> callable);
+	
+	void run(Runnable runnable);
 
 	/**
 	 * Same as calling {@link #run(String, TrxRunnable)} with trxName=null
