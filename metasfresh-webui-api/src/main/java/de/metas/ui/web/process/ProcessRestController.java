@@ -55,11 +55,11 @@ import io.swagger.annotations.Api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -109,7 +109,7 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final ProcessInfo processInfo = createProcessInfo(adProcessId, request);
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
@@ -117,7 +117,7 @@ public class ProcessRestController
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
-	
+
 	private ProcessInfo createProcessInfo(final int adProcessId, final JSONCreateProcessInstanceRequest request)
 	{
 		// Validate request's AD_Process_ID
@@ -213,20 +213,22 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
-		return Execution.callInNewExecution("pinstance.processParametersChangeEvents", () -> {
-			final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
+		return Execution.prepareNewExecution()
+				.retryOnVersionError(3)
+				.execute(() -> {
+					final ProcessInstance processInstance = instancesRepository.getProcessInstanceForWriting(pinstanceId);
 
-			//
-			// Apply changes
-			processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					//
+					// Apply changes
+					processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 
-			// Push back the changed document
-			instancesRepository.checkin(processInstance);
+					// Push back the changed document
+					instancesRepository.checkin(processInstance);
 
-			//
-			// Return the changes
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
-		});
+					//
+					// Return the changes
+					return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+				});
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}/start", method = RequestMethod.GET)
@@ -268,7 +270,7 @@ public class ProcessRestController
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(reportData, headers, HttpStatus.OK);
+		final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		return response;
 	}
 
