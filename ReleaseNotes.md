@@ -30,6 +30,7 @@ this week's RC
   * #256 Implement document attachments
   * #257 login page: focus on username
   * #275 None of the menus could be opened when in full screen mode
+  * #281 Remove margin from wrapper modal to make 0-padding inside
   * #734 Add Translation for en_US in WebUI
   * #833 Invoice Process in Invoice Candidates WebUI
   * #894 Payment Allocation Window WebUI
