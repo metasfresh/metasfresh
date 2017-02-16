@@ -10,6 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.57.55 (2017-08)
+
+##Features
+* metasfresh 
+  * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
+  * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
+
 # metasfresh 4.56.55 (2017-07)
 
 this week's RC
