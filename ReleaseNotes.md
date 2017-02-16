@@ -10,12 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.57.55 (2017-08)
+# metasfresh 4.57.56 (2017-08)
+
+upcoming
 
 ##Features
 * metasfresh 
   * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
   * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
+  * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
 
 # metasfresh 4.56.55 (2017-07)
 
