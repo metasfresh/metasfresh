@@ -13,17 +13,18 @@ package org.adempiere.pricing.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.pricing.spi.IPricingRule;
@@ -125,11 +126,16 @@ public interface IPricingResult
 	void setM_DiscountSchema_ID(int m_DiscountSchema_ID);
 
 	/**
-	 * Return the price relevant attributes (if any). Never return <code>null</code>.
-	 *
-	 * @return
+	 * @return the price relevant attributes. Never return <code>null</code>.
 	 */
 	List<IPricingAttribute> getPricingAttributes();
+
+	/**
+	 * Adds given {@link IPricingAttribute}s to this result.
+	 * 
+	 * @param pricingAttributesToAdd pricing attributes or empty or null.
+	 */
+	void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd);
 
 	/**
 	 *

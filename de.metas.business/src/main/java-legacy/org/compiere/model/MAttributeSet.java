@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
+import org.compiere.util.KeyNamePair;
 
 /**
  *  Product Attribute Set
@@ -53,7 +55,7 @@ public class MAttributeSet extends X_M_AttributeSet
 	public static MAttributeSet get (Properties ctx, int M_AttributeSet_ID)
 	{
 		Integer key = new Integer (M_AttributeSet_ID);
-		MAttributeSet retValue = (MAttributeSet) s_cache.get (key);
+		MAttributeSet retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;
 		retValue = new MAttributeSet (ctx, M_AttributeSet_ID, null);
@@ -332,6 +334,20 @@ public class MAttributeSet extends X_M_AttributeSet
 		return "\u00bb";
 	}	//	getLotCharEnd
 	
+	public KeyNamePair createLot(final int M_Product_ID)
+	{
+		int M_LotCtl_ID = getM_LotCtl_ID();
+		if (M_LotCtl_ID <= 0)
+		{
+			return null;
+		}
+		
+		final MLotCtl ctl = new MLotCtl(getCtx(), M_LotCtl_ID, ITrx.TRXNAME_None);
+		final MLot lot = ctl.createLot(M_Product_ID);
+		return new KeyNamePair(lot.getM_Lot_ID(), lot.getName());
+	}	// createLot
+
+	
 	/**
 	 * 	Get SerNo Char Start
 	 *	@return defined or #
@@ -355,6 +371,18 @@ public class MAttributeSet extends X_M_AttributeSet
 			return s;
 		return "";
 	}	//	getSerNoCharEnd
+	
+	public String createSerNo()
+	{
+		final int M_SerNoCtl_ID = getM_SerNoCtl_ID();
+		if(M_SerNoCtl_ID <= 0)
+		{
+			return null;
+		}
+		
+		final MSerNoCtl ctl = new MSerNoCtl(getCtx(), M_SerNoCtl_ID, get_TrxName());
+		return ctl.createSerNo();
+	}
 	
 	
 	/**

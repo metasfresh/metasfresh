@@ -531,11 +531,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean askForDeleteRegeneration = true; // ask for re-generation
 			setError(ic, e, askForDeleteRegeneration);
 		}
-		catch (final org.adempiere.exceptions.ProductNotOnPriceListException e)
-		{
-			final boolean askForDeleteRegeneration = true; // ask for re-generation
-			setError(ic, e, askForDeleteRegeneration);
-		}
 		catch (final Exception e)
 		{
 			final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation

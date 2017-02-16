@@ -1,10 +1,14 @@
+--DROP VIEW IF EXISTS rv_fresh_pricelist ;
+--DROP VIEW IF EXISTS rv_fresh_pricelist_comparison;
+--DROP VIEW IF EXISTS report.fresh_AttributePrice;
+
 CREATE OR REPLACE VIEW report.fresh_AttributePrice AS 
 SELECT 	
-	ppa.M_ProductPrice_ID, 
-	ppa.M_ProductPrice_Attribute_ID, 
-	ppa.PriceStd, 
-	ppa.IsActive, 
-	ppa.M_HU_PI_Item_Product_ID, 
+	pp.M_ProductPrice_ID, 
+	ai.m_attributesetinstance_id,
+	pp.PriceStd, 
+	pp.IsActive, 
+	pp.M_HU_PI_Item_Product_ID, 
 
 	string_agg ( av.value , ', ' ORDER BY av.value ) AS Attributes,
 	
@@ -12,13 +16,14 @@ SELECT
 	 *  That column will be filled with an empty string if all relevant data is null. this is important to prevent 
 	 *  attribute prices to be compared with regular prices */
 	(
-		COALESCE( ppa.M_HU_PI_Item_Product_ID || ' ', '' ) ||
-		COALESCE( ppa.isDefault || ' ', '' ) || 
-		COALESCE( string_agg( ppal.M_Attribute_ID::text ||' '|| ppal.M_Attributevalue_ID::text, ',' ORDER BY ppal.M_Attribute_ID) , '')
+		COALESCE( pp.M_HU_PI_Item_Product_ID || ' ', '' ) ||
+		COALESCE( pp.isDefault || ' ', '' ) || 
+		COALESCE( string_agg( ai.M_Attribute_ID::text ||' '|| ai.M_Attributevalue_ID::text, ',' ORDER BY ai.M_Attribute_ID) , '')
 	) AS signature 
 FROM 	
-	M_ProductPrice_Attribute ppa
-	LEFT OUTER JOIN M_ProductPrice_Attribute_Line ppal ON ppa.M_ProductPrice_Attribute_ID = ppal.M_ProductPrice_Attribute_ID AND ppal.isActive = 'Y'
+	M_ProductPrice pp
+	--LEFT OUTER JOIN M_ProductPrice_Attribute_Line ppal ON ppa.M_ProductPrice_Attribute_ID = ppal.M_ProductPrice_Attribute_ID AND ppal.isActive = 'Y'
+	LEFT OUTER JOIN M_AttributeInstance ai ON pp.m_attributesetinstance_id = ai.m_attributesetinstance_id AND ai.isActive = 'Y'
 	LEFT OUTER JOIN (
 		SELECT	av.isActive, av.M_Attributevalue_ID,
 			CASE
@@ -29,11 +34,11 @@ FROM
 			END as value
 		FROM	M_Attributevalue av 
 			LEFT OUTER JOIN M_Attribute a ON av.M_Attribute_ID = a.M_Attribute_ID
-	) av ON ppal.M_Attributevalue_ID = av.M_Attributevalue_ID AND av.IsActive = 'Y' AND av.value IS NOT NULL
+	) av ON ai.M_Attributevalue_ID = av.M_Attributevalue_ID AND av.IsActive = 'Y' AND av.value IS NOT NULL
 WHERE 	
-	ppa.IsActive = 'Y'
+	pp.IsActive = 'Y'
 GROUP BY 
-	ppa.M_ProductPrice_ID, ppa.M_ProductPrice_Attribute_ID, ppa.PriceStd, ppa.IsActive, ppa.M_HU_PI_Item_Product_ID
+	pp.M_ProductPrice_ID, pp.PriceStd, pp.IsActive, pp.M_HU_PI_Item_Product_ID
 ;
 
 
