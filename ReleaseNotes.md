@@ -24,6 +24,7 @@ this week's RC
   * #127 Receipt schedules - Receive with configuration improvements
   * #118 Functionality to easily add files to current record in webUI
   * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+  * #132 Receiving HUs: already received HUs shall be flagged as processed
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
