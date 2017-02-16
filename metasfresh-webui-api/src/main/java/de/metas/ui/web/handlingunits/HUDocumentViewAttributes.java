@@ -145,7 +145,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 	private final JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue)
 	{
 		final String fieldName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
-		final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributeValue);
+		final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
 				.setDisplayed(true)
 				.setMandatory(false)

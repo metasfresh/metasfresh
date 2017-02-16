@@ -132,7 +132,7 @@ public class HUDocumentViewAttributesProvider implements IDocumentViewAttributes
 
 			final DocumentPath documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(storage);
 			final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
-			final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributeValue);
+			final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(storage, attributeValue);
 			final DocumentFieldWidgetType widgetType = HUDocumentViewAttributesHelper.extractWidgetType(attributeValue);
 
 			documentChangesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
