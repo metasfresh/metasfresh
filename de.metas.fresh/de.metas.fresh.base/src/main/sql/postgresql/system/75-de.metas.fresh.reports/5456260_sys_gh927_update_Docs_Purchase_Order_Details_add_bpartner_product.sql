@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN record_id numeric, IN ad_language Character Varying (6));
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details(IN record_id numeric, IN ad_language Character Varying (6));
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN record_id numeric, IN ad_language Character Varying (6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details(IN record_id numeric, IN ad_language Character Varying (6))
 
 RETURNS TABLE
 (
@@ -18,7 +18,7 @@ RETURNS TABLE
 	isDiscountPrinted character(1), 
 	rate character varying, 
 	isPrintTax character(1),
-	description character varying,
+	Description Character Varying,
 	bp_product_no character varying(30),
 	bp_product_name character varying(100)
 )
@@ -51,15 +51,14 @@ SELECT
 		ELSE round(rate, 2)
 	END::character varying AS rate,
 	isPrintTax,
-	ol.description,
+	ol.Description,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
 FROM
 	C_OrderLine ol
-	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
-	INNER JOIN C_BPartner bp			ON o.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
-	LEFT OUTER JOIN C_BP_Group bpg 		ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner bp			ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
+	INNER JOIN C_BP_Group bpg 			ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip 		ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
 	-- Product and its translation
 	LEFT OUTER JOIN M_Product p 			ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
@@ -70,20 +69,21 @@ FROM
 		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y' AND uomt.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
 	-- Tax
 	LEFT OUTER JOIN C_Tax t			ON ol.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
 	-- Get Attributes
 	LEFT OUTER JOIN	(
 		SELECT 	String_agg ( att.ai_value, ', ' ORDER BY length(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
-		FROM 	Report.fresh_Attributes att
+		FROM Report.fresh_Attributes att
 		JOIN C_OrderLine ol ON att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
-		WHERE	att.at_Value IN ('1000002', '1000001', '1000030', '1000015') AND ol.C_Order_ID = $1
+		WHERE	att.at_Value IN ('1000002', '1000001', '1000030', '1000015', 'M_Material_Tracking_ID') AND ol.C_Order_ID = $1
+			-- att.at_IsAttrDocumentRelevant = 'Y' currently those flags are set to be correct for purchase invoices. we need something more flexible for all kinds of documents
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
-	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID')
+	AND pc.M_Product_Category_ID != (SELECT value::numeric FROM AD_SysConfig WHERE name = 'PackingMaterialProductCategoryID' AND isActive = 'Y')
 ORDER BY
 	ol.line
 

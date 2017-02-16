@@ -24,13 +24,13 @@ package org.adempiere.ad.housekeeping.spi;
 
 
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 
 public interface IStartupHouseKeepingTask
 {
 	/**
-	 * Execute the housekeeping-task.
+	 * Execute the housekeeping-task. Please log to an {@link ILoggable} obtained via {@link Loggables#get()}. The housekeeping engine provides one.
 	 * 
-	 * @param loggable implementors should log to this instance.
 	 */
-	void executeTask(ILoggable loggable);
+	void executeTask();
 }

@@ -13,15 +13,14 @@ package org.adempiere.ad.housekeeping.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -29,7 +28,9 @@ import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.LoggerLoggable;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -54,20 +55,23 @@ public class HouseKeepingBL implements IHouseKeepingBL
 		logger.info("Executing the registered house keeping tasks");
 
 		final ILoggable loggable = LoggerLoggable.of(logger, Level.INFO);
-		for (final IStartupHouseKeepingTask task : startupTasks)
-		{
-			logger.info("Executing task " + task.getClass().getName());
 
-			try
+		try (final IAutoCloseable temporaryLoggable = Loggables.temporarySetLoggable(loggable);)
+		{
+			for (final IStartupHouseKeepingTask task : startupTasks)
 			{
-				task.executeTask(loggable);
-			}
-			catch (Exception e)
-			{
-				logger.warn("Failed to execute task {}. Skipped", task, e);
+				logger.info("Executing task " + task.getClass().getName());
+				try
+				{
+					task.executeTask();
+				}
+				catch (Exception e)
+				{
+					logger.warn("Failed to execute task {}. Skipped", task, e);
+				}
 			}
 		}
-		
+
 		logger.info("Finished executing the house keeping tasks");
 	}
 
