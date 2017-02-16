@@ -3,7 +3,6 @@ package de.metas.server.housekeep;
 import java.util.Properties;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.util.ILoggable;
 import org.compiere.process.SequenceCheck;
 import org.compiere.util.Env;
 
@@ -33,10 +32,10 @@ public class SequenceCheckHouseKeepingTask implements IStartupHouseKeepingTask
 {
 
 	@Override
-	public void executeTask(ILoggable loggable)
+	public void executeTask()
 	{
 		final Properties ctx = Env.getCtx();
-		SequenceCheck.checkSequences(ctx, loggable);
+		SequenceCheck.checkSequences(ctx);
 	}
 
 }
