@@ -9,6 +9,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
+import org.adempiere.db.DBConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery.Operator;
@@ -518,8 +519,11 @@ public class SqlDocumentQueryBuilder
 
 		final String sqlOperator = (negate ? " NOT " : " ") + (ignoreCase ? "ILIKE " : "LIKE ");
 
+		sqlParams.add(sqlValueStr);
 		return CompositeStringExpression.builder()
-				.append(sqlColumnExpr).append(sqlOperator).append("?")
+				.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(sqlColumnExpr).append(", 1)")
+				.append(sqlOperator)
+				.append(DBConstants.FUNCNAME_unaccent_string).append("(?, 1)")
 				.build();
 	}
 
