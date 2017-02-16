@@ -8,8 +8,8 @@
     "node": true
   },
   "parser": "babel-eslint",
+  "extends": "eslint:recommended",
   "rules": {
-    "esline:recommended": 2,
     "quotes": [2, "single"],
     "jsx-quotes": [2, "prefer-double"],
     "strict": [2, "never"],
