@@ -21,6 +21,7 @@ upcoming
   * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
   * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
   * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
+  * [#942](https://github.com/metasfresh/metasfresh/issues/942) Improve Transparency & Usability of Pricing definitions
   
 ## Fixes
 * metasfresh
