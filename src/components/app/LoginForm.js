@@ -61,7 +61,7 @@ class LoginForm extends Component {
 
     handleLogin = () => {
         const {dispatch} = this.props;
-        const {roleSelect, roles, role} = this.state;
+        const {roleSelect, role} = this.state;
 
         this.setState({
             pending: true

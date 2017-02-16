@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class TableContextShortcuts extends Component {
@@ -6,7 +6,7 @@ class TableContextShortcuts extends Component {
         super(props);
     }
 
-    handleShortcuts = (action, event) => {
+    handleShortcuts = (action) => {
         const {
             handleToggleExpand, handleToggleQuickInput
         } = this.props;

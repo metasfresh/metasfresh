@@ -1,7 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import {connect} from 'react-redux';
-
-import '../../assets/css/styles.css';
+import React, { Component } from 'react';
 
 class Indicator extends Component {
     constructor(props){
@@ -11,13 +8,10 @@ class Indicator extends Component {
         switch(state){
             case 'saved':
                 return 'indicator-success';
-                break;
             case 'pending':
                 return 'indicator-pending';
-                break;
             case 'error':
                 return 'indicator-error';
-                break;
         }
     }
     render() {

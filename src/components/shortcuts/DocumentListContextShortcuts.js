@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
  
 class DocumentListContextShortcuts extends Component {
@@ -6,7 +6,9 @@ class DocumentListContextShortcuts extends Component {
         super(props);
     }
     handleShortcuts = (action, event) => {
-        const {handleAdvancedEdit, handleOpenNewTab, handleDelete, getAllLeafs} = this.props;
+        const {
+            handleAdvancedEdit, handleOpenNewTab, handleDelete, getAllLeafs
+        } = this.props;
         
         switch (action) {
         case 'OPEN_SELECTED':

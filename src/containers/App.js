@@ -6,7 +6,7 @@ import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
 
 import { syncHistoryWithStore, push } from 'react-router-redux';
-import { Router, Route, browserHistory } from 'react-router';
+import { Router, browserHistory } from 'react-router';
 
 import Moment from 'moment';
 
@@ -20,6 +20,7 @@ import {
     getAvailableLang
 } from '../actions/AppActions';
 
+import '../assets/css/styles.css';
 
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);

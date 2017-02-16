@@ -1,8 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import { Link } from 'react-router';
 
-import Header from '../components/header/Header';
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
@@ -37,7 +35,7 @@ class NavigationTree extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType} = this.props;
+        const {dispatch} = this.props;
 
         this.getData();
         dispatch(getWindowBreadcrumb('143'));
@@ -73,25 +71,24 @@ class NavigationTree extends Component {
 
     handleQuery = (e) => {
         const {dispatch} = this.props;
-        const {rootResults} = this.state;
 
         e.preventDefault();
-        if(!!e.target.value){
-            this.setState(Object.assign({}, this.state, {
+        if(e.target.value){
+            this.setState({
                 query: e.target.value
-            }));
+            });
 
             dispatch(queryPathsRequest(e.target.value, 9, true)).then(response => {
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     queriedResults: response.data.children
-                }))
+                })
             }).catch((err) => {
                 if(err.response && err.response.status === 404) {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         queriedResults: [],
                         rootResults: {}
-                    }))
+                    })
                 }
             });
         }else{
@@ -109,8 +106,7 @@ class NavigationTree extends Component {
         this.getData(this.clearValue);
     }
 
-    renderTree = (res) => {
-      const {dispatch} = this.props;
+    renderTree = () => {
       const {rootResults, queriedResults, query} = this.state;
 
       return(
@@ -180,9 +176,8 @@ class NavigationTree extends Component {
     }
 
     render() {
-        const {master, connectionError, modal, breadcrumb} = this.props;
-        const {nodeId, node} = this.props;
-        const {rootResults, deepNode} = this.state;
+        const {modal, breadcrumb} = this.props;
+        const {rootResults} = this.state;
 
         return (
             <Container
@@ -212,9 +207,9 @@ function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
 
     const {
-        modal,
+        modal
     } = windowHandler || {
-        modal: {},
+        modal: {}
     }
 
     const {
@@ -232,7 +227,7 @@ function mapStateToProps(state) {
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
     breadcrumb: PropTypes.array.isRequired,
-    modal: PropTypes.object.isRequired,
+    modal: PropTypes.object.isRequired
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);

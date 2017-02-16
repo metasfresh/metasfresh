@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { getImageAction, postImageAction } from '../../actions/AppActions';
 
-export default class Image extends React.Component{
+class Image extends Component{
     constructor(props){
         super(props);
 
@@ -87,7 +87,6 @@ export default class Image extends React.Component{
     }
 
     takeSnapshot() {
-        let img = document.createElement('img');
         const width = this.camera.offsetWidth;
         const height = this.camera.offsetHeight;
 
@@ -134,7 +133,7 @@ export default class Image extends React.Component{
             })
                 .then(stream => {
                     this.camera.src = window.URL.createObjectURL(stream);
-                    this.camera.onloadedmetadata = (e) => {
+                    this.camera.onloadedmetadata = () => {
                         this.camera.play();
                     };
 
@@ -146,7 +145,7 @@ export default class Image extends React.Component{
         });
     }
 
-    handleUploadFile(e){
+    handleUploadFile(){
         this.uploadBlob(this.imageInput.files[0]);
     }
 
@@ -171,11 +170,11 @@ export default class Image extends React.Component{
     renderUsingCameraControls(){
         return <div>
             <div className="col-sm-12">
-                <div className="btn btn-meta-outline-secondary btn-sm btn-distance-3" onClick={(e) => this.takeSnapshot()}>
+                <div className="btn btn-meta-outline-secondary btn-sm btn-distance-3" onClick={() => this.takeSnapshot()}>
                     <i className="meta-icon-photo"/>
                     Capture
                 </div>
-                <div className="btn btn-meta-outline-secondary btn-sm" onClick={(e) => this.stopUsingCamera()}>
+                <div className="btn btn-meta-outline-secondary btn-sm" onClick={() => this.stopUsingCamera()}>
                     <i className="meta-icon-close-alt"/>
                     Cancel
                 </div>
@@ -185,7 +184,7 @@ export default class Image extends React.Component{
 
     renderRegularCameraControl(){
         return <div className="col-sm-12">
-            <div className="btn btn-meta-outline-secondary btn-sm" onClick={(e) => this.handleCamera()}>
+            <div className="btn btn-meta-outline-secondary btn-sm" onClick={() => this.handleCamera()}>
                 <i className="meta-icon-photo"/>
                 Take from camera
             </div>
@@ -223,3 +222,5 @@ export default class Image extends React.Component{
         </div>
     }
 }
+
+export default Image;

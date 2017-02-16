@@ -11,7 +11,6 @@ import {
 
 import {
     initLayout,
-    getData,
     patchRequest,
     createInstance,
     completeRequest
@@ -40,16 +39,16 @@ class TableQuickInput extends Component {
         this.initQuickInput();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate() {
         const {data, layout, editedField} = this.state;
         if(data){
             for(let i = 0; i < layout.length; i++){
                 const item = layout[i].fields.map(elem => findRowByPropName(data, elem.field));
                 if(!item[0].value){
                     if(editedField !== i){
-                        this.setState(Object.assign({}, this.state, {
+                        this.setState({
                             editedField: i
-                        }));
+                        })
                     }
 
                     break;
@@ -62,23 +61,23 @@ class TableQuickInput extends Component {
         const {dispatch, docType, docId, tabId} = this.props;
         const {layout} = this.state;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             data: null
-        }), () => {
+        }, () => {
             dispatch(createInstance('window', docType, docId, tabId, 'quickInput')).then(instance => {
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     data: parseToDisplay(instance.data.fields),
                     id: instance.data.id,
                     editedField: 0
-                }));
-            }).catch(err => {
+                });
+            }).catch(() => {
 
             });
 
             !layout && dispatch(initLayout('window', docType, tabId, 'quickInput', docId)).then(layout => {
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     layout: layout.data.elements
-                }))
+                })
             });
         });
     }
@@ -131,7 +130,7 @@ class TableQuickInput extends Component {
 
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
         const {tabId, docType} = this.props;
-        const {editedField} = this.state;
+        
         if(layout){
             return layout.map((item, id) => {
                 const widgetData = item.fields.map(elem => findRowByPropName(data, elem.field));
@@ -180,7 +179,6 @@ class TableQuickInput extends Component {
     }
 
     validateForm = (data) => {
-        const {dispatch} = this.props;
         let ret = true;
         data.map(item => {
             if(!item.value){

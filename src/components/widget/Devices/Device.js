@@ -1,3 +1,5 @@
+/* global config:true */
+
 import React, { Component } from 'react';
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
@@ -19,7 +21,7 @@ class Device extends Component {
         this.sockClient = Stomp.Stomp.over(this.sock);
 
         this.sockClient.debug = null;
-        this.sockClient.connect({}, frame => {
+        this.sockClient.connect({}, () => {
             this.sockClient.subscribe(device.websocketEndpoint, msg => {
                 if(!this.state.valueChangeStopper){
                     const body = JSON.parse(msg.body);
@@ -53,7 +55,7 @@ class Device extends Component {
         const {value, index, isMore} = this.state;
         const {tabIndex} = this.props;
 
-        if(!!value){
+        if(value){
             return (
                 <div
                     className={'btn btn-device btn-meta-outline-secondary btn-sm btn-inline pointer btn-distance-rev ' +

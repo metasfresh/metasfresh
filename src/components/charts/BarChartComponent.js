@@ -26,10 +26,10 @@ class BarChartComponent extends Component {
         
     }
 
-    setDimensions = (mTop=20, mRight=20, mBottom=20, mLeft=20, width=600, height=400) => {
+    setDimensions = (mTop=20, mRight=20, mBottom=20, mLeft=20, mwidth=600, mheight=400) => {
         var margin = {top: mTop, right: mRight, bottom: mBottom, left: mLeft},
-            width = width - margin.left - margin.right,
-            height = height - margin.top - margin.bottom;
+            width = mwidth - margin.left - margin.right,
+            height = mheight - margin.top - margin.bottom;
             return {
                 margin: {
                     top: margin.top, 
@@ -55,11 +55,11 @@ class BarChartComponent extends Component {
         var svg = d3.select('.barchart')
             .attr('width', dimensions.width + dimensions.margin.left + dimensions.margin.right)
             .attr('height', dimensions.height + dimensions.margin.top + dimensions.margin.bottom)
-        .append('g')
+            .append('g')
             .attr('transform', 
                 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')');
 
-        var bars = svg.selectAll('.bar')
+        svg.selectAll('.bar')
             .data(data)
             .enter().append('rect')
             .attr('class', 'bar')

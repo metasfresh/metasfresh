@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
-import { push } from 'react-router-redux';
 
 import {
     closeRawModal
@@ -43,7 +42,7 @@ class RawModal extends Component {
     }
 
     handleClose = () => {
-        const {dispatch, closeCallback, modalType} = this.props;
+        const {closeCallback} = this.props;
         const {isNew} = this.state;
 
         closeCallback && closeCallback(isNew);
@@ -60,7 +59,7 @@ class RawModal extends Component {
 
     render() {
         const {
-            modalTitle, dataId, modalType, windowType, children
+            modalTitle, children
         } = this.props;
 
         const {

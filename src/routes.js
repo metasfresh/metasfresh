@@ -1,6 +1,6 @@
 import React from 'react';
-import { Router, Route, IndexRoute, NoMatch } from 'react-router';
-import {push, replace} from 'react-router-redux';
+import {Route, IndexRoute, NoMatch} from 'react-router';
+import {push} from 'react-router-redux';
 
 import Login from './containers/Login.js';
 import Dashboard from './containers/Dashboard.js';
@@ -24,7 +24,7 @@ export const getRoutes = (store) => {
     const authRequired = (nextState, replace, callback) => {
         if( !localStorage.isLogged ){
             store.dispatch(localLoginRequest()).then((resp) => {
-                if(!!resp.data){
+                if(resp.data){
                     store.dispatch(loginSuccess());
                     callback(null, nextState.location.pathname);
                 }else{

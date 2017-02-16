@@ -17,6 +17,7 @@ import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class QuickActions extends Component {
+    
     constructor(props){
         super(props);
 
@@ -64,6 +65,7 @@ class QuickActions extends Component {
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
+        
         dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
             this.setState({
                 actions: response.data.actions

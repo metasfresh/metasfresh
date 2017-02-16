@@ -24,7 +24,7 @@ const initialState = {
     master: {
         layout: {},
         data: [],
-        rowData: {},
+        rowData: {}
     },
     indicator: 'saved',
     latestNewDocument: null,

@@ -14,7 +14,6 @@ class Notification extends Component {
     }
 
     renderNotification = (item, index) => {
-        const {dispatch} = this.props;
         const {notificationMounted} = this.state;
 
         return (
@@ -28,9 +27,9 @@ class Notification extends Component {
     closeNotification = (id) => {
         const {dispatch} = this.props;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             notificationMounted: false
-        }))
+        })
 
         setTimeout(function(){
             dispatch(deleteNotification(id));
@@ -38,30 +37,30 @@ class Notification extends Component {
     }
 
     componentDidMount() {
-      const {item, index, dispatch} = this.props;
-
-      if(item.time > 0) {
+        const {item, index, dispatch} = this.props;
+        
+        if(item.time > 0) {
+            setTimeout(function(){
+                dispatch(deleteNotification(index));
+            }, item.time);
+        }
+        let th = this;
         setTimeout(function(){
-          dispatch(deleteNotification(index));
-        }, item.time);
-      }
-      let th = this;
-      setTimeout(function(){
-          th.setState(Object.assign({}, this.state, {
-            notificationMounted: true
-          }))
+            th.setState({
+                notificationMounted: true
+            })
         }, 10);
     }
-
+    
     componentWillReceiveProps() {
-      this.setState(Object.assign({}, this.state, {
+        this.setState({
             notificationMounted: true
-      }))
+        })
     }
 
 
     render() {
-        const {notification, item, index} = this.props;
+        const {item, index} = this.props;
         return (
           <div>
             {item && this.renderNotification(item, index)}

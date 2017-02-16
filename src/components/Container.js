@@ -40,7 +40,7 @@ class Container extends Component {
                 <div
                     className={
                         'header-sticky-distance js-unselect ' +
-                        (!!noMargin ? 'dashboard' : 'container-fluid')
+                        (noMargin ? 'dashboard' : 'container-fluid')
                     }
                 >
                     {children}

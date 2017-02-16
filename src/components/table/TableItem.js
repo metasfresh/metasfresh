@@ -46,21 +46,19 @@ class TableItem extends Component {
                 }
             })
         }
-
-
     }
 
     handleKey = (e, property) => {
         const elem = document.activeElement;
-        const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        const { changeListenOnTrue } = this.props;
         const { edited, activeCell} = this.state;
-
+        
         if(!elem.className.includes('js-input-field')) {
-          this.setState(Object.assign({}, this.state, {
-              activeCell: elem
-          }))
+            this.setState({
+                activeCell: elem
+            })
         }
-
+        
         if(e.key === 'Enter' && !edited) {
             this.handleEditProperty(e,property, true);
         } else if (e.key === 'Enter' && edited) {
@@ -195,10 +193,8 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, selectedProducts, rowId, cols,
-            onMouseDown, onDoubleClick, included, tabid, type, docId,
-            tabIndex, mainTable, entity, readonly, indent, odd,
-            handleRightClick, indentSupported, contextType
+            isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick, 
+            indentSupported, contextType
         } = this.props;
 
         return (

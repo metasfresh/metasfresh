@@ -14,15 +14,14 @@ class TableFilter extends Component {
     }
 
     toggleTooltip = (key = null) => {
-        const {isTooltipShow} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isTooltipShow: key
-        }));
+        });
     }
 
     render() {
         const {
-            openModal, toggleFullScreen, fullScreen, docType, docId, tabId, tabIndex,
+            openModal, toggleFullScreen, fullScreen, docType, docId, tabId,
             isBatchEntry, handleBatchEntryToggle
         } = this.props;
 
