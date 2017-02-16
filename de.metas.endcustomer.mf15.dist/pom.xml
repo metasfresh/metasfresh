@@ -20,10 +20,14 @@
 		-->
 		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
 		
-		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+		<!--
+		The following 3 properties are changed by the build system via mvn versions:update-property. 
+		See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
 		<metasfresh.version>1.0.0</metasfresh.version>
+		<metasfresh-webui-frontend.version>1.0.0</metasfresh-webui-frontend.version>
+		<metasfresh-webui-api.version>1.0.0</metasfresh-webui-api.version>
 	</properties>
 
 	<dependencies>
@@ -526,9 +530,43 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!--
+						gh #968: also include the webui deployables. 
+						The two version properties metasfresh-webui-frontend.version and metasfresh-webui-api.version are set "outside".
+					-->
+					<execution>
+						<id>copy-webui-deployables</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<excludeTransitive>true</excludeTransitive>
+							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.metas.ui.web</groupId>
+									<artifactId>metasfresh-webui-api</artifactId>
+									<version>${metasfresh-webui-api.version}</version>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}/dist/metasfresh-webui-frontend</outputDirectory>
+									<destFileName>metasfresh-webui-api.jar</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.metas.ui.web</groupId>
+									<artifactId>metasfresh-webui-frontend</artifactId>
+									<version>${metasfresh-webui-frontend.version}</version>
+									<type>tar.gz</type>
+									<outputDirectory>${project.build.directory}/dist/metasfresh-webui-frontend</outputDirectory>
+									<destFileName>metasfresh-webui-frontend.tar.gz</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+
 					<!-- 
 						Build deploy/download folder: metasfresh client zip, some camel ESB modules, etc.
-						These bundles are buid somewhere else and therefore we need to resolve them with a version range.
+						These bundles are build somewhere else and therefore we need to resolve them with a version range.
 						We did this by specifying them as dependencies further up. they were already resolved and now, we only need to copy them,
 						without specifying a particular version at this place. 
 					-->
@@ -540,7 +578,11 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
-							<includeArtifactIds>de.metas.printing.esb.camel,de.metas.edi.esb.camel,de.metas.document.archive.esb.camel,de.metas.admin.webui</includeArtifactIds>
+							<includeArtifactIds>
+								de.metas.printing.esb.camel,
+								de.metas.edi.esb.camel,
+								de.metas.admin.webui,
+							</includeArtifactIds>
 							<type>jar</type>
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>

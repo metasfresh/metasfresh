@@ -99,13 +99,23 @@
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
-					 <properties>
+					<properties>
 						<property>
-						  <name>metasfresh.version</name>
-						  <searchReactor>false</searchReactor>
-						  <autoLinkDependencies>true</autoLinkDependencies>
+							<name>metasfresh.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
-					  </properties>
+						<property>
+							<name>metasfresh-webui-frontend.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-webui-api.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					</properties>
 				</configuration>
 			</plugin>
 		</plugins>
