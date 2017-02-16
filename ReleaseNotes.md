@@ -46,6 +46,7 @@ this week's RC
   * #268 Wrong viewId when starting the process
   * #276 Wrong timing when completing a quick input entry
   * #279 While browsing a document, pressing New does nothing
+  * #295 Attribute Editor too narrow
 
 # metasfresh 4.55.54 (2017-06)
 
