@@ -80,3 +80,4 @@ metasfresh
 endpoint
 endpoints
 deserialize
+accessor
