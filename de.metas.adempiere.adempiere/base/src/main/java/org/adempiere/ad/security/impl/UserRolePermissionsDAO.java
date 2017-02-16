@@ -245,8 +245,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 						.setOrg_Tree_ID(adTreeOrgId);
 				
 				// org *
-				OrgResource resource = OrgResource.of(AD_Client_ID, 0);
-				OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
+				final OrgResource resource = OrgResource.of(AD_Client_ID, 0);
+				final OrgPermission permission = OrgPermission.ofResourceAndReadOnly(resource, false);
 				builder.addPermission(permission);
 				
 				//
@@ -254,9 +254,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				final List<I_AD_Org> clientOrgs = Services.get(IOrgDAO.class).retrieveClientOrgs(ctx, AD_Client_ID);
 				for (final I_AD_Org org :  clientOrgs)
 				{
-					resource = OrgResource.of(AD_Client_ID, org.getAD_Org_ID());
-					permission = OrgPermission.ofResourceAndReadOnly(resource, false);
-					builder.addPermission(permission);
+					final OrgResource orgResource = OrgResource.of(AD_Client_ID, org.getAD_Org_ID());
+					final OrgPermission orgPermission = OrgPermission.ofResourceAndReadOnly(orgResource, false);
+					builder.addPermission(orgPermission);
 				}
 				return builder.build();
 			}
