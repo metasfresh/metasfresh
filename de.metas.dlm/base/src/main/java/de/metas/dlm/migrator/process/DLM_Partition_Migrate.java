@@ -46,8 +46,8 @@ public class DLM_Partition_Migrate extends JavaProcess
 	@Param(mandatory = true, parameterName = "IsTest")
 	private boolean testMigrate;
 
-	final IMigratorService migratorService = Services.get(IMigratorService.class);
-	final IDLMService dlmService = Services.get(IDLMService.class);
+	private final IMigratorService migratorService = Services.get(IMigratorService.class);
+	private final IDLMService dlmService = Services.get(IDLMService.class);
 
 	@RunOutOfTrx
 	@Override
