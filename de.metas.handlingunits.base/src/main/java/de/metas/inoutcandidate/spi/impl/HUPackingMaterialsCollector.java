@@ -214,6 +214,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		for (final IPair<I_M_HU_PackingMaterial, Integer> huPackingMaterialAndQty : packingMaterialsAndQtys)
 		{
 			final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialAndQty.getLeft();
+			if (huPackingMaterial == null)
+			{
+				// note: some old HUs might have no packing material set.
+				// In this case there is no product, so there is no point to go forward.
+				continue;
+			}
 			final int productId = huPackingMaterial.getM_Product_ID();
 			if (productId <= 0)
 			{
@@ -241,26 +247,21 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final String huUnitTypeToUse = huUnitTypeOverride == null ? handlingUnitsBL.getHU_UnitType(hu) : huUnitTypeOverride;
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeToUse))
 		{
-			// 'hu' is a TO; count it
+			// 'hu' is a TU; count it
+			
+			final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
+			
+			final int countTUsAbs = aggregateHU
+					? hu.getM_HU_Item_Parent().getQty().intValueExact() // gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
+					: 1; // 'hu' represents one TU
+			
 			if (remove)
 			{
-				countTUs--;
+				countTUs -= countTUsAbs;
 			}
 			else
 			{
-				countTUs++;
-			}
-		}
-		else if (handlingUnitsBL.isAggregateHU(hu))
-		{
-			// gh #640: 'hu' is a "bag" of homogenous HUs. Take into account the number of TUs it represents.
-			if (remove)
-			{
-				countTUs -= hu.getM_HU_Item_Parent().getQty().intValueExact();
-			}
-			else
-			{
-				countTUs += hu.getM_HU_Item_Parent().getQty().intValueExact();
+				countTUs += countTUsAbs;
 			}
 		}
 
@@ -268,7 +269,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	/**
-	 * Blindly added the packing materials of given PI.
+	 * Blindly adds the packing materials of given PI.
 	 *
 	 * NOTE: mainly use this method for BLs which are about adding packing materials of user overrides.
 	 *
@@ -375,10 +376,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		final I_M_Locator locator = hu == null ? null : hu.getM_Locator();
-		
+
 		// hu without locator is OK sometimes (e.g. in InOutProducerFromReceiptScheduleHUTest), so we can't assert this here.
-		//Check.errorIf(hu != null && hu.getM_Locator() == null, "The given hu has no locator; hu={}", hu);
-		
+		// Check.errorIf(hu != null && hu.getM_Locator() == null, "The given hu has no locator; hu={}", hu);
+
 		final HUPackingMaterialDocumentLineCandidate candidate = new HUPackingMaterialDocumentLineCandidate(product, material_Tracking, locator);
 		return candidate;
 	}

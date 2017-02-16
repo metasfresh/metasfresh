@@ -359,7 +359,8 @@ public class HUKeyFactory implements IHUKeyFactory
 		final List<IHUKey> keys = new ArrayList<IHUKey>(hus.size());
 		for (final I_M_HU hu : hus)
 		{
-			if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu) && hu.getM_HU_Item_Parent().getQty().signum() <= 0)
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			if (handlingUnitsBL.isAggregateHU(hu) && hu.getM_HU_Item_Parent().getQty().signum() <= 0)
 			{
 				continue;
 			}
@@ -468,7 +469,7 @@ public class HUKeyFactory implements IHUKeyFactory
 				// Iterate VHUs
 				// FIXME: handle the case of an VHU on LU directly !!!!!!! .... in that case there will be no children!!!
 				final List<IHUKey> vhuKeys;
-				if (tuHUKey.isVirtualPI())
+				if (tuHUKey.isVirtualPI() || tuHUKey.isAggregateHU())
 				{
 					vhuKeys = Collections.<IHUKey> singletonList(tuHUKey);
 				}

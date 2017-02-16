@@ -134,7 +134,7 @@ public interface IHUKey extends ITerminalKey, IDisposable
 	boolean isGrouping();
 
 	/**
-	 * @return true if this is a virtual handling unit (but NOT strictly a pure virtual one)
+	 * @return {@code true} if this is a virtual handling unit (but NOT strictly a pure virtual one). However, return {@code false} if this is an aggregate HU!
 	 */
 	boolean isVirtualPI();
 

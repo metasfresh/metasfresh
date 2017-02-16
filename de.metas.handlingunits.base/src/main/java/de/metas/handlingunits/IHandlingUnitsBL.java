@@ -401,4 +401,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
 	 */
 	boolean isAggregateHU(I_M_HU hu);
+
+	/**
+	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
+	 * Otherwise, return the given {@code hu}'s own/direct PI version.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_PI_Version getEffectivePIVersion(I_M_HU hu);
 }

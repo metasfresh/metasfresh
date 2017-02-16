@@ -50,14 +50,14 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractMaterialMovementModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
-import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinBL;
+import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinOrMergeBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 
 public final class HUMergeModel extends AbstractMaterialMovementModel
 {
 	private static final String ERR_SELECT_HU_KEY = "SelectHUKey";
-	private static final String ERR_MULTIPLE_PRODUCTS = "MultipleCUsForTUMerge";
+	public static final String ERR_MULTIPLE_PRODUCTS = "MultipleCUsForTUMerge";
 
 	//
 	// Services
@@ -160,7 +160,7 @@ public final class HUMergeModel extends AbstractMaterialMovementModel
 			tuKeysToJoin = createTUJoinKeysRecursively(selectedTUs, getSelectedChildrenCount());
 		}
 
-		Services.get(ILUTUJoinBL.class).joinHUs(getTerminalContext(), selectedLUKey, tuKeysToJoin);
+		Services.get(ILUTUJoinOrMergeBL.class).joinOrMergeHUs(getTerminalContext(), selectedLUKey, tuKeysToJoin);
 	}
 
 	private List<TUJoinKey> createTUJoinKeysRecursively(final List<LUJoinKey> luKeys, final LUJoinKey selectedLUKey)

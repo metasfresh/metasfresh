@@ -59,6 +59,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.GenericListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -74,7 +75,10 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 /**
  * Helper class for massive generation of HUs for receipt schedule(s).
  * <p>
- * Note:The respective {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s are created via {@link ReceiptScheduleHUTrxListener}.
+ * Notes:
+ * <li>The respective {@link I_M_ReceiptSchedule_Alloc}s and {@link I_M_HU_Assignment}s are created via {@link ReceiptScheduleHUTrxListener}.
+ * <li>This class can also be configured to go with pre existing HUs (if they are still valid) instead of creating new ones,
+ * see {@link ILUTUProducerAllocationDestination#setExistingHUs(IHUAllocations)} which is called from this class.
  *
  * @author tsa
  *
@@ -113,18 +117,20 @@ public class ReceiptScheduleHUGenerator
 	private IContextAware _contextInitial;
 	private final List<I_M_ReceiptSchedule> _receiptSchedules = new ArrayList<>();
 	private final Map<Integer, IProductStorage> _receiptSchedule2productStorage = new HashMap<>();
-
+	private final Map<Integer, IHUAllocations> _receiptSchedule2huAllocations = new HashMap<>();
 	private Quantity _qtyToAllocateTarget = null;
+	//
+	private boolean updateReceiptScheduleDefaultConfiguration = false; // default false, backward compatible; this flag is not considered by #generateAllPlanningHUs_InChunks()
 
 	//
 	// Status
 	private boolean _configurable = true;
 	private IDocumentLUTUConfigurationManager _lutuConfigurationManager;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration;
+	private ILUTUProducerAllocationDestination _lutuProducer;
 
 	private ReceiptScheduleHUGenerator()
 	{
-		super();
 	}
 
 	private final void assertConfigurable()
@@ -158,11 +164,32 @@ public class ReceiptScheduleHUGenerator
 		_contextInitial = context;
 		return this;
 	}
+	
+	/**
+	 * Sets if, after generating the HUs, we shall also update receipt schedule's LUTU configuration.
+	 * 
+	 * IMPORTANT: this flag applies for {@link #generate()} but does not apply for {@link #generateAllPlanningHUs_InChunks()}.
+	 * 
+	 * @param updateReceiptScheduleDefaultConfiguration
+	 */
+	public ReceiptScheduleHUGenerator setUpdateReceiptScheduleDefaultConfiguration(final boolean updateReceiptScheduleDefaultConfiguration)
+	{
+		assertConfigurable();
+		this.updateReceiptScheduleDefaultConfiguration = updateReceiptScheduleDefaultConfiguration;
+		return this;
+	}
+	
+	public boolean isUpdateReceiptScheduleDefaultConfiguration()
+	{
+		return updateReceiptScheduleDefaultConfiguration;
+	}
 
 	private final Quantity getQtyToAllocateTarget()
 	{
-		Check.assumeNotNull(_qtyToAllocateTarget, "_qtyToAllocateTarget not null");
-		Check.assume(_qtyToAllocateTarget.signum() > 0, "qtyToAllocateTarget > 0 but it was {}", _qtyToAllocateTarget);
+		if(_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0)
+		{
+			throw new AdempiereException("Quantity to receive shall be greather than zero");
+		}
 		return _qtyToAllocateTarget;
 	}
 
@@ -233,6 +260,25 @@ public class ReceiptScheduleHUGenerator
 		return orderLine;
 	}
 
+	/**
+	 * This method is important in getting precomputed HUs
+	 * 
+	 * @param schedule
+	 * @return
+	 */
+	private IHUAllocations getHUAllocations(final I_M_ReceiptSchedule schedule)
+	{
+		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
+		IHUAllocations huAllocations = _receiptSchedule2huAllocations.get(receiptScheduleId);
+		if (huAllocations == null)
+		{
+			final IProductStorage productStorage = getProductStorage(schedule);
+			huAllocations = new ReceiptScheduleHUAllocations(schedule, productStorage);
+			_receiptSchedule2huAllocations.put(receiptScheduleId, huAllocations);
+		}
+		return huAllocations;
+	}
+
 	private IProductStorage getProductStorage(final I_M_ReceiptSchedule schedule)
 	{
 		final int receiptScheduleId = schedule.getM_ReceiptSchedule_ID();
@@ -291,7 +337,19 @@ public class ReceiptScheduleHUGenerator
 		Check.assume(!qtyCUsTotal.isInfinite(), "QtyToAllocate(target) shall not be infinite");
 
 		final IAllocationRequest request = createAllocationRequest(qtyCUsTotal);
-		return generateLUTUHandlingUnitsForQtyToAllocate(request);
+		final List<I_M_HU> hus = generateLUTUHandlingUnitsForQtyToAllocate(request);
+		
+		//
+		// Update receipt schedule's LU/TU configuration
+		if(isUpdateReceiptScheduleDefaultConfiguration())
+		{
+			trxManager.run(() -> {
+				final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
+				getLUTUConfigurationManager().setCurrentLUTUConfigurationAndSave(lutuConfiguration);
+			});
+		}
+		
+		return hus;
 	}
 
 	/**
@@ -462,6 +520,8 @@ public class ReceiptScheduleHUGenerator
 	 * Creates/Updates {@link I_M_ReceiptSchedule#COLUMNNAME_M_HU_LUTU_Configuration_ID}.
 	 *
 	 * Please note, this method is not updating the receipt schedule but only the {@link I_M_HU_LUTU_Configuration}.
+	 * 
+	 * IMPORTANT: this is used only by {@link #generateAllPlanningHUs_InChunks()}.
 	 *
 	 * Also, it:
 	 * <ul>
@@ -490,8 +550,23 @@ public class ReceiptScheduleHUGenerator
 		lutuConfigurationFactory.save(lutuConfiguration);
 		_lutuConfiguration = lutuConfiguration;
 	}
+	
+	/**
+	 * Sets the LU/TU configuration to be used when generating HUs.
+	 */
+	public ReceiptScheduleHUGenerator setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		assertConfigurable();
+		
+		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
+		_lutuConfiguration = lutuConfiguration;
+		return this;
+	}
 
-	private I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
+	/**
+	 * @return the LU/TU configuration to be used when generating HUs.
+	 */
+	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		if (_lutuConfiguration != null)
 		{
@@ -507,14 +582,33 @@ public class ReceiptScheduleHUGenerator
 
 	public ILUTUProducerAllocationDestination getLUTUProducerAllocationDestination()
 	{
+		if (_lutuProducer != null)
+		{
+			return _lutuProducer;
+		}
+
 		final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
+		_lutuProducer = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+
+		//
+		// Ask the "lutuProducer" to consider currently created HUs that are linked to our receipt schedule
+		// In case they are suitable, they will be used, else they will be destroyed.
+		// NOTE: we do this only if we have only one M_ReceiptSchedule
+		final I_M_ReceiptSchedule receiptSchedule = getSingleReceiptScheduleOrNull();
+		if (receiptSchedule != null)
+		{
+			final IHUAllocations huAllocations = getHUAllocations(receiptSchedule);
+			_lutuProducer.setExistingHUs(huAllocations);
+		}
 
 		markNotConfigurable();
-		return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+		return _lutuProducer;
 	}
 
 	/**
 	 * Adjust LU/TU Configuration with actual <code>lutuProducer</code> values.
+	 * 
+	 * IMPORTANT: this is called only from {@link #generateAllPlanningHUs_InChunks()} so it's ONLY about when we are pregerating the HUs.
 	 *
 	 * NOTE:
 	 * <ul>
@@ -625,14 +719,9 @@ public class ReceiptScheduleHUGenerator
 
 		//
 		// Adjust the LU/TU configuration if needed and push it back to receipt schedule (for later use)
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, false);
-				updateLUTUConfigurationFromActualValues();
-			}
+		trxManager.run(() -> {
+			InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, false);
+			updateLUTUConfigurationFromActualValues();
 		});
 	}
 

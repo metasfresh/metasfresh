@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -224,7 +225,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// TODO: why not setting TrxName inherited?
 		final String currentHUTrxName = InterfaceWrapperHelper.getTrxName(hu);
 		final String contextTrxName = huContext.getTrxName();
-		if (!Check.equals(currentHUTrxName, contextTrxName))
+		if (!Objects.equals(currentHUTrxName, contextTrxName))
 		{
 			InterfaceWrapperHelper.setTrxName(hu, contextTrxName);
 		}
@@ -538,7 +539,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			if (currentHUCursor == null)
 			{
 				// If there is no current HU to work with, stop here. This happens e.g. if there are 5 TU allowed on one LU and we already created those 5 TUs.
-				// that's not a problem per se, it just means that another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet.
+				// that's not a problem per se, it just means that 
+				// either another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet,
+				// or there are already pre-loaded HUs that have everything we needed
 				break;
 			}
 			I_M_HU currentHU = currentHUCursor.current();
@@ -674,7 +677,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	@OverridingMethodsMustInvokeSuper
 	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
 	{
-		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
+		// TODO: i think we can move this stuff or something better into a model interceptor that is fired when item.qty is changed
 		_createdHUs.forEach(
 				hu -> {
 					final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);

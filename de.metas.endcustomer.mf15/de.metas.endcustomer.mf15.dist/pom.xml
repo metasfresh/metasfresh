@@ -71,6 +71,7 @@ Since we now work with a range, we now declare the dependencies here where range
 			<classifier>client</classifier>
 			<type>zip</type>
 		</dependency>
+
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
@@ -201,7 +202,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.dlm</groupId>
-			<artifactId>metasfresh-dlm</artifactId>
+			<artifactId>metasfresh-dlm-base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>

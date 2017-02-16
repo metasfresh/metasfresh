@@ -75,13 +75,17 @@ FROM
 	LEFT OUTER JOIN M_Product_Trl pt ON p.M_product_ID = pt.M_Product_ID AND bp.AD_Language = pt.AD_Language AND pt.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	JOIN (
-		SELECT 	lui.M_HU_ID, COALESCE(avg(tus.qty), 0) AS CU_per_TU, count(tu.M_HU_ID) AS TU_per_LU
+		SELECT 	lui.M_HU_ID, 
+		--in case the HUs are aggregated we need to calculate how many TU and Cu are there
+		COALESCE( (CASE WHEN val.qty IS NOT NULL THEN (avg(tus.qty) / val.qty)::numeric ELSE avg(tus.qty)  END), 0) AS CU_per_TU,
+		COALESCE(val.qty, count(tu.M_HU_ID))::bigint AS TU_per_LU
 		FROM 	M_HU_Item lui
-			LEFT JOIN M_HU_PI_Item lupii ON lui.M_HU_PI_Item_ID = lupii.M_HU_PI_Item_ID AND lupii.ItemType = 'HU' AND lupii.isActive = 'Y'
-			LEFT JOIN M_HU tu ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID
-			LEFT JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID AND tus.isActive = 'Y'
+			 JOIN M_HU_PI_Item lupii ON lui.M_HU_PI_Item_ID = lupii.M_HU_PI_Item_ID AND lupii.ItemType = 'HU' AND lupii.isActive = 'Y'
+			 JOIN M_HU tu ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID
+			 JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID AND tus.isActive = 'Y'
+			LEFT JOIN "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 		WHERE lui.isActive = 'Y'
-		GROUP BY lui.M_HU_ID
+		GROUP BY lui.M_HU_ID, val.qty
 		
 	) qty ON lu.M_HU_ID = qty.M_HU_ID
 
@@ -98,3 +102,4 @@ FROM
 -- WHERE
 -- 	lu.M_HU_ID = $P{M_HU_ID}
 ;
+

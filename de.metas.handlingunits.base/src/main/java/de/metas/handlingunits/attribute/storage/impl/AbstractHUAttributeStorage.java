@@ -41,6 +41,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUTransactionAttribute;
@@ -73,7 +74,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	 *
 	 * @param saveOnChange if true, attribute values will be saved to database on each change
 	 */
-	protected void setSaveOnChange(final boolean saveOnChange)
+	@Override
+	public final void setSaveOnChange(final boolean saveOnChange)
 	{
 		//
 		// Iterate existing attribute values and set "saveOnChange" option to them.
@@ -152,10 +154,12 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		Check.assumeNotNull(hu, "hu not null");
 
 		final IHUPIAttributesDAO huPIAttributesDAO = getHUPIAttributesDAO();
-
+		
 		//
 		// Retrieve M_HU_PI_Attributes
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		// gh #460: in case of an aggregate HU which is created right now, we need to get the pi version the HUBuilder was invoked with.
+		// note that we can't yet get it from the HU's parent item itself, because that item is not yet finalized.
+		final I_M_HU_PI_Version piVersion = IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu, hu.getM_HU_PI_Version());
 		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(piVersion);
 
 		//

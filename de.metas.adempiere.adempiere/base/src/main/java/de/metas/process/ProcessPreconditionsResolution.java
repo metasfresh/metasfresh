@@ -3,6 +3,7 @@ package de.metas.process;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -17,12 +18,12 @@ import de.metas.i18n.ImmutableTranslatableString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -83,7 +84,7 @@ public final class ProcessPreconditionsResolution
 
 	/**
 	 * NOTE: please avoid using this method. It was introduced just to migrate the old processes.
-	 * 
+	 *
 	 * @param accept
 	 * @return if <code>accept</code> is true then returns {@link #accepted} else {@link #reject()}.
 	 */
@@ -151,7 +152,7 @@ public final class ProcessPreconditionsResolution
 	{
 		return !accepted ? reason : null;
 	}
-	
+
 	public boolean isInternal()
 	{
 		return internal;
@@ -162,6 +163,11 @@ public final class ProcessPreconditionsResolution
 		return captionOverride == null ? null : captionOverride.translate(adLanguage);
 	}
 
+	private Builder toBuilder()
+	{
+		return new Builder(this);
+	}
+
 	public static final class Builder
 	{
 		private Boolean accepted;
@@ -170,7 +176,13 @@ public final class ProcessPreconditionsResolution
 
 		private Builder()
 		{
-			super();
+		}
+
+		private Builder(final ProcessPreconditionsResolution template)
+		{
+			accepted = template.accepted;
+			reason = template.reason;
+			captionOverride = template.captionOverride;
 		}
 
 		public ProcessPreconditionsResolution build()
@@ -219,7 +231,19 @@ public final class ProcessPreconditionsResolution
 		{
 			return captionOverride;
 		}
+	}
 
+	public ProcessPreconditionsResolution deriveWithCaptionOverride(final String captionOverride)
+	{
+		final ITranslatableString captionOverrideNew = captionOverride == null ? null : ImmutableTranslatableString.constant(captionOverride);
+		if (Objects.equal(this.captionOverride, captionOverrideNew))
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.setCaptionOverride(captionOverrideNew)
+				.build();
 	}
 
 }

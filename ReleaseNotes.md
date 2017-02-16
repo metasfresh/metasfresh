@@ -10,50 +10,162 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.55.53 (2017-06)
+# metasfresh 4.57.56 (2017-08)
 
-upcoming Release
+upcoming
 
 ## Features
-* metasfresh
-  * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
-  * #460 Provide aggregate HUs
-
-* webui
-  * #873 Customer & Vendor Subtab in BPartner Window WebUI
-  * #196 Grid View 100% height
-
+* metasfresh 
+  * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
+  * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
+  * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
+  * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
+  * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
+  
 ## Fixes
 * metasfresh
-  * #863 No Result Window for Prosesses that don't allow rerun
-  * #879 Fix "ValueType not supported: D" when HU attributes are generated
-  * #781 ESR scan processing returns improper bpartner
-  * #783 DocAction on Sales Order not available although permission existing
+  * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
 
-* webui
-  * #204 Can not complete Order
-  * #886 GrandTotal missing in Purchase Order Grid view
-
-# metasfresh 4.54.53 (2017-05)
+# metasfresh 4.56.55 (2017-07)
 
 this week's RC
 
 ## Features
 * metasfresh
+  * #913 include branch name in build version string
+  
+* webUI
+  * #112 On login page, deactivate the fields while logging in
+  * #120 Material Receipt WebUI: Attribute Values wrong
+  * #127 Receipt schedules - Receive with configuration improvements
+  * #118 Functionality to easily add files to current record in webUI
+  * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+  * #127 Receipt schedules - Receive with configuration improvements
+  * #132 Receiving HUs: already received HUs shall be flagged as processed
+  * #226 Implement document field device support
+  * #227 Wrong breadcrumb when the view is opened after process execution
+  * #254 Cannot see the HU editor icons
+  * #256 Implement document attachments
+  * #257 login page: focus on username
+  * #275 None of the menus could be opened when in full screen mode
+  * #281 Remove margin from wrapper modal to make 0-padding inside
+  * #734 Add Translation for en_US in WebUI
+  * #833 Invoice Process in Invoice Candidates WebUI
+  * #894 Payment Allocation Window WebUI
+  * #895 Dunning Candidates Window WebUI
+  * #947 Window Greeting Add Translation for en_US
+
+## Fixes 
+* metasfresh
+  * #797 Zoom does not open new document
+  
+* webUI
+  * #119 Error when Pressing the Attribute Button
+  * #116 qty 0 in purchase order
+  * #229 Location editor button called "edit attributes"
+  * #261 When the attribute is readonly don't show the Device button(s)
+  * #264 Included tabs layout is broken
+  * #268 Wrong viewId when starting the process
+  * #276 Wrong timing when completing a quick input entry
+  * #279 While browsing a document, pressing New does nothing
+  * #295 Attribute Editor too narrow
+
+# metasfresh 4.55.54 (2017-06)
+
+## Features
+* metasfresh
+  * #877 Make "Wareneingang POS (Jasper)" report work with M_ReceiptSchedule_ID as parameter
+    * Adapt the reports for Material Receipt to work with Receipt Schedule ID as Paramater. This is needed for the new Material Receipt Workflow in WebUI which is now based on generic Material Receipt Schedule Window.
+  * #460 Provide aggregate HUs
+    * Introduce the Handling Unit compression to only store and process the minimal needed information about Handling Units per step in supply chain. This Implementation is a huge Performance gain in Handling Unit processing.
+  * #815 Jasper Footer: Show bank account in one line
+    * Adjust the Jasper Reports Footer subdocument. Show all bank information now in same line.
+  * #904 New Field "Zulieferant" in R_Request Window
+    * Add new Field in Request window to allow the storage of an explicit Vendor Businesspartner.
+  * #914 adjust weight in Docs_Purchase_InOut_Customs_Details function
+    * Adjust the customs report to fit for swiss requirements in customs reporting. The gross weight is now calculated as Handling Units weight minus weight Logistics Unit Package Item.
+  
+* webui
+  * #873 Customer & Vendor Subtab in BPartner Window WebUI
+    * Add and arrange the customer and vendor subtab in Businesspartner Window in Web User Interface.
+  * #196 Grid View 100% height
+    * Adjust the Grid view height to expand to screensize.
+  * #795 Price Window WebUI Layout
+    * Add the Layout for the Price window in WebUI.
+  * #896 Dunning Window WebUI
+    * Add the Layout for the Dunning Window in WebUI.
+  * #194 Open views from process execution result 
+    * Add a new functionality that allows process results to receive a Window ID and open the corresponding Window after finishing the process execution.
+     
+
+## Fixes
+* metasfresh
+  * #857 Fix String Attributes Save in POS
+    * Fix that now allows the possibility to save String Attribute in POS Windows also without loosing focus for recorded field.
+  * #863 No Result Window for Prosesses that don't allow rerun
+    * Fix for rerun parameter in Processes. Now possible to switch off the rerun confirmation Window after Process.
+  * #879 Fix "ValueType not supported: D" when HU attributes are generated
+    * Minor Fix for Value Type of generated HU Attributes.
+  * #781 ESR scan processing returns improper bpartner
+    * Fix and Enhancement of ESR Scan functionality in Purchase Invoices. Now allowing to select alternative Business Partner for on the Fly Bank Account generation. 
+  * #783 DocAction on Sales Order not available although permission existing
+    * Sysconfig to certrally enable/ disable the Document Action Close.
+  * #813 hide packing instruction and qty when null
+    * Fix that does not show the Packing Instruction and Packing Qty on documents anymore when null.
+  * #903 Jenkins build error with slash in branch name
+    * Minor Fix for Jenkins Build.
+  * #870 Invoice Candidate price-qty overwrite lost when ReverseCorrect
+    * Fix that stores the price & qty override in Invoice Candidates after Reverse-Correct of Invoice.
+  * #910 Put explicit delivery date on invoice
+    * Add the precise description for delivery date as demanded by german law.
+
+* webui
+  * #204 Can not complete Order
+    * Minor Fix that now allows the completion of Sales Order in Web User Interface.
+  * #886 GrandTotal missing in Purchase Order Grid view
+    * Fix that enables the display of Grandtotal Field in Purchase Order Grid View.
+  * #179 Fields too short for documentno in Breadcrumbs
+    * Fix that extends the number of visible digits (now 9 digits) in Breadcrumb menu for Document or masterdata identifiers.
+
+# metasfresh 4.54.53 (2017-05)
+
+## Features
+* metasfresh
   * #858 Adjustments for Shipment Schedule Grid View
+    * Minor changes on the Grid View for the Shipment Schedules Window.
   * #868 Weekly Revenue Report
+    * Create a weekly Revenue Report in Jasperreports. Similar to the montly report, just comparing different weeks instead months.
   * #827 use the barcode field to select HU using attribute value
+    * New feature to be able to scan barcode attrivutes attached to a Handling Unit fir precise identifying.
 
 * webUI
+  * #198 Process with parameters cannot be started
+    * Fix a Bug in WebUI that did not allow the start of processes with parameters.
+  * #205 Batch entry Dropdown for Handling Unit Missing in Workflow
+    * Add a Packing Unit dropdown in combined Product Field in Sales Orderline Batchentry.
+  * #206 Deleting Batch entry product with "X" only deletes Product not Handling unit
+    * Now allowing to delete the whole content of the combined Product-Packing Unit Field.
+  * #208 After New autofocus on first record field
+    * New UX Feature that automatically sets the focus onto the first recordable Field in Window when "New Record"
+  * #213 Do not focus fields "in background" when in Expanded view
+    * Adjust the navigation behavior and sequence when using TAB jumping from field to field, now avoids that the focus gets "under" the overlay panel.
+  * #218 Reduce Gap Height between Layout Sections
+    * Refine UX. Reduced the height between Layout Sections to not have the feeling of having a too big gap between them.
   * #862 Payment Window in WebUI
+    * Include the payment Window in WebUI.
   * #873 Customer and Vendor Subtab in BPartner WebUI Window
+    * Include the Customer and Vendor Subtab in Business Partner Window.
   * #883 Sales Purchase Order Window Grid View
+    * Include the Grid View for the Sales and Purchase Order in WebUI.
   * #878 Purchase Order Window WebUI
+    * Include the Purchase Order Window in WebUI.
 
 ## Fixes
 * metasfresh 
   * #782 Focus on the first process parameter
+    * Fix to allow the first recordable Field having focus when opening a process paramater window.
   * #864 Adjust C_Country Location Print generation DE
+    * Adjust the Location capture Sequence for Germany.
 
 # metasfresh 4.53.52 (2017-04)
 
@@ -1471,52 +1583,4 @@ bundle:install mvn:com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider/2.6.3
  - 09704 Migration ADempiere to metasfresh (100169279454) +it +feature
     * making hardcoded endcustomer-feature configurable for all metasfresh users
  - 09752 system creates two printing queue items for gernic reports (107420055849) +it +fix
- - 09764 servicemix update (102943200308): the esb bundles now use servmicemix-6.1 +uat +feature
-    *also switching everything from activemq-5.7 to activemq-5.12.1
-    *ActiveMQJMSEndpoint now needs to provide username and password to the jms broker
-    *commenting out the sniffer plugin because we can now build against java 1.7
-    *moving org.adempiere.event to de.metas.event
-    *moving EqualsBuilder and HashcodeBuilder from base to util
-	* removing javax.mail from printing.esb, instead using guava to encode base64
-    * removing javax.mail from de.metas.util
-    * further build fixes and clean-ups
- - 09746_Change of activity report adaptions +fix +uat
-    * fixing a / by zero issue
- - 09756 Record from foreign org in material receipt (POS) (105735084840) +fix +uat
-    * applying user's access rules in all terminal windows
- - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +fix +uat
-    * refined the logic with new specs that came out during QA
- - 09618 order-checkup printing problems (106933593952): +fix +uat
-    * server/core changes: 
-      * allowing an ITrxListener to deactivate itself in case it does not want to be called more than once 
-    * printing client changes
-      * using guava to decode the base64, got rid of javax.mail
-      * Http endpoint: storing the received data in a file that's deleted once the print worked if the print failed, the file's content can be inspected
-      * parent-pom: managing the guava version to be used (=>18.0)
-      * cleaned up the printlcient's code
-- 09761 Do research and improve logging of the stand alone printing client (104599264471) +feature +uat
-    * adding a more usable JUL properties file that includes instructions.
-    * minor changes (removing customer specifics, fixing a log level in the ESB to avoid log file flooding)
- - 09618 Bestellkontrolle Druck Probleme (106933593952): allowing an ITrxListener to deactivate itself in case it does not want to be called more than once +fix +uat
- - 09744_Dunning Report and UI changes +uat
- - 09668_Change quality based invoicing for fresh products +uat
- - 09203_avoid setting IT staff as sales rep in orders that were generated from EDI +uat +fix
- - 09743_option to show bugdet data in the balance report  +uat
- - 09746_Change of activity report adaptions +uat
- - 09670_Daily Lot for material storing +uat
- - 09671_accounting_always book discount onto actNo 150 +uat
- - 09704_Migration ADempiere nach metasfresh +fix
-    * adjusting the included tab size in the windows order (sales+purchase), shipment and invoice (sales+purchase) to 800, 
-    * additional fixes
- - 09748_Menu search box working weird +fix
- - 09709_metasfresh web (early prototyping, nothing to use yet)
- - 09733_Problems with Sepa-XML import into Mammut +uat
- - 09694_Fact Acct Summary incremental updates +uat
- - 09502_Support quality based invoicing +uat +fix
- - 09690_Report change of activity +uat +fix
- - 09726_Deep-copy support for AD_Roles +uat
- - 09722_Changes to the costing report +uat
- - 09717_Costprice is 0 on multiple selection in wareneingang pos +uat +fix
- - 09564_Report all not-completed Documents +uat 
- - 09718_Revenuereport Excel-Export broken +uat
- - 09687_DD order Copy with details +uat
+ - 09764 servicemix update (102943200308): the esb bundles now use 

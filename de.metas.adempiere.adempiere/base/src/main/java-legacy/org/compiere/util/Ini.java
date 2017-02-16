@@ -281,22 +281,22 @@ public final class Ini implements Serializable
 		}
 
 		final String fileName = getFileName();
+		final File file = new File(fileName).getAbsoluteFile();
 		FileOutputStream fos = null;
 		try
 		{
-			final File f = new File(fileName);
-			f.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
-			fos = new FileOutputStream(f);
+			file.getParentFile().mkdirs(); // Create all dirs if not exist - teo_sarca FR [ 2406123 ]
+			fos = new FileOutputStream(file);
 			s_prop.store(fos, "metasfresh.properties");
 			fos.flush();
 			fos.close();
 		}
 		catch (Exception e)
 		{
-			log.error("Cannot save Properties to " + fileName + " - " + e.toString());
+			log.error("Cannot save Properties to {}", file, e);
 			return;
 		}
-		log.info("Saved properties to {}", fileName);
+		log.info("Saved properties to {}", file);
 
 	}	// save
 
@@ -478,10 +478,12 @@ public final class Ini implements Serializable
 		return propertyFileName;
 	}	// getFileName
 
-	/**************************************************************************
+	/**
 	 * Set Property
 	 *
-	 * @param key Key
+	 * @param key can by any key, not only the ones declared in this class. In order to persist it, call {@link #saveProperties()}.
+	 *            <p>
+	 *            <b>Important:</b> if the given key is included in {@link #PROPERTIES_CLIENT}, but we currently aren't in the client, then the property is set in {@link Env} instead.
 	 * @param value Value
 	 */
 	public static void setProperty(String key, String value)
@@ -520,7 +522,7 @@ public final class Ini implements Serializable
 	}
 
 	/**
-	 * Set Property
+	 * Set Property from a boolean value. Delegates to {@link #setProperty(String, String)} with the boolean's string representation.
 	 *
 	 * @param key Key
 	 * @param value Value
@@ -531,7 +533,7 @@ public final class Ini implements Serializable
 	}   // setProperty
 
 	/**
-	 * Set Property
+	 * Set Property from a int value. Delegates to {@link #setProperty(String, String)} with the int's string representation.
 	 *
 	 * @param key Key
 	 * @param value Value
@@ -547,10 +549,12 @@ public final class Ini implements Serializable
 	 * @param key Key
 	 * @return Value
 	 */
-	public static String getProperty(String key)
+	public static String getProperty(final String key)
 	{
 		if (key == null)
+		{
 			return "";
+		}
 
 		// If it's a client property and we are in server mode, get value from context instead of Ini file
 		if (!Ini.isClient() && PROPERTIES_CLIENT.contains(key))
@@ -559,14 +563,20 @@ public final class Ini implements Serializable
 			return value == null ? "" : value;
 		}
 
-		String retStr = s_prop.getProperty(key, "");
+		final String retStr = s_prop.getProperty(key, "");
 		if (retStr == null || retStr.length() == 0)
+		{
 			return "";
+		}
+
 		//
-		String value = SecureEngine.decrypt(retStr);
+		final String value = SecureEngine.decrypt(retStr);
 		// log.trace(key + "=" + value);
 		if (value == null)
+		{
 			return "";
+		}
+
 		return value;
 	}	// getProperty
 
@@ -623,13 +633,13 @@ public final class Ini implements Serializable
 	/*************************************************************************/
 
 	public static final String METASFRESH_HOME = "METASFRESH_HOME";
-	
+
 	/** System Property Value of ADEMPIERE_HOME. Users should rather set the {@value #METASFRESH_HOME} value */
 	@Deprecated
 	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
-	
+
 	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
-	
+
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -724,7 +734,7 @@ public final class Ini implements Serializable
 	{
 		return METASFRESH_HOME_Supplier.get();
 	}
-	
+
 	/**
 	 * Finds {@link #METASFRESH_HOME}.
 	 * 
@@ -742,7 +752,7 @@ public final class Ini implements Serializable
 				return metasfreshHome;
 			}
 		}
-		
+
 		// Try getting the METASFRESH_HOME from environment
 		{
 			final String env = System.getenv(METASFRESH_HOME);
@@ -969,6 +979,5 @@ public final class Ini implements Serializable
 		{
 			return Ini.getRunMode() != RunMode.SWING_CLIENT;
 		}
-
 	}
 }	// Ini

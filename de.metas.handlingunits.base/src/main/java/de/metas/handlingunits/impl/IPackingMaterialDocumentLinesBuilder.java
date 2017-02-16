@@ -37,7 +37,7 @@ public interface IPackingMaterialDocumentLinesBuilder
 	/**
 	 * Create Packing Material Document Lines, update source lines and set the link to packing material lines.
 	 */
-	void create();
+	IPackingMaterialDocumentLinesBuilder create();
 
 	/**
 	 * Check if this builder is empty.

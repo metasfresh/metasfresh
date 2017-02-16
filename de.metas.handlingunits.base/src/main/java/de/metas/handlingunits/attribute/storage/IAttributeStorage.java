@@ -240,10 +240,9 @@ public interface IAttributeStorage extends IAttributeSet
 
 	@Override
 	Date getValueAsDate(I_M_Attribute attribute);
-	
+
 	@Override
 	String getValueAsString(I_M_Attribute attribute);
-
 
 	/**
 	 * @param attribute
@@ -319,6 +318,14 @@ public interface IAttributeStorage extends IAttributeSet
 	 * If changes will be saved or not depends on implementation.
 	 */
 	void saveChangesIfNeeded();
+
+	/**
+	 * Enables/Disables automatic saving when an attribute value is changed
+	 * 
+	 * @param saveOnChange
+	 * @throws UnsupportedOperationException in case the operation is not supported
+	 */
+	void setSaveOnChange(final boolean saveOnChange);
 
 	IAttributeStorageFactory getHUAttributeStorageFactory();
 
