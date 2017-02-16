@@ -85,8 +85,10 @@ public final class ProcessInstance
 	@Lazy
 	private IDocumentViewsRepository documentViewsRepo;
 
-	private final ProcessDescriptor processDescriptor;
 	private final DocumentId adPInstanceId;
+	private int version = 1;
+
+	private final ProcessDescriptor processDescriptor;
 	private final Document parameters;
 
 	private boolean executed = false;
@@ -114,8 +116,10 @@ public final class ProcessInstance
 		// Adempiere.autowire(this);
 		documentViewsRepo = from.documentViewsRepo;
 
-		processDescriptor = from.processDescriptor;
 		adPInstanceId = from.adPInstanceId;
+		version = from.version;
+
+		processDescriptor = from.processDescriptor;
 		parameters = from.parameters.copy(copyMode);
 
 		executed = from.executed;
@@ -128,6 +132,7 @@ public final class ProcessInstance
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("AD_PInstance_ID", adPInstanceId)
+				.add("version", version)
 				.add("executed", "executed")
 				.add("executionResult", executionResult)
 				.add("processDescriptor", processDescriptor)
@@ -148,6 +153,16 @@ public final class ProcessInstance
 	public DocumentId getAD_PInstance_ID()
 	{
 		return adPInstanceId;
+	}
+
+	/* package */int getVersion()
+	{
+		return version;
+	}
+
+	/* package */void setVersion(final int version)
+	{
+		this.version = version;
 	}
 
 	public Document getParametersDocument()

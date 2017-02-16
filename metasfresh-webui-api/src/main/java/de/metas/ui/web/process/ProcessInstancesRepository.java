@@ -1,6 +1,7 @@
 package de.metas.ui.web.process;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -19,6 +20,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.exceptions.InvalidDocumentVersionException;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.process.descriptor.ProcessParametersRepository;
@@ -58,6 +60,7 @@ public class ProcessInstancesRepository
 	private ProcessDescriptorsFactory processDescriptorFactory;
 
 	private final LoadingCache<DocumentId, ProcessInstance> processInstances = CacheBuilder.newBuilder()
+			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.removalListener(new RemovalListener<DocumentId, ProcessInstance>()
 			{
 				@Override
@@ -72,6 +75,7 @@ public class ProcessInstancesRepository
 	public void cacheReset()
 	{
 		processInstances.invalidateAll();
+		processInstances.cleanUp();
 	}
 
 	public ProcessDescriptor getProcessDescriptor(final int adProcessId)
@@ -82,7 +86,34 @@ public class ProcessInstancesRepository
 	public void checkin(final ProcessInstance processInstance)
 	{
 		processInstance.saveIfValidAndHasChanges(false); // throwEx=false
-		processInstances.put(processInstance.getAD_PInstance_ID(), processInstance.copy(CopyMode.CheckInReadonly));
+
+		final int versionCurrentExpected = processInstance.getVersion();
+		final int version = versionCurrentExpected + 1;
+		final ProcessInstance processInstanceCopy = processInstance.copy(CopyMode.CheckInReadonly);
+		processInstanceCopy.setVersion(version);
+		final DocumentId adPInstanceId = processInstance.getAD_PInstance_ID();
+
+		// NOTE: because Cache does not have a compute() method, we have to synchronize this block. 
+		synchronized (processInstanceCopy)
+		{
+			// Get current process instance.
+			final ProcessInstance processInstanceCurrent = processInstances.getIfPresent(adPInstanceId);
+			
+			// Make sure we are not overriding a different document version than the one that was checked out.
+			if (processInstanceCurrent != null)
+			{
+				if (processInstanceCurrent.getVersion() != versionCurrentExpected)
+				{
+					throw new InvalidDocumentVersionException(versionCurrentExpected, processInstanceCurrent.getVersion());
+				}
+			}
+			
+			// Actually put the new document
+			processInstances.put(adPInstanceId, processInstanceCopy);
+			
+			// Update version of the document that was given as parameter.
+			processInstance.setVersion(version);
+		}
 	}
 
 	public ProcessInstance createNewProcessInstance(final ProcessInfo processInfo)
@@ -158,10 +189,10 @@ public class ProcessInstancesRepository
 
 	public ProcessInstance getProcessInstanceForWriting(final int pinstanceIdAsInt)
 	{
+		final DocumentId documentId = DocumentId.of(pinstanceIdAsInt);
 		try
 		{
-			return processInstances.get(DocumentId.of(pinstanceIdAsInt))
-					.copy(CopyMode.CheckOutWritable);
+			return processInstances.get(documentId).copy(CopyMode.CheckOutWritable);
 		}
 		catch (final UncheckedExecutionException | ExecutionException e)
 		{
