@@ -14,13 +14,17 @@ Here come the actual release notes:
 
 upcoming
 
-##Features
+## Features
 * metasfresh 
   * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
   * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
   * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
   * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
-  
+
+## Fixes
+* metasfresh
+  * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
+
 # metasfresh 4.56.55 (2017-07)
 
 this week's RC
