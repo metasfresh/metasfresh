@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.quickinput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,8 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 
 /*
  * #%L
@@ -31,7 +33,7 @@ import com.google.common.collect.ImmutableList;
  * #L%
  */
 
-public class DocumentLayoutDetailQuickInputDescriptor
+public class QuickInputLayoutDescriptor
 {
 	public static final Builder builder()
 	{
@@ -40,7 +42,7 @@ public class DocumentLayoutDetailQuickInputDescriptor
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
-	private DocumentLayoutDetailQuickInputDescriptor(final Builder builder)
+	private QuickInputLayoutDescriptor(final Builder builder)
 	{
 		super();
 		elements = ImmutableList.copyOf(builder.buildElements());
@@ -69,9 +71,9 @@ public class DocumentLayoutDetailQuickInputDescriptor
 			super();
 		}
 
-		public DocumentLayoutDetailQuickInputDescriptor build()
+		public QuickInputLayoutDescriptor build()
 		{
-			return new DocumentLayoutDetailQuickInputDescriptor(this);
+			return new QuickInputLayoutDescriptor(this);
 		}
 
 		private List<DocumentLayoutElementDescriptor> buildElements()

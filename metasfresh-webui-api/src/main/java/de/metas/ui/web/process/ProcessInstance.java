@@ -26,6 +26,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -35,6 +36,8 @@ import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest.JSONReferencing;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
@@ -57,18 +60,18 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * WEBUI Process instance.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -146,7 +149,7 @@ public final class ProcessInstance
 	{
 		return adPInstanceId;
 	}
-	
+
 	public Document getParametersDocument()
 	{
 		return parameters;
@@ -239,12 +242,12 @@ public final class ProcessInstance
 		// Build and return the execution result
 		{
 			String summary = processExecutionResult.getSummary();
-			if(Check.isEmpty(summary, true) || JavaProcess.MSG_OK.equals(summary))
+			if (Check.isEmpty(summary, true) || JavaProcess.MSG_OK.equals(summary))
 			{
 				// hide summary if empty or MSG_OK (which is the most used non-message)
 				summary = null;
 			}
-			
+
 			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder()
 					.setAD_PInstance_ID(processExecutionResult.getAD_PInstance_ID())
 					.setSummary(summary)
@@ -259,7 +262,7 @@ public final class ProcessInstance
 
 			//
 			// Result: records to select
-			createViewIfNeeded(resultBuilder, processExecutor.getProcessInfo(), processExecutionResult.getRecordsToSelectAfterExecution());
+			updateRecordsToOpen(resultBuilder, processExecutor.getProcessInfo(), processExecutionResult.getRecordsToOpen());
 
 			//
 			final ProcessInstanceResult result = resultBuilder.build();
@@ -306,35 +309,53 @@ public final class ProcessInstance
 		return reportFile;
 	}
 
-	/**
-	 * Creates a view from given <code>recordRefs</code>.
-	 * 
-	 * @param resultBuilder
-	 * @param processInfo
-	 * @param recordRefs
-	 */
-	private void createViewIfNeeded(final ProcessInstanceResult.Builder resultBuilder, final ProcessInfo processInfo, final List<TableRecordReference> recordRefs)
+	private void updateRecordsToOpen(final ProcessInstanceResult.Builder resultBuilder, final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
 	{
-		// If there are no records, skip creating the view.
-		if (recordRefs.isEmpty())
+		if (recordsToOpen == null)
 		{
 			return;
 		}
+		//
+		// View
+		else if (recordsToOpen.isGridView())
+		{
+			final IDocumentViewSelection view = createView(processInfo, recordsToOpen);
+			resultBuilder.openView(view.getAD_Window_ID(), view.getViewId());
+		}
+		//
+		// Single document
+		else
+		{
+			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
+			resultBuilder.openSingleDocument(documentPath);
+		}
+
+	}
+
+	private final IDocumentViewSelection createView(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
+	{
+		final List<TableRecordReference> recordRefs = recordsToOpen.getRecords();
+		if (recordRefs.isEmpty())
+		{
+			return null; // shall not happen
+		}
+
+		final int adWindowId_Override = recordsToOpen.getAD_Window_ID(); // optional
 
 		//
 		// Create view create request builders from current records
 		final Map<Integer, JSONCreateDocumentViewRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
-			final JSONCreateDocumentViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(adWindowId, key -> JSONCreateDocumentViewRequest.builder(adWindowId, JSONViewDataType.grid));
+			final int recordWindowId = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			final JSONCreateDocumentViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> JSONCreateDocumentViewRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
 		}
 		// If there is no view create request builder there stop here (shall not happen)
 		if (viewRequestBuilders.isEmpty())
 		{
-			return;
+			return null;
 		}
 
 		//
@@ -350,7 +371,7 @@ public final class ProcessInstance
 		//
 		// Create the view and set its ID to our process result.
 		final IDocumentViewSelection view = documentViewsRepo.createView(viewRequest);
-		resultBuilder.setView(view.getAD_Window_ID(), view.getViewId());
+		return view;
 	}
 
 	private static final JSONReferencing extractJSONReferencing(final ProcessInfo processInfo)
@@ -363,6 +384,20 @@ public final class ProcessInstance
 
 		final int adWindowId = RecordZoomWindowFinder.findAD_Window_ID(sourceRecordRef);
 		return JSONReferencing.of(adWindowId, sourceRecordRef.getRecord_ID());
+	}
+
+	private static final DocumentPath extractSingleDocumentPath(final RecordsToOpen recordsToOpen)
+	{
+		final TableRecordReference recordRef = recordsToOpen.getSingleRecord();
+		final int documentId = recordRef.getRecord_ID();
+
+		int adWindowId = recordsToOpen.getAD_Window_ID();
+		if (adWindowId <= 0)
+		{
+			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+		}
+
+		return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
 	}
 
 	/**

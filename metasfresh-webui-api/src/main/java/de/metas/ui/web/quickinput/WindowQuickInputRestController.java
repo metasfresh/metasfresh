@@ -22,12 +22,11 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTabQuickInput;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailQuickInputDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -46,11 +45,11 @@ import io.swagger.annotations.Api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -69,7 +68,7 @@ public class WindowQuickInputRestController
 	private DocumentCollection documentsCollection;
 
 	@Autowired
-	private QuickInputProcessorFactory quickInputProcessorFactory;
+	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
 	private final CCache<Integer, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
@@ -80,22 +79,32 @@ public class WindowQuickInputRestController
 				.build();
 	}
 
+	private QuickInputDescriptor getQuickInputDescriptor(final int adWindowId, final String tabIdStr)
+	{
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
+
+		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
+		return quickInputDescriptor;
+	}
+
 	@GetMapping("/layout")
-	public JSONDocumentLayoutTabQuickInput getLayout(
+	public JSONQuickInputLayoutDescriptor getLayout(
 			@PathVariable("windowId") final int adWindowId //
 			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
 			, @PathVariable("tabId") final String tabIdStr //
 	)
 	{
 		userSession.assertLoggedIn();
-		
-		final DocumentLayoutDetailQuickInputDescriptor layout = documentsCollection.getDocumentDescriptor(adWindowId)
-				.getLayout()
-				.getDetail(DetailId.fromJson(tabIdStr))
-				.getQuickInput()
-				.orElse(null);
 
-		return JSONDocumentLayoutTabQuickInput.fromNullable(layout, newJSONOptions());
+		final QuickInputDescriptor quickInputDescriptor = getQuickInputDescriptor(adWindowId, tabIdStr);
+		if (quickInputDescriptor == null)
+		{
+			return null;
+		}
+
+		final QuickInputLayoutDescriptor layout = quickInputDescriptor.getLayout();
+		return JSONQuickInputLayoutDescriptor.fromNullable(layout, newJSONOptions());
 	}
 
 	@PostMapping
@@ -177,7 +186,7 @@ public class WindowQuickInputRestController
 
 		return jsonDocument;
 	}
-	
+
 	@PatchMapping("{quickInputId}/complete")
 	@Deprecated
 	public JSONDocument complete_DEPRECATED(@PathVariable("quickInputId") final int quickInputId)
@@ -185,7 +194,6 @@ public class WindowQuickInputRestController
 		userSession.assertDeprecatedRestAPIAllowed();
 		return complete(quickInputId);
 	}
-
 
 	private <RT> RT processQuickInput(final int quickInputId, final Function<QuickInput, RT> processor)
 	{
@@ -202,15 +210,15 @@ public class WindowQuickInputRestController
 
 	private QuickInput createQuickInput(final int adWindowId, final String documentIdStr, final String tabIdStr)
 	{
-		final DocumentEntityDescriptor quickInputDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
-				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr))
-				.getQuickInputDescriptor();
+		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(adWindowId)
+				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
+
+		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
 
 		return Execution.callInNewExecution("quickInput.create", () -> {
 			return QuickInput.builder()
 					.setQuickInputDescriptor(quickInputDescriptor)
 					.setRootDocumentPath(adWindowId, documentIdStr)
-					.setQuickInputProcessorFactory(quickInputProcessorFactory)
 					.build()
 					.bindRootDocument(documentsCollection)
 					.assertTargetWritable();

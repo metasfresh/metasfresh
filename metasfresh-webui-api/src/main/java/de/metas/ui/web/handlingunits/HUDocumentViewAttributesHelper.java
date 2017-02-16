@@ -1,12 +1,16 @@
 package de.metas.ui.web.handlingunits;
 
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.util.Services;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.NamePair;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
@@ -23,11 +27,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -55,11 +59,26 @@ public final class HUDocumentViewAttributesHelper
 		return attribute.getValue();
 	}
 
-	public static Object extractJSONValue(final IAttributeValue attributeValue)
+	public static Object extractJSONValue(final IAttributeStorage attributesStorage, final IAttributeValue attributeValue)
 	{
-		final Object value = attributeValue.getValue();
+		final Object value = extractValueAndResolve(attributesStorage, attributeValue);
+
 		final Object jsonValue = Values.valueToJsonObject(value);
 		return jsonValue;
+	}
+
+	private static final Object extractValueAndResolve(final IAttributeStorage attributesStorage, final IAttributeValue attributeValue)
+	{
+		final Object value = attributeValue.getValue();
+		if (!attributeValue.isList())
+		{
+			return value;
+		}
+
+		final IAttributeValuesProvider valuesProvider = attributeValue.getAttributeValuesProvider();
+		final Evaluatee evalCtx = valuesProvider.prepareContext(attributesStorage);
+		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value == null ? null : value.toString());
+		return LookupValue.fromNamePair(valueNP);
 	}
 
 	public static final DocumentFieldWidgetType extractWidgetType(final IAttributeValue attributeValue)

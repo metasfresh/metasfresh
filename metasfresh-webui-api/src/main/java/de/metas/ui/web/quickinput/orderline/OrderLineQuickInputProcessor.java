@@ -20,6 +20,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -56,14 +57,14 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	}
 
 	@Override
-	public Object process(final QuickInput quickInput)
+	public DocumentId process(final QuickInput quickInput)
 	{
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
-		final I_C_OrderLine orderLineNew = OrderFastInput.addOrderLine(ctx, order, orderLineObj -> updateOrderLine(orderLineObj, quickInput));
-
-		return orderLineNew;
+		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLineObj -> updateOrderLine(orderLineObj, quickInput));
+		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
+		return DocumentId.of(newOrderLineId);
 	}
 
 	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)

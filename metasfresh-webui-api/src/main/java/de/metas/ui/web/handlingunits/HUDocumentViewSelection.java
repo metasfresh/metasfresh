@@ -72,6 +72,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	private final int adWindowId;
 
 	private final DocumentPath referencingDocumentPath;
+	private final String referencingTableName;
 
 	private final HUDocumentViewLoader documentViewsLoader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
@@ -89,6 +90,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
 		referencingDocumentPath = builder.getReferencingDocumentPath();
+		referencingTableName = builder.getReferencingTableName();
 	}
 
 	@Override
@@ -198,8 +200,8 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		Check.assumeNotEmpty(viewDocumentIds, "viewDocumentIds is not empty");
 		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
-		final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds); 
-		
+		final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds);
+
 		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIdsAsInts) + ")";
 	}
 
@@ -219,6 +221,11 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	public DocumentPath getReferencingDocumentPath()
 	{
 		return referencingDocumentPath;
+	}
+	
+	public String getReferencingTableName()
+	{
+		return referencingTableName;
 	}
 
 	public void invalidateAll()
@@ -322,6 +329,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private String viewId;
 		private int adWindowId;
 		private DocumentPath referencingDocumentPath;
+		private String referencingTableName;
 
 		private ProcessDescriptorsFactory processDescriptorsFactory;
 		private HUDocumentViewLoader documentViewsLoader;
@@ -382,15 +390,21 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return processDescriptorsFactory;
 		}
 
-		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath)
+		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath, final String referencingTableName)
 		{
 			this.referencingDocumentPath = referencingDocumentPath;
+			this.referencingTableName = referencingTableName;
 			return this;
 		}
 
 		private DocumentPath getReferencingDocumentPath()
 		{
 			return referencingDocumentPath;
+		}
+
+		private String getReferencingTableName()
+		{
+			return referencingTableName;
 		}
 	}
 
@@ -399,11 +413,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return getRecords().streamByIds(documentIds);
 	}
-
-	// public List<HUDocumentView> retrieveModelsByIds(Collection<DocumentId> documentIds, final Class<>)
-	// {
-	// return streamUserSelectedDocuments().collect(GuavaCollectors.toImmutableList());
-	// }
 
 	@Override
 	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)

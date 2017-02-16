@@ -245,7 +245,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private String columnName;
 		private Integer displayType;
 		private int AD_Reference_Value_ID = -1;
-		private Integer AD_Val_Rule_ID;
+		private int AD_Val_Rule_ID = -1;
 		private LookupScope scope = LookupScope.DocumentField;
 
 		//
@@ -266,6 +266,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 		public LookupDescriptorProvider buildProvider()
 		{
+			Check.assumeNotNull(displayType, "Parameter displayType is not null");
+			
 			return buildProvider(columnName, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
 

@@ -84,6 +84,12 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return (HUDocumentViewType)delegate.getType();
 	}
+	
+	@Override
+	public boolean isProcessed()
+	{
+		return delegate.isProcessed();
+	}
 
 	@Override
 	public String getIdFieldNameOrNull()
