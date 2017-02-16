@@ -156,7 +156,12 @@ class LoginForm extends Component {
                     </div>
                 }
                 <div className="mt-2">
-                    <button className="btn btn-sm btn-block btn-meta-success" onClick={this.handleLogin}>{roleSelect? "Send" : "Login"}</button>
+                    <button className="btn btn-sm btn-block btn-meta-success"
+                            onClick={this.handleLogin}
+                            disabled={pending}
+                    >
+                        {roleSelect? "Send" : "Login"}
+                    </button>
                 </div>
             </div>
         )
