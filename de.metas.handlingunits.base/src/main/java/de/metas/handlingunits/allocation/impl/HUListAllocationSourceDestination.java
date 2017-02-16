@@ -58,7 +58,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 
 /**
- * An Allocation Source/Destination which has a list of HUs in behind. Ususally used to load from HUs.
+ * An Allocation Source/Destination which has a list of HUs in behind. Usually used to load from HUs.
  *
  * @author tsa
  *
@@ -133,6 +133,14 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		this.createHUSnapshots = createHUSnapshots;
 	}
 
+	/**
+	 * For this instance's HUs their included HUs (if any), this setter specifies whether this instance will make sure that for every aggregate HU, the current CU-per-TU quantity is stored in the given {@code request}'s {@link IHUContext}.
+	 * <p>
+	 * This information (if stored by this instance) can later be used by {@link AggregateHUTrxListener} to adjust the {@code HA} item's {@code Qty} or split off a partial TU.
+	 * If you don't want this behavior (e.g. gh #943: because we are adjusting the HU's storage from the net weight), then just call this method with {@code false}. If you don't use this setter, the default will be {@code true}.
+	 * 
+	 * @param storeCUQtyBeforeProcessing
+	 */
 	public void setStoreCUQtyBeforeProcessing(final boolean storeCUQtyBeforeProcessing)
 	{
 		this.storeCUQtyBeforeProcessing = storeCUQtyBeforeProcessing;
@@ -205,6 +213,12 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		return result;
 	}
 
+	/**
+	 * See {@link #setStoreCUQtyBeforeProcessing(boolean)}.
+	 * 
+	 * @param request
+	 * @param hu
+	 */
 	private void storeAggregateItemCuQty(final IAllocationRequest request, I_M_HU hu)
 	{
 		if (handlingUnitsBL.isAggregateHU(hu))

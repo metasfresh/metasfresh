@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -30,7 +30,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JList;
@@ -52,6 +55,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.grid.ed.VDate;
 import org.compiere.model.MSequence;
 import org.compiere.print.CPrinter;
@@ -70,7 +75,6 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -118,7 +122,7 @@ public final class Preference extends CDialog
 		}
 		load();
 		//
-		StringBuilder sta = new StringBuilder("#");
+		final StringBuilder sta = new StringBuilder("#");
 		sta.append(Env.getCtx().size()).append(" - ")
 				.append(msgBL.translate(Env.getCtx(), "AD_Window_ID"))
 				.append("=").append(WindowNo);
@@ -166,12 +170,12 @@ public final class Preference extends CDialog
 	private CCheckBox cacheWindow = new CCheckBox();
 	private CLabel lPrinter = new CLabel();
 	private CPrinter fPrinter = new CPrinter();
-	
+
 	// metas: adding support for an additional label printer
 	private CLabel lLabelPrinter = new CLabel();
 	private CPrinter fLabelPrinter = new CPrinter();
 	// metas end
-	
+
 	private CLabel lDate = new CLabel();
 	private VDate fDate = new VDate();
 	private CButton bRoleInfo = new CButton(msgBL.translate(Env.getCtx(), "AD_Role_ID"));
@@ -214,7 +218,7 @@ public final class Preference extends CDialog
 	 * 
 	 * @throws Exception
 	 */
-	void jbInit() throws Exception
+	private void jbInit() throws Exception
 	{
 		traceLabel.setRequestFocusEnabled(false);
 		traceLabel.setText(msgBL.getMsg(Env.getCtx(), "TraceLevel", true));
@@ -244,24 +248,24 @@ public final class Preference extends CDialog
 		storePassword.setToolTipText(msgBL.getMsg(Env.getCtx(), "StorePassword", false));
 		showTrl.setText(msgBL.getMsg(Env.getCtx(), "ShowTrlTab", true));
 		showTrl.setToolTipText(msgBL.getMsg(Env.getCtx(), "ShowTrlTab", false));
-		
-		if(Services.get(IPostingService.class).isEnabled())
+
+		if (Services.get(IPostingService.class).isEnabled())
 		{
 			showAcct = new CCheckBox();
 			showAcct.setText(msgBL.getMsg(Env.getCtx(), "ShowAcctTab", true));
 			showAcct.setToolTipText(msgBL.getMsg(Env.getCtx(), "ShowAcctTab", false));
 		}
-		
+
 		showAdvanced.setText(msgBL.getMsg(Env.getCtx(), "ShowAdvancedTab", true));
 		showAdvanced.setToolTipText(msgBL.getMsg(Env.getCtx(), "ShowAdvancedTab", false));
 		// connectionProfileLabel.setText(Msg.getElement(Env.getCtx(), "ConnectionProfile"));
 		cacheWindow.setText(msgBL.getMsg(Env.getCtx(), "CacheWindow", true));
 		cacheWindow.setToolTipText(msgBL.getMsg(Env.getCtx(), "CacheWindow", false));
 		lPrinter.setText(msgBL.getMsg(Env.getCtx(), "Printer"));
-		
+
 		// metas: adding support for an additional label printer
 		lLabelPrinter.setText(msgBL.getMsg(Env.getCtx(), Ini.P_LABELPRINTER));
-		
+
 		lDate.setText(msgBL.getMsg(Env.getCtx(), "Date"));
 		infoArea.setReadWrite(false);
 		// Charset:
@@ -296,7 +300,7 @@ public final class Preference extends CDialog
 			windowPanel.add(showAcct);
 			showAcct.setBorder(insetBorder);
 		}
-		
+
 		windowPanel.add(showTrl);
 		showTrl.setBorder(insetBorder);
 		windowPanel.add(showAdvanced);
@@ -352,12 +356,12 @@ public final class Preference extends CDialog
 				,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 2, 2, 0), 0, 0));
 		printPanel.add(fLabelPrinter,new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0
 				,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 2, 2, 0), 0, 0));
-		//metas end
+		// metas end
 
 		customizePane.add(printPanel, new GridBagConstraints(0, 4, 1, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 0, 2, 0), 0, 0));
 
-		CPanel otherPanel = new CPanel();
+		final CPanel otherPanel = new CPanel();
 		otherPanel.setBorder(BorderFactory.createEmptyBorder());
 		otherPanel.setLayout(new GridLayout());
 		CPanel datePanel = new CPanel();
@@ -383,6 +387,15 @@ public final class Preference extends CDialog
 		charsetPanel.add(fCharset);
 		customizePane.add(charsetPanel, new GridBagConstraints(0, 6, 1, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 0, 2, 0), 0, 0));
+		
+		// gh #975: also add additional settings that were registered via addSettingsPanel()
+		// for now, the panels are just added one by one, below each other
+		for (int i = 0; i < additionalSettingsPanels.size(); i++)
+		{
+			final CPanel additionalPanel = additionalSettingsPanels.get(i).getLeft();
+			// start with x=7, because 'charsetPanel' was added at 6
+			customizePane.add(additionalPanel, new GridBagConstraints(0, i + 7, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 0, 2, 0), 0, 0));
+		}
 
 		CPanel themePanel = new CPanel();
 		themePanel.setLayout(new GridLayout(1, 1));
@@ -422,7 +435,7 @@ public final class Preference extends CDialog
 		contextDetail.setLineWrap(true);
 		contextDetail.setWrapStyleWord(true);
 		contextDetail.setBorder(BorderFactory.createLoweredBevelBorder());
-		
+
 		// South
 		panel.add(southPanel, BorderLayout.SOUTH);
 		southPanel.setLayout(southLayout);
@@ -494,7 +507,7 @@ public final class Preference extends CDialog
 		// AutoCommit
 		autoCommit.setSelected(Env.isAutoCommit(Env.getCtx()));
 		autoNew.setSelected(Env.isAutoNew(Env.getCtx()));
-		
+
 		//
 		// AdempiereSys
 		adempiereSys.setSelected(Ini.isPropertyBool(Ini.P_ADEMPIERESYS));
@@ -511,7 +524,7 @@ public final class Preference extends CDialog
 				logMigrationScript.setEnabled(false);
 			}
 		}
-		
+
 		// If the ID server is not enabled, don't show the log migration scripts flags because can cause huge problems (see task 09544)
 		if (!MSequence.isExternalIDSystemEnabled())
 		{
@@ -520,12 +533,12 @@ public final class Preference extends CDialog
 			logMigrationScript.setSelected(false);
 			logMigrationScript.setVisible(false);
 		}
-		
+
 		// AutoLogin
 		autoLogin.setSelected(Ini.isPropertyBool(Ini.P_A_LOGIN));
 		// Save Password
 		storePassword.setSelected(Ini.isPropertyBool(Ini.P_STORE_PWD));
-		
+
 		// Show Acct Tab
 		if (showAcct != null)
 		{
@@ -539,7 +552,7 @@ public final class Preference extends CDialog
 				showAcct.setReadWrite(false);
 			}
 		}
-		
+
 		// Show Trl/Advanced Tab
 		showTrl.setSelected(Ini.isPropertyBool(Ini.P_SHOW_TRL));
 		showAdvanced.setSelected(Ini.isPropertyBool(Ini.P_SHOW_ADVANCED));
@@ -585,7 +598,7 @@ public final class Preference extends CDialog
 			final Level logLevel = LogManager.getLevel();
 			final File logFile = LogManager.getActiveLogFile();
 			final boolean logFileEnabled = LogManager.isFileLoggingEnabled();
-			
+
 			traceLevel.setSelectedItem(logLevel);
 			String traceFileText = msgBL.getMsg(Env.getCtx(), Ini.P_TRACEFILE_ENABLED, true);
 			if (logFile != null)
@@ -611,6 +624,12 @@ public final class Preference extends CDialog
 		final String[] context = Env.getEntireContext(Env.getCtx());
 		Arrays.sort(context);
 		infoList.setListData(context);
+		
+		// gh #975: also apply on-load consumers that where added via addSettingsPanel()
+		additionalSettingsPanels.forEach(p -> {
+			final Consumer<Preference> onLoad = p.getRight().getLeft();
+			onLoad.accept(this);
+		});
 	}	// load
 
 	/**
@@ -633,14 +652,14 @@ public final class Preference extends CDialog
 		Ini.setProperty(Ini.P_A_LOGIN, (autoLogin.isSelected()));
 		// Save Password
 		Ini.setProperty(Ini.P_STORE_PWD, (storePassword.isSelected()));
-		
+
 		// Show Acct Tab
 		if (showAcct != null)
 		{
 			Ini.setProperty(Ini.P_SHOW_ACCT, (showAcct.isSelected()));
 			Env.setContext(Env.getCtx(), Env.CTXNAME_ShowAcct, (showAcct.isSelected()));
 		}
-		
+
 		// Show Trl Tab
 		Ini.setProperty(Ini.P_SHOW_TRL, (showTrl.isSelected()));
 		Env.setContext(Env.getCtx(), "#ShowTrl", (showTrl.isSelected()));
@@ -725,8 +744,34 @@ public final class Preference extends CDialog
 			}
 		}
 
+		// gh #975: also apply on-save consumers that where added via addSettingsPanel()
+		additionalSettingsPanels.forEach(p -> {
+			final Consumer<Preference> onSave = p.getRight().getRight();
+			onSave.accept(this);
+		});
+		
 		Ini.saveProperties();
 		dispose();
 	}	// cmd_save
 
+	/**
+	 * Contains the parameters that were passed to {@link #addSettingsPanel(CPanel, Consumer, Consumer)} as {@code (panel, (onLoad, onSave))}.
+	 */
+	private final static List<IPair<CPanel, IPair<Consumer<Preference>, Consumer<Preference>>>> additionalSettingsPanels = new ArrayList<>();
+
+	/**
+	 * 
+	 * @param panel
+	 * @param onLoad will be applied then this instance is loaded. Should contain code to load initial values into the given {@code panel}.
+	 * @param onSave will be applied when this instance is stored, right before {@link Ini#saveProperties()} is invoked.
+	 *            Should contain code to persist the values of the given {@code panel}.
+	 *            
+	 * @task https://github.com/metasfresh/metasfresh/issues/975
+	 */
+	public static void addSettingsPanel(final CPanel panel,
+			final Consumer<Preference> onLoad,
+			final Consumer<Preference> onSave)
+	{
+		additionalSettingsPanels.add(ImmutablePair.of(panel, ImmutablePair.of(onLoad, onSave)));
+	}
 }

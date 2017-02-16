@@ -33,6 +33,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 /**
  * Interface used to manage (create, update, edit etc) the LU/TU configuration of a particular document line.
+ * 
+ * Under the hood, it uses {@link IDocumentLUTUConfigurationHandler}.
  *
  * @author tsa
  *
@@ -67,17 +69,9 @@ public interface IDocumentLUTUConfigurationManager
 	List<I_M_HU_LUTU_Configuration> getCurrentLUTUConfigurationAlternatives();
 
 	/**
+	 * Sets given configuration to underlying document line and save that line.
 	 *
 	 * @param lutuConfiguration
-	 * @see IDocumentLUTUConfigurationHandler#setCurrentLUTUConfiguration(Object, I_M_HU_LUTU_Configuration)
-	 */
-	void setCurrentLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
-
-	/**
-	 * Same as {@link #setCurrentLUTUConfiguration(I_M_HU_LUTU_Configuration)} but the underlying document line is also saved.
-	 *
-	 * @param lutuConfiguration
-	 * @see IDocumentLUTUConfigurationHandler#setCurrentLUTUConfiguration(Object, I_M_HU_LUTU_Configuration)
 	 */
 	void setCurrentLUTUConfigurationAndSave(I_M_HU_LUTU_Configuration lutuConfiguration);
 

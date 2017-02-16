@@ -110,19 +110,13 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 	}
 
 	@Override
-	public void setCurrentLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration)
-	{
-		final T documentLine = getDocumentLine();
-		handler.setCurrentLUTUConfiguration(documentLine, lutuConfiguration);
-	}
-
-	@Override
 	public void setCurrentLUTUConfigurationAndSave(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		setCurrentLUTUConfiguration(lutuConfiguration);
+		// Update the document line
+		final T documentLine = getDocumentLine();
+		handler.setCurrentLUTUConfiguration(documentLine, lutuConfiguration);
 
 		// Save it
-		final T documentLine = getDocumentLine();
 		handler.save(documentLine);
 	}
 

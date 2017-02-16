@@ -1,13 +1,10 @@
 package de.metas.dlm.connection;
 
-import java.sql.Connection;
-
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 
-import de.metas.connection.IConnectionCustomizer;
 import de.metas.dlm.migrator.IMigratorService;
 
 /*
@@ -45,7 +42,7 @@ public class DLMPermanentSysConfigCustomizer extends AbstractDLMCustomizer
 	private static final String SYSCONFIG_DLM_COALESCE_LEVEL = "de.metas.dlm.DLM_Coalesce_Level";
 	private static final String SYSCONFIG_DLM_LEVEL = "de.metas.dlm.DLM_Level";
 
-	public static IConnectionCustomizer PERMANENT_INSTANCE = new DLMPermanentSysConfigCustomizer();
+	public static AbstractDLMCustomizer PERMANENT_SYSCONFIG_INSTANCE = new DLMPermanentSysConfigCustomizer();
 
 	private DLMPermanentSysConfigCustomizer()
 	{
@@ -55,9 +52,12 @@ public class DLMPermanentSysConfigCustomizer extends AbstractDLMCustomizer
 	 * Returns the DLM_Level set in the SysConfig. If none is set, it returns {@link IMigratorService#DLM_Level_TEST},
 	 * so by default, only records that are "live/operational" and records that are currently processed by {@link IMigratorService#testMigratePartition(de.metas.dlm.Partition)}
 	 * are visible to the system.
+	 * 
+	 * @param c_IGNOREDignored, can also be {@code null}
+	 * 
 	 */
 	@Override
-	public int getDlmLevel(final Connection c)
+	public int getDlmLevel()
 	{
 		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DLM_LEVEL, IMigratorService.DLM_Level_TEST);
 	}
@@ -67,7 +67,7 @@ public class DLMPermanentSysConfigCustomizer extends AbstractDLMCustomizer
 	 * everything that was not yet explicitly moved to a DLM level is visible.
 	 */
 	@Override
-	public int getDlmCoalesceLevel(final Connection c)
+	public int getDlmCoalesceLevel()
 	{
 		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DLM_COALESCE_LEVEL, IMigratorService.DLM_Level_LIVE);
 	}

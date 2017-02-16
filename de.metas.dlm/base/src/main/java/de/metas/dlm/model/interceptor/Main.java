@@ -8,7 +8,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.connection.IConnectionCustomizerService;
-import de.metas.dlm.connection.DLMPermanentSysConfigCustomizer;
+import de.metas.dlm.connection.DLMPermanentIniCustomizer;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.coordinator.impl.LastUpdatedInspector;
 import de.metas.dlm.exception.DLMReferenceExceptionWrapper;
@@ -57,8 +57,8 @@ public class Main extends AbstractModuleInterceptor
 	{
 		DBException.registerExceptionWrapper(DLMReferenceExceptionWrapper.INSTANCE);
 
-		Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentSysConfigCustomizer.PERMANENT_INSTANCE);
+		Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentIniCustomizer.INSTANCE);
 
-		Services.get(ICoordinatorService.class).registerInspector(LastUpdatedInspector.INSTANCE);
+		Services.get(ICoordinatorService.class).registerInspector(LastUpdatedInspector.INSTANCE);	
 	}
 }

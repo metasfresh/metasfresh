@@ -1,7 +1,5 @@
 package de.metas.dlm.connection;
 
-import java.sql.Connection;
-
 import javax.annotation.concurrent.Immutable;
 
 import de.metas.connection.ITemporaryConnectionCustomizer;
@@ -67,13 +65,13 @@ public class DLMConnectionCustomizer
 	};
 
 	@Override
-	public int getDlmLevel(final Connection IGNORED)
+	public int getDlmLevel()
 	{
 		return dlmLevel;
 	}
 
 	@Override
-	public int getDlmCoalesceLevel(final Connection IGNORED)
+	public int getDlmCoalesceLevel()
 	{
 		return dlmCoalesceLevel;
 	}
