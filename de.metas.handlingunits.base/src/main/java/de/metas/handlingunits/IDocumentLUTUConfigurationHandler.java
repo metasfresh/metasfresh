@@ -52,7 +52,7 @@ public interface IDocumentLUTUConfigurationHandler<T>
 	I_M_HU_LUTU_Configuration createNewLUTUConfiguration(final T documentLine);
 
 	/**
-	 * Update the given LU/TU Configuration from underlying document line.
+	 * Update the given LU/TU Configuration from underlying document line (not saving).
 	 *
 	 * @param lutuConfiguration
 	 */
