@@ -37,6 +37,8 @@ public interface IDocumentView
 	DocumentId getDocumentId();
 	
 	IDocumentViewType getType();
+	
+	boolean isProcessed();
 
 	String getIdFieldNameOrNull();
 

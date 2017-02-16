@@ -231,6 +231,10 @@ public final class JSONDocument implements Serializable
 
 			//
 			// Document view record specific attributes
+			if(documentView.isProcessed())
+			{
+				jsonDocument.putOtherProperty("processed", true);
+			}
 			if (documentView.hasAttributes())
 			{
 				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);

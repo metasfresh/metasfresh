@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -52,6 +53,7 @@ public final class DocumentView implements IDocumentView
 	private final DocumentPath documentPath;
 	private final DocumentId documentId;
 	private final IDocumentViewType type;
+	private final boolean processed;
 
 	private final String idFieldName;
 	private final Map<String, Object> values;
@@ -68,6 +70,8 @@ public final class DocumentView implements IDocumentView
 		idFieldName = builder.idFieldName;
 		documentId = documentPath.getDocumentId();
 		type = builder.getType();
+		processed = builder.isProcessed();
+		
 		values = ImmutableMap.copyOf(builder.values);
 
 		attributesProvider = builder.getAttributesProviderOrNull();
@@ -85,6 +89,7 @@ public final class DocumentView implements IDocumentView
 				.add("values", values)
 				.add("attributesProvider", attributesProvider)
 				.add("includedDocuments.count", includedDocuments.size())
+				.add("processed", processed)
 				.toString();
 	}
 
@@ -110,6 +115,12 @@ public final class DocumentView implements IDocumentView
 	public IDocumentViewType getType()
 	{
 		return type;
+	}
+	
+	@Override
+	public boolean isProcessed()
+	{
+		return processed;
 	}
 
 	@Override
@@ -159,6 +170,7 @@ public final class DocumentView implements IDocumentView
 		private String idFieldName;
 		private DocumentId _documentId;
 		private IDocumentViewType type;
+		private Boolean processed;
 
 		private final Map<String, Object> values = new LinkedHashMap<>();
 		private IDocumentViewAttributesProvider attributesProvider;
@@ -229,6 +241,24 @@ public final class DocumentView implements IDocumentView
 		{
 			this.type = type;
 			return this;
+		}
+		
+		public Builder setProcessed(final boolean processed)
+		{
+			this.processed = processed;
+			return this;
+		}
+		
+		private boolean isProcessed()
+		{
+			if(processed == null)
+			{
+				return DisplayType.toBoolean(values.getOrDefault("Processed", false));
+			}
+			else
+			{
+				return processed.booleanValue();
+			}
 		}
 
 		public Builder putFieldValue(final String fieldName, final Object jsonValue)
