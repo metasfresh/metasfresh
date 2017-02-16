@@ -37,6 +37,13 @@ import de.metas.process.Param;
  * #L%
  */
 
+/**
+ * This process can be useful if the user found two records that should not be in the same partition but still are.
+ * He/She can then use this process to figure out how those records are connected.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class DLM_FindPathBetweenRecords extends JavaProcess
 {
 	@Param(mandatory = true, parameterName = I_DLM_Partition_Config.COLUMNNAME_DLM_Partition_Config_ID)

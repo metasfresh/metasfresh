@@ -62,7 +62,8 @@ public class PartitionerTools
 
 	public static Iterator<WorkQueue> loadQueue(final int dlm_Partition_ID, final IContextAware contextAware)
 	{
-		final Iterator<I_DLM_Partition_Workqueue> iterator = Services.get(IQueryBL.class).createQueryBuilder(I_DLM_Partition_Workqueue.class, contextAware)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final Iterator<I_DLM_Partition_Workqueue> iterator = queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, contextAware)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DLM_Partition_Workqueue.COLUMN_DLM_Partition_ID, dlm_Partition_ID)
 				.orderBy().addColumn(I_DLM_Partition_Workqueue.COLUMNNAME_DLM_Partition_Workqueue_ID).endOrderBy()
@@ -84,8 +85,12 @@ public class PartitionerTools
 			{
 				return WorkQueue.of(iterator.next());
 			}
+
+			@Override
+			public String toString()
+			{
+				return "PartitionerTools.loadQueue() [dlm_Partition_ID=" + dlm_Partition_ID + "; iterator=" + iterator + "]";
+			}
 		};
-
 	}
-
 }

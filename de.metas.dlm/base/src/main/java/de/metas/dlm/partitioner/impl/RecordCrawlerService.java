@@ -15,6 +15,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
@@ -31,6 +33,8 @@ import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
+import de.metas.dlm.partitioner.IIterateResult;
+import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
 import de.metas.dlm.partitioner.IRecordCrawlerService;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
@@ -73,12 +77,12 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		// store what we are setting out to do here.
-		// E.g. if we are called from a DLMException, we want the situation - partition is not complete because testMigrate failed, and there are e.g. 20 orderlines to backtrack from - to be stored here.
+		// store what we are setting out to do here. E.g. if we are called from a DLMException, we want the situation such as
+		// "partition is not complete because testMigrate failed, and there are e.g. 20 orderlines to backtrack from" to be stored here.
 		// otherwise, the partiton we are in truth working on just now would be flagged as "completed" in the DB until further notice
 		storeIterateResult(config, result, ctxAware);
 
-		while (!result.isQueueEmpty())
+		mainLoop: while (!result.isQueueEmpty())
 		{
 			final ITableRecordReference currentReference = result.nextFromQueue();
 			final IDLMAware currentRecord = currentReference.getModel(ctxAware, IDLMAware.class);
@@ -163,7 +167,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						if (forwardRecord == null)
 						{
 							// this happens with our "minidump" where we left out the HUs
-							logger.debug("{}[{}] forward: the record from table={} which we attempted to load via {}.{}={} is NULL",
+							Loggables.get().withLogger(logger, Level.WARN).addLog(
+									"{}[{}] forward: the record from table={} which we attempted to load via {}.{}={} is NULL",
 									currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey);
 							continue;
 						}
@@ -171,12 +176,18 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						logger.debug("{}[{}] forward: loaded from table={} via {}.{}={}: referenced IDLMAware={}",
 								currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey, forwardRecord);
 
-						result.addReferencedRecord(currentReference, forwardReference, forwardRecord.getDLM_Partition_ID());
+						final AddResult addResult = result.addReferencedRecord(currentReference, forwardReference, forwardRecord.getDLM_Partition_ID());
 						if (forwardRecord.getDLM_Partition_ID() > 0)
 						{
 							// log why we do not search further using the new found foreign record
 							logger.debug("{}[{}] forward: referenced IDLMAware={} already has DLM_Partition_ID={}",
 									currentTableName, currentRecordId, forwardRecord, forwardRecord.getDLM_Partition_ID());
+						}
+						if(AddResult.STOP.equals(addResult))
+						{
+							Loggables.get().withLogger(logger, Level.WARN)
+								.addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
+							break mainLoop;
 						}
 					}
 				}
@@ -243,27 +254,35 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 					final ITableRecordReference backwardTableRecordReference = ITableRecordReference.FromModelConverter.convert(backwardRecord);
 
-					final boolean recordWasNotYetAddedBefore = result.addReferencingRecord(backwardTableRecordReference, currentReference, backwardRecord.getDLM_Partition_ID());
+					final AddResult addRecordResult = result.addReferencingRecord(backwardTableRecordReference, currentReference, backwardRecord.getDLM_Partition_ID());
 
 					// should not happen because we excluded alreadyAddedBackwardIds from the loading query
 					// Check.errorUnless(recordWasNotYetAddedBefore, "{}[{}] backward: WAS ALREADY ADDED! - loaded referencing IDLMAware={} from table={} via {}.{}={}",
 					// currentTableName, currentRecordId, backwardRecord, backwardTableName, backwardTableName, backwardColumnName, currentRecordId);
-					if (recordWasNotYetAddedBefore)
-					{
-						// the foreign record was not yet added before. Add it now
-						logger.debug("{}[{}] backward: loaded from table={} via {}.{}={}: referencing IDLMAware={}",
-								currentTableName, currentRecordId, backwardTableName, backwardTableName, backwardColumnName, currentRecordId, backwardRecord);
 
-						if (backwardRecord.getDLM_Partition_ID() > 0)
-						{
-							// log why we did not search further using the new found foreign record
-							logger.debug("{}[{}] backward: referenced IDLMAware={} already has DLM_Partition_ID={}",
-									currentTableName, currentRecordId, backwardRecord, backwardRecord.getDLM_Partition_ID());
-						}
-					}
-					else
+					switch (addRecordResult)
 					{
-						logger.trace("{}[{}] backward: ITableRecordReference={} was already added in a previous iteration. Returning", currentTableName, currentRecordId, backwardTableRecordReference);
+						case ADDED_CONTINUE:
+							// log that the foreign record was not yet added before. We added it now
+							logger.debug("{}[{}] backward: loaded from table={} via {}.{}={}: referencing IDLMAware={}",
+									currentTableName, currentRecordId, backwardTableName, backwardTableName, backwardColumnName, currentRecordId, backwardRecord);
+
+							if (backwardRecord.getDLM_Partition_ID() > 0)
+							{
+								// log why we did not search further using the new found foreign record
+								logger.debug("{}[{}] backward: referenced IDLMAware={} already has DLM_Partition_ID={}",
+										currentTableName, currentRecordId, backwardRecord, backwardRecord.getDLM_Partition_ID());
+							}
+							break;
+						case NOT_ADDED_CONTINUE:
+							logger.trace("{}[{}] backward: ReferencingRecord={} was already added in a previous iteration. Returning", currentTableName, currentRecordId, backwardTableRecordReference);
+							break;
+						case STOP:
+							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencingRecord={} the result. Stopping now", backwardTableRecordReference);
+							break mainLoop;
+						default:
+							Check.errorIf(true, "Unexpected result={}", addRecordResult);
+							break;
 					}
 				}
 			}
@@ -326,6 +345,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IDLMService dlmService = Services.get(IDLMService.class);
 
 		final Partition resultPartition = result.getPartition() // the partiton returned by result might be empty, if this is the first time we are in this method
 				.withConfig(config)
@@ -338,21 +358,19 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		if (dlmPartitionId2Record.isEmpty())
 		{
 			logger.debug("storeIterateResult: Result={} has no records; config={}", result, config);
-			storedPartition = Services.get(IDLMService.class).storePartition(
+			storedPartition = dlmService.storePartition(
 					resultPartition,
 					false); // runInOwnTrx=false because this whole method is already running in its own transaction
 		}
 		else
 		{
-			// check the DLM_Partition_IDs we know about and see if there is one > 0, i.e. see if there is one already persisted parttion in the plan
+			// check the DLM_Partition_IDs we know about and see if there is one > 0, i.e. see if there is one already persisted partition in the plan
 			final Set<Integer> keySet = new HashSet<>(dlmPartitionId2Record.keySet());
 			keySet.add(resultPartition.getDLM_Partition_ID());
 
 			// commpares dlmPartitionIds by the size of there respective DLM_Partition records
 			final Comparator<Integer> c = Comparator
-					.comparing(dlmPartitionId -> InterfaceWrapperHelper
-							.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName())
-							.getPartitionSize());
+					.comparing(dlmPartitionId -> getPartitionSize(ctxAware, dlmPartitionId));
 
 			final Optional<Integer> firstKeyIfAny = keySet
 					.stream()
@@ -368,7 +386,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 				firstKey = firstKeyIfAny.get();
 
 				// update the existing parttion
-				storedPartition = Services.get(IDLMService.class).storePartition(
+				storedPartition = dlmService.storePartition(
 						resultPartition
 								.withDLM_Partition_ID(firstKey)
 								.withTargetDLMLevel(IMigratorService.DLM_Level_NOT_SET)
@@ -378,14 +396,13 @@ public class RecordCrawlerService implements IRecordCrawlerService
 			else
 			{
 				// store a brand new partition
-				storedPartition = Services.get(IDLMService.class).storePartition(
+				storedPartition = dlmService.storePartition(
 						resultPartition,
 						false); // runInOwnTrx=false because this whole method is already running in its own transaction
 				firstKey = storedPartition.getDLM_Partition_ID();
 			}
 
 			// now iterate the keyset and merge all other partitions with the one that has "firstKey" as it's ID
-			final IDLMService dlmService = Services.get(IDLMService.class);
 
 			keySet.stream()
 
@@ -399,7 +416,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 					.forEach(dlmPartitionId -> {
 						dlmService.directUpdateDLMColumn(ctxAware, dlmPartitionId, IDLMAware.COLUMNNAME_DLM_Partition_ID, firstKey);
 
-						// we know that the partitition with dlmPartitionId is now empty, so let's delete it
+						// reassign DLM_Partition_Workqueue records
 						queryBL.createQueryBuilder(I_DLM_Partition_Workqueue.class, ctxAware)
 								.addEqualsFilter(I_DLM_Partition_Workqueue.COLUMN_DLM_Partition_ID, dlmPartitionId)
 								.create()
@@ -407,13 +424,19 @@ public class RecordCrawlerService implements IRecordCrawlerService
 								.addSetColumnValue(I_DLM_Partition_Workqueue.COLUMNNAME_DLM_Partition_ID, firstKey)
 								.execute();
 
+						// we know that the partitition with dlmPartitionId is now empty, so let's delete it
 						final I_DLM_Partition emptyPartitionDB = InterfaceWrapperHelper.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName());
-						InterfaceWrapperHelper.delete(emptyPartitionDB);
+						if (emptyPartitionDB != null)
+						{
+							InterfaceWrapperHelper.delete(emptyPartitionDB);
+						}
+						Loggables.get().withLogger(logger, Level.INFO).addLog("Deleted DLM_Partition_ID={} after merge with DLM_Partition_ID={}", dlmPartitionId, firstKey);
 					});
 		}
 
 		// store and delete DLM_Partition_Workqueue records according to the records we processed and the records we newly added since the last time this method was called.
 		{
+			// delete DLM_Partition_Workqueue records we already processed
 			final Mutable<Integer> deletedSum = new Mutable<>(0);
 			result.getQueueRecordsToDelete()
 					.forEach(r -> {
@@ -428,11 +451,12 @@ public class RecordCrawlerService implements IRecordCrawlerService
 					});
 			logger.debug("storeIterateResult: Deleted {} DLM_Partition_Workqueue records", deletedSum.getValue());
 
+			// persist DLM_Partition_Workqueue record we still need to process.
 			final Mutable<Integer> storedSum = new Mutable<>(0);
 			result.getQueueRecordsToStore()
-					.forEach(r -> {
+					.forEach(queueRecordsToStore -> {
 
-						final ITableRecordReference tableRecordReference = r.getTableRecordReference();
+						final ITableRecordReference tableRecordReference = queueRecordsToStore.getTableRecordReference();
 
 						final I_DLM_Partition_Workqueue newQueueRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Workqueue.class);
 						newQueueRecord.setDLM_Partition_ID(storedPartition.getDLM_Partition_ID());
@@ -441,7 +465,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 						InterfaceWrapperHelper.save(newQueueRecord);
 
-						r.setDLM_Partition_Workqueue_ID(newQueueRecord.getDLM_Partition_Workqueue_ID());
+						queueRecordsToStore.setDLM_Partition_Workqueue_ID(newQueueRecord.getDLM_Partition_Workqueue_ID());
 
 						storedSum.setValue(storedSum.getValue() + 1);
 					});
@@ -449,6 +473,16 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		}
 
 		result.clearAfterPartitionStored(storedPartition);
+	}
+
+	private int getPartitionSize(final IContextAware ctxAware, Integer dlmPartitionId)
+	{
+		final I_DLM_Partition partitionDB = InterfaceWrapperHelper.create(ctxAware.getCtx(), dlmPartitionId, I_DLM_Partition.class, ctxAware.getTrxName());
+		if (partitionDB == null)
+		{
+			return 0; // guard against NPE
+		}
+		return partitionDB.getPartitionSize();
 	}
 
 }

@@ -71,6 +71,8 @@ public class Partition
 
 	private final boolean complete;
 
+	private final boolean aborted;
+
 	/**
 	 * Can be used to create a new instance when records were just be discovered and still need to be saved.
 	 *
@@ -104,7 +106,8 @@ public class Partition
 	{
 		final boolean configChanged = false;
 		final boolean recordsChanged = false;
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		final boolean aborted = false; // a partitin can only be "aborted" while new records are added to it
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	private Partition(
@@ -116,7 +119,8 @@ public class Partition
 			final int currentDLMLevel,
 			final int targetDLMLevel,
 			final Timestamp nextInspectionDate,
-			final int DLM_Partition_ID)
+			final int DLM_Partition_ID,
+			final boolean aborted)
 	{
 		this.config = config;
 		this.configChanged = configChanged;
@@ -130,6 +134,8 @@ public class Partition
 		this.targetDLMLevel = targetDLMLevel;
 		this.nextInspectionDate = nextInspectionDate;
 		this.DLM_Partition_ID = DLM_Partition_ID;
+
+		this.aborted = aborted;
 	}
 
 	/**
@@ -140,12 +146,12 @@ public class Partition
 	 */
 	public Partition withTargetDLMLevel(final int targetDLMLevel)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	public Partition withCurrentDLMLevel(final int currentDLMLevel)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	/**
@@ -158,18 +164,18 @@ public class Partition
 	public Partition withRecords(final Map<String, Collection<ITableRecordReference>> records)
 	{
 		final boolean recordsChanged = true;
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	public Partition withNextInspectionDate(final Timestamp nextInspectionDate)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	public Partition withConfig(final PartitionConfig config)
 	{
 		final boolean configChanged = true;
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	/**
@@ -183,17 +189,22 @@ public class Partition
 		final boolean configChanged = false;
 		final boolean recordsChanged = false;
 
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	public Partition withComplete(final boolean complete)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	public Partition withDLM_Partition_ID(final int DLM_Partition_ID)
 	{
-		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID);
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
+	}
+
+	public Partition withAborted(final boolean aborted)
+	{
+		return new Partition(config, configChanged, records, recordsChanged, complete, currentDLMLevel, targetDLMLevel, nextInspectionDate, DLM_Partition_ID, aborted);
 	}
 
 	/**
@@ -210,7 +221,8 @@ public class Partition
 				IMigratorService.DLM_Level_NOT_SET,
 				IMigratorService.DLM_Level_NOT_SET,
 				null,
-				0);
+				0,
+				false);
 	}
 
 	/**
@@ -283,6 +295,11 @@ public class Partition
 		return DLM_Partition_ID;
 	}
 
+	public boolean isAborted()
+	{
+		return aborted;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -330,5 +347,10 @@ public class Partition
 			dlmPartitionWorkqueueId = dlm_Partition_Workqueue_ID;
 		}
 
+		@Override
+		public String toString()
+		{
+			return "Partition.WorkQueue [DLM_Partition_Workqueue_ID=" + dlmPartitionWorkqueueId + ", tableRecordReference=" + tableRecordReference + "]";
+		}
 	}
 }

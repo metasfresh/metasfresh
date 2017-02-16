@@ -5,9 +5,9 @@ SELECT
 	p.DLM_Partition_ID, SUM(count) AS Size
 FROM DLM_Partition p
 	JOIN DLM_Partition_Config c 
-			ON p.DLM_Partition_Config_ID=c.DLM_Partition_Config_ID
+			ON p.DLM_Partition_Config_ID=c.DLM_Partition_Config_ID AND c.IsActive='Y'
 	JOIN DLM_Partition_Config_Line l 
-			ON l.DLM_Partition_Config_ID=c.DLM_Partition_Config_ID
+			ON l.DLM_Partition_Config_ID=c.DLM_Partition_Config_ID  AND l.IsActive='Y'
 		JOIN AD_Table t 
 			ON t.AD_Table_ID=l.DLM_Referencing_Table_ID
 	JOIN LATERAL (SELECT COUNT(1) AS count FROM dlm.get_dlm_records(t.TableName, p.DLM_Partition_ID)) as count 

@@ -32,6 +32,7 @@ public interface IMigratorService extends ISingletonService
 {
 	/**
 	 * This value is equivalent to <code>DLM_Level IS NULL</code> in the database's DLM'ed records.
+	 * Please keep this value in sync with the "unset value in the SQL {@code dlm.triggers}.
 	 */
 	public static final int DLM_Level_NOT_SET = 0;
 
@@ -55,11 +56,13 @@ public interface IMigratorService extends ISingletonService
 	public static final String MSG_DLM_Level_ARCHIVE = "de.metas.dlm.DLM_Level_ARCHIVE";
 
 	/**
-	 * Checks if the given partition could be migrated.
+	 * Check if the given partition could be migrated.
 	 * This is the case if the partition is "complete", meaning that there would be no records left behind with dangling references, if we migrated the partition.
 	 * <p>
-	 * Make the test by temporarily setting <code>DLM_Level</code> to {@link #DLM_Level_TEST}. If it works, then undo the change.
-	 * Both operations are performed in a local transaction.
+	 * Make the test by temporarily setting <code>DLM_Level</code> to {@link #DLM_Level_TEST}. If it worked without exception, then set the level (back) to {@link Partition#getCurrentDLMLevel()}.
+	 * Perform both operations in one local transaction.
+	 * <p>
+	 * <b>Important:</b> if {@link Partition#getCurrentDLMLevel()} already returns a values greater than o equal to {@link #DLM_Level_TEST}, then log a warning and do nothing.
 	 *
 	 * @param partition the partition to test. Please note that the content of {@link Partition#getRecords()} does not play a role.
 	 * @throws {@link DLMReferenceException} if the given migration is not complete and therefore cannot be migrated.

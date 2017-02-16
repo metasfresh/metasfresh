@@ -10,6 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 4.57.56 (2017-08)
+
+upcoming
+
+## Features
+* metasfresh 
+  * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
+  * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
+  * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
+  * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
+  * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
+  
+## Fixes
+* metasfresh
+  * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
+
 # metasfresh 4.56.55 (2017-07)
 
 this week's RC
@@ -19,16 +35,22 @@ this week's RC
   * #913 include branch name in build version string
   
 * webUI
+  * #112 On login page, deactivate the fields while logging in
+  * #120 Material Receipt WebUI: Attribute Values wrong
   * #127 Receipt schedules - Receive with configuration improvements
   * #118 Functionality to easily add files to current record in webUI
   * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+  * #127 Receipt schedules - Receive with configuration improvements
+  * #132 Receiving HUs: already received HUs shall be flagged as processed
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
   * #256 Implement document attachments
   * #257 login page: focus on username
   * #275 None of the menus could be opened when in full screen mode
+  * #281 Remove margin from wrapper modal to make 0-padding inside
   * #734 Add Translation for en_US in WebUI
+  * #833 Invoice Process in Invoice Candidates WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
   * #947 Window Greeting Add Translation for en_US
@@ -46,6 +68,7 @@ this week's RC
   * #268 Wrong viewId when starting the process
   * #276 Wrong timing when completing a quick input entry
   * #279 While browsing a document, pressing New does nothing
+  * #295 Attribute Editor too narrow
 
 # metasfresh 4.55.54 (2017-06)
 

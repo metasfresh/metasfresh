@@ -50,6 +50,12 @@ import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
  * #L%
  */
 
+/**
+ * This interceptor is responsible for reacting on DLM-related events by identifying the related records and scheduling them with {@link DLMPartitionerWorkpackageProcessor}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PartitionerInterceptor extends AbstractModelInterceptor
 {
 	public static final PartitionerInterceptor INSTANCE = new PartitionerInterceptor();
@@ -60,8 +66,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 	/**
 	 * Registers {@link AddToPartitionInterceptor#INSTANCE} as listener for every table that has a {@link PartitionerConfigLine} in the default configuration.
-	 * Reegisters {@link CheckTableRecordReferenceInterceptor#INSTANCE} as listener for every table that has an <code>AD_Table-ID</code> and <code>Record_ID</code> column.
-	 *
+	 * Also registers {@link CheckTableRecordReferenceInterceptor#INSTANCE} as listener for every table that has an <code>AD_Table-ID</code> and <code>Record_ID</code> column.
 	 *
 	 */
 	@Override

@@ -4,6 +4,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
@@ -37,13 +38,23 @@ import de.metas.dlm.exception.DLMReferenceExceptionWrapper;
 
 public class Main extends AbstractModuleInterceptor
 {
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/969
+	 */
+	private static final String SYSCONFIG_DLM_PARTITIONER_INTERCEPTOR_ENABLED = "de.metas.dlm.PartitionerInterceptor.enabled";
+
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addModelValidator(DLM_Partition_Config.INSTANCE, client);
 		engine.addModelValidator(DLM_Partition_Config_Line.INSTANCE, client);
 
-		engine.addModelValidator(PartitionerInterceptor.INSTANCE, client);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_DLM_PARTITIONER_INTERCEPTOR_ENABLED, false))
+		{
+			// gh #969: only do partitioning if it's enabled
+			engine.addModelValidator(PartitionerInterceptor.INSTANCE, client);
+		}
 	}
 
 	@Override
@@ -59,6 +70,6 @@ public class Main extends AbstractModuleInterceptor
 
 		Services.get(IConnectionCustomizerService.class).registerPermanentCustomizer(DLMPermanentIniCustomizer.INSTANCE);
 
-		Services.get(ICoordinatorService.class).registerInspector(LastUpdatedInspector.INSTANCE);	
+		Services.get(ICoordinatorService.class).registerInspector(LastUpdatedInspector.INSTANCE);
 	}
 }

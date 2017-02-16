@@ -12,7 +12,9 @@ RETURNS TABLE
 	QualityDiscountPercent numeric,
 	QualityNote character varying, 
 	isInDispute character(1),
-	Description Character Varying
+	Description Character Varying,
+	bp_product_no character varying(30),
+	bp_product_name character varying(100)
 )
 AS
 $$
@@ -28,7 +30,10 @@ SELECT
 	QualityDiscountPercent,
 	QualityNote,
 	isInDispute,
-	iol.Description
+	iol.Description,
+	bp_product_no,
+	bp_product_name
+
 FROM
 	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
 	-- (Otherwise we'd have to copy the attributes-sub-select in the group by clause. Hint: That would suck)
@@ -54,7 +59,10 @@ FROM
 			)
 		) END AS QualityNote,
 		iol.isInDispute,
-		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description
+		CASE WHEN iol.Description IS NOT NULL AND iol.Description != '' THEN  iol.Description ELSE NULL END AS Description,
+		-- in case there is no C_BPartner_Product, fallback to the default ones
+		COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
+		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
 	FROM
 		-- All In Outs linked to the order
 		(
@@ -76,10 +84,14 @@ FROM
 		 * process we assume, that all lines of one inout belong to only one order
 		 */
 		INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
+		LEFT OUTER JOIN C_BPartner bp			ON io.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 		-- Product and its translation
 		INNER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 		LEFT OUTER JOIN M_Product_Trl pt 		ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 		INNER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+		
+		LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 		-- Unit of measurement & its translation
 		INNER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 		LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
@@ -138,7 +150,9 @@ GROUP BY
 	QualityNote,
 	isInDispute,
 	StdPrecision,
-	Description
+	Description,
+	bp_product_no,
+	bp_product_name
 ORDER BY
 	Name, MIN(M_InOutLine_ID)
 

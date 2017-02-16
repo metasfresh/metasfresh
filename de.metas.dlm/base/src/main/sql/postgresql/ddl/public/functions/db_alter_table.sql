@@ -8,26 +8,30 @@ declare
 	i int;
 	j int;
 	v record;
+	currentViewFullName text;
 	viewFullName text[];
 	viewtext text[];
 	dropviews text[];
 	command text;
 begin
 
-	-- Fetch dependent views
+	-- Fetch dependent views, "deepest" first and store them in the viewFullName and viewtext arrays
 	i := 0;
 	for v in (select view_schema, view_name, depth FROM public.db_dependent_views(p_table_name) order by depth desc)
 	loop
-		if (viewFullName @> array[v.view_name]) then
-			-- raise notice ' skip view % because it was already detected as a dependency', v.relname;
+		currentViewFullName := '"'||v.view_schema||'".'||v.view_name;
+		-- note: @> is the "contains" operator
+		if (viewFullName @> array[currentViewFullName]) then
+			raise notice ' skip view % because it was already detected as a dependency', currentViewFullName;
 			continue;
 		end if;
 		i := i + 1;
 		viewtext[i] := (select view_definition from information_schema.views where views.table_schema=v.view_schema AND views.table_name=v.view_name);
-		viewFullName[i] := '"'||v.view_schema||'".'||v.view_name;
-		raise notice '    Found dependent view: %', viewFullName[i];
+		viewFullName[i] := currentViewFullName;
+		raise notice '    Found dependent view with depth %: %', v.depth, viewFullName[i];
 	end loop;
 	
+	-- Drop the dependent view, deepest first
 	if i > 0 then
 			for j in 1 .. i loop
 				raise notice '    Dropping view %', viewFullName[j];
@@ -59,7 +63,7 @@ end;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-COMMENT ON FUCNTION public.db_alter_table(text, text) IS
-'Drops all views that directly or indirectly depend on the given table (1st param), then executes the given DDL (2nd param) and finnal restores the views
+COMMENT ON FUNCTION public.db_alter_table(text, text) IS
+'Drops all views that directly or indirectly depend on the given table (1st param), then executes the given DDL (2nd param) and finally restores the views
 This function is similar to the old public.altercolumn() function, but is more generic.
 ';

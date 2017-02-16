@@ -14,7 +14,11 @@ import org.jgrapht.graph.DefaultEdge;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dlm.partitioner.impl.IIterateResult;
+import de.metas.dlm.partitioner.IIterateResult;
+import de.metas.dlm.partitioner.IIterateResultHandler;
+import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
+import de.metas.dlm.partitioner.IterateResultHandlerSupport;
+import de.metas.dlm.partitioner.process.DLM_FindPathBetweenRecords;
 
 /*
  * #%L
@@ -38,10 +42,21 @@ import de.metas.dlm.partitioner.impl.IIterateResult;
  * #L%
  */
 
+/**
+ * This implementation is dedicated to finding a path between different records.
+ * It collects all records that the crawler finds and in the end uses a graph library to find a path bitween them.
+ *
+ * @see DLM_FindPathBetweenRecords
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class FindPathIterateResult implements IIterateResult
 {
 	private final ITableRecordReference start;
 	private final ITableRecordReference goal;
+
+	private IterateResultHandlerSupport handlerSupport = new IterateResultHandlerSupport();
 
 	private final DirectedGraph<ITableRecordReference, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 
@@ -58,7 +73,7 @@ public class FindPathIterateResult implements IIterateResult
 		queueItemsToProcess.addLast(start);
 	}
 
-	private boolean add(final ITableRecordReference referencingRecord, final ITableRecordReference referencedRecord, final boolean calledFromAddReferencedRecord)
+	private AddResult add(final ITableRecordReference referencingRecord, final ITableRecordReference referencedRecord, final boolean calledFromAddReferencedRecord)
 	{
 		final boolean referencingRecordAdded = referencingRecord == null ? false : g.addVertex(referencingRecord);
 		final boolean referencedRecordAdded = referencedRecord == null ? false : g.addVertex(referencedRecord);
@@ -83,29 +98,28 @@ public class FindPathIterateResult implements IIterateResult
 			foundGoal = true;
 		}
 
-		return calledFromAddReferencedRecord ? referencedRecordAdded : referencingRecordAdded;
+		final boolean added = calledFromAddReferencedRecord ? referencedRecordAdded : referencingRecordAdded;
+
+		final ITableRecordReference recordThatWasToAdd = calledFromAddReferencedRecord ? referencedRecord : referencingRecord;
+
+		if (added)
+		{
+			queueItemsToProcess.addLast(recordThatWasToAdd);
+			return handlerSupport.onRecordAdded(recordThatWasToAdd, AddResult.ADDED_CONTINUE);
+		}
+		return handlerSupport.onRecordAdded(recordThatWasToAdd, AddResult.NOT_ADDED_CONTINUE);
 	}
 
 	@Override
-	public boolean addReferencedRecord(final ITableRecordReference referencingRecord, final ITableRecordReference referencedRecord, final int IGNORED)
+	public AddResult addReferencedRecord(final ITableRecordReference referencingRecord, final ITableRecordReference referencedRecord, final int IGNORED)
 	{
-		final boolean added = add(referencingRecord, referencedRecord, true);
-		if (added)
-		{
-			queueItemsToProcess.addLast(referencedRecord);
-		}
-		return added;
+		return add(referencingRecord, referencedRecord, true);
 	}
 
 	@Override
-	public boolean addReferencingRecord(final ITableRecordReference referencingRecord, final ITableRecordReference referencedRecord, final int IGNORED)
+	public AddResult addReferencingRecord(final ITableRecordReference referencingRecord, final ITableRecordReference referencedRecord, final int IGNORED)
 	{
-		final boolean added = add(referencingRecord, referencedRecord, false);
-		if (added)
-		{
-			queueItemsToProcess.addLast(referencingRecord);
-		}
-		return added;
+		return add(referencingRecord, referencedRecord, false);
 	}
 
 	@Override
@@ -132,6 +146,24 @@ public class FindPathIterateResult implements IIterateResult
 	public ITableRecordReference nextFromQueue()
 	{
 		return queueItemsToProcess.removeFirst();
+	}
+
+	@Override
+	public void registerHandler(IIterateResultHandler handler)
+	{
+		handlerSupport.registerListener(handler);
+	}
+
+	@Override
+	public List<IIterateResultHandler> getRegisteredHandlers()
+	{
+		return handlerSupport.getRegisteredHandlers();
+	}
+
+	@Override
+	public boolean isHandlerSignaledToStop()
+	{
+		return handlerSupport.isHandlerSignaledToStop();
 	}
 
 	public boolean isFoundGoalRecord()
@@ -184,5 +216,4 @@ public class FindPathIterateResult implements IIterateResult
 	{
 		return "FindPathIterateResult [start=" + start + ", goal=" + goal + ", size=" + size + ", foundGoal=" + foundGoal + ", queueItemsToProcess.size()=" + queueItemsToProcess.size() + "]";
 	}
-
 }

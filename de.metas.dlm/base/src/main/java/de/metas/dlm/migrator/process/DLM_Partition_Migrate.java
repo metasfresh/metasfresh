@@ -15,6 +15,8 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -41,6 +43,13 @@ import de.metas.process.JavaProcess;
 public class DLM_Partition_Migrate extends JavaProcess
 {
 
+	@Param(mandatory = true, parameterName = "IsTest")
+	private boolean testMigrate;
+
+	private final IMigratorService migratorService = Services.get(IMigratorService.class);
+	private final IDLMService dlmService = Services.get(IDLMService.class);
+
+	@RunOutOfTrx
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -48,14 +57,13 @@ public class DLM_Partition_Migrate extends JavaProcess
 
 		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
-		final IMigratorService migratorService = Services.get(IMigratorService.class);
-		final IDLMService dlmService = Services.get(IDLMService.class);
-
 		final Iterator<I_DLM_Partition> partitionsToMigrate = queryBL.createQueryBuilder(I_DLM_Partition.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_DLM_Partition.COLUMN_Target_DLM_Level, null)
 				.addNotEqualsFilter(I_DLM_Partition.COLUMN_Target_DLM_Level, IMigratorService.DLM_Level_NOT_SET)
 				.addNotEqualsFilter(I_DLM_Partition.COLUMN_Target_DLM_Level, ModelColumnNameValue.forColumn(I_DLM_Partition.COLUMN_Current_DLM_Level))
+				.filter(getProcessInfo().getQueryFilter())
+
 				.orderBy().addColumn(I_DLM_Partition.COLUMNNAME_DLM_Partition_ID).endOrderBy()
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
@@ -67,19 +75,31 @@ public class DLM_Partition_Migrate extends JavaProcess
 				.setProcessor(new TrxItemProcessorAdapter<I_DLM_Partition, Void>()
 				{
 					@Override
-					public void process(final I_DLM_Partition item) throws Exception
+					public void process(final I_DLM_Partition partitionDB) throws Exception
 					{
-						final Partition partition = dlmService.loadPartition(item);
-						final Partition migratedPartition = migratorService.migratePartition(partition);
-
-						addLog("Migrated partition={} with result={}", partition, migratedPartition);
-						dlmService.storePartition(migratedPartition, false);
+						process0(partitionDB);
 					}
 				})
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)
 				.process(partitionsToMigrate);
 
 		return MSG_OK;
+	}
+
+	private void process0(final I_DLM_Partition partitionDB)
+	{
+		final Partition partition = dlmService.loadPartition(partitionDB);
+
+		if (testMigrate)
+		{
+			migratorService.testMigratePartition(partition);
+			return;
+		}
+
+		final Partition migratedPartition = migratorService.migratePartition(partition);
+
+		addLog("Migrated partition={} with result={}", partition, migratedPartition);
+		dlmService.storePartition(migratedPartition, false);
 	}
 
 }

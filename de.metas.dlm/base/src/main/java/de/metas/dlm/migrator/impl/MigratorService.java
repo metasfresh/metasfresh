@@ -9,10 +9,12 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.migrator.IMigratorService;
@@ -51,6 +53,15 @@ public class MigratorService implements IMigratorService
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String localTrxName = trxManager.createTrxName("testMigratePartition", false);
 
+		final int initialDLMLevelBkp = partition.getCurrentDLMLevel();
+		if (initialDLMLevelBkp >= DLM_Level_TEST)
+		{
+			Loggables.get().withLogger(logger, Level.WARN).addLog(
+					"testMigratePartition can't test partition because its DLM level is already {}; partition={}",
+					initialDLMLevelBkp, partition);
+			return; // do nothing
+		}
+
 		ITrx localTrx = null;
 		try
 		{
@@ -64,7 +75,7 @@ public class MigratorService implements IMigratorService
 			logger.info("Update of all records with DLM_Partition_ID={} to DLM_Level={} succeeeded!", partition.getDLM_Partition_ID(), DLM_Level_TEST);
 
 			localTrx.start();
-			updateDLMLevel0(partition, partition.getCurrentDLMLevel(), ctxAware);
+			updateDLMLevel0(partition, initialDLMLevelBkp, ctxAware);
 			localTrx.commit(true);
 		}
 		catch (final SQLException e)

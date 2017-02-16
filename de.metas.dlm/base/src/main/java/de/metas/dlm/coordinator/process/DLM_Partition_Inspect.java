@@ -17,6 +17,7 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -51,6 +52,7 @@ import de.metas.process.JavaProcess;
 public class DLM_Partition_Inspect extends JavaProcess
 {
 
+	@RunOutOfTrx // this process might run for some time and comes with its own trx management
 	@Override
 	protected String doIt() throws Exception
 	{
