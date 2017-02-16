@@ -40,6 +40,8 @@ public interface IMigratorService extends ISingletonService
 	 */
 	public static final int DLM_Level_LIVE = 1;
 
+	public static final String MSG_DLM_Level_LIVE = "de.metas.dlm.DLM_Level_LIVE";
+	
 	/**
 	 * 2: operational data; this level is used by the partitioner. The partitioner temporarily updates records DLM_Level to 2 to find out if it already has found a complete partition.
 	 */
@@ -49,6 +51,8 @@ public interface IMigratorService extends ISingletonService
 	 * 3: archived data
 	 */
 	public static final int DLM_Level_ARCHIVE = 3;
+	
+	public static final String MSG_DLM_Level_ARCHIVE = "de.metas.dlm.DLM_Level_ARCHIVE";
 
 	/**
 	 * Checks if the given partition could be migrated.

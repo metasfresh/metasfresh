@@ -42,9 +42,9 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	public abstract int getDlmLevel(Connection c);
+	public abstract int getDlmLevel();
 
-	public abstract int getDlmCoalesceLevel(Connection c);
+	public abstract int getDlmCoalesceLevel();
 
 
 	/**
@@ -73,8 +73,8 @@ public abstract class AbstractDLMCustomizer implements IConnectionCustomizer
 
 			DLMConnectionUtils.setSearchPathForDLM(c);
 
-			DLMConnectionUtils.changeDLMLevel(c, getDlmLevel(c));
-			DLMConnectionUtils.changeDLMCoalesceLevel(c, getDlmCoalesceLevel(c));
+			DLMConnectionUtils.changeDLMLevel(c, getDlmLevel());
+			DLMConnectionUtils.changeDLMCoalesceLevel(c, getDlmCoalesceLevel());
 		}
 		catch (final SQLException e)
 		{

@@ -9,16 +9,26 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.business</groupId>
-	<artifactId>de.metas.business</artifactId>
+	<groupId>de.metas.dlm</groupId>
+	<artifactId>metasfresh-dlm-base</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
+		<!-- empty property because the sql migration dir already contains a list of base directories -->
 		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
@@ -33,42 +43,25 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.async</groupId>
-			<artifactId>de.metas.async</artifactId>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
-		<!-- this module wants to register de.metas.dlm.coordinator.IRecordInspectors, e.g. for invoices --> 
+		<!--
+		Those two are needed to visualize a partition-graph.
+		I played with a very rudimentory JFrame to show a graph, but it would need much more work in order to be any usefull for graphs of a non-trivial size.
+		Also see http://jgrapht.org/visualizations.html
 		<dependency>
-			<groupId>de.metas.dlm</groupId>
-			<artifactId>metasfresh-dlm-base</artifactId>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-ext</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
 		<dependency>
-			<groupId>de.metas.elasticsearch</groupId>
-			<artifactId>de.metas.elasticsearch</artifactId>
-			<version>1.0.0</version>
+			<groupId>jgraph</groupId>
+			<artifactId>jgraph</artifactId>
+			<version>5.13.0.0</version>
 		</dependency>
-
+		-->
 	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- Create tests JAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
