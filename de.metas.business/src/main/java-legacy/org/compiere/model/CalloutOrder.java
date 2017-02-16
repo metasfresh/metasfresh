@@ -356,7 +356,7 @@ public class CalloutOrder extends CalloutEngine
 				// 08578 take default users first.
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
-				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC ";; // #1
+				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
