@@ -19,6 +19,7 @@ this week's RC
   * #913 include branch name in build version string
   
 * webUI
+  * #120 Material Receipt WebUI: Attribute Values wrong
   * #127 Receipt schedules - Receive with configuration improvements
   * #118 Functionality to easily add files to current record in webUI
   * #121 Empties Returns for Vendors and Customers in Material Receipt Window
