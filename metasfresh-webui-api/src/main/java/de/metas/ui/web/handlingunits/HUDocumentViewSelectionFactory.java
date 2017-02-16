@@ -13,6 +13,7 @@ import de.metas.ui.web.view.IDocumentViewSelectionFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -36,11 +37,11 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -122,14 +123,28 @@ public class HUDocumentViewSelectionFactory implements IDocumentViewSelectionFac
 	{
 		final String viewId = UUID.randomUUID().toString();
 		final int adWindowId = jsonRequest.getAD_Window_ID();
-		
-		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.of(jsonRequest);
+
+		//
+		// Referencing path and tableName (i.e. from where are we coming)
+		final DocumentPath referencingDocumentPath = jsonRequest.getReferencingDocumentPathOrNull();
+		final String referencingTableName;
+		if (referencingDocumentPath != null)
+		{
+			referencingTableName = documentDescriptorFactory.getDocumentEntityDescriptor(referencingDocumentPath.getAD_Window_ID())
+					.getTableNameOrNull();
+		}
+		else
+		{
+			referencingTableName = null;
+		}
+
+		final HUDocumentViewLoader documentViewsLoader = HUDocumentViewLoader.of(jsonRequest, referencingTableName);
 
 		return HUDocumentViewSelection.builder()
 				.setViewId(viewId)
 				.setAD_Window_ID(adWindowId)
 				.setRecords(documentViewsLoader)
-				.setReferencingDocumentPath(jsonRequest.getReferencingDocumentPathOrNull())
+				.setReferencingDocumentPath(referencingDocumentPath, referencingTableName)
 				.setServices(processDescriptorsFactory)
 				.build();
 	}
