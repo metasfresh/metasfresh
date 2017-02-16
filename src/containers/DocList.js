@@ -117,6 +117,7 @@ class DocList extends Component {
                      refId={query.refId}
                      selected={selected}
                      inBackground={rawModal.visible}
+                     fetchQuickActionsOnInit={true}
                  />
             </Container>
         );

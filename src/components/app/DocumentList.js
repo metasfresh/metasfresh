@@ -17,7 +17,6 @@ import {
     initLayout
 } from '../../actions/GenericActions';
 
-
 import {
     selectTableItems
 } from '../../actions/WindowActions';
@@ -58,9 +57,12 @@ class DocumentList extends Component {
             inBackground
         } = props;
         const {page, sort, viewId, cachedSelection} = this.state;
-        //if we browse list of docs, changing type of Document
-        //does not re-construct component, so we need to
-        //make it manually while the windowType changes.
+        
+        /* 
+         * If we browse list of docs, changing type of Document
+         * does not re-construct component, so we need to
+         * make it manually while the windowType changes.
+         */
         if(windowType !== this.props.windowType) {
             this.setState({
                 data:null,
@@ -106,7 +108,9 @@ class DocumentList extends Component {
          * After opening modal cache current selection
          * After closing modal with gridview, refresh selected.
          */
-        if(inBackground != this.props.inBackground) {
+        if(
+            inBackground != this.props.inBackground 
+        ) {
             if(!inBackground){
                 this.props.dispatch(
                     selectTableItems(cachedSelection)
@@ -121,7 +125,6 @@ class DocumentList extends Component {
 
     componentDidMount() {
         const {viewId} = this.state;
-
         this.connectWS(viewId);
     }
 
@@ -305,7 +308,8 @@ class DocumentList extends Component {
         } = this.state;
 
         const {
-            dispatch, windowType, type, open, closeOverlays, selected, inBackground
+            dispatch, windowType, type, open, closeOverlays, selected, inBackground,
+            fetchQuickActionsOnInit
         } = this.props;
 
         if(layout && data) {
@@ -335,6 +339,7 @@ class DocumentList extends Component {
                             selected={data.size && selected}
                             refresh={refresh}
                             shouldNotUpdate={inBackground}
+                            fetchOnInit={fetchQuickActionsOnInit}
                         />
                     </div>
                     <div className="document-list-body">

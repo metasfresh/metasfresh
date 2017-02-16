@@ -25,8 +25,10 @@ class QuickActions extends Component {
             actions: [],
             isDropdownOpen: false
         }
+        
+        const {fetchOnInit} = this.props;
 
-        this.fetchActions();
+        fetchOnInit && this.fetchActions();
     }
 
     componentDidUpdate = (prevProps) => {
@@ -53,19 +55,20 @@ class QuickActions extends Component {
 
     handleClick = (action) => {
         const {dispatch, viewId} = this.props;
-        if(!action.disabled){
-            dispatch(
-                openModal(
-                    action.caption, action.processId, 'process', null, null, false,
-                    viewId
-                )
-            );
+        if(action.disabled){
+            return;
         }
+        
+        dispatch(
+            openModal(
+                action.caption, action.processId, 'process', null, null, false,
+                viewId
+            )
+        );
     }
 
     fetchActions = () => {
         const {dispatch, windowType, viewId, selected} = this.props;
-        
         dispatch(quickActionsRequest(windowType, viewId, selected)).then(response => {
             this.setState({
                 actions: response.data.actions
