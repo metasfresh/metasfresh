@@ -4,11 +4,16 @@
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
- * Returns the URL of the deployed downstream artifact.
- *
+ * 
  * TODO: move it into a shared library
+ * IMPORTANT: i'm now wrapping up this work (i.e. https://github.com/metasfresh/metasfresh/issues/968) to do other things! it's not yet finsined or tested!
+ *
+ * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
+ * <li>{@code BUILD_VERSION}: the version the maven artifacts were deployed with
+ * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
+ *
  */
-def String invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
+def Map invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, String metasfreshVersion, boolean wait)
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 	
@@ -56,15 +61,8 @@ def String invokeDownStreamJobs(String jobFolderName, String buildId, String ups
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
 	;
-	
-	final buildDescription = buildResult.getDescription();
-	echo "buildDescription=${buildDescription}";
-	
-	final matcher = buildDescription =~ '.*href=\"(.+)\".*';
-	final artifactURL = matcher[0][1];
-	echo "artifactURL=${artifactURL}";
-	
-	return artifactURL;
+
+	return buildResult.getBuildVariables();
 }
 
 def boolean isRepoExists(String repoId)
@@ -322,49 +320,25 @@ node('agent && linux')
 				}
 				else
 				{
+
 				if(!isRepoExists(MF_MAVEN_REPO_NAME))
 				{
 					createRepo(MF_MAVEN_REPO_NAME);
 				}
 
-				// checkout our code. 
-				// git branch: "${env.BRANCH_NAME}", url: 'https://github.com/metasfresh/metasfresh.git'
-				// we use this more complicated approach because that way we can also clean the workspace after checkout ('CleanCheckout') and we can ignore edits in ReleaseNotes, Readme etc
-				// update: commented this out for now. Maybe remove soon, because: it aparently doesn't work with "external" PRs. Also, i don't know if this solution is *really* capable of ignoring chagnes to README.md et all
-				/*
-				checkout([
-					$class: 'GitSCM', 
-					branches: [[name: "${env.BRANCH_NAME}"]],
-					doGenerateSubmoduleConfigurations: false, 
-					extensions: [
-						[$class: 'PathRestriction', excludedRegions: '''ReleaseNotes\\.md
-README\\.md
-CONTRIBUTING\\.md
-CODE_OF_CONDUCT\\.md''', includedRegions: ''],
-						[$class: 'CleanCheckout']
-					], 
-					submoduleCfg: [], 
-					userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh.git']]
-				]);
-				*/
 				checkout scm; // i hope this to do all the magic we need
 				sh 'git clean -d --force -x' // clean the workspace
-			
-			
-				// deploy de.metas.parent/pom.xml as it is now (still with version "1.0.0") so that other nodes can find it when they modify their own pom.xml versions
-				// doesn't work because 1.0.0 is not SNAPSHOT anymore and there is already a 1.0.0 parent pom
-				// sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-				
+
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
         		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
-				
+
 				// update the versions of metas dependencies that are external to our reactor modules
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
-        
+
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
@@ -407,6 +381,8 @@ CODE_OF_CONDUCT\\.md''', includedRegions: ''],
 
 // this map is populated in the "Invoke downstream jobs" stage
 final EXTERNAL_ARTIFACT_URLS = [:];
+final EXTERNAL_ARTIFACT_VERSIONS = [:];
+
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -415,19 +391,23 @@ stage('Invoke downstream jobs')
 {
 	if(params.MF_SKIP_TO_DIST) 
 	{
-		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs"
-		
+		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs";
+
 		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui or metasfresh-webui-frontend.. 
 		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_VERSION is set
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
 		{
 			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-api&v=${params.MF_UPSTREAM_VERSION}"
+			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui']=params.MF_UPSTREAM_VERSION;
 			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui']}"
 		}
+		
+		// gh #968: this needs to go away, there is no point. the frontend doesn't depend with this repo. Just get the latest webui-frontend later, when we need it. (using mvn version:update etc)
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend')
 		{
 			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] = "http://repo.metasfresh.com/service/local/artifact/maven/redirect?r=${MF_MAVEN_REPO_NAME}&g=de.metas.ui.web&a=metasfresh-webui-frontend&v=${params.MF_UPSTREAM_VERSION}&p=tar.gz"
+			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_VERSION;
 			echo "Set EXTERNAL_ARTIFACT_URLS.metasfresh-webui-frontend=${EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']}"
 		}
 		// TODO: also handle procurement-webui
@@ -437,13 +417,22 @@ stage('Invoke downstream jobs')
 		if(!branchesWithNoWebUI.contains(env.BRANCH_NAME))
 		{
 			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
-			EXTERNAL_ARTIFACT_URLS['metasfresh-webui'] = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_ARTIFACT_URL;
+			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
 			
-			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend'] = invokeDownStreamJobs('metasfresh-webui-frontend', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			// gh #968: this needs to go away, there is no point. the frontend doesn't depend with this repo. Just get the latest webui-frontend later, when we need it. (using mvn version:update etc)
+			final webuiFrontendDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui-frontend', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+			EXTERNAL_ARTIFACT_URLS['metasfresh-webui-frontend']=webuiFrontendDownStreamJobMap.BUILD_ARTIFACT_URL;
+			EXTERNAL_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=webuiFrontendDownStreamJobMap.BUILD_VERSION;
 		}
 
-		EXTERNAL_ARTIFACT_URLS['metasfresh-procurement-webui'] = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-		// more do come: admin-webui, maybe the webui-javascript frontend too
+		// yup metasfresh-procurement-webui does share *some* code with this repo
+		final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
+		EXTERNAL_ARTIFACT_URLS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_ARTIFACT_URL;
+		EXTERNAL_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
+
+		// more do come: admin-webui
 
 		// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
 		echo "Going to notify external systems via zapier webhook"
@@ -452,7 +441,11 @@ stage('Invoke downstream jobs')
 			withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')]) 
 			{
 				final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}/"
-				final jsonPayload = "{ \"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", \"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", \"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" }";
+				final jsonPayload = """{ 
+					\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\", 
+					\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\", 
+					\"MF_METASFRESH_VERSION\":\"${BUILD_VERSION}\" 
+				}""";
 				
 				sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}"
 			}
@@ -477,48 +470,49 @@ node('agent && linux && libc6-i386')
 				// checkout our code
 				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
 				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
-				// update: commented this out for now. Maybe remove soon, because: it aparently doesn't work with "external" PRs.
-				/*
-				checkout([
-					$class: 'GitSCM', 
-					branches: [[name: "${env.BRANCH_NAME}"]],
-					doGenerateSubmoduleConfigurations: false, 
-					extensions: [
-						[$class: 'CleanCheckout'], 
-						// with sparse checkout we sometimes got errors like "stderr: error: Entry 'de.metas.acct.base/LICENSE.txt' not uptodate. Cannot update sparse checkout."
-						// [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [[path: '/de.metas.endcustomer.mf15']]]
-					], 
-					submoduleCfg: [], 
-					userRemoteConfigs: [[credentialsId: 'github_metas-dev' , url: 'https://github.com/metasfresh/metasfresh.git']]
-				]);
-				*/
+
 				checkout scm; // i hope this to do all the magic we need
 				sh 'git clean -d --force -x' // clean the workspace
 				
-				final String mavenUpdatePropertyParam;
-				final String mavenUpdateParentParam;
+				final String metasfreshUpdateParentParam;
+				final String metasfreshUpdatePropertyParam;
+				final String metasfreshWebApiUpdatePropertyParam;
+				final String metasfreshWebFrontEntUpdatePropertyParam;
 				if(!params.MF_SKIP_TO_DIST)
 				{
-					mavenUpdateParentParam="-DparentVersion=${BUILD_VERSION}"
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}"; // update the property, use the metasfresh version that the "main" part of this pipeline was build with
+					metasfreshUpdateParentParam="-DparentVersion=${BUILD_VERSION}";
+					
+					// update the property, use the metasfresh version that the "main" part of this pipeline was build with
+					metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${BUILD_VERSION}";
+					
+					// gh #968 TODO: update the properties, use either the version that we got from the downstream job invokations
+					// or use the MF_UPSTREAM_VERSION that we got from webui-api if *they called us*
+					metasfreshWebApiUpdatePropertyParam="-Dmetasfresh-webui-api.version -DnewVersion=${}";
+					metasfreshWebFrontEntUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${}";
 				}
 				else
 				{
-					mavenUpdateParentParam=''; // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so use the latest
-					mavenUpdatePropertyParam='-Dproperty=metasfresh.version' // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the property, but use the latest version
+					metasfreshUpdateParentParam=''; // the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so use the latest
+					
+					// the "main" part of this pipeline was skipped (MF_SKIP_TO_DIST==true), so still update the properties, but use the latest versions
+					metasfreshUpdatePropertyParam='-Dproperty=metasfresh.version';
+					metasfreshWebApiUpdatePropertyParam="-Dmetasfresh-webui-api.version";
+					metasfreshWebFrontEntUpdatePropertyParam="-Dproperty=metasfresh-webui-frontend.version";
 				}
 		
 				// update the parent pom version
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdateParentParam} versions:update-parent"
 				
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdatePropertyParam} versions:update-property"
 
+				// gh#968 TODO: also update the metasfresh-webui-frontend.version and metasfresh-webui-api.versions. for the frontend, just get the latest. 
+				
 				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.endcustomer.sp80*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// do the actual building and deployment
-					// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// about -Dmaven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 			
