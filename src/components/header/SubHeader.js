@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
-import Prompt from '../app/Prompt';
 import onClickOutside from 'react-onclickoutside';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
@@ -9,16 +8,11 @@ import {
     setFilter
 } from '../../actions/ListActions';
 
-import {
-    addNotification
-} from '../../actions/AppActions'
-
 import keymap from '../../keymap.js';
 
 import {
     setReferences,
     setActions,
-    getViewActions,
     setAttachments
 } from '../../actions/MenuActions';
 
@@ -47,7 +41,7 @@ class Subheader extends Component {
 
     componentDidMount() {
         const {
-            dispatch, windowType, dataId, viewId, selected, entity, query
+            dispatch, windowType, dataId, selected, entity, query
         } = this.props;
 
         dispatch(setActions([]));
@@ -181,12 +175,11 @@ class Subheader extends Component {
 
     render() {
         const {
-            windowType, onClick, references, actions, dataId, viewId, docNo, openModal,
-            handlePrint, handleDelete, redirect, handleClone, dispatch, closeSubheader,
-            attachments
+            windowType, references, actions, dataId, docNo, openModal, handlePrint, 
+            handleDelete, redirect, handleClone, closeSubheader, attachments
         } = this.props;
 
-        const {prompt,attachmentHovered} = this.state;
+        const {attachmentHovered} = this.state;
 
         return (
             <div

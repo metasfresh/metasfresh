@@ -1,3 +1,5 @@
+/* global config:true */
+
 import * as types from '../constants/MenuTypes'
 import axios from 'axios';
 
@@ -127,7 +129,7 @@ export function getWindowBreadcrumb(id){
 export function flattenLastElem(node, prop = 'children') {
     let result = [];
 
-    if(!!node[prop]){
+    if(node[prop]){
         node[prop].map(child => {
             const flat = flattenLastElem(child);
 
@@ -146,7 +148,7 @@ export function flattenLastElem(node, prop = 'children') {
 
 export function flattenOneLine(node) {
     let result = [];
-    if(!!node.children){
+    if(node.children){
         flattenOneLine(node.children[0]).map(item => {
             result.push(
                 item

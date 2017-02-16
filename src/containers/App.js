@@ -6,7 +6,7 @@ import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
 
 import { syncHistoryWithStore, push } from 'react-router-redux';
-import { Router, Route, browserHistory } from 'react-router';
+import { Router, browserHistory } from 'react-router';
 
 import Moment from 'moment';
 

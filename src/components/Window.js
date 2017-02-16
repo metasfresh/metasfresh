@@ -1,5 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
 
 import Dropzone from './Dropzone';
 
@@ -10,8 +9,6 @@ import {
 import MasterWidget from '../components/widget/MasterWidget';
 import Tabs from '../components/tabs/Tabs';
 import Table from '../components/table/Table';
-
-import logo from '../assets/images/metasfresh_logo_green_thumb.png';
 
 class Window extends Component {
     constructor(props){
@@ -38,10 +35,9 @@ class Window extends Component {
     }
 
     toggleTableFullScreen = (tabId) => {
-        const {fullScreen} = this.state;
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             fullScreen: tabId
-        }));
+        });
     }
 
     renderTabs = (tabs) => {
@@ -176,8 +172,8 @@ class Window extends Component {
     }
 
     render() {
-        const {sections, type, tabs} = this.props.layout;
-        const {data, isModal, handleDropFile} = this.props;
+        const {sections, tabs} = this.props.layout;
+        const {handleDropFile} = this.props;
         return (
             <div key="window" className="window-wrapper">
                 <Dropzone handleDropFile={handleDropFile}>

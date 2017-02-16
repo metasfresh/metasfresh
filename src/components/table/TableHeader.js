@@ -19,10 +19,10 @@ class TableHeader extends Component {
     }
 
     renderSorting = (field, caption) => {
-        const {sort,display, orderBy, deselect, page} = this.props;
+        const {sort, orderBy, deselect, page} = this.props;
         let sorting = {};
 
-        orderBy && orderBy.map((item, index) => {
+        orderBy && orderBy.map((item) => {
 
             if(field == item.fieldName){
                 sorting.name = item.fieldName;

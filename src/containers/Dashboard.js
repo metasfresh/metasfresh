@@ -10,7 +10,6 @@ export class Dashboard extends Component {
     }
 
     render() {
-        const {breadcrumb} = this.props;
         return (
             <Container
                 siteName = "Dashboard"

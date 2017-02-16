@@ -6,10 +6,9 @@ class PaginationContextShortcuts extends Component {
         super(props);
     }
 
-    handleShortcuts = (action, event) => {
+    handleShortcuts = (action) => {
         const {
-            handleFirstPage, handleLastPage,
-            handlePrevPage, handleNextPage
+            handleFirstPage, handleLastPage, handlePrevPage, handleNextPage
         } = this.props;
 
         switch (action) {

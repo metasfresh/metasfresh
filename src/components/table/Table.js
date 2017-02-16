@@ -20,7 +20,6 @@ import TableItem from './TableItem';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
-import MasterWidget from '../widget/MasterWidget';
 
 import keymap from '../../keymap.js';
 import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
@@ -54,7 +53,7 @@ class Table extends Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const {dispatch, disconnected} = this.props;
+        const {dispatch} = this.props;
 
         if((JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
         ){
@@ -148,13 +147,12 @@ class Table extends Component {
     }
 
     selectAll = () => {
-        const {rowData, tabid, keyProperty, indentSupported} = this.props;
+        const {keyProperty} = this.props;
         const {rows} = this.state;
         const property = keyProperty ? keyProperty : 'rowId';
-        const toSelect = rows.map((item, index) => item[property]);
+        const toSelect = rows.map((item) => item[property]);
 
         this.selectRangeProduct(toSelect);
-
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
@@ -203,7 +201,6 @@ class Table extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {rowData, tabid, listenOnKeys} = this.props;
         const {selected, rows} = this.state;
         const selectRange = e.shiftKey;
 
@@ -306,7 +303,7 @@ class Table extends Component {
         const {selected, rows} = this.state;
 
         const {
-            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open
+            onDoubleClick, closeOverlays, open
         } = this.props;
 
         const selectRange = e.shiftKey;
@@ -315,7 +312,7 @@ class Table extends Component {
             case 'ArrowDown':
                 e.preventDefault();
 
-                const array = rows.map((item, id) => {
+                const array = rows.map((item) => {
                     return item.id
                 });
 
@@ -334,7 +331,7 @@ class Table extends Component {
             case 'ArrowUp':
                 e.preventDefault();
 
-                const arrays = rows.map((item, id) => {
+                const arrays = rows.map((item) => {
                     return item.id
                 });
 
@@ -372,7 +369,7 @@ class Table extends Component {
         }
     }
 
-    closeContextMenu = (event) => {
+    closeContextMenu = () => {
         this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 open: false
@@ -382,7 +379,6 @@ class Table extends Component {
 
     handleClick = (e, id) => {
         if(e.button === 0){
-            const {dispatch} = this.props;
             const {selected} = this.state;
             const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
             const selectRange = e.shiftKey;
@@ -433,8 +429,8 @@ class Table extends Component {
     }
 
     handleFocus = () => {
-        const {rowData, tabid, indentSupported} = this.props;
-        const {selected, rows} = this.state;
+        const {rowData, tabid} = this.props;
+        const {selected} = this.state;
 
          if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
@@ -511,7 +507,7 @@ class Table extends Component {
 
     handlePromptSubmitClick = (selected) => {
         const {
-            dispatch, type, docId, mainTable, updateDocList, entity, tabid
+            dispatch, type, docId, updateDocList, tabid
         } = this.props;
 
         this.setState({
@@ -544,9 +540,8 @@ class Table extends Component {
 
     renderTableBody = () => {
         const {
-            rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays,
-            indentSupported
+            tabid, cols, type, docId, readonly, keyProperty, onDoubleClick, 
+            mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
 
         const {selected, rows} = this.state;
@@ -626,7 +621,7 @@ class Table extends Component {
         } = this.props;
 
         const {
-            contextMenu, selected, listenOnKeys, promptOpen, isBatchEntry
+            contextMenu, selected, promptOpen, isBatchEntry
         } = this.state;
 
         return (

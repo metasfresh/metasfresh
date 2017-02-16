@@ -1,5 +1,4 @@
 import * as types from '../constants/MenuTypes';
-import update from 'react-addons-update';
 
 const initialState = {
     breadcrumb: [],

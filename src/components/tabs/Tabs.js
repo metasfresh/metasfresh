@@ -5,23 +5,15 @@ class Tabs extends Component {
         super(props);
         this.state = {
             selected: this.props.children[0].key
-            // fullScreen: null
         }
     }
 
     handleClick = (e, id) => {
         e.preventDefault();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             'selected': id
-        }));
+        });
     }
-
-    // toggleTableFullScreen = (tabId) => {
-    //     const {fullScreen} = this.state;
-    //     this.setState(Object.assign({}, this.state, {
-    //         fullScreen: tabId
-    //     }));
-    // }
 
     handlePillKeyDown = (e, key) => {
         if(e.key === 'Enter'){
@@ -50,7 +42,7 @@ class Tabs extends Component {
     }
 
     renderTabs = (tabs) => {
-        const {tabIndex, toggleTableFullScreen, fullScreen} = this.props;
+        const {toggleTableFullScreen, fullScreen} = this.props;
         const {selected} = this.state;
         return tabs.map((item) => {
             const itemWithProps = Object.assign({}, item, {

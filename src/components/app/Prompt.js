@@ -1,10 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
-import {
-    closePrompt,
-} from '../../actions/WindowActions';
-
 class Prompt extends Component {
     constructor(props) {
         super(props);
@@ -35,7 +31,7 @@ class Prompt extends Component {
     }
 
     render() {
-        const {onCancelClick, onSubmitClick, title, buttons} = this.props;
+        const {onCancelClick, title, buttons} = this.props;
         const {cancel, submit} = buttons;
         return (
             <div className="screen-freeze screen-prompt-freeze">

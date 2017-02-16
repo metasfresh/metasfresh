@@ -66,7 +66,6 @@ class TableCell extends Component {
                     break;
                 case 'boolean':
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
-                    break;
                 case 'string':
                     if(type === 'Date' || type === 'DateTime' || type === 'Time'){
                         return this.createDate(field);
@@ -84,7 +83,7 @@ class TableCell extends Component {
     render() {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
-            onKeyDown, readonly, updatedRow, tabIndex, entity, onClickOutside
+            onKeyDown, readonly, updatedRow, tabIndex, entity
         } = this.props;
 
         return (

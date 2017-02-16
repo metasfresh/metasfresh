@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
-import NotificationHandler from '../components/notifications/NotificationHandler';
 import LoginForm from '../components/app/LoginForm';
 
 

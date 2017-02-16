@@ -19,8 +19,7 @@ class MenuOverlayItem extends Component {
 
     clickedItem = (e, elementId, nodeId, type ) => {
         const {
-            handleClickOnFolder, handleRedirect, handleNewRedirect, openModal,
-            caption
+            handleClickOnFolder, handleNewRedirect, openModal, caption
         } = this.props;
 
         if(type === 'newRecord'){
@@ -123,8 +122,8 @@ class MenuOverlayItem extends Component {
 
     render() {
         const {
-            dispatch, nodeId, type, elementId, caption, children, handleClickOnFolder,
-            handleRedirect, handleNewRedirect, handlePath, query, printChildren
+            nodeId, type, elementId, caption, children, handleClickOnFolder,
+            query, printChildren
         } = this.props;
 
         return (

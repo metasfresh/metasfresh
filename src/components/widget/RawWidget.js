@@ -1,12 +1,6 @@
 import React, { Component } from 'react';
 import Moment from 'moment';
 
-import {
-    patch,
-    updateProperty,
-    findRowByPropName
-} from '../../actions/WindowActions';
-
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
@@ -83,11 +77,11 @@ class RawWidget extends Component {
 
     renderWidget = () => {
         const {
-            handleChange, handleFocus, updated, isModal, filterWidget, filterId,
-            id, range, entity, onShow,
+            handleChange, updated, isModal, filterWidget, filterId, id, range,
             onHide, handleBackdropLock, subentity, subentityId, tabIndex, viewId,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
-            windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign
+            windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
+            entity, onShow
         } = this.props;
 
         const {isEdited} = this.state;
@@ -141,6 +135,7 @@ class RawWidget extends Component {
                         </div>
                     )
                 }
+                break;
             case 'DateTime':
                 return (
                     <div className={'input-icon-container input-block ' +
@@ -507,7 +502,7 @@ class RawWidget extends Component {
                             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
                             (widgetData[0].readonly ? 'tag-disabled disabled ' : '')
                         }
-                        onClick={(e) => this.handlePatch(widgetField)}
+                        onClick={() => this.handlePatch(widgetField)}
                         tabIndex={fullScreen ? -1 : tabIndex}
                         ref={c => this.rawWidget = c}
                     >
@@ -570,17 +565,13 @@ class RawWidget extends Component {
                     handlePatch={this.handlePatch}
                 />;
             default:
-                return (
-                    <div>{widgetType}</div>
-                )
+                return (<div>{widgetType}</div>)
         }
     }
 
     render() {
         const {
-            caption, widgetType, description, fields, windowType, type, noLabel,
-            widgetData, dataId, rowId, tabId, icon, updated, isModal,
-            tabIndex, handlePatch
+            caption, fields, type, noLabel, widgetData, rowId, isModal, handlePatch
         } = this.props;
 
         if(widgetData[0].displayed && widgetData[0].displayed === true){

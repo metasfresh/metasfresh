@@ -1,5 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
 import Moment from 'moment';
 
 class InboxItem extends Component {
@@ -11,7 +10,6 @@ class InboxItem extends Component {
         switch(target){
             case '143':
                 return 'sales';
-                break;
             default:
                 return 'system';
         }

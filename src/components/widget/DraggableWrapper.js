@@ -70,22 +70,22 @@ export class DraggableWrapper extends Component {
     }
 
     hideWidgets = (id) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isVisible: false,
             idMaximized: id
-        }))
+        })
     }
 
-    showWidgets = (id) => {
-        this.setState(Object.assign({}, this.state, {
+    showWidgets = () => {
+        this.setState({
             isVisible: true,
             idMaximized: false
-        }))
+        })
     }
 
 
     render() {
-        const { cards, isVisible, idMaximized, indicators } = this.state;
+        const { cards, idMaximized, indicators } = this.state;
         return (
             <div className={this.props.dashboard == '/'?'dashboard-wrapper':''}> 
                 {this.props.dashboard == '/' &&

@@ -1,7 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
-import Moment from 'moment';
+import React, { Component } from 'react';
 
 import Datetime from 'react-datetime';
 
@@ -20,7 +17,7 @@ class DatePicker extends Component {
     }
 
     handleBlur = (date) => {
-        const {patch, value, handleBackdropLock} = this.props;
+        const {patch, handleBackdropLock} = this.props;
         const {cache} = this.state;
 
         if(JSON.stringify(cache) !== (
@@ -64,9 +61,6 @@ class DatePicker extends Component {
     }
 
     render() {
-        const {open} = this.state;
-        const {tabIndex} = this.props;
-
         return (<Datetime
             closeOnTab={true}
             renderDay={this.renderDay}

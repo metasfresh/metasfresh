@@ -1,5 +1,4 @@
-import React, { Component, PropTypes } from 'react';
-import { connect } from 'react-redux';
+import React, { Component } from 'react';
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
@@ -13,14 +12,14 @@ class RawList extends Component {
         }
     }
 
-    handleBlur = (e) => {
+    handleBlur = () => {
         const { selected } = this.props;
 
         this.dropdown.blur();
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: false,
             selected: selected || 0
-        }))
+        })
     }
 
     handleFocus = (e) => {
@@ -29,9 +28,9 @@ class RawList extends Component {
 
         onFocus && onFocus();
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isOpen: true
-        }))
+        })
     }
 
     handleChange = (e) => {
@@ -171,7 +170,7 @@ class RawList extends Component {
     render() {
         const {
             list, rank, readonly, defaultValue, selected, align, updated, loading,
-            rowId, isModal, mandatory, value, tabIndex, disabled
+            rowId, isModal, tabIndex, disabled
         } = this.props;
 
         const {

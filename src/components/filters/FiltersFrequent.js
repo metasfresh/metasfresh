@@ -4,10 +4,6 @@ import onClickOutside from 'react-onclickoutside';
 
 import FiltersItem from './FiltersItem';
 
-import {
-    getItemsByProperty
-} from '../../actions/WindowActions';
-
 class FiltersFrequent extends Component {
     constructor(props) {
         super(props);
@@ -17,7 +13,7 @@ class FiltersFrequent extends Component {
         }
     }
 
-    toggleFilter = (index, item) => {
+    toggleFilter = (index) => {
         this.setState({
             openFilterId: index
         })
