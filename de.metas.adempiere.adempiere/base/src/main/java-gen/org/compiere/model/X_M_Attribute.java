@@ -1,8 +1,10 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.Env;
 
 /** Generated Model for M_Attribute
  *  @author Adempiere (generated) 
@@ -14,7 +16,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1470337377L;
+	private static final long serialVersionUID = 224866491L;
 
     /** Standard Constructor */
     public X_M_Attribute (Properties ctx, int M_Attribute_ID, String trxName)
@@ -24,8 +26,12 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
         {
 			setAttributeValueType (null);
 // S
+			setIsAttrDocumentRelevant (false);
+// N
 			setIsInstanceAttribute (false);
 			setIsMandatory (false);
+			setIsPricingRelevant (false);
+// N
 			setIsReadOnlyValues (false);
 // N
 			setM_Attribute_ID (0);
@@ -48,6 +54,40 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
+	}
+
+	@Override
+	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, AD_JavaClass);
+	}
+
+	/** Set Java Klasse.
+		@param AD_JavaClass_ID Java Klasse	  */
+	@Override
+	public void setAD_JavaClass_ID (int AD_JavaClass_ID)
+	{
+		if (AD_JavaClass_ID < 1) 
+			set_Value (COLUMNNAME_AD_JavaClass_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_JavaClass_ID, Integer.valueOf(AD_JavaClass_ID));
+	}
+
+	/** Get Java Klasse.
+		@return Java Klasse	  */
+	@Override
+	public int getAD_JavaClass_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_JavaClass_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule() throws RuntimeException
@@ -172,6 +212,32 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Auf Belegen auszuweisen.
+		@param IsAttrDocumentRelevant 
+		Wenn ein Attribute auf Belegen auszuweisen ist, bedeutet das, das Lieferposionen mit unterschiedlichen Attributwerten nicht zu einer Rechnungszeile zusammengefasst werden können.
+	  */
+	@Override
+	public void setIsAttrDocumentRelevant (boolean IsAttrDocumentRelevant)
+	{
+		set_Value (COLUMNNAME_IsAttrDocumentRelevant, Boolean.valueOf(IsAttrDocumentRelevant));
+	}
+
+	/** Get Auf Belegen auszuweisen.
+		@return Wenn ein Attribute auf Belegen auszuweisen ist, bedeutet das, das Lieferposionen mit unterschiedlichen Attributwerten nicht zu einer Rechnungszeile zusammengefasst werden können.
+	  */
+	@Override
+	public boolean isAttrDocumentRelevant () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAttrDocumentRelevant);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Instanz-Attribut.
 		@param IsInstanceAttribute 
 		The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
@@ -215,6 +281,29 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public boolean isMandatory () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsMandatory);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set isPricingRelevant.
+		@param IsPricingRelevant isPricingRelevant	  */
+	@Override
+	public void setIsPricingRelevant (boolean IsPricingRelevant)
+	{
+		set_Value (COLUMNNAME_IsPricingRelevant, Boolean.valueOf(IsPricingRelevant));
+	}
+
+	/** Get isPricingRelevant.
+		@return isPricingRelevant	  */
+	@Override
+	public boolean isPricingRelevant () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPricingRelevant);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -345,5 +434,49 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+	}
+
+	/** Set Max. Wert.
+		@param ValueMax 
+		Maximum Value for a field
+	  */
+	@Override
+	public void setValueMax (java.math.BigDecimal ValueMax)
+	{
+		set_Value (COLUMNNAME_ValueMax, ValueMax);
+	}
+
+	/** Get Max. Wert.
+		@return Maximum Value for a field
+	  */
+	@Override
+	public java.math.BigDecimal getValueMax () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueMax);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Min. Wert.
+		@param ValueMin 
+		Minimum Value for a field
+	  */
+	@Override
+	public void setValueMin (java.math.BigDecimal ValueMin)
+	{
+		set_Value (COLUMNNAME_ValueMin, ValueMin);
+	}
+
+	/** Get Min. Wert.
+		@return Minimum Value for a field
+	  */
+	@Override
+	public java.math.BigDecimal getValueMin () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueMin);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 }

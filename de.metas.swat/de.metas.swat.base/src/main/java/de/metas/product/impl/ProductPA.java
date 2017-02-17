@@ -35,10 +35,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MProductScalePrice;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.X_M_ProductScalePrice;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -46,7 +47,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_PO;
 import org.compiere.model.I_M_Replenish;
@@ -70,9 +73,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheIgnore;
 import de.metas.adempiere.util.CacheTrx;
@@ -488,8 +489,7 @@ public class ProductPA implements IProductPA
 			final boolean soTrx)
 	{
 
-		final MProductPricing pricing = new MProductPricing(productId, partnerId,
-				qty, soTrx);
+		final MProductPricing pricing = new MProductPricing(productId, partnerId, qty, soTrx);
 
 		pricing.setM_PriceList_ID(priceListId);
 
@@ -589,13 +589,13 @@ public class ProductPA implements IProductPA
 	}
 
 	@Override
-	public Collection<MProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
+	public Collection<I_M_ProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
 	{
 		return new Query(Env.getCtx(), I_M_ProductScalePrice.Table_Name, WHERE_PRODUCT_SCALE_PRICE, trxName)
 				.setParameters(new Object[] { productPriceId })
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
-				.list();
+				.list(I_M_ProductScalePrice.class);
 	}
 
 	/**
@@ -607,7 +607,7 @@ public class ProductPA implements IProductPA
 	@Override
 	public I_M_ProductScalePrice createScalePrice(final String trxName)
 	{
-		return new MProductScalePrice(Env.getCtx(), 0, trxName);
+		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(),trxName));
 	}
 
 	/**
@@ -654,17 +654,14 @@ public class ProductPA implements IProductPA
 			if (rs.next())
 			{
 
-				logger.debug("Returning existing instance for M_ProductPrice "
-						+ productPriceId + " and quantity " + qty);
-				return new MProductScalePrice(Env.getCtx(), rs, trxName);
+				logger.debug("Returning existing instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
+				return new X_M_ProductScalePrice(Env.getCtx(), rs, trxName);
 			}
 			if (createNew)
 			{
 
-				logger.debug("Returning new instance for M_ProductPrice "
-						+ productPriceId + " and quantity " + qty);
-				final MProductScalePrice newInstance = new MProductScalePrice(
-						Env.getCtx(), 0, trxName);
+				logger.debug("Returning new instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
+				final I_M_ProductScalePrice newInstance = createScalePrice(trxName);
 				newInstance.setM_ProductPrice_ID(productPriceId);
 				newInstance.setQty(qty);
 				return newInstance;
@@ -674,7 +671,7 @@ public class ProductPA implements IProductPA
 		}
 		catch (SQLException e)
 		{
-			throw new RuntimeException(e);
+			throw new DBException(e, SQL_SCALEPRICE_FOR_QTY);
 		}
 		finally
 		{

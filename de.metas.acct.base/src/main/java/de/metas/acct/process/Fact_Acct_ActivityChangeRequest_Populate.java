@@ -12,9 +12,9 @@ import org.adempiere.util.Services;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest_Source_v;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.Process;
-import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -93,7 +93,8 @@ public class Fact_Acct_ActivityChangeRequest_Populate extends JavaProcess
 				.insertDirectlyInto(I_Fact_Acct_ActivityChangeRequest.class)
 				.mapCommonColumns()
 				.mapPrimaryKey()
-				.execute();
+				.execute()
+				.getRowsInserted();
 
 		return "@Created@ #" + createdCount;
 	}

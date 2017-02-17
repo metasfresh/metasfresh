@@ -40,12 +40,11 @@ import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Period;
+import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MDiscountSchema;
 import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Msg;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.IProductAware;
 import de.metas.adempiere.service.IParameterizable;
@@ -80,6 +79,7 @@ import de.metas.commission.service.ISalesRepFactBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.HierarchyAscender;
+import de.metas.logging.LogManager;
 
 /**
  * Evaluates volume-of-sales commission facts. Writes APV, ADV and Rank changes to <code>C_AdvComSalesRep</code>.
@@ -281,7 +281,7 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 	 * @return null if the salary group has no discount schema
 	 */
 	@Override
-	public MDiscountSchema retrieveDiscountSchema(final I_C_AdvCommissionSalaryGroup sg, final I_C_Sponsor sponsor, final Timestamp date)
+	public I_M_DiscountSchema retrieveDiscountSchema(final I_C_AdvCommissionSalaryGroup sg, final I_C_Sponsor sponsor, final Timestamp date)
 	{
 		if (sg == null)
 		{
@@ -304,7 +304,7 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 			return null;
 		}
 
-		final MDiscountSchema ds = CommissionTools.retrieveDiscountSchemaForValue(ctx, dsValue, trxName);
+		final I_M_DiscountSchema ds = CommissionTools.retrieveDiscountSchemaForValue(ctx, dsValue, trxName);
 
 		if (ds == null)
 		{
@@ -420,11 +420,11 @@ public class UpdateSalesRepFacts implements ISalesRefFactCollector
 						"BPartner " + bPartner.getValue() + " has more than one sponsor", bPartner);
 			}
 
-			final MDiscountSchema oldDs = retrieveDiscountSchema(oldAndNewRank.get(0), sponsor, date);
-			final int oldDsId = oldDs == null ? 0 : oldDs.get_ID();
+			final I_M_DiscountSchema oldDs = retrieveDiscountSchema(oldAndNewRank.get(0), sponsor, date);
+			final int oldDsId = oldDs == null ? 0 : oldDs.getM_DiscountSchema_ID();
 
-			final MDiscountSchema newDs = retrieveDiscountSchema(oldAndNewRank.get(1), sponsor, date);
-			final int newDsId = newDs == null ? 0 : newDs.get_ID();
+			final I_M_DiscountSchema newDs = retrieveDiscountSchema(oldAndNewRank.get(1), sponsor, date);
+			final int newDsId = newDs == null ? 0 : newDs.getM_DiscountSchema_ID();
 
 			if (newDsId != oldDsId)
 			{

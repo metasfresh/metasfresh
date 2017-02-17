@@ -77,6 +77,7 @@ public class MTree extends MTree_Base
 		m_editable = false;
 		m_allNodes = true;
 		m_clientTree = true;
+		_adLanguage = null; 
 		_userRolePermissions = null;
 	}   // MTree
 
@@ -86,6 +87,7 @@ public class MTree extends MTree_Base
 		m_editable = builder.isEditable();
 		m_allNodes = builder.isAllNodes();
 		m_clientTree = builder.isClientTree();
+		_adLanguage = builder.getAD_Language();
 		_userRolePermissions = builder.getUserRolePermissions();
 		reload();
 	}   // MTree
@@ -94,6 +96,7 @@ public class MTree extends MTree_Base
 	private final boolean m_editable;
 	private final boolean m_allNodes;
 	private final boolean m_clientTree;
+	private final String _adLanguage;
 	private final IUserRolePermissions _userRolePermissions;
 
 	/** Root Node */
@@ -695,6 +698,15 @@ public class MTree extends MTree_Base
 	{
 		return m_clientTree;
 	}
+	
+	public final String getAD_Language()
+	{
+		if(_adLanguage == null)
+		{
+			return Env.getAD_Language(getCtx());
+		}
+		return _adLanguage;
+	}
 
 	private void reload()
 	{
@@ -728,6 +740,7 @@ public class MTree extends MTree_Base
 		private boolean clientTree;
 		private boolean allNodes = false;
 		private String trxName = ITrx.TRXNAME_None;
+		private String adLanguage = null;
 		private IUserRolePermissions userRolePermissions;
 
 		private Builder()
@@ -834,6 +847,21 @@ public class MTree extends MTree_Base
 		public boolean isAllNodes()
 		{
 			return allNodes;
+		}
+		
+		public Builder setLanguage(final String adLanguage)
+		{
+			this.adLanguage = adLanguage;
+			return this;
+		}
+		
+		private String getAD_Language()
+		{
+			if(adLanguage == null)
+			{
+				return Env.getAD_Language(getCtx());
+			}
+			return adLanguage;
 		}
 	}
 }   // MTree

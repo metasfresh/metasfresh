@@ -16,26 +16,22 @@ package org.adempiere.pricing.spi;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.compiere.model.I_M_DiscountSchemaLine;
-import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_ProductPrice;
 import de.metas.logging.LogManager;
 
 /**
@@ -149,20 +145,5 @@ public final class AggregatedPricingRule implements IPricingRule
 	public String toString()
 	{
 		return "AggregatedPricingRule[" + rules + "]";
-	}
-
-	@Override
-	public void updateFromDiscounLine(final I_M_PriceList_Version plv, final Iterator<I_M_ProductPrice> productPrices, final I_M_DiscountSchemaLine dsl)
-	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("PriceListVersion: " + plv + " ; DiscountSchemaLine:" + dsl);
-		}
-
-		for (final IPricingRule rule : rules)
-		{
-			rule.updateFromDiscounLine(plv, productPrices, dsl);
-		}
-
 	}
 }

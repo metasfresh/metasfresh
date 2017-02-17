@@ -12,7 +12,7 @@ public interface I_AD_User
     public static final String Table_Name = "AD_User";
 
     /** AD_Table_ID=114 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -121,6 +121,35 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "AD_User_ID", null);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
+
+	/**
+	 * Get Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_User_InCharge_ID();
+
+	public org.compiere.model.I_AD_User getAD_User_InCharge();
+
+	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge);
+
+    /** Column definition for AD_User_InCharge_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
+    /** Column name AD_User_InCharge_ID */
+    public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
 	 * Set Geburtstag.
@@ -757,6 +786,31 @@ public interface I_AD_User
     public static final String COLUMNNAME_IsInPayroll = "IsInPayroll";
 
 	/**
+	 * Set Mengenmeldung-WebUI.
+	 * Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsMFProcurementUser (boolean IsMFProcurementUser);
+
+	/**
+	 * Get Mengenmeldung-WebUI.
+	 * Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isMFProcurementUser();
+
+    /** Column definition for IsMFProcurementUser */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsMFProcurementUser = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsMFProcurementUser", null);
+    /** Column name IsMFProcurementUser */
+    public static final String COLUMNNAME_IsMFProcurementUser = "IsMFProcurementUser";
+
+	/**
 	 * Set Einkaufskontakt.
 	 *
 	 * <br>Type: YesNo
@@ -780,6 +834,29 @@ public interface I_AD_User
     public static final String COLUMNNAME_IsPurchaseContact = "IsPurchaseContact";
 
 	/**
+	 * Set IsPurchaseContact_Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPurchaseContact_Default (boolean IsPurchaseContact_Default);
+
+	/**
+	 * Get IsPurchaseContact_Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPurchaseContact_Default();
+
+    /** Column definition for IsPurchaseContact_Default */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsPurchaseContact_Default = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsPurchaseContact_Default", null);
+    /** Column name IsPurchaseContact_Default */
+    public static final String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
+
+	/**
 	 * Set IsSalesContact.
 	 *
 	 * <br>Type: YesNo
@@ -801,6 +878,29 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSalesContact = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSalesContact", null);
     /** Column name IsSalesContact */
     public static final String COLUMNNAME_IsSalesContact = "IsSalesContact";
+
+	/**
+	 * Set IsSalesContact_Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSalesContact_Default (boolean IsSalesContact_Default);
+
+	/**
+	 * Get IsSalesContact_Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSalesContact_Default();
+
+    /** Column definition for IsSalesContact_Default */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSalesContact_Default = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSalesContact_Default", null);
+    /** Column name IsSalesContact_Default */
+    public static final String COLUMNNAME_IsSalesContact_Default = "IsSalesContact_Default";
 
 	/**
 	 * Set IsSubjectMatterContact.
