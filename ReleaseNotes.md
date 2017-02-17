@@ -64,13 +64,21 @@ this week's RC
   * #132 Receiving HUs: already received HUs shall be flagged as processed
     * Now flagging the already processed Handling Units in material Receipts workflow as processed and make visible to the user.
   * #226 Implement document field device support
+    * New generic Device functionality to add device buttons to an input field. In the first Implementation used to attach weighing machines to receive the current value for gross weight field. Can be used in Material Receipt window/ Handling Unit editor.
   * #227 Wrong breadcrumb when the view is opened after process execution
+    * Adjust for the breadcrumb navigation to show the corresponding path after process execution from window action.
   * #254 Cannot see the HU editor icons
+    * Added missing HU editor icons for logistic-, transport- and customer-unit level.
   * #256 Implement document attachments
+    * New, fast and easy implematation to upload attachments to an existing record in metasfresh.
   * #257 login page: focus on username
+    * When opening the login page to enter metasfresh webUI then initially have the focus on Username field.
   * #275 None of the menus could be opened when in full screen mode
+    * Allows to open all top bar menues now, also when quick batch entry mode is activated.
   * #281 Remove margin from wrapper modal to make 0-padding inside
+    * Adjusting the look and feel of the modal overlay, now reducing the padding to minimum.
   * #734 Add Translation for en_US in WebUI
+    * Translation of metasfresh is now available in en_US.
   * #833 Invoice Process in Invoice Candidates WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
