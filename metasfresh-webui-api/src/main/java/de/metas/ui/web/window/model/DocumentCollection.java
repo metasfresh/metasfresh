@@ -243,7 +243,7 @@ public class DocumentCollection
 				.retriveDocumentOrNull();
 		if (document == null)
 		{
-			throw new DocumentNotFoundException(documentKey);
+			throw new DocumentNotFoundException(documentKey.getDocumentPath());
 		}
 
 		return document;
@@ -399,6 +399,11 @@ public class DocumentCollection
 		public DocumentId getDocumentId()
 		{
 			return documentId;
+		}
+		
+		public DocumentPath getDocumentPath()
+		{
+			return DocumentPath.rootDocumentPath(documentType, documentTypeId, documentId);
 		}
 	} // DocumentKey
 }

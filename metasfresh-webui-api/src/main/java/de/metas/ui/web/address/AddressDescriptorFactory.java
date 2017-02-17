@@ -70,7 +70,7 @@ public class AddressDescriptorFactory
 	private DocumentEntityDescriptor createAddressEntityDescriptor()
 	{
 		final DocumentEntityDescriptor.Builder addressDescriptor = DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.Address, 1) // we have only one descriptor for all addresses
+				.setDocumentType(DocumentType.Address, AddressDescriptor.DocumentTypeId) // we have only one descriptor for all addresses
 				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText("C_Location_ID"))
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
 				.disableDefaultTableCallouts()

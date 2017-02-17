@@ -1,5 +1,6 @@
 package de.metas.ui.web.address;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -26,6 +27,8 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public class AddressDescriptor
 {
+	public static final DocumentId DocumentTypeId = DocumentId.of(1);
+	
 	/* package */public static AddressDescriptor of(final DocumentEntityDescriptor entityDescriptor, final AddressLayout layout)
 	{
 		return new AddressDescriptor(entityDescriptor, layout);
