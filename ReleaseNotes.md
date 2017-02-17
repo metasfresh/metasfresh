@@ -56,6 +56,7 @@ this week's RC
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
   * #947 Window Greeting Add Translation for en_US
+  * #966 Provide WebUI Default Role
 
 ## Fixes 
 * metasfresh
