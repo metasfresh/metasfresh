@@ -132,7 +132,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 
 		final List<IDocumentView> page = stream.collect(GuavaCollectors.toImmutableList());
 
-		return DocumentViewResult.of(this, firstRow, pageLength, orderBys, page);
+		return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
 	}
 
 	private static final Comparator<HUDocumentView> createComparatorOrNull(final List<DocumentQueryOrderBy> orderBys)

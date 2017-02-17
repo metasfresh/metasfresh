@@ -297,7 +297,7 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				cache_documentViewsById.put(documentView.getDocumentId(), documentView);
 			}
 
-			return DocumentViewResult.of(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
+			return DocumentViewResult.ofViewAndPage(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
 		}
 		catch (final SQLException | DBException e)
 		{

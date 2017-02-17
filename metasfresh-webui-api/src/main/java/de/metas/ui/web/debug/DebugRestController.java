@@ -165,7 +165,7 @@ public class DebugRestController
 	{
 		return documentViewsRepo.getViews()
 				.stream()
-				.map(DocumentViewResult::of)
+				.map(DocumentViewResult::ofView)
 				.map(JSONDocumentViewResult::of)
 				.collect(GuavaCollectors.toImmutableList());
 	}

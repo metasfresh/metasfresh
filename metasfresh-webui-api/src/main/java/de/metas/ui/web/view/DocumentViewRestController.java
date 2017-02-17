@@ -125,7 +125,7 @@ public class DocumentViewRestController
 		}
 		else
 		{
-			result = DocumentViewResult.of(view);
+			result = DocumentViewResult.ofView(view);
 		}
 
 		return JSONDocumentViewResult.of(result);
