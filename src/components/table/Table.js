@@ -364,7 +364,10 @@ class Table extends Component {
                 break;
             case 'Tab':
                 e.preventDefault();
-                document.getElementsByClassName('js-attributes')[0].focus();
+                const focusedElem = document.getElementsByClassName('js-attributes')[0];
+                if(focusedElem){
+                    focusedElem.getElementsByTagName('input')[0].focus();
+                }
                 break;
         }
     }
