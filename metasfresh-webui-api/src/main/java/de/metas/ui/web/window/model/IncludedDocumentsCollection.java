@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -42,16 +43,16 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/class IncludedDocumentsCollection
+/* package */class IncludedDocumentsCollection
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
@@ -132,11 +133,11 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	private final boolean isStale(final DocumentId documentId)
 	{
-		if(_staleDocumentIds.contains(documentId))
+		if (_staleDocumentIds.contains(documentId))
 		{
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -200,9 +201,10 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 				.retriveDocumentOrNull();
 		if (documentNew == null)
 		{
-			throw new DocumentNotFoundException("No document found for id=" + documentId + " in " + this + "."
-					+ "\n Parent document: " + parentDocument
-					+ "\n Available document ids are: " + _documents.keySet());
+			final DocumentPath documentPath = parentDocument
+					.getDocumentPath()
+					.createChildPath(entityDescriptor.getDetailId(), documentId);
+			throw new DocumentNotFoundException(documentPath);
 		}
 
 		//
@@ -217,7 +219,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		// Done
 		return documentNew;
 	}
-	
+
 	private void refreshStaleDocumentIfPossible(final Document document)
 	{
 		final DocumentId documentId = document.getDocumentId();
@@ -231,7 +233,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		{
 			document.refreshFromRepositoryIfStaled();
 		}
-		
+
 		if (!document.isStaled())
 		{
 			markNotStale(documentId);
@@ -263,12 +265,25 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 
 		//
+		// Refresh stale documents
 		final Collection<Document> documents = getInnerDocuments();
-		for(final Document document : documents)
+		for (final Iterator<Document> it = documents.iterator(); it.hasNext();)
 		{
-			refreshStaleDocumentIfPossible(document);
+			final Document document = it.next();
+			try
+			{
+				refreshStaleDocumentIfPossible(document);
+			}
+			catch (final DocumentNotFoundException ex)
+			{
+				// Document was not found.
+				// Re-throw the exception if is not about our current document
+				ex.rethrowIfNotMatching(document.getDocumentPath());
+				// Else, just remove the document from the inner collection.
+				it.remove();
+			}
 		}
-		
+
 		return documents;
 	}
 
@@ -296,7 +311,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 					+ "\n EntityDescriptor: " + entityDescriptor);
 		}
 	}
-	
+
 	public LogicExpressionResult getAllowCreateNewDocument()
 	{
 		if (parentDocument.isProcessed())
@@ -312,12 +327,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	private void assertDeleteDocumentAllowed(final Document document)
 	{
 		final LogicExpressionResult allowDelete = getAllowDeleteDocument();
-		if(allowDelete.isFalse())
+		if (allowDelete.isFalse())
 		{
 			throw new InvalidDocumentStateException(parentDocument, "Cannot delete included document because it's not allowed: " + allowDelete);
 		}
 	}
-	
+
 	private LogicExpressionResult getAllowDeleteDocument()
 	{
 		if (parentDocument.isProcessed())
