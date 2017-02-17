@@ -10,6 +10,7 @@ import Moment from 'moment';
 import {
     loginRequest,
     loginSuccess,
+    localLoginRequest,
     loginCompletionRequest,
     getUserLang
 } from '../../actions/AppActions';
@@ -59,6 +60,19 @@ class LoginForm extends Component {
 
     }
 
+    checkIfAlreadyLogged(err){
+        const {dispatch} = this.props;
+
+        return dispatch(localLoginRequest())
+            .then(response => {
+                if (response.data){
+                    return location.href = '/';
+                }
+
+                return Promise.reject(err);
+            });
+    }
+
     handleLogin = () => {
         const {dispatch} = this.props;
         const {roleSelect, role} = this.state;
@@ -84,6 +98,9 @@ class LoginForm extends Component {
                         }))
                     }
                 }).catch(err => {
+                    return this.checkIfAlreadyLogged(err);
+                })
+                .catch(err => {
                     this.setState(Object.assign({}, this.state, {
                         err: err.response.data.message
                     }));
