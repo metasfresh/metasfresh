@@ -168,14 +168,11 @@ class Lookup extends Component {
         const propertiesKeys = Object.keys(properts);
         let isClose = true;
 
-
         this.props.defaultValue.map (item => {
             if(!item.value){
                 isClose = false;
             }
         });
-
-        
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
