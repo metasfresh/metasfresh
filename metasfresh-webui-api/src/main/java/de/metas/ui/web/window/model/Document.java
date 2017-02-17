@@ -125,7 +125,7 @@ public final class Document
 	//
 	// Parent & children
 	private final Document _parentDocument;
-	private final Map<DetailId, IncludedDocumentsCollection> includedDocuments;
+	private final Map<DetailId, IIncludedDocumentsCollection> includedDocuments;
 
 	//
 	// Evaluatee
@@ -194,11 +194,11 @@ public final class Document
 		//
 		// Create included documents containers
 		{
-			final ImmutableMap.Builder<DetailId, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			final ImmutableMap.Builder<DetailId, IIncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
 			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
 			{
 				final DetailId detailId = includedEntityDescriptor.getDetailId();
-				final IncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
+				final IIncludedDocumentsCollection includedDocumentsForDetailId = new IncludedDocumentsCollection(this, includedEntityDescriptor);
 				includedDocuments.put(detailId, includedDocumentsForDetailId);
 			}
 			this.includedDocuments = includedDocuments.build();
@@ -292,12 +292,12 @@ public final class Document
 		//
 		// Copy included documents containers
 		{
-			final ImmutableMap.Builder<DetailId, IncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
-			for (final Map.Entry<DetailId, IncludedDocumentsCollection> e : from.includedDocuments.entrySet())
+			final ImmutableMap.Builder<DetailId, IIncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+			for (final Map.Entry<DetailId, IIncludedDocumentsCollection> e : from.includedDocuments.entrySet())
 			{
 				final DetailId detailId = e.getKey();
-				final IncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
-				final IncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this, copyMode);
+				final IIncludedDocumentsCollection includedDocumentsForDetailIdOrig = e.getValue();
+				final IIncludedDocumentsCollection includedDocumentsForDetailIdCopy = includedDocumentsForDetailIdOrig.copy(this, copyMode);
 
 				includedDocuments.put(detailId, includedDocumentsForDetailIdCopy);
 			}
@@ -1037,7 +1037,7 @@ public final class Document
 		// Refresh it
 		// and also mark all included documents as stale because it might be that processing add/removed/changed some data in included documents too
 		refreshFromRepository();
-		for (final IncludedDocumentsCollection includedDocumentsPerDetail : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsPerDetail : includedDocuments.values())
 		{
 			includedDocumentsPerDetail.markStaleAll();
 		}
@@ -1254,13 +1254,13 @@ public final class Document
 
 	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocumentById(rowId);
 	}
 
 	public List<Document> getIncludedDocuments(final DetailId detailId)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments();
 	}
 
@@ -1269,10 +1269,10 @@ public final class Document
 		getIncludedDocumentsCollection(detailId).assertNewDocumentAllowed();
 	}
 
-	/* package */IncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
+	/* package */IIncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
 	{
 		Check.assumeNotNull(detailId, "Parameter detailId is not null");
-		final IncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
+		final IIncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
 		if (includedDocumentsForDetailId == null)
 		{
 			throw new IllegalArgumentException("detailId '" + detailId + "' not found for " + this);
@@ -1282,13 +1282,13 @@ public final class Document
 
 	/* package */ Document createIncludedDocument(final DetailId detailId)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.createNewDocument();
 	}
 
 	/* package */ void deleteIncludedDocuments(final DetailId detailId, final Set<DocumentId> rowIds)
 	{
-		final IncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		includedDocuments.deleteDocuments(rowIds);
 	}
 
@@ -1410,7 +1410,7 @@ public final class Document
 
 		//
 		// Check included documents
-		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
 			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus();
 			if (!validState.isValid())
@@ -1469,7 +1469,7 @@ public final class Document
 
 		//
 		// Check included documents
-		for (final IncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
 			if (includedDocumentsPerDetailId.hasChangesRecursivelly())
 			{
@@ -1540,7 +1540,7 @@ public final class Document
 
 		//
 		// Try also saving the included documents
-		for (final IncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
+		for (final IIncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
 		{
 			includedDocumentsForDetailId.saveIfHasChanges();
 

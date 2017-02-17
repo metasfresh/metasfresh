@@ -52,7 +52,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  * #L%
  */
 
-/* package */class IncludedDocumentsCollection
+/* package */class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 {
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
@@ -155,6 +155,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		_staleDocumentIds.remove(documentId);
 	}
 
+	@Override
 	public final void markStaleAll()
 	{
 		markNotFullyLoaded();
@@ -169,6 +170,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return entityDescriptor.getDetailId();
 	}
 
+	@Override
 	public synchronized Document getDocumentById(final DocumentId documentId)
 	{
 		if (documentId == null || documentId.isNew())
@@ -240,6 +242,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 	}
 
+	@Override
 	public synchronized List<Document> getDocuments()
 	{
 		return ImmutableList.copyOf(getInnerDocumentsFullyLoaded());
@@ -287,6 +290,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return documents;
 	}
 
+	@Override
 	public synchronized Document createNewDocument()
 	{
 		assertWritable();
@@ -301,6 +305,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return document;
 	}
 
+	@Override
 	public void assertNewDocumentAllowed()
 	{
 		final LogicExpressionResult allowCreateNewDocument = getAllowCreateNewDocument();
@@ -392,12 +397,14 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		markFullyLoaded();
 	}
 
-	/* package */IncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
+	@Override
+	public IncludedDocumentsCollection copy(final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		return new IncludedDocumentsCollection(this, parentDocumentCopy, copyMode);
 	}
 
-	/* package */DocumentValidStatus checkAndGetValidStatus()
+	@Override
+	public DocumentValidStatus checkAndGetValidStatus()
 	{
 		for (final Document document : getInnerDocuments())
 		{
@@ -412,7 +419,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		return DocumentValidStatus.valid();
 	}
 
-	/* package */boolean hasChangesRecursivelly()
+	@Override
+	public boolean hasChangesRecursivelly()
 	{
 		for (final Document document : getInnerDocuments())
 		{
@@ -427,7 +435,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	}
 
-	/* package */void saveIfHasChanges()
+	@Override
+	public void saveIfHasChanges()
 	{
 		for (final Document document : getInnerDocuments())
 		{
@@ -436,6 +445,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 	}
 
+	@Override
 	public synchronized void deleteDocuments(final Set<DocumentId> documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
