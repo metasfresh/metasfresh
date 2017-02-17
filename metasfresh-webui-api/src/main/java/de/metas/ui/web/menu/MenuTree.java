@@ -4,6 +4,7 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -108,7 +109,21 @@ public final class MenuTree
 		{
 			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
 		}
+		
 		return nodes.get(0);
+	}
+	
+	public Optional<MenuNode> getNewRecordNodeForWindowId(final int adWindowId)
+	{
+		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, adWindowId);
+		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
+		if (nodes == null || nodes.isEmpty())
+		{
+			return Optional.empty();
+		}
+		
+		final MenuNode newRecordNode = nodes.get(0);
+		return Optional.of(newRecordNode);
 	}
 
 	public List<MenuNode> getPath(final String nodeId)

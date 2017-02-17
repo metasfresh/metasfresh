@@ -61,7 +61,8 @@ public class MenuRestController
 	private MenuTree getMenuTree()
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = userSession.getUserRolePermissionsKey();
-		return menuTreeRepository.getMenuTree(userRolePermissionsKey);
+		final String adLanguage = userSession.getAD_Language();
+		return menuTreeRepository.getMenuTree(userRolePermissionsKey, adLanguage);
 	}
 
 	@RequestMapping(value = "/root", method = RequestMethod.GET)

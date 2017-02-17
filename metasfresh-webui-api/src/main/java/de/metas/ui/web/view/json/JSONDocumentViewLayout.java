@@ -130,9 +130,6 @@ public final class JSONDocumentViewLayout implements Serializable
 
 		supportAttributes = layout.isAttributesSupport();
 		supportTree = layout.isTreeSupport();
-
-		// FIXME: workaround
-		enableNewRecord("New " + caption);
 	}
 
 	@JsonCreator
