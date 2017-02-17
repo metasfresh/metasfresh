@@ -53,15 +53,16 @@ this week's RC
 * webUI
   * #112 On login page, deactivate the fields while logging in
     * Now making the login fields read-only as soon ad the authentication process is triggered.
-  * #120 Material Receipt WebUI: Attribute Values wrong
-    * Instead of short Attribute identifiers now the resolved values are shon in the Attribute Editor.
-  * #127 Receipt schedules - Receive with configuration improvements
-    * Enhanced configuration and saving functionality in material receipt workflow in WebUI.
   * #118 Functionality to easily add files to current record in webUI
     * New Functionality to upload files to a given dataset in the new WebUI. This implementation is also used for the new attachment functionality.
+  * #120 Material Receipt WebUI: Attribute Values wrong
+    * Instead of short Attribute identifiers now the resolved values are shon in the Attribute Editor.
   * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+    * New Functionality in WebUI. Possibility to create empties return/ receive documents quickly from Material Receipts window.
   * #127 Receipt schedules - Receive with configuration improvements
+    * Enhanced configuration and saving functionality in material receipt workflow in WebUI.
   * #132 Receiving HUs: already received HUs shall be flagged as processed
+    * Now flagging the already processed Handling Units in material Receipts workflow as processed and make visible to the user.
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
