@@ -73,7 +73,7 @@ WHERE c.IsDLMPartitionBoundary=''N''
 END 
 $BODY$
 	LANGUAGE plpgsql VOLATILE;
-COMMENT ON FUNCTION dlm.disable_dlm_triggers(text) IS 
+COMMENT ON FUNCTION dlm.disable_dlm_triggers(text, boolean) IS 
 'Uses the view dlm.triggers to disable tiggers for the given p_table_name which were created using the dlm.triggers view.
 If called with p_silent=false, is invokes "RAISE NOTICE" on each triggers that it enabled.
 If if disabling an individual trigger fails, it logs a warning and goes on.

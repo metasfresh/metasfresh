@@ -58,4 +58,8 @@ UPDATE AD_Column SET IsDLMPartitionBoundary='Y',Updated=TO_TIMESTAMP('2017-01-04
 --
 -- DDL
 --
-SELECT TableName, dlm.recreate_dlm_triggers(TableName) FROM AD_Table WHERE IsDLM='Y';
+COMMIT;
+SELECT TableName, dlm.drop_dlm_triggers(TableName) FROM AD_Table WHERE IsDLM='Y';
+COMMIT;
+SELECT TableName, dlm.create_dlm_triggers(TableName) FROM AD_Table WHERE IsDLM='Y';
+
