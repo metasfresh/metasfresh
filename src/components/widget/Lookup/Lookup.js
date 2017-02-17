@@ -56,9 +56,9 @@ class Lookup extends Component {
 
         if(autoFocus && isInputEmpty && shouldBeFocused){
             this.inputSearch.focus();
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 shouldBeFocused: false
-            }));
+            });
         }
     }
 
@@ -147,10 +147,10 @@ class Lookup extends Component {
                     newProps[propertiesCopy[index].field] = prop.data.values;
                 });
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     properts: newProps,
                     model: select
-                }), () => {
+                }, () => {
                     this.generatingPropsSelection();
                 });
             });
@@ -169,9 +169,9 @@ class Lookup extends Component {
         // unselected properties and handling further
         // selection
         if(propertiesKeys.length === 0){
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 property: ''
-            }));
+            });
 
             this.handleBlur();
             return;
@@ -181,10 +181,10 @@ class Lookup extends Component {
 
             if(properts[propertiesKeys[i]].length > 1){
                 // Generating list of props choice
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     list: properts[propertiesKeys[i]],
                     property: propertiesKeys[i]
-                }));
+                });
                 break;
             }else{
                 onChange(propertiesKeys[i], properts[propertiesKeys[i]][0]);
@@ -231,34 +231,34 @@ class Lookup extends Component {
 
         if(this.inputSearch.value != ''){
 
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 isInputEmpty: false,
                 loading: true,
                 query: this.inputSearch.value,
                 isOpen: true
-            }));
+            });
 
             dispatch(autocompleteRequest(
                 windowType, (filterWidget ? parameterName : mainProperty[0].field), this.inputSearch.value,
                 (filterWidget ? viewId : dataId), tabId, rowId, entity, subentity, subentityId
             )).then((response)=>{
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     list: response.data.values,
                     loading: false
-                }));
+                });
             });
 
         }else{
-            this.setState(Object.assign({}, this.state, {
+            this.setState({
                 isInputEmpty: true,
                 query: this.inputSearch.value,
                 list: recent
-            }));
+            });
         }
     }
 
     clearState = () => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             list: [],
             isInputEmpty: true,
             selected: null,
@@ -266,7 +266,7 @@ class Lookup extends Component {
             property: '',
             loading: false,
             query: ''
-        }));
+        });
     }
 
     handleClear = (e) => {
@@ -439,6 +439,7 @@ class Lookup extends Component {
                         onClickOutside={this.handleBlur}
                         disableOnClickOutside={!isOpen}
                         query={query}
+                        creatingNewDisabled={isModal}
                     />
                 }
             </div>
