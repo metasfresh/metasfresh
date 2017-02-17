@@ -93,17 +93,27 @@ this week's RC
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
+    * Fix that allows to open a referenced document record in metasfresh via the reference action and zoom accross.
   
 * webUI
   * #119 Error when Pressing the Attribute Button
+    * Fixes an error that occured in sales order advancededit and grid view edit when trying to record product attributes.
   * #116 qty 0 in purchase order
+    * Fix for the Quick batch entry bug that leads into wrong quantity 0 in generated order line.
   * #229 Location editor button called "edit attributes"
+    * Minor fix renaming the button for Location editing.
   * #261 When the attribute is readonly don't show the Device button(s)
+    * Making the new Field device buttons invisible when the corresponding field in read-only.
   * #264 Included tabs layout is broken
+    * Fix for the broken layout of included tabs when opened in lower screen resolution.
   * #268 Wrong viewId when starting the process
+    * Fix that now provides the correct View-ID as process Parameter.
   * #276 Wrong timing when completing a quick input entry
+    * Fix for the Quick Order Batch entry that leads to wrong prices in certain cases.
   * #279 While browsing a document, pressing New does nothing
+    * Fixing the new document functionality in action menu while viewing a document in detail view.
   * #295 Attribute Editor too narrow
+    * Makes the Attribute Editor now better readable.
 
 # metasfresh 4.55.54 (2017-06)
 
