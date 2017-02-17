@@ -366,7 +366,7 @@ class Table extends Component {
                 e.preventDefault();
                 const focusedElem = document.getElementsByClassName('js-attributes')[0];
                 if(focusedElem){
-                    focusedElem.getElementsByTagName("input")[0].focus();
+                    focusedElem.getElementsByTagName('input')[0].focus();
                 }
                 break;
         }
