@@ -98,6 +98,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     color: $brand-font-color;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .panel-modal-header-title {

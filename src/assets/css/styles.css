@@ -860,6 +860,9 @@ td.pulse-off input {
     border-radius: 3px;
     border: 1px solid $brand-border-color;
     margin-left: .5rem;
+    
+    overflow: auto;
+    overflow-x: hidden;
 }
 
 .attributes-selector-header,
