@@ -93,7 +93,10 @@ class Modal extends Component {
         const {dispatch} = this.props;
 
         dispatch(closeModal());
-        document.body.style.overflow = 'auto';
+
+        if (!this.props.rawModalVisible){
+            document.body.style.overflow = 'auto';
+        }
     }
 
     renderModalBody = () => {
@@ -180,10 +183,15 @@ class Modal extends Component {
     }
 }
 
+const mapStateToProps = state => ({
+    rawModalVisible: state.windowHandler.rawModal.visible || false
+});
+
 Modal.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    rawModalVisible: PropTypes.bool
 };
 
-Modal = connect()(Modal)
+Modal = connect(mapStateToProps)(Modal)
 
 export default Modal
