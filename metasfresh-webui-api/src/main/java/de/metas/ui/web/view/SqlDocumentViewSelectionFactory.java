@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.descriptor.ProcessDescriptorsFactory;
 import de.metas.ui.web.view.descriptor.DocumentViewLayout;
 import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
@@ -31,11 +32,11 @@ import de.metas.ui.web.window.model.DocumentReferencesService;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,6 +50,8 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 	private DocumentReferencesService documentReferencesService;
 	@Autowired
 	private ProcessDescriptorsFactory processDescriptorsFactory;
+	@Autowired
+	private MenuTreeRepository menuTreeRepo;
 
 	@Override
 	public JSONDocumentViewLayout getViewLayout(final int adWindowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
@@ -59,23 +62,34 @@ public class SqlDocumentViewSelectionFactory implements IDocumentViewSelectionFa
 		final DocumentEntityDescriptor entityDescriptor = descriptor.getEntityDescriptor();
 		final Collection<DocumentFilterDescriptor> filters = entityDescriptor.getFiltersProvider().getAll();
 
+		final JSONDocumentViewLayout jsonLayout;
 		switch (viewDataType)
 		{
 			case grid:
 			{
 				final DocumentViewLayout viewLayout = layout.getGridViewLayout();
-				return JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+				jsonLayout = JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+				break;
 			}
 			case list:
 			{
 				final DocumentViewLayout viewLayout = layout.getSideListViewLayout();
-				return JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+				jsonLayout = JSONDocumentViewLayout.of(viewLayout, filters, jsonOpts);
+				break;
 			}
 			default:
 			{
 				throw new IllegalArgumentException("Invalid viewDataType: " + viewDataType);
 			}
 		}
+
+		//
+		// Enable new record if supported
+		menuTreeRepo.getUserSessionMenuTree()
+				.getNewRecordNodeForWindowId(layout.getAD_Window_ID())
+				.ifPresent(newRecordMenuNode -> jsonLayout.enableNewRecord(newRecordMenuNode.getCaption()));
+
+		return jsonLayout;
 	}
 
 	@Override
