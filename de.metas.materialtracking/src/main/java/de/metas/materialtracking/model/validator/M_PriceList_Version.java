@@ -32,8 +32,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.model.I_M_PriceList_Version;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -75,8 +75,7 @@ public class M_PriceList_Version
 						.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID());
 		if (previousPLV != null)
 		{
-			plvFilter
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, previousPLV.getM_PriceList_Version_ID());
+			plvFilter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID, previousPLV.getM_PriceList_Version_ID());
 		}
 
 		final int ppOrderTableID = adTableDAO.retrieveTableId(I_PP_Order.Table_Name);

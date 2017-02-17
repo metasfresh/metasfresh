@@ -4,7 +4,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -19,8 +23,10 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -39,11 +45,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -85,8 +91,10 @@ public class ProcessExecutionResult
 	public static enum ShowProcessLogs
 	{
 		/** Always display them */
-		Always, /** Display them only if the process failed */
-		OnError, /** Never display them */
+		Always,
+		/** Display them only if the process failed */
+		OnError,
+		/** Never display them */
 		Never,
 	};
 
@@ -99,7 +107,11 @@ public class ProcessExecutionResult
 	private boolean refreshAllAfterExecution = false;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private List<TableRecordReference> recordsToSelectAfterExecution = null;
+	private TableRecordReference recordToSelectAfterExecution = null;
+
+	/** Records to be opened (UI) after this process was successfully executed */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private RecordsToOpen recordsToOpen = null;
 
 	public ProcessExecutionResult()
 	{
@@ -156,8 +168,8 @@ public class ProcessExecutionResult
 	public void markAsSuccess(final String summary)
 	{
 		this.summary = summary;
-		this.throwable = null;
-		this.error = false;
+		throwable = null;
+		error = false;
 	}
 
 	public void markAsError(final Throwable throwable)
@@ -177,9 +189,8 @@ public class ProcessExecutionResult
 	{
 		this.summary = summary;
 		this.throwable = throwable;
-		this.error = true;
+		error = true;
 	}
-
 
 	/**
 	 * @return true if the process execution failed
@@ -277,38 +288,11 @@ public class ProcessExecutionResult
 	}
 
 	/**
-	 * @return the records to be selected in window, after this process is executed
-	 */
-	public List<TableRecordReference> getRecordsToSelectAfterExecution()
-	{
-		if(recordsToSelectAfterExecution == null)
-		{
-			return ImmutableList.of();
-		}
-		return recordsToSelectAfterExecution;
-	}
-	
-	/**
 	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
 	 */
 	public TableRecordReference getRecordToSelectAfterExecution()
 	{
-		if(recordsToSelectAfterExecution == null || recordsToSelectAfterExecution.isEmpty())
-		{
-			return null;
-		}
-		
-		return recordsToSelectAfterExecution.get(0);
-	}
-
-	/**
-	 * Sets the records to be selected in window, after this process is executed.
-	 *
-	 * @param recordsToSelectAfterExecution
-	 */
-	public void setRecordsToSelectAfterExecution(final List<TableRecordReference> recordsToSelectAfterExecution)
-	{
-		this.recordsToSelectAfterExecution = recordsToSelectAfterExecution == null ? null : ImmutableList.copyOf(recordsToSelectAfterExecution);
+		return recordToSelectAfterExecution;
 	}
 
 	/**
@@ -318,7 +302,51 @@ public class ProcessExecutionResult
 	 */
 	public void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
 	{
-		this.recordsToSelectAfterExecution = recordToSelectAfterExecution == null ? null : ImmutableList.of(recordToSelectAfterExecution);
+		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
+	}
+
+	public void setRecordsToOpen(final Collection<TableRecordReference> records, final int adWindowId)
+	{
+		if (records == null || records.isEmpty())
+		{
+			recordsToOpen = null;
+		}
+		else
+		{
+			final boolean gridView = true;
+			recordsToOpen = new RecordsToOpen(records, adWindowId, gridView);
+		}
+	}
+
+	public void setRecordsToOpen(final Collection<TableRecordReference> records)
+	{
+		if (records == null || records.isEmpty())
+		{
+			recordsToOpen = null;
+		}
+		else
+		{
+			final int adWindowId = -1;
+			final boolean gridView = true;
+			recordsToOpen = new RecordsToOpen(records, adWindowId, gridView);
+		}
+	}
+
+	public void setRecordToOpen(final TableRecordReference record, final int adWindowId, final boolean gridView)
+	{
+		if (record == null)
+		{
+			recordsToOpen = null;
+		}
+		else
+		{
+			recordsToOpen = new RecordsToOpen(ImmutableList.of(record), adWindowId, gridView);
+		}
+	}
+
+	public RecordsToOpen getRecordsToOpen()
+	{
+		return recordsToOpen;
 	}
 
 	public void setPrintFormat(final MPrintFormat printFormat)
@@ -567,6 +595,97 @@ public class ProcessExecutionResult
 
 		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
 
-		recordsToSelectAfterExecution = otherResult.recordsToSelectAfterExecution;
+		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
+		recordsToOpen = otherResult.recordsToOpen;
+	}
+
+	@Immutable
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static final class RecordsToOpen
+	{
+		@JsonProperty("records")
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		private final List<TableRecordReference> records;
+
+		@JsonProperty("adWindowId")
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		private final Integer adWindowId;
+
+		@JsonProperty("gridView")
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		private final boolean gridView;
+
+		@JsonCreator
+		private RecordsToOpen( //
+				@JsonProperty("records") final Collection<TableRecordReference> records //
+				, @JsonProperty("adWindowId") final Integer adWindowId //
+				, @JsonProperty("gridView") final boolean gridView //
+		)
+		{
+			super();
+			Check.assumeNotEmpty(records, "records is not empty");
+			
+			this.records = ImmutableList.copyOf(records);
+			this.adWindowId = adWindowId > 0 ? adWindowId : null;
+			this.gridView = gridView;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.omitNullValues()
+					.add("records", records)
+					.add("adWindowId", adWindowId)
+					.add("gridView", gridView)
+					.toString();
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(records, adWindowId, gridView);
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+			if (obj instanceof RecordsToOpen)
+			{
+				final RecordsToOpen other = (RecordsToOpen)obj;
+				return Objects.equals(records, other.records)
+						&& Objects.equals(adWindowId, other.adWindowId)
+						&& Objects.equals(gridView, other.gridView);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		/** @return records to open; never null or empty */
+		public List<TableRecordReference> getRecords()
+		{
+			return records;
+		}
+		
+		public TableRecordReference getSingleRecord()
+		{
+			return records.get(0);
+		}
+
+		public int getAD_Window_ID()
+		{
+			return adWindowId == null ? -1 : adWindowId;
+		}
+
+		public boolean isGridView()
+		{
+			return gridView;
+		}
 	}
 }

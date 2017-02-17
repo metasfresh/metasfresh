@@ -184,10 +184,12 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	I_M_AttributeSetInstance copy(I_M_AttributeSetInstance asi);
 
+
+	I_M_AttributeSetInstance copy(I_M_AttributeSetInstance asi, int overrideM_AttributeSet_ID);
+
 	/**
 	 * @param attribute
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
-
 }

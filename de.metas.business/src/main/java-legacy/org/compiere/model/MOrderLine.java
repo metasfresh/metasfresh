@@ -25,8 +25,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.ProductNotOnPriceListException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -37,12 +37,10 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 

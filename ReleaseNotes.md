@@ -10,28 +10,83 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 4.56.54 (2017-07)
+# metasfresh 4.57.56 (2017-08)
 
 upcoming
+
+## Features
+* metasfresh 
+  * [#739](https://github.com/metasfresh/metasfresh/issues/739) remove X_BPartner_Stats_MV
+  * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
+  * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
+  * [#928](https://github.com/metasfresh/metasfresh/issues/928) have a way to control which contact is used on addresses in order
+  * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
+  * [#942](https://github.com/metasfresh/metasfresh/issues/942) Improve Transparency & Usability of Pricing definitions
+  * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
+  * [#956](https://github.com/metasfresh/metasfresh/issues/956) Adjust Price list reports to new data structure
+  * [#957](https://github.com/metasfresh/metasfresh/issues/957) Empties Returns for Vendors and Customers in Material Receipt Window
+  * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
+  * [#975](https://github.com/metasfresh/metasfresh/issues/975) Set DLM_Level via properties/preferences UI
+  
+* webUI
+  * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
+
+## Fixes
+* metasfresh
+  * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
+
+* webUI
+  * [#314](https://github.com/metasfresh/metasfresh-webui-frontend/issues/314) Grid view filtering: don't send valueTo if it's not a range parameter
+  * [#322](https://github.com/metasfresh/metasfresh-webui-frontend/issues/322) Quick input's mandatory=false not respected
+  * [#317](https://github.com/metasfresh/metasfresh-webui-frontend/issues/317) Quick actions are not refreshed when opening the modal HU editor
+  * [#137](https://github.com/metasfresh/metasfresh-webui/issues/137) Make sure ProcessInstance is not override by concurrent RES api call
+  
+# metasfresh 4.56.55 (2017-07)
+
+this week's RC
 
 ## Features
 * metasfresh
   * #913 include branch name in build version string
   
 * webUI
+  * #112 On login page, deactivate the fields while logging in
+  * #120 Material Receipt WebUI: Attribute Values wrong
+  * #127 Receipt schedules - Receive with configuration improvements
+  * #118 Functionality to easily add files to current record in webUI
+  * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+  * #127 Receipt schedules - Receive with configuration improvements
+  * #132 Receiving HUs: already received HUs shall be flagged as processed
   * #226 Implement document field device support
   * #227 Wrong breadcrumb when the view is opened after process execution
   * #254 Cannot see the HU editor icons
+  * #256 Implement document attachments
+  * #257 login page: focus on username
+  * #275 None of the menus could be opened when in full screen mode
+  * #281 Remove margin from wrapper modal to make 0-padding inside
+  * #734 Add Translation for en_US in WebUI
+  * #833 Invoice Process in Invoice Candidates WebUI
   * #894 Payment Allocation Window WebUI
   * #895 Dunning Candidates Window WebUI
+  * #947 Window Greeting Add Translation for en_US
+  * #966 Provide WebUI Default Role
 
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
+  
+* webUI
+  * #119 Error when Pressing the Attribute Button
+  * #116 qty 0 in purchase order
+  * #229 Location editor button called "edit attributes"
+  * #261 When the attribute is readonly don't show the Device button(s)
+  * #264 Included tabs layout is broken
+  * #268 Wrong viewId when starting the process
+  * #276 Wrong timing when completing a quick input entry
+  * #279 While browsing a document, pressing New does nothing
+  * #295 Attribute Editor too narrow
 
 # metasfresh 4.55.54 (2017-06)
-
-this week's RC
 
 ## Features
 * metasfresh

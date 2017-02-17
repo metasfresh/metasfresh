@@ -54,6 +54,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
 import org.compiere.model.MAsset;
@@ -80,12 +81,10 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 
@@ -291,7 +290,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		//
 		if (parent_table_id == MBPartner.Table_ID)
 			rq.setC_BPartner_ID(parent_record_id);
-		else if (parent_table_id == MUser.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_AD_User.class))
 			rq.setAD_User_ID(parent_record_id);
 		//
 		else if (parent_table_id == MProject.Table_ID)

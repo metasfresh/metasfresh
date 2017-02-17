@@ -25,12 +25,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
@@ -504,7 +504,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	 * @return value; not null
 	 * @throws E
 	 */
-	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<? extends E> exceptionSupplier) throws E
+	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<E> exceptionSupplier) throws E
 	{
 		final V value = get(key);
 		if(value == null)
@@ -602,7 +602,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			@Override
 			public int reset(final String tableNameToReset, final Object key)
 			{
-				if (tableName != null && !Check.equals(tableName, tableNameToReset))
+				if (tableName != null && !Objects.equals(tableName, tableNameToReset))
 				{
 					return 0;
 				}

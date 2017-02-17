@@ -23,7 +23,9 @@ RETURNS TABLE
 	StdPrecision numeric(10,0),
 	linenetamt numeric,
 	rate numeric,
-	IsPrintTax character(1)
+	IsPrintTax character(1),
+	bp_product_no character varying(30),
+	bp_product_name character varying(100)
 )
 AS
 $$
@@ -63,7 +65,10 @@ SELECT
 	puom.StdPrecision,
 	SUM(il.linenetamt) AS linenetamt,
 	t.rate,
-	bpg.IsPrintTax
+	bpg.IsPrintTax,
+	-- in case there is no C_BPartner_Product, fallback to the default ones
+	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
 FROM
 	C_InvoiceLine il
 	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
@@ -80,6 +85,9 @@ FROM
 		FROM	M_Product_Category
 		WHERE isActive = 'Y'
 	) pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID
+	
+	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 
 	-- Get Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
@@ -217,7 +225,10 @@ GROUP BY
 	bpg.IsPrintTax,
 
 	COALESCE( io1.DateFrom, io2.DateFrom ),
-	COALESCE( io1.DocNo, io2.DocNo )
+	COALESCE( io1.DocNo, io2.DocNo ),
+	
+	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) ,
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)
 
 ORDER BY
 	COALESCE( io1.DateFrom, io2.DateFrom ),

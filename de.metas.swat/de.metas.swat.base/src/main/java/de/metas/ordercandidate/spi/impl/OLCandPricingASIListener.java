@@ -30,6 +30,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPricingAttribute;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -95,7 +96,6 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-		final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(olCand);
 		Check.assumeNotNull(asiAware,
@@ -103,10 +103,13 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 				olCand, OLCandASIAwareFactory.class.getName());
 
 		asiAware.setM_AttributeSetInstance(null); // reset, because we want getCreateASI to give us a new ASI
-		if (!pricingResult.getPricingAttributes().isEmpty())
+		final List<IPricingAttribute> pricingAttributes = pricingResult.getPricingAttributes();
+		if (!pricingAttributes.isEmpty())
 		{
 			attributeSetInstanceBL.getCreateASI(asiAware);
-			attributePricingBL.addToASI(pricingResult, asiAware);
+			
+			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+			attributePricingBL.addToASI(asiAware, pricingAttributes);
 		}
 	}
 }

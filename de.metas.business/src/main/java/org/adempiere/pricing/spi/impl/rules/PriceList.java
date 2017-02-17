@@ -32,8 +32,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 public class PriceList extends AbstractPriceListBasedRule
 {
@@ -95,6 +95,7 @@ public class PriceList extends AbstractPriceListBasedRule
 				+ " AND pp.IsActive='Y'"
 				+ " AND p.M_Product_ID=?"				// #1
 				+ " AND pv.M_PriceList_ID=?"			// #2
+				+ " AND pp." + I_M_ProductPrice.COLUMNNAME_IsAttributeDependant + "='N'"
 				+ " ORDER BY pv.ValidFrom DESC";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -114,13 +115,13 @@ public class PriceList extends AbstractPriceListBasedRule
 					// Prices
 					m_PriceStd = rs.getBigDecimal(1);
 					if (rs.wasNull())
-						m_PriceStd = Env.ZERO;
+						m_PriceStd = BigDecimal.ZERO;
 					m_PriceList = rs.getBigDecimal(2);
 					if (rs.wasNull())
-						m_PriceList = Env.ZERO;
+						m_PriceList = BigDecimal.ZERO;
 					m_PriceLimit = rs.getBigDecimal(3);
 					if (rs.wasNull())
-						m_PriceLimit = Env.ZERO;
+						m_PriceLimit = BigDecimal.ZERO;
 					//
 					m_C_UOM_ID = rs.getInt(4);
 					m_C_Currency_ID = rs.getInt(6);
