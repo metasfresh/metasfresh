@@ -32,11 +32,11 @@ import de.metas.ui.web.window.descriptor.filters.DocumentFilterDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -89,6 +89,14 @@ public final class JSONDocumentViewLayout implements Serializable
 	@JsonProperty(value = "supportTree")
 	private final boolean supportTree;
 
+	//
+	// New record support
+	@JsonProperty("supportNewRecord")
+	private boolean supportNewRecord = false;
+	@JsonProperty("newRecordCaption")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String newRecordCaption = null;
+
 	private JSONDocumentViewLayout(
 			final DocumentViewLayout layout //
 			, final Collection<DocumentFilterDescriptor> filters //
@@ -134,7 +142,11 @@ public final class JSONDocumentViewLayout implements Serializable
 			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 			, @JsonProperty(value = PROPERTY_supportAttributes) final boolean supportAttributes //
-			, @JsonProperty(value = "supportTree") final boolean supportTree)
+			, @JsonProperty(value = "supportTree") final boolean supportTree //
+			//
+			, @JsonProperty("newRecordCaption") final String newRecordCaption //
+			, @JsonProperty("supportNewRecord") final boolean supportNewRecord //
+	)
 	{
 		super();
 		this.type = type;
@@ -149,6 +161,11 @@ public final class JSONDocumentViewLayout implements Serializable
 
 		this.supportAttributes = supportAttributes;
 		this.supportTree = supportTree;
+
+		//
+		// New record support
+		this.supportNewRecord = supportNewRecord;
+		this.newRecordCaption = newRecordCaption;
 	}
 
 	@Override
@@ -206,5 +223,11 @@ public final class JSONDocumentViewLayout implements Serializable
 	public boolean isSupportTree()
 	{
 		return supportTree;
+	}
+
+	public void enableNewRecord(final String newRecordCaption)
+	{
+		supportNewRecord = true;
+		this.newRecordCaption = newRecordCaption;
 	}
 }
