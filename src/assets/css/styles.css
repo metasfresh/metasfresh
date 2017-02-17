@@ -923,25 +923,6 @@ td.pulse-off input {
     display: block;
 }
 
-.slidein-enter {
-    right: -100%;
-}
-
-.slidein-enter.slidein-enter-active {
-    right: 0;
-    transition: right .2s;
-    transition-delay: .8s;
-}
-
-.slidein-leave {
-    right: 0;
-    transition: right .2s;
-}
-
-.slidein-leave.slidein-leave-active {
-    right: -100%;
-}
-
 @media (max-width: $breakpoint-md){
     .btn-new-document {
         max-width: 140px;
@@ -949,3 +930,66 @@ td.pulse-off input {
         text-overflow: ellipsis;
     }
 }
+
+.progress-bar {
+    position: absolute;
+    bottom:0;
+    left:0;
+    height: 3px;
+    background-color: rgba(0,0,0,.3);
+}
+
+.progress-bar.error {
+    background-color: $brand-danger-color;
+}
+
+.progress-bar.warning {
+    background-color: $brand-warning-color;
+}
+
+.progress-bar.success {
+    background-color: $brand-success-dark-color;
+}
+
+/*
+ *  Animations
+ */
+ 
+ .slidein-enter {
+     right: -100%;
+ }
+
+ .slidein-enter.slidein-enter-active {
+     right: 0;
+     transition: right .2s;
+     transition-delay: .8s;
+ }
+
+ .slidein-leave {
+     right: 0;
+     transition: right .2s;
+ }
+
+ .slidein-leave.slidein-leave-active {
+     right: -100%;
+ }
+ 
+ 
+ 
+ .progress-enter {
+     width:100%;
+ }
+
+ .progress-enter.progress-enter-active {
+     width: 0;
+     transition: width 5s linear;
+ }
+
+ .progress-leave {
+     width: 0;
+     transition: width 5s linear;
+ }
+
+ .progress-leave.slidein-leave-active {
+     width: 0;
+ }

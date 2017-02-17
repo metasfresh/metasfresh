@@ -6,6 +6,10 @@ import {
     attachFileAction
 } from '../actions/WindowActions';
 
+import {
+    addNotification
+} from '../actions/AppActions'
+
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
 import RawModal from '../components/app/RawModal';
@@ -63,7 +67,7 @@ class MasterWindow extends Component {
     render() {
         const {
             master, modal, breadcrumb, references, actions, attachments, rawModal,
-            selected
+            selected, dispatch
         } = this.props;
         const {newRow, modalTitle} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
@@ -97,6 +101,8 @@ class MasterWindow extends Component {
                 attachments={attachments}
                 showSidelist={true}
             >
+            {/*TO REMOVE, ONLY DEV PURPOSE*/}
+            <div onClick={() => {dispatch(addNotification('test', 'test', 5000))}}>NOTIFICATION</div>
                 {modal.visible &&
                     <Modal
                         relativeType={type}
