@@ -55,6 +55,11 @@
 }
 
 
+
+/*
+ * Feel really sorry about that, but it is hard to get over 
+ * table styles in bootstrap and avoid !important.
+ */
 .table-striped tbody tr.tr-odd:nth-child(even) {
     background-color: $brand-super-light-color;
 }
@@ -66,8 +71,17 @@
 }
 .table-striped tbody tr.tr-even:nth-last-child(even) {
     background-color: #fff;
-
 }
+.table-striped tbody tr.tr-even.row-disabled,
+.table-striped tbody tr.tr-odd.row-disabled  {
+    background-color: #f3f3f3;
+    color: #a9a9a9;
+}
+.table-striped tbody tr.tr-even.row-boundary,
+.table-striped tbody tr.tr-odd.row-boundary  {
+    border-bottom: 2px solid #ddd;
+}
+
 
 .row-selected {
     background-color: #d5e3ec !important;
