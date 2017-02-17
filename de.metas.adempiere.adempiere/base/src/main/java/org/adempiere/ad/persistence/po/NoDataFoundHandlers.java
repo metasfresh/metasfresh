@@ -1,41 +1,53 @@
-package de.metas.dlm.model;
+package org.adempiere.ad.persistence.po;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
- * metasfresh-dlm
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IDLMAware
+public final class NoDataFoundHandlers
 {
-	/**
-	 * No getter for I_DLM_Partition records, because they might or might not exists at any given time.
-	 */
-	String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
+	private static final NoDataFoundHandlers INSTANCE = new NoDataFoundHandlers();
 
-	int getDLM_Partition_ID();
+	public static NoDataFoundHandlers get()
+	{
+		return INSTANCE;
+	}
 
-	void setDLM_Partition_ID(int DLM_Partition_ID);
+	private final List<INoDataFoundHandler> noDataFoundHandlers = new ArrayList<>();
 
-	String COLUMNNAME_DLM_Level = "DLM_Level";
+	private NoDataFoundHandlers()
+	{
+	};
 
-	int getDLM_Level();
-	
-	void setDLM_Level(int DLM_Level);
+	public NoDataFoundHandlers addHandler(INoDataFoundHandler handler)
+	{
+		noDataFoundHandlers.add(handler);
+		return this;
+	}
+
+	public List<INoDataFoundHandler> getHandlers()
+	{
+		return noDataFoundHandlers;
+	}
 }
