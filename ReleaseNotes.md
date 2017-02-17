@@ -80,10 +80,15 @@ this week's RC
   * #734 Add Translation for en_US in WebUI
     * Translation of metasfresh is now available in en_US.
   * #833 Invoice Process in Invoice Candidates WebUI
+    * Add the Invoiceing process to easy create customer and vendor invoices from filtered and selected records in invoice candidates window in webUI.
   * #894 Payment Allocation Window WebUI
+    * Include the Payment allocation window in new Web User Interface.
   * #895 Dunning Candidates Window WebUI
+    * Include the Dunning Candidates window in new Web User Interface.
   * #947 Window Greeting Add Translation for en_US
+    * Minor enhancement, translating the Greeting window for language en_US.
   * #966 Provide WebUI Default Role
+    * Add a default role and permission to use the already implemented functionalities for the new Web User Interface.
 
 ## Fixes 
 * metasfresh
