@@ -147,10 +147,10 @@ class Lookup extends Component {
                     newProps[propertiesCopy[index].field] = prop.data.values;
                 });
 
-                this.setState(Object.assign({}, this.state, {
+                this.setState({
                     properts: newProps,
                     model: select
-                }), () => {
+                }, () => {
                     this.generatingPropsSelection();
                 });
             });
@@ -439,6 +439,7 @@ class Lookup extends Component {
                         onClickOutside={this.handleBlur}
                         disableOnClickOutside={!isOpen}
                         query={query}
+                        creatingNewDisabled={isModal}
                     />
                 }
             </div>
