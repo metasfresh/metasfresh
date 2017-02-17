@@ -24,7 +24,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -517,7 +516,7 @@ public final class Document
 		private final Properties ctx;
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
-		private final Evaluatee evaluatee;
+		private final IDocumentEvaluatee _evaluatee;
 		private final DocumentId parentDocumentId;
 
 		private InitialFieldValueSupplier(final Document document, final DocumentValuesSupplier parentSupplier)
@@ -531,7 +530,7 @@ public final class Document
 			documentType = entityDescriptor.getDocumentType();
 			documentTypeId = entityDescriptor.getDocumentTypeId();
 
-			evaluatee = document.asEvaluatee();
+			_evaluatee = document.asEvaluatee();
 
 			final Document parentDocument = document.getParentDocument();
 			parentDocumentId = parentDocument == null ? null : parentDocument.getDocumentId();
@@ -543,7 +542,7 @@ public final class Document
 			return MoreObjects.toStringHelper(this)
 					.add("type", documentType)
 					.add("typeId", documentTypeId)
-					.add("evaluatee", evaluatee)
+					.add("evaluatee", _evaluatee)
 					.toString();
 		}
 
@@ -557,6 +556,15 @@ public final class Document
 		public String getVersion()
 		{
 			return parentSupplier.getVersion();
+		}
+		
+		private final IDocumentEvaluatee getEvaluatee(final DocumentFieldDescriptor fieldInScope)
+		{
+			if (fieldInScope == null)
+			{
+				return _evaluatee;
+			}
+			return _evaluatee.fieldInScope(fieldInScope.getFieldName());
 		}
 
 		@Override
@@ -595,7 +603,8 @@ public final class Document
 			final IExpression<?> defaultValueExpression = fieldDescriptor.getDefaultValueExpression().orElse(null);
 			if (defaultValueExpression != null)
 			{
-				final Object value = defaultValueExpression.evaluate(evaluatee, OnVariableNotFound.Fail);
+				final IDocumentEvaluatee evaluateeEffective = getEvaluatee(fieldDescriptor);
+				final Object value = defaultValueExpression.evaluate(evaluateeEffective, OnVariableNotFound.Fail);
 
 				if (value != null
 						&& String.class.equals(defaultValueExpression.getValueClass())
@@ -946,7 +955,7 @@ public final class Document
 		}
 		return _evaluatee;
 	}
-
+	
 	/**
 	 * Similar with {@link #setValue(String, Object, ReasonSupplier)} but this method is also checking if we are allowed to change that field
 	 *
