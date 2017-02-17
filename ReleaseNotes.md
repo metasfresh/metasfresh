@@ -25,6 +25,7 @@ upcoming
   * [#928](https://github.com/metasfresh/metasfresh/issues/928) have a way to control which contact is used on addresses in order
   * [#739](https://github.com/metasfresh/metasfresh/issues/739) remove X_BPartner_Stats_MV
   * [#975](https://github.com/metasfresh/metasfresh/issues/975) Set DLM_Level via properties/preferences UI
+  * [#956](https://github.com/metasfresh/metasfresh/issues/956) Adjust Price list reports to new data structure
   
 * webUI
   * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
