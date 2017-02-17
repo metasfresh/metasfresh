@@ -7,12 +7,15 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import de.metas.ui.web.session.UserSession;
 
 /*
  * #%L
@@ -39,6 +42,9 @@ import com.google.common.cache.LoadingCache;
 @Repository
 public class MenuTreeRepository
 {
+	@Autowired
+	private UserSession userSession;
+
 	private final LoadingCache<MenuTreeKey, MenuTree> menuTrees = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build(new CacheLoader<MenuTreeKey, MenuTree>()
@@ -54,6 +60,13 @@ public class MenuTreeRepository
 							.load();
 				}
 			});
+
+	public MenuTree getUserSessionMenuTree()
+	{
+		final UserRolePermissionsKey userRolePermissionsKey = userSession.getUserRolePermissionsKey();
+		final String adLanguage = userSession.getAD_Language();
+		return getMenuTree(userRolePermissionsKey, adLanguage);
+	}
 
 	public MenuTree getMenuTree(final UserRolePermissionsKey userRolePermissionsKey, final String adLanguage)
 	{
