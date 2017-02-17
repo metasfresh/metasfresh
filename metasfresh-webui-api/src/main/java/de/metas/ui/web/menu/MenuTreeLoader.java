@@ -59,6 +59,7 @@ public final class MenuTreeLoader
 	private Properties _ctx;
 	private UserRolePermissionsKey _userRolePermissionsKey;
 	private IUserRolePermissions _userRolePermissions; // lazy
+	private String _adLanguage;
 
 	private MenuTreeLoader()
 	{
@@ -235,6 +236,7 @@ public final class MenuTreeLoader
 				.setAD_Tree_ID(adTreeId)
 				.setEditable(false)
 				.setClientTree(true)
+				.setLanguage(getAD_Language())
 				.build();
 		final MTreeNode rootNodeModel = mTree.getRoot();
 		return rootNodeModel;
@@ -249,5 +251,16 @@ public final class MenuTreeLoader
 		}
 		
 		return userRolePermissions.getMenu_Tree_ID();
+	}
+
+	public MenuTreeLoader setAD_Language(String adLanguage)
+	{
+		this._adLanguage = adLanguage;
+		return this;
+	}
+	
+	private String getAD_Language()
+	{
+		return _adLanguage;
 	}
 }

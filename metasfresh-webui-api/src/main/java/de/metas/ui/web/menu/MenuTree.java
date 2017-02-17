@@ -108,6 +108,7 @@ public final class MenuTree
 		{
 			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
 		}
+		
 		return nodes.get(0);
 	}
 
