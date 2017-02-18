@@ -32,12 +32,13 @@ class Lookup extends Component {
             propertiesCopy: getItemsByProperty(this.props.properties, "source", "list"),
             mainProperty: getItemsByProperty(this.props.properties, "source", "lookup"),
             oldValue: '',
-            isOpen: false
+            isOpen: false,
+            shouldBeFocused: true
         }
     }
 
     componentDidMount() {
-        const {selected, filterWidget, autoFocus} = this.props;
+        const {selected, filterWidget} = this.props;
 
         this.handleValueChanged();
 
@@ -46,20 +47,26 @@ class Lookup extends Component {
         }else{
             this.handleClear();
         }
-
-        if(autoFocus){
-            this.inputSearch.focus();
-        }
     }
 
     componentDidUpdate() {
         this.handleValueChanged();
+
+        const {autoFocus} = this.props;
+        const {isInputEmpty, shouldBeFocused} = this.state;
+
+        if(autoFocus && isInputEmpty && shouldBeFocused){
+            this.inputSearch.focus();
+            this.setState(Object.assign({}, this.state, {
+                shouldBeFocused: false
+            }));
+        }
     }
 
     handleSelect = (select) => {
         const {
             dispatch, properties, onChange, dataId, fields, filterWidget,
-            parameterName, setSelectedItem, windowType, subentity
+            parameterName, windowType, subentity
         } = this.props;
 
         const {
@@ -72,7 +79,6 @@ class Lookup extends Component {
         }), () => {
             if(filterWidget) {
                 onChange(parameterName, select);
-                setSelectedItem(select[Object.keys(select)[0]]);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
 
@@ -95,7 +101,7 @@ class Lookup extends Component {
                         promise.then(() => {
                             if(!subentity){
                                 this.getAllDropdowns();
-                            }    
+                            }
                         }
                     )}
                 } else {
@@ -198,14 +204,14 @@ class Lookup extends Component {
     }
 
     handleBlur = (callback) => {
-        
+
         this.setState(Object.assign({}, this.state, {
             isOpen: false
         }), () => {
             if(callback) {
                 callback();
             }
-            
+
         })
     }
 
@@ -274,8 +280,8 @@ class Lookup extends Component {
         e && e.preventDefault();
         this.inputSearch.value = "";
 
-        onChange(properties, "", false);
-        
+        onChange(properties, null, false);
+
         this.handleBlur(this.clearState);
     }
 
@@ -352,6 +358,17 @@ class Lookup extends Component {
                 this.setState(Object.assign({}, this.state, {
                     oldValue: inputValue,
                     isInputEmpty: false
+                }));
+            }
+
+        } else if(oldValue && !defaultValue[0].value && this.inputSearch) {
+            const inputEmptyValue = defaultValue[0].value;
+
+            if(inputEmptyValue !== oldValue){
+                this.inputSearch.value = inputEmptyValue;
+                this.setState(Object.assign({}, this.state, {
+                    oldValue: inputEmptyValue,
+                    isInputEmpty: true
                 }));
             }
         }

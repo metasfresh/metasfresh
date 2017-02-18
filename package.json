@@ -44,6 +44,7 @@
     "react-dnd": "~2.1.4",
     "react-dnd-html5-backend": "~2.1.2",
     "react-dom": "~15.4.2",
+    "react-dropzone": "~3.9.2",
     "react-onclickoutside": "~5.3.3",
     "react-redux": "~4.4.5",
     "react-router": "~2.5.1",

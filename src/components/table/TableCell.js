@@ -29,7 +29,7 @@ class TableCell extends Component {
     handleClickOutside = (e) => {
         const {onClickOutside} = this.props;
         const {backdropLock} = this.state;
-
+        
         //We can handle click outside only if
         //nested elements has no click oustide listening pending
         if(!backdropLock){
@@ -41,28 +41,35 @@ class TableCell extends Component {
         }
     }
 
+    createDate = (field) => {
+        if(field){
+            let d = new Date(field);
+            let date = Moment(d).format('DD.MM.YYYY');
+            return date;
+        } else {
+            // specified case to avoid parsing "error" text
+            return "";
+        }
+    }
+
     fieldToString = (field, type) => {
         if(field === null){
             return "";
         }else{
             switch(typeof field){
                 case "object":
-                    return field[Object.keys(field)[0]];
+                    if(type === "Date" || type === "DateTime" || type === "Time"){
+                        return this.createDate(field);
+                    } else {
+                        return field[Object.keys(field)[0]];
+                    }
                     break;
                 case "boolean":
                     return field ? <i className="meta-icon-checkbox-1" /> : <i className="meta-icon-checkbox" />;
                     break;
                 case "string":
                     if(type === "Date" || type === "DateTime" || type === "Time"){
-                        if(field){
-                            let d = new Date(field);
-                            let date = Moment(d).format('DD.MM.YYYY');
-                            return date;
-                        } else {
-                            // specified case to avoid parsing "error" text
-                            return "";
-                        }
-                        
+                        return this.createDate(field);
                     } else {
                         return field;
                     }
@@ -71,12 +78,13 @@ class TableCell extends Component {
                     return field;
             }
         }
+        
     }
 
     render() {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId, onDoubleClick,
-            onKeyDown, readonly, updatedRow, tabIndex, entity
+            onKeyDown, readonly, updatedRow, tabIndex, entity, onClickOutside
         } = this.props;
 
         return (

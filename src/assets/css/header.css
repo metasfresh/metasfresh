@@ -12,7 +12,7 @@
     left:0;
     width: 100%;
     height: 55px;
-    z-index: 201;
+    z-index: 100;
 }
 .header-container {
     width: 100%;
@@ -166,7 +166,7 @@
     display: none;
     width: 100%;
     position: fixed;
-    z-index:201;
+    z-index: 201;
     background-color: $brand-bright-color;
 }
 
@@ -421,13 +421,24 @@
     border-bottom: 1px dashed $brand-link-color;
 }
 
+.menu-overlay-expanded-link:focus .query-clickable-group {
+    border-bottom: 1px dashed $brand-link-color;
+}
+
 .menu-overlay-expanded-link:focus .menu-overlay-link {
     border-bottom: 1px solid $brand-link-color;
 }
 
+.menu-overlay-expanded-link:focus .query-clickable-link {
+    border-bottom: 1px solid $brand-link-color;
+}
 .menu-overlay-expanded-link {
     color: $brand-link-color;
     width: auto;
+}
+
+.menu-overlay-header:focus {
+    border-bottom: 1px solid $brand-font-color-secondary;
 }
 
 

@@ -17,6 +17,7 @@
 @import './tabs.css';
 @import './tag.css';
 @import './tooltip.css';
+@import './image.css';
 
 /**
 *  IMPORTANT NOTE
@@ -220,7 +221,7 @@ body {
     background-color: inherit;
     min-width: 100%;
     width: auto;
-    z-index: 201;
+    z-index: 99;
 }
 
 .dropdown-status-item {
@@ -363,9 +364,17 @@ body {
 
 .document-list-header {
     display: flex;
+    justify-content: space-between;
 }
 
-.document-list-header>*:not(:last-child) {
+.document-list-header > * {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.document-list-header > *:not(:last-child) {
     margin-right: .5rem;
 }
 
@@ -798,4 +807,112 @@ td.pulse-off input {
 .hint {
     font-size: .75rem;
     color: $brand-font-color-weak;
+}
+
+.spacer-right {
+    margin-right: .2rem;
+}
+
+.quick-actions-wrapper {
+    position: relative;
+}
+
+.quick-actions-dropdown {
+    position: absolute;
+    z-index:1;
+    width: 100%;
+
+    margin-top: .2rem;
+    padding: .3rem;
+
+    background-color: #fff;
+    border:1px solid $brand-border-color;
+    border-radius: 4px;
+}
+
+.quick-actions-dropdown small {
+    color: $brand-font-color-weak;
+}
+
+.quick-actions-item {
+    cursor: pointer;
+    padding: .5rem .3rem;
+}
+
+.quick-actions-item p {
+    margin:0;
+}
+
+.quick-actions-item:hover{
+    background-color: $brand-bright-color;
+}
+
+.quick-actions-item-disabled {
+    padding: .3rem .3rem;
+    cursor: default;
+    color: $brand-color-secondary;
+}
+
+.attributes-selector {
+    flex:1;
+
+    background-color: #fff;
+    border-radius: 3px;
+    border: 1px solid $brand-border-color;
+    margin-left: .5rem;
+}
+
+.attributes-selector-header,
+.attributes-selector-body {
+    padding: .54rem .7rem;
+}
+
+.attributes-selector-header {
+    border-bottom: 1px solid $brand-border-color;
+    background-color: $brand-super-light-color;
+}
+
+.one-line {
+    width: 100%;
+    overflow:hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.document-file-dropzone{
+    width: 100%;
+    height: auto;
+    position: relative;
+}
+
+.document-file-dropzone-backdrop{
+    background-color: black;
+    opacity: 0.5;
+    cursor: copy;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin-top: 15px;
+    border: 5px dashed white;
+}
+
+.document-file-dropzone-info{
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: white;
+    height: 30px;
+    line-height: 30px;
+    margin-top: -15px;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.document-file-dropzone-active .document-file-dropzone-backdrop{
+    display: block;
 }

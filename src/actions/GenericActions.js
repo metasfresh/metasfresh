@@ -23,8 +23,8 @@ export function getData(
 ) {
     return () => axios.get(
         config.API_URL +
-        '/' + entity + '/' +
-        docType + '/' +
+        '/' + entity +
+        '/' + docType +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
@@ -37,7 +37,9 @@ export function getData(
 export function createInstance(entity, docType, docId, tabId, subentity) {
     return () => axios.post(
         config.API_URL +
-        '/' + entity + '/' + docType + '/' + docId +
+        '/' + entity +
+        '/' + docType +
+        '/' + docId +
         (tabId ? "/" + tabId : "") +
         (subentity ? "/" + subentity : "")
     );
@@ -45,7 +47,7 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
 
 export function patchRequest(
     entity, docType, docId = "NEW", tabId, rowId, property, value, subentity,
-    subentityId, isAdvanced
+    subentityId, isAdvanced, viewId
 ) {
 
     let payload = [];
@@ -74,6 +76,7 @@ export function patchRequest(
         config.API_URL +
         '/' + entity +
         (docType ? "/" + docType : "") +
+        (viewId ? "/" + viewId : "") +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
@@ -99,12 +102,14 @@ export function completeRequest(
 }
 
 export function autocompleteRequest(
-    docType, propertyName, query, docId, tabId, rowId, entity, subentity, subentityId
+    docType, propertyName, query, docId, tabId, rowId, entity, subentity,
+    subentityId, viewId
 ) {
     return () => axios.get(
         config.API_URL +
         '/' + entity +
         (docType ? "/" + docType : "") +
+        (viewId ? "/" + viewId : "") +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +
@@ -116,12 +121,13 @@ export function autocompleteRequest(
 }
 
 export function dropdownRequest(
-    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId
+    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId, viewId
 ) {
     return () => axios.get(
         config.API_URL +
         '/' + entity +
         (docType ? "/" + docType : "") +
+        (viewId ? "/" + viewId : "") +
         (docId ? "/" + docId : "") +
         (tabId ? "/" + tabId : "") +
         (rowId ? "/" + rowId : "") +

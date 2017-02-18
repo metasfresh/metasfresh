@@ -1,31 +1,29 @@
-image: jazzypro/ubuntu-frontend
+image: jazzypro/ubuntu-frontend:latest
 
 stages:
   - build
   - deploy
 
-before_script:
-  - git submodule sync --recursive
-  - git submodule update --init --recursive
-
 build:
   stage: build
   script:
-    - ci-run-local ansible/build.yml -v
+    - ansible-playbook ansible/build.yml -v
   artifacts:
     paths:
       - dist/
   only:
-    - dev
-    - dev-189
+    - /^dev-.*$/
+    - master
 
 deploy-dev:
   stage: deploy
   script:
-    - ci-run-remote ansible/deploy.yml -v
+    - ansible-playbook ansible/deploy.yml -v
   dependencies:
     - build
   only:
-    - dev
-    - dev-189
-  environment: dev
+    - master
+    - /^dev-.*$/
+  environment:
+    name: $CI_BUILD_REF_NAME
+    url: http://$CI_BUILD_REF_NAME.metasfresh.jzapp.io/

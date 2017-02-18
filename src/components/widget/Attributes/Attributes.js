@@ -135,7 +135,7 @@ class Attributes extends Component {
     render() {
         const {
             widgetData,fields, dispatch, docType, dataId, tabId, rowId, patch,
-            fieldName, attributeType, tabIndex
+            fieldName, attributeType, tabIndex, readonly
         } = this.props;
 
         const {
@@ -160,10 +160,11 @@ class Attributes extends Component {
                     onClick={() => this.handleToggle(true)}
                     className={
                         "btn btn-block tag tag-lg tag-block tag-secondary pointer " +
-                        (dropdown ? "tag-disabled " : "")
+                        (dropdown ? "tag-disabled " : "") +
+                        (readonly ? "tag-disabled disabled " : "")
                     }
                 >
-                    {label ? label : "Edit attributes"}
+                    {label ? label : "Edit"}
                 </button>
                 {dropdown &&
                     <AttributesDropdown

@@ -1,0 +1,63 @@
+.image-source-options .input{
+    display: none;
+}
+
+.image-source-options [class^=meta-icon]{
+    float: left;
+    font-size: 1rem;
+}
+
+.image-source-options [class^=meta-icon]:before{
+    float: left;
+}
+
+.image-placeholder{
+    width: 200px;
+    height: 150px;
+    border: solid 1px $brand-light-color;
+    border-radius: 4px;
+    margin: 0 auto;
+    display: table;
+}
+
+.image-placeholder .placeholder-value{
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.camera-preview{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 300px;
+    cursor: pointer;
+}
+
+.camera-preview video{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.camera-preview .preview-loader{
+    opacity: 0;
+    background-color: rgba(0, 0, 0, .5);
+    transition: opacity .2s;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.camera-preview.loading .preview-loader{
+    opacity: 1;
+}

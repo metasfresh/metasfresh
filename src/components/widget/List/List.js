@@ -19,7 +19,7 @@ class List extends Component {
     handleFocus = () => {
         const {
             properties, dispatch, dataId, rowId, tabId, windowType, filterWidget,
-            filterId, parameterName, entity, subentity, subentityId
+            filterId, parameterName, entity, subentity, subentityId, viewId
         } = this.props;
 
         this.setState(Object.assign({}, this.state, {
@@ -27,8 +27,8 @@ class List extends Component {
         }));
 
         dispatch(dropdownRequest(
-            windowType, properties[0].field, dataId, tabId, rowId, entity,
-            subentity, subentityId
+            windowType, filterWidget ? properties[0].parameterName: properties[0].field,
+            dataId, tabId, rowId, entity, subentity, subentityId, viewId
         )).then((res) => {
             this.setState(Object.assign({}, this.state, {
                 list: res.data.values,
@@ -38,11 +38,8 @@ class List extends Component {
     }
 
     handleSelect = (option) => {
-        const {onChange, setSelectedItem, filterWidget} = this.props;
+        const {onChange} = this.props;
         onChange(option);
-        if(filterWidget){
-            setSelectedItem(option);
-        }
     }
 
     render() {

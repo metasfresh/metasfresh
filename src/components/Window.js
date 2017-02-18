@@ -1,6 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import {connect} from 'react-redux';
 
+import Dropzone from './Dropzone';
+
 import {
     findRowByPropName
 } from '../actions/WindowActions';
@@ -16,8 +18,9 @@ class Window extends Component {
         super(props);
 
         this.state = {
-            fullScreen: null
-        }
+            fullScreen: null,
+            dragActive: false
+        };
 
         if(props.isModal){
             this.tabIndex = {
@@ -174,12 +177,15 @@ class Window extends Component {
 
     render() {
         const {sections, type, tabs} = this.props.layout;
-        const {data, isModal} = this.props;
+        const {data, isModal, handleDropFile} = this.props;
         return (
             <div key="window" className="window-wrapper">
-                <div className="sections-wrapper">
-                    {sections && this.renderSections(sections)}
-                </div>
+                <Dropzone handleDropFile={handleDropFile}>
+                    <div className="sections-wrapper">
+                        {sections && this.renderSections(sections)}
+                    </div>
+                </Dropzone>
+
                 <div className="mt-1 tabs-wrapper">
                     {tabs && this.renderTabs(tabs)}
                 </div>

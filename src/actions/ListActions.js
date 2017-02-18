@@ -32,36 +32,6 @@ export function clearListProps(){
     }
 }
 
-export function clearListPagination(){
-    return {
-        type: types.CLEAR_LIST_PAGINATION
-    }
-}
-
-export function updateFiltersParameters(filterId, property, value, valueTo){
-	return {
-		type: types.UPDATE_FILTERS_PARAMETERS,
-		filterId: filterId,
-		property: property,
-		value: value,
-        valueTo: valueTo
-	}
-}
-
-export function deleteFiltersParameters(){
-	return {
-		type: types.DELETE_FILTERS_PARAMETERS
-	}
-}
-
-export function initFiltersParameters(filterId, parameters){
-	return {
-		type: types.INIT_FILTERS_PARAMETERS,
-		filterId: filterId,
-		parameters: parameters
-	}
-}
-
 export function initDocumentView(viewId) {
     return {
         type: types.INIT_DOC_VIEW,
@@ -69,10 +39,20 @@ export function initDocumentView(viewId) {
     }
 }
 
-export function quickActionsRequest(windowId, viewId) {
+export function quickActionsRequest(windowId, viewId, selectedIds) {
     return () => axios.get(
-        config.API_URL + 'documentView/' + 
-        windowId + viewId +
-        '/quickActions'
+        config.API_URL + '/documentView/' +
+        windowId + '/' + viewId +
+        '/quickActions' +
+        (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
+    );
+}
+
+export function selectionAttributes(windowId, viewId, selectedIds) {
+    return () => axios.get(
+        config.API_URL + '/documentView/' +
+        windowId + '/' + viewId +
+        '/quickActions' +
+        (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
     );
 }

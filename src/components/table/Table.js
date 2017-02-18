@@ -16,7 +16,7 @@ import {
 import Prompt from '../app/Prompt';
 
 import TableFilter from './TableFilter';
-import TableItemWrapper from './TableItemWrapper';
+import TableItem from './TableItem';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
@@ -32,8 +32,11 @@ const shortcutManager = new ShortcutManager(keymap);
 class Table extends Component {
     constructor(props) {
         super(props);
+
+        const {defaultSelected} = this.props;
+
         this.state = {
-            selected: [],
+            selected: defaultSelected || [null],
             listenOnKeys: true,
             contextMenu: {
                 open: false,
@@ -41,7 +44,35 @@ class Table extends Component {
                 y: 0
             },
             promptOpen: false,
-            isBatchEntry: false
+            isBatchEntry: false,
+            rows: []
+        }
+    }
+
+    componentDidMount(){
+        this.getIndentData(true);
+    }
+
+    componentWillUpdate(nextProps, nextState) {
+        const {dispatch, disconnected} = this.props;
+
+        if((JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected))
+        ){
+            dispatch(selectTableItems(nextState.selected));
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const {mainTable, open, rowData} = this.props;
+        if(mainTable && open){
+            this.table.focus();
+        }
+
+        if(
+            JSON.stringify(prevProps.rowData) !=
+            JSON.stringify(rowData)
+        ){
+            this.getIndentData();
         }
     }
 
@@ -49,30 +80,54 @@ class Table extends Component {
         return { shortcuts: shortcutManager }
     }
 
-    componentWillUpdate(nextProps, nextState) {
-        const {dispatch} = this.props;
+    getIndentData = (selectFirst) => {
+        const {rowData, tabid, indentSupported} = this.props;
 
-        if(JSON.stringify(nextState.selected) !== JSON.stringify(this.state.selected)){
-            dispatch(selectTableItems(nextState.selected));
+        if(indentSupported){
+            let rowsData = [];
+
+            rowData[tabid].map(item => {
+                rowsData = rowsData.concat(this.mapIncluded(item));
+            })
+
+            this.setState({
+                rows: rowsData
+            }, () => {
+                if(selectFirst){
+                    this.selectOneProduct(this.state.rows[0].id);
+                    document.getElementsByClassName('js-table')[0].focus();
+                }
+
+            })
+        } else {
+            this.setState({
+                rows: rowData[tabid]
+            });
         }
     }
 
-    componentDidUpdate() {
-        const {mainTable, open} = this.props;
-        if(mainTable && open){
-            this.table.focus();
-        }
+    getAllLeafs = () => {
+        const {rows, selected} = this.state;
+        let leafs = [];
+        let leafsIds = [];
+
+        rows.map( item => {
+            if(item.id == selected[0]){
+                leafs = this.mapIncluded(item);
+            }
+        });
+
+        leafs.map(item => {
+            leafsIds = leafsIds.concat(item.id);
+        });
+
+        this.selectRangeProduct(leafsIds);
     }
 
     changeListen = (listenOnKeys) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             listenOnKeys: !!listenOnKeys
-        }))
-    }
-
-    getSelectedItems = () => {
-        const {selected} = this.state;
-        return selected;
+        })
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
@@ -87,23 +142,25 @@ class Table extends Component {
     }
 
     selectRangeProduct = (ids) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: ids
-        }))
+        });
     }
 
     selectAll = () => {
-        const {rowData, tabid, keyProperty} = this.props;
+        const {rowData, tabid, keyProperty, indentSupported} = this.props;
+        const {rows} = this.state;
         const property = keyProperty ? keyProperty : "rowId";
-        const toSelect = rowData[tabid].map((item, index) => item[property]);
+        const toSelect = rows.map((item, index) => item[property]);
 
         this.selectRangeProduct(toSelect);
+
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: [id]
-        }), () => {
+        }, () => {
             this.triggerFocus(idFocused, idFocusedDown);
             cb && cb();
         })
@@ -117,9 +174,9 @@ class Table extends Component {
     }
 
     deselectAllProducts = (cb) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             selected: []
-        }), cb && cb());
+        }, cb && cb());
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
@@ -147,8 +204,7 @@ class Table extends Component {
 
     handleKeyDown = (e) => {
         const {rowData, tabid, listenOnKeys} = this.props;
-        const item = rowData[tabid];
-        const {selected} = this.state;
+        const {selected, rows} = this.state;
         const selectRange = e.shiftKey;
 
         const nodeList = Array.prototype.slice.call(document.activeElement.parentElement.children);
@@ -163,30 +219,30 @@ class Table extends Component {
             case "ArrowDown":
                 e.preventDefault();
 
-                const actualId = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
+                const actualId = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
 
-                if(actualId < Object.keys(rowData[tabid]).length-1 ){
+                if(actualId < Object.keys(rows).length-1 ){
                     let newId = actualId+1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
+                        this.selectOneProduct(Object.keys(rows)[newId], false, idFocused);
                     } else {
-                        this.selectProduct(Object.keys(rowData[tabid])[newId], false, idFocused);
+                        this.selectProduct(Object.keys(rows)[newId], false, idFocused);
                     }
                 }
                 break;
             case "ArrowUp":
                 e.preventDefault();
 
-                const actual = Object.keys(rowData[tabid]).findIndex(x => x === selected[selected.length-1])
+                const actual = Object.keys(rows).findIndex(x => x === selected[selected.length-1])
 
                 if(actual > 0 ){
                     let newId = actual-1;
 
                     if(!selectRange) {
-                        this.selectOneProduct(Object.keys(rowData[tabid])[newId], idFocused, false);
+                        this.selectOneProduct(Object.keys(rows)[newId], idFocused, false);
                     } else {
-                        this.selectProduct(Object.keys(rowData[tabid])[newId], idFocused, false);
+                        this.selectProduct(Object.keys(rows)[newId], idFocused, false);
                     }
                 }
                 break;
@@ -214,21 +270,56 @@ class Table extends Component {
         }
     }
 
+    mapIncluded = (node, indent, isParentLastChild = false) => {
+        let ind = indent ? indent : [];
+        let result = [];
+
+        const nodeCopy = Object.assign({}, node, {
+            indent: ind
+        });
+
+        result = result.concat([nodeCopy]);
+
+        if(isParentLastChild){
+            ind[ind.length - 2] = false;
+        }
+
+        if(node.includedDocuments){
+            for(let i = 0; i < node.includedDocuments.length; i++){
+                let copy = node.includedDocuments[i];
+                if(i === node.includedDocuments.length - 1){
+                    copy = Object.assign({}, copy, {
+                        lastChild: true
+                    });
+                }
+
+                result = result.concat(
+                    this.mapIncluded(copy, ind.concat([true]), node.lastChild)
+                )
+            }
+        }
+
+        return result;
+    }
+
     handleKeyDownDocList = (e) => {
-        const {selected} = this.state;
-        const {rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open} = this.props;
-        const item = rowData[tabid];
+        const {selected, rows} = this.state;
+
+        const {
+            rowData, tabid, listenOnKeys, onDoubleClick, closeOverlays, open
+        } = this.props;
+
         const selectRange = e.shiftKey;
 
         switch(e.key) {
             case "ArrowDown":
                 e.preventDefault();
 
-                const array = (rowData[tabid]).map((item, id) => {
+                const array = rows.map((item, id) => {
                     return item.id
                 });
 
-                const actualId = array.findIndex(x => x === selected[selected.length-1])
+                const actualId = array.findIndex(x => x === selected[selected.length-1]);
 
                 if(actualId < array.length-1 ){
                     let newId = actualId+1;
@@ -243,7 +334,7 @@ class Table extends Component {
             case "ArrowUp":
                 e.preventDefault();
 
-                const arrays = (rowData[tabid]).map((item, id) => {
+                const arrays = rows.map((item, id) => {
                     return item.id
                 });
 
@@ -274,15 +365,19 @@ class Table extends Component {
                     closeOverlays();
                 }
                 break;
+            case "Tab":
+                e.preventDefault();
+                document.getElementsByClassName('js-attributes')[0].focus();
+                break;
         }
     }
 
     closeContextMenu = (event) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 open: false
             })
-        }))
+        })
     }
 
     handleClick = (e, id) => {
@@ -328,29 +423,23 @@ class Table extends Component {
     }
 
     setContextMenu = (clientX, clientY) => {
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 x: clientX,
                 y: clientY,
                 open: true
             })
-        }));
+        });
     }
 
     handleFocus = () => {
-        const {rowData, tabid} = this.props;
-        const {selected} = this.state;
+        const {rowData, tabid, indentSupported} = this.props;
+        const {selected, rows} = this.state;
 
-        if(selected.length <= 0){
+         if(selected.length <= 0){
             const firstId = Object.keys(rowData[tabid])[0];
             this.selectOneProduct(firstId, 0);
         }
-    }
-
-    sumProperty = (items, prop) => {
-        return items.reduce((a, b) => {
-            return b[prop] == null ? a : a + b[prop];
-        }, 0);
     }
 
     getProductRange = (id) => {
@@ -385,9 +474,9 @@ class Table extends Component {
     handleBatchEntryToggle = () => {
         const {isBatchEntry} = this.state;
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState({
             isBatchEntry: !isBatchEntry
-        }));
+        });
     }
 
     openModal = (windowType, tabId, rowId) => {
@@ -395,44 +484,113 @@ class Table extends Component {
         dispatch(openModal("Add new", windowType, "window", tabId, rowId));
     }
 
+    handleAdvancedEdit = (type, tabId, selected) => {
+        const {dispatch} = this.props;
+
+        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
+    }
+
+    handleOpenNewTab = (selected) => {
+        const {type} = this.props;
+        for(let i = 0; i < selected.length; i++){
+            window.open("/window/" + type + "/" + selected[i], "_blank");
+        }
+    }
+
+    handleDelete = () => {
+        this.setState({
+            promptOpen: true
+        })
+    }
+
+    handlePromptCancelClick = () => {
+        this.setState({
+            promptOpen: false
+        })
+    }
+
+    handlePromptSubmitClick = (selected) => {
+        const {
+            dispatch, type, docId, mainTable, updateDocList, entity, tabid
+        } = this.props;
+
+        this.setState({
+            promptOpen: false,
+            selected: []
+        }, () => {
+            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
+            .then(() => {
+                if(docId){
+                    dispatch(deleteLocal(tabid, selected, "master"))
+                } else {
+                    updateDocList();
+                }
+            });
+        });
+    }
+
+    handleKey = (e) => {
+        const {readonly, mainTable} = this.props;
+        const {listenOnKeys} = this.state;
+
+        if(listenOnKeys){
+            if(!readonly){
+                this.handleKeyDown(e);
+            }else if(mainTable){
+                this.handleKeyDownDocList(e)
+            }
+        }
+    }
+
     renderTableBody = () => {
         const {
             rowData, tabid, cols, type, docId, readonly, keyProperty,
-            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays
+            onDoubleClick, mainTable, newRow, tabIndex, entity, closeOverlays,
+            indentSupported
         } = this.props;
 
-        const {selected} = this.state;
+        const {selected, rows} = this.state;
         const keyProp = keyProperty ? keyProperty : "rowId";
 
-        if(!!rowData && rowData[tabid]){
-            let keys = Object.keys(rowData[tabid]);
-            const item = rowData[tabid];
+        if(rows){
+            let keys = Object.keys(rows);
+            const item = rows;
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
                 ret.push(
-                    <TableItemWrapper
-                        key={i}
-                        odd={i & 1}
-                        item={item[key]}
-                        entity={entity}
-                        tabId={tabid}
-                        cols={cols}
-                        type={type}
-                        docId={docId}
-                        tabIndex={tabIndex}
-                        readonly={readonly}
-                        mainTable={mainTable}
-                        selected={selected}
-                        keyProperty={keyProp}
-                        onDoubleClick={onDoubleClick}
-                        handleClick={this.handleClick}
-                        handleRightClick={this.handleRightClick}
-                        changeListenOnTrue={() => this.changeListen(true)}
-                        changeListenOnFalse={() => this.changeListen(false)}
-                        newRow={i === keys.length-1 ? newRow : false}
-                        handleSelect={this.selectProduct}
-                    />
+                    <tbody key={i}>
+                        <TableItem
+                            key={i}
+                            odd={i & 1}
+                            item={item[key]}
+                            entity={entity}
+                            fields={item[key].fields}
+                            rowId={item[key][keyProp]}
+                            tabId={tabid}
+                            cols={cols}
+                            type={type}
+                            docId={docId}
+                            tabIndex={tabIndex}
+                            readonly={readonly}
+                            mainTable={mainTable}
+                            selected={selected}
+                            keyProperty={keyProp}
+                            onDoubleClick={() => onDoubleClick && onDoubleClick(item[key][keyProp])}
+                            onMouseDown={(e) => this.handleClick(e, item[key][keyProp])}
+                            handleRightClick={(e) => this.handleRightClick(e, item[key][keyProp])}
+                            changeListenOnTrue={() => this.changeListen(true)}
+                            changeListenOnFalse={() => this.changeListen(false)}
+                            newRow={i === keys.length-1 ? newRow : false}
+                            isSelected={selected.indexOf(item[key][keyProp]) > -1}
+                            handleSelect={this.selectRangeProduct}
+                            indentSupported={indentSupported}
+                            indent={item[key].indent}
+                            includedDocuments={item[key].includedDocuments}
+                            lastSibling={item[key].lastChild}
+                            contextType={item[key].type}
+                        />
+                    </tbody>
                 );
             }
 
@@ -460,71 +618,11 @@ class Table extends Component {
         }
     }
 
-    handleAdvancedEdit = (type, tabId, selected) => {
-        const {dispatch} = this.props;
-
-        dispatch(openModal("Advanced edit", type, "window", tabId, selected[0], true));
-    }
-
-    handleOpenNewTab = (selected) => {
-        const {type} = this.props;
-        for(let i = 0; i < selected.length; i++){
-            window.open("/window/" + type + "/" + selected[i], "_blank");
-        }
-    }
-
-    handleDelete = () => {
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: true
-        }))
-    }
-
-    handlePromptCancelClick = () => {
-        this.setState(
-            Object.assign({}, this.state, {
-                promptOpen: false
-            })
-        )
-    }
-
-    handlePromptSubmitClick = (selected) => {
-        const {
-            dispatch, type, docId, mainTable, updateDocList, entity, tabid
-        } = this.props;
-
-        this.setState(Object.assign({}, this.state, {
-            promptOpen: false,
-            selected: []
-        }), () => {
-            dispatch(deleteRequest("window", type, docId ? docId : null, docId ? tabid : null, selected))
-            .then(() => {
-                if(docId){
-                    dispatch(deleteLocal(tabid, selected, "master"))
-                } else {
-                    updateDocList();
-                }
-            });
-        });
-    }
-
-    handleKey = (e) => {
-        const {readonly, mainTable} = this.props;
-        const {listenOnKeys} = this.state;
-
-        if(listenOnKeys){
-            if(!readonly){
-                this.handleKeyDown(e);
-            }else if(mainTable){
-                this.handleKeyDownDocList(e)
-            }
-        }
-    }
-
     render() {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex
+            fullScreen, tabIndex, indentSupported
         } = this.props;
 
         const {
@@ -533,7 +631,10 @@ class Table extends Component {
 
         return (
             <div className="table-flex-wrapper">
-                <div className="table-flex-wrapper">
+                <div className={"table-flex-wrapper " +
+                        (mainTable ? "table-flex-wrapper-row " : "")
+                    }
+                >
                     {contextMenu.open && <TableContextMenu
                         x={contextMenu.x}
                         y={contextMenu.y}
@@ -566,11 +667,18 @@ class Table extends Component {
                     </div>}
 
                     <div
-                        className="panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper"
+                        className={
+                            "panel panel-primary panel-bordered panel-bordered-force table-flex-wrapper document-list-table" +
+                            ((
+                                (rowData && rowData[tabid] &&
+                                Object.keys(rowData[tabid]).length === 0) ||
+                                (!rowData[tabid])
+                            ) ? " table-content-empty" : null)
+                        }
                     >
                         <table
                             className={
-                                "table table-bordered-vertically table-striped " +
+                                "table table-bordered-vertically table-striped js-table " +
                                 (readonly ? "table-read-only" : "")
                             }
                             onKeyDown={this.handleKey}
@@ -586,6 +694,7 @@ class Table extends Component {
                                     orderBy={orderBy}
                                     deselect={this.deselectAllProducts}
                                     page={page}
+                                    indentSupported={indentSupported}
                                 />
                             </thead>
                             {this.renderTableBody()}
@@ -597,7 +706,14 @@ class Table extends Component {
 
                         {this.renderEmptyInfo(rowData, tabid)}
                     </div>
+
+                    {
+                        // Other 'table-flex-wrapped' components
+                        // like selection attributes
+                        this.props.children
+                    }
                 </div>
+
                 {page && pageLength &&
                     <div className="row">
                         <div className="col-xs-12">
@@ -614,8 +730,7 @@ class Table extends Component {
                         </div>
                     </div>
                 }
-                {
-                    promptOpen &&
+                {promptOpen &&
                     <Prompt
                         title={"Delete"}
                         text={"Are you sure?"}
@@ -624,10 +739,12 @@ class Table extends Component {
                         onSubmitClick={() => this.handlePromptSubmitClick(selected)}
                     />
                 }
+
                 <DocumentListContextShortcuts
                     handleAdvancedEdit={selected.length > 0 ? () => this.handleAdvancedEdit(type, tabid, selected) : ''}
                     handleOpenNewTab={selected.length > 0 && mainTable ? () => this.handleOpenNewTab(selected) : ''}
                     handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+                    getAllLeafs={this.getAllLeafs}
                 />
 
                 {!readonly &&

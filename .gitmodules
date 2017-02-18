@@ -1,3 +1,0 @@
-[submodule "ansible"]
-	path = ansible
-	url = ../meta-frontend-ansible.git

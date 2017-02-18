@@ -24,9 +24,21 @@ export default {
         OPEN_SELECTED: mod + '+' + 'b', //open document in new tab
         REMOVE_SELECTED: mod + '+' + 'y',
         ADVANCED_EDIT: mod + '+' + 'a',
+        //===================  POS  ======================
+        SELECT_ALL_LEAFS: mod + '+' + 's'
+        
     },
     TABLE_CONTEXT: {
         TOGGLE_QUICK_INPUT: mod + '+' + 'q',
         TOGGLE_EXPAND: mod + '+' + 'space'
+    },
+    PAGINATION_CONTEXT: {
+        NEXT_PAGE: 'pageup',
+        PREV_PAGE: 'pagedown',
+        FIRST_PAGE: 'home',
+        LAST_PAGE: 'end'
+    },
+    QUICK_ACTIONS: {
+        QUICK_ACTION_POS: mod + '+' + 'u'
     }
 }
