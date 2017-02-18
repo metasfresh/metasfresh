@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model;
 
 import java.util.List;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /*
@@ -32,7 +33,7 @@ public interface DocumentsRepository
 
 	Document retrieveDocument(DocumentQuery query);
 
-	default Document retrieveDocumentById(final DocumentEntityDescriptor entityDescriptor, final int recordId)
+	default Document retrieveDocumentById(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId)
 	{
 		return retrieveDocument(DocumentQuery.ofRecordId(entityDescriptor, recordId));
 	}

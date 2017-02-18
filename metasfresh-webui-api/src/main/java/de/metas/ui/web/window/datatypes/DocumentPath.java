@@ -46,12 +46,13 @@ public final class DocumentPath
 		return new Builder();
 	}
 
-	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final int id)
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeIdInt, final int id)
 	{
-		if (documentTypeId <= 0)
+		if (documentTypeIdInt <= 0)
 		{
 			throw new IllegalArgumentException("documentTypeId < 0");
 		}
+		final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
 
 		final DocumentId documentId = DocumentId.of(id);
 		if (documentId.isNew())
@@ -62,12 +63,13 @@ public final class DocumentPath
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
 
-	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final String idStr)
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeIdInt, final String idStr)
 	{
-		if (documentTypeId <= 0)
+		if (documentTypeIdInt <= 0)
 		{
 			throw new IllegalArgumentException("documentTypeId < 0");
 		}
+		final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
 
 		final DocumentId documentId = DocumentId.of(idStr);
 		if (documentId.isNew())
@@ -78,12 +80,13 @@ public final class DocumentPath
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
 
-	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final int documentTypeIdInt, final DocumentId documentId)
 	{
-		if (documentTypeId <= 0)
+		if (documentTypeIdInt <= 0)
 		{
 			throw new IllegalArgumentException("documentTypeId < 0");
 		}
+		final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
 
 		if (documentId == null || documentId.isNew())
 		{
@@ -92,6 +95,17 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId);
 	}
+	
+	public static final DocumentPath rootDocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
+	{
+		if (documentId == null || documentId.isNew())
+		{
+			throw new IllegalArgumentException("new or null documentId is not accepted: " + documentId);
+		}
+
+		return new DocumentPath(documentType, documentTypeId, documentId);
+	}
+
 
 	public static final List<DocumentPath> rootDocumentPathsList(final DocumentType documentType, final int documentTypeId, final String documentIdsListStr)
 	{
@@ -159,7 +173,7 @@ public final class DocumentPath
 	}
 
 	private final DocumentType documentType;
-	private final int documentTypeId;
+	private final DocumentId documentTypeId;
 	private final DocumentId documentId;
 	private final DetailId detailId;
 	private final Set<DocumentId> rowIds;
@@ -169,11 +183,13 @@ public final class DocumentPath
 	private transient String _toString; // lazy
 
 	/** Root document constructor */
-	private DocumentPath(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
+	private DocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 	{
 		super();
 
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
+		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
+		
 		this.documentType = documentType;
 		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
@@ -184,13 +200,15 @@ public final class DocumentPath
 	}
 
 	/** Multiple rowIds constructor */
-	private DocumentPath(final DocumentType documentType, final int adWindowId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
+	private DocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
 	{
 		super();
 
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
+		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
+		
 		this.documentType = documentType;
-		this.documentTypeId = adWindowId;
+		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
 
 		this.detailId = detailId;
@@ -214,13 +232,15 @@ public final class DocumentPath
 	}
 
 	/** Single rowId constructor */
-	private DocumentPath(final DocumentType documentType, final int adWindowId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
+	private DocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
 	{
 		super();
 
 		Preconditions.checkNotNull(documentType, "documentType shall not be null");
+		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
+		
 		this.documentType = documentType;
-		this.documentTypeId = adWindowId;
+		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
 
 		this.detailId = detailId;
@@ -281,11 +301,11 @@ public final class DocumentPath
 		}
 
 		final DocumentPath other = (DocumentPath)obj;
-		return documentType == other.documentType
-				&& DataTypes.equals(documentTypeId, other.documentTypeId)
-				&& DataTypes.equals(documentId, other.documentId)
-				&& DataTypes.equals(detailId, other.detailId)
-				&& DataTypes.equals(rowIds, other.rowIds);
+		return Objects.equals(documentType, other.documentType)
+				&& Objects.equals(documentTypeId, other.documentTypeId)
+				&& Objects.equals(documentId, other.documentId)
+				&& Objects.equals(detailId, other.detailId)
+				&& Objects.equals(rowIds, other.rowIds);
 	}
 
 	public DocumentType getDocumentType()
@@ -293,7 +313,7 @@ public final class DocumentPath
 		return documentType;
 	}
 
-	public int getDocumentTypeId()
+	public DocumentId getDocumentTypeId()
 	{
 		return documentTypeId;
 	}
@@ -301,7 +321,7 @@ public final class DocumentPath
 	public int getAD_Window_ID()
 	{
 		Check.assume(documentType == DocumentType.Window, "Expect documentType={} for {}", DocumentType.Window, this);
-		return documentTypeId;
+		return documentTypeId.toInt();
 	}
 
 	public DocumentId getDocumentId()
@@ -392,11 +412,27 @@ public final class DocumentPath
 
 		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
 	}
+	
+	public DocumentPath createChildPath(final DetailId detailId, final DocumentId rowId)
+	{
+		if (detailId == null)
+		{
+			throw new IllegalArgumentException("detailId must be not empty");
+		}
+		
+		if (rowId == null || rowId.isNew())
+		{
+			throw new IllegalArgumentException("new or null rowId is not accepted: " + rowId);
+		}
+		
+		return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowId);
+	}
+
 
 	public static final class Builder
 	{
 		private DocumentType documentType;
-		private int documentTypeId;
+		private DocumentId documentTypeId;
 		private DocumentId documentId;
 		private boolean documentId_allowNew = false;
 		private DetailId detailId;
@@ -418,7 +454,7 @@ public final class DocumentPath
 
 			//
 			// Validate documentTypeId
-			if (documentTypeId <= 0)
+			if (documentTypeId == null)
 			{
 				throw new InvalidDocumentPathException("Invalid document type ID: " + documentTypeId);
 			}
@@ -469,16 +505,16 @@ public final class DocumentPath
 			return this;
 		}
 
-		public Builder setDocumentType(final DocumentType documentType, final int documentTypeId)
+		public Builder setDocumentType(final DocumentType documentType, final int documentTypeIdInt)
 		{
 			Preconditions.checkNotNull(documentType, "documentType not null");
-			if (documentTypeId <= 0)
+			if (documentTypeIdInt <= 0)
 			{
-				throw new IllegalArgumentException("Invalid document type ID: " + documentTypeId);
+				throw new IllegalArgumentException("Invalid document type ID: " + documentTypeIdInt);
 			}
 
 			this.documentType = DocumentType.Window;
-			this.documentTypeId = documentTypeId;
+			this.documentTypeId = DocumentId.of(documentTypeIdInt);
 			return this;
 		}
 

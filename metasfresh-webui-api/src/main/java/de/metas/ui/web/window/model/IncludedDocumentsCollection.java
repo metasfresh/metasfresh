@@ -181,6 +181,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		if (documentExisting != null)
 		{
 			refreshStaleDocumentIfPossible(documentExisting);
+			return documentExisting;
 		}
 		else
 		{

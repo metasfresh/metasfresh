@@ -73,7 +73,7 @@ public interface IDocumentViewSelection
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
 
-	String getSqlWhereClause(Collection<Integer> viewDocumentIds);
+	String getSqlWhereClause(Collection<DocumentId> viewDocumentIds);
 
 	/**
 	 * @return stream of actions which can be executed on this view

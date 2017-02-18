@@ -20,7 +20,6 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -240,7 +239,7 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException("documentId cannot be NEW");
 		}
 
-		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId().toInt())
+		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId())
 				.retriveDocumentOrNull();
 		if (document == null)
 		{
@@ -334,18 +333,18 @@ public class DocumentCollection
 			return new DocumentKey(entityDescriptor.getDocumentType(), entityDescriptor.getDocumentTypeId(), document.getDocumentId());
 		}
 
-		public static final DocumentKey of(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
+		public static final DocumentKey of(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 		{
 			return new DocumentKey(documentType, documentTypeId, documentId);
 		}
 
 		private DocumentType documentType;
-		private int documentTypeId;
+		private DocumentId documentTypeId;
 		private final DocumentId documentId;
 
 		private Integer _hashcode = null;
 
-		private DocumentKey(final DocumentType documentType, final int documentTypeId, final DocumentId documentId)
+		private DocumentKey(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 		{
 			super();
 			this.documentType = documentType;
@@ -386,15 +385,15 @@ public class DocumentCollection
 			}
 
 			final DocumentKey other = (DocumentKey)obj;
-			return documentType == other.documentType
-					&& documentTypeId == other.documentTypeId
-					&& DataTypes.equals(documentId, other.documentId);
+			return Objects.equals(documentType, other.documentType)
+					&& Objects.equals(documentTypeId, other.documentTypeId)
+					&& Objects.equals(documentId, other.documentId);
 		}
 
 		public int getAD_Window_ID()
 		{
 			Check.assume(documentType == DocumentType.Window, "documentType shall be {} but it was {}", DocumentType.Window, documentType);
-			return documentTypeId;
+			return documentTypeId.toInt();
 		}
 
 		public DocumentId getDocumentId()

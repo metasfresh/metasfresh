@@ -1,11 +1,11 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
-import java.util.Map;
 
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 
 /*
@@ -36,12 +36,12 @@ public interface IDocumentViewAttributes
 
 	DocumentViewAttributesLayout getLayout();
 
-	Map<String, Object> getData();
-
 	void processChanges(List<JSONDocumentChangedEvent> events);
 
 	LookupValuesList getAttributeTypeahead(String attributeName, final String query);
 
 	LookupValuesList getAttributeDropdown(String attributeName);
+
+	JSONDocument toJSONDocument();
 
 }

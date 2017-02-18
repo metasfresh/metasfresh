@@ -34,11 +34,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -130,9 +130,9 @@ public final class JSONDocumentField implements Serializable
 		{
 			jsonField.setLookupValuesStale(lookupValuesStale, ReasonSupplier.toDebugString(event.getLookupValuesStaleReason()));
 		}
-		
+
 		final DocumentValidStatus validStatus = event.getValidStatus();
-		if(validStatus != null)
+		if (validStatus != null)
 		{
 			jsonField.setValidStatus(validStatus);
 		}
@@ -146,7 +146,7 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.ALWAYS)
 	private final String field;
 	public static final String FIELD_VALUE_ID = "ID";
-	
+
 	@JsonProperty("widgetType")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutWidgetType widgetType;
@@ -190,11 +190,11 @@ public final class JSONDocumentField implements Serializable
 	@JsonProperty("lookupValuesStale-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String lookupValuesStaleReason;
-	
+
 	@JsonProperty("valid")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean valid;
-	
+
 	@JsonProperty("validReason")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String validReason;
@@ -239,24 +239,45 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	/* package */ JSONDocumentField setReadonly(final boolean readonly, final String reason)
+	public JSONDocumentField setReadonly(final boolean readonly, final String reason)
 	{
 		this.readonly = readonly;
 		readonlyReason = reason;
 		return this;
 	}
 
-	/* package */ JSONDocumentField setMandatory(final boolean mandatory, final String reason)
+	public JSONDocumentField setReadonly(final boolean readonly)
+	{
+		final String reason = null; // N/A
+		setReadonly(readonly, reason);
+		return this;
+	}
+
+	public JSONDocumentField setMandatory(final boolean mandatory, final String reason)
 	{
 		this.mandatory = mandatory;
 		mandatoryReason = reason;
 		return this;
 	}
 
-	/* package */ JSONDocumentField setDisplayed(final boolean displayed, final String reason)
+	public JSONDocumentField setMandatory(final boolean mandatory)
+	{
+		final String reason = null; // N/A
+		setMandatory(mandatory, reason);
+		return this;
+	}
+
+	public JSONDocumentField setDisplayed(final boolean displayed, final String reason)
 	{
 		this.displayed = displayed;
 		displayedReason = reason;
+		return this;
+	}
+
+	public JSONDocumentField setDisplayed(final boolean displayed)
+	{
+		String reason = null; // N/A
+		setDisplayed(displayed, reason);
 		return this;
 	}
 
@@ -266,10 +287,10 @@ public final class JSONDocumentField implements Serializable
 		lookupValuesStaleReason = reason;
 		return this;
 	}
-	
-	/*package*/ JSONDocumentField setValidStatus(final DocumentValidStatus validStatus)
+
+	/* package */ JSONDocumentField setValidStatus(final DocumentValidStatus validStatus)
 	{
-		if(validStatus == null)
+		if (validStatus == null)
 		{
 			valid = null;
 			validReason = null;
@@ -279,10 +300,9 @@ public final class JSONDocumentField implements Serializable
 			valid = validStatus.isValid();
 			validReason = validStatus.getReason();
 		}
-		
+
 		return this;
 	}
-
 
 	public String getField()
 	{
@@ -338,7 +358,7 @@ public final class JSONDocumentField implements Serializable
 	{
 		return lookupValuesStaleReason;
 	}
-	
+
 	@JsonAnyGetter
 	public Map<String, Object> getOtherProperties()
 	{

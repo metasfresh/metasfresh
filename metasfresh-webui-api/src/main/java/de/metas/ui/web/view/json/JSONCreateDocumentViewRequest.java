@@ -157,11 +157,6 @@ public final class JSONCreateDocumentViewRequest implements Serializable
 		return viewType.getRequiredFieldCharacteristic();
 	}
 
-	public JSONReferencing getReferencing()
-	{
-		return referencing;
-	}
-
 	public DocumentPath getReferencingDocumentPathOrNull()
 	{
 		return referencing == null ? null : referencing.toDocumentPath();

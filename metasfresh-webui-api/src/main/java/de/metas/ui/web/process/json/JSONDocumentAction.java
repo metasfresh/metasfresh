@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -39,8 +40,9 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 public final class JSONDocumentAction implements Serializable
 {
 	public static final Comparator<JSONDocumentAction> ORDERBY_QuickActionFirst_Caption = Comparator
-			.<JSONDocumentAction, Boolean> comparing(action -> !action.isDefaultQuickAction()) // Default QuickAction first
-			.thenComparing(action -> !action.isQuickAction()) // QuickAction
+			.<JSONDocumentAction> comparingInt(action -> action.isEnabled() ? 0 : 1) // enabled actions first
+			.thenComparingInt(action -> action.isDefaultQuickAction() ? 0 : 1) // Default QuickAction
+			.thenComparingInt(action -> action.isQuickAction() ? 0 : 1) // QuickAction
 			.thenComparing(JSONDocumentAction::getCaption) // Caption
 			;
 
@@ -116,6 +118,18 @@ public final class JSONDocumentAction implements Serializable
 	public String getDescription()
 	{
 		return description;
+	}
+	
+	@JsonIgnore
+	public boolean isDisabled()
+	{
+		return disabled != null && disabled.booleanValue();
+	}
+	
+	@JsonIgnore
+	public boolean isEnabled()
+	{
+		return !isDisabled();
 	}
 
 	public boolean isQuickAction()

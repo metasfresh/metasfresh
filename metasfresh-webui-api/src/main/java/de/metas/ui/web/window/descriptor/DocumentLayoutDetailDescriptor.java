@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 
 /*
  * #%L
@@ -29,11 +30,11 @@ import de.metas.i18n.ImmutableTranslatableString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,7 +55,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final ITranslatableString emptyResultHint;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
-	private final Optional<DocumentLayoutDetailQuickInputDescriptor> quickInput;
+	private final Optional<QuickInputLayoutDescriptor> quickInput;
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
@@ -79,7 +80,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
-	
+
 	public int getAD_Window_ID()
 	{
 		return AD_Window_ID;
@@ -120,7 +121,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return !elements.isEmpty();
 	}
 
-	public Optional<DocumentLayoutDetailQuickInputDescriptor> getQuickInput()
+	public Optional<QuickInputLayoutDescriptor> getQuickInput()
 	{
 		return quickInput;
 	}
@@ -135,8 +136,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		private ITranslatableString emptyResultHint;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
-		
-		private DocumentLayoutDetailQuickInputDescriptor.Builder _quickInput;
+
+		private QuickInputLayoutDescriptor _quickInput;
 
 		private Builder()
 		{
@@ -165,7 +166,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 					.add("elements-count", elementBuilders.size())
 					.toString();
 		}
-		
+
 		public Builder setAD_Window_ID(final int AD_Window_ID)
 		{
 			this.AD_Window_ID = AD_Window_ID;
@@ -201,7 +202,7 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setEmptyResultHint(ITranslatableString emptyResultHint)
+		public Builder setEmptyResultHint(final ITranslatableString emptyResultHint)
 		{
 			this.emptyResultHint = emptyResultHint;
 			return this;
@@ -257,20 +258,16 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			final DocumentLayoutElementDescriptor.Builder elementBuilder = findElementBuilderByFieldName(fieldName);
 			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
-		
-		public Builder setQuickInput(DocumentLayoutDetailQuickInputDescriptor.Builder quickInput)
+
+		public Builder setQuickInput(final QuickInputLayoutDescriptor quickInput)
 		{
-			this._quickInput = quickInput;
+			_quickInput = quickInput;
 			return this;
 		}
-		
-		private Optional<DocumentLayoutDetailQuickInputDescriptor> buildQuickInput()
+
+		private Optional<QuickInputLayoutDescriptor> buildQuickInput()
 		{
-			if(_quickInput == null)
-			{
-				return Optional.empty();
-			}
-			return Optional.of(_quickInput.build());
+			return Optional.ofNullable(_quickInput);
 		}
 	}
 }

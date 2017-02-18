@@ -1,5 +1,7 @@
 package de.metas.ui.web.quickinput;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -13,16 +15,22 @@ package de.metas.ui.web.quickinput;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public interface IQuickInputProcessor
 {
-	public Object process(final QuickInput quickInput);
+	/**
+	 * Processes the quick input and creates the included document line.
+	 * 
+	 * @param quickInput
+	 * @return {@link DocumentId} of the included document that was created.
+	 */
+	public DocumentId process(final QuickInput quickInput);
 }

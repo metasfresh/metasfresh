@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -140,7 +141,7 @@ public final class Document
 	{
 		Object NO_VALUE = new Object();
 
-		int getId();
+		DocumentId getDocumentId();
 
 		String getVersion();
 
@@ -466,16 +467,16 @@ public final class Document
 
 	private static final class SimpleDocumentValuesSupplier implements DocumentValuesSupplier
 	{
-		private final IntSupplier documentIdSupplier;
+		private final Supplier<DocumentId> documentIdSupplier;
 		private final String version;
 
-		public SimpleDocumentValuesSupplier(final int documentId, final String version)
+		public SimpleDocumentValuesSupplier(final DocumentId documentId, final String version)
 		{
 			documentIdSupplier = () -> documentId;
 			this.version = version;
 		}
 
-		public SimpleDocumentValuesSupplier(final IntSupplier documentIdSupplier, final String version)
+		public SimpleDocumentValuesSupplier(final Supplier<DocumentId> documentIdSupplier, final String version)
 		{
 			this.documentIdSupplier = documentIdSupplier;
 			this.version = version;
@@ -491,9 +492,9 @@ public final class Document
 		}
 
 		@Override
-		public int getId()
+		public DocumentId getDocumentId()
 		{
-			return documentIdSupplier.getAsInt();
+			return documentIdSupplier.get();
 		}
 
 		@Override
@@ -515,7 +516,7 @@ public final class Document
 		private final DocumentValuesSupplier parentSupplier;
 		private final Properties ctx;
 		private final DocumentType documentType;
-		private final int documentTypeId;
+		private final DocumentId documentTypeId;
 		private final Evaluatee evaluatee;
 		private final DocumentId parentDocumentId;
 
@@ -547,9 +548,9 @@ public final class Document
 		}
 
 		@Override
-		public int getId()
+		public DocumentId getDocumentId()
 		{
-			return parentSupplier.getId();
+			return parentSupplier.getDocumentId();
 		}
 
 		@Override
@@ -575,8 +576,8 @@ public final class Document
 			// Primary Key field
 			if (fieldDescriptor.isKey())
 			{
-				final int id = parentSupplier.getId();
-				return id;
+				final DocumentId id = parentSupplier.getDocumentId();
+				return id == null ? null : id.toInt();
 			}
 
 			//
@@ -616,7 +617,7 @@ public final class Document
 			final String fieldName = fieldDescriptor.getFieldName();
 			if (documentType == DocumentType.Window)
 			{
-				final int adWindowId = documentTypeId;
+				final int adWindowId = documentTypeId.toInt();
 
 				//
 				// Preference (user) - P|
@@ -1724,17 +1725,24 @@ public final class Document
 			return build();
 		}
 
-		public Document initializeAsNewDocument(final int newDocumentId, final String version)
+		public Document initializeAsNewDocument(final DocumentId newDocumentId, final String version)
 		{
 			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentId, version));
 			return build();
 		}
 
-		public Builder initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
+		public Builder initializeAsNewDocument(final Supplier<DocumentId> newDocumentIdSupplier, final String version)
 		{
 			initializeAsNewDocument(new SimpleDocumentValuesSupplier(newDocumentIdSupplier, version));
 			return this;
 		}
+		
+		public Builder initializeAsNewDocument(final IntSupplier newDocumentIdSupplier, final String version)
+		{
+			initializeAsNewDocument(new SimpleDocumentValuesSupplier(DocumentId.supplier(newDocumentIdSupplier), version));
+			return this;
+		}
+
 
 		private boolean isNewDocument()
 		{
@@ -1759,7 +1767,7 @@ public final class Document
 		{
 			if (_documentPath == null)
 			{
-				final int documentId = documentValuesSupplier.getId();
+				final DocumentId documentId = documentValuesSupplier.getDocumentId();
 				if (parentDocument == null)
 				{
 					_documentPath = DocumentPath.rootDocumentPath(entityDescriptor.getDocumentType(), entityDescriptor.getDocumentTypeId(), documentId);

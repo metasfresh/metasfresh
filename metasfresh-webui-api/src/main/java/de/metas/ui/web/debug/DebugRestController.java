@@ -1,6 +1,8 @@
 package de.metas.ui.web.debug;
 
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.util.Check;
@@ -11,11 +13,19 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.simp.SimpMessageType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.event.Event;
 import de.metas.event.Event.Builder;
@@ -50,11 +60,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,6 +96,10 @@ public class DebugRestController
 	@Lazy
 	private IQueryStatisticsLogger statisticsLogger;
 
+	@Autowired
+	@Lazy
+	private SimpMessagingTemplate websocketMessagingTemplate;
+
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
 	{
@@ -112,7 +126,7 @@ public class DebugRestController
 		final Object showColumnNamesForCaptionOldObj = userSession.setProperty(JSONOptions.SESSION_ATTR_ShowColumnNamesForCaption, showColumnNamesForCaption);
 		logResourceValueChanged("showColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOldObj);
 	}
-	
+
 	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.PUT)
 	public void setDisableDeprecatedRestAPI(@RequestBody final String disableDeprecatedRestAPIStr)
 	{
@@ -126,7 +140,6 @@ public class DebugRestController
 	{
 		return userSession.getPropertyAsBoolean(UserSession.PARAM_DisableDeprecatedRestAPI, false);
 	}
-
 
 	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
 	public void setTraceSqlQueries(@RequestParam("enabled") final boolean enabled)
@@ -172,10 +185,10 @@ public class DebugRestController
 			, @RequestParam(name = "message", defaultValue = "test message") final String message//
 			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
 			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
-	//
-	, @RequestParam(name = "targetType", required = false) final String targetTypeStr//
-	, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final int targetDocumentType//
-	, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
+			//
+			, @RequestParam(name = "targetType", required = false) final String targetTypeStr//
+			, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final int targetDocumentType//
+			, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
 	)
 	{
 		final Topic topic = Topic.builder()
@@ -209,6 +222,19 @@ public class DebugRestController
 		Services.get(IEventBusFactory.class)
 				.getEventBus(topic)
 				.postEvent(event);
+	}
+
+	@PostMapping("/websocket/post")
+	public void postToWebsocket(
+			@RequestParam("endpoint") final String endpoint, @RequestBody final String messageStr)
+	{
+		final Charset charset = Charset.forName("UTF-8");
+		final Map<String, Object> headers = ImmutableMap.<String, Object> builder()
+				.put("simpMessageType", SimpMessageType.MESSAGE)
+				.put("contentType", new MimeType("application", "json", charset))
+				.build();
+		final Message<?> message = new GenericMessage<>(messageStr.getBytes(charset), headers);
+		websocketMessagingTemplate.send(endpoint, message);
 	}
 
 	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)

@@ -10,6 +10,7 @@ import org.compiere.util.Util;
 import com.google.common.base.MoreObjects;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 
 /*
  * #%L
@@ -24,11 +25,11 @@ import de.metas.printing.esb.base.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,12 +47,16 @@ public class ProcessInstanceResult implements Serializable
 	private final String summary;
 	private final boolean error;
 
+	// Report to open (optional)
 	private final String reportFilename;
 	private final String reportContentType;
 	private final File reportTempFile;
-	
-	private final int viewWindowId;
-	private final String viewId;
+
+	// View or single document to open (optional)
+	private final int openViewWindowId;
+	private final String openViewId;
+	//
+	private final DocumentPath openSingleDocumentPath;
 
 	private ProcessInstanceResult(final Builder builder)
 	{
@@ -64,8 +69,9 @@ public class ProcessInstanceResult implements Serializable
 		reportContentType = builder.reportContentType;
 		reportTempFile = builder.reportTempFile;
 
-		viewWindowId = builder.viewWindowId;
-		viewId = builder.viewId;
+		openViewWindowId = builder.openViewWindowId;
+		openViewId = builder.openViewId;
+		openSingleDocumentPath = builder.openSingleDocumentPath;
 	}
 
 	@Override
@@ -81,8 +87,9 @@ public class ProcessInstanceResult implements Serializable
 				.add("reportContentType", reportContentType)
 				.add("reportTempFile", reportTempFile)
 				//
-				.add("viewWindowId", viewWindowId > 0 ? viewWindowId : null)
-				.add("viewId", viewId)
+				.add("openViewWindowId", openViewWindowId > 0 ? openViewWindowId : null)
+				.add("openViewId", openViewId)
+				.add("openSingleDocumentPath", openSingleDocumentPath)
 				//
 				.toString();
 	}
@@ -96,7 +103,7 @@ public class ProcessInstanceResult implements Serializable
 	{
 		return summary;
 	}
-	
+
 	public boolean isSuccess()
 	{
 		return !isError();
@@ -116,20 +123,25 @@ public class ProcessInstanceResult implements Serializable
 	{
 		return reportContentType;
 	}
-	
+
 	public byte[] getReportData()
 	{
 		return Util.readBytes(reportTempFile);
 	}
-	
-	public int getViewWindowId()
+
+	public int getOpenViewWindowId()
 	{
-		return viewWindowId;
+		return openViewWindowId;
 	}
-	
-	public String getViewId()
+
+	public String getOpenViewId()
 	{
-		return viewId;
+		return openViewId;
+	}
+
+	public DocumentPath getOpenSingleDocumentPath()
+	{
+		return openSingleDocumentPath;
 	}
 
 	public static final class Builder
@@ -138,12 +150,16 @@ public class ProcessInstanceResult implements Serializable
 		private String summary;
 		private boolean error;
 
+		// Report to open (optional)
 		private String reportFilename;
 		private String reportContentType;
 		private File reportTempFile;
-		
-		private int viewWindowId = -1;
-		private String viewId;
+
+		// View or single document to open (optional)
+		private int openViewWindowId;
+		private String openViewId;
+		//
+		private DocumentPath openSingleDocumentPath;
 
 		private Builder()
 		{
@@ -180,21 +196,36 @@ public class ProcessInstanceResult implements Serializable
 			this.reportTempFile = reportTempFile;
 			return this;
 		}
-		
-		public Builder setView(final int viewWindowId, final String viewId)
+
+		public Builder openView(final int viewWindowId, final String viewId)
 		{
-			if(viewWindowId > 0)
+			if (viewWindowId > 0)
 			{
-				this.viewWindowId = viewWindowId;
-				
+				openViewWindowId = viewWindowId;
+
 				Check.assumeNotEmpty(viewId, "viewId is not empty");
-				this.viewId = viewId;
+				openViewId = viewId;
 			}
 			else
 			{
-				this.viewWindowId = -1;
-				this.viewId = null;
+				openViewWindowId = -1;
+				openViewId = null;
 			}
+
+			// reset the single document to open
+			openSingleDocumentPath = null;
+
+			return this;
+		}
+
+		public Builder openSingleDocument(final DocumentPath documentPath)
+		{
+			openSingleDocumentPath = documentPath;
+
+			// reset the view to open
+			openViewWindowId = -1;
+			openViewId = null;
+
 			return this;
 		}
 	}

@@ -130,7 +130,11 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 
 		final Operator operator;
-		if (widgetType.isRangeFilteringSupported())
+		if(widgetType.isText())
+		{
+			operator = Operator.LIKE_I;
+		}
+		else if (widgetType.isRangeFilteringSupported())
 		{
 			operator = Operator.BETWEEN;
 		}

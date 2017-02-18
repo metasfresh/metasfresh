@@ -26,12 +26,12 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -120,7 +120,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		logger.warn("Changed LoadLimitWarn: {} -> {}", loadLimitMaxOld, this.loadLimitMax);
 	}
 
-	private static int retrieveNextId(final DocumentEntityDescriptor entityDescriptor)
+	private static DocumentId retrieveNextDocumentId(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 
@@ -133,7 +133,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 
 		logger.trace("Acquired next ID={} for {}", nextId, entityDescriptor);
-		return nextId;
+		return DocumentId.of(nextId);
 	}
 
 	@Override
@@ -243,7 +243,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		assertThisRepository(entityDescriptor);
 
-		final int documentId = retrieveNextId(entityDescriptor);
+		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
 
 		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
@@ -267,41 +267,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
-	private static final class InitialDocumentValuesSupplier implements DocumentValuesSupplier
-	{
-		private final int id;
-
-		private InitialDocumentValuesSupplier(final int id)
-		{
-			this.id = id;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this).add("id", id).toString();
-		}
-
-		@Override
-		public int getId()
-		{
-			return id;
-		}
-
-		@Override
-		public String getVersion()
-		{
-			return null;
-		}
-
-		@Override
-		public Object getValue(final DocumentFieldDescriptor fieldDescriptor)
-		{
-			return NO_VALUE;
-		}
-
-	}
-
 	private static final class ResultSetDocumentValuesSupplier implements DocumentValuesSupplier
 	{
 		private static final AtomicInteger _nextMissingId = new AtomicInteger(-10000);
@@ -310,7 +275,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		private final ResultSet rs;
 
 		private boolean idAquired = false;
-		private int id;
+		private DocumentId id;
 
 		private String version;
 
@@ -324,7 +289,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 
 		@Override
-		public int getId()
+		public DocumentId getDocumentId()
 		{
 			if (idAquired)
 			{
@@ -335,13 +300,15 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			if (idField == null)
 			{
 				// FIXME: workaround to bypass the missing ID field for views
-				id = _nextMissingId.decrementAndGet();
+				final int idInt = _nextMissingId.decrementAndGet();
+				id = DocumentId.of(idInt);
 				idAquired = true;
 				return id;
 			}
 			else
 			{
-				id = (int)getValue(idField);
+				final int idInt = (int)getValue(idField);
+				id = DocumentId.of(idInt);
 				idAquired = true;
 				return id;
 			}
@@ -399,10 +366,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		assertThisRepository(document.getEntityDescriptor());
 
-		refresh(document, document.getDocumentIdAsInt());
+		refresh(document, document.getDocumentId());
 	}
 
-	private void refresh(final Document document, final int documentId)
+	private void refresh(final Document document, final DocumentId documentId)
 	{
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
 
@@ -487,7 +454,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		//
 		// Reload the document
-		final int idNew = InterfaceWrapperHelper.getId(po);
+		final DocumentId idNew = DocumentId.of(InterfaceWrapperHelper.getId(po));
 		refresh(document, idNew);
 	}
 

@@ -58,10 +58,7 @@ public class ServletLoggingFilter implements Filter
 	// Core MDC parameters
 	private static final String MDC_Param_RemoteAddr = "RemoteAddr";
 	private static final String MDC_Param_RemoteAddr_DefaultValue = "server";
-
 	private static final String MDC_Param_LoggedUser = "LoggedUser";
-	private static final String MDC_Param_LoggedUser_DefaultValue = "_none";
-
 	private static final String MDC_Param_UserAgent = "UserAgent";
 
 	//

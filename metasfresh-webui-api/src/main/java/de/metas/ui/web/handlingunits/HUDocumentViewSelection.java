@@ -49,11 +49,11 @@ import de.metas.ui.web.window.model.filters.DocumentFilter;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -72,6 +72,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	private final int adWindowId;
 
 	private final DocumentPath referencingDocumentPath;
+	private final String referencingTableName;
 
 	private final HUDocumentViewLoader documentViewsLoader;
 	private final ExtendedMemorizingSupplier<IndexedDocumentViews> _recordsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveRecords());
@@ -89,6 +90,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		documentViewsLoader = builder.getDocumentViewsLoader();
 
 		referencingDocumentPath = builder.getReferencingDocumentPath();
+		referencingTableName = builder.getReferencingTableName();
 	}
 
 	@Override
@@ -194,10 +196,13 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<Integer> viewDocumentIds)
+	public String getSqlWhereClause(final Collection<DocumentId> viewDocumentIds)
 	{
 		Check.assumeNotEmpty(viewDocumentIds, "viewDocumentIds is not empty");
-		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIds) + ")";
+		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
+		final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds);
+
+		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIdsAsInts) + ")";
 	}
 
 	@Override
@@ -217,16 +222,18 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return referencingDocumentPath;
 	}
+	
+	public String getReferencingTableName()
+	{
+		return referencingTableName;
+	}
 
 	public void invalidateAll()
 	{
 		invalidateAllNoNotify();
 
-		final DocumentViewChangesCollector changesCollector = DocumentViewChangesCollector.getCurrentOrNull();
-		if (changesCollector != null)
-		{
-			changesCollector.collectFullyChanged(this);
-		}
+		DocumentViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 
 	private void invalidateAllNoNotify()
@@ -322,6 +329,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		private String viewId;
 		private int adWindowId;
 		private DocumentPath referencingDocumentPath;
+		private String referencingTableName;
 
 		private ProcessDescriptorsFactory processDescriptorsFactory;
 		private HUDocumentViewLoader documentViewsLoader;
@@ -382,15 +390,21 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 			return processDescriptorsFactory;
 		}
 
-		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath)
+		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath, final String referencingTableName)
 		{
 			this.referencingDocumentPath = referencingDocumentPath;
+			this.referencingTableName = referencingTableName;
 			return this;
 		}
 
 		private DocumentPath getReferencingDocumentPath()
 		{
 			return referencingDocumentPath;
+		}
+
+		private String getReferencingTableName()
+		{
+			return referencingTableName;
 		}
 	}
 
@@ -399,11 +413,6 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 	{
 		return getRecords().streamByIds(documentIds);
 	}
-
-	// public List<HUDocumentView> retrieveModelsByIds(Collection<DocumentId> documentIds, final Class<>)
-	// {
-	// return streamUserSelectedDocuments().collect(GuavaCollectors.toImmutableList());
-	// }
 
 	@Override
 	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)

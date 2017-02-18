@@ -17,11 +17,9 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.quickinput.orderline.OrderLineQuickInputDescriptorFactory;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -66,7 +64,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
 	private final Map<Integer, String> _adFieldId2columnName;
@@ -79,8 +76,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 	public GridTabVOBasedDocumentEntityDescriptorFactory(final GridTabVO gridTabVO, final GridTabVO parentTabVO, final boolean isSOTrx)
 	{
-		super();
-
 		final boolean rootEntity = parentTabVO == null;
 
 		_specialFieldsCollector = rootEntity ? new SpecialDocumentFieldsCollector() : null;
@@ -208,10 +203,6 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.getFields()
 				.stream()
 				.forEach(gridFieldVO -> createAndAddDocumentField(entityDescriptorBuilder, gridFieldVO));
-
-		//
-		// Quick input descriptor
-		setupQuickInputEntityDescriptor(entityDescriptorBuilder);
 
 		return entityDescriptorBuilder;
 	}
@@ -513,22 +504,5 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 	public Map<Characteristic, DocumentFieldDescriptor.Builder> getSpecialField_DocSatusAndDocAction()
 	{
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
-	}
-
-	private void setupQuickInputEntityDescriptor(final DocumentEntityDescriptor.Builder documentDescriptor)
-	{
-
-		final DocumentEntityDescriptor.Builder quickInputDescriptor;
-		if (I_C_OrderLine.Table_Name.equals(documentDescriptor.getTableNameOrNull()))
-		{
-			// FIXME uber HARDCODED
-			quickInputDescriptor = OrderLineQuickInputDescriptorFactory.instance.createQuickInputEntityDescriptor(documentDescriptor);
-		}
-		else
-		{
-			quickInputDescriptor = null;
-		}
-
-		documentDescriptor.setQuickInputDescriptor(quickInputDescriptor);
 	}
 }

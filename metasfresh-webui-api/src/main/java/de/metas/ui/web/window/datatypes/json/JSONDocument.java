@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.view.IDocumentView;
+import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -46,11 +47,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -227,6 +228,21 @@ public final class JSONDocument implements Serializable
 					.forEach(jsonFields::add);
 
 			jsonDocument.setFields(jsonFields);
+
+			//
+			// Document view record specific attributes
+			if(documentView.isProcessed())
+			{
+				jsonDocument.putOtherProperty("processed", true);
+			}
+			if (documentView.hasAttributes())
+			{
+				jsonDocument.putOtherProperty(JSONDocumentViewLayout.PROPERTY_supportAttributes, true);
+			}
+			if(documentView.getType() != null)
+			{
+				jsonDocument.putOtherProperty("type", documentView.getType().getName());
+			}
 		}
 
 		//
@@ -244,24 +260,6 @@ public final class JSONDocument implements Serializable
 		}
 
 		return jsonDocument;
-	}
-
-	public static JSONDocument ofMap(final DocumentPath documentPath, final Map<String, Object> map)
-	{
-		final JSONDocument jsonDocument = new JSONDocument(documentPath);
-
-		final List<JSONDocumentField> jsonFields = map.entrySet()
-				.stream()
-				.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue())
-						.setDisplayed(true, null)
-						.setReadonly(false, null)
-						.setMandatory(false, null))
-				.collect(Collectors.toList());
-
-		jsonDocument.setFields(jsonFields);
-
-		return jsonDocument;
-
 	}
 
 	@JsonProperty("id")
@@ -409,7 +407,7 @@ public final class JSONDocument implements Serializable
 		return this;
 	}
 
-	private void setFields(final Collection<JSONDocumentField> fields)
+	public void setFields(final Collection<JSONDocumentField> fields)
 	{
 		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
 	}

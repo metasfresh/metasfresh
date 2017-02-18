@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
@@ -28,11 +30,11 @@ import de.metas.printing.esb.base.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -47,7 +49,7 @@ public abstract class DocumentId implements Serializable
 
 	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
-	public static final DocumentId of(String idStr)
+	public static final DocumentId of(final String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
 		{
@@ -68,8 +70,10 @@ public abstract class DocumentId implements Serializable
 		{
 			idInt = Integer.parseInt(idStr);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
+			// TODO: find a better way to distinguish between IntegerDocumentId and StringDocumentId.
+			// For now we are fine because in almost all cases they are integers...
 			return new StringDocumentId(idStr);
 		}
 
@@ -116,7 +120,7 @@ public abstract class DocumentId implements Serializable
 
 	}
 
-	public static Set<DocumentId> ofStringSet(final Set<String> documentIds)
+	public static Set<DocumentId> ofStringSet(final Collection<String> documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
 		{
@@ -144,7 +148,28 @@ public abstract class DocumentId implements Serializable
 			return ImmutableSet.of();
 		}
 
-		return documentIds.stream().map(documentId -> documentId.toInt()).collect(GuavaCollectors.toImmutableSet());
+		return documentIds.stream()
+				.map(documentId -> documentId.toInt())
+				.collect(GuavaCollectors.toImmutableSet());
+	}
+
+	public static final Set<Integer> toIntSetIgnoringNonInts(final Collection<DocumentId> documentIds)
+	{
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return documentIds.stream()
+				.filter(documentId -> documentId != null && documentId.isInt())
+				.map(documentId -> documentId.toInt())
+				.collect(GuavaCollectors.toImmutableSet());
+	}
+
+	public static final Supplier<DocumentId> supplier(IntSupplier intSupplier)
+	{
+		Check.assumeNotNull(intSupplier, "Parameter intSupplier is not null");
+		return () -> DocumentId.of(intSupplier.getAsInt());
 	}
 
 	private DocumentId()
@@ -165,6 +190,8 @@ public abstract class DocumentId implements Serializable
 
 	@Override
 	public abstract boolean equals(final Object obj);
+
+	protected abstract boolean isInt();
 
 	public abstract int toInt();
 
@@ -211,6 +238,12 @@ public abstract class DocumentId implements Serializable
 
 			final IntDocumentId other = (IntDocumentId)obj;
 			return idInt == other.idInt;
+		}
+
+		@Override
+		protected boolean isInt()
+		{
+			return true;
 		}
 
 		@Override
@@ -263,7 +296,13 @@ public abstract class DocumentId implements Serializable
 			}
 
 			final StringDocumentId other = (StringDocumentId)obj;
-			return idStr == other.idStr;
+			return Objects.equals(idStr, other.idStr);
+		}
+
+		@Override
+		protected boolean isInt()
+		{
+			return false;
 		}
 
 		@Override

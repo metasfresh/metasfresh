@@ -1,9 +1,12 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -11,14 +14,20 @@ import org.compiere.model.I_M_Attribute;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.view.IDocumentViewAttributes;
 import de.metas.ui.web.view.descriptor.DocumentViewAttributesLayout;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 
 /*
@@ -34,21 +43,23 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/ class HUDocumentViewAttributes implements IDocumentViewAttributes
+/* package */ class HUDocumentViewAttributes implements IDocumentViewAttributes
 {
 	private final IAttributeStorage attributesStorage;
 	private final DocumentPath documentPath;
 
 	private final Supplier<DocumentViewAttributesLayout> layoutSupplier = ExtendedMemorizingSupplier.of(() -> createLayout());
+
+	private final Set<String> readonlyAttributeNames;
 
 	/* package */ HUDocumentViewAttributes(final IAttributeStorage attributesStorage)
 	{
@@ -57,8 +68,37 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 		Check.assumeNotNull(attributesStorage, "Parameter attributesStorage is not null");
 		this.attributesStorage = attributesStorage;
 		documentPath = HUDocumentViewAttributesHelper.extractDocumentPath(attributesStorage);
+
+		final boolean readonly = extractIsReadonly(attributesStorage);
+
+		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
+		readonlyAttributeNames = attributesStorage.getAttributes()
+				.stream()
+				.filter(attribute -> readonly || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+				.map(HUDocumentViewAttributesHelper::extractAttributeName)
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
+	private static final boolean extractIsReadonly(final IAttributeStorage attributesStorage)
+	{
+		final I_M_HU hu = IHUAware.getM_HUOrNull(attributesStorage);
+		if (hu == null)
+		{
+			return true;
+		}
+		if (!hu.isActive())
+		{
+			return true;
+		}
+
+		final String huStatus = hu.getHUStatus();
+		if (!X_M_HU.HUSTATUS_Planning.equals(huStatus))
+		{
+			return true;
+		}
+
+		return false; // not readonly
+	}
 
 	@Override
 	public String toString()
@@ -88,27 +128,34 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 	}
 
 	@Override
-	public Map<String, Object> getData()
+	public JSONDocument toJSONDocument()
 	{
-		return attributesStorage.getAttributeValues()
+		final JSONDocument jsonDocument = new JSONDocument(documentPath);
+
+		final List<JSONDocumentField> jsonFields = attributesStorage.getAttributeValues()
 				.stream()
-				.map(av -> toMapEntryOrNull(av))
-				.filter(entry -> entry != null)
-				.collect(GuavaCollectors.toImmutableMap());
+				.map(this::toJSONDocumentField)
+				.collect(Collectors.toList());
+
+		jsonDocument.setFields(jsonFields);
+
+		return jsonDocument;
 	}
 
-	private static final Map.Entry<String, Object> toMapEntryOrNull(final IAttributeValue attributeValue)
+	private final JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue)
 	{
-		final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributeValue);
-		if (jsonValue == null)
-		{
-			return null;
-		}
-
-		final String attributeName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
-		return GuavaCollectors.entry(attributeName, jsonValue);
+		final String fieldName = HUDocumentViewAttributesHelper.extractAttributeName(attributeValue);
+		final Object jsonValue = HUDocumentViewAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
+		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
+				.setDisplayed(true)
+				.setMandatory(false)
+				.setReadonly(isReadonly(fieldName));
 	}
-
+	
+	private boolean isReadonly(final String attributeName)
+	{
+		return readonlyAttributeNames.contains(attributeName);
+	}
 
 	@Override
 	public void processChanges(final List<JSONDocumentChangedEvent> events)
@@ -126,6 +173,11 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 		if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 		{
 			final String attributeName = event.getPath();
+			if(isReadonly(attributeName))
+			{
+				throw new DocumentFieldReadonlyException(attributeName, event.getValue());
+			}
+			
 			final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
 
 			final Object value = event.getValue(); // TODO: i think we will need some conversions

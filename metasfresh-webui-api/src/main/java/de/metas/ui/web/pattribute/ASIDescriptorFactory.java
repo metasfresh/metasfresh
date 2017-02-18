@@ -204,7 +204,7 @@ public class ASIDescriptorFactory
 	{
 		final ASILayout.Builder layout = ASILayout.builder()
 				.setCaption(attributeSetDescriptor.getCaption())
-				.setM_AttributeSet_ID(attributeSetDescriptor.getDocumentTypeId());
+				.setM_AttributeSet_ID(attributeSetDescriptor.getDocumentTypeId().toInt());
 
 		attributeSetDescriptor.getFields()
 				.stream()

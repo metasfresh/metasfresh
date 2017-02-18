@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,6 +34,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
+import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
 import de.metas.ui.web.notification.UserNotificationsService;
@@ -53,11 +55,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -70,7 +72,7 @@ public class LoginRestController
 
 	@Autowired
 	private UserSession userSession;
-	
+
 	@Autowired
 	private UserNotificationsService userNotificationsService;
 
@@ -87,20 +89,26 @@ public class LoginRestController
 				.orElseThrow(() -> new NotAuthenticatedException());
 	}
 
-	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-	public JSONLoginAuthResponse authenticate(
-			@RequestParam("username") final String username //
-			, @RequestParam("password") final String password //
+	@PostMapping(value = "/authenticate")
+	public JSONLoginAuthResponse authenticate( //
+			@RequestBody(required = false) JSONLoginAuthRequest request //
+			, @Deprecated @RequestParam(name = "username", required = false) final String username_DEPRECATED //
+			, @Deprecated @RequestParam(name = "password", required = false) final String password_DEPRECATED //
 	)
 	{
 		userSession.assertNotLoggedIn();
+		
+		if(request == null)
+		{
+			request = new JSONLoginAuthRequest(username_DEPRECATED, password_DEPRECATED);
+		}
 
 		final Login loginService = getLoginService();
 		final MSession session = createMSession(loginService);
 
 		try
 		{
-			final Set<KeyNamePair> availableRoles = loginService.authenticate(username, password);
+			final Set<KeyNamePair> availableRoles = loginService.authenticate(request.getUsername(), request.getPassword());
 
 			//
 			// Create JSON roles
@@ -286,12 +294,12 @@ public class LoginRestController
 		//
 		// Mark session as logged in
 		userSession.setLoggedIn(true);
-		
+
 		//
 		// Enable user notifications
 		userNotificationsService.enableForSession(userSession.getSessionId(), userSession.getAD_User_ID(), userSession.getAD_Language());
 	}
-	
+
 	@RequestMapping(value = "/isLoggedIn", method = RequestMethod.GET)
 	public boolean isLoggedIn()
 	{
@@ -332,18 +340,18 @@ public class LoginRestController
 		final MSession session = MSession.get(userSession.getCtx(), false);
 		destroySession(loginService, session);
 	}
-	
+
 	@Component
 	public static class SessionDestroyedListener implements ApplicationListener<SessionDestroyedEvent>
 	{
 		@Autowired
 		private UserNotificationsService userNotificationsService;
-		
+
 		public SessionDestroyedListener()
 		{
 			super();
 		}
-		
+
 		@Override
 		public void onApplicationEvent(final SessionDestroyedEvent event)
 		{

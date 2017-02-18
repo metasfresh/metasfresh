@@ -1,19 +1,21 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -41,11 +43,12 @@ import de.metas.printing.esb.base.util.Check;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONCreateProcessInstanceRequest implements Serializable
 {
+	@Deprecated
 	public static JSONCreateProcessInstanceRequest of(final int adProcessId, final int adWindowId, final String idStr)
 	{
 		final String documentType = String.valueOf(adWindowId);
 		final String viewId = null;
-		final List<Integer> viewDocumentIds = null;
+		final Set<String> viewDocumentIds = null;
 		return new JSONCreateProcessInstanceRequest(adProcessId, documentType, idStr, viewId, viewDocumentIds);
 	}
 
@@ -67,7 +70,10 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	//
 	@JsonProperty("viewDocumentIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<Integer> viewDocumentIds;
+	private final Set<String> viewDocumentIdsStrings;
+
+	@JsonIgnore
+	private transient Set<DocumentId> _viewDocumentIds;
 
 	//
 	// Calculated values
@@ -82,7 +88,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 			, @JsonProperty("documentType") final String documentType //
 			, @JsonProperty("documentId") final String documentId //
 			, @JsonProperty("viewId") final String viewId //
-			, @JsonProperty("viewDocumentIds") final List<Integer> viewDocumentIds //
+			, @JsonProperty("viewDocumentIds") final Set<String> viewDocumentIds //
 	)
 	{
 		super();
@@ -90,18 +96,19 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		this.documentType = documentType;
 		this.documentId = documentId;
 		this.viewId = viewId;
-		this.viewDocumentIds = viewDocumentIds == null ? ImmutableList.of() : ImmutableList.copyOf(viewDocumentIds);
+		this.viewDocumentIdsStrings = viewDocumentIds == null ? null : ImmutableSet.copyOf(viewDocumentIds);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("processId", processId)
 				.add("documentType", documentType)
 				.add("documentId", documentId)
 				.add("viewId", viewId)
-				.add("viewDocumentIds", viewDocumentIds)
+				.add("viewDocumentIds", _viewDocumentIds != null ? _viewDocumentIds : viewDocumentIdsStrings)
 				.toString();
 	}
 
@@ -130,8 +137,12 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		return viewId;
 	}
 
-	public List<Integer> getViewDocumentIds()
+	public Set<DocumentId> getViewDocumentIds()
 	{
-		return viewDocumentIds;
+		if(_viewDocumentIds == null)
+		{
+			_viewDocumentIds = DocumentId.ofStringSet(viewDocumentIdsStrings);
+		}
+		return _viewDocumentIds;
 	}
 }
