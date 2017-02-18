@@ -24,17 +24,21 @@ package org.adempiere.service.impl;
 
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IAttachmentBL;
 import org.adempiere.service.IAttachmentDAO;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.MAttachment;
 import org.compiere.model.MAttachmentEntry;
+
+import com.google.common.collect.ImmutableList;
 
 public class AttachmentBL implements IAttachmentBL
 {
@@ -69,6 +73,34 @@ public class AttachmentBL implements IAttachmentBL
 
 		return attachment;
 	}
+	
+	@Override
+	public List<MAttachmentEntry> getEntiresForModel(final Object model)
+	{
+		final MAttachment attachment = LegacyAdapters.convertToPO(getAttachment(model));
+		return attachment == null ? ImmutableList.of() : attachment.getEntriesAsList();
+	}
+	
+	@Override
+	public MAttachmentEntry getEntryForModelById(final Object model, final int id)
+	{
+		final MAttachment attachment = LegacyAdapters.convertToPO(getAttachment(model));
+		return attachment == null ? null : attachment.getEntryById(id);
+	}
+	
+	@Override
+	public void deleteEntryForModel(final Object model, final int id)
+	{
+		final MAttachment attachment = LegacyAdapters.convertToPO(getAttachment(model));
+		if(attachment == null)
+		{
+			return;
+		}
+		
+		attachment.deleteEntryById(id);
+		InterfaceWrapperHelper.save(attachment);
+	}
+
 
 	@Override
 	public void addEntry(final I_AD_Attachment attachment, final File file)
@@ -97,6 +129,15 @@ public class AttachmentBL implements IAttachmentBL
 
 		return attachment;
 	}
+	
+	@Override
+	public I_AD_Attachment createAttachment(final Object model, final String name, final byte[] data)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		addEntry(attachment, name, data);
+		return attachment;
+	}
+
 
 	@Override
 	public void addEntry(final I_AD_Attachment attachment, final String name, final byte[] data)
@@ -112,7 +153,7 @@ public class AttachmentBL implements IAttachmentBL
 		}
 
 		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
-		attachmentPO.addEntry(new MAttachmentEntry(name, data));
+		attachmentPO.addEntry(name, data);
 
 		InterfaceWrapperHelper.save(attachment);
 	}

@@ -13,20 +13,21 @@ package org.adempiere.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.io.File;
+import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.MAttachmentEntry;
 
 public interface IAttachmentBL extends ISingletonService
 {
@@ -60,9 +61,19 @@ public interface IAttachmentBL extends ISingletonService
 	 * 
 	 * @param model
 	 * @param file
-	 * @return the attachment (if created)
+	 * @return the attachment
 	 */
 	I_AD_Attachment createAttachment(Object model, File file);
+
+	/**
+	 * Method to attach file (described by name and data) to object model.
+	 * 
+	 * @param model
+	 * @param name filename
+	 * @param data file content
+	 * @return the attachment
+	 */
+	I_AD_Attachment createAttachment(Object model, String name, byte[] data);
 
 	byte[] getEntryAsBytes(I_AD_Attachment attachment, String name);
 
@@ -74,4 +85,9 @@ public interface IAttachmentBL extends ISingletonService
 	 */
 	byte[] getFirstEntryAsBytesOrNull(I_AD_Attachment attachment);
 
+	List<MAttachmentEntry> getEntiresForModel(Object model);
+	
+	MAttachmentEntry getEntryForModelById(final Object model, final int id);
+	
+	void deleteEntryForModel(Object model, int id);
 }

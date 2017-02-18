@@ -85,6 +85,8 @@ public class Adempiere
 	 */
 	public static final String CLIENT_VERSION_LOCAL_BUILD = "1.0.0";
 
+	public static final String CLIENT_BRANCH_LOCAL_BUILD = "LOCAL-BUILD";
+
 	/** Main Version String */
 	private static String _mainVersion = "";
 	/** Detail Version as date Used for Client/Server */
@@ -121,6 +123,7 @@ public class Adempiere
 	// Product License
 	private static String _productLicenseURL = null;
 	private static final String DEFAULT_ProductLicenseResourceName = "org/adempiere/license.html";
+
 	private static String _productLicenseResourceName = DEFAULT_ProductLicenseResourceName;
 
 	/** Logging */
