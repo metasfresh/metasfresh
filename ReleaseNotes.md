@@ -32,12 +32,13 @@ upcoming
   * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
   * [#138](https://github.com/metasfresh/metasfresh-webui/issues/138) change name of new record button
   * [#252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/252) Add keyboard handling in POS   
-
-## Fixes
-  * [#135](https://github.com/metasfresh/metasfresh-webui/issues/135) process parameter defaults are not set
+  * [#215](https://github.com/metasfresh/metasfresh-webui-frontend/issues/215) Shortcut for direct Document Action <complete>
   * [#282](https://github.com/metasfresh/metasfresh-webui-frontend/issues/282) Implement attachments list in Actions menu
+  * [#227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/277) Processed HU in Material Receipt Workflow
+  
+## Fixes
 
-* metasfresh
+ * metasfresh
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
 
 * webUI
@@ -48,7 +49,10 @@ upcoming
   * [#333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/333) The whole process parameters content vanished
   * [#331](https://github.com/metasfresh/metasfresh-webui-frontend/issues/331) Debug/fix: if a PATCH operation fails some wrong calls are performed  
   * [#330](https://github.com/metasfresh/metasfresh-webui-frontend/issues/330) HUEditor displays HUs which are destroyed
-  
+  * [#135](https://github.com/metasfresh/metasfresh-webui/issues/135) process parameter defaults are not set
+  * [#137](https://github.com/metasfresh/metasfresh-webui/issues/137) Make sure ProcessInstance is not override by concurrent REST api call
+  * [#294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/294) Leave Location editor with no entry
+
 # metasfresh 4.56.55 (2017-07)
 
 ## Features
