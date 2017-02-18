@@ -43,8 +43,6 @@ upcoming
   
 # metasfresh 4.56.55 (2017-07)
 
-this week's RC
-
 ## Features
 * metasfresh
   * #913 include branch name in build version string
