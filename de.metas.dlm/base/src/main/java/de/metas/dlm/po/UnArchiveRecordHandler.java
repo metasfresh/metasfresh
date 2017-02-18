@@ -1,16 +1,20 @@
 package de.metas.dlm.po;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.dlm.connection.DLMConnectionCustomizer;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -34,8 +38,16 @@ import de.metas.dlm.model.IDLMAware;
  * #L%
  */
 
+@Immutable
 public class UnArchiveRecordHandler implements INoDataFoundHandler
 {
+	private static final transient Logger logger = LogManager.getLogger(UnArchiveRecordHandler.class);
+
+	public static UnArchiveRecordHandler INSTANCE = new UnArchiveRecordHandler();
+
+	private UnArchiveRecordHandler()
+	{
+	}
 
 	@Override
 	public boolean invoke(String tableName, Object[] ids, IContextAware ctx)
@@ -48,12 +60,20 @@ public class UnArchiveRecordHandler implements INoDataFoundHandler
 		{
 			return false;
 		}
-		
+
 		final IConnectionCustomizerService connectionCustomizerService = Services.get(IConnectionCustomizerService.class);
 		try (final AutoCloseable customizer = connectionCustomizerService.registerTemporaryCustomizer(DLMConnectionCustomizer.seeThemAllCustomizer()))
 		{
 			final TableRecordReference reference = TableRecordReference.of(tableName, (int)ids[0]);
 			final IDLMAware model = reference.getModel(ctx, IDLMAware.class);
+
+			if (model == null)
+			{
+				logger.info("Unable to load reference={}; nothing more to do.", reference);
+				return false;
+			}
+
+			logger.info("Setting DLM_Level to {} for {}", IMigratorService.DLM_Level_LIVE, reference);
 
 			model.setDLM_Level(IMigratorService.DLM_Level_LIVE);
 			InterfaceWrapperHelper.save(model);
