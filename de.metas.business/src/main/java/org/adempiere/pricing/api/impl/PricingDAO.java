@@ -13,15 +13,14 @@ package org.adempiere.pricing.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -29,12 +28,16 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.pricing.api.IPricingDAO;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
+
+import de.metas.adempiere.util.CacheCtx;
 
 public class PricingDAO implements IPricingDAO
 {
 	@Override
-	public List<I_C_PricingRule> retrievePricingRules(Properties ctx)
+	@Cached(cacheName = I_C_PricingRule.Table_Name + "#All")
+	public List<I_C_PricingRule> retrievePricingRules(@CacheCtx Properties ctx)
 	{
 		final String whereClause = null;
 		final List<I_C_PricingRule> rulesDef = new Query(ctx, I_C_PricingRule.Table_Name, whereClause, ITrx.TRXNAME_None)

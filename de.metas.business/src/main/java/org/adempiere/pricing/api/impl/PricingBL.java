@@ -37,6 +37,7 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingDAO;
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.pricing.exceptions.PriceListVersionNotFoundException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.AggregatedPricingRule;
@@ -46,6 +47,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -54,7 +56,6 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 
@@ -295,14 +296,9 @@ public class PricingBL implements IPricingBL
 		return InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
 	}
 
-	private void setProductInfo(IPricingContext pricingCtx, IPricingResult result)
+	private void setProductInfo(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		if (pricingCtx.getM_Product_ID() <= 0)
-		{
-			return;
-		}
-
-		final I_M_Product product = getM_Product(Env.getCtx(), pricingCtx.getM_Product_ID());
+		final I_M_Product product = pricingCtx.getM_Product();
 		if (product == null || product.getM_Product_ID() <= 0)
 		{
 			return;
@@ -312,10 +308,11 @@ public class PricingBL implements IPricingBL
 
 		//
 		// Set Price_UOM_ID (06942)
-		if (pricingCtx.getM_PriceList_Version_ID() > 0)
+		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
+		if (plv != null)
 		{
-			final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(Env.getCtx(), pricingCtx.getM_PriceList_Version_ID(), I_M_PriceList_Version.class, ITrx.TRXNAME_None);
-			final I_M_ProductPrice productPrice = Services.get(IPriceListDAO.class).retrieveProductPriceOrNull(plv, product.getM_Product_ID());
+			final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, product.getM_Product_ID())
+					.orElse(null);
 			if (productPrice == null)
 			{
 				result.setPrice_UOM_ID(product.getC_UOM_ID());

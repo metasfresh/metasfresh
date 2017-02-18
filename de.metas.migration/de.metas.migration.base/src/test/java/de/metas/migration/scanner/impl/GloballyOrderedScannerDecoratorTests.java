@@ -86,6 +86,7 @@ public class GloballyOrderedScannerDecoratorTests
 
 	/**
 	 * Just to visualize {@link TreeSet}'s behavior: if two different objects compare to 0, then they can't both be added.
+	 * Note: we don't use TreeSet anymore, but this test is still nice, in case we'll reconsider it :-).
 	 */
 	@Test
 	public void testTreeSet()

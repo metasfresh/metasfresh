@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -61,6 +63,7 @@ import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -76,11 +79,8 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
-
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -101,8 +101,8 @@ import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAttributeAware;
-import de.metas.pricing.attributebased.ProductPriceAttributeAware;
+import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.product.IProductPA;
 import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
@@ -449,7 +449,7 @@ public class OLCandBL implements IOLCandBL
 		final IAttributeSetInstanceAware orderLineASIAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(resultOrderLinePO);
 		Check.assumeNotNull(orderLineASIAware, "We can allways obtain a not-null ASI aware for C_OrderLine {} ", resultOrderLine);
 
-		final Optional<IProductPriceAttributeAware> ppaAware = ProductPriceAttributeAware.ofModel(candToProcess);
+		final Optional<IProductPriceAware> ppaAware = ProductPriceAware.ofModel(candToProcess);
 		Services.get(IAttributePricingBL.class).setDynAttrProductPriceAttributeAware(orderLineASIAware, ppaAware);
 
 		InterfaceWrapperHelper.save(resultOrderLine);
@@ -621,7 +621,7 @@ public class OLCandBL implements IOLCandBL
 		// We keep this block for the time being because as of now we did not make sure that the aggAndOrderList is complete to ensure that all
 		// C_OLCands with different C_Order-"header"-columns will be split into different orders (think of e.g. C_OLCands with different currencies).
 		if (previousCandidate.getAD_Org_ID() != candidate.getAD_Org_ID()
-				|| !Check.equals(previousCandidate.getPOReference(), candidate.getPOReference())
+				|| !Objects.equals(previousCandidate.getPOReference(), candidate.getPOReference())
 				|| previousCandidate.getC_Currency_ID() != candidate.getC_Currency_ID()
 				|| effectiveValuesBL.getC_BPartner_Effective_ID(previousCandidate) != effectiveValuesBL.getC_BPartner_Effective_ID(candidate)
 				|| effectiveValuesBL.getC_BP_Location_Effective_ID(previousCandidate) != effectiveValuesBL.getC_BP_Location_Effective_ID(candidate)
@@ -630,11 +630,11 @@ public class OLCandBL implements IOLCandBL
 				|| effectiveValuesBL.getBill_Location_Effective_ID(previousCandidate) != effectiveValuesBL.getBill_Location_Effective_ID(candidate)
 				|| effectiveValuesBL.getBill_User_Effective_ID(previousCandidate) != effectiveValuesBL.getBill_User_Effective_ID(candidate)
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
-				|| !Check.equals(effectiveValuesBL.getDatePromised_Effective(previousCandidate), effectiveValuesBL.getDatePromised_Effective(candidate))
-				|| !Check.equals(effectiveValuesBL.getHandOver_Partner_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
-				|| !Check.equals(effectiveValuesBL.getHandOver_Location_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
-				|| !Check.equals(effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
-				|| !Check.equals(effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getDatePromised_Effective(previousCandidate), effectiveValuesBL.getDatePromised_Effective(candidate))
+				|| !Objects.equals(effectiveValuesBL.getHandOver_Partner_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getHandOver_Location_Effective_ID(previousCandidate), effectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getDropShip_BPartner_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
+				|| !Objects.equals(effectiveValuesBL.getDropShip_Location_Effective_ID(previousCandidate), effectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
 				|| getPricingSystemId(ctx, previousCandidate, processor, trxName) != getPricingSystemId(ctx, candidate, processor, trxName))
 		{
 			return true;
@@ -649,7 +649,7 @@ public class OLCandBL implements IOLCandBL
 
 			final Object value = getValueByColumnId(processor, candidate, aggAndOrder);
 			final Object previousValue = getValueByColumnId(processor, previousCandidate, aggAndOrder);
-			if (!Check.equals(value, previousValue))
+			if (!Objects.equals(value, previousValue))
 			{
 				return true;
 			}
@@ -1267,9 +1267,7 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl = InterfaceWrapperHelper.create(
-					productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName),
-					I_M_PriceList.class);
+			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName);
 
 			if (pl == null)
 			{

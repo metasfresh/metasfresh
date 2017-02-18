@@ -40,6 +40,33 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Java Klasse.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_JavaClass_ID (int AD_JavaClass_ID);
+
+	/**
+	 * Get Java Klasse.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_JavaClass_ID();
+
+	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass();
+
+	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass);
+
+    /** Column definition for AD_JavaClass_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, de.metas.javaclasses.model.I_AD_JavaClass> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, de.metas.javaclasses.model.I_AD_JavaClass>(I_M_Attribute.class, "AD_JavaClass_ID", de.metas.javaclasses.model.I_AD_JavaClass.class);
+    /** Column name AD_JavaClass_ID */
+    public static final String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -123,6 +150,35 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_AttributeValueType = "AttributeValueType";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_C_UOM>(I_M_Attribute.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -151,35 +207,6 @@ public interface I_M_Attribute
     public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_User>(I_M_Attribute.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_C_UOM>(I_M_Attribute.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -230,6 +257,31 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Auf Belegen auszuweisen.
+	 * Wenn ein Attribute auf Belegen auszuweisen ist, bedeutet das, das Lieferposionen mit unterschiedlichen Attributwerten nicht zu einer Rechnungszeile zusammengefasst werden können.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAttrDocumentRelevant (boolean IsAttrDocumentRelevant);
+
+	/**
+	 * Get Auf Belegen auszuweisen.
+	 * Wenn ein Attribute auf Belegen auszuweisen ist, bedeutet das, das Lieferposionen mit unterschiedlichen Attributwerten nicht zu einer Rechnungszeile zusammengefasst werden können.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAttrDocumentRelevant();
+
+    /** Column definition for IsAttrDocumentRelevant */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsAttrDocumentRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsAttrDocumentRelevant", null);
+    /** Column name IsAttrDocumentRelevant */
+    public static final String COLUMNNAME_IsAttrDocumentRelevant = "IsAttrDocumentRelevant";
+
+	/**
 	 * Set Instanz-Attribut.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
@@ -278,6 +330,29 @@ public interface I_M_Attribute
     public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsMandatory = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsMandatory", null);
     /** Column name IsMandatory */
     public static final String COLUMNNAME_IsMandatory = "IsMandatory";
+
+	/**
+	 * Set isPricingRelevant.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPricingRelevant (boolean IsPricingRelevant);
+
+	/**
+	 * Get isPricingRelevant.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPricingRelevant();
+
+    /** Column definition for IsPricingRelevant */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsPricingRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsPricingRelevant", null);
+    /** Column name IsPricingRelevant */
+    public static final String COLUMNNAME_IsPricingRelevant = "IsPricingRelevant";
 
 	/**
 	 * Set IsReadOnlyValues.
@@ -435,4 +510,54 @@ public interface I_M_Attribute
     public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Max. Wert.
+	 * Maximum Value for a field
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setValueMax (java.math.BigDecimal ValueMax);
+
+	/**
+	 * Get Max. Wert.
+	 * Maximum Value for a field
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getValueMax();
+
+    /** Column definition for ValueMax */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_ValueMax = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "ValueMax", null);
+    /** Column name ValueMax */
+    public static final String COLUMNNAME_ValueMax = "ValueMax";
+
+	/**
+	 * Set Min. Wert.
+	 * Minimum Value for a field
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setValueMin (java.math.BigDecimal ValueMin);
+
+	/**
+	 * Get Min. Wert.
+	 * Minimum Value for a field
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getValueMin();
+
+    /** Column definition for ValueMin */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_ValueMin = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "ValueMin", null);
+    /** Column name ValueMin */
+    public static final String COLUMNNAME_ValueMin = "ValueMin";
 }

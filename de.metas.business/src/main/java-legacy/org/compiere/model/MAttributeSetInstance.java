@@ -150,15 +150,11 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	 */
 	public KeyNamePair createLot(int M_Product_ID)
 	{
-		KeyNamePair retValue = null;
-		int M_LotCtl_ID = getMAttributeSet().getM_LotCtl_ID();
-		if (M_LotCtl_ID != 0)
+		final KeyNamePair retValue = getMAttributeSet().createLot(M_Product_ID);
+		if(retValue != null)
 		{
-			MLotCtl ctl = new MLotCtl(getCtx(), M_LotCtl_ID, null);
-			MLot lot = ctl.createLot(M_Product_ID);
-			setM_Lot_ID(lot.getM_Lot_ID());
-			setLot(lot.getName());
-			retValue = new KeyNamePair(lot.getM_Lot_ID(), lot.getName());
+			setM_Lot_ID(retValue.getKey());
+			setLot(retValue.getName());
 		}
 		return retValue;
 	}	// createLot
@@ -199,15 +195,14 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	 * @param getNew if true create/set new Ser No
 	 * @return Serial Number
 	 */
-	public String getSerNo(boolean getNew)
+	public String getSerNo(final boolean getNew)
 	{
 		if (getNew)
 		{
-			int M_SerNoCtl_ID = getMAttributeSet().getM_SerNoCtl_ID();
-			if (M_SerNoCtl_ID != 0)
+			final String serNo = getMAttributeSet().createSerNo();
+			if(serNo != null)
 			{
-				MSerNoCtl ctl = new MSerNoCtl(getCtx(), M_SerNoCtl_ID, get_TrxName());
-				setSerNo(ctl.createSerNo());
+				setSerNo(serNo);
 			}
 		}
 		return getSerNo();

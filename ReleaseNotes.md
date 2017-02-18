@@ -16,16 +16,31 @@ upcoming
 
 ## Features
 * metasfresh 
+  * [#739](https://github.com/metasfresh/metasfresh/issues/739) remove X_BPartner_Stats_MV
   * [#920](https://github.com/metasfresh/metasfresh/issues/920) Show date promised on order confirmation
   * [#927](https://github.com/metasfresh/metasfresh/issues/927) Use partner specific product number and name in documents
-  * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
+  * [#928](https://github.com/metasfresh/metasfresh/issues/928) have a way to control which contact is used on addresses in order
   * [#941](https://github.com/metasfresh/metasfresh/issues/941) Make TableSequenceChecker more robust with corner cases
+  * [#942](https://github.com/metasfresh/metasfresh/issues/942) Improve Transparency & Usability of Pricing definitions
+  * [#954](https://github.com/metasfresh/metasfresh/issues/954) Address Layout Dunning Document
+  * [#956](https://github.com/metasfresh/metasfresh/issues/956) Adjust Price list reports to new data structure
+  * [#957](https://github.com/metasfresh/metasfresh/issues/957) Empties Returns for Vendors and Customers in Material Receipt Window
   * [#969](https://github.com/metasfresh/metasfresh/issues/969) mass migration for 2014, 2015 and further
+  * [#975](https://github.com/metasfresh/metasfresh/issues/975) Set DLM_Level via properties/preferences UI
   
+* webUI
+  * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
+
 ## Fixes
 * metasfresh
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
 
+* webUI
+  * [#314](https://github.com/metasfresh/metasfresh-webui-frontend/issues/314) Grid view filtering: don't send valueTo if it's not a range parameter
+  * [#322](https://github.com/metasfresh/metasfresh-webui-frontend/issues/322) Quick input's mandatory=false not respected
+  * [#317](https://github.com/metasfresh/metasfresh-webui-frontend/issues/317) Quick actions are not refreshed when opening the modal HU editor
+  * [#137](https://github.com/metasfresh/metasfresh-webui/issues/137) Make sure ProcessInstance is not override by concurrent RES api call
+  
 # metasfresh 4.56.55 (2017-07)
 
 this week's RC
@@ -33,42 +48,72 @@ this week's RC
 ## Features
 * metasfresh
   * #913 include branch name in build version string
+    * Added the branch name into the build version string to be able to distinguish between builds & rollouts in development branches.
   
 * webUI
   * #112 On login page, deactivate the fields while logging in
-  * #120 Material Receipt WebUI: Attribute Values wrong
-  * #127 Receipt schedules - Receive with configuration improvements
+    * Now making the login fields read-only as soon ad the authentication process is triggered.
   * #118 Functionality to easily add files to current record in webUI
+    * New Functionality to upload files to a given dataset in the new WebUI. This implementation is also used for the new attachment functionality.
+  * #120 Material Receipt WebUI: Attribute Values wrong
+    * Instead of short Attribute identifiers now the resolved values are shon in the Attribute Editor.
   * #121 Empties Returns for Vendors and Customers in Material Receipt Window
+    * New Functionality in WebUI. Possibility to create empties return/ receive documents quickly from Material Receipts window.
   * #127 Receipt schedules - Receive with configuration improvements
+    * Enhanced configuration and saving functionality in material receipt workflow in WebUI.
   * #132 Receiving HUs: already received HUs shall be flagged as processed
+    * Now flagging the already processed Handling Units in material Receipts workflow as processed and make visible to the user.
   * #226 Implement document field device support
+    * New generic Device functionality to add device buttons to an input field. In the first Implementation used to attach weighing machines to receive the current value for gross weight field. Can be used in Material Receipt window/ Handling Unit editor.
   * #227 Wrong breadcrumb when the view is opened after process execution
+    * Adjust for the breadcrumb navigation to show the corresponding path after process execution from window action.
   * #254 Cannot see the HU editor icons
+    * Added missing HU editor icons for logistic-, transport- and customer-unit level.
   * #256 Implement document attachments
+    * New, fast and easy implematation to upload attachments to an existing record in metasfresh.
   * #257 login page: focus on username
+    * When opening the login page to enter metasfresh webUI then initially have the focus on Username field.
   * #275 None of the menus could be opened when in full screen mode
+    * Allows to open all top bar menues now, also when quick batch entry mode is activated.
   * #281 Remove margin from wrapper modal to make 0-padding inside
+    * Adjusting the look and feel of the modal overlay, now reducing the padding to minimum.
   * #734 Add Translation for en_US in WebUI
+    * Translation of metasfresh is now available in en_US.
   * #833 Invoice Process in Invoice Candidates WebUI
+    * Add the Invoiceing process to easy create customer and vendor invoices from filtered and selected records in invoice candidates window in webUI.
   * #894 Payment Allocation Window WebUI
+    * Include the Payment allocation window in new Web User Interface.
   * #895 Dunning Candidates Window WebUI
+    * Include the Dunning Candidates window in new Web User Interface.
   * #947 Window Greeting Add Translation for en_US
+    * Minor enhancement, translating the Greeting window for language en_US.
+  * #966 Provide WebUI Default Role
+    * Add a default role and permission to use the already implemented functionalities for the new Web User Interface.
 
 ## Fixes 
 * metasfresh
   * #797 Zoom does not open new document
+    * Fix that allows to open a referenced document record in metasfresh via the reference action and zoom accross.
   
 * webUI
   * #119 Error when Pressing the Attribute Button
+    * Fixes an error that occured in sales order advancededit and grid view edit when trying to record product attributes.
   * #116 qty 0 in purchase order
+    * Fix for the Quick batch entry bug that leads into wrong quantity 0 in generated order line.
   * #229 Location editor button called "edit attributes"
+    * Minor fix renaming the button for Location editing.
   * #261 When the attribute is readonly don't show the Device button(s)
+    * Making the new Field device buttons invisible when the corresponding field in read-only.
   * #264 Included tabs layout is broken
+    * Fix for the broken layout of included tabs when opened in lower screen resolution.
   * #268 Wrong viewId when starting the process
+    * Fix that now provides the correct View-ID as process Parameter.
   * #276 Wrong timing when completing a quick input entry
+    * Fix for the Quick Order Batch entry that leads to wrong prices in certain cases.
   * #279 While browsing a document, pressing New does nothing
+    * Fixing the new document functionality in action menu while viewing a document in detail view.
   * #295 Attribute Editor too narrow
+    * Makes the Attribute Editor now better readable.
 
 # metasfresh 4.55.54 (2017-06)
 

@@ -37,9 +37,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
-
-import de.metas.adempiere.model.I_M_ProductPrice;
 
 @Validator(I_M_ProductPrice.class)
 public class M_ProductPrice
@@ -51,12 +50,6 @@ public class M_ProductPrice
 		calloutProvider.registerAnnotatedCallout(new de.metas.pricing.callout.M_ProductPrice());
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void doNothing(I_M_ProductPrice productPrice)
-	{
-		// FIXME: Make MV work only with @Init as well
-	}
-	
 	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE})
 	public void setSeqNo(final I_M_ProductPrice productPrice)
 	{
@@ -84,15 +77,14 @@ public class M_ProductPrice
 			, ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_M_ProductPrice.COLUMNNAME_UseScalePrice,
-			de.metas.pricing.attributebased.I_M_ProductPrice.COLUMNNAME_IsAttributeDependant
+			I_M_ProductPrice.COLUMNNAME_IsAttributeDependant
 	})
 	public void checkFlags(I_M_ProductPrice productPrice)
 	{
 		// Should never happen.
 		Check.assumeNotNull(productPrice, "Product price not null");
-		final de.metas.pricing.attributebased.I_M_ProductPrice productPriceEx = InterfaceWrapperHelper.create(productPrice, de.metas.pricing.attributebased.I_M_ProductPrice.class);
 
-		if (productPriceEx.isAttributeDependant() && productPriceEx.isUseScalePrice())
+		if (productPrice.isAttributeDependant() && productPrice.isUseScalePrice())
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(productPrice);
 

@@ -46,11 +46,11 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
 
-import de.metas.adempiere.model.I_M_PriceList;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
