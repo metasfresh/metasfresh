@@ -33,7 +33,7 @@ upcoming
   * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
   * [#138](https://github.com/metasfresh/metasfresh-webui/issues/138) change name of new record button
   * [#252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/252) Add keyboard handling in POS   
-  * [#215](https://github.com/metasfresh/metasfresh-webui-frontend/issues/215) Shortcut for direct Document Action <complete>
+  * [#215](https://github.com/metasfresh/metasfresh-webui-frontend/issues/215) Shortcut for direct Document Action "complete"
   * [#227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/277) Processed HU in Material Receipt Workflow
   * [#282](https://github.com/metasfresh/metasfresh-webui-frontend/issues/282) Implement attachments list in Actions menu
   
@@ -45,6 +45,7 @@ upcoming
 * webUI
   * [#135](https://github.com/metasfresh/metasfresh-webui/issues/135) process parameter defaults are not set
   * [#137](https://github.com/metasfresh/metasfresh-webui/issues/137) Make sure ProcessInstance is not override by concurrent REST api call
+  * [#141](https://github.com/metasfresh/metasfresh-webui/issues/141) edit address not working anymore
   * [#294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/294) Leave Location editor with no entry
   * [#313](https://github.com/metasfresh/metasfresh-webui-frontend/issues/313) Scrollbar missing on LU/ TU Level in HU Editor
   * [#314](https://github.com/metasfresh/metasfresh-webui-frontend/issues/314) Grid view filtering: don't send valueTo if it's not a range parameter
