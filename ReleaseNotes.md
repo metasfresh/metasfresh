@@ -43,6 +43,7 @@ upcoming
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
 
 * webUI
+  * [#124](https://github.com/metasfresh/metasfresh-webui/issues/124) Default/ Standard Filter not correct in WebUI
   * [#135](https://github.com/metasfresh/metasfresh-webui/issues/135) process parameter defaults are not set
   * [#137](https://github.com/metasfresh/metasfresh-webui/issues/137) Make sure ProcessInstance is not override by concurrent REST api call
   * [#141](https://github.com/metasfresh/metasfresh-webui/issues/141) edit address not working anymore
