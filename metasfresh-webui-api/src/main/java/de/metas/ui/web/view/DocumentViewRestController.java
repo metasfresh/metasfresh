@@ -42,11 +42,11 @@ import io.swagger.annotations.ApiParam;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -202,11 +202,7 @@ public class DocumentViewRestController
 				.assertWindowIdMatches(adWindowId);
 
 		return view.streamActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
-				//
-				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled
-				// TODO: replace the line above with following, after https://github.com/metasfresh/metasfresh-webui-frontend/issues/191#issuecomment-275927950 it's implemented
-				// .filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
-				//
+				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
@@ -222,6 +218,7 @@ public class DocumentViewRestController
 		return documentViewsRepo.getView(viewId)
 				.assertWindowIdMatches(adWindowId)
 				.streamQuickActions(DocumentId.ofCommaSeparatedString(selectedIdsListStr))
+				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 }

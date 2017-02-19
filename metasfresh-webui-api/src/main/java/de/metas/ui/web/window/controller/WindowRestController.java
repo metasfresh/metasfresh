@@ -454,7 +454,7 @@ public class WindowRestController
 		final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
 
 		return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext)
-				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled
+				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
 				.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 	}
 
