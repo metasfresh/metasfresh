@@ -69,7 +69,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	/* package */ IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
-		super();
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
 		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
 
@@ -93,7 +92,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		_staleDocumentIds = new HashSet<>(from._staleDocumentIds);
 
 		// Deep-copy documents map
-		_documents = new LinkedHashMap<>(Maps.transformValues(from._documents, (includedDocumentOrig) -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
+		_documents = new LinkedHashMap<>(Maps.transformValues(from._documents, includedDocumentOrig -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
 	}
 
 	@Override
@@ -454,6 +453,8 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 
 		assertWritable();
+		
+		// TODO: check if application dictionary says that is allowed
 
 		for (final DocumentId documentId : documentIds)
 		{
@@ -472,6 +473,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 		}
 	}
 
+	@Override
 	public int getNextLineNo()
 	{
 		final int lastLineNo = getLastLineNo();
