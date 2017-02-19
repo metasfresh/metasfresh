@@ -79,6 +79,9 @@ public final class HUDocumentView implements IDocumentView
 		return delegate.getDocumentId();
 	}
 
+	/**
+	 * @return {@link HUDocumentViewType}; never returns null.
+	 */
 	@Override
 	public HUDocumentViewType getType()
 	{
