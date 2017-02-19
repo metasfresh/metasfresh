@@ -31,6 +31,7 @@ upcoming
   
 * webUI
   * [#145](https://github.com/metasfresh/metasfresh-webui/issues/145) HU editor - Create material receipt not enabled when the whole palet is selected
+  * [#146](https://github.com/metasfresh/metasfresh-webui/issues/146) Receipt schedules: show empties receive/return actions only when only one row is selected
   * [#147](https://github.com/metasfresh/metasfresh-webui/issues/147) HU editor: hide filters because they are not supported atm
   * [#323](https://github.com/metasfresh/metasfresh-webui-frontend/issues/323) Provide login credentials in request body
   * [#138](https://github.com/metasfresh/metasfresh-webui/issues/138) change name of new record button
