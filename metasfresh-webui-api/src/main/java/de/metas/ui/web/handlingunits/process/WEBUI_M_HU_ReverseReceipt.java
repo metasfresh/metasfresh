@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.MutableInt;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -18,7 +19,9 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
+import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
+import de.metas.ui.web.process.DocumentViewAsPreconditionsContext;
 import de.metas.ui.web.process.ProcessInstance;
 import de.metas.ui.web.view.IDocumentViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -58,13 +61,50 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if(context.isNoSelection())
+		final DocumentViewAsPreconditionsContext viewContext = DocumentViewAsPreconditionsContext.castOrNull(context);
+		if (viewContext == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("webui view not available");
+		}
+		
+		if(viewContext.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 		
+		final MutableInt checkedDocumentsCount = new MutableInt(0);
+		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUDocumentViewSelection.class)
+				.streamByIds(viewContext.getSelectedDocumentIds())
+				.filter(document -> document.isPureHU())
+				//
+				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
+				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
+				.filter(resolution -> resolution != null) // filter out those which are not errors
+				.findFirst()
+				.orElse(null);
+		if (firstRejection != null)
+		{
+			// found a record which is not eligible => don't run the process
+			return firstRejection;
+		}
+		if (checkedDocumentsCount.getValue() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible rows");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
+	
+	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUDocumentView document)
+	{
+		if (!document.isHUStatusActive())
+		{
+			return ProcessPreconditionsResolution.reject("Only active HUs can be reversed"); // TODO: trl
+		}
+
+		return null;
+	}
+
 
 	@Autowired
 	private IDocumentViewsRepository documentViewsRepo;
