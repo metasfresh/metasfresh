@@ -5,11 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -27,11 +28,11 @@ import de.metas.ui.web.window.descriptor.DetailId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -88,7 +89,11 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	@Override
 	public Map<DocumentPath, DocumentChanges> getDocumentChangesByPath()
 	{
-		return ImmutableMap.copyOf(documentChangesByPath);
+		return documentChangesByPath.entrySet().stream()
+				// skip document changes which are staled because it might be those were recorded before the detailId was marked as stale
+				.filter(e -> !isStaleDocumentChanges(e.getValue()))
+				//
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 
 	@Override
@@ -194,12 +199,12 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		documentChanges(documentPath)
 				.collectDocumentValidStatusChanged(documentValidStatus);
 	}
-	
+
 	@Override
-	public void collectValidStatus(IDocumentFieldView documentField)
+	public void collectValidStatus(final IDocumentFieldView documentField)
 	{
 		documentChanges(documentField)
-			.collectValidStatusChanged(documentField);
+				.collectValidStatusChanged(documentField);
 	}
 
 	@Override
@@ -210,16 +215,43 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	}
 
 	@Override
-	public void collectStaleDetailId(final DocumentPath documentPath, final DetailId detailId)
+	public void collectStaleDetailId(final DocumentPath rootDocumentPath, final DetailId detailId)
 	{
-		documentChanges(documentPath)
+		Check.assume(rootDocumentPath.isRootDocument(), "{} is root document path", rootDocumentPath);
+		Check.assumeNotNull(detailId, "Parameter detailId is not null");
+
+		documentChanges(rootDocumentPath)
 				.collectStaleDetailId(detailId);
 	}
-	
+
+	private boolean isStaleDocumentChanges(final DocumentChanges documentChanges)
+	{
+		final DocumentPath documentPath = documentChanges.getDocumentPath();
+		if (!documentPath.isSingleIncludedDocument())
+		{
+			return false;
+		}
+
+		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
+		final DocumentChanges rootDocumentChanges = documentChangesIfExists(rootDocumentPath);
+		if (rootDocumentChanges == null)
+		{
+			return false;
+		}
+
+		final DetailId detailId = documentPath.getDetailId();
+		if (rootDocumentChanges.isDetailIdStaled(detailId))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	@Override
 	public void collectEvent(final IDocumentFieldChangedEvent event)
 	{
 		documentChanges(event.getDocumentPath())
-			.collectEvent(event);
+				.collectEvent(event);
 	}
 }
