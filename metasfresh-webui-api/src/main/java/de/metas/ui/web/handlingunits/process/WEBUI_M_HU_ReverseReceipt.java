@@ -5,6 +5,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -124,14 +125,18 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
+		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
+		
 		ReceiptCorrectHUsProcessor.builder()
-				.setM_ReceiptSchedule(getM_ReceiptSchedule())
+				.setM_ReceiptSchedule(receiptSchedule)
 				.build()
 				.reverseReceiptsForHUs(retrieveHUsToReverse());
 
 		//
 		// Reset the view's affected HUs
 		getView().invalidateAll();
+
+		documentViewsRepo.notifyRecordChanged(TableRecordReference.of(receiptSchedule));
 
 		return MSG_OK;
 	}
