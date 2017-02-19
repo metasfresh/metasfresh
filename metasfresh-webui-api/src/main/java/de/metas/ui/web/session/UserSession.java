@@ -120,7 +120,7 @@ public class UserSession implements InitializingBean, Serializable
 	private String dashboardUrl;
 
 	public static final String PARAM_DisableDeprecatedRestAPI = "metasfresh.webui.debug.DisableDeprecatedRestAPI";
-	@Value("${" + PARAM_DisableDeprecatedRestAPI + ":false}")
+	@Value("${" + PARAM_DisableDeprecatedRestAPI + ":true}")
 	private boolean default_disableDeprecatedRestAPI;
 
 	public UserSession()
