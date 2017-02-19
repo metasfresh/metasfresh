@@ -155,6 +155,11 @@ public final class HUDocumentView implements IDocumentView
 	{
 		return X_M_HU.HUSTATUS_Planning.equals(getHUStatus());
 	}
+	
+	public boolean isHUStatusActive()
+	{
+		return X_M_HU.HUSTATUS_Active.equals(getHUStatus());
+	}
 
 	public boolean isPureHU()
 	{
