@@ -111,4 +111,9 @@ public interface IDocumentViewSelection
 	<T> List<T> retrieveModelsByIds(Collection<DocumentId> documentIds, Class<T> modelClass);
 
 	Stream<? extends IDocumentView> streamByIds(Collection<DocumentId> documentIds);
+
+	/**
+	 * Notify the view that given record has changed.
+	 */
+	void notifyRecordChanged(TableRecordReference recordRef);
 }

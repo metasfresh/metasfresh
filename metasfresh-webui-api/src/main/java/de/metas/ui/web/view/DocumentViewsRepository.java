@@ -3,6 +3,8 @@ package de.metas.ui.web.view;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -27,11 +29,11 @@ import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -82,5 +84,14 @@ public class DocumentViewsRepository implements IDocumentViewsRepository
 	{
 		final IDocumentViewSelection view = (IDocumentViewSelection)notification.getValue();
 		view.close();
+	}
+
+	@Override
+	public void notifyRecordChanged(final TableRecordReference recordRef)
+	{
+		Check.assumeNotNull(recordRef, "Parameter recordRef is not null");
+
+		views.asMap().values().stream()
+				.forEach(view -> view.notifyRecordChanged(recordRef));
 	}
 }

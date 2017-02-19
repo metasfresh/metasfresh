@@ -167,6 +167,18 @@ public abstract class DocumentId implements Serializable
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
+	public static final Set<String> toStringSet(final Collection<DocumentId> documentIds)
+	{
+		if (documentIds == null || documentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return documentIds.stream()
+				.map(documentId -> documentId.toString())
+				.collect(GuavaCollectors.toImmutableSet());
+	}
+
 	public static final Supplier<DocumentId> supplier(IntSupplier intSupplier)
 	{
 		Check.assumeNotNull(intSupplier, "Parameter intSupplier is not null");

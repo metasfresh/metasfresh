@@ -21,6 +21,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
@@ -39,6 +40,7 @@ import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.SqlDocumentViewFieldValueLoader;
 import de.metas.ui.web.view.descriptor.SqlDocumentViewBinding.ViewFieldsBinding;
+import de.metas.ui.web.view.event.DocumentViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -66,11 +68,11 @@ import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -499,6 +501,19 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 				.list(modelClass);
 	}
 
+	@Override
+	public void notifyRecordChanged(final TableRecordReference recordRef)
+	{
+		if (!Objects.equals(getTableName(), recordRef.getTableName()))
+		{
+			return;
+		}
+
+		final DocumentId documentId = DocumentId.of(recordRef.getRecord_ID());
+		DocumentViewChangesCollector.getCurrentOrAutoflush()
+				.collectDocumentChanged(this, documentId);
+	}
+
 	//
 	//
 	// Builder
@@ -700,6 +715,5 @@ class SqlDocumentViewSelection implements IDocumentViewSelection
 			Check.assumeNotNull(documentReferencesService, "Parameter documentReferencesService is not null");
 			return documentReferencesService;
 		}
-
 	}
 }
