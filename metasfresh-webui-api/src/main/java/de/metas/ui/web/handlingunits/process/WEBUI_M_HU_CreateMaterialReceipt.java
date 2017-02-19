@@ -17,10 +17,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUDocumentView;
 import de.metas.ui.web.handlingunits.HUDocumentViewSelection;
@@ -71,6 +71,8 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		final MutableInt checkedDocumentsCount = new MutableInt(0);
 		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUDocumentViewSelection.class)
 				.streamByIds(viewContext.getSelectedDocumentIds())
+				.filter(document -> document.isPureHU())
+				//
 				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
 				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
 				.filter(resolution -> resolution != null) // filter out those which are not errors
@@ -83,8 +85,7 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		}
 		if (checkedDocumentsCount.getValue() <= 0)
 		{
-			// nothing selected
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible rows");
 		}
 
 		// Safe to run the process
@@ -93,13 +94,9 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 
 	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUDocumentView document)
 	{
-		if (!document.isPureHU())
-		{
-			return ProcessPreconditionsResolution.reject("Selected not an HU line: " + document); // TODO: improve message
-		}
 		if (!document.isHUStatusPlanning())
 		{
-			return ProcessPreconditionsResolution.reject("Invalid HU status: " + document); // TODO: improve message
+			return ProcessPreconditionsResolution.reject("Only planning HUs can be received"); // TODO: trl
 		}
 
 		return null;
