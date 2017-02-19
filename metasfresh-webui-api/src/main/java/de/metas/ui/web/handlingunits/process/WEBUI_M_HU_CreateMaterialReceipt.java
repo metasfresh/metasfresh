@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -122,7 +123,8 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 
 		//
 		// Generate material receipts
-		final List<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.of(getM_ReceiptSchedule());
+		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
+		final List<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.of(receiptSchedule);
 		final Set<I_M_HU> selectedHUs = retrieveHUsToReceive();
 		final boolean collectGeneratedInOuts = true;
 		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(getCtx(), receiptSchedules, selectedHUs, collectGeneratedInOuts);
@@ -131,6 +133,8 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 		//
 		// Reset the view's affected HUs
 		getView().invalidateAll();
+		
+		documentViewsRepo.notifyRecordChanged(TableRecordReference.of(receiptSchedule));
 
 		return MSG_OK;
 	}
