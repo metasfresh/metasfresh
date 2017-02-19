@@ -203,7 +203,7 @@ public final class JSONDocument implements Serializable
 				.collect(Collectors.toList());
 	}
 
-	private static JSONDocument ofDocumentView(final IDocumentView documentView)
+	public static JSONDocument ofDocumentView(final IDocumentView documentView)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(documentView.getDocumentPath());
 

@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +23,7 @@ import de.metas.ui.web.view.json.JSONCreateDocumentViewRequest;
 import de.metas.ui.web.view.json.JSONDocumentViewLayout;
 import de.metas.ui.web.view.json.JSONDocumentViewResult;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONViewDataType;
@@ -154,6 +156,37 @@ public class DocumentViewRestController
 				.assertWindowIdMatches(adWindowId)
 				.getPage(firstRow, pageLength, orderBysListStr);
 		return JSONDocumentViewResult.of(result);
+	}
+
+	@GetMapping("/{viewId}/byIds")
+	public List<JSONDocument> getByIds(
+			@PathVariable(PARAM_WindowId) final int adWindowId //
+			, @PathVariable("viewId") final String viewId//
+			, @PathVariable("ids") @ApiParam("comma separated IDs") final String idsListStr)
+	{
+		userSession.assertLoggedIn();
+
+		final Set<DocumentId> documentIds = DocumentId.ofCommaSeparatedString(idsListStr);
+
+		final List<IDocumentView> result = documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.getByIds(documentIds);
+		return JSONDocument.ofDocumentViewList(result);
+	}
+
+	@GetMapping("/{viewId}/{id}")
+	public JSONDocument getById(
+			@PathVariable(PARAM_WindowId) final int adWindowId //
+			, @PathVariable("viewId") final String viewId//
+			, @PathVariable("id") final String idStr)
+	{
+		final DocumentId documentId = DocumentId.of(idStr);
+
+		final IDocumentView record = documentViewsRepo.getView(viewId)
+				.assertWindowIdMatches(adWindowId)
+				.getById(documentId);
+
+		return JSONDocument.ofDocumentView(record);
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
