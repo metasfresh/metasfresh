@@ -173,22 +173,7 @@ public class DocumentViewRestController
 				.getByIds(documentIds);
 		return JSONDocument.ofDocumentViewList(result);
 	}
-
-	@GetMapping("/{viewId}/{id}")
-	public JSONDocument getById(
-			@PathVariable(PARAM_WindowId) final int adWindowId //
-			, @PathVariable("viewId") final String viewId//
-			, @PathVariable("id") final String idStr)
-	{
-		final DocumentId documentId = DocumentId.of(idStr);
-
-		final IDocumentView record = documentViewsRepo.getView(viewId)
-				.assertWindowIdMatches(adWindowId)
-				.getById(documentId);
-
-		return JSONDocument.ofDocumentView(record);
-	}
-
+	
 	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final int adWindowId //
