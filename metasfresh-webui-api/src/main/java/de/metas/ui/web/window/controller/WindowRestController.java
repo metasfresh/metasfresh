@@ -279,8 +279,10 @@ public class WindowRestController
 			if (!collectedFieldNames.isEmpty())
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
-						+ "\n Collected field names were: {}" //
-						, collectedFieldNames, new Exception("StackTrace"));
+						+ "\n Missed (but collected now) field names were: {}" //
+						+ "\n Document path: {}"
+						+ "\n Patch requests: {}"
+						, collectedFieldNames, documentPath, events);
 			}
 		}
 
