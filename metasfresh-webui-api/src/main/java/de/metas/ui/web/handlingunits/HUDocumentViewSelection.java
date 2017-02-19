@@ -202,7 +202,7 @@ public class HUDocumentViewSelection implements IDocumentViewSelection
 		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
 		final Set<Integer> viewDocumentIdsAsInts = DocumentId.toIntSetIgnoringNonInts(viewDocumentIds);
 
-		return I_M_HU.COLUMNNAME_M_HU_ID + " IN (" + DB.buildSqlList(viewDocumentIdsAsInts) + ")";
+		return I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(viewDocumentIdsAsInts);
 	}
 
 	@Override
