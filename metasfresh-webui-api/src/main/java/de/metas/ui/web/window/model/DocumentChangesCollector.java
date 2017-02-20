@@ -8,7 +8,6 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -57,17 +56,6 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		return MoreObjects.toStringHelper(this)
 				.addValue(documentChangesByPath)
 				.toString();
-	}
-
-	@Override
-	public Set<String> getFieldNames(final DocumentPath documentPath)
-	{
-		final DocumentChanges documentChanges = documentChangesIfExists(documentPath);
-		if (documentChanges == null)
-		{
-			return ImmutableSet.of();
-		}
-		return documentChanges.getFieldNames();
 	}
 
 	private DocumentChanges documentChanges(final IDocumentFieldView documentField)
