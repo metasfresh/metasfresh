@@ -126,6 +126,15 @@ export default function windowHandler(state = initialState, action) {
                     }
                 }
             })
+            
+        case types.CLEAR_TAB:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    rowData: Object.assign({}, state[action.scope].rowData, {
+                        [action.tabId]: null
+                    })
+                })
+            })
 
         case types.UPDATE_ROW_SUCCESS:
             return update(state, {

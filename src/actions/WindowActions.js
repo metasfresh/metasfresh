@@ -102,6 +102,14 @@ export function deleteRow(tabid, rowid, scope) {
     }
 }
 
+export function clearTab(tabId, scope) {
+    return {
+        type: types.CLEAR_TAB,
+        tabId: tabId,
+        scope: scope
+    }
+}
+
 export function updateDataProperty(property, value, scope) {
     return {
         type: types.UPDATE_DATA_PROPERTY,
@@ -345,11 +353,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         //Handling staleTabIds
         staleTabIds.map(staleTabId => {
             dispatch(getTab(staleTabId, windowType, id)).then(tab => {
-                const keys = Object.keys(tab);
-
-                keys.map(key => {
-                    dispatch(addNewRow(tab[key], staleTabId, key, 'master'))
-                })
+                dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
     }
