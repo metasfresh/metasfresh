@@ -440,7 +440,7 @@ class Table extends Component {
         const keyProp = keyProperty ? keyProperty : 'rowId';
         
         if(selected.length <= 0){
-            this.selectOneProduct(rows[tabid][keyProperty], 0);
+            this.selectOneProduct(rows[tabid][keyProp], 0);
         }
     }
 

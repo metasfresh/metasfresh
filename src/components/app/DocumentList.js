@@ -67,7 +67,8 @@ class DocumentList extends Component {
             this.setState({
                 data:null,
                 layout:null,
-                filters: null
+                filters: null,
+                viewId: null
             }, () => {
 
                 this.fetchLayoutAndData();
@@ -309,7 +310,7 @@ class DocumentList extends Component {
         } = this.state;
 
         const {
-            dispatch, windowType, type, open, closeOverlays, selected, inBackground,
+            dispatch, windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal
         } = this.props;
         
