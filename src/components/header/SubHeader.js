@@ -88,12 +88,15 @@ class Subheader extends Component {
     }
     
     handleAttachmentDelete = (e, id) => {
-        const {dispatch, entity, windowType, dataId} = this.props;
+        const {dispatch, entity, windowType, dataId, selected} = this.props;
         e.stopPropagation();
         dispatch(deleteRequest(
-            entity, windowType, dataId, null, null, 'attachments', id
+            'window', windowType, dataId ? dataId : selected[0], null, null, 
+            'attachments', id
         )).then(() => {
-            return dispatch(attachmentsRequest(entity, windowType, dataId))
+            return dispatch(
+                attachmentsRequest('window', windowType, dataId ? dataId : selected[0])
+            )
         }).then((response) => {
             dispatch(setAttachments(response.data));
         });

@@ -71,6 +71,7 @@ class Lookup extends Component {
             mainProperty, property
         } = this.state;
 
+
         // removing selection
         this.setState({
             selected: null
@@ -160,6 +161,7 @@ class Lookup extends Component {
         }
     }
 
+
     generatingPropsSelection = () => {
         const {onChange} = this.props;
         const {properts} = this.state;
@@ -191,6 +193,8 @@ class Lookup extends Component {
                 this.handleBlur();
             }
         }
+
+        this.handleBlur();
     }
 
     handleAddNew = () => {

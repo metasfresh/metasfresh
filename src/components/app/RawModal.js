@@ -50,10 +50,13 @@ class RawModal extends Component {
     }
 
     removeModal = () => {
-        const {dispatch} = this.props;
+        const {dispatch, modalVisible} = this.props;
 
         dispatch(closeRawModal());
-        document.body.style.overflow = 'auto';
+
+        if (!modalVisible){
+            document.body.style.overflow = 'auto';
+        }
     }
 
 
@@ -102,10 +105,15 @@ class RawModal extends Component {
     }
 }
 
+const mapStateToProps = state => ({
+    modalVisible: state.windowHandler.modal.visible || false
+});
+
 RawModal.propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    modalVisible: PropTypes.bool
 };
 
-RawModal = connect()(RawModal)
+RawModal = connect(mapStateToProps)(RawModal)
 
 export default RawModal

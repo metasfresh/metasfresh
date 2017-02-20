@@ -92,6 +92,7 @@ class DocList extends Component {
                         query={query}
                         selected={selected}
                         viewId={query.viewId}
+                        rawModalVisible={rawModal.visible}
                      />
                  }
                  {rawModal.visible &&
@@ -104,6 +105,7 @@ class DocList extends Component {
                              defaultViewId={rawModal.viewId}
                              selected={selected}
                              setModalTitle={this.setModalTitle}
+                             isModal={true}
                          />
                      </RawModal>
                  }

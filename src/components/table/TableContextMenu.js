@@ -77,12 +77,14 @@ class TableContextMenu extends Component {
                     </div>
                 }
 
-                <div className="context-menu-item" onClick={handleDelete}>
-                    <i className="meta-icon-trash" /> Delete
-                    <span className="tooltip-inline">
-                        {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
-                    </span>
-                </div>
+                {handleDelete && 
+                    <div className="context-menu-item" onClick={handleDelete}>
+                        <i className="meta-icon-trash" /> Delete
+                        <span className="tooltip-inline">
+                            {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
+                        </span>
+                    </div>
+                }
             </div>
         )
     }

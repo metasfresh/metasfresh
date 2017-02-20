@@ -112,6 +112,7 @@ class MasterWindow extends Component {
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
                         closeCallback={this.closeModalCallback}
+                        rawModalVisible={rawModal.visible}
                      />
                  }
                  {rawModal.visible &&
