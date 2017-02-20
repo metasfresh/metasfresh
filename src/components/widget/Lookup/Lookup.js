@@ -163,18 +163,9 @@ class Lookup extends Component {
 
 
     generatingPropsSelection = () => {
-        const {onChange, defaultValue} = this.props;
+        const {onChange} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
-        let isClose = true;
-
-        console.log(defaultValue);
-
-        defaultValue.map (item => {
-            if(!item.value){
-                isClose = false;
-            }
-        });
 
         // Chcecking properties model if there is some
         // unselected properties and handling further
@@ -203,9 +194,7 @@ class Lookup extends Component {
             }
         }
 
-        if(isClose) {
-            this.handleBlur();
-        }
+        this.handleBlur();
     }
 
     handleAddNew = () => {
