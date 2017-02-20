@@ -311,19 +311,20 @@ class DocumentList extends Component {
             dispatch, windowType, type, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit
         } = this.props;
+        
 
         if(layout && data) {
             return (
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         <div>
-                            {type === 'grid' &&
+                            {layout.supportNewRecord &&
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
-                                    title={'New '+layout.caption}
+                                    title={'New '+ layout.newRecordCaption}
                                 >
-                                    <i className="meta-icon-add" /> New {layout.caption}
+                                    <i className="meta-icon-add" /> {layout.newRecordCaption}
                                 </button>
                             }
                             {layout.filters && <Filters
