@@ -45,7 +45,7 @@ upcoming
 
  * metasfresh
   * [#912](https://github.com/metasfresh/metasfresh/issues/912) New role added .. login not possible after that
-  * [#981](https://github.com/metasfresh/metasfresh/issues/981) ClassNotFoundException: de.metas.dlm.swingui.model.interceptor.Main
+  * [#998](https://github.com/metasfresh/metasfresh/issues/998) ClassNotFoundException: de.metas.dlm.swingui.model.interceptor.Main
   
 * webUI
   * [#124](https://github.com/metasfresh/metasfresh-webui/issues/124) Default/ Standard Filter not correct in WebUI
