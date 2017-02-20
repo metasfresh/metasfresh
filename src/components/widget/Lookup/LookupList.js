@@ -120,8 +120,6 @@ class LookupList extends Component {
             loading, list
         } = this.props;
 
-        // console.log(list);
-
         return (
             <div className="input-dropdown-list" ref={c => this.listScrollWrap = c}>
                 {(loading && list.length === 0) && this.renderLoader()}

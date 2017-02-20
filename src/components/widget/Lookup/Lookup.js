@@ -163,12 +163,14 @@ class Lookup extends Component {
 
 
     generatingPropsSelection = () => {
-        const {onChange} = this.props;
+        const {onChange, defaultValue} = this.props;
         const {properts} = this.state;
         const propertiesKeys = Object.keys(properts);
         let isClose = true;
 
-        this.props.defaultValue.map (item => {
+        console.log(defaultValue);
+
+        defaultValue.map (item => {
             if(!item.value){
                 isClose = false;
             }
