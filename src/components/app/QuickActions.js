@@ -102,7 +102,7 @@ class QuickActions extends Component {
                             onClick={() => this.handleClick(actions[0])}
                             title={actions[0].caption}
                         >
-                            <i className="meta-icon-accept" /> {actions[0].caption}
+                            {actions[0].caption}
                         </div>
 
                         <div

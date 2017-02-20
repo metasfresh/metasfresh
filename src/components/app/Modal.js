@@ -25,7 +25,8 @@ class Modal extends Component {
         this.state = {
             scrolled: false,
             isNew: rowId === 'NEW',
-            init: false
+            init: false,
+            pending: false
         }
 
         switch(modalType){
@@ -83,9 +84,21 @@ class Modal extends Component {
     }
 
     handleStart = () => {
+        this.setState(Object.assign({}, this.state, {
+            pending: true
+        }));
+
         const {dispatch, layout, windowType} = this.props;
         dispatch(startProcess(windowType, layout.pinstanceId)).then(response => {
+            this.setState(Object.assign({}, this.state, {
+                pending: false
+            }));
             dispatch(handleProcessResponse(response, null, null, () => this.removeModal()));
+            
+        }).catch(() => {
+            this.setState(Object.assign({}, this.state, {
+                pending: false
+            }));
         });
     }
 
@@ -103,6 +116,8 @@ class Modal extends Component {
         const {
             data, layout, tabId, rowId, dataId, modalType, windowType, isAdvanced
         } = this.props;
+
+        const {pending} = this.state;
 
         switch(modalType){
             case 'window':
@@ -124,6 +139,7 @@ class Modal extends Component {
                         data={data}
                         layout={layout}
                         type={windowType}
+                        disabled={pending}
                     />
                 )
         }
@@ -135,7 +151,8 @@ class Modal extends Component {
         } = this.props;
 
         const {
-            scrolled
+            scrolled,
+            pending
         } = this.state;
 
         return (
@@ -154,7 +171,7 @@ class Modal extends Component {
                         </span>
                         <div className="items-row-2">
                             <button
-                                className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+                                className={'btn btn-meta-outline-secondary btn-distance-3 btn-md ' + (pending ? 'tag-disabled disabled' : '')}
                                 onClick={this.handleClose}
                                 tabIndex={0}
                             >
@@ -162,7 +179,7 @@ class Modal extends Component {
                             </button>
                             {modalType === 'process' &&
                                 <button
-                                    className="btn btn-meta-primary btn-distance-3 btn-md"
+                                    className={'btn btn-meta-primary btn-distance-3 btn-md ' + (pending ? 'tag-disabled disabled' : '') }
                                     onClick={this.handleStart}
                                     tabIndex={0}
                                 >
@@ -184,7 +201,7 @@ class Modal extends Component {
 }
 
 Modal.propTypes = {
-    dispatch: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired
 };
 
 Modal = connect()(Modal);

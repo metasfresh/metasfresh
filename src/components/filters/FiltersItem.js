@@ -23,9 +23,13 @@ class FiltersItem extends Component {
 
     init = () => {
         const {active} = this.props;
-        active && active.parameters && active.parameters.map(item => {
-            this.mergeData(item.parameterName, item.value, item.valueTo);
-        })
+        const {filter} = this.state;
+        
+        if(filter.parameters && active && active.parameters){
+            active.parameters.map(item => {
+                this.mergeData(item.parameterName, item.value, item.valueTo);
+            })
+        }
     }
 
     setValue = (property, value, valueTo) => {
@@ -68,7 +72,7 @@ class FiltersItem extends Component {
     handleApply = () => {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
-
+        
         applyFilters(filter);
         closeFilterMenu();
     }
