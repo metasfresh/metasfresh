@@ -66,7 +66,8 @@ class DocumentList extends Component {
         if(windowType !== this.props.windowType) {
             this.setState({
                 data:null,
-                layout:null
+                layout:null,
+                filters: null
             }, () => {
 
                 this.fetchLayoutAndData();
