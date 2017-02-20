@@ -620,7 +620,7 @@ class Table extends Component {
         const {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy, toggleFullScreen,
-            fullScreen, tabIndex, indentSupported
+            fullScreen, tabIndex, indentSupported, isModal
         } = this.props;
 
         const {
@@ -646,7 +646,7 @@ class Table extends Component {
                         updateDocList={updateDocList}
                         handleAdvancedEdit={() => this.handleAdvancedEdit(type, tabid, selected)}
                         handleOpenNewTab={() => this.handleOpenNewTab(selected)}
-                        handleDelete={() => this.handleDelete()}
+                        handleDelete={!isModal ? () => this.handleDelete() : null}
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">

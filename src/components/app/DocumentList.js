@@ -309,7 +309,7 @@ class DocumentList extends Component {
 
         const {
             dispatch, windowType, type, open, closeOverlays, selected, inBackground,
-            fetchQuickActionsOnInit
+            fetchQuickActionsOnInit, isModal
         } = this.props;
         
 
@@ -318,7 +318,7 @@ class DocumentList extends Component {
                 <div className="document-list-wrapper">
                     <div className="panel panel-primary panel-spaced panel-inline document-list-header">
                         <div>
-                            {layout.supportNewRecord &&
+                            {layout.supportNewRecord && !isModal &&
                                 <button
                                     className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                     onClick={() => this.redirectToNewDocument()}
@@ -360,8 +360,10 @@ class DocumentList extends Component {
                             readonly={true}
                             keyProperty="id"
                             onDoubleClick={(id) => {
+                                !isModal &&
                                 dispatch(push('/window/' + windowType + '/' + id))
                             }}
+                            isModal={isModal}
                             size={data.size}
                             pageLength={this.pageLength}
                             handleChangePage={this.handleChangePage}
