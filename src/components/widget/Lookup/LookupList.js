@@ -53,7 +53,7 @@ class LookupList extends Component {
         const {handleSelect, selected} = this.props;
         const name = item[Object.keys(item)[0]];
         const key = Object.keys(item)[0];
-        // console.log(item);
+
         return (
             <div
                 key={key}
