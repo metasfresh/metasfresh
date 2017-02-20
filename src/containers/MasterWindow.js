@@ -22,7 +22,7 @@ class MasterWindow extends Component {
         }
     }
 
-    closeModalCallback = (type, isNew) => {
+    closeModalCallback = (isNew) => {
         if(isNew){
             this.setState({
                     newRow: true
@@ -112,7 +112,7 @@ class MasterWindow extends Component {
                         isAdvanced={modal.isAdvanced}
                         viewId={null}
                         closeCallback={(isNew) => this.closeModalCallback(
-                            modal.modalType, isNew, modal.layout.pinstanceId
+                            isNew
                         )}
                      />
                  }
