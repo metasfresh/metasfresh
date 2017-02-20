@@ -117,7 +117,7 @@ class LookupList extends Component {
 
     render() {
         const {
-            loading, list
+            loading, list, creatingNewDisabled
         } = this.props;
 
         return (
@@ -126,7 +126,7 @@ class LookupList extends Component {
                 {(!loading && list.length === 0) && this.renderEmpty()}
                 <div ref={(c) => this.items = c}>
                     {list.map((item, index) => this.getDropdownComponent(index, item))}
-                    {list.length === 0 && this.renderNew()}
+                    {list.length === 0 && !creatingNewDisabled && this.renderNew()}
                 </div>
             </div>
         )

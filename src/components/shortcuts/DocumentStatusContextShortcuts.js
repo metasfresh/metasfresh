@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class DocumentStatusContextShortcuts extends Component {
-    handleShortcuts = (action) => {
+    handleShortcuts = (action, event) => {
         const {
             handleDocumentCompleteStatus
         } = this.props;
 
         switch (action) {
             case 'COMPLETE_STATUS':
+                event.preventDefault();
                 return handleDocumentCompleteStatus();
         }
     }

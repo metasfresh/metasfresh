@@ -277,7 +277,9 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
  */
-export function patch(entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal, isAdvanced) {
+export function patch(
+    entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal, isAdvanced
+) {
     return dispatch => {
         let responsed = false;
 
@@ -302,10 +304,11 @@ export function patch(entity, windowType, id = 'NEW', tabId, rowId, property, va
             responsed = true;
             dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
         }).catch(() => {
-            dispatch(getData('window', windowType, id, tabId, rowId, null, null, isAdvanced))
-                .then(response => {
-                    dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
-                });
+            dispatch(
+                getData(entity, windowType, id, tabId, rowId, null, null, isAdvanced)
+            ).then(response => {
+                dispatch(mapDataToState(response.data, isModal, rowId, id, windowType));
+            });
         });
     }
 }
@@ -342,11 +345,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         //Handling staleTabIds
         staleTabIds.map(staleTabId => {
             dispatch(getTab(staleTabId, windowType, id)).then(tab => {
-                const keys = Object.keys(tab);
-
-                keys.map(key => {
-                    dispatch(addNewRow(tab[key], staleTabId, key, 'master'))
-                })
+                dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
             })
         })
     }

@@ -8,6 +8,8 @@ import {
 
 import Window from '../components/Window';
 import Modal from '../components/app/Modal';
+import RawModal from '../components/app/RawModal';
+import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 
 class MasterWindow extends Component {
@@ -15,7 +17,8 @@ class MasterWindow extends Component {
         super(props);
 
         this.state = {
-            newRow: false
+            newRow: false,
+            modalTitle: null
         }
     }
 
@@ -51,12 +54,18 @@ class MasterWindow extends Component {
         return dispatch(attachFileAction(type, dataId, fd));
     }
 
+    setModalTitle = (title) => {
+        this.setState({
+            modalTitle: title
+        })
+    }
+
     render() {
         const {
-            master, modal, breadcrumb, references, actions, 
-            attachments
+            master, modal, breadcrumb, references, actions, attachments, rawModal,
+            selected
         } = this.props;
-        const {newRow} = this.state;
+        const {newRow, modalTitle} = this.state;
         const {documentNoElement, docActionElement, documentSummaryElement, type} = master.layout;
         const dataId = master.docId;
         const docNoData = findRowByPropName(master.data, documentNoElement && documentNoElement.fields[0].field);
@@ -107,6 +116,19 @@ class MasterWindow extends Component {
                         )}
                      />
                  }
+                 {rawModal.visible &&
+                     <RawModal
+                         modalTitle={modalTitle}
+                     >
+                         <DocumentList
+                             type="grid"
+                             windowType={parseInt(rawModal.type)}
+                             defaultViewId={rawModal.viewId}
+                             selected={selected}
+                             setModalTitle={this.setModalTitle}
+                         />
+                     </RawModal>
+                 }
                 <Window
                     data={master.data}
                     layout={master.layout}
@@ -128,17 +150,23 @@ MasterWindow.propTypes = {
     references: PropTypes.array.isRequired,
     actions: PropTypes.array.isRequired,
     attachments: PropTypes.array.isRequired,
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
+    selected: PropTypes.array,
+    rawModal: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
     const {
         master,
-        modal
+        modal,
+        rawModal,
+        selected
     } = windowHandler || {
         master: {},
-        modal: false
+        modal: false,
+        rawModal: {},
+        selected: []
     }
 
     const {
@@ -159,7 +187,9 @@ function mapStateToProps(state) {
         references,
         modal,
         actions,
-        attachments
+        attachments,
+        selected,
+        rawModal
     }
 }
 

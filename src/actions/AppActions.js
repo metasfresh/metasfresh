@@ -124,8 +124,8 @@ export function updateUri(pathname, query, prop, value) {
     }
 }
 
-export function loginRequest(login, passwd){
-    return () => axios.post(config.API_URL + '/login/authenticate?username=' + login + '&password=' + passwd);
+export function loginRequest(username, password){
+    return () => axios.post(config.API_URL + '/login/authenticate', { username, password });
 }
 
 export function localLoginRequest(){

@@ -34,4 +34,5 @@ $checkbox-unchecked: rgba(107, 123, 134, 0.2);
 
 $tooltip-border-color: #d5e5f0;
 
+$breakpoint-md: 991px;
 $breakpoint: 543px;

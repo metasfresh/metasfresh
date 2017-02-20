@@ -50,17 +50,34 @@ class Subheader extends Component {
 
         if(windowType){
             if(selected.length === 1 || dataId){
-                dispatch(referencesRequest('window', windowType, dataId ? dataId : selected[0])).then((response) => {
+                const id = dataId ? dataId : selected[0];
+                
+                /*
+                 * These actions always are called in window context
+                 * because it is or window, or anywhere else but
+                 * with some selection on particular document
+                 */
+                dispatch(
+                    referencesRequest('window', windowType, id)
+                ).then((response) => {
                     dispatch(setReferences(response.data.references));
                 });
+                
+                dispatch(
+                    attachmentsRequest('window', windowType, id)
+                ).then((response) => {
+                    dispatch(setAttachments(response.data));
+                });
+            }else{
+                dispatch(setAttachments([]));
+                dispatch(setReferences([]));
             }
 
-            dispatch(actionsRequest(entity, windowType, dataId ? dataId : query && query.viewId, selected)).then((response) => {
+            dispatch(
+                actionsRequest(
+                    entity, windowType, dataId ? dataId : query && query.viewId, selected)
+            ).then((response) => {
                 dispatch(setActions(response.data.actions));
-            });
-            
-            dataId && dispatch(attachmentsRequest(entity, windowType, dataId)).then((response) => {
-                dispatch(setAttachments(response.data));
             });
         }
     }
@@ -236,7 +253,7 @@ class Subheader extends Component {
 
                                     <div className="subheader-header">Attachments</div>
                                     <div className="subheader-break " />
-                                    { attachments && !!attachments.length ? attachments.map((item, key) =>
+                                    { (attachments && attachments.length) ? attachments.map((item, key) =>
                                         <div
                                             className="subheader-item subheader-item-ellipsis js-subheader-item"
                                             key={key}

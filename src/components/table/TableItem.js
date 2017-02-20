@@ -78,7 +78,7 @@ class TableItem extends Component {
             edited, updatedRow
         } = this.state;
 
-        //iterate over layout settings
+        // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
             let widgetData = item.fields.map(property => findRowByPropName(cells, property.field));
@@ -108,14 +108,13 @@ class TableItem extends Component {
     }
 
     updateRow = () => {
-        this.setState(
-            Object.assign({}, this.state, {
+        this.setState({
                 updatedRow: true
-            }), () => {
+            }, () => {
                 setTimeout(() => {
-                    this.setState(Object.assign({}, this.state, {
+                    this.setState({
                         updatedRow: false
-                    }))
+                    })
                 }, 1000);
             }
         )
@@ -194,7 +193,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fields, cols, onMouseDown, onDoubleClick, odd, handleRightClick, 
-            indentSupported, contextType
+            indentSupported, contextType, item, lastSibling, includedDocuments
         } = this.props;
 
         return (
@@ -204,8 +203,11 @@ class TableItem extends Component {
                 onContextMenu={handleRightClick}
                 className={
                     (isSelected ? 'row-selected ' : '') +
-                    (odd ? 'tr-odd ': '') +
-                    (!odd ? 'tr-even ': '')
+                    (odd ? 'tr-odd ': 'tr-even ') + 
+                    (item.processed ? 'row-disabled ': '') + 
+                    ((item.processed && lastSibling && !includedDocuments) ? 
+                        'row-boundary ': ''
+                    )
                 }
             >
                 {indentSupported &&

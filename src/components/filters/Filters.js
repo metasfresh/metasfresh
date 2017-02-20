@@ -9,12 +9,6 @@ class Filters extends Component {
 
         this.state = {
             filter: null,
-
-            openDateMenu: false,
-            notFrequentListOpen: true,
-            selectedItem: '',
-            frequentFilterOpen: false,
-            notFrequentFilterOpen: false,
             notValidFields: null,
             active: null,
             widgetShown: false
@@ -35,19 +29,6 @@ class Filters extends Component {
         this.setState({
             filter: filter
         })
-    }
-
-    setSelectedItem = (item, close) => {
-        this.setState(Object.assign({}, this.state, {
-            selectedItem: item
-        }), () => {
-            close && this.setState(Object.assign({}, this.state, {
-                notFrequentListOpen: true,
-                filterDataItem: '',
-                notFrequentFilterOpen: false,
-                frequentFilterOpen: false
-            }))
-        });
     }
 
     // SETTING FILTERS  --------------------------------------------------------
@@ -100,9 +81,13 @@ class Filters extends Component {
     }
 
     isFilterValid = (filters) => {
-        return filters.parameters.filter(item => {
-            return item.mandatory && !item.value;
-        })
+        if(filters.parameters){
+            return filters.parameters.filter(item => {
+                return item.mandatory && !item.value;
+            }).length;
+        }else{
+            return false;
+        }
     }
 
     getFiltersStructure = (filterData) => {

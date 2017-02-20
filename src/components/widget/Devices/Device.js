@@ -51,6 +51,17 @@ class Device extends Component {
         })
     }
 
+    handleKey = (e) => {
+        const {handleChange} = this.props;
+        const {value} = this.state;
+
+        switch(e.key){
+            case 'Enter':
+                handleChange(value);
+                break;
+        }
+    }
+
     render() {
         const {value, index, isMore} = this.state;
         const {tabIndex} = this.props;
@@ -67,6 +78,7 @@ class Device extends Component {
                     onFocus={() => this.handleToggleChangeStopper(true)}
                     onMouseLeave={() => this.handleToggleChangeStopper(false)}
                     onBlur={() => this.handleToggleChangeStopper(false)}
+                    onKeyDown={(e) => this.handleKey(e)}
                 >
                     {isMore && <span className="btn-flag">{index + 1}</span>}
                     {value}

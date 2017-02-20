@@ -179,13 +179,7 @@ class TableQuickInput extends Component {
     }
 
     validateForm = (data) => {
-        let ret = true;
-        data.map(item => {
-            if(!item.value){
-                ret = false;
-            }
-        });
-        return ret;
+        return !data.filter(item => item.mandatory && !item.value).length;
     }
 
     render() {
