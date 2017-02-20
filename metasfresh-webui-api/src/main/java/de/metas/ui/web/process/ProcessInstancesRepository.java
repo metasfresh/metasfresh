@@ -140,8 +140,7 @@ public class ProcessInstancesRepository
 		// Extract process where clause from view, in case the process was called from a view.
 		final String sqlWhereClause;
 		final String viewId = Strings.emptyToNull(request.getViewId());
-		int view_AD_Window_ID = -1;
-		DocumentId view_DocumentId = null;
+		DocumentPath viewSingleDocumentPath = null;
 		if (!Check.isEmpty(viewId))
 		{
 			final IDocumentViewSelection view = documentViewsRepo.getView(viewId);
@@ -150,8 +149,9 @@ public class ProcessInstancesRepository
 
 			if (viewDocumentIds.size() == 1)
 			{
-				view_AD_Window_ID = view.getAD_Window_ID();
-				view_DocumentId = viewDocumentIds.iterator().next();
+				final int view_AD_Window_ID = view.getAD_Window_ID();
+				final DocumentId view_singleDocumentId = viewDocumentIds.iterator().next();
+				viewSingleDocumentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_singleDocumentId);
 			}
 		}
 		else
@@ -162,15 +162,14 @@ public class ProcessInstancesRepository
 		//
 		// Extract the (single) referenced document
 		final TableRecordReference documentRef;
-		if (request.getAD_Window_ID() > 0 && !Check.isEmpty(request.getDocumentId()))
+		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
+		if (singleDocumentPath != null)
 		{
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, request.getAD_Window_ID(), request.getDocumentId());
-			documentRef = documentsCollection.getTableRecordReference(documentPath);
+			documentRef = documentsCollection.getTableRecordReference(singleDocumentPath);
 		}
-		else if (view_AD_Window_ID > 0 && view_DocumentId != null)
+		else if (viewSingleDocumentPath != null)
 		{
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.Window, view_AD_Window_ID, view_DocumentId);
-			documentRef = documentsCollection.getTableRecordReference(documentPath);
+			documentRef = documentsCollection.getTableRecordReference(viewSingleDocumentPath);
 		}
 		else
 		{

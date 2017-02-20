@@ -58,6 +58,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private Optional<Integer> precision;
+	private final int buttonProcessId;
 
 	private final LayoutType layoutType;
 	private final LayoutAlign gridAlign;
@@ -80,6 +81,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		widgetType = builder.getWidgetType();
 		precision = Optional.ofNullable(builder.getPrecision());
+		buttonProcessId = builder.getButtonProcessId();
 
 		layoutType = builder.getLayoutType();
 		gridAlign = builder.getGridAlign();
@@ -160,6 +162,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return !fields.isEmpty();
 	}
+	
+	public int getButtonProcessId()
+	{
+		return buttonProcessId;
+	}
 
 	public static final class Builder
 	{
@@ -169,12 +176,14 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private ITranslatableString _caption = ImmutableTranslatableString.empty();
 		private ITranslatableString _description = ImmutableTranslatableString.empty();
 		private DocumentFieldWidgetType _widgetType;
+		private int buttonProcessId = -1;
 		private LayoutType _layoutType;
 		private boolean _gridElement = false;
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
 		private boolean consumed = false;
+
 
 		private Builder()
 		{
@@ -418,6 +427,18 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private LayoutAlign getGridAlign()
 		{
 			return _gridElement ? getWidgetType().getGridAlign() : null;
+		}
+
+		
+		public Builder setButtonProcessId(final int buttonProcessId)
+		{
+			this.buttonProcessId = buttonProcessId;
+			return this;
+		}
+		
+		/* package */ int getButtonProcessId()
+		{
+			return buttonProcessId;
 		}
 
 	}

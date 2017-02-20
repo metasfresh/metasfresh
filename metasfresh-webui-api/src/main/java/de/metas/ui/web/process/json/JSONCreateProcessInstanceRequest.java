@@ -10,12 +10,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentType;
 
 /*
  * #%L
@@ -30,11 +30,11 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -47,14 +47,20 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	public static JSONCreateProcessInstanceRequest of(final int adProcessId, final int adWindowId, final String idStr)
 	{
 		final String documentType = String.valueOf(adWindowId);
+		final String tabId = null;
+		final String rowId = null;
+		//
 		final String viewId = null;
 		final Set<String> viewDocumentIds = null;
-		return new JSONCreateProcessInstanceRequest(adProcessId, documentType, idStr, viewId, viewDocumentIds);
+		//
+		return new JSONCreateProcessInstanceRequest(adProcessId, documentType, idStr, tabId, rowId, viewId, viewDocumentIds);
 	}
 
 	@JsonProperty("processId")
 	private final int processId;
 
+	//
+	// Called from single row
 	/** Document type (aka AD_Window_ID) */
 	@JsonProperty("documentType")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -63,7 +69,17 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String documentId;
+	//
+	@JsonProperty("tabId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String tabId;
+	//
+	@JsonProperty("rowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String rowId;
 
+	//
+	// Called from view
 	@JsonProperty("viewId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String viewId;
@@ -77,26 +93,36 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 
 	//
 	// Calculated values
-	private final transient Supplier<Integer> _adWindowId = Suppliers.memoize(() -> {
-		final String documentType = getDocumentType();
-		return Check.isEmpty(documentType, true) ? -1 : Integer.parseInt(documentType);
-	});
+	private final transient DocumentPath _singleDocumentPath;
 
 	@JsonCreator
 	private JSONCreateProcessInstanceRequest( //
 			@JsonProperty("processId") final int processId //
+			//
 			, @JsonProperty("documentType") final String documentType //
 			, @JsonProperty("documentId") final String documentId //
+			, @JsonProperty("tabId") final String tabId//
+			//
+			, @JsonProperty("rowId") final String rowId //
 			, @JsonProperty("viewId") final String viewId //
 			, @JsonProperty("viewDocumentIds") final Set<String> viewDocumentIds //
 	)
 	{
 		super();
 		this.processId = processId;
+
+		//
+		// Called from single row
 		this.documentType = documentType;
 		this.documentId = documentId;
+		this.tabId = tabId;
+		this.rowId = rowId;
+		_singleDocumentPath = createDocumentPathOrNull(documentType, documentId, tabId, rowId);
+
+		//
+		// Called from view
 		this.viewId = viewId;
-		this.viewDocumentIdsStrings = viewDocumentIds == null ? null : ImmutableSet.copyOf(viewDocumentIds);
+		viewDocumentIdsStrings = viewDocumentIds == null ? null : ImmutableSet.copyOf(viewDocumentIds);
 	}
 
 	@Override
@@ -105,11 +131,34 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("processId", processId)
+				//
 				.add("documentType", documentType)
 				.add("documentId", documentId)
+				.add("tabId", tabId)
+				.add("rowId", rowId)
+				//
 				.add("viewId", viewId)
 				.add("viewDocumentIds", _viewDocumentIds != null ? _viewDocumentIds : viewDocumentIdsStrings)
 				.toString();
+	}
+
+	private static final DocumentPath createDocumentPathOrNull(final String documentType, final String documentId, final String tabId, final String rowIdStr)
+	{
+		if (!Check.isEmpty(documentType) && !Check.isEmpty(documentId))
+		{
+			final int adWindowId = Integer.parseInt(documentType);
+
+			if (Check.isEmpty(tabId) && Check.isEmpty(rowIdStr))
+			{
+				return DocumentPath.rootDocumentPath(DocumentType.Window, adWindowId, documentId);
+			}
+			else
+			{
+				return DocumentPath.includedDocumentPath(DocumentType.Window, adWindowId, documentId, tabId, rowIdStr);
+			}
+		}
+
+		return null;
 	}
 
 	public int getAD_Process_ID()
@@ -117,19 +166,9 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		return processId;
 	}
 
-	public int getAD_Window_ID()
+	public DocumentPath getSingleDocumentPath()
 	{
-		return _adWindowId.get();
-	}
-
-	public String getDocumentType()
-	{
-		return documentType;
-	}
-
-	public String getDocumentId()
-	{
-		return documentId;
+		return _singleDocumentPath;
 	}
 
 	public String getViewId()
@@ -139,7 +178,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 
 	public Set<DocumentId> getViewDocumentIds()
 	{
-		if(_viewDocumentIds == null)
+		if (_viewDocumentIds == null)
 		{
 			_viewDocumentIds = DocumentId.ofStringSet(viewDocumentIdsStrings);
 		}

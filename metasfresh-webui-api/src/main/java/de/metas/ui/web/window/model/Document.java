@@ -1085,7 +1085,7 @@ public final class Document
 
 			// Skip button callouts because it's expected to execute those callouts ONLY when the button is pressed
 			final DocumentFieldWidgetType widgetType = documentField.getWidgetType();
-			if (widgetType == DocumentFieldWidgetType.Button || widgetType == DocumentFieldWidgetType.ActionButton)
+			if (widgetType.isButton())
 			{
 				return null;
 			}

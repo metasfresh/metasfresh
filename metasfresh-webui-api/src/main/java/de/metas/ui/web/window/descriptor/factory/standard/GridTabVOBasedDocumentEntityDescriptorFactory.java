@@ -233,7 +233,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 
 		//
 		//
-		final DocumentFieldWidgetType widgetType;
+		DocumentFieldWidgetType widgetType;
+		final int buttonProcessId;
 		final Class<?> valueClass;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
@@ -244,6 +245,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		if (isParentLinkColumn)
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
+			buttonProcessId = -1;
 			valueClass = Integer.class;
 			alwaysUpdateable = false;
 
@@ -257,6 +259,16 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		{
 			final int displayType = gridFieldVO.getDisplayType();
 			widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
+			if(widgetType.isButton() && gridFieldVO.AD_Process_ID > 0)
+			{
+				widgetType = DocumentFieldWidgetType.ProcessButton;
+				buttonProcessId = gridFieldVO.AD_Process_ID;
+			}
+			else
+			{
+				buttonProcessId = -1;
+			}
+			
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
@@ -333,6 +345,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setParentLink(isParentLinkColumn)
 				//
 				.setWidgetType(widgetType)
+				.setButtonProcessId(buttonProcessId)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				.setValueClass(fieldBinding.getValueClass())
 				.setVirtualField(fieldBinding.isVirtualColumn())
