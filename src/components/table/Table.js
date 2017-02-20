@@ -190,14 +190,16 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        const item = event.path;
-        for(let i = 0; i < item.length; i++){
-            if(item[i].classList && item[i].classList.contains('js-not-unselect')){
-                return;
+        if(event.target.parentNode !== document) {
+            const item = event.path;
+            for(let i = 0; i < item.length; i++){
+                if(item[i].classList && item[i].classList.contains('js-not-unselect')){
+                    return;
+                }
             }
-        }
 
-        this.deselectAllProducts();
+            this.deselectAllProducts();
+        }   
     }
 
     handleKeyDown = (e) => {
